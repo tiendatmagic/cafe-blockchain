@@ -12,7 +12,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::orderBy('id', 'desc')->get();
+        $products = Product::with('categories')->orderBy('id', 'desc')->get();
         return response()->json($products);
     }
 
@@ -24,7 +24,8 @@ class ProductController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
-            'category' => 'required|string|max:255',
+            'category_ids' => 'required|array',
+            'category_ids.*' => 'exists:categories,id',
             'image' => 'nullable|string|max:1000',
             'status' => 'nullable|boolean',
             'short_description' => 'nullable|string|max:500',
@@ -34,12 +35,15 @@ class ProductController extends Controller
         $product = Product::create([
             'name' => $validated['name'],
             'price' => $validated['price'],
-            'category' => $validated['category'],
             'image' => $validated['image'] ?? 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=500&auto=format&fit=crop&q=60',
             'status' => $validated['status'] ?? true,
             'short_description' => $validated['short_description'] ?? null,
             'description' => $validated['description'] ?? null,
         ]);
+
+        // Đồng bộ hóa các danh mục Nhiều-Nhiều
+        $product->categories()->sync($validated['category_ids']);
+        $product->load('categories');
 
         return response()->json([
             'message' => 'Thêm món thành công!',
@@ -57,14 +61,26 @@ class ProductController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
-            'category' => 'required|string|max:255',
+            'category_ids' => 'required|array',
+            'category_ids.*' => 'exists:categories,id',
             'image' => 'nullable|string|max:1000',
             'status' => 'required|boolean',
             'short_description' => 'nullable|string|max:500',
             'description' => 'nullable|string|max:5000',
         ]);
 
-        $product->update($validated);
+        $product->update([
+            'name' => $validated['name'],
+            'price' => $validated['price'],
+            'image' => $validated['image'] ?? 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=500&auto=format&fit=crop&q=60',
+            'status' => $validated['status'],
+            'short_description' => $validated['short_description'] ?? null,
+            'description' => $validated['description'] ?? null,
+        ]);
+
+        // Đồng bộ hóa các danh mục Nhiều-Nhiều
+        $product->categories()->sync($validated['category_ids']);
+        $product->load('categories');
 
         return response()->json([
             'message' => 'Cập nhật món thành công!',

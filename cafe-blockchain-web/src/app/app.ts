@@ -42,8 +42,23 @@ export class App implements OnInit {
     secondary_color: '#c084fc'
   });
 
-  // Tỷ giá Crypto ảo phục vụ Dashboard sang trọng
-  public readonly ethPriceVND = signal<number>(92450000);
+  // Tỷ giá Crypto phục vụ Dashboard sang trọng theo từng mạng EVM
+  public readonly nativeTokenPriceVND = computed(() => {
+    const symbol = this.web3Service.nativeTokenSymbol();
+    switch (symbol) {
+      case 'ETH':
+        return 92450000;
+      case 'BNB':
+        return 15240000;
+      case 'MATIC':
+      case 'POL':
+        return 12800;
+      case 'AVAX':
+        return 890000;
+      default:
+        return 92450000;
+    }
+  });
   public readonly usdtPriceVND = signal<number>(25420);
 
   // Trạng thái POS (Giỏ hàng)
@@ -60,12 +75,27 @@ export class App implements OnInit {
   public readonly menuForm = signal<any>({
     name: '',
     price: 0,
-    category: 'Cà phê',
+    category_ids: [],
     image: '',
     status: true,
     short_description: '',
     description: ''
   });
+
+  // Trạng thái Quản lý Danh mục (CRUD Category)
+  public readonly categoriesList = signal<any[]>([]);
+  public readonly categoryForm = signal<any>({
+    id: null as number | null,
+    name: ''
+  });
+  public readonly isCategoryLoading = signal<boolean>(false);
+
+  // Các signals quản lý Modal mới
+  public readonly isCategoryModalOpen = signal<boolean>(false);
+  public readonly isDeleteCategoryConfirmOpen = signal<boolean>(false);
+  public readonly deletingCategoryData = signal<any>(null);
+  public readonly isDeleteProductConfirmOpen = signal<boolean>(false);
+  public readonly deletingProductData = signal<any>(null);
 
   // Trạng thái Sổ đơn hàng (Bộ lọc)
   public readonly orderStatusFilter = signal<string>('all');
@@ -102,6 +132,54 @@ export class App implements OnInit {
     return this.cart().reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
   });
 
+  // ==================== LOGIC PHÂN TRANG (PAGINATION) ====================
+  public readonly menuItemsPerPage = 9; // Tối đa 9 sản phẩm trên 1 trang theo quy định mới
+  public readonly menuCurrentPage = signal<number>(1);
+
+  // Sản phẩm phân trang ở trang Quản lý Thực đơn
+  public readonly paginatedProducts = computed(() => {
+    const list = this.products();
+    const startIndex = (this.menuCurrentPage() - 1) * this.menuItemsPerPage;
+    return list.slice(startIndex, startIndex + this.menuItemsPerPage);
+  });
+
+  public readonly menuTotalPages = computed(() => {
+    return Math.ceil(this.products().length / this.menuItemsPerPage) || 1;
+  });
+
+  // Phân trang sản phẩm ở trang Bán hàng POS
+  public readonly posItemsPerPage = 9; // Tối đa 9 sản phẩm trên 1 trang theo quy định mới
+  public readonly posCurrentPage = signal<number>(1);
+
+  public readonly paginatedPosProducts = computed(() => {
+    const list = this.filteredProducts();
+    const startIndex = (this.posCurrentPage() - 1) * this.posItemsPerPage;
+    return list.slice(startIndex, startIndex + this.posItemsPerPage);
+  });
+
+  public readonly posTotalPages = computed(() => {
+    return Math.ceil(this.filteredProducts().length / this.posItemsPerPage) || 1;
+  });
+
+  public readonly ordersItemsPerPage = 5;
+  public readonly ordersCurrentPage = signal<number>(1);
+
+  // Đơn hàng phân trang ở Sổ đơn hàng
+  public readonly paginatedOrders = computed(() => {
+    const list = this.orders();
+    const startIndex = (this.ordersCurrentPage() - 1) * this.ordersItemsPerPage;
+    return list.slice(startIndex, startIndex + this.ordersItemsPerPage);
+  });
+
+  public readonly ordersTotalPages = computed(() => {
+    return Math.ceil(this.orders().length / this.ordersItemsPerPage) || 1;
+  });
+
+  // Helper sinh mảng số trang cho giao diện phân trang
+  public getPagesArray(totalPages: number): number[] {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+
   // Helper cho template HTML vẽ biểu đồ
   public mathMin(a: number, b: number): number {
     return Math.min(a, b);
@@ -110,16 +188,16 @@ export class App implements OnInit {
   // Lọc sản phẩm hiển thị trong POS
   public readonly filteredProducts = computed(() => {
     return this.products().filter(p => {
-      const matchCategory = this.posCategoryFilter() === 'Tất cả' || p.category === this.posCategoryFilter();
+      const matchCategory = this.posCategoryFilter() === 'Tất cả' || (p.categories && p.categories.some((c: any) => c.name === this.posCategoryFilter()));
       const matchSearch = p.name.toLowerCase().includes(this.posSearchQuery().toLowerCase());
       return matchCategory && matchSearch && p.status;
     });
   });
 
-  // Danh mục sản phẩm (không trùng lặp)
+  // Danh mục sản phẩm động lấy từ backend
   public readonly categories = computed(() => {
-    const list = this.products().map(p => p.category);
-    return ['Tất cả', ...Array.from(new Set(list))];
+    const list = this.categoriesList().map(c => c.name);
+    return ['Tất cả', ...list];
   });
 
   ngOnInit() {
@@ -166,12 +244,14 @@ export class App implements OnInit {
       dashboard: this.apiService.getDashboard(),
       products: this.apiService.getProducts(),
       orders: this.apiService.getOrders(),
-      settings: this.apiService.getSettings()
+      settings: this.apiService.getSettings(),
+      categories: this.apiService.getCategories()
     }).subscribe({
       next: (res) => {
         this.dashboardData.set(res.dashboard);
         this.products.set(res.products);
         this.orders.set(res.orders);
+        this.categoriesList.set(res.categories || []);
         
         if (res.settings) {
           this.settings.set(res.settings);
@@ -238,8 +318,10 @@ export class App implements OnInit {
       if (tab === 'dashboard') {
         this.refreshDashboard();
       } else if (tab === 'orders') {
+        this.ordersCurrentPage.set(1); // Reset phân trang đơn hàng về 1
         this.refreshOrders();
       } else if (tab === 'menu') {
+        this.menuCurrentPage.set(1); // Reset phân trang thực đơn về 1
         this.refreshProducts();
       } else if (tab === 'settings') {
         this.loadSettings();
@@ -255,7 +337,16 @@ export class App implements OnInit {
 
   // Refresh danh sách thực đơn
   private refreshProducts() {
-    this.apiService.getProducts().subscribe(res => this.products.set(res));
+    forkJoin({
+      products: this.apiService.getProducts(),
+      categories: this.apiService.getCategories()
+    }).subscribe({
+      next: (res) => {
+        this.products.set(res.products);
+        this.categoriesList.set(res.categories);
+      },
+      error: (err) => console.error('Lỗi refresh sản phẩm & danh mục:', err)
+    });
   }
 
   // Refresh danh sách đơn hàng
@@ -378,12 +469,14 @@ export class App implements OnInit {
   // Cập nhật bộ lọc trạng thái đơn hàng (Segmented Button)
   public setOrderStatusFilter(status: string) {
     this.orderStatusFilter.set(status);
+    this.ordersCurrentPage.set(1); // Reset phân trang về 1 khi đổi bộ lọc
     this.refreshOrders();
   }
 
   // Cập nhật bộ lọc blockchain đơn hàng (Segmented Button)
   public setOrderBlockchainFilter(blockchain: string) {
     this.orderBlockchainFilter.set(blockchain);
+    this.ordersCurrentPage.set(1); // Reset phân trang về 1 khi đổi bộ lọc
     this.refreshOrders();
   }
 
@@ -535,7 +628,7 @@ export class App implements OnInit {
     this.menuForm.set({
       name: '',
       price: 0,
-      category: 'Cà phê',
+      category_ids: [],
       image: '',
       status: true,
       short_description: '',
@@ -551,7 +644,7 @@ export class App implements OnInit {
     this.menuForm.set({
       name: product.name,
       price: product.price,
-      category: product.category,
+      category_ids: product.categories ? product.categories.map((c: any) => c.id) : [],
       image: product.image,
       status: product.status,
       short_description: product.short_description || '',
@@ -569,8 +662,8 @@ export class App implements OnInit {
   // Lưu món ăn (Thêm/Sửa)
   public saveProduct() {
     const formData = this.menuForm();
-    if (!formData.name || formData.price <= 0 || !formData.category) {
-      this.showToast('Vui lòng nhập đầy đủ thông tin món ăn!', 'error');
+    if (!formData.name || formData.price <= 0 || !formData.category_ids || formData.category_ids.length === 0) {
+      this.showToast('Vui lòng điền tên, đơn giá và chọn ít nhất một danh mục!', 'error');
       return;
     }
 
@@ -605,22 +698,182 @@ export class App implements OnInit {
     }
   }
 
-  // Xóa món ăn
+  // Xóa món ăn (chuyển tiếp sang trigger mở Custom Confirm Modal)
   public deleteProduct(id: number) {
-    if (confirm('Bạn có chắc chắn muốn xóa món này khỏi thực đơn không?')) {
-      this.isLoading.set(true);
-      this.apiService.deleteProduct(id).subscribe({
-        next: (res) => {
-          this.showToast('Xóa món ăn khỏi thực đơn thành công!', 'success');
+    const product = this.products().find(p => p.id === id);
+    if (product) {
+      this.triggerDeleteProduct(product);
+    }
+  }
+
+  // Xử lý tích/gỡ chọn danh mục trong menuForm
+  public toggleFormCategory(categoryId: number) {
+    const form = this.menuForm();
+    const currentIds: number[] = form.category_ids || [];
+    const index = currentIds.indexOf(categoryId);
+    if (index > -1) {
+      const updated = currentIds.filter(id => id !== categoryId);
+      this.menuForm.set({ ...form, category_ids: updated });
+    } else {
+      const updated = [...currentIds, categoryId];
+      this.menuForm.set({ ...form, category_ids: updated });
+    }
+  }
+
+  public isCategorySelected(categoryId: number): boolean {
+    const ids = this.menuForm().category_ids || [];
+    return ids.includes(categoryId);
+  }
+
+  // Tải danh sách danh mục
+  public loadCategories() {
+    this.apiService.getCategories().subscribe({
+      next: (res) => {
+        this.categoriesList.set(res);
+      },
+      error: (err) => console.error('Lỗi tải danh mục:', err)
+    });
+  }
+
+  // Mở modal thêm danh mục mới
+  public openAddCategoryModal() {
+    this.resetCategoryForm();
+    this.isCategoryModalOpen.set(true);
+  }
+
+  // Mở modal sửa danh mục
+  public openEditCategoryModal(category: any) {
+    this.categoryForm.set({
+      id: category.id,
+      name: category.name
+    });
+    this.isCategoryModalOpen.set(true);
+  }
+
+  // Đóng modal danh mục
+  public closeCategoryModal() {
+    this.isCategoryModalOpen.set(false);
+    this.resetCategoryForm();
+  }
+
+  // Sửa danh mục động (chuyển tiếp sang openEditCategoryModal)
+  public editCategory(category: any) {
+    this.openEditCategoryModal(category);
+  }
+
+  // Hủy sửa danh mục
+  public resetCategoryForm() {
+    this.categoryForm.set({
+      id: null,
+      name: ''
+    });
+  }
+
+  // Lưu danh mục (Thêm mới hoặc Cập nhật)
+  public saveCategory() {
+    const form = this.categoryForm();
+    if (!form.name.trim()) {
+      this.showToast('Vui lòng nhập tên danh mục!', 'error');
+      return;
+    }
+
+    this.isCategoryLoading.set(true);
+    if (form.id) {
+      this.apiService.updateCategory(form.id, { name: form.name.trim() }).subscribe({
+        next: () => {
+          this.showToast('Cập nhật danh mục thành công!', 'success');
+          this.closeCategoryModal();
+          this.loadCategories();
           this.refreshProducts();
-          this.isLoading.set(false);
+          this.isCategoryLoading.set(false);
         },
         error: (err) => {
-          this.showToast('Xóa món thất bại!', 'error');
-          this.isLoading.set(false);
+          console.error(err);
+          this.showToast('Cập nhật danh mục thất bại! Tên danh mục có thể đã tồn tại.', 'error');
+          this.isCategoryLoading.set(false);
+        }
+      });
+    } else {
+      this.apiService.createCategory({ name: form.name.trim() }).subscribe({
+        next: () => {
+          this.showToast('Tạo danh mục mới thành công!', 'success');
+          this.closeCategoryModal();
+          this.loadCategories();
+          this.refreshProducts();
+          this.isCategoryLoading.set(false);
+        },
+        error: (err) => {
+          console.error(err);
+          this.showToast('Tạo danh mục mới thất bại! Tên danh mục có thể đã tồn tại.', 'error');
+          this.isCategoryLoading.set(false);
         }
       });
     }
+  }
+
+  // Xóa danh mục động (chuyển tiếp sang trigger mở Custom Confirm Modal)
+  public deleteCategory(id: number) {
+    const category = this.categoriesList().find(c => c.id === id);
+    if (category) {
+      this.triggerDeleteCategory(category);
+    }
+  }
+
+  // Trigger mở modal xác nhận xóa danh mục
+  public triggerDeleteCategory(category: any) {
+    this.deletingCategoryData.set(category);
+    this.isDeleteCategoryConfirmOpen.set(true);
+  }
+
+  // Xác nhận xóa danh mục thực tế qua API
+  public confirmDeleteCategory() {
+    const category = this.deletingCategoryData();
+    if (!category) return;
+
+    this.isCategoryLoading.set(true);
+    this.apiService.deleteCategory(category.id).subscribe({
+      next: () => {
+        this.showToast('Xóa danh mục thành công!', 'success');
+        this.isDeleteCategoryConfirmOpen.set(false);
+        this.deletingCategoryData.set(null);
+        this.loadCategories();
+        this.refreshProducts();
+        this.isCategoryLoading.set(false);
+      },
+      error: (err) => {
+        console.error(err);
+        this.showToast('Xóa danh mục thất bại!', 'error');
+        this.isCategoryLoading.set(false);
+      }
+    });
+  }
+
+  // Trigger mở modal xác nhận xóa sản phẩm
+  public triggerDeleteProduct(product: any) {
+    this.deletingProductData.set(product);
+    this.isDeleteProductConfirmOpen.set(true);
+  }
+
+  // Xác nhận xóa sản phẩm thực tế qua API
+  public confirmDeleteProduct() {
+    const product = this.deletingProductData();
+    if (!product) return;
+
+    this.isLoading.set(true);
+    this.apiService.deleteProduct(product.id).subscribe({
+      next: () => {
+        this.showToast('Xóa món ăn khỏi thực đơn thành công!', 'success');
+        this.isDeleteProductConfirmOpen.set(false);
+        this.deletingProductData.set(null);
+        this.refreshProducts();
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error(err);
+        this.showToast('Xóa món thất bại!', 'error');
+        this.isLoading.set(false);
+      }
+    });
   }
 
   // ==================== CẤU HÌNH QUÁN & BLOCKCHAIN ====================

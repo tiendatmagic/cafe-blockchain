@@ -28,6 +28,71 @@ export class Web3Service {
     return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
   });
 
+  // Tự động nhận diện ký hiệu Native Token của Chain EVM đang kết nối
+  public readonly nativeTokenSymbol = computed(() => {
+    const activeChainId = this.walletConnected() ? this.chainId() : this.configuredChainId();
+    if (!activeChainId) return 'ETH';
+    
+    const id = activeChainId.toString().trim();
+    switch (id) {
+      case '1':
+      case '11155111':
+      case '5':
+      case '42161': // Arbitrum One
+      case '10':    // Optimism
+      case '8453':  // Base
+        return 'ETH';
+      case '56':
+      case '97':
+        return 'BNB';
+      case '137':
+      case '80001':
+        return 'MATIC';
+      case '80002':
+        return 'POL';
+      case '43114':
+      case '43113':
+        return 'AVAX';
+      default:
+        return 'ETH';
+    }
+  });
+
+  // Tự động nhận diện tên Mạng EVM đang kết nối
+  public readonly networkName = computed(() => {
+    const activeChainId = this.walletConnected() ? this.chainId() : this.configuredChainId();
+    if (!activeChainId) return 'Sepolia Testnet';
+    
+    const id = activeChainId.toString().trim();
+    switch (id) {
+      case '1':
+        return 'Ethereum Mainnet';
+      case '11155111':
+        return 'Sepolia Testnet';
+      case '5':
+        return 'Goerli Testnet';
+      case '56':
+        return 'BNB Smart Chain';
+      case '97':
+        return 'BSC Testnet';
+      case '137':
+        return 'Polygon Mainnet';
+      case '80001':
+        return 'Polygon Mumbai';
+      case '80002':
+        return 'Polygon Amoy';
+      case '43114':
+        return 'Avalanche C-Chain';
+      case '43113':
+        return 'Avalanche Fuji';
+      case '31337':
+      case '1337':
+        return 'Localhost EVM';
+      default:
+        return `EVM Chain (ID: ${id})`;
+    }
+  });
+
   private provider: BrowserProvider | null = null;
 
   constructor() {

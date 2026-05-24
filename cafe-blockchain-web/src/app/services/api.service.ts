@@ -72,4 +72,21 @@ export class ApiService {
   public updateSettings(settings: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/settings`, settings);
   }
+
+  // 5. Categories (Danh mục) API
+  public getCategories(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/categories`);
+  }
+
+  public createCategory(category: { name: string }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/categories`, category);
+  }
+
+  public updateCategory(id: number, category: { name: string }): Observable<any> {
+    return this.http.put(`${this.baseUrl}/categories/${id}`, category);
+  }
+
+  public deleteCategory(id: number): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/categories/${id}`);
+  }
 }

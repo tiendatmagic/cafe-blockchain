@@ -12,7 +12,6 @@ class Product extends Model
     protected $fillable = [
         'name',
         'price',
-        'category',
         'image',
         'status',
         'short_description',
@@ -23,4 +22,12 @@ class Product extends Model
         'price' => 'float',
         'status' => 'boolean',
     ];
+
+    /**
+     * Mối quan hệ Nhiều-Nhiều với Category
+     */
+    public function categories()
+    {
+        return $this->belongsToMany(Category::class);
+    }
 }
