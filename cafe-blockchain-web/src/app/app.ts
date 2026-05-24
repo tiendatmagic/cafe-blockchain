@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from './services/api.service';
@@ -26,6 +26,8 @@ export class App implements OnInit {
   public readonly isMobileMenuOpen = signal<boolean>(false);
   public readonly isWalletModalOpen = signal<boolean>(false);
   public readonly isPaymentDropdownOpen = signal<boolean>(false);
+  public readonly isChainDropdownOpen = signal<boolean>(false);
+  public readonly selectedChainName = signal<string>('-- Chọn nhanh mạng phổ biến nhất --');
   public readonly menuViewMode = signal<'table' | 'card'>('table');
 
   // Dữ liệu từ Laravel Backend
@@ -1005,22 +1007,31 @@ export class App implements OnInit {
     { name: 'Polygon Amoy Testnet', chainId: '80002', rpcUrl: 'https://rpc-amoy.polygon.technology', explorerUrl: 'https://amoy.polygonscan.com' }
   ];
 
-  // Hàm chọn nhanh mạng lưới
-  public selectPopularChain(event: Event) {
-    const select = event.target as HTMLSelectElement;
-    const chainId = select.value;
-    if (!chainId) return;
+  // Toggle đóng mở dropdown chọn mạng
+  public toggleChainDropdown() {
+    if (!this.web3Service.walletConnected() || !this.web3Service.isOwnerContract()) return;
+    this.isChainDropdownOpen.update(val => !val);
+  }
 
-    const chain = this.POPULAR_CHAINS.find(c => c.chainId === chainId);
-    if (chain) {
-      this.configForm.update(form => ({
-        ...form,
-        rpc_url: chain.rpcUrl,
-        chain_id: chain.chainId,
-        explorer_url: chain.explorerUrl
-      }));
-      this.showToast(`Đã tự động điền cấu hình mạng: ${chain.name}!`, 'success');
-      select.value = ''; // Reset select
+  // Hàm chọn nhanh mạng lưới trực tiếp từ Custom Dropdown
+  public selectPopularChainDirect(chain: { name: string, chainId: string, rpcUrl: string, explorerUrl: string }) {
+    this.configForm.update(form => ({
+      ...form,
+      rpc_url: chain.rpcUrl,
+      chain_id: chain.chainId,
+      explorer_url: chain.explorerUrl
+    }));
+    this.selectedChainName.set(`${chain.name} (ID: ${chain.chainId})`);
+    this.showToast(`Đã tự động điền cấu hình mạng: ${chain.name}!`, 'success');
+    this.isChainDropdownOpen.set(false);
+  }
+
+  // Lắng nghe click bên ngoài để đóng custom dropdown
+  @HostListener('document:click', ['$event'])
+  public onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.chain-dropdown-container')) {
+      this.isChainDropdownOpen.set(false);
     }
   }
 

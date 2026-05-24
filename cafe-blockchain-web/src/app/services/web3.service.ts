@@ -108,6 +108,11 @@ export class Web3Service {
     if (config.rpc_url) this.rpcUrl.set(config.rpc_url);
     if (config.explorer_url) this.explorerUrl.set(config.explorer_url);
     if (config.chain_id) this.configuredChainId.set(config.chain_id);
+
+    // Nếu ví đang kết nối, cập nhật lại trạng thái isOwnerContract dựa trên contract_address mới nhận được
+    if (this.walletConnected() && this.currentAccount()) {
+      this.updateBalanceAndStatus(this.currentAccount());
+    }
   }
 
   /**
@@ -168,13 +173,18 @@ export class Web3Service {
       this.chainId.set(network.chainId.toString());
 
       // 3. Kiểm tra xem có phải Owner của Smart Contract không
-      const contract = new Contract(this.contractAddress(), CAFE_WEB3_POS_ABI, this.provider);
-      try {
-        const isOwner = await contract['isOwner'](account);
-        this.isOwnerContract.set(isOwner);
-      } catch (e) {
-        console.warn('Smart Contract chua duoc deploy tren mang nay hoac loi dia chi:', e);
-        this.isOwnerContract.set(false);
+      if (!this.contractAddress()) {
+        // Nếu chưa deploy contract, bất kỳ ví nào đã kết nối đều được coi là Admin/Owner để cấu hình & deploy
+        this.isOwnerContract.set(true);
+      } else {
+        const contract = new Contract(this.contractAddress(), CAFE_WEB3_POS_ABI, this.provider);
+        try {
+          const isOwner = await contract['isOwner'](account);
+          this.isOwnerContract.set(isOwner);
+        } catch (e) {
+          console.warn('Smart Contract chua duoc deploy tren mang nay hoac loi dia chi:', e);
+          this.isOwnerContract.set(false);
+        }
       }
     } catch (err) {
       console.error('Loi cap nhat trang thai vi:', err);
