@@ -3,8 +3,8 @@ pragma solidity ^0.8.20;
 
 /**
  * @title CafeWeb3POS
- * @dev Quản lý hóa đơn bán hàng cho hệ thống Cafe Web3 POS tích hợp Blockchain EVM.
- * Cho phép ghi nhận bằng chứng hóa đơn (bill order) lên Blockchain bởi các ví thu ngân được ủy quyền.
+ * @dev Manages billing records for the Cafe Web3 POS system integrated with EVM Blockchain.
+ * Allows recording order billing proofs on-chain by authorized cashier wallets.
  */
 contract CafeWeb3POS {
     
@@ -18,16 +18,16 @@ contract CafeWeb3POS {
         address recordedBy;
     }
 
-    // Mapping từ orderId sang thông tin Order chi tiết
+    // Mapping from orderId to detailed Order information
     mapping(uint256 => Order) private _orders;
     
-    // Mảng lưu trữ tất cả các orderId đã được ghi nhận
+    // Array storing all recorded orderIds
     uint256[] private _orderIds;
     
-    // Mapping kiểm tra quyền Owner (ví thu ngân / quản lý)
+    // Mapping to check owner permissions (cashiers / managers)
     mapping(address => bool) public isOwner;
     
-    // Mảng lưu danh sách các Owners để tiện hiển thị
+    // Array storing the list of owners for easy retrieval and display
     address[] public owners;
 
     // Events
@@ -44,9 +44,9 @@ contract CafeWeb3POS {
     event OwnerAdded(address indexed newOwner);
     event OwnerRemoved(address indexed removedOwner);
 
-    // Modifier kiểm tra quyền sở hữu
+    // Modifier to check ownership permission
     modifier onlyOwner() {
-        require(isOwner[msg.sender], "CafeWeb3POS: ban khong phai la owner");
+        require(isOwner[msg.sender], "CafeWeb3POS: caller is not an owner");
         _;
     }
 
@@ -57,7 +57,7 @@ contract CafeWeb3POS {
     }
 
     /**
-     * @dev Ghi nhận hóa đơn bán hàng lên Blockchain
+     * @dev Records a sales order on-chain
      */
     function recordOrder(
         uint256 _orderId,
@@ -66,7 +66,7 @@ contract CafeWeb3POS {
         string memory _paymentMethod,
         string memory _itemsSummary
     ) public onlyOwner {
-        require(_orders[_orderId].orderId == 0, "CafeWeb3POS: don hang da ton tai tren blockchain");
+        require(_orders[_orderId].orderId == 0, "CafeWeb3POS: order already exists on blockchain");
         
         Order memory newOrder = Order({
             orderId: _orderId,
@@ -93,12 +93,12 @@ contract CafeWeb3POS {
     }
 
     /**
-     * @dev Thêm nhiều Owner (ví thu ngân) mới
+     * @dev Adds multiple new owners (cashier wallets)
      */
     function addOwners(address[] memory _newOwners) public onlyOwner {
         for (uint256 i = 0; i < _newOwners.length; i++) {
             address newOwner = _newOwners[i];
-            require(newOwner != address(0), "CafeWeb3POS: dia chi vi khong hop le");
+            require(newOwner != address(0), "CafeWeb3POS: invalid owner address");
             
             if (!isOwner[newOwner]) {
                 isOwner[newOwner] = true;
@@ -109,22 +109,22 @@ contract CafeWeb3POS {
     }
 
     /**
-     * @dev Xóa nhiều Owner (ví thu ngân) hiện tại
+     * @dev Removes multiple existing owners (cashier wallets)
      */
     function removeOwners(address[] memory _ownersToRemove) public onlyOwner {
-        require(_ownersToRemove.length < owners.length, "CafeWeb3POS: khong the xoa tat ca owners");
+        require(_ownersToRemove.length < owners.length, "CafeWeb3POS: cannot remove all owners");
         
         for (uint256 i = 0; i < _ownersToRemove.length; i++) {
             address ownerToRemove = _ownersToRemove[i];
             
-            // Không cho phép tự xóa chính mình để tránh mất quyền quản trị vô ý
-            require(ownerToRemove != msg.sender, "CafeWeb3POS: khong the tu xoa chinh minh");
+            // Do not allow self-removal to prevent accidental loss of admin rights
+            require(ownerToRemove != msg.sender, "CafeWeb3POS: cannot remove self");
             
             if (isOwner[ownerToRemove]) {
                 isOwner[ownerToRemove] = false;
                 emit OwnerRemoved(ownerToRemove);
                 
-                // Cập nhật lại mảng owners
+                // Reconstruct the owners array
                 for (uint256 j = 0; j < owners.length; j++) {
                     if (owners[j] == ownerToRemove) {
                         owners[j] = owners[owners.length - 1];
@@ -137,7 +137,7 @@ contract CafeWeb3POS {
     }
 
     /**
-     * @dev Truy vấn chi tiết đơn hàng theo orderId
+     * @dev Queries detailed order information by orderId
      */
     function getOrder(uint256 _orderId) public view returns (
         uint256 orderId,
@@ -149,7 +149,7 @@ contract CafeWeb3POS {
         address recordedBy
     ) {
         Order memory o = _orders[_orderId];
-        require(o.orderId != 0, "CafeWeb3POS: don hang khong ton tai");
+        require(o.orderId != 0, "CafeWeb3POS: order does not exist");
         return (
             o.orderId,
             o.tableNumber,
@@ -162,21 +162,21 @@ contract CafeWeb3POS {
     }
 
     /**
-     * @dev Lấy tổng số lượng đơn hàng đã ghi nhận
+     * @dev Gets the total count of recorded orders
      */
     function getOrdersCount() public view returns (uint256) {
         return _orderIds.length;
     }
 
     /**
-     * @dev Lấy danh sách tất cả các ID đơn hàng
+     * @dev Gets the list of all order IDs
      */
     function getAllOrderIds() public view returns (uint256[] memory) {
         return _orderIds;
     }
 
     /**
-     * @dev Lấy danh sách tất cả các Owners hiện tại
+     * @dev Gets the list of all current owners
      */
     function getOwners() public view returns (address[] memory) {
         return owners;
