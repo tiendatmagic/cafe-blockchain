@@ -27,7 +27,7 @@ class DatabaseSeeder extends Seeder
  
         // 2. Tạo cấu hình quán và blockchain mặc định
         Setting::set('store_name', 'Blockchain Cafe & Bistro');
-        Setting::set('contract_address', '0xc294C4f1C313e6BA70845a7b8e5c46e01a075304');
+        Setting::set('contract_address', '');
         Setting::set('rpc_url', 'https://ethereum-sepolia.publicnode.com');
         Setting::set('chain_id', '11155111'); // Sepolia Chain ID
         Setting::set('explorer_url', 'https://sepolia.etherscan.io');

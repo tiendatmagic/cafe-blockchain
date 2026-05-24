@@ -34,7 +34,7 @@ export class App implements OnInit {
   public readonly orders = signal<any[]>([]);
   public readonly settings = signal<any>({
     store_name: 'Blockchain Cafe & Bistro',
-    contract_address: '0xc294C4f1C313e6BA70845a7b8e5c46e01a075304',
+    contract_address: '',
     rpc_url: 'https://ethereum-sepolia.publicnode.com',
     chain_id: '11155111',
     explorer_url: 'https://sepolia.etherscan.io',
@@ -254,12 +254,13 @@ export class App implements OnInit {
         this.categoriesList.set(res.categories || []);
         
         if (res.settings) {
-          this.settings.set(res.settings);
-          this.configForm.set({ ...res.settings });
+          const settings = { ...res.settings };
+          this.settings.set(settings);
+          this.configForm.set({ ...settings });
           // Áp dụng màu sắc động
-          this.applyDynamicColors(res.settings.primary_color, res.settings.secondary_color);
+          this.applyDynamicColors(settings.primary_color, settings.secondary_color);
           // Cập nhật cấu hình sang Web3 Service
-          this.web3Service.updateConfig(res.settings);
+          this.web3Service.updateConfig(settings);
         }
         this.isLoading.set(false);
       },
@@ -362,9 +363,10 @@ export class App implements OnInit {
   // Refresh cấu hình
   private loadSettings() {
     this.apiService.getSettings().subscribe(res => {
-      this.settings.set(res);
-      this.configForm.set({ ...res });
-      this.web3Service.updateConfig(res);
+      const settings = { ...res };
+      this.settings.set(settings);
+      this.configForm.set({ ...settings });
+      this.web3Service.updateConfig(settings);
     });
   }
 
@@ -987,5 +989,82 @@ export class App implements OnInit {
       }
       this.isOwnerActionLoading.set(false);
     }
+  }
+
+  // Danh sách các mạng EVM phổ biến để Admin chọn nhanh
+  public readonly POPULAR_CHAINS = [
+    { name: 'Ethereum Mainnet', chainId: '1', rpcUrl: 'https://cloudflare-eth.com', explorerUrl: 'https://etherscan.io' },
+    { name: 'BNB Smart Chain (BSC)', chainId: '56', rpcUrl: 'https://bsc-dataseed.binance.org', explorerUrl: 'https://bscscan.com' },
+    { name: 'Polygon PoS Mainnet', chainId: '137', rpcUrl: 'https://polygon-rpc.com', explorerUrl: 'https://polygonscan.com' },
+    { name: 'Arbitrum One Mainnet', chainId: '42161', rpcUrl: 'https://arb1.arbitrum.io/rpc', explorerUrl: 'https://arbiscan.io' },
+    { name: 'Optimism Mainnet', chainId: '10', rpcUrl: 'https://mainnet.optimism.io', explorerUrl: 'https://optimistic.etherscan.io' },
+    { name: 'Base Mainnet', chainId: '8453', rpcUrl: 'https://mainnet.base.org', explorerUrl: 'https://basescan.org' },
+    { name: 'Avalanche C-Chain', chainId: '43114', rpcUrl: 'https://api.avax.network/ext/bc/C/rpc', explorerUrl: 'https://snowtrace.io' },
+    { name: 'Sepolia Testnet', chainId: '11155111', rpcUrl: 'https://ethereum-sepolia.publicnode.com', explorerUrl: 'https://sepolia.etherscan.io' },
+    { name: 'BSC Testnet', chainId: '97', rpcUrl: 'https://data-seed-prebsc-1-s1.binance.org:8545', explorerUrl: 'https://testnet.bscscan.com' },
+    { name: 'Polygon Amoy Testnet', chainId: '80002', rpcUrl: 'https://rpc-amoy.polygon.technology', explorerUrl: 'https://amoy.polygonscan.com' }
+  ];
+
+  // Hàm chọn nhanh mạng lưới
+  public selectPopularChain(event: Event) {
+    const select = event.target as HTMLSelectElement;
+    const chainId = select.value;
+    if (!chainId) return;
+
+    const chain = this.POPULAR_CHAINS.find(c => c.chainId === chainId);
+    if (chain) {
+      this.configForm.update(form => ({
+        ...form,
+        rpc_url: chain.rpcUrl,
+        chain_id: chain.chainId,
+        explorer_url: chain.explorerUrl
+      }));
+      this.showToast(`Đã tự động điền cấu hình mạng: ${chain.name}!`, 'success');
+      select.value = ''; // Reset select
+    }
+  }
+
+  // Tự động nhận diện mạng từ ví Metamask đang kết nối
+  public async detectChainFromWallet() {
+    if (!this.web3Service.walletConnected()) {
+      this.showToast('Vui lòng kết nối ví Metamask trước!', 'error');
+      return;
+    }
+
+    this.isLoading.set(true);
+    try {
+      const activeChainId = this.web3Service.chainId();
+      if (!activeChainId) {
+        this.showToast('Không thể đọc Chain ID từ ví đang kết nối!', 'error');
+        this.isLoading.set(false);
+        return;
+      }
+
+      const idStr = activeChainId.toString().trim();
+      const chain = this.POPULAR_CHAINS.find(c => c.chainId === idStr);
+      
+      if (chain) {
+        this.configForm.update(form => ({
+          ...form,
+          rpc_url: chain.rpcUrl,
+          chain_id: chain.chainId,
+          explorer_url: chain.explorerUrl
+        }));
+        this.showToast(`Nhận diện thành công mạng: ${chain.name}!`, 'success');
+      } else {
+        // Nếu không thuộc 10 mạng phổ biến
+        this.configForm.update(form => ({
+          ...form,
+          chain_id: idStr,
+          rpc_url: '', // Để người dùng tự điền vì là mạng tùy chỉnh
+          explorer_url: ''
+        }));
+        this.showToast(`Nhận diện được Chain ID: ${idStr}. Đây là mạng tùy chỉnh, vui lòng tự nhập RPC URL!`, 'success');
+      }
+    } catch (err: any) {
+      console.error(err);
+      this.showToast('Lỗi nhận diện mạng từ ví: ' + err.message, 'error');
+    }
+    this.isLoading.set(false);
   }
 }

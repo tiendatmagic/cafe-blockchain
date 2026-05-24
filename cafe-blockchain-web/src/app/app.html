@@ -984,6 +984,26 @@
               <p class="text-sm text-slate-500 dark:text-slate-400">Quản lý tên quán, kết nối node Blockchain EVM, cấu hình ví Smart Contract, và phân quyền ví thu ngân.</p>
             </div>
 
+            <!-- Banner Cảnh báo Phân quyền (Chuẩn POS / Sổ bán hàng thực tế) -->
+            <div class="w-full shrink-0">
+              @if (!web3Service.walletConnected()) {
+                <div class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center gap-3 text-xs font-bold leading-relaxed shadow-sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                  <span>[CẢNH BÁO BẢO MẬT] Bạn chưa kết nối ví Web3. Vui lòng kết nối ví Metamask của ADMIN để bắt đầu cấu hình hệ thống, deploy contract và phân quyền ví thu ngân!</span>
+                </div>
+              } @else if (!web3Service.isOwnerContract()) {
+                <div class="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-455 flex items-center gap-3 text-xs font-bold leading-relaxed shadow-sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                  <span>[TRUY CẬP HẠN CHẾ] Bạn đang đăng nhập dưới quyền THU NGÂN. Chỉ ví ADMIN (Chủ sở hữu Smart Contract) mới được phép thay đổi cấu hình quán, deploy contract mới hoặc thêm/xóa phân quyền ví thu ngân!</span>
+                </div>
+              } @else {
+                <div class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center gap-3 text-xs font-bold leading-relaxed shadow-sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" /></svg>
+                  <span>[ADMIN ĐÃ XÁC THỰC] Chào mừng Quản trị viên tối cao! Bạn có toàn quyền thiết lập hệ thống, deploy contract và phân quyền quản trị ví.</span>
+                </div>
+              }
+            </div>
+
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
               
               <!-- Cột trái: Cấu hình thông tin & node mạng EVM -->
@@ -997,16 +1017,23 @@
                   <!-- Tên quán -->
                   <div class="space-y-1.5">
                     <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Tên cửa hàng</label>
-                    <input type="text" [(ngModel)]="configForm().store_name" class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-purple-600 text-slate-800 dark:text-white" />
+                    <input type="text" [(ngModel)]="configForm().store_name" [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()" class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--dynamic-primary)] text-slate-800 dark:text-white disabled:opacity-50" />
                   </div>
 
                   <!-- Địa chỉ Smart Contract -->
                   <div class="space-y-1.5">
                     <div class="flex items-center justify-between flex-wrap gap-2">
-                      <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Địa chỉ Smart Contract CafeWeb3POS (0x...)</label>
-                      <button type="button" [disabled]="isDeploying()" (click)="deployNewContract()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-950/60 text-[11px] font-extrabold text-purple-600 dark:text-purple-400 border border-purple-200/20 dark:border-purple-800/20 transition-all active:scale-95 disabled:opacity-50">
+                      <div class="flex items-center gap-2">
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Địa chỉ Smart Contract EVM</label>
+                        @if (!configForm().contract_address) {
+                          <span class="bg-rose-500/10 text-rose-500 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">Chưa Deploy</span>
+                        } @else {
+                          <span class="bg-emerald-500/10 text-emerald-500 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">Đã cấu hình</span>
+                        }
+                      </div>
+                      <button type="button" [disabled]="isDeploying() || !web3Service.walletConnected() || !web3Service.isOwnerContract()" (click)="deployNewContract()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--dynamic-primary)]/10 hover:bg-[var(--dynamic-primary)]/20 text-[11px] font-extrabold text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] border border-[var(--dynamic-primary)]/20 transition-all active:scale-95 disabled:opacity-50">
                         @if (isDeploying()) {
-                          <div class="w-3.5 h-3.5 rounded-full border-2 border-purple-600/30 border-t-purple-600 animate-spin"></div>
+                          <div class="w-3.5 h-3.5 rounded-full border-2 border-[var(--dynamic-primary)]/30 border-t-[var(--dynamic-primary)] animate-spin"></div>
                           <span>Đang deploy...</span>
                         } @else {
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
@@ -1014,24 +1041,41 @@
                         }
                       </button>
                     </div>
-                    <input type="text" [(ngModel)]="configForm().contract_address" placeholder="0xc294C4f1C313e6BA70845a7b8e5c46e01a075304..." class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-purple-600 text-slate-800 dark:text-white transition-all" />
+                    <input type="text" [(ngModel)]="configForm().contract_address" placeholder="Chưa deploy hợp đồng. Vui lòng bấm Deploy Contract mới ở trên..." [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all disabled:opacity-50" />
+                  </div>
+
+                  <!-- Lựa chọn & Nhận diện mạng nhanh (EVM Chain Selector & Wallet Detector) -->
+                  <div class="space-y-1.5 border-t border-slate-100 dark:border-slate-800/60 pt-4">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block">Cấu hình nhanh EVM Chain (Chọn mạng)</label>
+                    <div class="flex gap-2">
+                      <select (change)="selectPopularChain($event)" [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()" class="flex-1 px-3 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[var(--dynamic-primary)] transition-all disabled:opacity-50">
+                        <option value="">-- Chọn nhanh mạng phổ biến nhất --</option>
+                        @for (chain of POPULAR_CHAINS; track chain.chainId) {
+                          <option [value]="chain.chainId">{{ chain.name }} (ID: {{ chain.chainId }})</option>
+                        }
+                      </select>
+                      <button type="button" (click)="detectChainFromWallet()" [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()" class="px-4 py-2.5 bg-[var(--dynamic-primary)]/10 hover:bg-[var(--dynamic-primary)]/20 text-[var(--dynamic-primary)] text-xs font-bold rounded-2xl border border-[var(--dynamic-primary)]/10 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5 disabled:opacity-50 shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-[var(--dynamic-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                        <span>Nhận diện từ Ví</span>
+                      </button>
+                    </div>
                   </div>
 
                   <!-- RPC Node URL -->
                   <div class="space-y-1.5">
                     <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Blockchain RPC Endpoint URL</label>
-                    <input type="text" [(ngModel)]="configForm().rpc_url" class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-purple-600 text-slate-800 dark:text-white" />
+                    <input type="text" [(ngModel)]="configForm().rpc_url" [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()" class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[var(--dynamic-primary)] text-slate-800 dark:text-white disabled:opacity-50" />
                   </div>
 
-                  <!-- Chain ID & Explorer -->
-                  <div class="grid grid-cols-2 gap-4">
+                  <!-- Chain ID & Explorer (Sửa Grid thành grid-cols-1 sm:grid-cols-2 để sửa lỗi responsive hoàn toàn) -->
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="space-y-1.5">
                       <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Chain ID (EVM)</label>
-                      <input type="text" [(ngModel)]="configForm().chain_id" class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-purple-600 text-slate-800 dark:text-white" />
+                      <input type="text" [(ngModel)]="configForm().chain_id" [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()" class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--dynamic-primary)] text-slate-800 dark:text-white disabled:opacity-50" />
                     </div>
                     <div class="space-y-1.5">
                       <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Block Explorer URL</label>
-                      <input type="text" [(ngModel)]="configForm().explorer_url" class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-purple-600 text-slate-800 dark:text-white" />
+                      <input type="text" [(ngModel)]="configForm().explorer_url" [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()" class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[var(--dynamic-primary)] text-slate-800 dark:text-white disabled:opacity-50" />
                     </div>
                   </div>
 
@@ -1039,7 +1083,7 @@
                   <div class="border-t border-slate-100 dark:border-slate-800/60 pt-4 space-y-3.5">
                     <div class="flex items-center justify-between">
                       <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">Màu sắc giao diện DApp</span>
-                      <button type="button" (click)="resetColorsToDefault()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-950 dark:hover:bg-slate-800/60 text-[11px] font-extrabold text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] transition-all border border-[var(--dynamic-primary)]/20 dark:border-[var(--dynamic-secondary)]/20 active:scale-95">
+                      <button type="button" (click)="resetColorsToDefault()" [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-950 dark:hover:bg-slate-800/60 text-[11px] font-extrabold text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] transition-all border border-[var(--dynamic-primary)]/20 dark:border-[var(--dynamic-secondary)]/20 active:scale-95 disabled:opacity-50">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H12v9" /></svg>
                         <span>Về mặc định</span>
                       </button>
@@ -1052,8 +1096,8 @@
                           <span>Màu chủ đạo (Primary)</span>
                         </label>
                         <div class="flex gap-2">
-                          <input type="color" [(ngModel)]="configForm().primary_color" class="w-10 h-10 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer overflow-hidden p-0 bg-transparent shrink-0" />
-                          <input type="text" [(ngModel)]="configForm().primary_color" placeholder="#7c3aed" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-purple-600 text-slate-800 dark:text-white" />
+                          <input type="color" [(ngModel)]="configForm().primary_color" [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()" class="w-10 h-10 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer overflow-hidden p-0 bg-transparent shrink-0 disabled:opacity-50" />
+                          <input type="text" [(ngModel)]="configForm().primary_color" placeholder="#7c3aed" [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-[var(--dynamic-primary)] text-slate-800 dark:text-white disabled:opacity-50" />
                         </div>
                       </div>
                       <div class="space-y-1.5">
@@ -1062,18 +1106,18 @@
                           <span>Màu phụ (Secondary)</span>
                         </label>
                         <div class="flex gap-2">
-                          <input type="color" [(ngModel)]="configForm().secondary_color" class="w-10 h-10 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer overflow-hidden p-0 bg-transparent shrink-0" />
-                          <input type="text" [(ngModel)]="configForm().secondary_color" placeholder="#c084fc" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-purple-600 text-slate-800 dark:text-white" />
+                          <input type="color" [(ngModel)]="configForm().secondary_color" [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()" class="w-10 h-10 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer overflow-hidden p-0 bg-transparent shrink-0 disabled:opacity-50" />
+                          <input type="text" [(ngModel)]="configForm().secondary_color" placeholder="#c084fc" [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-[var(--dynamic-primary)] text-slate-800 dark:text-white disabled:opacity-50" />
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <button (click)="saveConfig()" class="w-full py-3.5 bg-[var(--dynamic-primary)] hover:opacity-90 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-[var(--dynamic-primary)]/20 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
-                  <span>LƯU CẤU HÌNH HỆ THỐNG</span>
-                </button>
+                  <button (click)="saveConfig()" [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()" class="w-full py-3.5 bg-[var(--dynamic-primary)] hover:opacity-90 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-[var(--dynamic-primary)]/20 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 disabled:opacity-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
+                    <span>LƯU CẤU HÌNH HỆ THỐNG</span>
+                  </button>
+                </div>
               </div>
 
               <!-- Cột phải: Quản lý Owners (Ví thu ngân được ủy quyền) trên Smart Contract -->
@@ -1097,8 +1141,8 @@
                     <div class="p-4 rounded-2xl bg-purple-500/5 border border-purple-500/10 space-y-3">
                       <h5 class="text-xs font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-wider">Ủy quyền ví thu ngân mới</h5>
                       <div class="flex gap-2">
-                        <input type="text" [(ngModel)]="newOwnerAddress" placeholder="Nhập địa chỉ ví 0x..." class="flex-1 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-purple-600 text-slate-800 dark:text-white" />
-                        <button [disabled]="isOwnerActionLoading()" (click)="addOwnerAddress()" class="px-4 py-2 bg-[var(--dynamic-primary)] hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-md shadow-[var(--dynamic-primary)]/15 disabled:opacity-50 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                        <input type="text" [(ngModel)]="newOwnerAddress" placeholder="Nhập địa chỉ ví 0x..." [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()" class="flex-1 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-purple-600 text-slate-800 dark:text-white disabled:opacity-50" />
+                        <button [disabled]="isOwnerActionLoading() || !web3Service.walletConnected() || !web3Service.isOwnerContract()" (click)="addOwnerAddress()" class="px-4 py-2 bg-[var(--dynamic-primary)] hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-md shadow-[var(--dynamic-primary)]/15 disabled:opacity-50 transition-all hover:scale-[1.02] active:scale-[0.98]">
                           + Thêm
                         </button>
                       </div>
@@ -1108,7 +1152,7 @@
                     <div class="space-y-2">
                       <div class="flex items-center justify-between text-xs font-bold text-slate-400 pb-1 uppercase tracking-wide">
                         <span>Danh sách địa chỉ ví đã ủy quyền</span>
-                        <button (click)="loadOwnersList()" class="text-purple-600 dark:text-purple-400 hover:underline">Tải lại list</button>
+                        <button (click)="loadOwnersList()" [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()" class="text-purple-600 dark:text-purple-400 hover:underline disabled:opacity-50">Tải lại list</button>
                       </div>
 
                       <div class="space-y-2 max-h-[180px] overflow-y-auto pr-1">

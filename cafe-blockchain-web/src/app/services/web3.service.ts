@@ -16,7 +16,7 @@ export class Web3Service {
   public readonly chainId = signal<string>('');
 
   // Cấu hình blockchain (sẽ được cập nhật từ database thông qua ApiService)
-  public readonly contractAddress = signal<string>('0xc294C4f1C313e6BA70845a7b8e5c46e01a075304');
+  public readonly contractAddress = signal<string>('');
   public readonly rpcUrl = signal<string>('https://ethereum-sepolia.publicnode.com');
   public readonly explorerUrl = signal<string>('https://sepolia.etherscan.io');
   public readonly configuredChainId = signal<string>('11155111');
@@ -104,7 +104,7 @@ export class Web3Service {
    * Cập nhật cấu hình Blockchain từ API
    */
   public updateConfig(config: { contract_address?: string, rpc_url?: string, explorer_url?: string, chain_id?: string }) {
-    if (config.contract_address) this.contractAddress.set(config.contract_address);
+    this.contractAddress.set(config.contract_address || '');
     if (config.rpc_url) this.rpcUrl.set(config.rpc_url);
     if (config.explorer_url) this.explorerUrl.set(config.explorer_url);
     if (config.chain_id) this.configuredChainId.set(config.chain_id);
