@@ -212,7 +212,7 @@ export class App implements OnInit {
   private initTheme() {
     const savedTheme = localStorage.getItem('theme');
     const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
+
     if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
       this.isDarkMode.set(true);
       document.documentElement.classList.add('dark');
@@ -254,7 +254,7 @@ export class App implements OnInit {
         this.products.set(res.products);
         this.orders.set(res.orders);
         this.categoriesList.set(res.categories || []);
-        
+
         if (res.settings) {
           const settings = { ...res.settings };
           this.settings.set(settings);
@@ -316,7 +316,7 @@ export class App implements OnInit {
     if (this.activeTab() !== tab) {
       this.activeTab.set(tab);
       this.isMobileMenuOpen.set(false);
-      
+
       // Refresh dữ liệu tương ứng khi đổi tab
       if (tab === 'dashboard') {
         this.refreshDashboard();
@@ -403,7 +403,7 @@ export class App implements OnInit {
   }
 
   // ==================== CHỨC NĂNG POS (BÁN HÀNG) ====================
-  
+
   // Thêm món vào giỏ hàng
   public addToCart(product: any) {
     const currentCart = this.cart();
@@ -486,6 +486,11 @@ export class App implements OnInit {
 
   // Tạo đơn hàng mới từ POS
   public submitOrder() {
+    if (!this.web3Service.walletConnected()) {
+      this.showToast('Vui lòng kết nối ví Web3 để thanh toán và ghi nhận đơn hàng!', 'error');
+      return;
+    }
+
     if (this.cart().length === 0) {
       this.showToast('Vui lòng chọn ít nhất một món ăn!', 'error');
       return;
@@ -533,15 +538,20 @@ export class App implements OnInit {
 
   // Cập nhật trạng thái đơn hàng (đang chờ -> thành công / đã hủy)
   public updateStatus(orderId: number, status: 'completed' | 'cancelled') {
+    if (!this.web3Service.walletConnected()) {
+      this.showToast('Vui lòng kết nối ví Web3 để thay đổi trạng thái đơn hàng!', 'error');
+      return;
+    }
+
     this.isLoading.set(true);
     this.apiService.updateOrderStatus(orderId, status).subscribe({
       next: (res) => {
         this.showToast(`Cập nhật trạng thái đơn hàng thành công!`, 'success');
-        
+
         // Nếu cập nhật thành công (completed), và là đơn hàng thanh toán crypto hoặc ngân hàng/tiền mặt mà thu ngân muốn sync,
         // ta sẽ cập nhật trực tiếp trong list orders.
         this.refreshOrders();
-        
+
         // Nếu trong modal chi tiết đang mở, cập nhật nó luôn
         if (this.selectedOrderDetails() && this.selectedOrderDetails().id === orderId) {
           this.selectedOrderDetails.set(res.data);
@@ -561,11 +571,8 @@ export class App implements OnInit {
   public async syncToBlockchain(order: any) {
     // 1. Kiểm tra kết nối ví
     if (!this.web3Service.walletConnected()) {
-      const connected = await this.web3Service.connectWallet();
-      if (!connected) {
-        this.showToast(this.web3Service.walletError() || 'Vui lòng kết nối ví Web3 thu ngân trước!', 'error');
-        return;
-      }
+      this.showToast('Vui lòng kết nối ví Web3 để thực hiện tác vụ này!', 'error');
+      return;
     }
 
     // 2. Kiểm tra xem ví có phải Owner được ủy quyền không
@@ -591,13 +598,13 @@ export class App implements OnInit {
 
     if (result.success && result.txHash) {
       this.showToast('Giao dịch đã được gửi! Đang đồng bộ trạng thái...', 'success');
-      
+
       // Gửi TxHash lên Laravel Backend để lưu trữ trạng thái pending ban đầu
       this.apiService.syncOrderBlockchain(order.id, result.txHash, 'success').subscribe({
         next: (res) => {
           this.showToast('Ghi nhận bằng chứng hóa đơn lên Blockchain EVM thành công!', 'success');
           this.refreshOrders();
-          
+
           if (this.selectedOrderDetails() && this.selectedOrderDetails().id === order.id) {
             this.selectedOrderDetails.set(res.data);
           }
@@ -665,6 +672,11 @@ export class App implements OnInit {
 
   // Lưu món ăn (Thêm/Sửa)
   public saveProduct() {
+    if (!this.web3Service.walletConnected()) {
+      this.showToast('Vui lòng kết nối ví Web3 để thực hiện hành động này!', 'error');
+      return;
+    }
+
     const formData = this.menuForm();
     if (!formData.name || formData.price <= 0 || !formData.category_ids || formData.category_ids.length === 0) {
       this.showToast('Vui lòng điền tên, đơn giá và chọn ít nhất một danh mục!', 'error');
@@ -704,6 +716,11 @@ export class App implements OnInit {
 
   // Xóa món ăn (chuyển tiếp sang trigger mở Custom Confirm Modal)
   public deleteProduct(id: number) {
+    if (!this.web3Service.walletConnected()) {
+      this.showToast('Vui lòng kết nối ví Web3 để thực hiện hành động này!', 'error');
+      return;
+    }
+
     const product = this.products().find(p => p.id === id);
     if (product) {
       this.triggerDeleteProduct(product);
@@ -775,6 +792,11 @@ export class App implements OnInit {
 
   // Lưu danh mục (Thêm mới hoặc Cập nhật)
   public saveCategory() {
+    if (!this.web3Service.walletConnected()) {
+      this.showToast('Vui lòng kết nối ví Web3 để thực hiện hành động này!', 'error');
+      return;
+    }
+
     const form = this.categoryForm();
     if (!form.name.trim()) {
       this.showToast('Vui lòng nhập tên danh mục!', 'error');
@@ -817,6 +839,11 @@ export class App implements OnInit {
 
   // Xóa danh mục động (chuyển tiếp sang trigger mở Custom Confirm Modal)
   public deleteCategory(id: number) {
+    if (!this.web3Service.walletConnected()) {
+      this.showToast('Vui lòng kết nối ví Web3 để thực hiện hành động này!', 'error');
+      return;
+    }
+
     const category = this.categoriesList().find(c => c.id === id);
     if (category) {
       this.triggerDeleteCategory(category);
@@ -831,6 +858,11 @@ export class App implements OnInit {
 
   // Xác nhận xóa danh mục thực tế qua API
   public confirmDeleteCategory() {
+    if (!this.web3Service.walletConnected()) {
+      this.showToast('Vui lòng kết nối ví Web3 để thực hiện hành động này!', 'error');
+      return;
+    }
+
     const category = this.deletingCategoryData();
     if (!category) return;
 
@@ -860,6 +892,11 @@ export class App implements OnInit {
 
   // Xác nhận xóa sản phẩm thực tế qua API
   public confirmDeleteProduct() {
+    if (!this.web3Service.walletConnected()) {
+      this.showToast('Vui lòng kết nối ví Web3 để thực hiện hành động này!', 'error');
+      return;
+    }
+
     const product = this.deletingProductData();
     if (!product) return;
 
@@ -884,6 +921,10 @@ export class App implements OnInit {
 
   // Lưu cấu hình quán
   public saveConfig() {
+    if (!this.web3Service.walletConnected()) {
+      this.showToast('Vui lòng kết nối ví Web3 để thực hiện tác vụ này!', 'error');
+      return;
+    }
     this.isLoading.set(true);
     const data = this.configForm();
     this.apiService.updateSettings(data).subscribe({
@@ -904,6 +945,10 @@ export class App implements OnInit {
 
   // Khôi phục màu sắc giao diện về mặc định
   public resetColorsToDefault() {
+    if (!this.web3Service.walletConnected()) {
+      this.showToast('Vui lòng kết nối ví Web3 để thực hiện tác vụ này!', 'error');
+      return;
+    }
     this.configForm.update(form => ({
       ...form,
       primary_color: '#7c3aed',
@@ -916,11 +961,8 @@ export class App implements OnInit {
   // Tự động deploy Smart Contract mới từ giao diện
   public async deployNewContract() {
     if (!this.web3Service.walletConnected()) {
-      const connected = await this.web3Service.connectWallet();
-      if (!connected) {
-        this.showToast(this.web3Service.walletError() || 'Vui lòng kết nối ví Web3 trước!', 'error');
-        return;
-      }
+      this.showToast('Vui lòng kết nối ví Web3 để thực hiện tác vụ này!', 'error');
+      return;
     }
 
     this.isDeploying.set(true);
@@ -951,6 +993,10 @@ export class App implements OnInit {
 
   // Thêm Owner (ví thu ngân) mới trên Blockchain
   public async addOwnerAddress() {
+    if (!this.web3Service.walletConnected()) {
+      this.showToast('Vui lòng kết nối ví Web3 để thực hiện tác vụ này!', 'error');
+      return;
+    }
     const address = this.newOwnerAddress().trim();
     if (!address.startsWith('0x') || address.length !== 42) {
       this.showToast('Địa chỉ ví EVM không hợp lệ (phải bắt đầu bằng 0x và dài 42 ký tự)!', 'error');
@@ -973,6 +1019,10 @@ export class App implements OnInit {
 
   // Xóa Owner (ví thu ngân) khỏi Blockchain
   public async removeOwnerAddress(address: string) {
+    if (!this.web3Service.walletConnected()) {
+      this.showToast('Vui lòng kết nối ví Web3 để thực hiện tác vụ này!', 'error');
+      return;
+    }
     if (address.toLowerCase() === this.web3Service.currentAccount().toLowerCase()) {
       this.showToast('Không thể tự xóa ví chính mình khỏi quyền quản trị!', 'error');
       return;
@@ -1053,7 +1103,7 @@ export class App implements OnInit {
 
       const idStr = activeChainId.toString().trim();
       const chain = this.POPULAR_CHAINS.find(c => c.chainId === idStr);
-      
+
       if (chain) {
         this.configForm.update(form => ({
           ...form,

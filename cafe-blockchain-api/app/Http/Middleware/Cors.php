@@ -18,14 +18,14 @@ class Cors
             return response('', 204)
                 ->header('Access-Control-Allow-Origin', '*')
                 ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-                ->header('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With, Authorization, X-Token-Auth');
+                ->header('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With, Authorization, X-Token-Auth, X-Wallet-Address');
         }
 
         $response = $next($request);
 
         $response->headers->set('Access-Control-Allow-Origin', '*');
         $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With, Authorization, X-Token-Auth');
+        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With, Authorization, X-Token-Auth, X-Wallet-Address');
 
         return $response;
     }

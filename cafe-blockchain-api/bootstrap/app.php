@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // Thêm custom CORS middleware toàn cục
         $middleware->append(\App\Http\Middleware\Cors::class);
+        $middleware->append(\App\Http\Middleware\RequireWalletAddress::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
