@@ -129,6 +129,11 @@ export class App implements OnInit {
   public readonly blockchainSyncLoading = signal<boolean>(false);
   public readonly isDeploying = signal<boolean>(false);
   public readonly isConfigSaving = signal<boolean>(false);
+  public readonly isProductSaving = signal<boolean>(false);
+  public readonly isProductDeleting = signal<boolean>(false);
+  public readonly isOrderStatusUpdating = signal<boolean>(false);
+  public readonly isOrderSubmitting = signal<boolean>(false);
+  public readonly isDetectingChain = signal<boolean>(false);
 
   // Tính tổng tiền giỏ hàng
   public readonly cartTotal = computed(() => {
@@ -186,6 +191,19 @@ export class App implements OnInit {
   // Helper cho template HTML vẽ biểu đồ
   public mathMin(a: number, b: number): number {
     return Math.min(a, b);
+  }
+
+  // Helper lấy ảnh sản phẩm, nếu trống hoặc lỗi thì trả về ảnh placeholder splash tuyệt đẹp
+  public getProductImage(imagePath: string): string {
+    if (!imagePath || !imagePath.trim()) {
+      return 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=600&auto=format&fit=crop';
+    }
+    return imagePath;
+  }
+
+  // Fallback khi hình ảnh bị lỗi tải (như 404)
+  public handleImageError(event: any) {
+    event.target.src = 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=600&auto=format&fit=crop';
   }
 
   // Lọc sản phẩm hiển thị trong POS
@@ -497,7 +515,7 @@ export class App implements OnInit {
       return;
     }
 
-    this.isLoading.set(true);
+    this.isOrderSubmitting.set(true);
     const orderData = {
       table_number: this.tableNumber(),
       payment_method: this.paymentMethod(),
@@ -511,14 +529,14 @@ export class App implements OnInit {
       next: (res) => {
         this.showToast('Đã ghi nhận đơn hàng thành công! Trạng thái: Đang chờ xác nhận.', 'success');
         this.clearCart();
-        this.isLoading.set(false);
+        this.isOrderSubmitting.set(false);
         // Tự động chuyển qua trang Sổ đơn hàng để quản lý
         this.setTab('orders');
       },
       error: (err) => {
         console.error('Lỗi đặt đơn:', err);
         this.showToast('Không thể tạo đơn hàng. Vui lòng kiểm tra lại!', 'error');
-        this.isLoading.set(false);
+        this.isOrderSubmitting.set(false);
       }
     });
   }
@@ -544,7 +562,7 @@ export class App implements OnInit {
       return;
     }
 
-    this.isLoading.set(true);
+    this.isOrderStatusUpdating.set(true);
     this.apiService.updateOrderStatus(orderId, status).subscribe({
       next: (res) => {
         this.showToast(`Cập nhật trạng thái đơn hàng thành công!`, 'success');
@@ -558,12 +576,12 @@ export class App implements OnInit {
           this.selectedOrderDetails.set(res.data);
         }
 
-        this.isLoading.set(false);
+        this.isOrderStatusUpdating.set(false);
       },
       error: (err) => {
         console.error('Loi cap nhat trang thai:', err);
         this.showToast('Cập nhật trạng thái thất bại!', 'error');
-        this.isLoading.set(false);
+        this.isOrderStatusUpdating.set(false);
       }
     });
   }
@@ -684,18 +702,18 @@ export class App implements OnInit {
       return;
     }
 
-    this.isLoading.set(true);
+    this.isProductSaving.set(true);
     if (this.menuModalType() === 'add') {
       this.apiService.createProduct(formData).subscribe({
         next: (res) => {
           this.showToast('Thêm món ăn thành công!', 'success');
           this.closeMenuModal();
           this.refreshProducts();
-          this.isLoading.set(false);
+          this.isProductSaving.set(false);
         },
         error: (err) => {
           this.showToast('Thêm món thất bại!', 'error');
-          this.isLoading.set(false);
+          this.isProductSaving.set(false);
         }
       });
     } else {
@@ -705,11 +723,11 @@ export class App implements OnInit {
           this.showToast('Cập nhật món ăn thành công!', 'success');
           this.closeMenuModal();
           this.refreshProducts();
-          this.isLoading.set(false);
+          this.isProductSaving.set(false);
         },
         error: (err) => {
           this.showToast('Cập nhật món thất bại!', 'error');
-          this.isLoading.set(false);
+          this.isProductSaving.set(false);
         }
       });
     }
@@ -901,19 +919,19 @@ export class App implements OnInit {
     const product = this.deletingProductData();
     if (!product) return;
 
-    this.isLoading.set(true);
+    this.isProductDeleting.set(true);
     this.apiService.deleteProduct(product.id).subscribe({
       next: () => {
         this.showToast('Xóa món ăn khỏi thực đơn thành công!', 'success');
         this.isDeleteProductConfirmOpen.set(false);
         this.deletingProductData.set(null);
         this.refreshProducts();
-        this.isLoading.set(false);
+        this.isProductDeleting.set(false);
       },
       error: (err) => {
         console.error(err);
         this.showToast('Xóa món thất bại!', 'error');
-        this.isLoading.set(false);
+        this.isProductDeleting.set(false);
       }
     });
   }
@@ -1093,12 +1111,12 @@ export class App implements OnInit {
       return;
     }
 
-    this.isLoading.set(true);
+    this.isDetectingChain.set(true);
     try {
       const activeChainId = this.web3Service.chainId();
       if (!activeChainId) {
         this.showToast('Không thể đọc Chain ID từ ví đang kết nối!', 'error');
-        this.isLoading.set(false);
+        this.isDetectingChain.set(false);
         return;
       }
 
@@ -1127,6 +1145,6 @@ export class App implements OnInit {
       console.error(err);
       this.showToast('Lỗi nhận diện mạng từ ví: ' + err.message, 'error');
     }
-    this.isLoading.set(false);
+    this.isDetectingChain.set(false);
   }
 }
