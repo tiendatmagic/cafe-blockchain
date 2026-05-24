@@ -19,6 +19,7 @@ export class App implements OnInit {
   private readonly apiService = inject(ApiService);
   public readonly web3Service = inject(Web3Service);
   private readonly router = inject(Router);
+  private readonly colorStorageKey = 'dapp_dynamic_colors';
 
   // Quản lý tab và UI
   public readonly activeTab = signal<string>('dashboard');
@@ -196,14 +197,14 @@ export class App implements OnInit {
   // Helper lấy ảnh sản phẩm, nếu trống hoặc lỗi thì trả về ảnh placeholder splash tuyệt đẹp
   public getProductImage(imagePath: string): string {
     if (!imagePath || !imagePath.trim()) {
-      return 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=600&auto=format&fit=crop';
+      return 'not-found.webp';
     }
     return imagePath;
   }
 
   // Fallback khi hình ảnh bị lỗi tải (như 404)
   public handleImageError(event: any) {
-    event.target.src = 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=600&auto=format&fit=crop';
+    event.target.src = 'not-found.webp';
   }
 
   // Lọc sản phẩm hiển thị trong POS
@@ -231,6 +232,7 @@ export class App implements OnInit {
   private initTheme() {
     const savedTheme = localStorage.getItem('theme');
     const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    this.applyCachedDynamicColors();
 
     if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
       this.isDarkMode.set(true);
@@ -279,7 +281,7 @@ export class App implements OnInit {
           this.settings.set(settings);
           this.configForm.set({ ...settings });
           // Áp dụng màu sắc động
-          this.applyDynamicColors(settings.primary_color, settings.secondary_color);
+          this.applyAndCacheDynamicColors(settings.primary_color, settings.secondary_color);
           // Cập nhật cấu hình sang Web3 Service
           this.web3Service.updateConfig(settings);
         }
@@ -312,6 +314,26 @@ export class App implements OnInit {
     const sColor = secondary || '#c084fc';
     document.documentElement.style.setProperty('--dynamic-primary', pColor);
     document.documentElement.style.setProperty('--dynamic-secondary', sColor);
+  }
+
+  private applyAndCacheDynamicColors(primary: string, secondary: string) {
+    this.applyDynamicColors(primary, secondary);
+    localStorage.setItem(this.colorStorageKey, JSON.stringify({
+      primary_color: primary || '#7c3aed',
+      secondary_color: secondary || '#c084fc'
+    }));
+  }
+
+  private applyCachedDynamicColors() {
+    const cachedColors = localStorage.getItem(this.colorStorageKey);
+    if (!cachedColors) return;
+
+    try {
+      const colors = JSON.parse(cachedColors);
+      this.applyDynamicColors(colors.primary_color, colors.secondary_color);
+    } catch {
+      localStorage.removeItem(this.colorStorageKey);
+    }
   }
 
   // Đồng bộ tab hoạt động dựa trên URL hiện tại
@@ -387,6 +409,7 @@ export class App implements OnInit {
       const settings = { ...res };
       this.settings.set(settings);
       this.configForm.set({ ...settings });
+      this.applyAndCacheDynamicColors(settings.primary_color, settings.secondary_color);
       this.web3Service.updateConfig(settings);
     });
   }
@@ -877,6 +900,8 @@ export class App implements OnInit {
 
   // Xác nhận xóa danh mục thực tế qua API
   public confirmDeleteCategory() {
+    if (this.isCategoryLoading()) return; // Chặn click đúp và các request gọi đồng thời liên tiếp
+
     if (!this.web3Service.walletConnected()) {
       this.showToast('Vui lòng kết nối ví Web3 để thực hiện hành động này!', 'error');
       return;
@@ -897,7 +922,8 @@ export class App implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        this.showToast('Xóa danh mục thất bại!', 'error');
+        const errMsg = err.error?.message || 'Xóa danh mục thất bại!';
+        this.showToast(errMsg, 'error');
         this.isCategoryLoading.set(false);
       }
     });
@@ -911,6 +937,8 @@ export class App implements OnInit {
 
   // Xác nhận xóa sản phẩm thực tế qua API
   public confirmDeleteProduct() {
+    if (this.isProductDeleting()) return; // Chặn click đúp và các request gọi đồng thời liên tiếp
+
     if (!this.web3Service.walletConnected()) {
       this.showToast('Vui lòng kết nối ví Web3 để thực hiện hành động này!', 'error');
       return;
@@ -930,7 +958,8 @@ export class App implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        this.showToast('Xóa món thất bại!', 'error');
+        const errMsg = err.error?.message || 'Xóa món thất bại!';
+        this.showToast(errMsg, 'error');
         this.isProductDeleting.set(false);
       }
     });
@@ -951,7 +980,7 @@ export class App implements OnInit {
         this.showToast('Lưu cấu hình quán và Blockchain thành công!', 'success');
         this.settings.set(res.data);
         // Áp dụng màu sắc động
-        this.applyDynamicColors(res.data.primary_color, res.data.secondary_color);
+        this.applyAndCacheDynamicColors(res.data.primary_color, res.data.secondary_color);
         this.web3Service.updateConfig(res.data);
         this.isConfigSaving.set(false);
       },

@@ -90,14 +90,14 @@ class OrderController extends Controller
             DB::commit();
 
             return response()->json([
-                'message' => 'Tạo đơn hàng thành công!',
+                'message' => 'Order created successfully.',
                 'data' => Order::with('items.product')->find($order->id)
             ], 201);
 
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
-                'message' => 'Lỗi tạo đơn hàng: ' . $e->getMessage()
+                'message' => 'Failed to create order: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -124,7 +124,7 @@ class OrderController extends Controller
         $order->save();
 
         return response()->json([
-            'message' => 'Cập nhật trạng thái đơn hàng thành công!',
+            'message' => 'Order status updated successfully.',
             'data' => Order::with('items.product')->find($order->id)
         ]);
     }
@@ -146,7 +146,7 @@ class OrderController extends Controller
         $order->save();
 
         return response()->json([
-            'message' => 'Đồng bộ blockchain thành công!',
+            'message' => 'Blockchain sync updated successfully.',
             'data' => Order::with('items.product')->find($order->id)
         ]);
     }

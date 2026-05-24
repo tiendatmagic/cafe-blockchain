@@ -35,7 +35,7 @@ class ProductController extends Controller
         $product = Product::create([
             'name' => $validated['name'],
             'price' => $validated['price'],
-            'image' => $validated['image'] ?? 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=500&auto=format&fit=crop&q=60',
+            'image' => $validated['image'] ?? null,
             'status' => $validated['status'] ?? true,
             'short_description' => $validated['short_description'] ?? null,
             'description' => $validated['description'] ?? null,
@@ -46,7 +46,7 @@ class ProductController extends Controller
         $product->load('categories');
 
         return response()->json([
-            'message' => 'Thêm món thành công!',
+            'message' => 'Product created successfully.',
             'data' => $product
         ], 201);
     }
@@ -72,7 +72,7 @@ class ProductController extends Controller
         $product->update([
             'name' => $validated['name'],
             'price' => $validated['price'],
-            'image' => $validated['image'] ?? 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=500&auto=format&fit=crop&q=60',
+            'image' => $validated['image'] ?? null,
             'status' => $validated['status'],
             'short_description' => $validated['short_description'] ?? null,
             'description' => $validated['description'] ?? null,
@@ -83,7 +83,7 @@ class ProductController extends Controller
         $product->load('categories');
 
         return response()->json([
-            'message' => 'Cập nhật món thành công!',
+            'message' => 'Product updated successfully.',
             'data' => $product
         ]);
     }
@@ -93,11 +93,27 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
-        $product = Product::findOrFail($id);
-        $product->delete();
+        $product = Product::find($id);
 
-        return response()->json([
-            'message' => 'Xóa món thành công!'
-        ]);
+        if (!$product) {
+            return response()->json([
+                'message' => 'Product does not exist or has already been deleted.'
+            ], 404);
+        }
+
+        try {
+            // Thực hiện xóa sản phẩm
+            $product->delete();
+
+            return response()->json([
+                'message' => 'Product deleted successfully.'
+            ]);
+        } catch (\Exception $e) {
+            // Lỗi QueryException hoặc các lỗi ràng buộc khóa ngoại (foreign key constraint)
+            return response()->json([
+                'message' => 'This product cannot be deleted because it has been recorded in the order history.',
+                'error' => $e->getMessage()
+            ], 409); // 409 Conflict đúng chuẩn Restful API
+        }
     }
 }

@@ -36,7 +36,7 @@ class SettingController extends Controller
         }
 
         return response()->json([
-            'message' => 'Cập nhật cấu hình thành công!',
+            'message' => 'Settings updated successfully.',
             'data' => Setting::all()->pluck('value', 'key')
         ]);
     }

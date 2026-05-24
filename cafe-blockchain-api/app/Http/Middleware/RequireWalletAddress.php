@@ -20,7 +20,7 @@ class RequireWalletAddress
             if (empty($walletAddress)) {
                 return response()->json([
                     'success' => false,
-                    'message' => '[TRUY CẬP BỊ CHẶN] Bạn phải kết nối ví Web3 để thực hiện tác vụ này!'
+                    'message' => 'Access denied. Please connect a Web3 wallet to perform this action.'
                 ], 403);
             }
 
@@ -28,7 +28,7 @@ class RequireWalletAddress
             if (!preg_match('/^0x[a-fA-F0-9]{40}$/', $walletAddress)) {
                 return response()->json([
                     'success' => false,
-                    'message' => '[LỖI VÍ WEB3] Địa chỉ ví Web3 không hợp lệ!'
+                    'message' => 'Invalid Web3 wallet address.'
                 ], 400);
             }
         }

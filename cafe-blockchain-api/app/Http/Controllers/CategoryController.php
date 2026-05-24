@@ -27,9 +27,9 @@ class CategoryController extends Controller
         $category = Category::create($validated);
  
         return response()->json([
-            'message' => 'Tạo danh mục thành công!',
+            'message' => 'Category created successfully.',
             'category' => $category
-        ], 210);
+        ], 201);
     }
  
     /**
@@ -46,7 +46,7 @@ class CategoryController extends Controller
         $category->update($validated);
  
         return response()->json([
-            'message' => 'Cập nhật danh mục thành công!',
+            'message' => 'Category updated successfully.',
             'category' => $category
         ]);
     }
@@ -56,11 +56,25 @@ class CategoryController extends Controller
      */
     public function destroy($id)
     {
-        $category = Category::findOrFail($id);
-        $category->delete();
- 
-        return response()->json([
-            'message' => 'Xóa danh mục thành công!'
-        ]);
+        $category = Category::find($id);
+
+        if (!$category) {
+            return response()->json([
+                'message' => 'Category does not exist or has already been deleted.'
+            ], 404);
+        }
+
+        try {
+            $category->delete();
+
+            return response()->json([
+                'message' => 'Category deleted successfully.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'This category cannot be deleted because it is assigned to one or more products.',
+                'error' => $e->getMessage()
+            ], 409); // 409 Conflict đúng chuẩn Restful API
+        }
     }
 }
