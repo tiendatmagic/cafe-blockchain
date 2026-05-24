@@ -85,27 +85,27 @@
 
     <!-- Navigation Menu -->
     <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto">
-      <button (click)="setTab('dashboard')" [class]="activeTab() === 'dashboard' ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50'" class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group">
+      <button (click)="setTab('dashboard')" [class]="activeTab() === 'dashboard' ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-semibold' : 'text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50'" class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" /></svg>
         <span>Tổng quan Dashboard</span>
       </button>
 
-      <button (click)="setTab('pos')" [class]="activeTab() === 'pos' ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50'" class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group">
+      <button (click)="setTab('pos')" [class]="activeTab() === 'pos' ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-semibold' : 'text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50'" class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
         <span>Bán hàng POS</span>
       </button>
 
-      <button (click)="setTab('menu')" [class]="activeTab() === 'menu' ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50'" class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group">
+      <button (click)="setTab('menu')" [class]="activeTab() === 'menu' ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-semibold' : 'text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50'" class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
         <span>Quản lý Thực đơn</span>
       </button>
 
-      <button (click)="setTab('orders')" [class]="activeTab() === 'orders' ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50'" class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group">
+      <button (click)="setTab('orders')" [class]="activeTab() === 'orders' ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-semibold' : 'text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50'" class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01m-.01 4h.01" /></svg>
         <span>Sổ đơn hàng</span>
       </button>
 
-      <button (click)="setTab('settings')" [class]="activeTab() === 'settings' ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50'" class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group">
+      <button (click)="setTab('settings')" [class]="activeTab() === 'settings' ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-semibold' : 'text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50'" class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
         <span>Cấu hình quán</span>
       </button>
@@ -114,7 +114,7 @@
     <!-- Sidebar Footer (Theme Toggle) -->
     <div class="p-4 border-t border-slate-200/60 dark:border-slate-800/60 flex items-center justify-between">
       <div class="flex items-center gap-2">
-        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">Giao diện tối</span>
+        <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Giao diện tối</span>
       </div>
       <button (click)="toggleTheme()" [class]="isDarkMode() ? 'bg-purple-600' : 'bg-slate-300'" class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none">
         <span [class]="isDarkMode() ? 'translate-x-5 bg-white' : 'translate-x-0 bg-white'" class="pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out"></span>
@@ -165,11 +165,11 @@
           </div>
 
           <nav class="flex-1 space-y-2">
-            <button (click)="setTab('dashboard')" [class]="activeTab() === 'dashboard' ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100'" class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200">Dashboard</button>
-            <button (click)="setTab('pos')" [class]="activeTab() === 'pos' ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100'" class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200">Bán hàng POS</button>
-            <button (click)="setTab('menu')" [class]="activeTab() === 'menu' ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100'" class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200">Quản lý Thực đơn</button>
-            <button (click)="setTab('orders')" [class]="activeTab() === 'orders' ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100'" class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200">Sổ đơn hàng</button>
-            <button (click)="setTab('settings')" [class]="activeTab() === 'settings' ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100'" class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200">Cấu hình quán</button>
+            <button (click)="setTab('dashboard')" [class]="activeTab() === 'dashboard' ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-bold' : 'text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100'" class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200">Dashboard</button>
+            <button (click)="setTab('pos')" [class]="activeTab() === 'pos' ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-bold' : 'text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100'" class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200">Bán hàng POS</button>
+            <button (click)="setTab('menu')" [class]="activeTab() === 'menu' ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-bold' : 'text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100'" class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200">Quản lý Thực đơn</button>
+            <button (click)="setTab('orders')" [class]="activeTab() === 'orders' ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-bold' : 'text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100'" class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200">Sổ đơn hàng</button>
+            <button (click)="setTab('settings')" [class]="activeTab() === 'settings' ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-bold' : 'text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100'" class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200">Cấu hình quán</button>
           </nav>
 
           <!-- Wallet Widget trong Drawer Mobile -->
@@ -193,7 +193,7 @@
           </div>
 
           <div class="pt-4 border-t border-slate-200/60 dark:border-slate-800/60 flex items-center justify-between">
-            <span class="text-xs font-semibold text-slate-500">Giao diện tối</span>
+            <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Giao diện tối</span>
             <button (click)="toggleTheme()" [class]="isDarkMode() ? 'bg-purple-600' : 'bg-slate-300'" class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none">
               <span [class]="isDarkMode() ? 'translate-x-5 bg-white' : 'translate-x-0 bg-white'" class="pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out"></span>
             </button>

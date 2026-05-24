@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.35;
 
 /**
  * @title CafeWeb3POS
@@ -7,7 +7,6 @@ pragma solidity ^0.8.20;
  * Allows recording order billing proofs on-chain by authorized cashier wallets.
  */
 contract CafeWeb3POS {
-    
     struct Order {
         uint256 orderId;
         string tableNumber;
@@ -20,13 +19,13 @@ contract CafeWeb3POS {
 
     // Mapping from orderId to detailed Order information
     mapping(uint256 => Order) private _orders;
-    
+
     // Array storing all recorded orderIds
     uint256[] private _orderIds;
-    
+
     // Mapping to check owner permissions (cashiers / managers)
     mapping(address => bool) public isOwner;
-    
+
     // Array storing the list of owners for easy retrieval and display
     address[] public owners;
 
@@ -40,7 +39,7 @@ contract CafeWeb3POS {
         uint256 timestamp,
         address indexed recordedBy
     );
-    
+
     event OwnerAdded(address indexed newOwner);
     event OwnerRemoved(address indexed removedOwner);
 
@@ -66,8 +65,11 @@ contract CafeWeb3POS {
         string memory _paymentMethod,
         string memory _itemsSummary
     ) public onlyOwner {
-        require(_orders[_orderId].orderId == 0, "CafeWeb3POS: order already exists on blockchain");
-        
+        require(
+            _orders[_orderId].orderId == 0,
+            "CafeWeb3POS: order already exists on blockchain"
+        );
+
         Order memory newOrder = Order({
             orderId: _orderId,
             tableNumber: _tableNumber,
@@ -98,8 +100,11 @@ contract CafeWeb3POS {
     function addOwners(address[] memory _newOwners) public onlyOwner {
         for (uint256 i = 0; i < _newOwners.length; i++) {
             address newOwner = _newOwners[i];
-            require(newOwner != address(0), "CafeWeb3POS: invalid owner address");
-            
+            require(
+                newOwner != address(0),
+                "CafeWeb3POS: invalid owner address"
+            );
+
             if (!isOwner[newOwner]) {
                 isOwner[newOwner] = true;
                 owners.push(newOwner);
@@ -112,18 +117,24 @@ contract CafeWeb3POS {
      * @dev Removes multiple existing owners (cashier wallets)
      */
     function removeOwners(address[] memory _ownersToRemove) public onlyOwner {
-        require(_ownersToRemove.length < owners.length, "CafeWeb3POS: cannot remove all owners");
-        
+        require(
+            _ownersToRemove.length < owners.length,
+            "CafeWeb3POS: cannot remove all owners"
+        );
+
         for (uint256 i = 0; i < _ownersToRemove.length; i++) {
             address ownerToRemove = _ownersToRemove[i];
-            
+
             // Do not allow self-removal to prevent accidental loss of admin rights
-            require(ownerToRemove != msg.sender, "CafeWeb3POS: cannot remove self");
-            
+            require(
+                ownerToRemove != msg.sender,
+                "CafeWeb3POS: cannot remove self"
+            );
+
             if (isOwner[ownerToRemove]) {
                 isOwner[ownerToRemove] = false;
                 emit OwnerRemoved(ownerToRemove);
-                
+
                 // Reconstruct the owners array
                 for (uint256 j = 0; j < owners.length; j++) {
                     if (owners[j] == ownerToRemove) {
@@ -139,15 +150,21 @@ contract CafeWeb3POS {
     /**
      * @dev Queries detailed order information by orderId
      */
-    function getOrder(uint256 _orderId) public view returns (
-        uint256 orderId,
-        string memory tableNumber,
-        uint256 totalAmount,
-        string memory paymentMethod,
-        string memory itemsSummary,
-        uint256 timestamp,
-        address recordedBy
-    ) {
+    function getOrder(
+        uint256 _orderId
+    )
+        public
+        view
+        returns (
+            uint256 orderId,
+            string memory tableNumber,
+            uint256 totalAmount,
+            string memory paymentMethod,
+            string memory itemsSummary,
+            uint256 timestamp,
+            address recordedBy
+        )
+    {
         Order memory o = _orders[_orderId];
         require(o.orderId != 0, "CafeWeb3POS: order does not exist");
         return (
