@@ -128,6 +128,7 @@ export class App implements OnInit {
   public readonly errorMessage = signal<string>('');
   public readonly blockchainSyncLoading = signal<boolean>(false);
   public readonly isDeploying = signal<boolean>(false);
+  public readonly isConfigSaving = signal<boolean>(false);
 
   // Tính tổng tiền giỏ hàng
   public readonly cartTotal = computed(() => {
@@ -925,7 +926,7 @@ export class App implements OnInit {
       this.showToast('Vui lòng kết nối ví Web3 để thực hiện tác vụ này!', 'error');
       return;
     }
-    this.isLoading.set(true);
+    this.isConfigSaving.set(true);
     const data = this.configForm();
     this.apiService.updateSettings(data).subscribe({
       next: (res) => {
@@ -934,11 +935,11 @@ export class App implements OnInit {
         // Áp dụng màu sắc động
         this.applyDynamicColors(res.data.primary_color, res.data.secondary_color);
         this.web3Service.updateConfig(res.data);
-        this.isLoading.set(false);
+        this.isConfigSaving.set(false);
       },
       error: (err) => {
         this.showToast('Lưu cấu hình thất bại!', 'error');
-        this.isLoading.set(false);
+        this.isConfigSaving.set(false);
       }
     });
   }
