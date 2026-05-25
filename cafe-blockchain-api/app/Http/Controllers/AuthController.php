@@ -101,4 +101,52 @@ class AuthController extends Controller
             return false;
         }
     }
+
+    /**
+     * Register a new cashier wallet under this admin's store
+     */
+    public function registerCashier(Request $request)
+    {
+        $validated = $request->validate([
+            'cashier_address' => 'required|string|regex:/^0x[a-fA-F0-9]{40}$/i',
+        ]);
+
+        $cashierAddress = strtolower($validated['cashier_address']);
+        $adminAddress = strtolower($request->user()->wallet_address);
+
+        // Find or create cashier user
+        $cashier = User::firstOrCreate(['wallet_address' => $cashierAddress]);
+        $cashier->store_owner_address = $adminAddress;
+        $cashier->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cashier registered successfully.',
+            'cashier' => $cashier
+        ]);
+    }
+
+    /**
+     * Remove a cashier wallet from this admin's store
+     */
+    public function removeCashier(Request $request)
+    {
+        $validated = $request->validate([
+            'cashier_address' => 'required|string|regex:/^0x[a-fA-F0-9]{40}$/i',
+        ]);
+
+        $cashierAddress = strtolower($validated['cashier_address']);
+
+        // Find cashier
+        $cashier = User::where('wallet_address', $cashierAddress)->first();
+        if ($cashier) {
+            $cashier->store_owner_address = null;
+            $cashier->save();
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cashier removed successfully.'
+        ]);
+    }
 }

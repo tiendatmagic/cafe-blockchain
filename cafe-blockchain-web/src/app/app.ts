@@ -63,6 +63,13 @@ export class App implements OnInit {
     }
   });
   public readonly usdtPriceVND = signal<number>(25420);
+  public readonly isWrongChain = computed(() => {
+    const connected = this.web3Service.walletConnected();
+    const contract = this.web3Service.contractAddress();
+    const activeChain = this.web3Service.chainId();
+    const configChain = this.web3Service.configuredChainId();
+    return connected && !!contract && contract.trim() !== '' && activeChain !== configChain;
+  });
 
   // Trạng thái POS (Giỏ hàng)
   public readonly cart = signal<{ product: any, quantity: number }[]>([]);
@@ -688,6 +695,12 @@ export class App implements OnInit {
       return;
     }
 
+    // Kiểm tra xem quán đã deploy contract chưa
+    if (!this.web3Service.contractAddress() || this.web3Service.contractAddress().trim() === '') {
+      this.showToast('Cửa hàng chưa được cấu hình Smart Contract! Vui lòng truy cập mục Cấu hình hệ thống để deploy contract trước.', 'error');
+      return;
+    }
+
     // 2. Kiểm tra xem ví có phải Owner được ủy quyền không
     if (!this.web3Service.isOwnerContract()) {
       this.showToast('Địa chỉ ví thu ngân hiện tại của bạn không được phân quyền (Owner) trên Smart Contract! Hãy nhờ quản lý cấp quyền trong mục Cấu hình.', 'error');
@@ -712,8 +725,8 @@ export class App implements OnInit {
     if (result.success && result.txHash) {
       this.showToast('Giao dịch đã được gửi! Đang đồng bộ trạng thái...', 'success');
 
-      // Gửi TxHash lên Laravel Backend để lưu trữ trạng thái pending ban đầu
-      this.apiService.syncOrderBlockchain(order.id, result.txHash, 'success').subscribe({
+      // Gửi TxHash và Chain ID lên Laravel Backend để lưu trữ
+      this.apiService.syncOrderBlockchain(order.id, result.txHash, 'success', this.web3Service.chainId()).subscribe({
         next: (res) => {
           this.showToast('Ghi nhận bằng chứng hóa đơn lên Blockchain EVM thành công!', 'success');
           this.refreshOrders();
@@ -729,8 +742,36 @@ export class App implements OnInit {
         }
       });
     } else {
-      this.showToast(result.error || 'Giao dịch thất bại hoặc bị từ chối!', 'error');
-      this.blockchainSyncLoading.set(false);
+      // Kiểm tra xem có phải lỗi order already exists không để đối soát tự động
+      const errorMsg = result.error || '';
+      const isAlreadyExists = errorMsg.includes('order already exists') || 
+                              errorMsg.toLowerCase().includes('already exists');
+
+      if (isAlreadyExists) {
+        this.showToast('Đơn hàng đã tồn tại trên Blockchain. Đang tự động đối soát và đồng bộ...', 'success');
+        
+        const pseudoTxHash = `0x_already_synced_order_${order.id}`;
+        
+        this.apiService.syncOrderBlockchain(order.id, pseudoTxHash, 'success', this.web3Service.chainId()).subscribe({
+          next: (res) => {
+            this.showToast('Đối soát và đồng bộ trạng thái hóa đơn từ Blockchain thành công!', 'success');
+            this.refreshOrders();
+            if (this.selectedOrderDetails() && this.selectedOrderDetails().id === order.id) {
+              this.selectedOrderDetails.set(res.data);
+            }
+            this.blockchainSyncLoading.set(false);
+          },
+          error: (err) => {
+            console.error('Lỗi đối soát đơn hàng:', err);
+            const errMsg = err.error?.message || 'Đối soát thất bại!';
+            this.showToast(errMsg, 'error');
+            this.blockchainSyncLoading.set(false);
+          }
+        });
+      } else {
+        this.showToast(result.error || 'Giao dịch thất bại hoặc bị từ chối!', 'error');
+        this.blockchainSyncLoading.set(false);
+      }
     }
   }
 
@@ -791,8 +832,8 @@ export class App implements OnInit {
     }
 
     const formData = this.menuForm();
-    if (!formData.name || formData.price <= 0 || !formData.category_ids || formData.category_ids.length === 0) {
-      this.showToast('Vui lòng điền tên, đơn giá và chọn ít nhất một danh mục!', 'error');
+    if (!formData.name || formData.price <= 0) {
+      this.showToast('Vui lòng điền tên và đơn giá hợp lệ!', 'error');
       return;
     }
 
@@ -1136,6 +1177,13 @@ export class App implements OnInit {
     if (res.success && res.txHash) {
       this.showToast(`Giao dịch thêm Owner thành công! TxHash: ${res.txHash}`, 'success');
       this.newOwnerAddress.set('');
+      
+      // Đồng bộ đăng ký ví thu ngân vào Laravel Backend
+      this.apiService.registerCashier(address).subscribe({
+        next: () => console.log('Đã đồng bộ đăng ký thu ngân vào DB.'),
+        error: (err) => console.error('Lỗi đồng bộ đăng ký thu ngân:', err)
+      });
+
       await this.loadOwnersList();
     } else {
       this.showToast(res.error || 'Thêm Owner thất bại!', 'error');
@@ -1171,6 +1219,13 @@ export class App implements OnInit {
       this.showToast(`Giao dịch xóa Owner thành công! TxHash: ${res.txHash}`, 'success');
       this.isDeleteOwnerConfirmOpen.set(false);
       this.deletingOwnerAddress.set('');
+      
+      // Đồng bộ gỡ bỏ ví thu ngân khỏi Laravel Backend
+      this.apiService.removeCashier(address).subscribe({
+        next: () => console.log('Đã đồng bộ gỡ thu ngân khỏi DB.'),
+        error: (err) => console.error('Lỗi đồng bộ gỡ thu ngân khỏi DB:', err)
+      });
+
       await this.loadOwnersList();
     } else {
       this.showToast(res.error || 'Xóa Owner thất bại!', 'error');
@@ -1287,5 +1342,21 @@ export class App implements OnInit {
         }
       }
     }
+  }
+
+  // Helper lấy Block Explorer Link cho một giao dịch dựa trên Chain ID
+  public getTxExplorerLink(txHash: string | null | undefined, chainId: string | number | null | undefined): string {
+    if (!txHash) return '#';
+    
+    if (chainId) {
+      const idStr = chainId.toString().trim();
+      const chain = this.POPULAR_CHAINS.find(c => c.chainId === idStr);
+      if (chain) {
+        return `${chain.explorerUrl}/tx/${txHash}`;
+      }
+    }
+    
+    // Fallback về explorer hiện tại của quán
+    return `${this.settings().explorer_url}/tx/${txHash}`;
   }
 }

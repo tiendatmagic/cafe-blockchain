@@ -57,6 +57,14 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/auth/verify`, { address, signature });
   }
 
+  public registerCashier(address: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/auth/register-cashier`, { cashier_address: address }, { headers: this.getHeaders() });
+  }
+
+  public removeCashier(address: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/auth/remove-cashier`, { cashier_address: address }, { headers: this.getHeaders() });
+  }
+
   // 1. Dashboard API
   public getDashboard(): Observable<any> {
     return this.http.get(`${this.baseUrl}/dashboard`, { headers: this.getHeaders() });
@@ -103,10 +111,11 @@ export class ApiService {
     return this.http.put(`${this.baseUrl}/orders/${id}/status`, { status }, { headers: this.getHeaders() });
   }
 
-  public syncOrderBlockchain(id: number, txHash: string, blockchainStatus: string): Observable<any> {
+  public syncOrderBlockchain(id: number, txHash: string, blockchainStatus: string, chainId?: string): Observable<any> {
     return this.http.put(`${this.baseUrl}/orders/${id}/sync`, {
       tx_hash: txHash,
-      blockchain_status: blockchainStatus
+      blockchain_status: blockchainStatus,
+      chain_id: chainId
     }, { headers: this.getHeaders() });
   }
 

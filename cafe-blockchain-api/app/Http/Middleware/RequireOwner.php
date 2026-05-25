@@ -25,9 +25,10 @@ class RequireOwner
         }
 
         $walletAddress = strtolower($user->wallet_address);
+        $storeOwner = $user->store_owner_address ?: $user->wallet_address;
         
-        $contractAddress = Setting::get('contract_address');
-        $rpcUrl = Setting::get('rpc_url', 'https://ethereum-sepolia.publicnode.com');
+        $contractAddress = Setting::getForStore('contract_address', $storeOwner);
+        $rpcUrl = Setting::getForStore('rpc_url', $storeOwner, 'https://ethereum-sepolia.publicnode.com');
 
         // If no contract is set, any authenticated wallet acts as owner to configure it
         if (empty($contractAddress)) {

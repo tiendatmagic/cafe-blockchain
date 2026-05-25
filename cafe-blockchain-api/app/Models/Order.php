@@ -16,6 +16,8 @@ class Order extends Model
         'status',
         'tx_hash',
         'blockchain_status',
+        'chain_id',
+        'store_owner_address',
     ];
 
     protected $casts = [

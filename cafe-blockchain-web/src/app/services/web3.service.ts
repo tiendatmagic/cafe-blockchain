@@ -179,7 +179,7 @@ export class Web3Service {
       this.chainId.set(network.chainId.toString());
 
       // 3. Kiểm tra xem có phải Owner của Smart Contract không
-      if (!this.contractAddress()) {
+      if (!this.contractAddress() || this.contractAddress().trim() === '') {
         // Nếu chưa deploy contract, bất kỳ ví nào đã kết nối đều được coi là Admin/Owner để cấu hình & deploy
         this.isOwnerContract.set(true);
       } else {

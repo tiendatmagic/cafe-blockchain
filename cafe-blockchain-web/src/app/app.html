@@ -1,3 +1,25 @@
+<!-- CẢNH BÁO SAI CHAIN HỆ THỐNG - THIẾT KẾ KÍNH MỜ SANG TRỌNG -->
+@if (isWrongChain()) {
+  <div class="fixed top-0 left-0 right-0 z-[10000] bg-amber-500/90 dark:bg-amber-600/95 backdrop-blur-md text-white px-4 py-3 flex items-center justify-between text-xs sm:text-sm font-bold shadow-lg border-b border-amber-400/20 transition-all duration-300">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center animate-bounce text-amber-100 shrink-0">
+        <svg xmlns="http://www.w3.org/2050/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      </div>
+      <span class="tracking-tight">
+        <strong class="font-extrabold text-amber-100">Sai mạng kết nối:</strong> Ví của bạn đang ở mạng khác. Quán yêu cầu kết nối mạng <span class="underline decoration-wavy decoration-white/50 text-white font-black">{{ web3Service.networkName() }}</span> (ID: {{ web3Service.configuredChainId() }}) để có thể đồng bộ Blockchain!
+      </span>
+    </div>
+    <button (click)="web3Service.ensureCorrectNetwork()" class="shrink-0 bg-white hover:bg-amber-50 text-amber-600 dark:text-amber-700 font-extrabold text-xs px-4 py-2 rounded-xl transition-all duration-200 shadow-md shadow-amber-950/20 active:scale-95 hover:scale-[1.03] flex items-center gap-1.5">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+      </svg>
+      Chuyển mạng tự động
+    </button>
+  </div>
+}
+
 <!-- TOAST NOTIFICATIONS (RICH AESTHETICS - PREMIUM WHITE BACKDROP WITH PROGRESS BAR) -->
 <div class="fixed bottom-5 right-5 z-[9999] flex flex-col gap-3 pointer-events-none max-w-sm w-full px-4 sm:px-0">
   
@@ -68,7 +90,7 @@
 
 
 <!-- CONTAINER CHÍNH -->
-<div class="flex flex-col lg:flex-row min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300 font-sans">
+<div class="flex flex-col lg:flex-row min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300 font-sans" [class.pt-[56px]]="isWrongChain()">
   
   <!-- SIDEBAR (DESKTOP & TABLET) -->
   <aside class="hidden lg:flex flex-col w-72 bg-white dark:bg-slate-900 border-r border-slate-200/60 dark:border-slate-800/60 shrink-0 sticky top-0 h-screen transition-colors duration-300">
@@ -408,7 +430,7 @@
                           </span>
                         </div>
                         <div class="flex items-center justify-between text-[11px] gap-2">
-                          <a [href]="settings().explorer_url + '/tx/' + tx.tx_hash" target="_blank" class="text-blue-500 hover:underline font-semibold tracking-wider font-mono truncate max-w-[120px] xs:max-w-[160px] sm:max-w-none">
+                          <a [href]="getTxExplorerLink(tx.tx_hash, tx.chain_id)" target="_blank" class="text-blue-500 hover:underline font-semibold tracking-wider font-mono truncate max-w-[120px] xs:max-w-[160px] sm:max-w-none">
                             tx: {{ tx.tx_hash.substring(0, 8) }}...{{ tx.tx_hash.substring(tx.tx_hash.length - 8) }} ↗
                           </a>
                           @if (tx.blockchain_status === 'success') {
@@ -1005,7 +1027,7 @@
                           @if (order.blockchain_status === 'success') {
                             <div class="flex items-center gap-1.5">
                               <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                              <a [href]="settings().explorer_url + '/tx/' + order.tx_hash" target="_blank" class="text-xs text-blue-500 font-mono hover:underline font-bold">
+                              <a [href]="getTxExplorerLink(order.tx_hash, order.chain_id)" target="_blank" class="text-xs text-blue-500 font-mono hover:underline font-bold">
                                 {{ order.tx_hash.substring(0, 5) }}...{{ order.tx_hash.substring(order.tx_hash.length - 4) }} ↗
                               </a>
                             </div>
@@ -1472,7 +1494,7 @@
                 <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
                 <span>Đã ghi nhận lên Blockchain EVM</span>
               </div>
-              <a [href]="settings().explorer_url + '/tx/' + selectedOrderDetails()?.tx_hash" target="_blank" class="text-[10px] text-blue-500 font-mono hover:underline break-all block font-bold leading-tight">
+              <a [href]="getTxExplorerLink(selectedOrderDetails()?.tx_hash, selectedOrderDetails()?.chain_id)" target="_blank" class="text-[10px] text-blue-500 font-mono hover:underline break-all block font-bold leading-tight">
                 tx: {{ selectedOrderDetails()?.tx_hash }} ↗
               </a>
             </div>

@@ -10,9 +10,10 @@ class CategoryController extends Controller
     /**
      * Lấy danh sách tất cả danh mục
      */
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Category::orderBy('id', 'asc')->get());
+        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        return response()->json(Category::where('store_owner_address', $storeOwner)->orderBy('id', 'asc')->get());
     }
  
     /**
@@ -20,11 +21,23 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
+        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+
         $validated = $request->validate([
-            'name' => 'required|string|max:100|unique:categories,name',
+            'name' => [
+                'required',
+                'string',
+                'max:100',
+                \Illuminate\Validation\Rule::unique('categories', 'name')->where(function ($query) use ($storeOwner) {
+                    return $query->where('store_owner_address', $storeOwner);
+                })
+            ],
         ]);
  
-        $category = Category::create($validated);
+        $category = Category::create([
+            'name' => $validated['name'],
+            'store_owner_address' => $storeOwner,
+        ]);
  
         return response()->json([
             'message' => 'Category created successfully.',
@@ -37,13 +50,25 @@ class CategoryController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $category = Category::findOrFail($id);
+        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $category = Category::where('store_owner_address', $storeOwner)->findOrFail($id);
  
         $validated = $request->validate([
-            'name' => 'required|string|max:100|unique:categories,name,' . $id,
+            'name' => [
+                'required',
+                'string',
+                'max:100',
+                \Illuminate\Validation\Rule::unique('categories', 'name')
+                    ->ignore($id)
+                    ->where(function ($query) use ($storeOwner) {
+                        return $query->where('store_owner_address', $storeOwner);
+                    })
+            ],
         ]);
  
-        $category->update($validated);
+        $category->update([
+            'name' => $validated['name']
+        ]);
  
         return response()->json([
             'message' => 'Category updated successfully.',
@@ -54,9 +79,10 @@ class CategoryController extends Controller
     /**
      * Xóa danh mục
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        $category = Category::find($id);
+        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $category = Category::where('store_owner_address', $storeOwner)->find($id);
 
         if (!$category) {
             return response()->json([

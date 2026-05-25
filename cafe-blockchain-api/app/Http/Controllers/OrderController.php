@@ -15,7 +15,8 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Order::with('items.product')->orderBy('id', 'desc');
+        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $query = Order::where('store_owner_address', $storeOwner)->with('items.product')->orderBy('id', 'desc');
 
         if ($request->has('status') && $request->status != 'all') {
             $query->where('status', $request->status);
@@ -32,9 +33,10 @@ class OrderController extends Controller
     /**
      * Lấy chi tiết đơn hàng
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        $order = Order::with('items.product')->findOrFail($id);
+        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $order = Order::where('store_owner_address', $storeOwner)->with('items.product')->findOrFail($id);
         return response()->json($order);
     }
 
@@ -43,6 +45,8 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
+        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+
         $validated = $request->validate([
             'table_number' => 'nullable|string|max:50',
             'payment_method' => 'required|string|in:cash,bank_transfer,crypto',
@@ -59,7 +63,7 @@ class OrderController extends Controller
 
             // Tính tổng tiền và lấy chi tiết món
             foreach ($validated['items'] as $item) {
-                $product = Product::findOrFail($item['product_id']);
+                $product = Product::where('store_owner_address', $storeOwner)->findOrFail($item['product_id']);
                 $price = $product->price;
                 $quantity = $item['quantity'];
                 $subTotal = $price * $quantity;
@@ -79,6 +83,7 @@ class OrderController extends Controller
                 'payment_method' => $validated['payment_method'],
                 'status' => 'pending', // Mặc định là đang chờ xác nhận
                 'blockchain_status' => 'none',
+                'store_owner_address' => $storeOwner,
             ]);
 
             // Tạo chi tiết đơn hàng
@@ -107,7 +112,8 @@ class OrderController extends Controller
      */
     public function updateStatus(Request $request, $id)
     {
-        $order = Order::findOrFail($id);
+        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $order = Order::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         $validated = $request->validate([
             'status' => 'required|string|in:completed,cancelled,pending',
@@ -134,11 +140,13 @@ class OrderController extends Controller
      */
     public function syncBlockchain(Request $request, $id)
     {
-        $order = Order::findOrFail($id);
+        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $order = Order::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         $validated = $request->validate([
             'tx_hash' => 'required|string|max:255',
             'blockchain_status' => 'required|string|in:pending,success,failed',
+            'chain_id' => 'nullable|string|max:50',
         ]);
 
         $txHash = $validated['tx_hash'];
@@ -150,41 +158,84 @@ class OrderController extends Controller
 
         // Only verify if setting to success
         if ($validated['blockchain_status'] === 'success') {
-            $contractAddress = \App\Models\Setting::get('contract_address');
-            $rpcUrl = \App\Models\Setting::get('rpc_url', 'https://ethereum-sepolia.publicnode.com');
+            $contractAddress = \App\Models\Setting::getForStore('contract_address', $storeOwner);
+            $rpcUrl = \App\Models\Setting::getForStore('rpc_url', $storeOwner, 'https://ethereum-sepolia.publicnode.com');
             
             if (!empty($contractAddress)) {
                 try {
-                    $payload = [
-                        'jsonrpc' => '2.0',
-                        'method' => 'eth_getTransactionReceipt',
-                        'params' => [$txHash],
-                        'id' => 1
-                    ];
+                    // TRƯỜNG HỢP 1: Đơn hàng đã tồn tại trên Blockchain và đối soát trực tiếp qua eth_call getOrder
+                    if (str_starts_with($txHash, '0x_already_synced_order_')) {
+                        $paddedOrderId = str_pad(dechex($order->id), 64, '0', STR_PAD_LEFT);
+                        $data = '0xd09ef241' . $paddedOrderId; // Function selector getOrder(uint256) is 0xd09ef241
 
-                    $response = \Illuminate\Support\Facades\Http::post($rpcUrl, $payload);
-                    if ($response->successful()) {
-                        $result = $response->json('result');
-                        
-                        // Check if tx exists, is successful, and was sent to our contract
-                        if (!$result || 
-                            !isset($result['status']) || 
-                            hexdec($result['status']) !== 1 ||
-                            strtolower($result['to']) !== strtolower($contractAddress)) {
-                            return response()->json(['message' => 'Invalid or failed transaction on the blockchain.'], 400);
+                        $payload = [
+                            'jsonrpc' => '2.0',
+                            'method' => 'eth_call',
+                            'params' => [
+                                [
+                                    'to' => $contractAddress,
+                                    'data' => $data
+                                ],
+                                'latest'
+                            ],
+                            'id' => 1
+                        ];
+
+                        $response = \Illuminate\Support\Facades\Http::post($rpcUrl, $payload);
+                        if ($response->successful() && !empty($response->json('result')) && $response->json('result') !== '0x') {
+                            $resultHex = substr($response->json('result'), 2);
+                            
+                            // Word 0 is orderId, Word 2 is totalAmount
+                            $word0 = substr($resultHex, 0, 64);
+                            $word2 = substr($resultHex, 64 * 2, 64);
+                            
+                            $onChainOrderId = hexdec($word0);
+                            $onChainAmount = hexdec($word2);
+
+                            if ($onChainOrderId === $order->id && $onChainAmount === (int)round($order->total_amount)) {
+                                // Đối soát khớp thông tin thành công
+                            } else {
+                                return response()->json(['message' => 'On-chain order verification mismatch. Amount or Order ID does not match.'], 400);
+                            }
+                        } else {
+                            return response()->json(['message' => 'This order does not exist on the Blockchain smart contract.'], 400);
                         }
                     } else {
-                        // RPC error, cannot verify
-                        return response()->json(['message' => 'Could not verify transaction with the blockchain node.'], 500);
+                        // TRƯỜNG HỢP 2: Đồng bộ thông thường qua TxReceipt
+                        $payload = [
+                            'jsonrpc' => '2.0',
+                            'method' => 'eth_getTransactionReceipt',
+                            'params' => [$txHash],
+                            'id' => 1
+                        ];
+
+                        $response = \Illuminate\Support\Facades\Http::post($rpcUrl, $payload);
+                        if ($response->successful()) {
+                            $result = $response->json('result');
+                            
+                            // Check if tx exists, is successful, and was sent to our contract
+                            if (!$result || 
+                                !isset($result['status']) || 
+                                hexdec($result['status']) !== 1 ||
+                                strtolower($result['to']) !== strtolower($contractAddress)) {
+                                return response()->json(['message' => 'Invalid or failed transaction on the blockchain.'], 400);
+                            }
+                        } else {
+                            // RPC error, cannot verify
+                            return response()->json(['message' => 'Could not verify transaction with the blockchain node.'], 500);
+                        }
                     }
                 } catch (\Exception $e) {
-                    return response()->json(['message' => 'Error verifying transaction.'], 500);
+                    return response()->json(['message' => 'Error verifying transaction: ' . $e->getMessage()], 500);
                 }
             }
         }
 
         $order->tx_hash = $txHash;
         $order->blockchain_status = $validated['blockchain_status'];
+        if (isset($validated['chain_id'])) {
+            $order->chain_id = $validated['chain_id'];
+        }
         $order->save();
 
         return response()->json([

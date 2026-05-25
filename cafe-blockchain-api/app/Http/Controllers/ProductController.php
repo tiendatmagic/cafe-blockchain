@@ -10,9 +10,10 @@ class ProductController extends Controller
     /**
      * Lấy danh sách thực đơn
      */
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::with('categories')->orderBy('id', 'desc')->get();
+        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $products = Product::where('store_owner_address', $storeOwner)->with('categories')->orderBy('id', 'desc')->get();
         return response()->json($products);
     }
 
@@ -21,10 +22,12 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
+        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
-            'category_ids' => 'required|array',
+            'category_ids' => 'nullable|array',
             'category_ids.*' => 'exists:categories,id',
             'image' => 'nullable|string|max:1000',
             'status' => 'nullable|boolean',
@@ -39,10 +42,11 @@ class ProductController extends Controller
             'status' => $validated['status'] ?? true,
             'short_description' => $validated['short_description'] ?? null,
             'description' => $validated['description'] ?? null,
+            'store_owner_address' => $storeOwner,
         ]);
 
         // Đồng bộ hóa các danh mục Nhiều-Nhiều
-        $product->categories()->sync($validated['category_ids']);
+        $product->categories()->sync($validated['category_ids'] ?? []);
         $product->load('categories');
 
         return response()->json([
@@ -56,12 +60,13 @@ class ProductController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $product = Product::findOrFail($id);
+        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $product = Product::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
-            'category_ids' => 'required|array',
+            'category_ids' => 'nullable|array',
             'category_ids.*' => 'exists:categories,id',
             'image' => 'nullable|string|max:1000',
             'status' => 'required|boolean',
@@ -79,7 +84,7 @@ class ProductController extends Controller
         ]);
 
         // Đồng bộ hóa các danh mục Nhiều-Nhiều
-        $product->categories()->sync($validated['category_ids']);
+        $product->categories()->sync($validated['category_ids'] ?? []);
         $product->load('categories');
 
         return response()->json([
@@ -91,9 +96,10 @@ class ProductController extends Controller
     /**
      * Xóa món ăn
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        $product = Product::find($id);
+        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $product = Product::where('store_owner_address', $storeOwner)->find($id);
 
         if (!$product) {
             return response()->json([

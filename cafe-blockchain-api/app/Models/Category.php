@@ -9,7 +9,7 @@ class Category extends Model
 {
     use HasFactory;
  
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'store_owner_address'];
  
     /**
      * Mối quan hệ Nhiều-Nhiều với Product

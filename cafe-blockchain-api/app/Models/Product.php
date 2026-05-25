@@ -16,6 +16,7 @@ class Product extends Model
         'status',
         'short_description',
         'description',
+        'store_owner_address',
     ];
 
     protected $casts = [

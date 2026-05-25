@@ -52,5 +52,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
 
         Route::post('/settings', [SettingController::class, 'store']);
+        Route::post('/auth/register-cashier', [AuthController::class, 'registerCashier']);
+        Route::post('/auth/remove-cashier', [AuthController::class, 'removeCashier']);
     });
 });
