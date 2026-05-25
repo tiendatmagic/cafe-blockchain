@@ -215,32 +215,102 @@ export class Web3Service {
         this.currentAccount.set(account);
         this.walletConnected.set(true);
         await this.updateBalanceAndStatus(account);
-
-        // Kiểm tra xem có đúng mạng được cấu hình không
-        const network = await this.provider.getNetwork();
-        const configuredChain = BigInt(this.configuredChainId());
-        
-        if (network.chainId !== configuredChain) {
-          try {
-            await (window as any).ethereum.request({
-              method: 'wallet_switchEthereumChain',
-              params: [{ chainId: `0x${configuredChain.toString(16)}` }],
-            });
-          } catch (switchError: any) {
-            // Mạng chưa được thêm vào ví
-            if (switchError.code === 4902) {
-              this.walletError.set(`Vui lòng thêm mạng có Chain ID ${this.configuredChainId()} vào ví của bạn!`);
-            } else {
-              this.walletError.set('Vui lòng chuyển ví sang mạng được cấu hình!');
-            }
-          }
-        }
         return true;
       }
       return false;
     } catch (err: any) {
       console.error('Loi ket noi vi:', err);
       this.walletError.set(err.message || 'Lỗi kết nối ví Web3.');
+      return false;
+    }
+  }
+
+  /**
+   * Đảm bảo ví đang kết nối đúng mạng được cấu hình.
+   * Nếu sai mạng, sẽ tự động yêu cầu chuyển mạng hoặc thêm mạng mới vào ví.
+   */
+  public async ensureCorrectNetwork(): Promise<boolean> {
+    this.walletError.set('');
+    if (typeof window === 'undefined' || !(window as any).ethereum) {
+      this.walletError.set('Vui lòng cài đặt ví Metamask!');
+      return false;
+    }
+
+    try {
+      if (!this.walletConnected() || !this.currentAccount()) {
+        const connected = await this.connectWallet();
+        if (!connected) return false;
+      }
+
+      if (!this.provider) {
+        this.provider = new BrowserProvider((window as any).ethereum);
+      }
+
+      const network = await this.provider.getNetwork();
+      const configuredChain = BigInt(this.configuredChainId());
+      
+      if (network.chainId !== configuredChain) {
+        const chainIdHex = `0x${configuredChain.toString(16)}`;
+        try {
+          // Yêu cầu chuyển mạng
+          await (window as any).ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: chainIdHex }],
+          });
+          
+          // Cập nhật lại số dư và trạng thái sau khi chuyển mạng thành công
+          if (this.currentAccount()) {
+            await this.updateBalanceAndStatus(this.currentAccount());
+          }
+          return true;
+        } catch (switchError: any) {
+          // Lỗi 4902 hoặc lỗi trong message: Mạng chưa được thêm vào ví
+          const isNetworkNotAdded = switchError.code === 4902 || 
+                                    switchError.data?.originalError?.code === 4902 ||
+                                    switchError.message?.includes('wallet_switchEthereumChain') ||
+                                    switchError.message?.includes('4902');
+          
+          if (isNetworkNotAdded) {
+            try {
+              const tokenSymbol = this.nativeTokenSymbol();
+              const netName = this.networkName();
+              
+              await (window as any).ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainId: chainIdHex,
+                  chainName: netName || `Mạng EVM Custom (ID: ${this.configuredChainId()})`,
+                  rpcUrls: [this.rpcUrl()],
+                  blockExplorerUrls: [this.explorerUrl()],
+                  nativeCurrency: {
+                    name: tokenSymbol,
+                    symbol: tokenSymbol,
+                    decimals: 18
+                  }
+                }],
+              });
+              
+              // Cập nhật lại số dư sau khi thêm và chuyển mạng thành công
+              if (this.currentAccount()) {
+                await this.updateBalanceAndStatus(this.currentAccount());
+              }
+              return true;
+            } catch (addError: any) {
+              console.error('Loi them mang vao vi:', addError);
+              this.walletError.set('Không thể tự động thêm mạng mới vào ví của bạn!');
+              return false;
+            }
+          } else {
+            console.error('Loi chuyen mang:', switchError);
+            this.walletError.set('Vui lòng chuyển ví sang mạng được cấu hình để tiếp tục!');
+            return false;
+          }
+        }
+      }
+      return true;
+    } catch (err: any) {
+      console.error('Loi kiem tra mang:', err);
+      this.walletError.set(err.message || 'Lỗi kiểm tra mạng lưới.');
       return false;
     }
   }
@@ -289,6 +359,12 @@ export class Web3Service {
       return { txHash: '', success: false, error: 'Không tìm thấy provider ví!' };
     }
 
+    // Đảm bảo đúng mạng trước khi tương tác contract
+    const hasCorrectNetwork = await this.ensureCorrectNetwork();
+    if (!hasCorrectNetwork) {
+      return { txHash: '', success: false, error: this.walletError() || 'Vui lòng chuyển sang đúng mạng được cấu hình!' };
+    }
+
     try {
       const signer = await this.provider.getSigner();
       const contract = new Contract(this.contractAddress(), CAFE_WEB3_POS_ABI, signer);
@@ -323,6 +399,12 @@ export class Web3Service {
   public async addOwnersOnChain(newOwners: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
     if (!this.provider) return { txHash: '', success: false, error: 'Chưa kết nối ví!' };
 
+    // Đảm bảo đúng mạng trước khi tương tác contract
+    const hasCorrectNetwork = await this.ensureCorrectNetwork();
+    if (!hasCorrectNetwork) {
+      return { txHash: '', success: false, error: this.walletError() || 'Vui lòng chuyển mạng!' };
+    }
+
     try {
       const signer = await this.provider.getSigner();
       const contract = new Contract(this.contractAddress(), CAFE_WEB3_POS_ABI, signer);
@@ -339,6 +421,12 @@ export class Web3Service {
    */
   public async removeOwnersOnChain(ownersToRemove: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
     if (!this.provider) return { txHash: '', success: false, error: 'Chưa kết nối ví!' };
+
+    // Đảm bảo đúng mạng trước khi tương tác contract
+    const hasCorrectNetwork = await this.ensureCorrectNetwork();
+    if (!hasCorrectNetwork) {
+      return { txHash: '', success: false, error: this.walletError() || 'Vui lòng chuyển mạng!' };
+    }
 
     try {
       const signer = await this.provider.getSigner();
@@ -374,6 +462,12 @@ export class Web3Service {
     }
     if (!this.provider) {
       return { contractAddress: '', success: false, error: 'Không tìm thấy provider ví Web3!' };
+    }
+
+    // Đảm bảo đúng mạng trước khi deploy
+    const hasCorrectNetwork = await this.ensureCorrectNetwork();
+    if (!hasCorrectNetwork) {
+      return { contractAddress: '', success: false, error: this.walletError() || 'Vui lòng chuyển mạng!' };
     }
 
     try {
