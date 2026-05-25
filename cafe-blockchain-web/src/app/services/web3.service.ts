@@ -257,6 +257,18 @@ export class Web3Service {
     this.walletBalance.set('0.00');
     this.walletConnected.set(false);
     this.isOwnerContract.set(false);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
+    }
+  }
+
+  /**
+   * Yêu cầu ví ký một thông điệp (Sign Message)
+   */
+  public async signMessage(message: string): Promise<string> {
+    if (!this.provider) throw new Error('Không có provider ví');
+    const signer = await this.provider.getSigner();
+    return await signer.signMessage(message);
   }
 
   /**

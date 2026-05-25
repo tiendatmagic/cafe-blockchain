@@ -15,24 +15,56 @@ export class ApiService {
   private readonly baseUrl = environment.apiBaseUrl;
 
   /**
-   * Tạo HttpHeaders chứa địa chỉ ví đang kết nối để gửi lên Backend kiểm tra bảo mật
+   * Cập nhật token vào localStorage
+   */
+  public setToken(token: string) {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('auth_token', token);
+    }
+  }
+
+  public getToken(): string | null {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('auth_token');
+    }
+    return null;
+  }
+
+  public removeToken() {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
+    }
+  }
+
+  /**
+   * Tạo HttpHeaders chứa Bearer token để gửi lên Backend kiểm tra bảo mật
    */
   private getHeaders(): HttpHeaders {
     let headers = new HttpHeaders();
-    if (this.web3Service.walletConnected() && this.web3Service.currentAccount()) {
-      headers = headers.set('X-Wallet-Address', this.web3Service.currentAccount());
+    const token = this.getToken();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
     }
     return headers;
   }
 
+  // --- Auth API ---
+  public getNonce(address: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/auth/nonce?address=${address}`);
+  }
+
+  public verifySignature(address: string, signature: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/auth/verify`, { address, signature });
+  }
+
   // 1. Dashboard API
   public getDashboard(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/dashboard`);
+    return this.http.get(`${this.baseUrl}/dashboard`, { headers: this.getHeaders() });
   }
 
   // 2. Products (Thực đơn) API
   public getProducts(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/products`);
+    return this.http.get<any[]>(`${this.baseUrl}/products`, { headers: this.getHeaders() });
   }
 
   public createProduct(product: any): Observable<any> {
@@ -56,11 +88,11 @@ export class ApiService {
     if (blockchainStatus !== 'all') {
       params = params.set('blockchain_status', blockchainStatus);
     }
-    return this.http.get<any[]>(`${this.baseUrl}/orders`, { params });
+    return this.http.get<any[]>(`${this.baseUrl}/orders`, { params, headers: this.getHeaders() });
   }
 
   public getOrder(id: number): Observable<any> {
-    return this.http.get(`${this.baseUrl}/orders/${id}`);
+    return this.http.get(`${this.baseUrl}/orders/${id}`, { headers: this.getHeaders() });
   }
 
   public createOrder(order: { table_number?: string, payment_method: string, items: { product_id: number, quantity: number }[] }): Observable<any> {
@@ -80,7 +112,7 @@ export class ApiService {
 
   // 4. Settings (Cấu hình) API
   public getSettings(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/settings`);
+    return this.http.get(`${this.baseUrl}/settings`, { headers: this.getHeaders() });
   }
 
   public updateSettings(settings: any): Observable<any> {
@@ -89,7 +121,7 @@ export class ApiService {
 
   // 5. Categories (Danh mục) API
   public getCategories(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/categories`);
+    return this.http.get<any[]>(`${this.baseUrl}/categories`, { headers: this.getHeaders() });
   }
 
   public createCategory(category: { name: string }): Observable<any> {

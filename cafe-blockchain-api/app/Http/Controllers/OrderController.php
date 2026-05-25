@@ -141,7 +141,49 @@ class OrderController extends Controller
             'blockchain_status' => 'required|string|in:pending,success,failed',
         ]);
 
-        $order->tx_hash = $validated['tx_hash'];
+        $txHash = $validated['tx_hash'];
+        
+        // Prevent reusing tx_hash
+        if (Order::where('tx_hash', $txHash)->where('id', '!=', $id)->exists()) {
+            return response()->json(['message' => 'Transaction hash has already been used.'], 400);
+        }
+
+        // Only verify if setting to success
+        if ($validated['blockchain_status'] === 'success') {
+            $contractAddress = \App\Models\Setting::get('contract_address');
+            $rpcUrl = \App\Models\Setting::get('rpc_url', 'https://ethereum-sepolia.publicnode.com');
+            
+            if (!empty($contractAddress)) {
+                try {
+                    $payload = [
+                        'jsonrpc' => '2.0',
+                        'method' => 'eth_getTransactionReceipt',
+                        'params' => [$txHash],
+                        'id' => 1
+                    ];
+
+                    $response = \Illuminate\Support\Facades\Http::post($rpcUrl, $payload);
+                    if ($response->successful()) {
+                        $result = $response->json('result');
+                        
+                        // Check if tx exists, is successful, and was sent to our contract
+                        if (!$result || 
+                            !isset($result['status']) || 
+                            hexdec($result['status']) !== 1 ||
+                            strtolower($result['to']) !== strtolower($contractAddress)) {
+                            return response()->json(['message' => 'Invalid or failed transaction on the blockchain.'], 400);
+                        }
+                    } else {
+                        // RPC error, cannot verify
+                        return response()->json(['message' => 'Could not verify transaction with the blockchain node.'], 500);
+                    }
+                } catch (\Exception $e) {
+                    return response()->json(['message' => 'Error verifying transaction.'], 500);
+                }
+            }
+        }
+
+        $order->tx_hash = $txHash;
         $order->blockchain_status = $validated['blockchain_status'];
         $order->save();
 

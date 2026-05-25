@@ -463,8 +463,50 @@ export class App implements OnInit {
   // Ngắt kết nối ví Web3 và đóng cửa sổ
   public disconnectWalletAndClose() {
     this.web3Service.disconnectWallet();
+    this.apiService.removeToken();
     this.isWalletModalOpen.set(false);
     this.showToast('Đã ngắt kết nối ví Web3 thành công!', 'success');
+  }
+
+  // Kết nối và Yêu cầu Ký ví Web3 Auth
+  public async connectWalletAndSign() {
+    const isConnected = await this.web3Service.connectWallet();
+    if (isConnected) {
+      const address = this.web3Service.currentAccount();
+      if (!address) return;
+
+      this.showToast('Vui lòng ký xác thực trên ví Metamask...', 'success');
+      this.apiService.getNonce(address).subscribe({
+        next: async (res) => {
+          try {
+            const signature = await this.web3Service.signMessage(res.message);
+            
+            this.apiService.verifySignature(address, signature).subscribe({
+              next: (verifyRes) => {
+                if (verifyRes.token) {
+                  this.apiService.setToken(verifyRes.token);
+                  this.showToast('Kết nối và xác thực ví thành công!', 'success');
+                  this.isWalletModalOpen.set(false);
+                  this.loadOwnersList();
+                  this.refreshProducts(); // Refresh lại danh sách xem có quyền sửa không
+                }
+              },
+              error: (err) => {
+                this.web3Service.disconnectWallet();
+                this.showToast('Xác thực chữ ký thất bại!', 'error');
+              }
+            });
+          } catch (e) {
+            this.web3Service.disconnectWallet();
+            this.showToast('Bạn đã từ chối ký xác thực!', 'error');
+          }
+        },
+        error: (err) => {
+          this.web3Service.disconnectWallet();
+          this.showToast('Lỗi lấy mã xác thực từ server!', 'error');
+        }
+      });
+    }
   }
 
   // ==================== CHỨC NĂNG POS (BÁN HÀNG) ====================
