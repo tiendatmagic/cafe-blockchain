@@ -434,6 +434,9 @@ export class App implements OnInit {
       this.configForm.set({ ...settings });
       this.applyAndCacheDynamicColors(settings.primary_color, settings.secondary_color);
       this.web3Service.updateConfig(settings);
+      
+      // Tự động nhận diện mạng nếu chưa có contract address
+      this.autoDetectNetworkIfNoContract();
     });
   }
 
@@ -489,6 +492,9 @@ export class App implements OnInit {
                   this.isWalletModalOpen.set(false);
                   this.loadOwnersList();
                   this.refreshProducts(); // Refresh lại danh sách xem có quyền sửa không
+                  
+                  // Tự động nhận diện mạng nếu chưa có contract address
+                  this.autoDetectNetworkIfNoContract();
                 }
               },
               error: (err) => {
@@ -1078,10 +1084,17 @@ export class App implements OnInit {
       return;
     }
 
+    // Đồng bộ cấu hình mạng tạm thời từ Form vào Web3Service để đảm bảo deploy đúng mạng đang chọn trên Form
+    this.web3Service.updateConfig({
+      rpc_url: this.configForm().rpc_url,
+      chain_id: this.configForm().chain_id,
+      explorer_url: this.configForm().explorer_url
+    });
+
     this.isDeploying.set(true);
     this.showToast('Vui lòng xác nhận giao dịch Deploy Smart Contract trên ví của bạn...', 'success');
 
-    const res = await this.web3Service.deployContractOnChain();
+    const res = await this.web3Service.deployContractOnChain(this.configForm().chain_id);
     if (res.success && res.contractAddress) {
       this.configForm.update(form => ({
         ...form,
@@ -1249,5 +1262,30 @@ export class App implements OnInit {
       this.showToast('Lỗi nhận diện mạng từ ví: ' + err.message, 'error');
     }
     this.isDetectingChain.set(false);
+  }
+
+  // Tự động nhận diện mạng nếu chưa deploy contract
+  public autoDetectNetworkIfNoContract() {
+    if (this.web3Service.walletConnected() && !this.web3Service.contractAddress()) {
+      const activeChainId = this.web3Service.chainId();
+      if (activeChainId) {
+        const idStr = activeChainId.toString().trim();
+        const chain = this.POPULAR_CHAINS.find(c => c.chainId === idStr);
+        if (chain) {
+          this.configForm.update(form => ({
+            ...form,
+            rpc_url: chain.rpcUrl,
+            chain_id: chain.chainId,
+            explorer_url: chain.explorerUrl
+          }));
+          this.selectedChainName.set(`${chain.name} (ID: ${chain.chainId})`);
+        } else {
+          this.configForm.update(form => ({
+            ...form,
+            chain_id: idStr
+          }));
+        }
+      }
+    }
   }
 }

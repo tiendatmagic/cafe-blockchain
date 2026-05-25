@@ -18,13 +18,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Tạo tài khoản User thử nghiệm
-        User::factory()->create([
-            'name' => 'Thu ngân Cafe Web3',
-            'email' => 'cashier@cafe.web3',
-            'password' => bcrypt('password'),
-        ]);
- 
         // 2. Tạo cấu hình quán và blockchain mặc định
         Setting::set('store_name', 'Blockchain Cafe & Bistro');
         Setting::set('contract_address', '');

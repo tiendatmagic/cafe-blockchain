@@ -229,7 +229,7 @@ export class Web3Service {
    * Đảm bảo ví đang kết nối đúng mạng được cấu hình.
    * Nếu sai mạng, sẽ tự động yêu cầu chuyển mạng hoặc thêm mạng mới vào ví.
    */
-  public async ensureCorrectNetwork(): Promise<boolean> {
+  public async ensureCorrectNetwork(targetChainId?: string): Promise<boolean> {
     this.walletError.set('');
     if (typeof window === 'undefined' || !(window as any).ethereum) {
       this.walletError.set('Vui lòng cài đặt ví Metamask!');
@@ -242,12 +242,20 @@ export class Web3Service {
         if (!connected) return false;
       }
 
-      if (!this.provider) {
-        this.provider = new BrowserProvider((window as any).ethereum);
-      }
+      // Khởi tạo lại provider mới để xóa cache thông tin mạng cũ của Ethers v6!
+      this.provider = new BrowserProvider((window as any).ethereum);
 
       const network = await this.provider.getNetwork();
-      const configuredChain = BigInt(this.configuredChainId());
+      const chainIdToUse = targetChainId || this.configuredChainId();
+      const configuredChain = BigInt(chainIdToUse);
+      
+      console.log('DEBUG ENSURE NETWORK:', {
+        networkChainId: network.chainId.toString(),
+        targetChainId: targetChainId,
+        configuredChainIdSignal: this.configuredChainId(),
+        chainIdToUse: chainIdToUse,
+        isDifferent: network.chainId !== configuredChain
+      });
       
       if (network.chainId !== configuredChain) {
         const chainIdHex = `0x${configuredChain.toString(16)}`;
@@ -258,6 +266,9 @@ export class Web3Service {
             params: [{ chainId: chainIdHex }],
           });
           
+          // Khởi tạo lại provider sau khi chuyển mạng thành công
+          this.provider = new BrowserProvider((window as any).ethereum);
+
           // Cập nhật lại số dư và trạng thái sau khi chuyển mạng thành công
           if (this.currentAccount()) {
             await this.updateBalanceAndStatus(this.currentAccount());
@@ -279,7 +290,7 @@ export class Web3Service {
                 method: 'wallet_addEthereumChain',
                 params: [{
                   chainId: chainIdHex,
-                  chainName: netName || `Mạng EVM Custom (ID: ${this.configuredChainId()})`,
+                  chainName: netName || `Mạng EVM Custom (ID: ${chainIdToUse})`,
                   rpcUrls: [this.rpcUrl()],
                   blockExplorerUrls: [this.explorerUrl()],
                   nativeCurrency: {
@@ -290,6 +301,9 @@ export class Web3Service {
                 }],
               });
               
+              // Khởi tạo lại provider sau khi thêm mạng thành công
+              this.provider = new BrowserProvider((window as any).ethereum);
+
               // Cập nhật lại số dư sau khi thêm và chuyển mạng thành công
               if (this.currentAccount()) {
                 await this.updateBalanceAndStatus(this.currentAccount());
@@ -456,7 +470,7 @@ export class Web3Service {
   /**
    * Tự động Deploy Smart Contract mới lên Blockchain EVM
    */
-  public async deployContractOnChain(): Promise<{ contractAddress: string; success: boolean; error?: string }> {
+  public async deployContractOnChain(targetChainId?: string): Promise<{ contractAddress: string; success: boolean; error?: string }> {
     if (!this.walletConnected() || !this.currentAccount()) {
       return { contractAddress: '', success: false, error: 'Chưa kết nối ví Web3!' };
     }
@@ -464,13 +478,15 @@ export class Web3Service {
       return { contractAddress: '', success: false, error: 'Không tìm thấy provider ví Web3!' };
     }
 
-    // Đảm bảo đúng mạng trước khi deploy
-    const hasCorrectNetwork = await this.ensureCorrectNetwork();
+    // Đảm bảo đúng mạng trước khi deploy, truyền targetChainId vào trực tiếp
+    const hasCorrectNetwork = await this.ensureCorrectNetwork(targetChainId);
     if (!hasCorrectNetwork) {
       return { contractAddress: '', success: false, error: this.walletError() || 'Vui lòng chuyển mạng!' };
     }
 
     try {
+      // Khởi tạo lại provider và signer mới nhất để đảm bảo giao dịch thực thi trên mạng đã cập nhật
+      this.provider = new BrowserProvider((window as any).ethereum);
       const signer = await this.provider.getSigner();
       const factory = new ContractFactory(CAFE_WEB3_POS_ABI, CAFE_WEB3_POS_BYTECODE, signer);
       
