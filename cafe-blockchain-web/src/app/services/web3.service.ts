@@ -2,6 +2,7 @@ import { Injectable, signal, computed } from '@angular/core';
 import { BrowserProvider, Contract, ContractFactory, formatEther, parseEther } from 'ethers';
 import { CAFE_WEB3_POS_ABI } from './contract-abi';
 import { CAFE_WEB3_POS_BYTECODE } from './contract-bytecode';
+import { Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -14,6 +15,9 @@ export class Web3Service {
   public readonly isOwnerContract = signal<boolean>(false);
   public readonly walletError = signal<string>('');
   public readonly chainId = signal<string>('');
+  
+  // Sự kiện thay đổi tài khoản hoặc ngắt kết nối ví
+  public readonly accountsChanged$ = new Subject<string>();
 
   // Cấu hình blockchain (sẽ được cập nhật từ database thông qua ApiService)
   public readonly contractAddress = signal<string>('');
@@ -28,42 +32,12 @@ export class Web3Service {
     return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
   });
 
-  // Tự động nhận diện ký hiệu Native Token của Chain EVM đang kết nối
-  public readonly nativeTokenSymbol = computed(() => {
-    const activeChainId = this.walletConnected() ? this.chainId() : this.configuredChainId();
-    if (!activeChainId) return 'ETH';
-    
-    const id = activeChainId.toString().trim();
-    switch (id) {
-      case '1':
-      case '11155111':
-      case '5':
-      case '42161': // Arbitrum One
-      case '10':    // Optimism
-      case '8453':  // Base
-        return 'ETH';
-      case '56':
-      case '97':
-        return 'BNB';
-      case '137':
-      case '80001':
-        return 'MATIC';
-      case '80002':
-        return 'POL';
-      case '43114':
-      case '43113':
-        return 'AVAX';
-      default:
-        return 'ETH';
-    }
-  });
-
-  // Tự động nhận diện tên Mạng EVM đang kết nối
-  public readonly networkName = computed(() => {
-    const activeChainId = this.walletConnected() ? this.chainId() : this.configuredChainId();
-    if (!activeChainId) return 'Sepolia Testnet';
-    
-    const id = activeChainId.toString().trim();
+  /**
+   * Lấy tên mạng EVM dựa vào chainId
+   */
+  public getNetworkNameByChainId(chainId: string | number): string {
+    if (!chainId) return 'Sepolia Testnet';
+    const id = chainId.toString().trim();
     switch (id) {
       case '1':
         return 'Ethereum Mainnet';
@@ -91,6 +65,58 @@ export class Web3Service {
       default:
         return `EVM Chain (ID: ${id})`;
     }
+  }
+
+  /**
+   * Lấy ký hiệu Native Token của mạng EVM dựa vào chainId
+   */
+  public getNativeTokenSymbolByChainId(chainId: string | number): string {
+    if (!chainId) return 'ETH';
+    const id = chainId.toString().trim();
+    switch (id) {
+      case '1':
+      case '11155111':
+      case '5':
+      case '42161': // Arbitrum One
+      case '10':    // Optimism
+      case '8453':  // Base
+        return 'ETH';
+      case '56':
+      case '97':
+        return 'BNB';
+      case '137':
+      case '80001':
+        return 'MATIC';
+      case '80002':
+        return 'POL';
+      case '43114':
+      case '43113':
+        return 'AVAX';
+      default:
+        return 'ETH';
+    }
+  }
+
+  // Tự động nhận diện ký hiệu Native Token của Chain EVM đang kết nối
+  public readonly nativeTokenSymbol = computed(() => {
+    const activeChainId = this.walletConnected() ? this.chainId() : this.configuredChainId();
+    return this.getNativeTokenSymbolByChainId(activeChainId);
+  });
+
+  // Ký hiệu Native Token được cấu hình cho quán
+  public readonly configuredNativeTokenSymbol = computed(() => {
+    return this.getNativeTokenSymbolByChainId(this.configuredChainId());
+  });
+
+  // Tự động nhận diện tên Mạng EVM đang kết nối
+  public readonly networkName = computed(() => {
+    const activeChainId = this.walletConnected() ? this.chainId() : this.configuredChainId();
+    return this.getNetworkNameByChainId(activeChainId);
+  });
+
+  // Tên mạng được cấu hình cho quán
+  public readonly configuredNetworkName = computed(() => {
+    return this.getNetworkNameByChainId(this.configuredChainId());
   });
 
   private provider: BrowserProvider | null = null;
@@ -147,8 +173,10 @@ export class Web3Service {
           this.currentAccount.set(accounts[0]);
           this.walletConnected.set(true);
           await this.updateBalanceAndStatus(accounts[0]);
+          this.accountsChanged$.next(accounts[0]);
         } else {
           this.resetWalletState();
+          this.accountsChanged$.next('');
         }
       });
 
@@ -283,8 +311,8 @@ export class Web3Service {
           
           if (isNetworkNotAdded) {
             try {
-              const tokenSymbol = this.nativeTokenSymbol();
-              const netName = this.networkName();
+              const tokenSymbol = this.getNativeTokenSymbolByChainId(chainIdToUse);
+              const netName = this.getNetworkNameByChainId(chainIdToUse);
               
               await (window as any).ethereum.request({
                 method: 'wallet_addEthereumChain',
@@ -343,6 +371,7 @@ export class Web3Service {
     this.isOwnerContract.set(false);
     if (typeof window !== 'undefined') {
       localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_address');
     }
   }
 

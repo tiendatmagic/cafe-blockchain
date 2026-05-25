@@ -256,6 +256,11 @@ export class App implements OnInit {
     this.initTheme();
     this.loadAllData();
     this.initRouting();
+
+    // Lắng nghe sự kiện thay đổi ví từ Web3Service
+    this.web3Service.accountsChanged$.subscribe((newAccount) => {
+      this.handleAccountSwitch(newAccount);
+    });
   }
 
   // Khởi tạo Light/Dark Theme
@@ -292,6 +297,16 @@ export class App implements OnInit {
 
   // Tải toàn bộ dữ liệu từ Laravel Backend
   public loadAllData() {
+    const connectedAddress = this.web3Service.currentAccount();
+    if (typeof window !== 'undefined') {
+      const authAddress = localStorage.getItem('auth_address');
+      if (connectedAddress && authAddress && connectedAddress.toLowerCase() !== authAddress.toLowerCase()) {
+        console.warn('Lệch tài khoản ví và token xác thực! Đang tự động đăng xuất và yêu cầu xác thực lại...');
+        this.handleAccountSwitch(connectedAddress);
+        return;
+      }
+    }
+
     this.isLoading.set(true);
     forkJoin({
       dashboard: this.apiService.getDashboard(),
@@ -474,6 +489,9 @@ export class App implements OnInit {
   public disconnectWalletAndClose() {
     this.web3Service.disconnectWallet();
     this.apiService.removeToken();
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_address');
+    }
     this.isWalletModalOpen.set(false);
     this.showToast('Đã ngắt kết nối ví Web3 thành công!', 'success');
   }
@@ -495,13 +513,13 @@ export class App implements OnInit {
               next: (verifyRes) => {
                 if (verifyRes.token) {
                   this.apiService.setToken(verifyRes.token);
+                  if (typeof window !== 'undefined') {
+                    localStorage.setItem('auth_address', address);
+                  }
                   this.showToast('Kết nối và xác thực ví thành công!', 'success');
                   this.isWalletModalOpen.set(false);
+                  this.loadAllData();
                   this.loadOwnersList();
-                  this.refreshProducts(); // Refresh lại danh sách xem có quyền sửa không
-                  
-                  // Tự động nhận diện mạng nếu chưa có contract address
-                  this.autoDetectNetworkIfNoContract();
                 }
               },
               error: (err) => {
@@ -519,6 +537,33 @@ export class App implements OnInit {
           this.showToast('Lỗi lấy mã xác thực từ server!', 'error');
         }
       });
+    }
+  }
+
+  // Xử lý khi tài khoản ví Web3 thay đổi
+  private handleAccountSwitch(newAccount: string) {
+    // Xóa token cũ và địa chỉ ví cũ để đảm bảo bảo mật
+    this.apiService.removeToken();
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_address');
+    }
+    
+    // Làm sạch dữ liệu hiện tại để tránh lộ thông tin ví cũ
+    this.clearCart();
+    this.dashboardData.set(null);
+    this.products.set([]);
+    this.orders.set([]);
+    this.categoriesList.set([]);
+    this.ownersFromChain.set([]);
+
+    if (newAccount) {
+      console.log('Đã chuyển đổi tài khoản ví sang:', newAccount);
+      this.showToast('Phát hiện tài khoản ví thay đổi. Đang yêu cầu ký xác thực lại...', 'success');
+      // Bắt đăng nhập lại cho tài khoản mới
+      this.connectWalletAndSign();
+    } else {
+      console.log('Ví đã ngắt kết nối hoàn toàn');
+      this.showToast('Ví đã ngắt kết nối. Vui lòng kết nối ví để tiếp tục!', 'error');
     }
   }
 

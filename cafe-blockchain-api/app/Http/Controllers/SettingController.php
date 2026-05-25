@@ -20,8 +20,8 @@ class SettingController extends Controller
         if (empty($settings)) {
             $defaultSettings = [
                 'store_name' => 'Cafe Web3 POS',
-                'primary_color' => '#f59e0b',
-                'secondary_color' => '#10b981',
+                'primary_color' => '#7c3aed',
+                'secondary_color' => '#c084fc',
                 'contract_address' => '',
                 'rpc_url' => '',
                 'chain_id' => '',
