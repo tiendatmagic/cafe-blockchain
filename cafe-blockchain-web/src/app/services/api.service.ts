@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Web3Service } from './web3.service';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +12,7 @@ export class ApiService {
   private readonly web3Service = inject(Web3Service);
   
   // URL của Laravel Backend API (Cổng mặc định của artisan serve)
-  private readonly baseUrl = 'http://127.0.0.1:8000/api';
+  private readonly baseUrl = environment.apiBaseUrl;
 
   /**
    * Tạo HttpHeaders chứa địa chỉ ví đang kết nối để gửi lên Backend kiểm tra bảo mật

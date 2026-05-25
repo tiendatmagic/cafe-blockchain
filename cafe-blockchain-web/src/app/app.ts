@@ -99,6 +99,8 @@ export class App implements OnInit {
   public readonly deletingCategoryData = signal<any>(null);
   public readonly isDeleteProductConfirmOpen = signal<boolean>(false);
   public readonly deletingProductData = signal<any>(null);
+  public readonly isDeleteOwnerConfirmOpen = signal<boolean>(false);
+  public readonly deletingOwnerAddress = signal<string>('');
 
   // Trạng thái Sổ đơn hàng (Bộ lọc)
   public readonly orderStatusFilter = signal<string>('all');
@@ -205,6 +207,27 @@ export class App implements OnInit {
   // Fallback khi hình ảnh bị lỗi tải (như 404)
   public handleImageError(event: any) {
     event.target.src = 'not-found.webp';
+  }
+
+  public updateConfigForm(field: string, value: any) {
+    this.configForm.update(form => ({
+      ...form,
+      [field]: value
+    }));
+  }
+
+  public updateMenuForm(field: string, value: any) {
+    this.menuForm.update(form => ({
+      ...form,
+      [field]: field === 'price' ? Number(value) : value
+    }));
+  }
+
+  public toggleMenuFormStatus() {
+    this.menuForm.update(form => ({
+      ...form,
+      status: !form.status
+    }));
   }
 
   // Lọc sản phẩm hiển thị trong POS
@@ -1065,8 +1088,7 @@ export class App implements OnInit {
     this.isOwnerActionLoading.set(false);
   }
 
-  // Xóa Owner (ví thu ngân) khỏi Blockchain
-  public async removeOwnerAddress(address: string) {
+  public removeOwnerAddress(address: string) {
     if (!this.web3Service.walletConnected()) {
       this.showToast('Vui lòng kết nối ví Web3 để thực hiện tác vụ này!', 'error');
       return;
@@ -1076,19 +1098,29 @@ export class App implements OnInit {
       return;
     }
 
-    if (confirm(`Bạn có chắc chắn muốn xóa quyền thu ngân của ví: ${address} trên Smart Contract không?`)) {
-      this.isOwnerActionLoading.set(true);
-      this.showToast('Vui lòng xác nhận giao dịch xóa Owner trên ví của bạn...', 'success');
+    this.deletingOwnerAddress.set(address);
+    this.isDeleteOwnerConfirmOpen.set(true);
+  }
 
-      const res = await this.web3Service.removeOwnersOnChain([address]);
-      if (res.success && res.txHash) {
-        this.showToast(`Giao dịch xóa Owner thành công! TxHash: ${res.txHash}`, 'success');
-        await this.loadOwnersList();
-      } else {
-        this.showToast(res.error || 'Xóa Owner thất bại!', 'error');
-      }
-      this.isOwnerActionLoading.set(false);
+  public async confirmDeleteOwner() {
+    if (this.isOwnerActionLoading()) return;
+
+    const address = this.deletingOwnerAddress();
+    if (!address) return;
+
+    this.isOwnerActionLoading.set(true);
+    this.showToast('Vui lòng xác nhận giao dịch xóa Owner trên ví của bạn...', 'success');
+
+    const res = await this.web3Service.removeOwnersOnChain([address]);
+    if (res.success && res.txHash) {
+      this.showToast(`Giao dịch xóa Owner thành công! TxHash: ${res.txHash}`, 'success');
+      this.isDeleteOwnerConfirmOpen.set(false);
+      this.deletingOwnerAddress.set('');
+      await this.loadOwnersList();
+    } else {
+      this.showToast(res.error || 'Xóa Owner thất bại!', 'error');
     }
+    this.isOwnerActionLoading.set(false);
   }
 
   // Danh sách các mạng EVM phổ biến để Admin chọn nhanh

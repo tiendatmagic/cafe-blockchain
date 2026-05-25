@@ -152,8 +152,14 @@ export class Web3Service {
         }
       });
 
-      eth.on('chainChanged', () => {
-        window.location.reload();
+      eth.on('chainChanged', async (newChainId: string) => {
+        this.provider = new BrowserProvider(eth);
+        this.walletError.set('');
+        this.chainId.set(BigInt(newChainId).toString());
+
+        if (this.walletConnected() && this.currentAccount()) {
+          await this.updateBalanceAndStatus(this.currentAccount());
+        }
       });
     }
   }
