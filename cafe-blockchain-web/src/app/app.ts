@@ -32,7 +32,7 @@ export class App implements OnInit, OnDestroy {
   public readonly isPaymentDropdownOpen = signal<boolean>(false);
   public readonly isChainDropdownOpen = signal<boolean>(false);
   public readonly selectedChainName = signal<string>('-- Chọn nhanh mạng phổ biến nhất --');
-  public readonly menuViewMode = signal<'table' | 'card'>('table');
+  public readonly menuViewMode = signal<'table' | 'card'>('card');
 
   // Dữ liệu từ Laravel Backend
   public readonly dashboardData = signal<any>(null);
@@ -154,6 +154,150 @@ export class App implements OnInit, OnDestroy {
   public readonly isOrderSubmitting = signal<boolean>(false);
   public readonly isDetectingChain = signal<boolean>(false);
 
+  // ==================== KHÁCH HÀNG & NHÓM KHÁCH HÀNG ====================
+  public readonly customers = signal<any[]>([]);
+  public readonly customerGroups = signal<any[]>([]);
+  public readonly isCustomerModalOpen = signal<boolean>(false);
+  public readonly isCustomerGroupModalOpen = signal<boolean>(false);
+  public readonly customerModalType = signal<'add' | 'edit'>('add');
+  public readonly customerGroupModalType = signal<'add' | 'edit'>('add');
+  public readonly editingCustomer = signal<any>(null);
+  public readonly editingCustomerGroup = signal<any>(null);
+  public readonly customerForm = signal<any>({
+    name: '',
+    phone: '',
+    email: '',
+    dob: '',
+    gender: 'Nam',
+    address: '',
+    group_ids: []
+  });
+  public readonly customerGroupForm = signal<any>({
+    name: ''
+  });
+  public readonly customerCurrentPage = signal<number>(1);
+  public readonly customerItemsPerPage = 5;
+  public readonly customerGroupCurrentPage = signal<number>(1);
+  public readonly customerGroupItemsPerPage = 5;
+
+  public readonly paginatedCustomers = computed(() => {
+    const list = this.customers();
+    const startIndex = (this.customerCurrentPage() - 1) * this.customerItemsPerPage;
+    return list.slice(startIndex, startIndex + this.customerItemsPerPage);
+  });
+  public readonly customerTotalPages = computed(() => {
+    return Math.ceil(this.customers().length / this.customerItemsPerPage) || 1;
+  });
+
+  public readonly paginatedCustomerGroups = computed(() => {
+    const list = this.customerGroups();
+    const startIndex = (this.customerGroupCurrentPage() - 1) * this.customerGroupItemsPerPage;
+    return list.slice(startIndex, startIndex + this.customerGroupItemsPerPage);
+  });
+  public readonly customerGroupTotalPages = computed(() => {
+    return Math.ceil(this.customerGroups().length / this.customerGroupItemsPerPage) || 1;
+  });
+
+  // ==================== TÀI CHÍNH - THU CHI ====================
+  public readonly transactions = signal<any[]>([]);
+  public readonly isTransactionModalOpen = signal<boolean>(false);
+  public readonly transactionModalType = signal<'add' | 'edit'>('add');
+  public readonly editingTransaction = signal<any>(null);
+  public readonly transactionForm = signal<any>({
+    type: 'thu',
+    amount: 0,
+    category: '',
+    description: '',
+    transaction_date: ''
+  });
+  public readonly transactionTypeFilter = signal<string>('all');
+  public readonly transactionCurrentPage = signal<number>(1);
+  public readonly transactionItemsPerPage = 5;
+
+  public readonly totalIncome = computed(() => {
+    return this.transactions().filter(t => t.type === 'thu').reduce((sum, t) => sum + Number(t.amount), 0);
+  });
+  public readonly totalExpense = computed(() => {
+    return this.transactions().filter(t => t.type === 'chi').reduce((sum, t) => sum + Number(t.amount), 0);
+  });
+  public readonly financialBalance = computed(() => {
+    return this.totalIncome() - this.totalExpense();
+  });
+  public readonly filteredTransactions = computed(() => {
+    const list = this.transactions();
+    const type = this.transactionTypeFilter();
+    return list.filter(t => type === 'all' || t.type === type);
+  });
+  public readonly paginatedTransactions = computed(() => {
+    const list = this.filteredTransactions();
+    const startIndex = (this.transactionCurrentPage() - 1) * this.transactionItemsPerPage;
+    return list.slice(startIndex, startIndex + this.transactionItemsPerPage);
+  });
+  public readonly transactionTotalPages = computed(() => {
+    return Math.ceil(this.filteredTransactions().length / this.transactionItemsPerPage) || 1;
+  });
+
+  // ==================== KHO HÀNG ====================
+  public readonly inventoryRecords = signal<any[]>([]);
+  public readonly isInventoryModalOpen = signal<boolean>(false);
+  public readonly inventoryForm = signal<any>({
+    type: 'nhap',
+    note: '',
+    record_date: '',
+    items: []
+  });
+  public readonly inventoryTypeFilter = signal<string>('all');
+  public readonly inventoryCurrentPage = signal<number>(1);
+  public readonly inventoryItemsPerPage = 5;
+  public readonly selectedInventoryRecord = signal<any>(null);
+  public readonly isInventoryDetailModalOpen = signal<boolean>(false);
+
+  public readonly filteredInventoryRecords = computed(() => {
+    const list = this.inventoryRecords();
+    const type = this.inventoryTypeFilter();
+    return list.filter(r => type === 'all' || r.type === type);
+  });
+  public readonly paginatedInventoryRecords = computed(() => {
+    const list = this.filteredInventoryRecords();
+    const startIndex = (this.inventoryCurrentPage() - 1) * this.inventoryItemsPerPage;
+    return list.slice(startIndex, startIndex + this.inventoryItemsPerPage);
+  });
+  public readonly inventoryTotalPages = computed(() => {
+    return Math.ceil(this.filteredInventoryRecords().length / this.inventoryItemsPerPage) || 1;
+  });
+
+  // ==================== KHU VỰC & BÀN ĂN ====================
+  public readonly areas = signal<any[]>([]);
+  public readonly diningTables = signal<any[]>([]);
+  public readonly isAreaModalOpen = signal<boolean>(false);
+  public readonly isTableModalOpen = signal<boolean>(false);
+  public readonly areaModalType = signal<'add' | 'edit'>('add');
+  public readonly tableModalType = signal<'add' | 'edit'>('add');
+  public readonly editingArea = signal<any>(null);
+  public readonly editingTable = signal<any>(null);
+  public readonly areaForm = signal<any>({
+    name: ''
+  });
+  public readonly tableForm = signal<any>({
+    name: '',
+    area_id: 0,
+    status: 'empty'
+  });
+  public readonly activeAreaFilter = signal<string>('all');
+  public readonly tableStatusFilter = signal<string>('all');
+
+  public readonly filteredDiningTables = computed(() => {
+    const tables = this.diningTables();
+    const areaId = this.activeAreaFilter();
+    const status = this.tableStatusFilter();
+
+    return tables.filter(t => {
+      const matchArea = areaId === 'all' || t.area_id?.toString() === areaId;
+      const matchStatus = status === 'all' || t.status === status;
+      return matchArea && matchStatus;
+    });
+  });
+
   public readonly cartTotal = computed(() => {
     return this.cart().reduce((sum, item) => {
       const price = item.variant ? item.variant.price : item.product.price;
@@ -227,6 +371,21 @@ export class App implements OnInit, OnDestroy {
     event.target.src = 'not-found.webp';
   }
 
+  // Helper hiển thị đơn giá: dạng khoảng giá (min - max) cho sản phẩm biến thể, hoặc giá đơn cho sản phẩm thường
+  public getProductPriceDisplay(product: any): string {
+    if (!product) return '0';
+    if (product.variants && product.variants.length > 0) {
+      const prices = product.variants.map((v: any) => Number(v.price) || 0);
+      const minPrice = Math.min(...prices);
+      const maxPrice = Math.max(...prices);
+      if (minPrice === maxPrice) {
+        return `${minPrice.toLocaleString('vi-VN')}`;
+      }
+      return `${minPrice.toLocaleString('vi-VN')} - ${maxPrice.toLocaleString('vi-VN')}`;
+    }
+    return `${(Number(product.price) || 0).toLocaleString('vi-VN')}`;
+  }
+
   public updateConfigForm(field: string, value: any) {
     this.configForm.update(form => ({
       ...form,
@@ -264,6 +423,10 @@ export class App implements OnInit, OnDestroy {
   });
 
   ngOnInit() {
+    this.initTheme();
+    this.loadAllData();
+    this.initRouting();
+    this.refreshTablesAndAreas();
     this.initTheme();
     this.loadAllData();
     this.initRouting();
@@ -410,6 +573,7 @@ export class App implements OnInit, OnDestroy {
           // Cập nhật cấu hình sang Web3 Service
           this.web3Service.updateConfig(settings);
         }
+        this.refreshTablesAndAreas();
         this.isLoading.set(false);
       },
       error: (err) => {
@@ -461,7 +625,6 @@ export class App implements OnInit, OnDestroy {
     }
   }
 
-  // Đồng bộ tab hoạt động dựa trên URL hiện tại
   private syncTabWithUrl(url: string) {
     const cleanUrl = url.split('?')[0]; // bỏ qua query params nếu có
     if (cleanUrl.includes('/dashboard')) {
@@ -474,10 +637,17 @@ export class App implements OnInit, OnDestroy {
       this.setTabState('orders');
     } else if (cleanUrl.includes('/settings')) {
       this.setTabState('settings');
+    } else if (cleanUrl.includes('/customers')) {
+      this.setTabState('customers');
+    } else if (cleanUrl.includes('/financials')) {
+      this.setTabState('financials');
+    } else if (cleanUrl.includes('/inventory')) {
+      this.setTabState('inventory');
+    } else if (cleanUrl.includes('/tables')) {
+      this.setTabState('tables');
     }
   }
 
-  // Cập nhật trạng thái tab nội bộ (không trigger navigate vòng lặp)
   private setTabState(tab: string) {
     if (this.activeTab() !== tab) {
       this.activeTab.set(tab);
@@ -495,6 +665,18 @@ export class App implements OnInit, OnDestroy {
       } else if (tab === 'settings') {
         this.loadSettings();
         this.loadOwnersList();
+      } else if (tab === 'customers') {
+        this.customerCurrentPage.set(1);
+        this.customerGroupCurrentPage.set(1);
+        this.refreshCustomers();
+      } else if (tab === 'financials') {
+        this.transactionCurrentPage.set(1);
+        this.refreshTransactions();
+      } else if (tab === 'inventory') {
+        this.inventoryCurrentPage.set(1);
+        this.refreshInventory();
+      } else if (tab === 'tables') {
+        this.refreshTablesAndAreas();
       }
     }
   }
@@ -1031,7 +1213,8 @@ export class App implements OnInit, OnDestroy {
     }
 
     const formData = this.menuForm();
-    if (!formData.name || formData.price <= 0) {
+    const hasVariants = formData.variants && formData.variants.length > 0;
+    if (!formData.name || (!hasVariants && formData.price <= 0)) {
       this.showToast('Vui lòng điền tên và đơn giá hợp lệ!', 'error');
       return;
     }
@@ -1558,5 +1741,604 @@ export class App implements OnInit, OnDestroy {
 
     // Fallback về explorer hiện tại của quán
     return `${this.settings().explorer_url}/tx/${txHash}`;
+  }
+
+  // ==================== REFRESH DATA FOR NEW TABS ====================
+  public refreshCustomers() {
+    this.apiService.getCustomers().subscribe({
+      next: (res) => this.customers.set(res),
+      error: (err) => console.error('Loi refresh khach hang:', err)
+    });
+    this.apiService.getCustomerGroups().subscribe({
+      next: (res) => this.customerGroups.set(res),
+      error: (err) => console.error('Loi refresh nhom khach hang:', err)
+    });
+  }
+
+  public refreshTransactions() {
+    this.apiService.getTransactions().subscribe({
+      next: (res) => this.transactions.set(res),
+      error: (err) => console.error('Loi refresh thu chi:', err)
+    });
+  }
+
+  public refreshInventory() {
+    this.apiService.getInventoryRecords().subscribe({
+      next: (res) => this.inventoryRecords.set(res),
+      error: (err) => console.error('Loi refresh kho hang:', err)
+    });
+    this.apiService.getProducts().subscribe({
+      next: (res) => this.products.set(res),
+      error: (err) => console.error('Loi refresh san pham trong kho:', err)
+    });
+  }
+
+  public refreshTablesAndAreas() {
+    this.apiService.getAreas().subscribe({
+      next: (res) => this.areas.set(res),
+      error: (err) => console.error('Loi refresh khu vur:', err)
+    });
+    this.apiService.getDiningTables().subscribe({
+      next: (res) => this.diningTables.set(res),
+      error: (err) => console.error('Loi refresh ban an:', err)
+    });
+  }
+
+  // --- Customer CRUD ---
+  public openAddCustomerModal() {
+    this.customerModalType.set('add');
+    this.editingCustomer.set(null);
+    this.customerForm.set({
+      name: '',
+      phone: '',
+      email: '',
+      dob: '',
+      gender: 'Nam',
+      address: '',
+      group_ids: []
+    });
+    this.isCustomerModalOpen.set(true);
+  }
+
+  public openEditCustomerModal(customer: any) {
+    this.customerModalType.set('edit');
+    this.editingCustomer.set(customer);
+    this.customerForm.set({
+      name: customer.name,
+      phone: customer.phone || '',
+      email: customer.email || '',
+      dob: customer.dob || '',
+      gender: customer.gender || 'Nam',
+      address: customer.address || '',
+      group_ids: customer.groups ? customer.groups.map((g: any) => g.id) : []
+    });
+    this.isCustomerModalOpen.set(true);
+  }
+
+  public closeCustomerModal() {
+    this.isCustomerModalOpen.set(false);
+    this.editingCustomer.set(null);
+  }
+
+  public toggleCustomerFormGroup(groupId: number) {
+    this.customerForm.update(form => {
+      const ids = [...(form.group_ids || [])];
+      const index = ids.indexOf(groupId);
+      if (index > -1) {
+        ids.splice(index, 1);
+      } else {
+        ids.push(groupId);
+      }
+      return { ...form, group_ids: ids };
+    });
+  }
+
+  public saveCustomer() {
+    const form = this.customerForm();
+    if (!form.name || !form.name.trim()) {
+      this.showToast('Tên khách hàng là bắt buộc!', 'error');
+      return;
+    }
+
+    this.isLoading.set(true);
+    if (this.customerModalType() === 'add') {
+      this.apiService.createCustomer(form).subscribe({
+        next: () => {
+          this.showToast('Thêm khách hàng thành công!', 'success');
+          this.closeCustomerModal();
+          this.refreshCustomers();
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.showToast('Thêm khách hàng thất bại!', 'error');
+          this.isLoading.set(false);
+        }
+      });
+    } else {
+      const id = this.editingCustomer().id;
+      this.apiService.updateCustomer(id, form).subscribe({
+        next: () => {
+          this.showToast('Cập nhật khách hàng thành công!', 'success');
+          this.closeCustomerModal();
+          this.refreshCustomers();
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.showToast('Cập nhật khách hàng thất bại!', 'error');
+          this.isLoading.set(false);
+        }
+      });
+    }
+  }
+
+  public deleteCustomer(id: number) {
+    if (confirm('Bạn có chắc chắn muốn xóa khách hàng này?')) {
+      this.isLoading.set(true);
+      this.apiService.deleteCustomer(id).subscribe({
+        next: () => {
+          this.showToast('Xóa khách hàng thành công!', 'success');
+          this.refreshCustomers();
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.showToast('Xóa khách hàng thất bại!', 'error');
+          this.isLoading.set(false);
+        }
+      });
+    }
+  }
+
+  // --- Customer Group CRUD ---
+  public openAddCustomerGroupModal() {
+    this.customerGroupModalType.set('add');
+    this.editingCustomerGroup.set(null);
+    this.customerGroupForm.set({ name: '' });
+    this.isCustomerGroupModalOpen.set(true);
+  }
+
+  public openEditCustomerGroupModal(group: any) {
+    this.customerGroupModalType.set('edit');
+    this.editingCustomerGroup.set(group);
+    this.customerGroupForm.set({ name: group.name });
+    this.isCustomerGroupModalOpen.set(true);
+  }
+
+  public closeCustomerGroupModal() {
+    this.isCustomerGroupModalOpen.set(false);
+    this.editingCustomerGroup.set(null);
+  }
+
+  public saveCustomerGroup() {
+    const form = this.customerGroupForm();
+    if (!form.name || !form.name.trim()) {
+      this.showToast('Tên nhóm khách hàng là bắt buộc!', 'error');
+      return;
+    }
+
+    this.isLoading.set(true);
+    if (this.customerGroupModalType() === 'add') {
+      this.apiService.createCustomerGroup(form).subscribe({
+        next: () => {
+          this.showToast('Thêm nhóm khách hàng thành công!', 'success');
+          this.closeCustomerGroupModal();
+          this.refreshCustomers();
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.showToast('Thêm nhóm thất bại hoặc tên nhóm đã tồn tại!', 'error');
+          this.isLoading.set(false);
+        }
+      });
+    } else {
+      const id = this.editingCustomerGroup().id;
+      this.apiService.updateCustomerGroup(id, form).subscribe({
+        next: () => {
+          this.showToast('Cập nhật nhóm khách hàng thành công!', 'success');
+          this.closeCustomerGroupModal();
+          this.refreshCustomers();
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.showToast('Cập nhật nhóm thất bại!', 'error');
+          this.isLoading.set(false);
+        }
+      });
+    }
+  }
+
+  public deleteCustomerGroup(id: number) {
+    if (confirm('Bạn có chắc chắn muốn xóa nhóm khách hàng này?')) {
+      this.isLoading.set(true);
+      this.apiService.deleteCustomerGroup(id).subscribe({
+        next: () => {
+          this.showToast('Xóa nhóm khách hàng thành công!', 'success');
+          this.refreshCustomers();
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.showToast('Xóa nhóm khách hàng thất bại!', 'error');
+          this.isLoading.set(false);
+        }
+      });
+    }
+  }
+
+  // --- Transaction CRUD ---
+  public openAddTransactionModal() {
+    this.transactionModalType.set('add');
+    this.editingTransaction.set(null);
+    this.transactionForm.set({
+      type: 'thu',
+      amount: 0,
+      category: '',
+      description: '',
+      transaction_date: new Date().toISOString().split('T')[0]
+    });
+    this.isTransactionModalOpen.set(true);
+  }
+
+  public openEditTransactionModal(transaction: any) {
+    this.transactionModalType.set('edit');
+    this.editingTransaction.set(transaction);
+    this.transactionForm.set({
+      type: transaction.type,
+      amount: transaction.amount,
+      category: transaction.category,
+      description: transaction.description || '',
+      transaction_date: transaction.transaction_date
+    });
+    this.isTransactionModalOpen.set(true);
+  }
+
+  public closeTransactionModal() {
+    this.isTransactionModalOpen.set(false);
+    this.editingTransaction.set(null);
+  }
+
+  public saveTransaction() {
+    const form = this.transactionForm();
+    if (form.amount <= 0 || !form.category || !form.category.trim() || !form.transaction_date) {
+      this.showToast('Vui lòng nhập số tiền (>0), hạng mục và ngày giao dịch hợp lệ!', 'error');
+      return;
+    }
+
+    this.isLoading.set(true);
+    if (this.transactionModalType() === 'add') {
+      this.apiService.createTransaction(form).subscribe({
+        next: () => {
+          this.showToast('Ghi nhận thu chi thành công!', 'success');
+          this.closeTransactionModal();
+          this.refreshTransactions();
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.showToast('Ghi nhận thu chi thất bại!', 'error');
+          this.isLoading.set(false);
+        }
+      });
+    } else {
+      const id = this.editingTransaction().id;
+      this.apiService.updateTransaction(id, form).subscribe({
+        next: () => {
+          this.showToast('Cập nhật giao dịch thành công!', 'success');
+          this.closeTransactionModal();
+          this.refreshTransactions();
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.showToast('Cập nhật giao dịch thất bại!', 'error');
+          this.isLoading.set(false);
+        }
+      });
+    }
+  }
+
+  public deleteTransaction(id: number) {
+    if (confirm('Bạn có chắc chắn muốn xóa phiếu thu chi này?')) {
+      this.isLoading.set(true);
+      this.apiService.deleteTransaction(id).subscribe({
+        next: () => {
+          this.showToast('Xóa giao dịch thành công!', 'success');
+          this.refreshTransactions();
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.showToast('Xóa giao dịch thất bại!', 'error');
+          this.isLoading.set(false);
+        }
+      });
+    }
+  }
+
+  // --- Inventory CRUD ---
+  public openAddInventoryModal() {
+    this.inventoryForm.set({
+      type: 'nhap',
+      note: '',
+      record_date: new Date().toISOString().split('T')[0],
+      items: [{ product_id: 0, product_variant_id: null, quantity: 1, price: 0 }]
+    });
+    this.isInventoryModalOpen.set(true);
+  }
+
+  public closeInventoryModal() {
+    this.isInventoryModalOpen.set(false);
+  }
+
+  public addInventoryItemRow() {
+    this.inventoryForm.update(form => ({
+      ...form,
+      items: [...form.items, { product_id: 0, product_variant_id: null, quantity: 1, price: 0 }]
+    }));
+  }
+
+  public removeInventoryItemRow(index: number) {
+    this.inventoryForm.update(form => {
+      const items = [...form.items];
+      items.splice(index, 1);
+      return { ...form, items };
+    });
+  }
+
+  public updateInventoryItemField(index: number, field: string, value: any) {
+    this.inventoryForm.update(form => {
+      const items = [...form.items];
+      if (items[index]) {
+        let parsedValue = value;
+        if (field === 'product_id') {
+          parsedValue = Number(value);
+          const prod = this.products().find(p => p.id === parsedValue);
+          items[index] = {
+            ...items[index],
+            product_id: parsedValue,
+            product_variant_id: prod && prod.variants && prod.variants.length > 0 ? prod.variants[0].id : null,
+            price: prod ? prod.price : 0
+          };
+        } else if (field === 'product_variant_id') {
+          parsedValue = value ? Number(value) : null;
+          const prodId = items[index].product_id;
+          const prod = this.products().find(p => p.id === prodId);
+          if (prod && prod.variants && parsedValue) {
+            const variant = prod.variants.find((v: any) => v.id === parsedValue);
+            items[index] = {
+              ...items[index],
+              product_variant_id: parsedValue,
+              price: variant ? variant.price : prod.price
+            };
+          } else {
+            items[index] = { ...items[index], product_variant_id: parsedValue };
+          }
+        } else {
+          items[index] = { ...items[index], [field]: field === 'price' || field === 'quantity' ? Number(value) : value };
+        }
+      }
+      return { ...form, items };
+    });
+  }
+
+  public saveInventoryRecord() {
+    const form = this.inventoryForm();
+    if (!form.record_date || form.items.length === 0) {
+      this.showToast('Vui lòng nhập ngày lập và chọn ít nhất một sản phẩm!', 'error');
+      return;
+    }
+
+    const invalidItem = form.items.some((item: any) => item.product_id <= 0 || item.quantity <= 0);
+    if (invalidItem) {
+      this.showToast('Vui lòng chọn sản phẩm và nhập số lượng hợp lệ cho tất cả các dòng!', 'error');
+      return;
+    }
+
+    this.isLoading.set(true);
+    this.apiService.createInventoryRecord(form).subscribe({
+      next: () => {
+        this.showToast('Tạo phiếu kho thành công!', 'success');
+        this.closeInventoryModal();
+        this.refreshInventory();
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        this.showToast('Tạo phiếu kho thất bại!', 'error');
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  public deleteInventoryRecord(id: number) {
+    if (confirm('Bạn có chắc chắn muốn xóa phiếu kho này?')) {
+      this.isLoading.set(true);
+      this.apiService.deleteInventoryRecord(id).subscribe({
+        next: () => {
+          this.showToast('Xóa phiếu kho thành công!', 'success');
+          this.refreshInventory();
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.showToast('Xóa phiếu kho thất bại!', 'error');
+          this.isLoading.set(false);
+        }
+      });
+    }
+  }
+
+  public viewInventoryRecordDetails(record: any) {
+    this.selectedInventoryRecord.set(record);
+    this.isInventoryDetailModalOpen.set(true);
+  }
+
+  public closeInventoryDetailModal() {
+    this.isInventoryDetailModalOpen.set(false);
+    this.selectedInventoryRecord.set(null);
+  }
+
+  // --- Area CRUD ---
+  public openAddAreaModal() {
+    this.areaModalType.set('add');
+    this.editingArea.set(null);
+    this.areaForm.set({ name: '' });
+    this.isAreaModalOpen.set(true);
+  }
+
+  public openEditAreaModal(area: any) {
+    this.areaModalType.set('edit');
+    this.editingArea.set(area);
+    this.areaForm.set({ name: area.name });
+    this.isAreaModalOpen.set(true);
+  }
+
+  public closeAreaModal() {
+    this.isAreaModalOpen.set(false);
+    this.editingArea.set(null);
+  }
+
+  public saveArea() {
+    const form = this.areaForm();
+    if (!form.name || !form.name.trim()) {
+      this.showToast('Tên khu vực là bắt buộc!', 'error');
+      return;
+    }
+
+    this.isLoading.set(true);
+    if (this.areaModalType() === 'add') {
+      this.apiService.createArea(form).subscribe({
+        next: () => {
+          this.showToast('Thêm khu vực thành công!', 'success');
+          this.closeAreaModal();
+          this.refreshTablesAndAreas();
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.showToast('Thêm khu vực thất bại hoặc tên đã tồn tại!', 'error');
+          this.isLoading.set(false);
+        }
+      });
+    } else {
+      const id = this.editingArea().id;
+      this.apiService.updateArea(id, form).subscribe({
+        next: () => {
+          this.showToast('Cập nhật khu vực thành công!', 'success');
+          this.closeAreaModal();
+          this.refreshTablesAndAreas();
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.showToast('Cập nhật khu vực thất bại!', 'error');
+          this.isLoading.set(false);
+        }
+      });
+    }
+  }
+
+  public deleteArea(id: number) {
+    if (confirm('Bạn có chắc chắn muốn xóa khu vực này? Tất cả các bàn trong khu vực cũng sẽ bị xóa.')) {
+      this.isLoading.set(true);
+      this.apiService.deleteArea(id).subscribe({
+        next: () => {
+          this.showToast('Xóa khu vực thành công!', 'success');
+          this.refreshTablesAndAreas();
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.showToast('Xóa khu vực thất bại!', 'error');
+          this.isLoading.set(false);
+        }
+      });
+    }
+  }
+
+  // --- Dining Table CRUD ---
+  public openAddTableModal() {
+    this.tableModalType.set('add');
+    this.editingTable.set(null);
+    this.tableForm.set({
+      name: '',
+      area_id: this.areas().length > 0 ? this.areas()[0].id : 0,
+      status: 'empty'
+    });
+    this.isTableModalOpen.set(true);
+  }
+
+  public openEditTableModal(table: any) {
+    this.tableModalType.set('edit');
+    this.editingTable.set(table);
+    this.tableForm.set({
+      name: table.name,
+      area_id: table.area_id,
+      status: table.status
+    });
+    this.isTableModalOpen.set(true);
+  }
+
+  public closeTableModal() {
+    this.isTableModalOpen.set(false);
+    this.editingTable.set(null);
+  }
+
+  public saveTable() {
+    const form = this.tableForm();
+    if (!form.name || !form.name.trim() || form.area_id <= 0) {
+      this.showToast('Vui lòng nhập tên bàn và chọn khu vực hợp lệ!', 'error');
+      return;
+    }
+
+    this.isLoading.set(true);
+    if (this.tableModalType() === 'add') {
+      this.apiService.createDiningTable(form).subscribe({
+        next: () => {
+          this.showToast('Thêm bàn ăn thành công!', 'success');
+          this.closeTableModal();
+          this.refreshTablesAndAreas();
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.showToast('Thêm bàn thất bại!', 'error');
+          this.isLoading.set(false);
+        }
+      });
+    } else {
+      const id = this.editingTable().id;
+      this.apiService.updateDiningTable(id, form).subscribe({
+        next: () => {
+          this.showToast('Cập nhật bàn ăn thành công!', 'success');
+          this.closeTableModal();
+          this.refreshTablesAndAreas();
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.showToast('Cập nhật bàn thất bại!', 'error');
+          this.isLoading.set(false);
+        }
+      });
+    }
+  }
+
+  public toggleTableStatusDirect(table: any) {
+    const newStatus = table.status === 'empty' ? 'using' : 'empty';
+    this.apiService.updateDiningTableStatus(table.id, newStatus).subscribe({
+      next: () => {
+        this.showToast(`Đã chuyển trạng thái bàn ${table.name} sang ${newStatus === 'empty' ? 'Trống' : 'Đang sử dụng'}!`, 'success');
+        this.refreshTablesAndAreas();
+      },
+      error: () => {
+        this.showToast('Không thể thay đổi trạng thái bàn!', 'error');
+      }
+    });
+  }
+
+  public deleteTable(id: number) {
+    if (confirm('Bạn có chắc chắn muốn xóa bàn ăn này?')) {
+      this.isLoading.set(true);
+      this.apiService.deleteDiningTable(id).subscribe({
+        next: () => {
+          this.showToast('Xóa bàn ăn thành công!', 'success');
+          this.refreshTablesAndAreas();
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.showToast('Xóa bàn ăn thất bại!', 'error');
+          this.isLoading.set(false);
+        }
+      });
+    }
   }
 }

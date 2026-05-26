@@ -46,15 +46,29 @@ export class Web3Service {
       case '5':
         return 'Goerli Testnet';
       case '56':
-        return 'BNB Smart Chain';
+        return 'BNB Smart Chain (BSC)';
       case '97':
         return 'BSC Testnet';
       case '137':
-        return 'Polygon Mainnet';
+        return 'Polygon PoS Mainnet';
       case '80001':
         return 'Polygon Mumbai';
       case '80002':
         return 'Polygon Amoy';
+      case '42161':
+        return 'Arbitrum One Mainnet';
+      case '421614':
+        return 'Arbitrum Sepolia';
+      case '421613':
+        return 'Arbitrum Goerli';
+      case '10':
+        return 'Optimism Mainnet';
+      case '11155420':
+        return 'Optimism Sepolia';
+      case '8453':
+        return 'Base Mainnet';
+      case '84532':
+        return 'Base Sepolia';
       case '43114':
         return 'Avalanche C-Chain';
       case '43113':

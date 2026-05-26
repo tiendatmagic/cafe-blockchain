@@ -28,7 +28,10 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
             'category_ids' => 'nullable|array',
-            'category_ids.*' => 'exists:categories,id',
+            'category_ids.*' => [
+                'exists:categories,id',
+                \Illuminate\Validation\Rule::exists('categories', 'id')->where('store_owner_address', $storeOwner)
+            ],
             'image' => 'nullable|string|max:1000',
             'status' => 'nullable|boolean',
             'short_description' => 'nullable|string|max:500',
@@ -83,7 +86,10 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
             'category_ids' => 'nullable|array',
-            'category_ids.*' => 'exists:categories,id',
+            'category_ids.*' => [
+                'exists:categories,id',
+                \Illuminate\Validation\Rule::exists('categories', 'id')->where('store_owner_address', $storeOwner)
+            ],
             'image' => 'nullable|string|max:1000',
             'status' => 'required|boolean',
             'short_description' => 'nullable|string|max:500',

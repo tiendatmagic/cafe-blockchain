@@ -7,6 +7,10 @@ export const routes: Routes = [
   { path: 'menu', component: App },
   { path: 'orders', component: App },
   { path: 'settings', component: App },
+  { path: 'customers', component: App },
+  { path: 'financials', component: App },
+  { path: 'inventory', component: App },
+  { path: 'tables', component: App },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   { path: '**', redirectTo: 'dashboard' }
 ];

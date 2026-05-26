@@ -3,6 +3,12 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\CustomerGroupController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\AreaController;
+use App\Http\Controllers\DiningTableController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\AuthController;
@@ -40,6 +46,42 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Settings API
     Route::get('/settings', [SettingController::class, 'index']);
+
+    // Customers API
+    Route::get('/customers', [CustomerController::class, 'index']);
+    Route::post('/customers', [CustomerController::class, 'store']);
+    Route::put('/customers/{id}', [CustomerController::class, 'update']);
+    Route::delete('/customers/{id}', [CustomerController::class, 'destroy']);
+
+    // Customer Groups API
+    Route::get('/customer-groups', [CustomerGroupController::class, 'index']);
+    Route::post('/customer-groups', [CustomerGroupController::class, 'store']);
+    Route::put('/customer-groups/{id}', [CustomerGroupController::class, 'update']);
+    Route::delete('/customer-groups/{id}', [CustomerGroupController::class, 'destroy']);
+
+    // Transactions (Thu Chi) API
+    Route::get('/transactions', [TransactionController::class, 'index']);
+    Route::post('/transactions', [TransactionController::class, 'store']);
+    Route::put('/transactions/{id}', [TransactionController::class, 'update']);
+    Route::delete('/transactions/{id}', [TransactionController::class, 'destroy']);
+
+    // Inventory (Kho hàng) API
+    Route::get('/inventory', [InventoryController::class, 'index']);
+    Route::post('/inventory', [InventoryController::class, 'store']);
+    Route::delete('/inventory/{id}', [InventoryController::class, 'destroy']);
+
+    // Areas (Khu vực) API
+    Route::get('/areas', [AreaController::class, 'index']);
+    Route::post('/areas', [AreaController::class, 'store']);
+    Route::put('/areas/{id}', [AreaController::class, 'update']);
+    Route::delete('/areas/{id}', [AreaController::class, 'destroy']);
+
+    // Dining Tables (Bàn ăn) API
+    Route::get('/dining-tables', [DiningTableController::class, 'index']);
+    Route::post('/dining-tables', [DiningTableController::class, 'store']);
+    Route::put('/dining-tables/{id}', [DiningTableController::class, 'update']);
+    Route::put('/dining-tables/{id}/status', [DiningTableController::class, 'updateStatus']);
+    Route::delete('/dining-tables/{id}', [DiningTableController::class, 'destroy']);
 
     // Owner-only routes (require both Sanctum token and Owner role)
     Route::middleware(RequireOwner::class)->group(function () {

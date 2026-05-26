@@ -144,4 +144,114 @@ export class ApiService {
   public deleteCategory(id: number): Observable<any> {
     return this.http.delete(`${this.baseUrl}/categories/${id}`, { headers: this.getHeaders() });
   }
+
+  // 6. Customers (Khách hàng) API
+  public getCustomers(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/customers`, { headers: this.getHeaders() });
+  }
+
+  public createCustomer(customer: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/customers`, customer, { headers: this.getHeaders() });
+  }
+
+  public updateCustomer(id: number, customer: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/customers/${id}`, customer, { headers: this.getHeaders() });
+  }
+
+  public deleteCustomer(id: number): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/customers/${id}`, { headers: this.getHeaders() });
+  }
+
+  // 7. Customer Groups (Nhóm khách hàng) API
+  public getCustomerGroups(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/customer-groups`, { headers: this.getHeaders() });
+  }
+
+  public createCustomerGroup(group: { name: string }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/customer-groups`, group, { headers: this.getHeaders() });
+  }
+
+  public updateCustomerGroup(id: number, group: { name: string }): Observable<any> {
+    return this.http.put(`${this.baseUrl}/customer-groups/${id}`, group, { headers: this.getHeaders() });
+  }
+
+  public deleteCustomerGroup(id: number): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/customer-groups/${id}`, { headers: this.getHeaders() });
+  }
+
+  // 8. Transactions (Thu Chi) API
+  public getTransactions(type: string = 'all'): Observable<any[]> {
+    let params = new HttpParams();
+    if (type !== 'all') {
+      params = params.set('type', type);
+    }
+    return this.http.get<any[]>(`${this.baseUrl}/transactions`, { params, headers: this.getHeaders() });
+  }
+
+  public createTransaction(transaction: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/transactions`, transaction, { headers: this.getHeaders() });
+  }
+
+  public updateTransaction(id: number, transaction: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/transactions/${id}`, transaction, { headers: this.getHeaders() });
+  }
+
+  public deleteTransaction(id: number): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/transactions/${id}`, { headers: this.getHeaders() });
+  }
+
+  // 9. Inventory (Kho hàng) API
+  public getInventoryRecords(type: string = 'all'): Observable<any[]> {
+    let params = new HttpParams();
+    if (type !== 'all') {
+      params = params.set('type', type);
+    }
+    return this.http.get<any[]>(`${this.baseUrl}/inventory`, { params, headers: this.getHeaders() });
+  }
+
+  public createInventoryRecord(record: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/inventory`, record, { headers: this.getHeaders() });
+  }
+
+  public deleteInventoryRecord(id: number): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/inventory/${id}`, { headers: this.getHeaders() });
+  }
+
+  // 10. Areas (Khu vực) API
+  public getAreas(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/areas`, { headers: this.getHeaders() });
+  }
+
+  public createArea(area: { name: string }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/areas`, area, { headers: this.getHeaders() });
+  }
+
+  public updateArea(id: number, area: { name: string }): Observable<any> {
+    return this.http.put(`${this.baseUrl}/areas/${id}`, area, { headers: this.getHeaders() });
+  }
+
+  public deleteArea(id: number): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/areas/${id}`, { headers: this.getHeaders() });
+  }
+
+  // 11. Dining Tables (Bàn ăn) API
+  public getDiningTables(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/dining-tables`, { headers: this.getHeaders() });
+  }
+
+  public createDiningTable(table: { name: string, area_id: number, status?: string }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/dining-tables`, table, { headers: this.getHeaders() });
+  }
+
+  public updateDiningTable(id: number, table: { name: string, area_id: number, status?: string }): Observable<any> {
+    return this.http.put(`${this.baseUrl}/dining-tables/${id}`, table, { headers: this.getHeaders() });
+  }
+
+  public updateDiningTableStatus(id: number, status: 'empty' | 'using'): Observable<any> {
+    return this.http.put(`${this.baseUrl}/dining-tables/${id}/status`, { status }, { headers: this.getHeaders() });
+  }
+
+  public deleteDiningTable(id: number): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/dining-tables/${id}`, { headers: this.getHeaders() });
+  }
 }
