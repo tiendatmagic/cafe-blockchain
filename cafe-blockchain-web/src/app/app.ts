@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, inject, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from './services/api.service';
@@ -14,7 +14,7 @@ import { filter } from 'rxjs/operators';
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App implements OnInit {
+export class App implements OnInit, OnDestroy {
   // Inject các services
   private readonly apiService = inject(ApiService);
   public readonly web3Service = inject(Web3Service);
@@ -24,6 +24,9 @@ export class App implements OnInit {
   // Quản lý tab và UI
   public readonly activeTab = signal<string>('dashboard');
   public readonly isDarkMode = signal<boolean>(false);
+  // Chế độ theme: 'light' | 'auto' | 'dark'
+  public readonly themeMode = signal<'light' | 'auto' | 'dark'>('light');
+  private autoThemeInterval: any = null;
   public readonly isMobileMenuOpen = signal<boolean>(false);
   public readonly isWalletModalOpen = signal<boolean>(false);
   public readonly isPaymentDropdownOpen = signal<boolean>(false);
@@ -263,35 +266,104 @@ export class App implements OnInit {
     });
   }
 
-  // Khởi tạo Light/Dark Theme
+  ngOnDestroy() {
+    this.clearAutoThemeInterval();
+  }
+
+  // Khởi tạo Light/Dark/Auto Theme
   private initTheme() {
-    const savedTheme = localStorage.getItem('theme');
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'auto' | null;
     this.applyCachedDynamicColors();
 
-    if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
-      this.isDarkMode.set(true);
+    if (savedTheme === 'auto') {
+      this.themeMode.set('auto');
+      this.applyAutoTheme();
+      this.startAutoThemeInterval();
+    } else if (savedTheme === 'dark') {
+      this.themeMode.set('dark');
+      this.applyDarkClass(true);
+    } else {
+      // default: light
+      this.themeMode.set('light');
+      this.applyDarkClass(false);
+    }
+  }
+
+  // Helper: kiểm tra giờ hiện tại có phải giờ tối không (18h00 - 6h00)
+  private isNightTime(): boolean {
+    const hour = new Date().getHours();
+    return hour >= 18 || hour < 6;
+  }
+
+  // Helper: áp dụng class dark hoặc bỏ class dark
+  private applyDarkClass(dark: boolean) {
+    this.isDarkMode.set(dark);
+    if (dark) {
       document.documentElement.classList.add('dark');
       document.body.classList.add('dark');
     } else {
-      this.isDarkMode.set(false);
       document.documentElement.classList.remove('dark');
       document.body.classList.remove('dark');
     }
   }
 
-  // Chuyển đổi Dark Mode
+  // Áp dụng theme tự động dựa theo giờ
+  private applyAutoTheme() {
+    this.applyDarkClass(this.isNightTime());
+  }
+
+  // Bật interval kiểm tra giờ mỗi phút khi ở chế độ auto
+  private startAutoThemeInterval() {
+    this.clearAutoThemeInterval();
+    this.autoThemeInterval = setInterval(() => {
+      if (this.themeMode() === 'auto') {
+        this.applyAutoTheme();
+      }
+    }, 60000);
+  }
+
+  // Dừng interval auto theme
+  private clearAutoThemeInterval() {
+    if (this.autoThemeInterval) {
+      clearInterval(this.autoThemeInterval);
+      this.autoThemeInterval = null;
+    }
+  }
+
+  // Chuyển đổi Dark Mode theo vòng tròn: light → auto → dark → light
   public toggleTheme() {
-    if (this.isDarkMode()) {
-      this.isDarkMode.set(false);
-      localStorage.setItem('theme', 'light');
-      document.documentElement.classList.remove('dark');
-      document.body.classList.remove('dark');
-    } else {
-      this.isDarkMode.set(true);
+    const current = this.themeMode();
+    if (current === 'light') {
+      // Chuyển sang Auto
+      this.themeMode.set('auto');
+      localStorage.setItem('theme', 'auto');
+      this.applyAutoTheme();
+      this.startAutoThemeInterval();
+    } else if (current === 'auto') {
+      // Chuyển sang Dark
+      this.clearAutoThemeInterval();
+      this.themeMode.set('dark');
       localStorage.setItem('theme', 'dark');
-      document.documentElement.classList.add('dark');
-      document.body.classList.add('dark');
+      this.applyDarkClass(true);
+    } else {
+      // Chuyển sang Light
+      this.clearAutoThemeInterval();
+      this.themeMode.set('light');
+      localStorage.setItem('theme', 'light');
+      this.applyDarkClass(false);
+    }
+  }
+
+  // Đặt trực tiếp chế độ theme (dùng cho 3-state segmented button)
+  public setThemeMode(mode: 'light' | 'auto' | 'dark') {
+    this.clearAutoThemeInterval();
+    this.themeMode.set(mode);
+    localStorage.setItem('theme', mode);
+    if (mode === 'auto') {
+      this.applyAutoTheme();
+      this.startAutoThemeInterval();
+    } else {
+      this.applyDarkClass(mode === 'dark');
     }
   }
 
