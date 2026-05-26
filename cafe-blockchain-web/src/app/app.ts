@@ -153,6 +153,12 @@ export class App implements OnInit, OnDestroy {
   public readonly isOrderStatusUpdating = signal<boolean>(false);
   public readonly isOrderSubmitting = signal<boolean>(false);
   public readonly isDetectingChain = signal<boolean>(false);
+  public readonly isCustomerSaving = signal<boolean>(false);
+  public readonly isCustomerGroupSaving = signal<boolean>(false);
+  public readonly isTransactionSaving = signal<boolean>(false);
+  public readonly isInventorySaving = signal<boolean>(false);
+  public readonly isAreaSaving = signal<boolean>(false);
+  public readonly isTableSaving = signal<boolean>(false);
 
   // ==================== KHÁCH HÀNG & NHÓM KHÁCH HÀNG ====================
   public readonly customers = signal<any[]>([]);
@@ -176,9 +182,9 @@ export class App implements OnInit, OnDestroy {
     name: ''
   });
   public readonly customerCurrentPage = signal<number>(1);
-  public readonly customerItemsPerPage = 5;
+  public readonly customerItemsPerPage = 9;
   public readonly customerGroupCurrentPage = signal<number>(1);
-  public readonly customerGroupItemsPerPage = 5;
+  public readonly customerGroupItemsPerPage = 9;
 
   public readonly paginatedCustomers = computed(() => {
     const list = this.customers();
@@ -212,7 +218,7 @@ export class App implements OnInit, OnDestroy {
   });
   public readonly transactionTypeFilter = signal<string>('all');
   public readonly transactionCurrentPage = signal<number>(1);
-  public readonly transactionItemsPerPage = 5;
+  public readonly transactionItemsPerPage = 9;
 
   public readonly totalIncome = computed(() => {
     return this.transactions().filter(t => t.type === 'thu').reduce((sum, t) => sum + Number(t.amount), 0);
@@ -248,7 +254,7 @@ export class App implements OnInit, OnDestroy {
   });
   public readonly inventoryTypeFilter = signal<string>('all');
   public readonly inventoryCurrentPage = signal<number>(1);
-  public readonly inventoryItemsPerPage = 5;
+  public readonly inventoryItemsPerPage = 9;
   public readonly selectedInventoryRecord = signal<any>(null);
   public readonly isInventoryDetailModalOpen = signal<boolean>(false);
 
@@ -265,6 +271,93 @@ export class App implements OnInit, OnDestroy {
   public readonly inventoryTotalPages = computed(() => {
     return Math.ceil(this.filteredInventoryRecords().length / this.inventoryItemsPerPage) || 1;
   });
+
+  public readonly productStocks = computed(() => {
+    const productsList = this.products();
+    const records = this.inventoryRecords();
+    const ordersList = this.orders();
+
+    const stocks: { [key: string]: number } = {};
+
+    productsList.forEach(p => {
+      if (p.variants && p.variants.length > 0) {
+        p.variants.forEach((v: any) => {
+          stocks[`${p.id}_${v.id}`] = 0;
+        });
+      } else {
+        stocks[`${p.id}_null`] = 0;
+      }
+    });
+
+    productsList.forEach(p => {
+      const processItem = (variantId: number | null) => {
+        const key = `${p.id}_${variantId}`;
+        
+        let latestKiemDate: Date | null = null;
+        let latestKiemQty = 0;
+        
+        records.forEach(r => {
+          if (r.type === 'kiem') {
+            const item = r.items?.find((i: any) => i.product_id === p.id && i.product_variant_id === variantId);
+            if (item) {
+              const rDate = new Date(r.record_date);
+              if (!latestKiemDate || rDate > latestKiemDate) {
+                latestKiemDate = rDate;
+                latestKiemQty = Number(item.quantity) || 0;
+              }
+            }
+          }
+        });
+
+        let totalIn = 0;
+        let totalOut = 0;
+        let totalSold = 0;
+
+        records.forEach(r => {
+          const rDate = new Date(r.record_date);
+          if (!latestKiemDate || rDate > latestKiemDate) {
+            const item = r.items?.find((i: any) => i.product_id === p.id && i.product_variant_id === variantId);
+            if (item) {
+              const qty = Number(item.quantity) || 0;
+              if (r.type === 'nhap') {
+                totalIn += qty;
+              } else if (r.type === 'xuat') {
+                totalOut += qty;
+              }
+            }
+          }
+        });
+
+        ordersList.forEach(o => {
+          if (o.status === 'completed') {
+            const oDate = new Date(o.created_at);
+            if (!latestKiemDate || oDate > latestKiemDate) {
+              const item = o.items?.find((i: any) => i.product_id === p.id && i.product_variant_id === variantId);
+              if (item) {
+                totalSold += Number(item.quantity) || 0;
+              }
+            }
+          }
+        });
+
+        const baseQty = latestKiemDate ? latestKiemQty : 0;
+        stocks[key] = baseQty + totalIn - totalOut - totalSold;
+      };
+
+      if (p.variants && p.variants.length > 0) {
+        p.variants.forEach((v: any) => processItem(v.id));
+      } else {
+        processItem(null);
+      }
+    });
+
+    return stocks;
+  });
+
+  public getProductStock(productId: number, variantId: number | null = null): number {
+    const key = `${productId}_${variantId}`;
+    return this.productStocks()[key] !== undefined ? this.productStocks()[key] : 0;
+  }
 
   // ==================== KHU VỰC & BÀN ĂN ====================
   public readonly areas = signal<any[]>([]);
@@ -1840,18 +1933,18 @@ export class App implements OnInit, OnDestroy {
       return;
     }
 
-    this.isLoading.set(true);
+    this.isCustomerSaving.set(true);
     if (this.customerModalType() === 'add') {
       this.apiService.createCustomer(form).subscribe({
         next: () => {
           this.showToast('Thêm khách hàng thành công!', 'success');
           this.closeCustomerModal();
           this.refreshCustomers();
-          this.isLoading.set(false);
+          this.isCustomerSaving.set(false);
         },
         error: () => {
           this.showToast('Thêm khách hàng thất bại!', 'error');
-          this.isLoading.set(false);
+          this.isCustomerSaving.set(false);
         }
       });
     } else {
@@ -1861,11 +1954,11 @@ export class App implements OnInit, OnDestroy {
           this.showToast('Cập nhật khách hàng thành công!', 'success');
           this.closeCustomerModal();
           this.refreshCustomers();
-          this.isLoading.set(false);
+          this.isCustomerSaving.set(false);
         },
         error: () => {
           this.showToast('Cập nhật khách hàng thất bại!', 'error');
-          this.isLoading.set(false);
+          this.isCustomerSaving.set(false);
         }
       });
     }
@@ -1915,18 +2008,18 @@ export class App implements OnInit, OnDestroy {
       return;
     }
 
-    this.isLoading.set(true);
+    this.isCustomerGroupSaving.set(true);
     if (this.customerGroupModalType() === 'add') {
       this.apiService.createCustomerGroup(form).subscribe({
         next: () => {
           this.showToast('Thêm nhóm khách hàng thành công!', 'success');
           this.closeCustomerGroupModal();
           this.refreshCustomers();
-          this.isLoading.set(false);
+          this.isCustomerGroupSaving.set(false);
         },
         error: () => {
           this.showToast('Thêm nhóm thất bại hoặc tên nhóm đã tồn tại!', 'error');
-          this.isLoading.set(false);
+          this.isCustomerGroupSaving.set(false);
         }
       });
     } else {
@@ -1936,11 +2029,11 @@ export class App implements OnInit, OnDestroy {
           this.showToast('Cập nhật nhóm khách hàng thành công!', 'success');
           this.closeCustomerGroupModal();
           this.refreshCustomers();
-          this.isLoading.set(false);
+          this.isCustomerGroupSaving.set(false);
         },
         error: () => {
           this.showToast('Cập nhật nhóm thất bại!', 'error');
-          this.isLoading.set(false);
+          this.isCustomerGroupSaving.set(false);
         }
       });
     }
@@ -2002,18 +2095,18 @@ export class App implements OnInit, OnDestroy {
       return;
     }
 
-    this.isLoading.set(true);
+    this.isTransactionSaving.set(true);
     if (this.transactionModalType() === 'add') {
       this.apiService.createTransaction(form).subscribe({
         next: () => {
           this.showToast('Ghi nhận thu chi thành công!', 'success');
           this.closeTransactionModal();
           this.refreshTransactions();
-          this.isLoading.set(false);
+          this.isTransactionSaving.set(false);
         },
         error: () => {
           this.showToast('Ghi nhận thu chi thất bại!', 'error');
-          this.isLoading.set(false);
+          this.isTransactionSaving.set(false);
         }
       });
     } else {
@@ -2023,11 +2116,11 @@ export class App implements OnInit, OnDestroy {
           this.showToast('Cập nhật giao dịch thành công!', 'success');
           this.closeTransactionModal();
           this.refreshTransactions();
-          this.isLoading.set(false);
+          this.isTransactionSaving.set(false);
         },
         error: () => {
           this.showToast('Cập nhật giao dịch thất bại!', 'error');
-          this.isLoading.set(false);
+          this.isTransactionSaving.set(false);
         }
       });
     }
@@ -2129,17 +2222,17 @@ export class App implements OnInit, OnDestroy {
       return;
     }
 
-    this.isLoading.set(true);
+    this.isInventorySaving.set(true);
     this.apiService.createInventoryRecord(form).subscribe({
       next: () => {
         this.showToast('Tạo phiếu kho thành công!', 'success');
         this.closeInventoryModal();
         this.refreshInventory();
-        this.isLoading.set(false);
+        this.isInventorySaving.set(false);
       },
       error: (err) => {
         this.showToast('Tạo phiếu kho thất bại!', 'error');
-        this.isLoading.set(false);
+        this.isInventorySaving.set(false);
       }
     });
   }
@@ -2198,18 +2291,18 @@ export class App implements OnInit, OnDestroy {
       return;
     }
 
-    this.isLoading.set(true);
+    this.isAreaSaving.set(true);
     if (this.areaModalType() === 'add') {
       this.apiService.createArea(form).subscribe({
         next: () => {
           this.showToast('Thêm khu vực thành công!', 'success');
           this.closeAreaModal();
           this.refreshTablesAndAreas();
-          this.isLoading.set(false);
+          this.isAreaSaving.set(false);
         },
         error: () => {
           this.showToast('Thêm khu vực thất bại hoặc tên đã tồn tại!', 'error');
-          this.isLoading.set(false);
+          this.isAreaSaving.set(false);
         }
       });
     } else {
@@ -2219,11 +2312,11 @@ export class App implements OnInit, OnDestroy {
           this.showToast('Cập nhật khu vực thành công!', 'success');
           this.closeAreaModal();
           this.refreshTablesAndAreas();
-          this.isLoading.set(false);
+          this.isAreaSaving.set(false);
         },
         error: () => {
           this.showToast('Cập nhật khu vực thất bại!', 'error');
-          this.isLoading.set(false);
+          this.isAreaSaving.set(false);
         }
       });
     }
@@ -2281,18 +2374,18 @@ export class App implements OnInit, OnDestroy {
       return;
     }
 
-    this.isLoading.set(true);
+    this.isTableSaving.set(true);
     if (this.tableModalType() === 'add') {
       this.apiService.createDiningTable(form).subscribe({
         next: () => {
           this.showToast('Thêm bàn ăn thành công!', 'success');
           this.closeTableModal();
           this.refreshTablesAndAreas();
-          this.isLoading.set(false);
+          this.isTableSaving.set(false);
         },
         error: () => {
           this.showToast('Thêm bàn thất bại!', 'error');
-          this.isLoading.set(false);
+          this.isTableSaving.set(false);
         }
       });
     } else {
@@ -2302,11 +2395,11 @@ export class App implements OnInit, OnDestroy {
           this.showToast('Cập nhật bàn ăn thành công!', 'success');
           this.closeTableModal();
           this.refreshTablesAndAreas();
-          this.isLoading.set(false);
+          this.isTableSaving.set(false);
         },
         error: () => {
           this.showToast('Cập nhật bàn thất bại!', 'error');
-          this.isLoading.set(false);
+          this.isTableSaving.set(false);
         }
       });
     }
