@@ -31,4 +31,12 @@ class Product extends Model
     {
         return $this->belongsToMany(Category::class);
     }
+
+    /**
+     * Mối quan hệ 1-Nhiều với ProductVariant
+     */
+    public function variants()
+    {
+        return $this->hasMany(ProductVariant::class)->orderBy('price', 'asc');
+    }
 }

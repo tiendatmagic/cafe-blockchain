@@ -75,11 +75,16 @@ export class App implements OnInit, OnDestroy {
   });
 
   // Trạng thái POS (Giỏ hàng)
-  public readonly cart = signal<{ product: any, quantity: number }[]>([]);
+  public readonly cart = signal<{ product: any, variant: any | null, quantity: number }[]>([]);
   public readonly tableNumber = signal<string>('');
   public readonly paymentMethod = signal<string>('cash');
   public readonly posCategoryFilter = signal<string>('Tất cả');
   public readonly posSearchQuery = signal<string>('');
+
+  // Trạng thái Chọn size ở POS
+  public readonly isVariantSelectModalOpen = signal<boolean>(false);
+  public readonly activeSelectingProduct = signal<any>(null);
+  public readonly selectedVariantForCart = signal<any>(null);
 
   // Trạng thái Quản lý Thực đơn (Menu CRUD Modal)
   public readonly isMenuModalOpen = signal<boolean>(false);
@@ -92,7 +97,8 @@ export class App implements OnInit, OnDestroy {
     image: '',
     status: true,
     short_description: '',
-    description: ''
+    description: '',
+    variants: []
   });
 
   // Trạng thái Quản lý Danh mục (CRUD Category)
@@ -148,9 +154,11 @@ export class App implements OnInit, OnDestroy {
   public readonly isOrderSubmitting = signal<boolean>(false);
   public readonly isDetectingChain = signal<boolean>(false);
 
-  // Tính tổng tiền giỏ hàng
   public readonly cartTotal = computed(() => {
-    return this.cart().reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+    return this.cart().reduce((sum, item) => {
+      const price = item.variant ? item.variant.price : item.product.price;
+      return sum + (price * item.quantity);
+    }, 0);
   });
 
   // ==================== LOGIC PHÂN TRANG (PAGINATION) ====================
@@ -528,7 +536,7 @@ export class App implements OnInit, OnDestroy {
       this.configForm.set({ ...settings });
       this.applyAndCacheDynamicColors(settings.primary_color, settings.secondary_color);
       this.web3Service.updateConfig(settings);
-      
+
       // Tự động nhận diện mạng nếu chưa có contract address
       this.autoDetectNetworkIfNoContract();
     });
@@ -580,7 +588,7 @@ export class App implements OnInit, OnDestroy {
         next: async (res) => {
           try {
             const signature = await this.web3Service.signMessage(res.message);
-            
+
             this.apiService.verifySignature(address, signature).subscribe({
               next: (verifyRes) => {
                 if (verifyRes.token) {
@@ -619,7 +627,7 @@ export class App implements OnInit, OnDestroy {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('auth_address');
     }
-    
+
     // Làm sạch dữ liệu hiện tại để tránh lộ thông tin ví cũ
     this.clearCart();
     this.dashboardData.set(null);
@@ -642,23 +650,58 @@ export class App implements OnInit, OnDestroy {
   // ==================== CHỨC NĂNG POS (BÁN HÀNG) ====================
 
   // Thêm món vào giỏ hàng
-  public addToCart(product: any) {
+  public addToCart(product: any, variant: any = null) {
+    if (product.variants && product.variants.length > 0 && !variant) {
+      this.activeSelectingProduct.set(product);
+      this.selectedVariantForCart.set(product.variants[0]);
+      this.isVariantSelectModalOpen.set(true);
+      return;
+    }
+
     const currentCart = this.cart();
-    const existIndex = currentCart.findIndex(item => item.product.id === product.id);
+    const existIndex = currentCart.findIndex(item =>
+      item.product.id === product.id &&
+      ((!item.variant && !variant) || (item.variant && variant && item.variant.id === variant.id))
+    );
 
     if (existIndex > -1) {
       const updated = [...currentCart];
       updated[existIndex].quantity += 1;
       this.cart.set(updated);
     } else {
-      this.cart.set([...currentCart, { product, quantity: 1 }]);
+      this.cart.set([...currentCart, { product, variant, quantity: 1 }]);
     }
+
+    this.showToast(`Đã thêm: ${product.name}${variant ? ' (' + variant.variant_name + ')' : ''}`, 'success');
+  }
+
+  // Xác nhận chọn size từ modal
+  public confirmVariantAndAddToCart() {
+    const product = this.activeSelectingProduct();
+    const variant = this.selectedVariantForCart();
+    if (product && variant) {
+      this.addToCart(product, variant);
+    }
+    this.closeVariantSelectModal();
+  }
+
+  public selectVariantForCart(variant: any) {
+    this.selectedVariantForCart.set(variant);
+  }
+
+  public closeVariantSelectModal() {
+    this.isVariantSelectModalOpen.set(false);
+    this.activeSelectingProduct.set(null);
+    this.selectedVariantForCart.set(null);
   }
 
   // Giảm số lượng / Xóa món khỏi giỏ hàng
-  public removeFromCart(productId: number) {
+  public removeFromCart(productId: number, variantId: number | null = null) {
     const currentCart = this.cart();
-    const existIndex = currentCart.findIndex(item => item.product.id === productId);
+    const existIndex = currentCart.findIndex(item =>
+      item.product.id === productId &&
+      ((!item.variant && !variantId) || (item.variant && variantId && item.variant.id === variantId))
+    );
 
     if (existIndex > -1) {
       const updated = [...currentCart];
@@ -673,9 +716,12 @@ export class App implements OnInit, OnDestroy {
   }
 
   // Tăng số lượng món trong giỏ hàng
-  public increaseQuantity(productId: number) {
+  public increaseQuantity(productId: number, variantId: number | null = null) {
     const currentCart = this.cart();
-    const existIndex = currentCart.findIndex(item => item.product.id === productId);
+    const existIndex = currentCart.findIndex(item =>
+      item.product.id === productId &&
+      ((!item.variant && !variantId) || (item.variant && variantId && item.variant.id === variantId))
+    );
     if (existIndex > -1) {
       const updated = [...currentCart];
       updated[existIndex].quantity += 1;
@@ -689,6 +735,7 @@ export class App implements OnInit, OnDestroy {
     this.tableNumber.set('');
     this.paymentMethod.set('cash');
     this.isPaymentDropdownOpen.set(false);
+    this.closeVariantSelectModal();
   }
 
   // Toggles trạng thái mở/đóng Dropdown thanh toán
@@ -739,6 +786,7 @@ export class App implements OnInit, OnDestroy {
       payment_method: this.paymentMethod(),
       items: this.cart().map(item => ({
         product_id: item.product.id,
+        product_variant_id: item.variant ? item.variant.id : null,
         quantity: item.quantity
       }))
     };
@@ -827,8 +875,11 @@ export class App implements OnInit, OnDestroy {
     this.blockchainSyncLoading.set(true);
     this.showToast('Vui lòng xác nhận giao dịch trên ví Metamask...', 'success');
 
-    // Tạo tóm tắt hóa đơn
-    const itemsSummary = order.items.map((item: any) => `${item.quantity}x ${item.product.name}`).join(', ');
+    // Tạo tóm tắt hóa đơn có chứa biến thể (kích thước)
+    const itemsSummary = order.items.map((item: any) => {
+      const variantStr = item.variant ? ` (${item.variant.variant_name})` : '';
+      return `${item.quantity}x ${item.product.name}${variantStr}`;
+    }).join(', ');
 
     // Gọi Smart Contract ghi nhận hóa đơn
     const result = await this.web3Service.recordOrderOnChain(
@@ -861,14 +912,14 @@ export class App implements OnInit, OnDestroy {
     } else {
       // Kiểm tra xem có phải lỗi order already exists không để đối soát tự động
       const errorMsg = result.error || '';
-      const isAlreadyExists = errorMsg.includes('order already exists') || 
-                              errorMsg.toLowerCase().includes('already exists');
+      const isAlreadyExists = errorMsg.includes('order already exists') ||
+        errorMsg.toLowerCase().includes('already exists');
 
       if (isAlreadyExists) {
         this.showToast('Đơn hàng đã tồn tại trên Blockchain. Đang tự động đối soát và đồng bộ...', 'success');
-        
+
         const pseudoTxHash = `0x_already_synced_order_${order.id}`;
-        
+
         this.apiService.syncOrderBlockchain(order.id, pseudoTxHash, 'success', this.web3Service.chainId()).subscribe({
           next: (res) => {
             this.showToast('Đối soát và đồng bộ trạng thái hóa đơn từ Blockchain thành công!', 'success');
@@ -914,7 +965,8 @@ export class App implements OnInit, OnDestroy {
       image: '',
       status: true,
       short_description: '',
-      description: ''
+      description: '',
+      variants: []
     });
     this.isMenuModalOpen.set(true);
   }
@@ -930,7 +982,8 @@ export class App implements OnInit, OnDestroy {
       image: product.image,
       status: product.status,
       short_description: product.short_description || '',
-      description: product.description || ''
+      description: product.description || '',
+      variants: product.variants ? product.variants.map((v: any) => ({ ...v })) : []
     });
     this.isMenuModalOpen.set(true);
   }
@@ -939,6 +992,35 @@ export class App implements OnInit, OnDestroy {
   public closeMenuModal() {
     this.isMenuModalOpen.set(false);
     this.editingProduct.set(null);
+  }
+
+  // Quản lý các dòng biến thể trong Form Admin
+  public addVariantRow() {
+    this.menuForm.update(form => ({
+      ...form,
+      variants: [...(form.variants || []), { variant_name: '', price: 0, status: true }]
+    }));
+  }
+
+  public removeVariantRow(index: number) {
+    this.menuForm.update(form => {
+      const list = [...(form.variants || [])];
+      list.splice(index, 1);
+      return { ...form, variants: list };
+    });
+  }
+
+  public updateVariantField(index: number, field: string, value: any) {
+    this.menuForm.update(form => {
+      const list = [...(form.variants || [])];
+      if (list[index]) {
+        list[index] = {
+          ...list[index],
+          [field]: field === 'price' ? Number(value) : value
+        };
+      }
+      return { ...form, variants: list };
+    });
   }
 
   // Lưu món ăn (Thêm/Sửa)
@@ -1294,7 +1376,7 @@ export class App implements OnInit, OnDestroy {
     if (res.success && res.txHash) {
       this.showToast(`Giao dịch thêm Owner thành công! TxHash: ${res.txHash}`, 'success');
       this.newOwnerAddress.set('');
-      
+
       // Đồng bộ đăng ký ví thu ngân vào Laravel Backend
       this.apiService.registerCashier(address).subscribe({
         next: () => console.log('Đã đồng bộ đăng ký thu ngân vào DB.'),
@@ -1336,7 +1418,7 @@ export class App implements OnInit, OnDestroy {
       this.showToast(`Giao dịch xóa Owner thành công! TxHash: ${res.txHash}`, 'success');
       this.isDeleteOwnerConfirmOpen.set(false);
       this.deletingOwnerAddress.set('');
-      
+
       // Đồng bộ gỡ bỏ ví thu ngân khỏi Laravel Backend
       this.apiService.removeCashier(address).subscribe({
         next: () => console.log('Đã đồng bộ gỡ thu ngân khỏi DB.'),
@@ -1361,7 +1443,8 @@ export class App implements OnInit, OnDestroy {
     { name: 'Avalanche C-Chain', chainId: '43114', rpcUrl: 'https://api.avax.network/ext/bc/C/rpc', explorerUrl: 'https://snowtrace.io' },
     { name: 'Sepolia Testnet', chainId: '11155111', rpcUrl: 'https://ethereum-sepolia.publicnode.com', explorerUrl: 'https://sepolia.etherscan.io' },
     { name: 'BSC Testnet', chainId: '97', rpcUrl: 'https://data-seed-prebsc-1-s1.binance.org:8545', explorerUrl: 'https://testnet.bscscan.com' },
-    { name: 'Polygon Amoy Testnet', chainId: '80002', rpcUrl: 'https://rpc-amoy.polygon.technology', explorerUrl: 'https://amoy.polygonscan.com' }
+
+    { name: 'Arbitrum Sepolia', chainId: '421614', rpcUrl: 'https://sepolia-rollup.arbitrum.io/rpc', explorerUrl: 'https://sepolia.arbiscan.io/' },
   ];
 
   // Toggle đóng mở dropdown chọn mạng
@@ -1464,7 +1547,7 @@ export class App implements OnInit, OnDestroy {
   // Helper lấy Block Explorer Link cho một giao dịch dựa trên Chain ID
   public getTxExplorerLink(txHash: string | null | undefined, chainId: string | number | null | undefined): string {
     if (!txHash) return '#';
-    
+
     if (chainId) {
       const idStr = chainId.toString().trim();
       const chain = this.POPULAR_CHAINS.find(c => c.chainId === idStr);
@@ -1472,7 +1555,7 @@ export class App implements OnInit, OnDestroy {
         return `${chain.explorerUrl}/tx/${txHash}`;
       }
     }
-    
+
     // Fallback về explorer hiện tại của quán
     return `${this.settings().explorer_url}/tx/${txHash}`;
   }

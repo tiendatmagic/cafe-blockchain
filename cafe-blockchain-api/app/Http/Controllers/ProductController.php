@@ -13,7 +13,7 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-        $products = Product::where('store_owner_address', $storeOwner)->with('categories')->orderBy('id', 'desc')->get();
+        $products = Product::where('store_owner_address', $storeOwner)->with(['categories', 'variants'])->orderBy('id', 'desc')->get();
         return response()->json($products);
     }
 
@@ -33,6 +33,10 @@ class ProductController extends Controller
             'status' => 'nullable|boolean',
             'short_description' => 'nullable|string|max:500',
             'description' => 'nullable|string|max:5000',
+            'variants' => 'nullable|array',
+            'variants.*.variant_name' => 'required|string|max:255',
+            'variants.*.price' => 'required|numeric|min:0',
+            'variants.*.status' => 'nullable|boolean',
         ]);
 
         $product = Product::create([
@@ -47,7 +51,19 @@ class ProductController extends Controller
 
         // Đồng bộ hóa các danh mục Nhiều-Nhiều
         $product->categories()->sync($validated['category_ids'] ?? []);
-        $product->load('categories');
+
+        // Lưu các biến thể nếu có
+        if ($request->has('variants') && is_array($request->variants)) {
+            foreach ($request->variants as $var) {
+                $product->variants()->create([
+                    'variant_name' => $var['variant_name'],
+                    'price' => $var['price'],
+                    'status' => $var['status'] ?? true,
+                ]);
+            }
+        }
+
+        $product->load(['categories', 'variants']);
 
         return response()->json([
             'message' => 'Product created successfully.',
@@ -72,6 +88,11 @@ class ProductController extends Controller
             'status' => 'required|boolean',
             'short_description' => 'nullable|string|max:500',
             'description' => 'nullable|string|max:5000',
+            'variants' => 'nullable|array',
+            'variants.*.id' => 'nullable|integer|exists:product_variants,id',
+            'variants.*.variant_name' => 'required|string|max:255',
+            'variants.*.price' => 'required|numeric|min:0',
+            'variants.*.status' => 'required|boolean',
         ]);
 
         $product->update([
@@ -85,7 +106,33 @@ class ProductController extends Controller
 
         // Đồng bộ hóa các danh mục Nhiều-Nhiều
         $product->categories()->sync($validated['category_ids'] ?? []);
-        $product->load('categories');
+
+        // Đồng bộ các biến thể
+        if ($request->has('variants')) {
+            $incomingVariants = $request->variants ?: [];
+            $incomingIds = collect($incomingVariants)->pluck('id')->filter()->toArray();
+
+            // Xóa các biến thể cũ không xuất hiện trong danh sách mới
+            $product->variants()->whereNotIn('id', $incomingIds)->delete();
+
+            foreach ($incomingVariants as $var) {
+                if (isset($var['id']) && $var['id']) {
+                    $product->variants()->where('id', $var['id'])->update([
+                        'variant_name' => $var['variant_name'],
+                        'price' => $var['price'],
+                        'status' => $var['status'],
+                    ]);
+                } else {
+                    $product->variants()->create([
+                        'variant_name' => $var['variant_name'],
+                        'price' => $var['price'],
+                        'status' => $var['status'] ?? true,
+                    ]);
+                }
+            }
+        }
+
+        $product->load(['categories', 'variants']);
 
         return response()->json([
             'message' => 'Product updated successfully.',

@@ -16,7 +16,7 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-        $query = Order::where('store_owner_address', $storeOwner)->with('items.product')->orderBy('id', 'desc');
+        $query = Order::where('store_owner_address', $storeOwner)->with(['items.product', 'items.variant'])->orderBy('id', 'desc');
 
         if ($request->has('status') && $request->status != 'all') {
             $query->where('status', $request->status);
@@ -36,7 +36,7 @@ class OrderController extends Controller
     public function show(Request $request, $id)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-        $order = Order::where('store_owner_address', $storeOwner)->with('items.product')->findOrFail($id);
+        $order = Order::where('store_owner_address', $storeOwner)->with(['items.product', 'items.variant'])->findOrFail($id);
         return response()->json($order);
     }
 
@@ -52,6 +52,7 @@ class OrderController extends Controller
             'payment_method' => 'required|string|in:cash,bank_transfer,crypto',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
+            'items.*.product_variant_id' => 'nullable|exists:product_variants,id',
             'items.*.quantity' => 'required|integer|min:1',
         ]);
 
@@ -64,13 +65,27 @@ class OrderController extends Controller
             // Tính tổng tiền và lấy chi tiết món
             foreach ($validated['items'] as $item) {
                 $product = Product::where('store_owner_address', $storeOwner)->findOrFail($item['product_id']);
+                
                 $price = $product->price;
+                $variantId = $item['product_variant_id'] ?? null;
+
+                if ($variantId) {
+                    // Truy vấn variant từ DB để xác thực xem có đúng thuộc sản phẩm này không
+                    $variant = $product->variants()->where('id', $variantId)->first();
+                    if ($variant) {
+                        $price = $variant->price;
+                    } else {
+                        throw new \Exception("Biến thể sản phẩm không hợp lệ cho món: " . $product->name);
+                    }
+                }
+
                 $quantity = $item['quantity'];
                 $subTotal = $price * $quantity;
                 $totalAmount += $subTotal;
 
                 $itemsData[] = [
                     'product_id' => $product->id,
+                    'product_variant_id' => $variantId,
                     'quantity' => $quantity,
                     'price' => $price,
                 ];
@@ -96,7 +111,7 @@ class OrderController extends Controller
 
             return response()->json([
                 'message' => 'Order created successfully.',
-                'data' => Order::with('items.product')->find($order->id)
+                'data' => Order::with(['items.product', 'items.variant'])->find($order->id)
             ], 201);
 
         } catch (\Exception $e) {
@@ -131,7 +146,7 @@ class OrderController extends Controller
 
         return response()->json([
             'message' => 'Order status updated successfully.',
-            'data' => Order::with('items.product')->find($order->id)
+            'data' => Order::with(['items.product', 'items.variant'])->find($order->id)
         ]);
     }
 
@@ -240,7 +255,7 @@ class OrderController extends Controller
 
         return response()->json([
             'message' => 'Blockchain sync updated successfully.',
-            'data' => Order::with('items.product')->find($order->id)
+            'data' => Order::with(['items.product', 'items.variant'])->find($order->id)
         ]);
     }
 }
