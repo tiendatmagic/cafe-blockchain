@@ -38,6 +38,11 @@ export class App implements OnInit, OnDestroy {
   public readonly dashboardData = signal<any>(null);
   public readonly products = signal<any[]>([]);
   public readonly orders = signal<any[]>([]);
+  
+  // Tự động lọc ra danh sách đơn hàng đã hoàn thành nhưng chưa đồng bộ Blockchain
+  public readonly unsyncedCompletedOrders = computed(() => {
+    return this.orders().filter(o => o.status === 'completed' && o.blockchain_status === 'none');
+  });
   public readonly settings = signal<any>({
     store_name: 'Blockchain Cafe & Bistro',
     contract_address: '',
@@ -163,6 +168,7 @@ export class App implements OnInit, OnDestroy {
   public readonly isTableSaving = signal<boolean>(false);
   public readonly isCancelExplanationOpen = signal<boolean>(false);
   public readonly explanationOrderDetails = signal<any>(null);
+  public readonly isAutoSyncOnCompleteChecked = signal<boolean>(false);
 
   // ==================== KHÁCH HÀNG & NHÓM KHÁCH HÀNG ====================
   public readonly customers = signal<any[]>([]);
@@ -1101,26 +1107,111 @@ export class App implements OnInit, OnDestroy {
   }
 
   // Cập nhật trạng thái đơn hàng (đang chờ -> thành công / đã hủy)
-  public updateStatus(orderId: number, status: 'completed' | 'cancelled') {
+  public async updateStatus(orderId: number, status: 'completed' | 'cancelled') {
     if (!this.web3Service.walletConnected()) {
       this.showToast('Vui lòng kết nối ví Web3 để thay đổi trạng thái đơn hàng!', 'error');
       return;
     }
 
+    // Trường hợp HỦY ĐƠN hoặc HOÀN THÀNH nhưng KHÔNG TÍCH chọn đồng bộ lập tức
+    if (status === 'cancelled' || !this.isAutoSyncOnCompleteChecked()) {
+      this.executeStatusUpdateOnly(orderId, status);
+      return;
+    }
+
+    // Trường hợp HOÀN THÀNH có TÍCH chọn đồng bộ Blockchain lập tức
+    this.isOrderStatusUpdating.set(true);
+    this.blockchainSyncLoading.set(true);
+    this.showToast('Bắt đầu đồng bộ Blockchain. Vui lòng xác nhận trên ví MetaMask...', 'success');
+
+    const order = this.selectedOrderDetails();
+    if (!order) {
+      this.isOrderStatusUpdating.set(false);
+      this.blockchainSyncLoading.set(false);
+      return;
+    }
+
+    // 1. Tạo tóm tắt món ăn
+    const itemsSummary = order.items.map((item: any) => {
+      const variantStr = item.variant ? ` (${item.variant.variant_name})` : '';
+      return `${item.quantity}x ${item.product.name}${variantStr}`;
+    }).join(', ');
+
+    // 2. Gửi giao dịch lên Blockchain trước
+    const result = await this.web3Service.recordOrderOnChain(
+      order.id,
+      order.table_number || 'Mang ve',
+      order.total_amount,
+      this.getPaymentMethodText(order.payment_method),
+      itemsSummary
+    );
+
+    if (result.success && result.txHash) {
+      this.showToast('Giao dịch Blockchain thành công! Đang lưu trạng thái...', 'success');
+      
+      // 3. Gọi API Laravel cập nhật trạng thái "completed" đồng thời lưu tx_hash vào DB
+      this.apiService.updateOrderStatus(orderId, 'completed').subscribe({
+        next: (res) => {
+          this.apiService.syncOrderBlockchain(orderId, result.txHash, 'success', this.web3Service.chainId()).subscribe({
+            next: (syncRes) => {
+              this.showToast('Hoàn thành đơn hàng và đồng bộ Blockchain thành công!', 'success');
+              this.refreshOrders();
+              if (this.selectedOrderDetails() && this.selectedOrderDetails().id === orderId) {
+                this.selectedOrderDetails.set(syncRes.data);
+              }
+              this.isOrderStatusUpdating.set(false);
+              this.blockchainSyncLoading.set(false);
+            },
+            error: (syncErr) => {
+              console.error('Lỗi đồng bộ TxHash:', syncErr);
+              this.isOrderStatusUpdating.set(false);
+              this.blockchainSyncLoading.set(false);
+            }
+          });
+        },
+        error: (err) => {
+          console.error('Lỗi cập nhật trạng thái:', err);
+          this.showToast('Cập nhật trạng thái POS thất bại!', 'error');
+          this.isOrderStatusUpdating.set(false);
+          this.blockchainSyncLoading.set(false);
+        }
+      });
+    } else {
+      // TRƯỜNG HỢP REJECT VÍ HOẶC LỖI GIAO DỊCH BLOCKCHAIN -> Kích hoạt chế độ dự phòng
+      console.warn('[Blockchain] Giao dịch Blockchain thất bại hoặc bị từ chối, chuyển sang chế độ dự phòng:', result.error);
+      this.showToast('Ví bị từ chối! Kích hoạt chế độ dự phòng: Lưu Database POS trước.', 'success');
+      
+      // Kích hoạt chế độ dự phòng: Chỉ cập nhật trạng thái Database completed
+      this.apiService.updateOrderStatus(orderId, 'completed').subscribe({
+        next: (res) => {
+          this.showToast('Đơn hàng đã được lưu hoàn thành vào Database POS!', 'success');
+          this.refreshOrders();
+          if (this.selectedOrderDetails() && this.selectedOrderDetails().id === orderId) {
+            this.selectedOrderDetails.set(res.data);
+          }
+          this.isOrderStatusUpdating.set(false);
+          this.blockchainSyncLoading.set(false);
+        },
+        error: (err) => {
+          console.error(err);
+          this.showToast('Cập nhật trạng thái thất bại!', 'error');
+          this.isOrderStatusUpdating.set(false);
+          this.blockchainSyncLoading.set(false);
+        }
+      });
+    }
+  }
+
+  // Hàm helper chỉ cập nhật Database (không kèm sync hoặc sync sau)
+  private executeStatusUpdateOnly(orderId: number, status: 'completed' | 'cancelled') {
     this.isOrderStatusUpdating.set(true);
     this.apiService.updateOrderStatus(orderId, status).subscribe({
       next: (res) => {
         this.showToast(`Cập nhật trạng thái đơn hàng thành công!`, 'success');
-
-        // Nếu cập nhật thành công (completed), và là đơn hàng thanh toán crypto hoặc ngân hàng/tiền mặt mà thu ngân muốn sync,
-        // ta sẽ cập nhật trực tiếp trong list orders.
         this.refreshOrders();
-
-        // Nếu trong modal chi tiết đang mở, cập nhật nó luôn
         if (this.selectedOrderDetails() && this.selectedOrderDetails().id === orderId) {
           this.selectedOrderDetails.set(res.data);
         }
-
         this.isOrderStatusUpdating.set(false);
       },
       error: (err) => {
@@ -1149,6 +1240,12 @@ export class App implements OnInit, OnDestroy {
 
   // Đồng bộ hóa đơn lên Blockchain EVM (Bằng chứng hóa đơn)
   public async syncToBlockchain(order: any) {
+    // 0. Kiểm tra tính toàn vẹn của dữ liệu đơn hàng (Chống hack DB)
+    if (order.is_verified === false) {
+      this.showToast('CẢNH BÁO: Dữ liệu tài chính của đơn hàng này đã bị thay đổi trái phép trong Database! Không thể đồng bộ.', 'error');
+      return;
+    }
+
     // 1. Kiểm tra kết nối ví
     if (!this.web3Service.walletConnected()) {
       this.showToast('Vui lòng kết nối ví Web3 để thực hiện tác vụ này!', 'error');
@@ -1244,6 +1341,32 @@ export class App implements OnInit, OnDestroy {
         this.blockchainSyncLoading.set(false);
       }
     }
+  }
+
+  // Đồng bộ hàng loạt tất cả các đơn hàng chưa đồng bộ (dành cho chốt ca ra về)
+  public async syncAllUnsyncedOrders() {
+    const list = this.unsyncedCompletedOrders();
+    if (list.length === 0) {
+      this.showToast('Không có đơn hàng nào cần đồng bộ!', 'success');
+      return;
+    }
+
+    // Chặn click đúp
+    if (this.blockchainSyncLoading() || this.isOrderStatusUpdating()) return;
+
+    this.showToast(`Bắt đầu đồng bộ hàng loạt ${list.length} đơn hàng. Vui lòng ký MetaMask cho từng đơn...`, 'success');
+
+    // Chạy vòng lặp đồng bộ tuần tự để MetaMask hiện popup lần lượt
+    for (const order of list) {
+      // Mở modal chi tiết của đơn hàng đang được đồng bộ để thu ngân quan sát rõ ràng
+      this.selectedOrderDetails.set(order);
+      this.isOrderDetailModalOpen.set(true);
+      
+      // Chạy đồng bộ đơn hàng và đợi hoàn tất giao dịch hiện tại trước khi chuyển sang đơn tiếp theo
+      await this.syncToBlockchain(order);
+    }
+
+    this.showToast('Đã hoàn tất tiến trình đồng bộ đối soát ca trực!', 'success');
   }
 
   // Dịch phương thức thanh toán sang tiếng Việt

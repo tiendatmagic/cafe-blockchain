@@ -158,6 +158,16 @@ class OrderController extends Controller
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
         $order = Order::where('store_owner_address', $storeOwner)->findOrFail($id);
 
+        // Xác thực chữ ký bảo mật HMAC chống can thiệp trực tiếp vào DB MySQL
+        if ($order->status === 'completed') {
+            $expectedHash = $order->generateVerificationHash();
+            if (empty($order->verification_hash) || $order->verification_hash !== $expectedHash) {
+                return response()->json([
+                    'message' => 'Dữ liệu tài chính của đơn hàng đã bị can thiệp và sửa đổi trái phép! Từ chối đối soát và ghi chuỗi.'
+                ], 400);
+            }
+        }
+
         $validated = $request->validate([
             'tx_hash' => 'required|string|max:255',
             'blockchain_status' => 'required|string|in:pending,success,failed',
