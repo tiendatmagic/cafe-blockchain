@@ -1,5 +1,5 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { BrowserProvider, Contract, ContractFactory, formatEther, parseEther, id as ethersId, toBeHex, zeroPadValue } from 'ethers';
+import { BrowserProvider, Contract, ContractFactory, JsonRpcProvider, formatEther, parseEther } from 'ethers';
 import { CAFE_WEB3_POS_ABI } from './contract-abi';
 import { CAFE_WEB3_POS_BYTECODE } from './contract-bytecode';
 import { Subject } from 'rxjs';
@@ -512,83 +512,73 @@ export class Web3Service {
 
   /**
    * Truy vấn tx_hash gốc của đơn hàng đã tồn tại trên Blockchain.
-   * Chiến lược 3 tầng:
-   *   1. Xác minh đơn hàng tồn tại trên chain qua getOrder()
-   *   2. Thử query event log qua RPC (chunked, ~30K blocks gần nhất)
-   *   3. Fallback: Truy vấn qua Block Explorer API (BscScan/Etherscan) - full lịch sử
+   * Chiến lược:
+   *   1. Xác minh đơn hàng tồn tại và lấy timestamp từ getOrder()
+   *   2. Tính block ước lượng từ timestamp
+   *   3. Dùng backup RPC (publicnode) để query event log — vì Binance RPC
+   *      default không hỗ trợ eth_getLogs, và MetaMask provider cũng thường bị giới hạn
    */
   public async getOriginalTxHashForOrder(orderId: number): Promise<string | null> {
     if (!this.provider || !this.contractAddress()) return null;
     try {
       const contract = new Contract(this.contractAddress(), CAFE_WEB3_POS_ABI, this.provider);
 
-      // ===== BƯỚC 1: Xác minh đơn hàng tồn tại trên Smart Contract =====
+      // ===== BƯỚC 1: Xác minh đơn hàng tồn tại + lấy timestamp =====
+      let orderTimestamp = 0;
       try {
         const orderData = await contract['getOrder'](orderId);
         if (!orderData || Number(orderData[0]) === 0) {
           console.warn('[Blockchain] Order', orderId, 'khong ton tai tren Smart Contract.');
           return null;
         }
-        console.log('[Blockchain] Xac minh order', orderId, 'ton tai tren chain OK.');
+        orderTimestamp = Number(orderData[5]); // timestamp field
+        console.log('[Blockchain] Order', orderId, 'xac minh OK. Timestamp:', new Date(orderTimestamp * 1000).toISOString());
       } catch {
         console.warn('[Blockchain] Khong the goi getOrder() - order co the khong ton tai.');
         return null;
       }
 
-      // ===== BƯỚC 2: Thử query event log qua RPC (blocks gần nhất) =====
-      try {
-        const currentBlock = await this.provider.getBlockNumber();
-        const filter = contract.filters['OrderRecorded'](orderId);
-        const chunkSize = 3000;
-        const minBlock = Math.max(0, currentBlock - 30000); // ~30K blocks gần nhất
-
-        for (let endBlock = currentBlock; endBlock >= minBlock; endBlock -= chunkSize) {
-          const startBlock = Math.max(minBlock, endBlock - chunkSize + 1);
-          try {
-            const events = await contract.queryFilter(filter, startBlock, endBlock);
-            if (events.length > 0) {
-              console.log('[Blockchain] RPC: Tim thay tx_hash cho order', orderId, ':', events[0].transactionHash);
-              return events[0].transactionHash;
-            }
-          } catch {
-            continue; // RPC giới hạn range → bỏ qua chunk này
-          }
-          if (startBlock <= 0) break;
-        }
-        console.warn('[Blockchain] RPC: Khong tim thay event trong 30K blocks gan nhat. Chuyen sang Explorer API...');
-      } catch (rpcErr) {
-        console.warn('[Blockchain] RPC event query that bai:', rpcErr);
-      }
-
-      // ===== BƯỚC 3: Fallback - Block Explorer API (full lịch sử) =====
+      // ===== BƯỚC 2: Dùng backup RPC để query event log =====
       const chainId = this.chainId() || this.configuredChainId();
-      const apiUrl = this.getExplorerApiUrl(chainId);
-      if (apiUrl) {
+      const backupRpcUrl = this.getBackupRpcUrl(chainId);
+      const rpcUrl = backupRpcUrl || this.rpcUrl();
+
+      console.log('[Blockchain] Dung backup RPC:', rpcUrl);
+      const backupProvider = new JsonRpcProvider(rpcUrl);
+      const backupContract = new Contract(this.contractAddress(), CAFE_WEB3_POS_ABI, backupProvider);
+
+      const currentBlock = await backupProvider.getBlockNumber();
+      const currentTime = Math.floor(Date.now() / 1000);
+
+      // Tính block ước lượng dựa trên timestamp và block time trung bình (~3s cho BSC)
+      const blockTime = this.getAvgBlockTime(chainId);
+      const timeDiff = currentTime - orderTimestamp;
+      const blockDiff = Math.floor(timeDiff / blockTime);
+      const approxBlock = currentBlock - blockDiff;
+
+      // Scan range: ±100K blocks xung quanh block ước lượng
+      const scanStart = Math.max(0, approxBlock - 100000);
+      const scanEnd = Math.min(currentBlock, approxBlock + 100000);
+      const chunkSize = 10000;
+
+      console.log(`[Blockchain] Scan blocks ${scanStart} - ${scanEnd} (approx: ${approxBlock}, chunk: ${chunkSize})`);
+
+      const filter = backupContract.filters['OrderRecorded'](orderId);
+      for (let start = scanStart; start <= scanEnd; start += chunkSize) {
+        const end = Math.min(start + chunkSize - 1, scanEnd);
         try {
-          const eventSig = 'OrderRecorded(uint256,string,uint256,string,string,uint256,address)';
-          const topic0 = ethersId(eventSig);
-          const topic1 = zeroPadValue(toBeHex(orderId), 32);
-
-          const url = `${apiUrl}?module=logs&action=getLogs&address=${this.contractAddress()}&topic0=${topic0}&topic0_1_opr=and&topic1=${topic1}&fromBlock=0&toBlock=latest`;
-          console.log('[Blockchain] Explorer API request:', url);
-
-          const response = await fetch(url);
-          const data = await response.json();
-
-          if (data.status === '1' && data.result && data.result.length > 0) {
-            const txHash = data.result[0].transactionHash;
-            console.log('[Blockchain] Explorer API: Tim thay tx_hash cho order', orderId, ':', txHash);
-            return txHash;
-          } else {
-            console.warn('[Blockchain] Explorer API: Khong tim thay event. Response:', data);
+          const events = await backupContract.queryFilter(filter, start, end);
+          if (events.length > 0) {
+            console.log('[Blockchain] ✅ Tim thay tx_hash cho order', orderId, ':', events[0].transactionHash, 'block:', events[0].blockNumber);
+            return events[0].transactionHash;
           }
-        } catch (apiErr) {
-          console.error('[Blockchain] Explorer API fallback that bai:', apiErr);
+        } catch {
+          // Chunk lỗi — bỏ qua và thử chunk tiếp
+          continue;
         }
-      } else {
-        console.warn('[Blockchain] Khong co Explorer API URL cho chain_id:', chainId);
       }
 
+      console.warn('[Blockchain] ❌ Khong tim thay event OrderRecorded cho order', orderId);
       return null;
     } catch (err) {
       console.error('[Blockchain] Loi tong quat khi truy van tx_hash goc:', err);
@@ -597,28 +587,42 @@ export class Web3Service {
   }
 
   /**
-   * Mapping chain_id sang Block Explorer API URL tương ứng.
-   * Dùng cho fallback khi RPC node giới hạn block range.
+   * Lấy backup RPC URL đáng tin cậy cho event log query.
+   * Binance RPC default không hỗ trợ eth_getLogs nên cần dùng node khác.
    */
-  private getExplorerApiUrl(chainId: string): string | null {
+  private getBackupRpcUrl(chainId: string): string | null {
     switch (chainId) {
-      case '1':         return 'https://api.etherscan.io/api';
-      case '11155111':  return 'https://api-sepolia.etherscan.io/api';
-      case '56':        return 'https://api.bscscan.com/api';
-      case '97':        return 'https://api-testnet.bscscan.com/api';
-      case '137':       return 'https://api.polygonscan.com/api';
-      case '80002':     return 'https://api-amoy.polygonscan.com/api';
-      case '42161':     return 'https://api.arbiscan.io/api';
-      case '421614':    return 'https://api-sepolia.arbiscan.io/api';
-      case '8453':      return 'https://api.basescan.org/api';
-      case '84532':     return 'https://api-sepolia.basescan.org/api';
-      case '43114':     return 'https://api.snowtrace.io/api';
-      case '43113':     return 'https://api-testnet.snowtrace.io/api';
-      case '10':        return 'https://api-optimistic.etherscan.io/api';
-      case '11155420':  return 'https://api-sepolia-optimistic.etherscan.io/api';
+      case '97':        return 'https://bsc-testnet-rpc.publicnode.com';
+      case '56':        return 'https://bsc-rpc.publicnode.com';
+      case '1':         return 'https://ethereum-rpc.publicnode.com';
+      case '11155111':  return 'https://ethereum-sepolia-rpc.publicnode.com';
+      case '137':       return 'https://polygon-bor-rpc.publicnode.com';
+      case '80002':     return 'https://polygon-amoy-bor-rpc.publicnode.com';
+      case '42161':     return 'https://arbitrum-one-rpc.publicnode.com';
+      case '421614':    return 'https://arbitrum-sepolia-rpc.publicnode.com';
+      case '8453':      return 'https://base-rpc.publicnode.com';
+      case '84532':     return 'https://base-sepolia-rpc.publicnode.com';
+      case '10':        return 'https://optimism-rpc.publicnode.com';
+      case '11155420':  return 'https://optimism-sepolia-rpc.publicnode.com';
       default:          return null;
     }
   }
+
+  /**
+   * Lấy block time trung bình (giây) theo chain.
+   */
+  private getAvgBlockTime(chainId: string): number {
+    switch (chainId) {
+      case '56':
+      case '97':        return 3;   // BSC ~3s
+      case '137':
+      case '80002':     return 2;   // Polygon ~2s
+      case '1':
+      case '11155111':  return 12;  // Ethereum ~12s
+      default:          return 3;   // Default 3s
+    }
+  }
+
 
 
   /**
