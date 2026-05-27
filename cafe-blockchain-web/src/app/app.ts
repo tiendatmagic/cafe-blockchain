@@ -159,6 +159,8 @@ export class App implements OnInit, OnDestroy {
   public readonly isInventorySaving = signal<boolean>(false);
   public readonly isAreaSaving = signal<boolean>(false);
   public readonly isTableSaving = signal<boolean>(false);
+  public readonly isCancelExplanationOpen = signal<boolean>(false);
+  public readonly explanationOrderDetails = signal<any>(null);
 
   // ==================== KHÁCH HÀNG & NHÓM KHÁCH HÀNG ====================
   public readonly customers = signal<any[]>([]);
@@ -1124,6 +1126,22 @@ export class App implements OnInit, OnDestroy {
         this.showToast('Cập nhật trạng thái thất bại!', 'error');
         this.isOrderStatusUpdating.set(false);
       }
+    });
+  }
+
+  public triggerCancelExplanation(order: any) {
+    this.explanationOrderDetails.set(order);
+    this.isCancelExplanationOpen.set(true);
+  }
+
+
+
+  public copyToClipboard(text: string) {
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+      this.showToast('Đã sao chép lý do chi vào bộ nhớ tạm!', 'success');
+    }).catch(err => {
+      this.showToast('Không thể tự động sao chép lý do chi!', 'error');
     });
   }
 
