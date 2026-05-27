@@ -1209,26 +1209,34 @@ export class App implements OnInit, OnDestroy {
         errorMsg.toLowerCase().includes('already exists');
 
       if (isAlreadyExists) {
-        this.showToast('Đơn hàng đã tồn tại trên Blockchain. Đang tự động đối soát và đồng bộ...', 'success');
+        this.showToast('Đơn hàng đã tồn tại trên Blockchain. Đang truy vấn bằng chứng gốc...', 'success');
 
-        const pseudoTxHash = `0x_already_synced_order_${order.id}`;
+        // Truy vấn tx_hash gốc từ event log blockchain
+        const originalTxHash = await this.web3Service.getOriginalTxHashForOrder(order.id);
 
-        this.apiService.syncOrderBlockchain(order.id, pseudoTxHash, 'success', this.web3Service.chainId()).subscribe({
-          next: (res) => {
-            this.showToast('Đối soát và đồng bộ trạng thái hóa đơn từ Blockchain thành công!', 'success');
-            this.refreshOrders();
-            if (this.selectedOrderDetails() && this.selectedOrderDetails().id === order.id) {
-              this.selectedOrderDetails.set(res.data);
+        if (originalTxHash) {
+          // Tìm thấy tx_hash gốc từ blockchain -> đồng bộ chính xác vào database
+          this.apiService.syncOrderBlockchain(order.id, originalTxHash, 'success', this.web3Service.chainId()).subscribe({
+            next: (res) => {
+              this.showToast('Đối soát thành công! Đã khôi phục bằng chứng blockchain gốc.', 'success');
+              this.refreshOrders();
+              if (this.selectedOrderDetails() && this.selectedOrderDetails().id === order.id) {
+                this.selectedOrderDetails.set(res.data);
+              }
+              this.blockchainSyncLoading.set(false);
+            },
+            error: (err) => {
+              console.error('Lỗi đối soát đơn hàng:', err);
+              const errMsg = err.error?.message || 'Đối soát thất bại!';
+              this.showToast(errMsg, 'error');
+              this.blockchainSyncLoading.set(false);
             }
-            this.blockchainSyncLoading.set(false);
-          },
-          error: (err) => {
-            console.error('Lỗi đối soát đơn hàng:', err);
-            const errMsg = err.error?.message || 'Đối soát thất bại!';
-            this.showToast(errMsg, 'error');
-            this.blockchainSyncLoading.set(false);
-          }
-        });
+          });
+        } else {
+          // Không tìm được tx_hash từ event log (có thể node RPC không hỗ trợ hoặc lỗi mạng)
+          this.showToast('Đơn hàng đã có trên blockchain nhưng không thể truy vấn tx_hash gốc. Vui lòng thử lại!', 'error');
+          this.blockchainSyncLoading.set(false);
+        }
       } else {
         this.showToast(result.error || 'Giao dịch thất bại hoặc bị từ chối!', 'error');
         this.blockchainSyncLoading.set(false);

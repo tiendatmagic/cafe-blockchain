@@ -1,5 +1,5 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { BrowserProvider, Contract, ContractFactory, formatEther, parseEther } from 'ethers';
+import { BrowserProvider, Contract, ContractFactory, formatEther, parseEther, id as ethersId, toBeHex, zeroPadValue } from 'ethers';
 import { CAFE_WEB3_POS_ABI } from './contract-abi';
 import { CAFE_WEB3_POS_BYTECODE } from './contract-bytecode';
 import { Subject } from 'rxjs';
@@ -509,6 +509,117 @@ export class Web3Service {
       return [];
     }
   }
+
+  /**
+   * Truy vấn tx_hash gốc của đơn hàng đã tồn tại trên Blockchain.
+   * Chiến lược 3 tầng:
+   *   1. Xác minh đơn hàng tồn tại trên chain qua getOrder()
+   *   2. Thử query event log qua RPC (chunked, ~30K blocks gần nhất)
+   *   3. Fallback: Truy vấn qua Block Explorer API (BscScan/Etherscan) - full lịch sử
+   */
+  public async getOriginalTxHashForOrder(orderId: number): Promise<string | null> {
+    if (!this.provider || !this.contractAddress()) return null;
+    try {
+      const contract = new Contract(this.contractAddress(), CAFE_WEB3_POS_ABI, this.provider);
+
+      // ===== BƯỚC 1: Xác minh đơn hàng tồn tại trên Smart Contract =====
+      try {
+        const orderData = await contract['getOrder'](orderId);
+        if (!orderData || Number(orderData[0]) === 0) {
+          console.warn('[Blockchain] Order', orderId, 'khong ton tai tren Smart Contract.');
+          return null;
+        }
+        console.log('[Blockchain] Xac minh order', orderId, 'ton tai tren chain OK.');
+      } catch {
+        console.warn('[Blockchain] Khong the goi getOrder() - order co the khong ton tai.');
+        return null;
+      }
+
+      // ===== BƯỚC 2: Thử query event log qua RPC (blocks gần nhất) =====
+      try {
+        const currentBlock = await this.provider.getBlockNumber();
+        const filter = contract.filters['OrderRecorded'](orderId);
+        const chunkSize = 3000;
+        const minBlock = Math.max(0, currentBlock - 30000); // ~30K blocks gần nhất
+
+        for (let endBlock = currentBlock; endBlock >= minBlock; endBlock -= chunkSize) {
+          const startBlock = Math.max(minBlock, endBlock - chunkSize + 1);
+          try {
+            const events = await contract.queryFilter(filter, startBlock, endBlock);
+            if (events.length > 0) {
+              console.log('[Blockchain] RPC: Tim thay tx_hash cho order', orderId, ':', events[0].transactionHash);
+              return events[0].transactionHash;
+            }
+          } catch {
+            continue; // RPC giới hạn range → bỏ qua chunk này
+          }
+          if (startBlock <= 0) break;
+        }
+        console.warn('[Blockchain] RPC: Khong tim thay event trong 30K blocks gan nhat. Chuyen sang Explorer API...');
+      } catch (rpcErr) {
+        console.warn('[Blockchain] RPC event query that bai:', rpcErr);
+      }
+
+      // ===== BƯỚC 3: Fallback - Block Explorer API (full lịch sử) =====
+      const chainId = this.chainId() || this.configuredChainId();
+      const apiUrl = this.getExplorerApiUrl(chainId);
+      if (apiUrl) {
+        try {
+          const eventSig = 'OrderRecorded(uint256,string,uint256,string,string,uint256,address)';
+          const topic0 = ethersId(eventSig);
+          const topic1 = zeroPadValue(toBeHex(orderId), 32);
+
+          const url = `${apiUrl}?module=logs&action=getLogs&address=${this.contractAddress()}&topic0=${topic0}&topic0_1_opr=and&topic1=${topic1}&fromBlock=0&toBlock=latest`;
+          console.log('[Blockchain] Explorer API request:', url);
+
+          const response = await fetch(url);
+          const data = await response.json();
+
+          if (data.status === '1' && data.result && data.result.length > 0) {
+            const txHash = data.result[0].transactionHash;
+            console.log('[Blockchain] Explorer API: Tim thay tx_hash cho order', orderId, ':', txHash);
+            return txHash;
+          } else {
+            console.warn('[Blockchain] Explorer API: Khong tim thay event. Response:', data);
+          }
+        } catch (apiErr) {
+          console.error('[Blockchain] Explorer API fallback that bai:', apiErr);
+        }
+      } else {
+        console.warn('[Blockchain] Khong co Explorer API URL cho chain_id:', chainId);
+      }
+
+      return null;
+    } catch (err) {
+      console.error('[Blockchain] Loi tong quat khi truy van tx_hash goc:', err);
+      return null;
+    }
+  }
+
+  /**
+   * Mapping chain_id sang Block Explorer API URL tương ứng.
+   * Dùng cho fallback khi RPC node giới hạn block range.
+   */
+  private getExplorerApiUrl(chainId: string): string | null {
+    switch (chainId) {
+      case '1':         return 'https://api.etherscan.io/api';
+      case '11155111':  return 'https://api-sepolia.etherscan.io/api';
+      case '56':        return 'https://api.bscscan.com/api';
+      case '97':        return 'https://api-testnet.bscscan.com/api';
+      case '137':       return 'https://api.polygonscan.com/api';
+      case '80002':     return 'https://api-amoy.polygonscan.com/api';
+      case '42161':     return 'https://api.arbiscan.io/api';
+      case '421614':    return 'https://api-sepolia.arbiscan.io/api';
+      case '8453':      return 'https://api.basescan.org/api';
+      case '84532':     return 'https://api-sepolia.basescan.org/api';
+      case '43114':     return 'https://api.snowtrace.io/api';
+      case '43113':     return 'https://api-testnet.snowtrace.io/api';
+      case '10':        return 'https://api-optimistic.etherscan.io/api';
+      case '11155420':  return 'https://api-sepolia-optimistic.etherscan.io/api';
+      default:          return null;
+    }
+  }
+
 
   /**
    * Tự động Deploy Smart Contract mới lên Blockchain EVM
