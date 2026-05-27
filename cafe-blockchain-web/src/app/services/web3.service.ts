@@ -23,6 +23,7 @@ export class Web3Service {
   public readonly contractAddress = signal<string>('');
   public readonly rpcUrl = signal<string>('https://ethereum-sepolia.publicnode.com');
   public readonly explorerUrl = signal<string>('https://sepolia.etherscan.io');
+  public readonly explorerApiKey = signal<string>('');
   public readonly configuredChainId = signal<string>('11155111');
 
   // Địa chỉ ví rút gọn
@@ -143,11 +144,12 @@ export class Web3Service {
   /**
    * Cập nhật cấu hình Blockchain từ API
    */
-  public updateConfig(config: { contract_address?: string, rpc_url?: string, explorer_url?: string, chain_id?: string }) {
+  public updateConfig(config: { contract_address?: string, rpc_url?: string, explorer_url?: string, chain_id?: string, explorer_api_key?: string }) {
     this.contractAddress.set(config.contract_address || '');
     if (config.rpc_url) this.rpcUrl.set(config.rpc_url);
     if (config.explorer_url) this.explorerUrl.set(config.explorer_url);
     if (config.chain_id) this.configuredChainId.set(config.chain_id);
+    if (config.explorer_api_key !== undefined) this.explorerApiKey.set(config.explorer_api_key || '');
 
     // Nếu ví đang kết nối, cập nhật lại trạng thái isOwnerContract dựa trên contract_address mới nhận được
     if (this.walletConnected() && this.currentAccount()) {
@@ -538,8 +540,40 @@ export class Web3Service {
         return null;
       }
 
-      // ===== BƯỚC 2: Dùng backup RPC để query event log =====
       const chainId = this.chainId() || this.configuredChainId();
+
+      // ===== BƯỚC 2: Thử tìm nhanh qua API Block Explorer (BscScan/Etherscan) =====
+      const explorerApiUrl = this.getExplorerApiUrl(chainId);
+      const apiKey = this.explorerApiKey();
+      if (explorerApiUrl && apiKey && apiKey.trim() !== '') {
+        try {
+          console.log('[Blockchain] Thu truy van nhanh qua API Explorer:', explorerApiUrl);
+          // Tạo topic1 bằng cách pad hex orderId sang 32 bytes (64 ký tự)
+          const topic1 = '0x' + orderId.toString(16).padStart(64, '0');
+          // Lấy topic0 từ ABI sự kiện
+          const topic0 = contract.interface.getEvent('OrderRecorded')?.topicHash;
+          
+          if (topic0) {
+            const url = `${explorerApiUrl}?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${this.contractAddress()}&topic0=${topic0}&topic1=${topic1}&apikey=${apiKey}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.status === '1' && data.result && data.result.length > 0) {
+              const txHash = data.result[0].transactionHash;
+              console.log('[Blockchain] ✅ Tim thay tx_hash qua API Explorer:', txHash);
+              return txHash;
+            } else {
+              console.warn('[Blockchain] API Explorer khong tra ve ket qua logic, thu sang RPC scan.');
+            }
+          }
+        } catch (apiErr) {
+          console.error('[Blockchain] Loi goi API Block Explorer, dang fallback ve RPC scan:', apiErr);
+        }
+      } else {
+        console.log('[Blockchain] Khong co API Key Explorer hoặc khong ho tro chain. Chuyen sang RPC scan.');
+      }
+
+      // ===== BƯỚC 3: Quét block bằng backup RPC (Fallback) =====
       const backupRpcUrl = this.getBackupRpcUrl(chainId);
       const rpcUrl = backupRpcUrl || this.rpcUrl();
 
@@ -583,6 +617,28 @@ export class Web3Service {
     } catch (err) {
       console.error('[Blockchain] Loi tong quat khi truy van tx_hash goc:', err);
       return null;
+    }
+  }
+
+  /**
+   * Lấy API URL của Block Explorer tương ứng với chainId.
+   */
+  private getExplorerApiUrl(chainId: string): string | null {
+    const id = chainId.toString().trim();
+    switch (id) {
+      case '97':        return 'https://api-testnet.bscscan.com/api';
+      case '56':        return 'https://api.bscscan.com/api';
+      case '1':         return 'https://api.etherscan.io/api';
+      case '11155111':  return 'https://api-sepolia.etherscan.io/api';
+      case '137':       return 'https://api.polygonscan.com/api';
+      case '80002':     return 'https://api-amoy.polygonscan.com/api';
+      case '42161':     return 'https://api.arbiscan.io/api';
+      case '421614':    return 'https://api-sepolia.arbiscan.io/api';
+      case '8453':      return 'https://api.basescan.org/api';
+      case '84532':     return 'https://api-sepolia.basescan.org/api';
+      case '10':        return 'https://api-optimistic.etherscan.io/api';
+      case '11155420':  return 'https://api-sepolia-optimistic.etherscan.io/api';
+      default:          return null;
     }
   }
 

@@ -178,67 +178,28 @@ class OrderController extends Controller
             
             if (!empty($contractAddress)) {
                 try {
-                    // TRƯỜNG HỢP 1: Đơn hàng đã tồn tại trên Blockchain và đối soát trực tiếp qua eth_call getOrder
-                    if (str_starts_with($txHash, '0x_already_synced_order_')) {
-                        $paddedOrderId = str_pad(dechex($order->id), 64, '0', STR_PAD_LEFT);
-                        $data = '0xd09ef241' . $paddedOrderId; // Function selector getOrder(uint256) is 0xd09ef241
+                    // Xác thực giao dịch thật qua TxReceipt của Blockchain RPC
+                    $payload = [
+                        'jsonrpc' => '2.0',
+                        'method' => 'eth_getTransactionReceipt',
+                        'params' => [$txHash],
+                        'id' => 1
+                    ];
 
-                        $payload = [
-                            'jsonrpc' => '2.0',
-                            'method' => 'eth_call',
-                            'params' => [
-                                [
-                                    'to' => $contractAddress,
-                                    'data' => $data
-                                ],
-                                'latest'
-                            ],
-                            'id' => 1
-                        ];
-
-                        $response = \Illuminate\Support\Facades\Http::post($rpcUrl, $payload);
-                        if ($response->successful() && !empty($response->json('result')) && $response->json('result') !== '0x') {
-                            $resultHex = substr($response->json('result'), 2);
-                            
-                            // Word 0 is orderId, Word 2 is totalAmount
-                            $word0 = substr($resultHex, 0, 64);
-                            $word2 = substr($resultHex, 64 * 2, 64);
-                            
-                            $onChainOrderId = hexdec($word0);
-                            $onChainAmount = hexdec($word2);
-
-                            if ($onChainOrderId === $order->id && $onChainAmount === (int)round($order->total_amount)) {
-                                // Đối soát khớp thông tin thành công
-                            } else {
-                                return response()->json(['message' => 'On-chain order verification mismatch. Amount or Order ID does not match.'], 400);
-                            }
-                        } else {
-                            return response()->json(['message' => 'This order does not exist on the Blockchain smart contract.'], 400);
+                    $response = \Illuminate\Support\Facades\Http::post($rpcUrl, $payload);
+                    if ($response->successful()) {
+                        $result = $response->json('result');
+                        
+                        // Check if tx exists, is successful, and was sent to our contract
+                        if (!$result || 
+                            !isset($result['status']) || 
+                            hexdec($result['status']) !== 1 ||
+                            strtolower($result['to']) !== strtolower($contractAddress)) {
+                            return response()->json(['message' => 'Invalid or failed transaction on the blockchain.'], 400);
                         }
                     } else {
-                        // TRƯỜNG HỢP 2: Đồng bộ thông thường qua TxReceipt
-                        $payload = [
-                            'jsonrpc' => '2.0',
-                            'method' => 'eth_getTransactionReceipt',
-                            'params' => [$txHash],
-                            'id' => 1
-                        ];
-
-                        $response = \Illuminate\Support\Facades\Http::post($rpcUrl, $payload);
-                        if ($response->successful()) {
-                            $result = $response->json('result');
-                            
-                            // Check if tx exists, is successful, and was sent to our contract
-                            if (!$result || 
-                                !isset($result['status']) || 
-                                hexdec($result['status']) !== 1 ||
-                                strtolower($result['to']) !== strtolower($contractAddress)) {
-                                return response()->json(['message' => 'Invalid or failed transaction on the blockchain.'], 400);
-                            }
-                        } else {
-                            // RPC error, cannot verify
-                            return response()->json(['message' => 'Could not verify transaction with the blockchain node.'], 500);
-                        }
+                        // RPC error, cannot verify
+                        return response()->json(['message' => 'Could not verify transaction with the blockchain node.'], 500);
                     }
                 } catch (\Exception $e) {
                     return response()->json(['message' => 'Error verifying transaction: ' . $e->getMessage()], 500);

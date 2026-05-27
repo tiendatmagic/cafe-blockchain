@@ -26,6 +26,7 @@ class SettingController extends Controller
                 'rpc_url' => '',
                 'chain_id' => '',
                 'explorer_url' => '',
+                'explorer_api_key' => '',
             ];
             
             foreach ($defaultSettings as $key => $value) {
@@ -51,6 +52,7 @@ class SettingController extends Controller
             'rpc_url' => 'nullable|string|max:1000',
             'chain_id' => 'nullable|string|max:50',
             'explorer_url' => 'nullable|string|max:1000',
+            'explorer_api_key' => 'nullable|string|max:255',
             'primary_color' => 'nullable|string|max:7',
             'secondary_color' => 'nullable|string|max:7',
         ]);

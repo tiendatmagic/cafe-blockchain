@@ -44,6 +44,7 @@ export class App implements OnInit, OnDestroy {
     rpc_url: 'https://ethereum-sepolia.publicnode.com',
     chain_id: '11155111',
     explorer_url: 'https://sepolia.etherscan.io',
+    explorer_api_key: '',
     primary_color: '#7c3aed',
     secondary_color: '#c084fc'
   });
@@ -131,6 +132,7 @@ export class App implements OnInit, OnDestroy {
     rpc_url: '',
     chain_id: '',
     explorer_url: '',
+    explorer_api_key: '',
     primary_color: '#7c3aed',
     secondary_color: '#c084fc'
   });
