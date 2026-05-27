@@ -33,6 +33,17 @@ export class Web3Service {
     return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
   });
 
+  // Kiểm tra số dư ví thu ngân có ở mức báo động cạn gas hay không
+  public readonly isGasLow = computed(() => {
+    if (!this.walletConnected()) return false;
+    const balance = parseFloat(this.walletBalance());
+    const symbol = this.nativeTokenSymbol();
+    if (symbol === 'MATIC' || symbol === 'POL') {
+      return balance < 0.2;
+    }
+    return balance < 0.005;
+  });
+
   /**
    * Lấy tên mạng EVM dựa vào chainId
    */
@@ -573,43 +584,65 @@ export class Web3Service {
         console.log('[Blockchain] Khong co API Key Explorer hoặc khong ho tro chain. Chuyen sang RPC scan.');
       }
 
-      // ===== BƯỚC 3: Quét block bằng backup RPC (Fallback) =====
-      const backupRpcUrl = this.getBackupRpcUrl(chainId);
-      const rpcUrl = backupRpcUrl || this.rpcUrl();
+      // ===== BƯỚC 3: Quét block bằng backup RPC (Fallback có Auto-switch) =====
+      const backupRpcUrls = this.getBackupRpcUrls(chainId);
+      const rpcUrlsToTry = [this.rpcUrl(), ...backupRpcUrls].filter(url => !!url);
+      
+      let eventsFound: any[] = [];
+      let successRpcUrl = '';
 
-      console.log('[Blockchain] Dung backup RPC:', rpcUrl);
-      const backupProvider = new JsonRpcProvider(rpcUrl);
-      const backupContract = new Contract(this.contractAddress(), CAFE_WEB3_POS_ABI, backupProvider);
-
-      const currentBlock = await backupProvider.getBlockNumber();
-      const currentTime = Math.floor(Date.now() / 1000);
-
-      // Tính block ước lượng dựa trên timestamp và block time trung bình (~3s cho BSC)
-      const blockTime = this.getAvgBlockTime(chainId);
-      const timeDiff = currentTime - orderTimestamp;
-      const blockDiff = Math.floor(timeDiff / blockTime);
-      const approxBlock = currentBlock - blockDiff;
-
-      // Scan range: ±100K blocks xung quanh block ước lượng
-      const scanStart = Math.max(0, approxBlock - 100000);
-      const scanEnd = Math.min(currentBlock, approxBlock + 100000);
-      const chunkSize = 10000;
-
-      console.log(`[Blockchain] Scan blocks ${scanStart} - ${scanEnd} (approx: ${approxBlock}, chunk: ${chunkSize})`);
-
-      const filter = backupContract.filters['OrderRecorded'](orderId);
-      for (let start = scanStart; start <= scanEnd; start += chunkSize) {
-        const end = Math.min(start + chunkSize - 1, scanEnd);
+      for (const rpcUrl of rpcUrlsToTry) {
         try {
-          const events = await backupContract.queryFilter(filter, start, end);
-          if (events.length > 0) {
-            console.log('[Blockchain] ✅ Tim thay tx_hash cho order', orderId, ':', events[0].transactionHash, 'block:', events[0].blockNumber);
-            return events[0].transactionHash;
+          console.log('[Blockchain] Thu quet event bang RPC:', rpcUrl);
+          const backupProvider = new JsonRpcProvider(rpcUrl);
+          const backupContract = new Contract(this.contractAddress(), CAFE_WEB3_POS_ABI, backupProvider);
+
+          const currentBlock = await backupProvider.getBlockNumber();
+          const currentTime = Math.floor(Date.now() / 1000);
+
+          // Tính block ước lượng dựa trên timestamp và block time trung bình (~3s cho BSC)
+          const blockTime = this.getAvgBlockTime(chainId);
+          const timeDiff = currentTime - orderTimestamp;
+          const blockDiff = Math.floor(timeDiff / blockTime);
+          const approxBlock = currentBlock - blockDiff;
+
+          // Scan range: ±100K blocks xung quanh block ước lượng
+          const scanStart = Math.max(0, approxBlock - 100000);
+          const scanEnd = Math.min(currentBlock, approxBlock + 100000);
+          const chunkSize = 10000;
+
+          console.log(`[Blockchain] Scan blocks ${scanStart} - ${scanEnd} (approx: ${approxBlock}, chunk: ${chunkSize})`);
+
+          const filter = backupContract.filters['OrderRecorded'](orderId);
+          let found = false;
+
+          for (let start = scanStart; start <= scanEnd; start += chunkSize) {
+            const end = Math.min(start + chunkSize - 1, scanEnd);
+            try {
+              const events = await backupContract.queryFilter(filter, start, end);
+              if (events.length > 0) {
+                eventsFound = events;
+                successRpcUrl = rpcUrl;
+                found = true;
+                break;
+              }
+            } catch {
+              continue;
+            }
           }
-        } catch {
-          // Chunk lỗi — bỏ qua và thử chunk tiếp
+
+          if (found) {
+            break; // Thử thành công, dừng xoay vòng RPC
+          }
+        } catch (rpcErr) {
+          console.warn(`[Blockchain] Node RPC ${rpcUrl} loi, dang fallback sang node khac:`, rpcErr);
           continue;
         }
+      }
+
+      if (eventsFound.length > 0) {
+        console.log('[Blockchain] ✅ Tim thay tx_hash cho order', orderId, ':', eventsFound[0].transactionHash, 'qua RPC:', successRpcUrl);
+        return eventsFound[0].transactionHash;
       }
 
       console.warn('[Blockchain] ❌ Khong tim thay event OrderRecorded cho order', orderId);
@@ -643,24 +676,24 @@ export class Web3Service {
   }
 
   /**
-   * Lấy backup RPC URL đáng tin cậy cho event log query.
-   * Binance RPC default không hỗ trợ eth_getLogs nên cần dùng node khác.
+   * Lấy danh sách backup RPC URL đáng tin cậy cho event log query và auto-switch.
    */
-  private getBackupRpcUrl(chainId: string): string | null {
-    switch (chainId) {
-      case '97':        return 'https://bsc-testnet-rpc.publicnode.com';
-      case '56':        return 'https://bsc-rpc.publicnode.com';
-      case '1':         return 'https://ethereum-rpc.publicnode.com';
-      case '11155111':  return 'https://ethereum-sepolia-rpc.publicnode.com';
-      case '137':       return 'https://polygon-bor-rpc.publicnode.com';
-      case '80002':     return 'https://polygon-amoy-bor-rpc.publicnode.com';
-      case '42161':     return 'https://arbitrum-one-rpc.publicnode.com';
-      case '421614':    return 'https://arbitrum-sepolia-rpc.publicnode.com';
-      case '8453':      return 'https://base-rpc.publicnode.com';
-      case '84532':     return 'https://base-sepolia-rpc.publicnode.com';
-      case '10':        return 'https://optimism-rpc.publicnode.com';
-      case '11155420':  return 'https://optimism-sepolia-rpc.publicnode.com';
-      default:          return null;
+  private getBackupRpcUrls(chainId: string): string[] {
+    const id = chainId.toString().trim();
+    switch (id) {
+      case '97':        return ['https://bsc-testnet-rpc.publicnode.com', 'https://bsc-testnet.blockpi.network/v1/rpc/public', 'https://data-seed-prebsc-1-s1.binance.org:8545'];
+      case '56':        return ['https://bsc-rpc.publicnode.com', 'https://binance.llamarpc.com', 'https://rpc.ankr.com/bsc'];
+      case '1':         return ['https://ethereum-rpc.publicnode.com', 'https://eth.llamarpc.com', 'https://rpc.ankr.com/eth'];
+      case '11155111':  return ['https://ethereum-sepolia-rpc.publicnode.com', 'https://sepolia.gateway.tenderly.co', 'https://rpc.ankr.com/eth_sepolia'];
+      case '137':       return ['https://polygon-bor-rpc.publicnode.com', 'https://polygon.llamarpc.com', 'https://rpc.ankr.com/polygon'];
+      case '80002':     return ['https://polygon-amoy-bor-rpc.publicnode.com', 'https://polygon-amoy.blockpi.network/v1/rpc/public', 'https://rpc.ankr.com/polygon_amoy'];
+      case '42161':     return ['https://arbitrum-one-rpc.publicnode.com', 'https://arbitrum.llamarpc.com', 'https://rpc.ankr.com/arbitrum'];
+      case '421614':    return ['https://arbitrum-sepolia-rpc.publicnode.com', 'https://arbitrum-sepolia.blockpi.network/v1/rpc/public', 'https://rpc.ankr.com/arbitrum_sepolia'];
+      case '8453':      return ['https://base-rpc.publicnode.com', 'https://base.llamarpc.com', 'https://rpc.ankr.com/base'];
+      case '84532':     return ['https://base-sepolia-rpc.publicnode.com', 'https://base-sepolia.blockpi.network/v1/rpc/public', 'https://rpc.ankr.com/base_sepolia'];
+      case '10':        return ['https://optimism-rpc.publicnode.com', 'https://optimism.llamarpc.com', 'https://rpc.ankr.com/optimism'];
+      case '11155420':  return ['https://optimism-sepolia-rpc.publicnode.com', 'https://optimism-sepolia.blockpi.network/v1/rpc/public', 'https://rpc.ankr.com/optimism_sepolia'];
+      default:          return [];
     }
   }
 
