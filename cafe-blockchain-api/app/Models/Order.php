@@ -10,6 +10,7 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
+        'order_code',
         'table_number',
         'total_amount',
         'payment_method',
@@ -47,6 +48,13 @@ class Order extends Model
 
     protected static function booted()
     {
+        // Tự động sinh mã đơn hàng ngẫu nhiên 6 ký tự viết hoa/chữ số khi tạo mới
+        static::creating(function ($order) {
+            if (empty($order->order_code)) {
+                $order->order_code = 'HD-' . strtoupper(bin2hex(random_bytes(3)));
+            }
+        });
+
         // Khi cập nhật đơn hàng hoặc khi lưu nếu trạng thái là completed và đã có ID
         static::saving(function ($order) {
             if ($order->status === 'completed' && $order->id) {
@@ -85,7 +93,7 @@ class Order extends Model
 
         // Tạo dữ liệu nhạy cảm cần ký (đã bao gồm phương thức thanh toán)
         $data = implode('|', [
-            $this->id,
+            strtolower($this->order_code ?? ''),
             $totalAmountFormatted,
             strtolower($this->payment_method ?? ''),
             $this->table_number ?? '',

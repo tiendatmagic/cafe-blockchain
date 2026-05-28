@@ -10,6 +10,7 @@ class Transaction extends Model
     use HasFactory;
 
     protected $fillable = [
+        'transaction_code',
         'type',
         'amount',
         'category',
@@ -44,6 +45,13 @@ class Transaction extends Model
 
     protected static function booted()
     {
+        // Tự động sinh mã giao dịch ngẫu nhiên 6 ký tự viết hoa/chữ số khi tạo mới
+        static::creating(function ($transaction) {
+            if (empty($transaction->transaction_code)) {
+                $transaction->transaction_code = 'TC-' . strtoupper(bin2hex(random_bytes(3)));
+            }
+        });
+
         // Khi cập nhật giao dịch
         static::saving(function ($transaction) {
             if ($transaction->id) {
@@ -82,7 +90,7 @@ class Transaction extends Model
 
         // Tạo dữ liệu nhạy cảm cần ký
         $data = implode('|', [
-            $this->id,
+            strtolower($this->transaction_code ?? ''),
             $this->type ?? '',
             $amountFormatted,
             $this->category ?? '',

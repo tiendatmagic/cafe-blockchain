@@ -10,6 +10,7 @@ class Product extends Model
     use HasFactory;
 
     protected $fillable = [
+        'sku',
         'name',
         'price',
         'image',
@@ -23,6 +24,16 @@ class Product extends Model
         'price' => 'float',
         'status' => 'boolean',
     ];
+
+    protected static function booted()
+    {
+        // Tự động sinh mã SKU ngẫu nhiên nếu Admin bỏ trống khi tạo mới
+        static::creating(function ($product) {
+            if (empty($product->sku)) {
+                $product->sku = 'SP-' . strtoupper(bin2hex(random_bytes(3)));
+            }
+        });
+    }
 
     /**
      * Mối quan hệ Nhiều-Nhiều với Category

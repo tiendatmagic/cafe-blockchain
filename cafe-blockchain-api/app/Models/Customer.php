@@ -10,6 +10,7 @@ class Customer extends Model
     use HasFactory;
 
     protected $fillable = [
+        'customer_code',
         'name',
         'phone',
         'email',
@@ -18,6 +19,16 @@ class Customer extends Model
         'address',
         'store_owner_address'
     ];
+
+    protected static function booted()
+    {
+        // Tự động sinh mã khách hàng ngẫu nhiên 4 ký tự viết hoa/chữ số khi tạo mới
+        static::creating(function ($customer) {
+            if (empty($customer->customer_code)) {
+                $customer->customer_code = 'KH-' . strtoupper(bin2hex(random_bytes(2)));
+            }
+        });
+    }
 
     /**
      * Mối quan hệ Nhiều-Nhiều với CustomerGroup

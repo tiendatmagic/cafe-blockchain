@@ -105,6 +105,7 @@ export class App implements OnInit, OnDestroy {
   public readonly menuModalType = signal<'add' | 'edit'>('add');
   public readonly editingProduct = signal<any>(null);
   public readonly menuForm = signal<any>({
+    sku: '',
     name: '',
     price: 0,
     category_ids: [],
@@ -142,6 +143,8 @@ export class App implements OnInit, OnDestroy {
   public readonly orderBlockchainFilter = signal<string>('all');
   public readonly selectedOrderDetails = signal<any>(null);
   public readonly isOrderDetailModalOpen = signal<boolean>(false);
+  public readonly selectedTransactionDetails = signal<any>(null);
+  public readonly isTransactionDetailModalOpen = signal<boolean>(false);
 
   // Trạng thái Cấu hình quán
   public readonly configForm = signal<any>({
@@ -1399,6 +1402,7 @@ export class App implements OnInit, OnDestroy {
   public openAddMenuModal() {
     this.menuModalType.set('add');
     this.menuForm.set({
+      sku: '',
       name: '',
       price: 0,
       category_ids: [],
@@ -1416,6 +1420,7 @@ export class App implements OnInit, OnDestroy {
     this.menuModalType.set('edit');
     this.editingProduct.set(product);
     this.menuForm.set({
+      sku: product.sku || '',
       name: product.name,
       price: product.price,
       category_ids: product.categories ? product.categories.map((c: any) => c.id) : [],
@@ -2138,6 +2143,20 @@ export class App implements OnInit, OnDestroy {
       next: (res) => this.transactions.set(res),
       error: (err) => console.error('Loi refresh thu chi:', err)
     });
+  }
+
+  public formatTxCode(id: number): string {
+    return 'TX-' + String(id).padStart(4, '0');
+  }
+
+  public viewTransactionDetails(tx: any) {
+    this.selectedTransactionDetails.set(tx);
+    this.isTransactionDetailModalOpen.set(true);
+  }
+
+  public closeTransactionDetailModal() {
+    this.selectedTransactionDetails.set(null);
+    this.isTransactionDetailModalOpen.set(false);
   }
 
   // Đồng bộ giao dịch Thu Chi lên Blockchain EVM
