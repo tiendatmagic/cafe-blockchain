@@ -36,6 +36,11 @@ class CustomerController extends Controller
                 'exists:customer_groups,id',
                 \Illuminate\Validation\Rule::exists('customer_groups', 'id')->where('store_owner_address', $storeOwner)
             ],
+            'type' => 'nullable|string|in:individual,business',
+            'company_name' => 'nullable|string|max:200',
+            'tax_code' => 'nullable|string|max:50',
+            'representative_name' => 'nullable|string|max:150',
+            'website' => 'nullable|string|max:150',
         ]);
 
         $customer = Customer::create([
@@ -46,6 +51,11 @@ class CustomerController extends Controller
             'gender' => $validated['gender'] ?? null,
             'address' => $validated['address'] ?? null,
             'store_owner_address' => $storeOwner,
+            'type' => $validated['type'] ?? 'individual',
+            'company_name' => $validated['company_name'] ?? null,
+            'tax_code' => $validated['tax_code'] ?? null,
+            'representative_name' => $validated['representative_name'] ?? null,
+            'website' => $validated['website'] ?? null,
         ]);
 
         if (!empty($validated['group_ids'])) {
@@ -81,6 +91,11 @@ class CustomerController extends Controller
                 'exists:customer_groups,id',
                 \Illuminate\Validation\Rule::exists('customer_groups', 'id')->where('store_owner_address', $storeOwner)
             ],
+            'type' => 'nullable|string|in:individual,business',
+            'company_name' => 'nullable|string|max:200',
+            'tax_code' => 'nullable|string|max:50',
+            'representative_name' => 'nullable|string|max:150',
+            'website' => 'nullable|string|max:150',
         ]);
 
         $customer->update([
@@ -90,6 +105,11 @@ class CustomerController extends Controller
             'dob' => $validated['dob'] ?? null,
             'gender' => $validated['gender'] ?? null,
             'address' => $validated['address'] ?? null,
+            'type' => $validated['type'] ?? 'individual',
+            'company_name' => $validated['company_name'] ?? null,
+            'tax_code' => $validated['tax_code'] ?? null,
+            'representative_name' => $validated['representative_name'] ?? null,
+            'website' => $validated['website'] ?? null,
         ]);
 
         $customer->groups()->sync($validated['group_ids'] ?? []);

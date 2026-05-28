@@ -4230,17 +4230,29 @@
                             <td class="p-4">
                               <div class="flex items-center gap-3">
                                 <div
-                                  class="w-9 h-9 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold text-sm"
+                                  [class]="cust.type === 'business' ? 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400' : 'bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400'"
+                                  class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shrink-0"
                                 >
-                                  {{ cust.name.substring(0, 1) | uppercase }}
+                                  {{ (cust.type === 'business' ? (cust.company_name || cust.name) : cust.name).substring(0, 1) | uppercase }}
                                 </div>
-                                <div class="flex flex-col">
-                                  <span class="font-extrabold text-slate-850 dark:text-white">{{
-                                    cust.name
-                                  }}</span>
-                                  <span class="text-[10px] text-slate-400 font-medium"
-                                    >Giới tính: {{ cust.gender || 'Nam' }}</span
-                                  >
+                                <div class="flex flex-col min-w-0">
+                                  <div class="flex items-center gap-1.5 flex-wrap">
+                                    <span class="font-extrabold text-slate-850 dark:text-white truncate max-w-[150px]">{{ cust.type === 'business' ? cust.company_name : cust.name }}</span>
+                                    @if (cust.type === 'business') {
+                                      <span class="bg-indigo-500/10 text-indigo-500 text-[9px] font-black px-1.5 py-0.2 rounded uppercase tracking-wider shrink-0">DN</span>
+                                    } @else {
+                                      <span class="bg-emerald-500/10 text-emerald-500 text-[9px] font-black px-1.5 py-0.2 rounded uppercase tracking-wider shrink-0">CN</span>
+                                    }
+                                  </div>
+                                  @if (cust.type === 'business') {
+                                    <span class="text-[10px] text-slate-550 dark:text-slate-400 font-semibold truncate max-w-[200px]"
+                                      >Đại diện: {{ cust.name }} | MST: {{ cust.tax_code || '--' }}</span
+                                    >
+                                  } @else {
+                                    <span class="text-[10px] text-slate-400 font-medium"
+                                      >Giới tính: {{ cust.gender || 'Nam' }}</span
+                                    >
+                                  }
                                 </div>
                               </div>
                             </td>
@@ -6826,92 +6838,219 @@
 
           <!-- Body Form -->
           <div class="flex-1 overflow-y-auto py-4 pr-1 space-y-4 no-scrollbar min-h-0">
-            <!-- Tên khách hàng (Bắt buộc) -->
+            <!-- Loại khách hàng (Switch B2C / B2B) -->
             <div class="space-y-1.5">
               <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-                >Tên khách hàng <span class="text-rose-500">*</span></label
+                >Loại khách hàng</label
               >
-              <input
-                type="text"
-                [(ngModel)]="customerForm().name"
-                placeholder="Nhập tên khách hàng..."
-                class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all"
-              />
+              <div
+                class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-200/60 dark:border-slate-800/60"
+              >
+                <button
+                  type="button"
+                  (click)="customerForm().type = 'individual'"
+                  [class]="
+                    customerForm().type === 'individual'
+                      ? 'bg-white dark:bg-slate-900 text-purple-650 font-bold shadow-sm'
+                      : 'text-slate-505'
+                  "
+                  class="flex-1 py-1.5 text-xs rounded-xl font-bold transition-all"
+                >
+                  Cá nhân (B2C)
+                </button>
+                <button
+                  type="button"
+                  (click)="customerForm().type = 'business'"
+                  [class]="
+                    customerForm().type === 'business'
+                      ? 'bg-white dark:bg-slate-900 text-purple-650 font-bold shadow-sm'
+                      : 'text-slate-505'
+                  "
+                  class="flex-1 py-1.5 text-xs rounded-xl font-bold transition-all"
+                >
+                  Doanh nghiệp (B2B)
+                </button>
+              </div>
             </div>
 
-            <!-- Số điện thoại -->
-            <div class="space-y-1.5">
-              <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-                >Số điện thoại</label
-              >
-              <input
-                type="text"
-                [(ngModel)]="customerForm().phone"
-                placeholder="Ví dụ: 0912345678..."
-                class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all"
-              />
-            </div>
+            @if (customerForm().type === 'business') {
+              <!-- FORM DOANH NGHIỆP (B2B) -->
+              <!-- Mã số thuế -->
+              <div class="space-y-1.5 relative">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                  >Mã số thuế <span class="text-rose-500">*</span></label
+                >
+                <div class="relative">
+                  <input
+                    type="text"
+                    [(ngModel)]="customerForm().tax_code"
+                    (ngModelChange)="onTaxCodeChange($event)"
+                    placeholder="Nhập 10 hoặc 13 số để tự tra cứu..."
+                    class="w-full pl-4 pr-10 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all font-mono font-bold tracking-wider"
+                  />
+                  <div class="absolute right-3.5 top-3 flex items-center justify-center">
+                    @if (isSearchingTax()) {
+                      <div class="w-4.5 h-4.5 rounded-full border-2 border-purple-500/20 border-t-purple-600 animate-spin"></div>
+                    } @else {
+                      <span class="text-slate-400 text-sm">🔍</span>
+                    }
+                  </div>
+                </div>
+              </div>
 
-            <!-- Email -->
-            <div class="space-y-1.5">
-              <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-                >Email</label
-              >
-              <input
-                type="email"
-                [(ngModel)]="customerForm().email"
-                placeholder="email@example.com..."
-                class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all"
-              />
-            </div>
-
-            <!-- Ngày sinh và Giới tính -->
-            <div class="grid grid-cols-2 gap-4">
+              <!-- Tên công ty -->
               <div class="space-y-1.5">
                 <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-                  >Ngày sinh</label
+                  >Tên công ty / Doanh nghiệp <span class="text-rose-500">*</span></label
                 >
                 <input
-                  type="date"
-                  [(ngModel)]="customerForm().dob"
+                  type="text"
+                  [(ngModel)]="customerForm().company_name"
+                  placeholder="Tên công ty sẽ tự động tra cứu..."
+                  class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all font-semibold"
+                />
+              </div>
+
+              <!-- Người đại diện liên hệ -->
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                  >Người đại diện liên hệ <span class="text-rose-500">*</span></label
+                >
+                <input
+                  type="text"
+                  [(ngModel)]="customerForm().name"
+                  placeholder="Nhập tên người đại diện liên hệ..."
                   class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all"
                 />
               </div>
 
-              <div class="space-y-1.5">
-                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-                  >Giới tính</label
-                >
-                <div
-                  class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-200/60 dark:border-slate-800/60"
-                >
-                  <button
-                    type="button"
-                    (click)="customerForm().gender = 'Nam'"
-                    [class]="
-                      customerForm().gender === 'Nam'
-                        ? 'bg-white dark:bg-slate-900 text-purple-650 font-bold shadow-sm'
-                        : 'text-slate-500'
-                    "
-                    class="flex-1 py-1.5 text-xs rounded-xl font-semibold transition-all"
+              <!-- Số điện thoại và Email -->
+              <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                  <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                    >Số điện thoại</label
                   >
-                    Nam
-                  </button>
-                  <button
-                    type="button"
-                    (click)="customerForm().gender = 'Nữ'"
-                    [class]="
-                      customerForm().gender === 'Nữ'
-                        ? 'bg-white dark:bg-slate-900 text-purple-650 font-bold shadow-sm'
-                        : 'text-slate-500'
-                    "
-                    class="flex-1 py-1.5 text-xs rounded-xl font-semibold transition-all"
+                  <input
+                    type="text"
+                    [(ngModel)]="customerForm().phone"
+                    placeholder="0912345..."
+                    class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all"
+                  />
+                </div>
+                <div class="space-y-1.5">
+                  <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                    >Email</label
                   >
-                    Nữ
-                  </button>
+                  <input
+                    type="email"
+                    [(ngModel)]="customerForm().email"
+                    placeholder="email@company.com..."
+                    class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all"
+                  />
                 </div>
               </div>
-            </div>
+
+              <!-- Website -->
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                  >Trang web (Website)</label
+                >
+                <input
+                  type="text"
+                  [(ngModel)]="customerForm().website"
+                  placeholder="https://company.com..."
+                  class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all font-mono"
+                />
+              </div>
+            } @else {
+              <!-- FORM CÁ NHÂN (B2C) -->
+              <!-- Tên khách hàng (Bắt buộc) -->
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                  >Tên khách hàng <span class="text-rose-500">*</span></label
+                >
+                <input
+                  type="text"
+                  [(ngModel)]="customerForm().name"
+                  placeholder="Nhập tên khách hàng..."
+                  class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all"
+                />
+              </div>
+
+              <!-- Số điện thoại -->
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                  >Số điện thoại</label
+                >
+                <input
+                  type="text"
+                  [(ngModel)]="customerForm().phone"
+                  placeholder="Ví dụ: 0912345678..."
+                  class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all"
+                />
+              </div>
+
+              <!-- Email -->
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                  >Email</label
+                >
+                <input
+                  type="email"
+                  [(ngModel)]="customerForm().email"
+                  placeholder="email@example.com..."
+                  class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all"
+                />
+              </div>
+
+              <!-- Ngày sinh và Giới tính -->
+              <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                  <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                    >Ngày sinh</label
+                  >
+                  <input
+                    type="date"
+                    [(ngModel)]="customerForm().dob"
+                    class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all"
+                  />
+                </div>
+
+                <div class="space-y-1.5">
+                  <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                    >Giới tính</label
+                  >
+                  <div
+                    class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-200/60 dark:border-slate-800/60"
+                  >
+                    <button
+                      type="button"
+                      (click)="customerForm().gender = 'Nam'"
+                      [class]="
+                        customerForm().gender === 'Nam'
+                          ? 'bg-white dark:bg-slate-900 text-purple-650 font-bold shadow-sm'
+                          : 'text-slate-500'
+                      "
+                      class="flex-1 py-1.5 text-xs rounded-xl font-semibold transition-all"
+                    >
+                      Nam
+                    </button>
+                    <button
+                      type="button"
+                      (click)="customerForm().gender = 'Nữ'"
+                      [class]="
+                        customerForm().gender === 'Nữ'
+                          ? 'bg-white dark:bg-slate-900 text-purple-650 font-bold shadow-sm'
+                          : 'text-slate-500'
+                      "
+                      class="flex-1 py-1.5 text-xs rounded-xl font-semibold transition-all"
+                    >
+                      Nữ
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
 
             <!-- Địa chỉ -->
             <div class="space-y-1.5">

@@ -38,7 +38,7 @@ export class App implements OnInit, OnDestroy {
   public readonly dashboardData = signal<any>(null);
   public readonly products = signal<any[]>([]);
   public readonly orders = signal<any[]>([]);
-  
+
   // Tự động lọc ra danh sách đơn hàng đã hoàn thành nhưng chưa đồng bộ Blockchain
   public readonly unsyncedCompletedOrders = computed(() => {
     return this.orders().filter(o => o.status === 'completed' && o.blockchain_status === 'none');
@@ -204,7 +204,12 @@ export class App implements OnInit, OnDestroy {
     dob: '',
     gender: 'Nam',
     address: '',
-    group_ids: []
+    group_ids: [],
+    type: 'individual',
+    company_name: '',
+    tax_code: '',
+    representative_name: '',
+    website: ''
   });
   public readonly customerGroupForm = signal<any>({
     name: ''
@@ -320,10 +325,10 @@ export class App implements OnInit, OnDestroy {
     productsList.forEach(p => {
       const processItem = (variantId: number | null) => {
         const key = `${p.id}_${variantId}`;
-        
+
         let latestKiemDate: Date | null = null;
         let latestKiemQty = 0;
-        
+
         records.forEach(r => {
           if (r.type === 'kiem') {
             const item = r.items?.find((i: any) => i.product_id === p.id && i.product_variant_id === variantId);
@@ -1044,13 +1049,13 @@ export class App implements OnInit, OnDestroy {
   // Khởi động chế độ chỉnh sửa đơn hàng đang chờ
   public editOrder(order: any) {
     if (!order) return;
-    
+
     this.isOrderSubmitting.set(true);
-    
+
     // Tái cấu trúc giỏ hàng từ order items
     const loadedCart: { product: any, variant: any | null, quantity: number }[] = [];
     const productsList = this.products();
-    
+
     order.items.forEach((item: any) => {
       const product = productsList.find(p => p.id === item.product_id);
       if (product) {
@@ -1065,15 +1070,15 @@ export class App implements OnInit, OnDestroy {
         });
       }
     });
-    
+
     this.cart.set(loadedCart);
     this.tableNumber.set(order.table_number || '');
     this.paymentMethod.set(order.payment_method || 'cash');
     this.editingOrderId.set(order.id);
-    
+
     // Chuyển sang tab POS để chỉnh sửa
     this.setTabState('pos');
-    
+
     this.showToast(`Đang chỉnh sửa đơn hàng ${order.order_code || ('#' + order.id)}`, 'success');
     this.isOrderSubmitting.set(false);
   }
@@ -1236,7 +1241,7 @@ export class App implements OnInit, OnDestroy {
 
     if (result.success && result.txHash) {
       this.showToast('Giao dịch Blockchain thành công! Đang lưu trạng thái...', 'success');
-      
+
       // 3. Gọi API Laravel cập nhật trạng thái "completed" đồng thời lưu tx_hash vào DB
       this.apiService.updateOrderStatus(orderId, 'completed').subscribe({
         next: (res) => {
@@ -1268,7 +1273,7 @@ export class App implements OnInit, OnDestroy {
       // TRƯỜNG HỢP REJECT VÍ HOẶC LỖI GIAO DỊCH BLOCKCHAIN -> Kích hoạt chế độ dự phòng
       console.warn('[Blockchain] Giao dịch Blockchain thất bại hoặc bị từ chối, chuyển sang chế độ dự phòng:', result.error);
       this.showToast('Ví bị từ chối! Kích hoạt chế độ dự phòng: Lưu Database POS trước.', 'success');
-      
+
       // Kích hoạt chế độ dự phòng: Chỉ cập nhật trạng thái Database completed
       this.apiService.updateOrderStatus(orderId, 'completed').subscribe({
         next: (res) => {
@@ -1449,7 +1454,7 @@ export class App implements OnInit, OnDestroy {
       // Mở modal chi tiết của đơn hàng đang được đồng bộ để thu ngân quan sát rõ ràng
       this.selectedOrderDetails.set(order);
       this.isOrderDetailModalOpen.set(true);
-      
+
       // Chạy đồng bộ đơn hàng và đợi hoàn tất giao dịch hiện tại trước khi chuyển sang đơn tiếp theo
       await this.syncToBlockchain(order);
     }
@@ -2366,6 +2371,76 @@ export class App implements OnInit, OnDestroy {
   }
 
   // --- Customer CRUD ---
+  public readonly isSearchingTax = signal<boolean>(false);
+  private taxLookupTimeout: any = null;
+  private lastSearchedTaxCode: string = '';
+  private taxLookupCache: { [key: string]: any } = {};
+
+  public onTaxCodeChange(taxCode: string) {
+    if (!taxCode) return;
+    const cleanTax = taxCode.replace(/\s+/g, '');
+
+    // Chỉ xử lý khi độ dài chính xác là 10 hoặc 13 ký tự (MST Việt Nam)
+    if (cleanTax.length !== 10 && cleanTax.length !== 13) {
+      return;
+    }
+
+    // Nếu trùng với mã số thuế vừa tìm kiếm gần nhất thì không gọi lại
+    if (cleanTax === this.lastSearchedTaxCode) {
+      return;
+    }
+
+    // Hủy timeout cũ nếu người dùng vẫn đang tiếp tục gõ
+    if (this.taxLookupTimeout) {
+      clearTimeout(this.taxLookupTimeout);
+    }
+
+    // Thiết lập debounce 500ms
+    this.taxLookupTimeout = setTimeout(() => {
+      // 1. Kiểm tra kết quả trong bộ nhớ đệm (Local Cache) trước
+      if (this.taxLookupCache[cleanTax]) {
+        const cachedData = this.taxLookupCache[cleanTax];
+        this.customerForm.update(form => ({
+          ...form,
+          company_name: cachedData.name || form.company_name,
+          address: cachedData.address || form.address,
+          representative_name: cachedData.representative || form.representative_name
+        }));
+        this.lastSearchedTaxCode = cleanTax;
+        this.showToast('Đã khôi phục thông tin từ bộ nhớ đệm!', 'success');
+        return;
+      }
+
+      // 2. Nếu không có trong cache, tiến hành gọi API mạng
+      this.isSearchingTax.set(true);
+      fetch(`https://api.vietqr.io/v2/business/${cleanTax}`)
+        .then(res => res.json())
+        .then(res => {
+          this.isSearchingTax.set(false);
+          if (res && res.code === '00' && res.data) {
+            // Lưu dữ liệu vào cache để tái sử dụng
+            this.taxLookupCache[cleanTax] = res.data;
+            this.lastSearchedTaxCode = cleanTax;
+
+            this.customerForm.update(form => ({
+              ...form,
+              company_name: res.data.name || form.company_name,
+              address: res.data.address || form.address,
+              representative_name: res.data.representative || form.representative_name
+            }));
+            this.showToast('Đã tìm thấy thông tin doanh nghiệp!', 'success');
+          } else {
+            this.showToast('Không tìm thấy thông tin doanh nghiệp cho mã số thuế này.', 'error');
+          }
+        })
+        .catch(err => {
+          this.isSearchingTax.set(false);
+          console.error('Lỗi tra cứu mã số thuế:', err);
+          this.showToast('Lỗi kết nối khi tra cứu mã số thuế!', 'error');
+        });
+    }, 1000);
+  }
+
   public openAddCustomerModal() {
     this.customerModalType.set('add');
     this.editingCustomer.set(null);
@@ -2376,7 +2451,12 @@ export class App implements OnInit, OnDestroy {
       dob: '',
       gender: 'Nam',
       address: '',
-      group_ids: []
+      group_ids: [],
+      type: 'individual',
+      company_name: '',
+      tax_code: '',
+      representative_name: '',
+      website: ''
     });
     this.isCustomerModalOpen.set(true);
   }
@@ -2391,7 +2471,12 @@ export class App implements OnInit, OnDestroy {
       dob: customer.dob || '',
       gender: customer.gender || 'Nam',
       address: customer.address || '',
-      group_ids: customer.groups ? customer.groups.map((g: any) => g.id) : []
+      group_ids: customer.groups ? customer.groups.map((g: any) => g.id) : [],
+      type: customer.type || 'individual',
+      company_name: customer.company_name || '',
+      tax_code: customer.tax_code || '',
+      representative_name: customer.representative_name || '',
+      website: customer.website || ''
     });
     this.isCustomerModalOpen.set(true);
   }

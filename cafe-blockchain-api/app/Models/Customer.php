@@ -17,7 +17,12 @@ class Customer extends Model
         'dob',
         'gender',
         'address',
-        'store_owner_address'
+        'store_owner_address',
+        'type',
+        'company_name',
+        'tax_code',
+        'representative_name',
+        'website'
     ];
 
     protected static function booted()
