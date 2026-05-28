@@ -94,6 +94,7 @@ export class App implements OnInit, OnDestroy {
   public readonly paymentMethod = signal<string>('cash');
   public readonly posCategoryFilter = signal<string>('Tất cả');
   public readonly posSearchQuery = signal<string>('');
+  public readonly editingOrderId = signal<number | null>(null);
 
   // Trạng thái Chọn size ở POS
   public readonly isVariantSelectModalOpen = signal<boolean>(false);
@@ -1040,6 +1041,51 @@ export class App implements OnInit, OnDestroy {
     this.closeVariantSelectModal();
   }
 
+  // Khởi động chế độ chỉnh sửa đơn hàng đang chờ
+  public editOrder(order: any) {
+    if (!order) return;
+    
+    this.isOrderSubmitting.set(true);
+    
+    // Tái cấu trúc giỏ hàng từ order items
+    const loadedCart: { product: any, variant: any | null, quantity: number }[] = [];
+    const productsList = this.products();
+    
+    order.items.forEach((item: any) => {
+      const product = productsList.find(p => p.id === item.product_id);
+      if (product) {
+        let variant: any = null;
+        if (item.product_variant_id && product.variants) {
+          variant = product.variants.find((v: any) => v.id === item.product_variant_id) || null;
+        }
+        loadedCart.push({
+          product,
+          variant,
+          quantity: Number(item.quantity) || 1
+        });
+      }
+    });
+    
+    this.cart.set(loadedCart);
+    this.tableNumber.set(order.table_number || '');
+    this.paymentMethod.set(order.payment_method || 'cash');
+    this.editingOrderId.set(order.id);
+    
+    // Chuyển sang tab POS để chỉnh sửa
+    this.setTabState('pos');
+    
+    this.showToast(`Đang chỉnh sửa đơn hàng ${order.order_code || ('#' + order.id)}`, 'success');
+    this.isOrderSubmitting.set(false);
+  }
+
+  // Hủy chỉnh sửa đơn hàng
+  public cancelEditOrder() {
+    this.clearCart();
+    this.editingOrderId.set(null);
+    this.setTabState('orders');
+    this.showToast('Đã hủy chỉnh sửa đơn hàng', 'success');
+  }
+
   // Toggles trạng thái mở/đóng Dropdown thanh toán
   public togglePaymentDropdown() {
     this.isPaymentDropdownOpen.set(!this.isPaymentDropdownOpen());
@@ -1070,7 +1116,7 @@ export class App implements OnInit, OnDestroy {
     this.refreshOrders();
   }
 
-  // Tạo đơn hàng mới từ POS
+  // Tạo hoặc Cập nhật đơn hàng từ POS
   public submitOrder() {
     if (!this.web3Service.walletConnected()) {
       this.showToast('Vui lòng kết nối ví Web3 để thanh toán và ghi nhận đơn hàng!', 'error');
@@ -1093,20 +1139,45 @@ export class App implements OnInit, OnDestroy {
       }))
     };
 
-    this.apiService.createOrder(orderData).subscribe({
-      next: (res) => {
-        this.showToast('Đã ghi nhận đơn hàng thành công! Trạng thái: Đang chờ xác nhận.', 'success');
-        this.clearCart();
-        this.isOrderSubmitting.set(false);
-        // Tự động chuyển qua trang Sổ đơn hàng để quản lý
-        this.setTab('orders');
-      },
-      error: (err) => {
-        console.error('Lỗi đặt đơn:', err);
-        this.showToast('Không thể tạo đơn hàng. Vui lòng kiểm tra lại!', 'error');
-        this.isOrderSubmitting.set(false);
-      }
-    });
+    const editId = this.editingOrderId();
+
+    if (editId !== null) {
+      // Gọi API cập nhật đơn hàng cũ
+      this.apiService.updateOrder(editId, orderData).subscribe({
+        next: (res) => {
+          this.showToast('Cập nhật đơn hàng thành công!', 'success');
+          this.clearCart();
+          this.editingOrderId.set(null);
+          this.isOrderSubmitting.set(false);
+          // Tự động chuyển qua trang Sổ đơn hàng
+          this.setTabState('orders');
+          this.refreshOrders();
+        },
+        error: (err) => {
+          console.error('Lỗi cập nhật đơn:', err);
+          const errorMsg = err.error?.message || 'Không thể cập nhật đơn hàng. Vui lòng kiểm tra lại!';
+          this.showToast(errorMsg, 'error');
+          this.isOrderSubmitting.set(false);
+        }
+      });
+    } else {
+      // Gọi API tạo đơn hàng mới
+      this.apiService.createOrder(orderData).subscribe({
+        next: (res) => {
+          this.showToast('Đã ghi nhận đơn hàng thành công! Trạng thái: Đang chờ xác nhận.', 'success');
+          this.clearCart();
+          this.isOrderSubmitting.set(false);
+          // Tự động chuyển qua trang Sổ đơn hàng để quản lý
+          this.setTabState('orders');
+          this.refreshOrders();
+        },
+        error: (err) => {
+          console.error('Lỗi đặt đơn:', err);
+          this.showToast('Không thể tạo đơn hàng. Vui lòng kiểm tra lại!', 'error');
+          this.isOrderSubmitting.set(false);
+        }
+      });
+    }
   }
 
   // ==================== CHỨC NĂNG SỔ ĐƠN HÀNG ====================

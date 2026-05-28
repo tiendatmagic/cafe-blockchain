@@ -107,6 +107,10 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/orders`, order, { headers: this.getHeaders() });
   }
 
+  public updateOrder(id: number, order: { table_number?: string, payment_method: string, items: { product_id: number, quantity: number }[] }): Observable<any> {
+    return this.http.put(`${this.baseUrl}/orders/${id}`, order, { headers: this.getHeaders() });
+  }
+
   public updateOrderStatus(id: number, status: string): Observable<any> {
     return this.http.put(`${this.baseUrl}/orders/${id}/status`, { status }, { headers: this.getHeaders() });
   }

@@ -1999,6 +1999,16 @@
                     </div>
 
                     <!-- Nút đặt đơn hàng -->
+                    <!-- Nút Hủy chỉnh sửa đơn hàng -->
+                    @if (editingOrderId()) {
+                      <button
+                        (click)="cancelEditOrder()"
+                        class="w-full mb-3.5 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-600 hover:text-slate-800 dark:text-slate-350 dark:hover:text-white font-extrabold text-xs transition-all flex items-center justify-center gap-1"
+                      >
+                        ✕ Hủy chỉnh sửa đơn hàng
+                      </button>
+                    }
+
                     <button
                       (click)="submitOrder()"
                       [disabled]="isOrderSubmitting() || !web3Service.walletConnected()"
@@ -2008,7 +2018,7 @@
                         <div
                           class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"
                         ></div>
-                        <span>ĐANG GHI NHẬN ĐƠN HÀNG...</span>
+                        <span>{{ editingOrderId() ? 'ĐANG CẬP NHẬT ĐƠN...' : 'ĐANG GHI NHẬN ĐƠN HÀNG...' }}</span>
                       } @else {
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -2024,7 +2034,7 @@
                             d="M13 10V3L4 14h7v7l9-11h-7z"
                           />
                         </svg>
-                        <span>GHI NHẬN & ĐẶT ĐƠN HÀNG</span>
+                        <span>{{ editingOrderId() ? 'CẬP NHẬT ĐƠN HÀNG' : 'GHI NHẬN & ĐẶT ĐƠN HÀNG' }}</span>
                       }
                     </button>
                   </div>
@@ -3090,12 +3100,22 @@
                           }
                         </td>
                         <td class="p-4.5 pr-6 text-right whitespace-nowrap">
-                          <button
-                            (click)="viewOrderDetail(order)"
-                            class="text-xs font-bold text-purple-600 hover:text-purple-700 hover:underline"
-                          >
-                            Chi tiết
-                          </button>
+                          <div class="flex items-center justify-end gap-2.5">
+                            <button
+                              (click)="viewOrderDetail(order)"
+                              class="text-xs font-bold text-purple-600 hover:text-purple-700 hover:underline"
+                            >
+                              Chi tiết
+                            </button>
+                            @if (order.status === 'pending' && order.blockchain_status === 'none') {
+                              <button
+                                (click)="editOrder(order)"
+                                class="px-2 py-1 rounded-lg bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] hover:bg-[var(--dynamic-primary)]/20 text-xs font-bold transition-all"
+                              >
+                                Sửa
+                              </button>
+                            }
+                          </div>
                         </td>
                       </tr>
                     }

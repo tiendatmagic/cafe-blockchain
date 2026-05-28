@@ -41,6 +41,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders', [OrderController::class, 'index']);
     Route::get('/orders/{id}', [OrderController::class, 'show']);
     Route::post('/orders', [OrderController::class, 'store']); // Create order doesn't require owner
+    Route::put('/orders/{id}', [OrderController::class, 'update']); // Edit order doesn't require owner
     Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus'])->middleware(RequireOwner::class); // Update status requires owner
     Route::put('/orders/{id}/sync', [OrderController::class, 'syncBlockchain'])->middleware(RequireOwner::class); // Sync blockchain requires owner
 

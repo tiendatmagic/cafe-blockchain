@@ -123,6 +123,100 @@ class OrderController extends Controller
     }
 
     /**
+     * Cập nhật đơn hàng (Thêm/Bớt món cho đơn hàng đang chờ)
+     */
+    public function update(Request $request, $id)
+    {
+        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $order = Order::where('store_owner_address', $storeOwner)->findOrFail($id);
+
+        // Ràng buộc bảo mật: chỉ cho phép sửa đơn hàng ở trạng thái pending và chưa đồng bộ blockchain
+        if ($order->status !== 'pending') {
+            return response()->json([
+                'message' => 'Chỉ có thể chỉnh sửa đơn hàng đang ở trạng thái chờ (pending)!'
+            ], 400);
+        }
+
+        if ($order->blockchain_status !== 'none') {
+            return response()->json([
+                'message' => 'Không thể chỉnh sửa đơn hàng đã được đồng bộ lên Blockchain!'
+            ], 400);
+        }
+
+        $validated = $request->validate([
+            'table_number' => 'nullable|string|max:50',
+            'payment_method' => 'required|string|in:cash,bank_transfer,crypto',
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.product_variant_id' => 'nullable|exists:product_variants,id',
+            'items.*.quantity' => 'required|integer|min:1',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $totalAmount = 0;
+            $itemsData = [];
+
+            // Tính tổng tiền và lấy chi tiết món
+            foreach ($validated['items'] as $item) {
+                $product = Product::where('store_owner_address', $storeOwner)->findOrFail($item['product_id']);
+                
+                $price = $product->price;
+                $variantId = $item['product_variant_id'] ?? null;
+
+                if ($variantId) {
+                    $variant = $product->variants()->where('id', $variantId)->first();
+                    if ($variant) {
+                        $price = $variant->price;
+                    } else {
+                        throw new \Exception("Biến thể sản phẩm không hợp lệ cho món: " . $product->name);
+                    }
+                }
+
+                $quantity = $item['quantity'];
+                $subTotal = $price * $quantity;
+                $totalAmount += $subTotal;
+
+                $itemsData[] = [
+                    'product_id' => $product->id,
+                    'product_variant_id' => $variantId,
+                    'quantity' => $quantity,
+                    'price' => $price,
+                ];
+            }
+
+            // Cập nhật thông tin đơn hàng
+            $order->update([
+                'table_number' => $validated['table_number'] ?? null,
+                'total_amount' => $totalAmount,
+                'payment_method' => $validated['payment_method'],
+            ]);
+
+            // Xóa toàn bộ chi tiết đơn hàng cũ và tạo mới
+            $order->items()->delete();
+
+            foreach ($itemsData as $itemData) {
+                $itemData['order_id'] = $order->id;
+                OrderItem::create($itemData);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Cập nhật đơn hàng thành công.',
+                'data' => Order::with(['items.product', 'items.variant'])->find($order->id)
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Lỗi cập nhật đơn hàng: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Cập nhật trạng thái đơn hàng (completed / cancelled)
      */
     public function updateStatus(Request $request, $id)
