@@ -209,7 +209,8 @@ export class App implements OnInit, OnDestroy {
     company_name: '',
     tax_code: '',
     representative_name: '',
-    website: ''
+    website: '',
+    business_status: 'Đang hoạt động'
   });
   public readonly customerGroupForm = signal<any>({
     name: ''
@@ -2404,7 +2405,8 @@ export class App implements OnInit, OnDestroy {
           ...form,
           company_name: cachedData.name || form.company_name,
           address: cachedData.address || form.address,
-          representative_name: cachedData.representative || form.representative_name
+          representative_name: cachedData.representative || form.representative_name,
+          business_status: cachedData.status || 'Đang hoạt động'
         }));
         this.lastSearchedTaxCode = cleanTax;
         this.showToast('Đã khôi phục thông tin từ bộ nhớ đệm!', 'success');
@@ -2426,7 +2428,8 @@ export class App implements OnInit, OnDestroy {
               ...form,
               company_name: res.data.name || form.company_name,
               address: res.data.address || form.address,
-              representative_name: res.data.representative || form.representative_name
+              representative_name: res.data.representative || form.representative_name,
+              business_status: res.data.status || 'Đang hoạt động'
             }));
             this.showToast('Đã tìm thấy thông tin doanh nghiệp!', 'success');
           } else {
@@ -2439,6 +2442,18 @@ export class App implements OnInit, OnDestroy {
           this.showToast('Lỗi kết nối khi tra cứu mã số thuế!', 'error');
         });
     }, 1000);
+  }
+
+  public getBusinessStatusColor(status: string): 'emerald' | 'amber' | 'rose' {
+    if (!status) return 'emerald';
+    const s = status.toLowerCase();
+    if (s.includes('ngừng') || s.includes('chấm dứt') || s.includes('không hoạt động') || s.includes('đóng cửa') || s.includes('nguong')) {
+      return 'rose';
+    }
+    if (s.includes('tạm nghỉ') || s.includes('tạm ngưng') || s.includes('tam nghi') || s.includes('tam ngung')) {
+      return 'amber';
+    }
+    return 'emerald';
   }
 
   public openAddCustomerModal() {
@@ -2456,7 +2471,8 @@ export class App implements OnInit, OnDestroy {
       company_name: '',
       tax_code: '',
       representative_name: '',
-      website: ''
+      website: '',
+      business_status: 'Đang hoạt động'
     });
     this.isCustomerModalOpen.set(true);
   }
@@ -2476,7 +2492,8 @@ export class App implements OnInit, OnDestroy {
       company_name: customer.company_name || '',
       tax_code: customer.tax_code || '',
       representative_name: customer.representative_name || '',
-      website: customer.website || ''
+      website: customer.website || '',
+      business_status: customer.business_status || 'Đang hoạt động'
     });
     this.isCustomerModalOpen.set(true);
   }
@@ -2502,7 +2519,11 @@ export class App implements OnInit, OnDestroy {
   public saveCustomer() {
     const form = this.customerForm();
     if (!form.name || !form.name.trim()) {
-      this.showToast('Tên khách hàng là bắt buộc!', 'error');
+      this.showToast('Tên người đại diện liên hệ là bắt buộc!', 'error');
+      return;
+    }
+    if (form.type === 'business' && (!form.company_name || !form.company_name.trim())) {
+      this.showToast('Tên công ty / Doanh nghiệp là bắt buộc!', 'error');
       return;
     }
 

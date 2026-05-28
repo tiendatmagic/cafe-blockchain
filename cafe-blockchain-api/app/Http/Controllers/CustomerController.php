@@ -41,6 +41,7 @@ class CustomerController extends Controller
             'tax_code' => 'nullable|string|max:50',
             'representative_name' => 'nullable|string|max:150',
             'website' => 'nullable|string|max:150',
+            'business_status' => 'nullable|string|max:100',
         ]);
 
         $customer = Customer::create([
@@ -56,6 +57,7 @@ class CustomerController extends Controller
             'tax_code' => $validated['tax_code'] ?? null,
             'representative_name' => $validated['representative_name'] ?? null,
             'website' => $validated['website'] ?? null,
+            'business_status' => $validated['business_status'] ?? 'Đang hoạt động',
         ]);
 
         if (!empty($validated['group_ids'])) {
@@ -96,6 +98,7 @@ class CustomerController extends Controller
             'tax_code' => 'nullable|string|max:50',
             'representative_name' => 'nullable|string|max:150',
             'website' => 'nullable|string|max:150',
+            'business_status' => 'nullable|string|max:100',
         ]);
 
         $customer->update([
@@ -110,6 +113,7 @@ class CustomerController extends Controller
             'tax_code' => $validated['tax_code'] ?? null,
             'representative_name' => $validated['representative_name'] ?? null,
             'website' => $validated['website'] ?? null,
+            'business_status' => $validated['business_status'] ?? 'Đang hoạt động',
         ]);
 
         $customer->groups()->sync($validated['group_ids'] ?? []);

@@ -22,7 +22,8 @@ class Customer extends Model
         'company_name',
         'tax_code',
         'representative_name',
-        'website'
+        'website',
+        'business_status'
     ];
 
     protected static function booted()
