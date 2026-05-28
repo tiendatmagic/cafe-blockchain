@@ -5789,20 +5789,6 @@
                     Tất cả khu vực
                   </button>
 
-                  @if (isTablesLoading()) {
-                    <!-- TABLES SKELETON -->
-                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 animate-pulse pt-4">
-                      @for (i of [1,2,3,4,5,6]; track i) {
-                        <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm h-32 flex flex-col justify-between items-center text-center">
-                          <div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-2/3"></div>
-                          <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-1/2"></div>
-                          <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4"></div>
-                        </div>
-                      }
-                    </div>
-                  }
-
-                  <div [class.hidden]="isTablesLoading()" class="space-y-6">
                   @for (area of areas(); track area.id) {
                     <button
                       (click)="activeAreaFilter.set(area.id.toString())"
@@ -5870,10 +5856,24 @@
               </div>
             </div>
 
-            <!-- SƠ ĐỒ LƯỚI BÀN ĂN (RICH AESTHETICS GRID) -->
-            <div
-              class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4"
-            >
+            @if (isTablesLoading()) {
+              <!-- TABLES SKELETON -->
+              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 animate-pulse pt-4">
+                @for (i of [1,2,3,4,5,6]; track i) {
+                  <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm h-32 flex flex-col justify-between items-center text-center">
+                    <div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-2/3"></div>
+                    <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-1/2"></div>
+                    <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4"></div>
+                  </div>
+                }
+              </div>
+            }
+
+            <div [class.hidden]="isTablesLoading()" class="space-y-6">
+              <!-- SƠ ĐỒ LƯỚI BÀN ĂN (RICH AESTHETICS GRID) -->
+              <div
+                class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4"
+              >
               @if (filteredDiningTables().length === 0) {
                 <div
                   class="col-span-full py-16 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 flex flex-col items-center justify-center gap-3"
