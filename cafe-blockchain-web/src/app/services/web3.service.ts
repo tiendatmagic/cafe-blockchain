@@ -2,6 +2,8 @@ import { Injectable, signal, computed } from '@angular/core';
 import { BrowserProvider, Contract, ContractFactory, JsonRpcProvider, formatEther, parseEther } from 'ethers';
 import { CAFE_WEB3_POS_ABI } from './contract-abi';
 import { CAFE_WEB3_POS_BYTECODE } from './contract-bytecode';
+import { CAFE_WEB3_FINANCE_ABI } from './finance-contract-abi';
+import { CAFE_WEB3_FINANCE_BYTECODE } from './finance-contract-bytecode';
 import { Subject } from 'rxjs';
 
 @Injectable({
@@ -21,6 +23,7 @@ export class Web3Service {
 
   // Cấu hình blockchain (sẽ được cập nhật từ database thông qua ApiService)
   public readonly contractAddress = signal<string>('');
+  public readonly financeContractAddress = signal<string>('');
   public readonly rpcUrl = signal<string>('https://ethereum-sepolia.publicnode.com');
   public readonly explorerUrl = signal<string>('https://sepolia.etherscan.io');
   public readonly explorerApiKey = signal<string>('');
@@ -155,8 +158,9 @@ export class Web3Service {
   /**
    * Cập nhật cấu hình Blockchain từ API
    */
-  public updateConfig(config: { contract_address?: string, rpc_url?: string, explorer_url?: string, chain_id?: string, explorer_api_key?: string }) {
+  public updateConfig(config: { contract_address?: string, finance_contract_address?: string, rpc_url?: string, explorer_url?: string, chain_id?: string, explorer_api_key?: string }) {
     this.contractAddress.set(config.contract_address || '');
+    if (config.finance_contract_address !== undefined) this.financeContractAddress.set(config.finance_contract_address || '');
     if (config.rpc_url) this.rpcUrl.set(config.rpc_url);
     if (config.explorer_url) this.explorerUrl.set(config.explorer_url);
     if (config.chain_id) this.configuredChainId.set(config.chain_id);
@@ -760,6 +764,262 @@ export class Web3Service {
         success: false,
         error: err.reason || err.message || 'Giao dịch deploy bị từ chối hoặc lỗi chuỗi.'
       };
+    }
+  }
+
+  /**
+   * Tự động Deploy Smart Contract Tài chính mới lên Blockchain EVM
+   */
+  public async deployFinanceContractOnChain(targetChainId?: string): Promise<{ contractAddress: string; success: boolean; error?: string }> {
+    if (!this.walletConnected() || !this.currentAccount()) {
+      return { contractAddress: '', success: false, error: 'Chưa kết nối ví Web3!' };
+    }
+    if (!this.provider) {
+      return { contractAddress: '', success: false, error: 'Không tìm thấy provider ví Web3!' };
+    }
+
+    const hasCorrectNetwork = await this.ensureCorrectNetwork(targetChainId);
+    if (!hasCorrectNetwork) {
+      return { contractAddress: '', success: false, error: this.walletError() || 'Vui lòng chuyển mạng!' };
+    }
+
+    try {
+      this.provider = new BrowserProvider((window as any).ethereum);
+      const signer = await this.provider.getSigner();
+      const factory = new ContractFactory(CAFE_WEB3_FINANCE_ABI, CAFE_WEB3_FINANCE_BYTECODE, signer);
+      
+      const contract = await factory.deploy();
+      await contract.waitForDeployment();
+      
+      const newAddress = await contract.getAddress();
+      this.financeContractAddress.set(newAddress);
+      
+      return {
+        contractAddress: newAddress,
+        success: true
+      };
+    } catch (err: any) {
+      console.error('Loi deploy Smart Contract Tai chinh:', err);
+      return {
+        contractAddress: '',
+        success: false,
+        error: err.reason || err.message || 'Giao dịch deploy bị từ chối hoặc lỗi chuỗi.'
+      };
+    }
+  }
+
+  /**
+   * Ghi nhận giao dịch thu chi tài chính lên Smart Contract Blockchain
+   */
+  public async recordTransactionOnChain(
+    txId: number,
+    type: 'thu' | 'chi',
+    amount: number,
+    category: string,
+    description: string
+  ): Promise<{ txHash: string; success: boolean; error?: string }> {
+    if (!this.walletConnected() || !this.currentAccount()) {
+      return { txHash: '', success: false, error: 'Chưa kết nối ví Web3!' };
+    }
+
+    if (!this.provider) {
+      return { txHash: '', success: false, error: 'Không tìm thấy provider ví!' };
+    }
+
+    const hasCorrectNetwork = await this.ensureCorrectNetwork();
+    if (!hasCorrectNetwork) {
+      return { txHash: '', success: false, error: this.walletError() || 'Vui lòng chuyển sang đúng mạng được cấu hình!' };
+    }
+
+    try {
+      const signer = await this.provider.getSigner();
+      const contract = new Contract(this.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, signer);
+
+      const txType = type === 'thu' ? 1 : 0;
+
+      const tx = await contract['recordTransaction'](
+        txId,
+        txType,
+        Math.round(amount),
+        category,
+        description || ''
+      );
+
+      return {
+        txHash: tx.hash,
+        success: true
+      };
+
+    } catch (err: any) {
+      console.error('Loi ky giao dich blockchain thu chi:', err);
+      return {
+        txHash: '',
+        success: false,
+        error: err.reason || err.message || 'Giao dịch bị từ chối hoặc lỗi chuỗi.'
+      };
+    }
+  }
+
+  /**
+   * Truy vấn tx_hash gốc của giao dịch thu chi đã tồn tại trên Blockchain.
+   */
+  public async getOriginalTxHashForTransaction(txId: number): Promise<string | null> {
+    if (!this.provider || !this.financeContractAddress()) return null;
+    try {
+      const contract = new Contract(this.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, this.provider);
+
+      let orderTimestamp = 0;
+      try {
+        const txData = await contract['getTransaction'](txId);
+        if (!txData || Number(txData[0]) === 0) {
+          console.warn('[Blockchain] Transaction', txId, 'khong ton tai tren Smart Contract.');
+          return null;
+        }
+        orderTimestamp = Number(txData[5]); // timestamp field
+      } catch {
+        console.warn('[Blockchain] Khong the goi getTransaction() - transaction co the khong ton tai.');
+        return null;
+      }
+
+      const chainId = this.chainId() || this.configuredChainId();
+
+      const explorerApiUrl = this.getExplorerApiUrl(chainId);
+      const apiKey = this.explorerApiKey();
+      if (explorerApiUrl && apiKey && apiKey.trim() !== '') {
+        try {
+          const topic1 = '0x' + txId.toString(16).padStart(64, '0');
+          const topic0 = contract.interface.getEvent('TransactionRecorded')?.topicHash;
+          
+          if (topic0) {
+            const url = `${explorerApiUrl}?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${this.financeContractAddress()}&topic0=${topic0}&topic1=${topic1}&apikey=${apiKey}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.status === '1' && data.result && data.result.length > 0) {
+              const txHash = data.result[0].transactionHash;
+              return txHash;
+            }
+          }
+        } catch (apiErr) {
+          console.error('[Blockchain] Loi goi API Block Explorer, dang fallback ve RPC scan:', apiErr);
+        }
+      }
+
+      const backupRpcUrls = this.getBackupRpcUrls(chainId);
+      const rpcUrlsToTry = [this.rpcUrl(), ...backupRpcUrls].filter(url => !!url);
+      
+      let eventsFound: any[] = [];
+
+      for (const rpcUrl of rpcUrlsToTry) {
+        try {
+          const backupProvider = new JsonRpcProvider(rpcUrl);
+          const backupContract = new Contract(this.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, backupProvider);
+
+          const currentBlock = await backupProvider.getBlockNumber();
+          const currentTime = Math.floor(Date.now() / 1000);
+
+          const blockTime = this.getAvgBlockTime(chainId);
+          const timeDiff = currentTime - orderTimestamp;
+          const blockDiff = Math.floor(timeDiff / blockTime);
+          const approxBlock = currentBlock - blockDiff;
+
+          const scanStart = Math.max(0, approxBlock - 100000);
+          const scanEnd = Math.min(currentBlock, approxBlock + 100000);
+          const chunkSize = 10000;
+
+          const filter = backupContract.filters['TransactionRecorded'](txId);
+          let found = false;
+
+          for (let start = scanStart; start <= scanEnd; start += chunkSize) {
+            const end = Math.min(start + chunkSize - 1, scanEnd);
+            try {
+              const events = await backupContract.queryFilter(filter, start, end);
+              if (events.length > 0) {
+                eventsFound = events;
+                found = true;
+                break;
+              }
+            } catch {
+              continue;
+            }
+          }
+
+          if (found) break;
+        } catch (rpcErr) {
+          continue;
+        }
+      }
+
+      if (eventsFound.length > 0) {
+        return eventsFound[0].transactionHash;
+      }
+
+      return null;
+    } catch (err) {
+      console.error('[Blockchain] Loi tong quat khi truy van tx_hash goc thu chi:', err);
+      return null;
+    }
+  }
+
+  /**
+   * Truy vấn danh sách ví Kế toán hiện tại trực tiếp từ Smart Contract Tài chính
+   */
+  public async getFinanceOwnersFromChain(): Promise<string[]> {
+    if (!this.provider || !this.financeContractAddress()) return [];
+    try {
+      const contract = new Contract(this.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, this.provider);
+      return await contract['getOwners']();
+    } catch (e) {
+      console.error('Loi doc danh sach finance owners tu chuoi:', e);
+      return [];
+    }
+  }
+
+  /**
+   * Thêm các Owner ví kế toán khác trên Smart Contract Tài chính
+   */
+  public async addFinanceOwnersOnChain(newOwners: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
+    if (!this.provider || !this.financeContractAddress()) {
+      return { txHash: '', success: false, error: 'Chưa kết nối ví hoặc chưa cấu hình hợp đồng Tài chính!' };
+    }
+
+    const hasCorrectNetwork = await this.ensureCorrectNetwork();
+    if (!hasCorrectNetwork) {
+      return { txHash: '', success: false, error: this.walletError() || 'Vui lòng chuyển mạng!' };
+    }
+
+    try {
+      const signer = await this.provider.getSigner();
+      const contract = new Contract(this.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, signer);
+
+      const tx = await contract['addOwners'](newOwners);
+      return { txHash: tx.hash, success: true };
+    } catch (err: any) {
+      return { txHash: '', success: false, error: err.reason || err.message };
+    }
+  }
+
+  /**
+   * Xóa các Owner ví kế toán khác trên Smart Contract Tài chính
+   */
+  public async removeFinanceOwnersOnChain(ownersToRemove: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
+    if (!this.provider || !this.financeContractAddress()) {
+      return { txHash: '', success: false, error: 'Chưa kết nối ví hoặc chưa cấu hình hợp đồng Tài chính!' };
+    }
+
+    const hasCorrectNetwork = await this.ensureCorrectNetwork();
+    if (!hasCorrectNetwork) {
+      return { txHash: '', success: false, error: this.walletError() || 'Vui lòng chuyển mạng!' };
+    }
+
+    try {
+      const signer = await this.provider.getSigner();
+      const contract = new Contract(this.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, signer);
+
+      const tx = await contract['removeOwners'](ownersToRemove);
+      return { txHash: tx.hash, success: true };
+    } catch (err: any) {
+      return { txHash: '', success: false, error: err.reason || err.message };
     }
   }
 }

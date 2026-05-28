@@ -43,15 +43,23 @@ export class App implements OnInit, OnDestroy {
   public readonly unsyncedCompletedOrders = computed(() => {
     return this.orders().filter(o => o.status === 'completed' && o.blockchain_status === 'none');
   });
+
+  // Tự động lọc ra danh sách giao dịch thu chi chưa đồng bộ Blockchain
+  public readonly unsyncedTransactions = computed(() => {
+    return this.transactions().filter(t => t.blockchain_status === 'none' || t.blockchain_status === 'failed');
+  });
   public readonly settings = signal<any>({
     store_name: 'Blockchain Cafe & Bistro',
     contract_address: '',
+    finance_contract_address: '',
     rpc_url: 'https://ethereum-sepolia.publicnode.com',
     chain_id: '11155111',
     explorer_url: 'https://sepolia.etherscan.io',
     explorer_api_key: '',
     primary_color: '#7c3aed',
-    secondary_color: '#c084fc'
+    secondary_color: '#c084fc',
+    has_synced_orders: false,
+    has_synced_transactions: false
   });
 
   // Tỷ giá Crypto phục vụ Dashboard sang trọng theo từng mạng EVM
@@ -123,6 +131,11 @@ export class App implements OnInit, OnDestroy {
   public readonly deletingProductData = signal<any>(null);
   public readonly isDeleteOwnerConfirmOpen = signal<boolean>(false);
   public readonly deletingOwnerAddress = signal<string>('');
+  public readonly financeOwnersFromChain = signal<string[]>([]);
+  public readonly newFinanceOwnerAddress = signal<string>('');
+  public readonly isFinanceOwnerActionLoading = signal<boolean>(false);
+  public readonly isDeleteFinanceOwnerConfirmOpen = signal<boolean>(false);
+  public readonly deletingFinanceOwnerAddress = signal<string>('');
 
   // Trạng thái Sổ đơn hàng (Bộ lọc)
   public readonly orderStatusFilter = signal<string>('all');
@@ -134,6 +147,7 @@ export class App implements OnInit, OnDestroy {
   public readonly configForm = signal<any>({
     store_name: '',
     contract_address: '',
+    finance_contract_address: '',
     rpc_url: '',
     chain_id: '',
     explorer_url: '',
@@ -1776,11 +1790,48 @@ export class App implements OnInit, OnDestroy {
     this.isDeploying.set(false);
   }
 
+  // Trạng thái đang deploy smart contract tài chính
+  public readonly isDeployingFinance = signal<boolean>(false);
+
+  // Tự động deploy Smart Contract Tài chính mới từ giao diện
+  public async deployFinanceContract() {
+    if (!this.web3Service.walletConnected()) {
+      this.showToast('Vui lòng kết nối ví Web3 để thực hiện tác vụ này!', 'error');
+      return;
+    }
+
+    // Đồng bộ cấu hình mạng tạm thời từ Form vào Web3Service để đảm bảo deploy đúng mạng đang chọn trên Form
+    this.web3Service.updateConfig({
+      rpc_url: this.configForm().rpc_url,
+      chain_id: this.configForm().chain_id,
+      explorer_url: this.configForm().explorer_url
+    });
+
+    this.isDeployingFinance.set(true);
+    this.showToast('Vui lòng xác nhận giao dịch Deploy Smart Contract Tài chính trên ví của bạn...', 'success');
+
+    const res = await this.web3Service.deployFinanceContractOnChain(this.configForm().chain_id);
+    if (res.success && res.contractAddress) {
+      this.configForm.update(form => ({
+        ...form,
+        finance_contract_address: res.contractAddress
+      }));
+      this.web3Service.updateConfig({ finance_contract_address: res.contractAddress });
+      this.showToast(`Deploy Smart Contract Tài chính thành công! Địa chỉ mới: ${res.contractAddress}. Nhấn LƯU CẤU HÌNH HỆ THỐNG để ghi nhận!`, 'success');
+    } else {
+      this.showToast(res.error || 'Deploy Smart Contract Tài chính thất bại!', 'error');
+    }
+    this.isDeployingFinance.set(false);
+  }
+
   // Tải danh sách Owners trực tiếp từ Smart Contract Blockchain
   public async loadOwnersList() {
     if (this.web3Service.walletConnected()) {
       const list = await this.web3Service.getOwnersFromChain();
       this.ownersFromChain.set(list);
+
+      // Đồng thời tải danh sách ví Kế toán
+      await this.loadFinanceOwnersList();
     }
   }
 
@@ -1815,6 +1866,89 @@ export class App implements OnInit, OnDestroy {
       this.showToast(res.error || 'Thêm Owner thất bại!', 'error');
     }
     this.isOwnerActionLoading.set(false);
+  }
+
+  // Tải danh sách ví Kế toán trực tiếp từ Smart Contract Blockchain
+  public async loadFinanceOwnersList() {
+    if (this.web3Service.walletConnected() && this.web3Service.financeContractAddress()) {
+      const list = await this.web3Service.getFinanceOwnersFromChain();
+      this.financeOwnersFromChain.set(list);
+    }
+  }
+
+  // Thêm ví Kế toán mới trên Blockchain
+  public async addFinanceOwnerAddress() {
+    if (!this.web3Service.walletConnected()) {
+      this.showToast('Vui lòng kết nối ví Web3 để thực hiện tác vụ này!', 'error');
+      return;
+    }
+    const address = this.newFinanceOwnerAddress().trim();
+    if (!address.startsWith('0x') || address.length !== 42) {
+      this.showToast('Địa chỉ ví EVM không hợp lệ (phải bắt đầu bằng 0x và dài 42 ký tự)!', 'error');
+      return;
+    }
+
+    this.isFinanceOwnerActionLoading.set(true);
+    this.showToast('Vui lòng xác nhận giao dịch thêm ví Kế toán trên ví của bạn...', 'success');
+
+    const res = await this.web3Service.addFinanceOwnersOnChain([address]);
+    if (res.success && res.txHash) {
+      this.showToast(`Giao dịch thêm ví Kế toán thành công! TxHash: ${res.txHash}`, 'success');
+      this.newFinanceOwnerAddress.set('');
+
+      // Đồng bộ đăng ký ví kế toán vào Laravel Backend (dùng chung API đăng ký ví)
+      this.apiService.registerCashier(address).subscribe({
+        next: () => console.log('Đã đồng bộ đăng ký kế toán vào DB.'),
+        error: (err) => console.error('Lỗi đồng bộ đăng ký kế toán:', err)
+      });
+
+      await this.loadFinanceOwnersList();
+    } else {
+      this.showToast(res.error || 'Thêm ví Kế toán thất bại!', 'error');
+    }
+    this.isFinanceOwnerActionLoading.set(false);
+  }
+
+  public removeFinanceOwnerAddress(address: string) {
+    if (!this.web3Service.walletConnected()) {
+      this.showToast('Vui lòng kết nối ví Web3 để thực hiện tác vụ này!', 'error');
+      return;
+    }
+    if (address.toLowerCase() === this.web3Service.currentAccount().toLowerCase()) {
+      this.showToast('Không thể tự xóa ví chính mình khỏi quyền quản trị!', 'error');
+      return;
+    }
+
+    this.deletingFinanceOwnerAddress.set(address);
+    this.isDeleteFinanceOwnerConfirmOpen.set(true);
+  }
+
+  public async confirmDeleteFinanceOwner() {
+    if (this.isFinanceOwnerActionLoading()) return;
+
+    const address = this.deletingFinanceOwnerAddress();
+    if (!address) return;
+
+    this.isFinanceOwnerActionLoading.set(true);
+    this.showToast('Vui lòng xác nhận giao dịch xóa ví Kế toán trên ví của bạn...', 'success');
+
+    const res = await this.web3Service.removeFinanceOwnersOnChain([address]);
+    if (res.success && res.txHash) {
+      this.showToast(`Giao dịch xóa ví Kế toán thành công! TxHash: ${res.txHash}`, 'success');
+      this.isDeleteFinanceOwnerConfirmOpen.set(false);
+      this.deletingFinanceOwnerAddress.set('');
+
+      // Đồng bộ gỡ ví kế toán khỏi Laravel Backend
+      this.apiService.removeCashier(address).subscribe({
+        next: () => console.log('Đã đồng bộ gỡ kế toán khỏi DB.'),
+        error: (err) => console.error('Lỗi đồng bộ gỡ kế toán khỏi DB:', err)
+      });
+
+      await this.loadFinanceOwnersList();
+    } else {
+      this.showToast(res.error || 'Xóa ví Kế toán thất bại!', 'error');
+    }
+    this.isFinanceOwnerActionLoading.set(false);
   }
 
   public removeOwnerAddress(address: string) {
@@ -2004,6 +2138,119 @@ export class App implements OnInit, OnDestroy {
       next: (res) => this.transactions.set(res),
       error: (err) => console.error('Loi refresh thu chi:', err)
     });
+  }
+
+  // Đồng bộ giao dịch Thu Chi lên Blockchain EVM
+  public async syncTransactionToBlockchain(tx: any) {
+    // 0. Kiểm tra tính toàn vẹn của dữ liệu giao dịch (Chống hack DB)
+    if (tx.is_verified === false) {
+      this.showToast('CẢNH BÁO: Dữ liệu tài chính của giao dịch này đã bị thay đổi trái phép trong Database! Không thể đồng bộ.', 'error');
+      return;
+    }
+
+    // 1. Kiểm tra kết nối ví
+    if (!this.web3Service.walletConnected()) {
+      this.showToast('Vui lòng kết nối ví Web3 để thực hiện tác vụ này!', 'error');
+      return;
+    }
+
+    // Kiểm tra xem quán đã deploy contract chưa
+    if (!this.web3Service.financeContractAddress() || this.web3Service.financeContractAddress().trim() === '') {
+      this.showToast('Cửa hàng chưa được cấu hình Smart Contract Tài chính! Vui lòng truy cập mục Cấu hình hệ thống để deploy contract trước.', 'error');
+      return;
+    }
+
+    // 2. Kiểm tra xem ví có phải Owner được ủy quyền không
+    if (!this.web3Service.isOwnerContract()) {
+      this.showToast('Địa chỉ ví thu ngân hiện tại của bạn không được phân quyền (Owner) trên Smart Contract! Hãy nhờ quản lý cấp quyền.', 'error');
+      return;
+    }
+
+    this.blockchainSyncLoading.set(true);
+    this.showToast('Vui lòng xác nhận giao dịch trên ví Metamask...', 'success');
+
+    // Gọi Smart Contract ghi nhận giao dịch tài chính
+    const result = await this.web3Service.recordTransactionOnChain(
+      tx.id,
+      tx.type,
+      tx.amount,
+      tx.category,
+      tx.description || ''
+    );
+
+    if (result.success && result.txHash) {
+      this.showToast('Giao dịch đã được gửi! Đang đồng bộ trạng thái...', 'success');
+
+      // Gửi TxHash và Chain ID lên Laravel Backend để lưu trữ
+      this.apiService.syncTransactionBlockchain(tx.id, result.txHash, 'success', this.web3Service.chainId()).subscribe({
+        next: (res) => {
+          this.showToast('Ghi nhận bằng chứng thu chi lên Blockchain EVM thành công!', 'success');
+          this.refreshTransactions();
+          this.blockchainSyncLoading.set(false);
+        },
+        error: (err) => {
+          console.error('Loi cap nhat TxHash len DB:', err);
+          this.blockchainSyncLoading.set(false);
+        }
+      });
+    } else {
+      // Kiểm tra xem có phải lỗi transaction already exists không để đối soát tự động
+      const errorMsg = result.error || '';
+      const isAlreadyExists = errorMsg.includes('transaction already exists') ||
+        errorMsg.toLowerCase().includes('already exists');
+
+      if (isAlreadyExists) {
+        this.showToast('Giao dịch đã tồn tại trên Blockchain. Đang truy vấn bằng chứng gốc...', 'success');
+
+        // Truy vấn tx_hash gốc từ event log blockchain
+        const originalTxHash = await this.web3Service.getOriginalTxHashForTransaction(tx.id);
+
+        if (originalTxHash) {
+          // Tìm thấy tx_hash gốc từ blockchain -> đồng bộ chính xác vào database
+          this.apiService.syncTransactionBlockchain(tx.id, originalTxHash, 'success', this.web3Service.chainId()).subscribe({
+            next: (res) => {
+              this.showToast('Đối soát thành công! Đã khôi phục bằng chứng blockchain gốc cho phiếu thu chi.', 'success');
+              this.refreshTransactions();
+              this.blockchainSyncLoading.set(false);
+            },
+            error: (err) => {
+              console.error('Lỗi đối soát giao dịch thu chi:', err);
+              const errMsg = err.error?.message || 'Đối soát thất bại!';
+              this.showToast(errMsg, 'error');
+              this.blockchainSyncLoading.set(false);
+            }
+          });
+        } else {
+          this.showToast('Giao dịch đã có trên blockchain nhưng không thể truy vấn tx_hash gốc. Vui lòng thử lại!', 'error');
+          this.blockchainSyncLoading.set(false);
+        }
+      } else {
+        this.showToast(result.error || 'Giao dịch thất bại hoặc bị từ chối!', 'error');
+        this.blockchainSyncLoading.set(false);
+      }
+    }
+  }
+
+  // Đồng bộ hàng loạt tất cả các giao dịch thu chi chưa đồng bộ
+  public async syncAllUnsyncedTransactions() {
+    const list = this.unsyncedTransactions();
+    if (list.length === 0) {
+      this.showToast('Không có giao dịch thu chi nào cần đồng bộ!', 'success');
+      return;
+    }
+
+    // Chặn click đúp
+    if (this.blockchainSyncLoading()) return;
+
+    this.showToast(`Bắt đầu đồng bộ hàng loạt ${list.length} phiếu thu chi. Vui lòng ký MetaMask cho từng phiếu...`, 'success');
+
+    // Chạy vòng lặp đồng bộ tuần tự để MetaMask hiện popup lần lượt
+    for (const tx of list) {
+      // Chạy đồng bộ giao dịch thu chi và đợi hoàn tất giao dịch hiện tại trước khi chuyển sang giao dịch tiếp theo
+      await this.syncTransactionToBlockchain(tx);
+    }
+
+    this.showToast('Đã hoàn tất tiến trình đồng bộ đối soát thu chi tài chính!', 'success');
   }
 
   public refreshInventory() {

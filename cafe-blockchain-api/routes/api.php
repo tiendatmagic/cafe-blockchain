@@ -64,6 +64,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/transactions', [TransactionController::class, 'store']);
     Route::put('/transactions/{id}', [TransactionController::class, 'update']);
     Route::delete('/transactions/{id}', [TransactionController::class, 'destroy']);
+    Route::put('/transactions/{id}/sync', [TransactionController::class, 'syncBlockchain'])->middleware(RequireOwner::class);
 
     // Inventory (Kho hàng) API
     Route::get('/inventory', [InventoryController::class, 'index']);

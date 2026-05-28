@@ -200,6 +200,14 @@ export class ApiService {
     return this.http.delete(`${this.baseUrl}/transactions/${id}`, { headers: this.getHeaders() });
   }
 
+  public syncTransactionBlockchain(id: number, txHash: string, blockchainStatus: string, chainId?: string): Observable<any> {
+    return this.http.put(`${this.baseUrl}/transactions/${id}/sync`, {
+      tx_hash: txHash,
+      blockchain_status: blockchainStatus,
+      chain_id: chainId
+    }, { headers: this.getHeaders() });
+  }
+
   // 9. Inventory (Kho hàng) API
   public getInventoryRecords(type: string = 'all'): Observable<any[]> {
     let params = new HttpParams();
