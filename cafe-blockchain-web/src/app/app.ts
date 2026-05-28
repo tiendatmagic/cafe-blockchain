@@ -31,6 +31,17 @@ export class App implements OnInit, OnDestroy {
   public readonly isWalletModalOpen = signal<boolean>(false);
   public readonly isPaymentDropdownOpen = signal<boolean>(false);
   public readonly isChainDropdownOpen = signal<boolean>(false);
+  public readonly isCustomerDropdownOpen = signal<boolean>(false);
+  public readonly isTransactionDropdownOpen = signal<boolean>(false);
+  public readonly isInventoryDropdownOpen = signal<boolean>(false);
+  public readonly isUpdatingTableStatus = signal<boolean>(false);
+  public readonly isDashboardLoading = signal<boolean>(false);
+  public readonly isProductsLoading = signal<boolean>(false);
+  public readonly isOrdersLoading = signal<boolean>(false);
+  public readonly isCustomersLoading = signal<boolean>(false);
+  public readonly isTransactionsLoading = signal<boolean>(false);
+  public readonly isInventoryLoading = signal<boolean>(false);
+  public readonly isTablesLoading = signal<boolean>(false);
   public readonly selectedChainName = signal<string>('-- Chọn nhanh mạng phổ biến nhất --');
   public readonly menuViewMode = signal<'table' | 'card'>('card');
 
@@ -551,11 +562,7 @@ export class App implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.initTheme();
-    this.loadAllData();
-    this.initRouting();
-    this.refreshTablesAndAreas();
-    this.initTheme();
-    this.loadAllData();
+    this.loadSettings();
     this.initRouting();
 
     // Lắng nghe sự kiện thay đổi ví từ Web3Service
@@ -776,35 +783,40 @@ export class App implements OnInit, OnDestroy {
   }
 
   private setTabState(tab: string) {
-    if (this.activeTab() !== tab) {
+    const isNewTab = this.activeTab() !== tab;
+    if (isNewTab) {
       this.activeTab.set(tab);
       this.isMobileMenuOpen.set(false);
+    }
 
-      // Refresh dữ liệu tương ứng khi đổi tab
-      if (tab === 'dashboard') {
-        this.refreshDashboard();
-      } else if (tab === 'orders') {
-        this.ordersCurrentPage.set(1); // Reset phân trang đơn hàng về 1
-        this.refreshOrders();
-      } else if (tab === 'menu') {
-        this.menuCurrentPage.set(1); // Reset phân trang thực đơn về 1
-        this.refreshProducts();
-      } else if (tab === 'settings') {
-        this.loadSettings();
-        this.loadOwnersList();
-      } else if (tab === 'customers') {
+    // Refresh dữ liệu tương ứng khi đổi tab hoặc khi load trang lần đầu
+    if (tab === 'dashboard') {
+      this.refreshDashboard();
+    } else if (tab === 'pos') {
+      this.refreshProducts();
+    } else if (tab === 'orders') {
+      if (isNewTab) this.ordersCurrentPage.set(1);
+      this.refreshOrders();
+    } else if (tab === 'menu') {
+      if (isNewTab) this.menuCurrentPage.set(1);
+      this.refreshProducts();
+    } else if (tab === 'settings') {
+      this.loadSettings();
+      this.loadOwnersList();
+    } else if (tab === 'customers') {
+      if (isNewTab) {
         this.customerCurrentPage.set(1);
         this.customerGroupCurrentPage.set(1);
-        this.refreshCustomers();
-      } else if (tab === 'financials') {
-        this.transactionCurrentPage.set(1);
-        this.refreshTransactions();
-      } else if (tab === 'inventory') {
-        this.inventoryCurrentPage.set(1);
-        this.refreshInventory();
-      } else if (tab === 'tables') {
-        this.refreshTablesAndAreas();
       }
+      this.refreshCustomers();
+    } else if (tab === 'financials') {
+      if (isNewTab) this.transactionCurrentPage.set(1);
+      this.refreshTransactions();
+    } else if (tab === 'inventory') {
+      if (isNewTab) this.inventoryCurrentPage.set(1);
+      this.refreshInventory();
+    } else if (tab === 'tables') {
+      this.refreshTablesAndAreas();
     }
   }
 
@@ -815,6 +827,7 @@ export class App implements OnInit, OnDestroy {
 
   // Refresh danh sách thực đơn
   private refreshProducts() {
+    this.isProductsLoading.set(true);
     forkJoin({
       products: this.apiService.getProducts(),
       categories: this.apiService.getCategories()
@@ -822,19 +835,43 @@ export class App implements OnInit, OnDestroy {
       next: (res) => {
         this.products.set(res.products);
         this.categoriesList.set(res.categories);
+        this.isProductsLoading.set(false);
       },
-      error: (err) => console.error('Lỗi refresh sản phẩm & danh mục:', err)
+      error: (err) => {
+        console.error('Lỗi refresh sản phẩm & danh mục:', err);
+        this.isProductsLoading.set(false);
+      }
     });
   }
 
   // Refresh danh sách đơn hàng
   public refreshOrders() {
-    this.apiService.getOrders(this.orderStatusFilter(), this.orderBlockchainFilter()).subscribe(res => this.orders.set(res));
+    this.isOrdersLoading.set(true);
+    this.apiService.getOrders(this.orderStatusFilter(), this.orderBlockchainFilter()).subscribe({
+      next: (res) => {
+        this.orders.set(res);
+        this.isOrdersLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Lỗi refresh đơn hàng:', err);
+        this.isOrdersLoading.set(false);
+      }
+    });
   }
 
   // Refresh dữ liệu dashboard
   public refreshDashboard() {
-    this.apiService.getDashboard().subscribe(res => this.dashboardData.set(res));
+    this.isDashboardLoading.set(true);
+    this.apiService.getDashboard().subscribe({
+      next: (res) => {
+        this.dashboardData.set(res);
+        this.isDashboardLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Lỗi refresh dashboard:', err);
+        this.isDashboardLoading.set(false);
+      }
+    });
   }
 
   // Refresh cấu hình
@@ -907,7 +944,8 @@ export class App implements OnInit, OnDestroy {
                   }
                   this.showToast('Kết nối và xác thực ví thành công!', 'success');
                   this.isWalletModalOpen.set(false);
-                  this.loadAllData();
+                  this.loadSettings();
+                  this.setTabState(this.activeTab());
                   this.loadOwnersList();
                 }
               },
@@ -2116,6 +2154,15 @@ export class App implements OnInit, OnDestroy {
     if (!target.closest('.chain-dropdown-container')) {
       this.isChainDropdownOpen.set(false);
     }
+    if (!target.closest('.customer-dropdown-container')) {
+      this.isCustomerDropdownOpen.set(false);
+    }
+    if (!target.closest('.transaction-dropdown-container')) {
+      this.isTransactionDropdownOpen.set(false);
+    }
+    if (!target.closest('.inventory-dropdown-container')) {
+      this.isInventoryDropdownOpen.set(false);
+    }
   }
 
   // Tự động nhận diện mạng từ ví Metamask đang kết nối
@@ -2205,20 +2252,34 @@ export class App implements OnInit, OnDestroy {
 
   // ==================== REFRESH DATA FOR NEW TABS ====================
   public refreshCustomers() {
-    this.apiService.getCustomers().subscribe({
-      next: (res) => this.customers.set(res),
-      error: (err) => console.error('Loi refresh khach hang:', err)
-    });
-    this.apiService.getCustomerGroups().subscribe({
-      next: (res) => this.customerGroups.set(res),
-      error: (err) => console.error('Loi refresh nhom khach hang:', err)
+    this.isCustomersLoading.set(true);
+    forkJoin({
+      customers: this.apiService.getCustomers(),
+      groups: this.apiService.getCustomerGroups()
+    }).subscribe({
+      next: (res) => {
+        this.customers.set(res.customers);
+        this.customerGroups.set(res.groups);
+        this.isCustomersLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Loi refresh khach hang:', err);
+        this.isCustomersLoading.set(false);
+      }
     });
   }
 
   public refreshTransactions() {
+    this.isTransactionsLoading.set(true);
     this.apiService.getTransactions().subscribe({
-      next: (res) => this.transactions.set(res),
-      error: (err) => console.error('Loi refresh thu chi:', err)
+      next: (res) => {
+        this.transactions.set(res);
+        this.isTransactionsLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Loi refresh thu chi:', err);
+        this.isTransactionsLoading.set(false);
+      }
     });
   }
 
@@ -2350,24 +2411,38 @@ export class App implements OnInit, OnDestroy {
   }
 
   public refreshInventory() {
-    this.apiService.getInventoryRecords().subscribe({
-      next: (res) => this.inventoryRecords.set(res),
-      error: (err) => console.error('Loi refresh kho hang:', err)
-    });
-    this.apiService.getProducts().subscribe({
-      next: (res) => this.products.set(res),
-      error: (err) => console.error('Loi refresh san pham trong kho:', err)
+    this.isInventoryLoading.set(true);
+    forkJoin({
+      records: this.apiService.getInventoryRecords(),
+      products: this.apiService.getProducts()
+    }).subscribe({
+      next: (res) => {
+        this.inventoryRecords.set(res.records);
+        this.products.set(res.products);
+        this.isInventoryLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Loi refresh kho hang:', err);
+        this.isInventoryLoading.set(false);
+      }
     });
   }
 
   public refreshTablesAndAreas() {
-    this.apiService.getAreas().subscribe({
-      next: (res) => this.areas.set(res),
-      error: (err) => console.error('Loi refresh khu vur:', err)
-    });
-    this.apiService.getDiningTables().subscribe({
-      next: (res) => this.diningTables.set(res),
-      error: (err) => console.error('Loi refresh ban an:', err)
+    this.isTablesLoading.set(true);
+    forkJoin({
+      areas: this.apiService.getAreas(),
+      tables: this.apiService.getDiningTables()
+    }).subscribe({
+      next: (res) => {
+        this.areas.set(res.areas);
+        this.diningTables.set(res.tables);
+        this.isTablesLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Loi refresh ban an:', err);
+        this.isTablesLoading.set(false);
+      }
     });
   }
 
@@ -2456,7 +2531,7 @@ export class App implements OnInit, OnDestroy {
     return 'emerald';
   }
 
-  public openAddCustomerModal() {
+  public openAddCustomerModal(type: 'individual' | 'business' = 'individual') {
     this.customerModalType.set('add');
     this.editingCustomer.set(null);
     this.customerForm.set({
@@ -2467,7 +2542,7 @@ export class App implements OnInit, OnDestroy {
       gender: 'Nam',
       address: '',
       group_ids: [],
-      type: 'individual',
+      type: type,
       company_name: '',
       tax_code: '',
       representative_name: '',
@@ -2475,6 +2550,7 @@ export class App implements OnInit, OnDestroy {
       business_status: 'Đang hoạt động'
     });
     this.isCustomerModalOpen.set(true);
+    this.isCustomerDropdownOpen.set(false);
   }
 
   public openEditCustomerModal(customer: any) {
@@ -2651,17 +2727,18 @@ export class App implements OnInit, OnDestroy {
   }
 
   // --- Transaction CRUD ---
-  public openAddTransactionModal() {
+  public openAddTransactionModal(type: 'thu' | 'chi' = 'thu') {
     this.transactionModalType.set('add');
     this.editingTransaction.set(null);
     this.transactionForm.set({
-      type: 'thu',
+      type: type,
       amount: 0,
       category: '',
       description: '',
       transaction_date: new Date().toISOString().split('T')[0]
     });
     this.isTransactionModalOpen.set(true);
+    this.isTransactionDropdownOpen.set(false);
   }
 
   public openEditTransactionModal(transaction: any) {
@@ -2738,14 +2815,15 @@ export class App implements OnInit, OnDestroy {
   }
 
   // --- Inventory CRUD ---
-  public openAddInventoryModal() {
+  public openAddInventoryModal(type: 'nhap' | 'xuat' | 'kiem' = 'nhap') {
     this.inventoryForm.set({
-      type: 'nhap',
+      type: type,
       note: '',
       record_date: new Date().toISOString().split('T')[0],
       items: [{ product_id: 0, product_variant_id: null, quantity: 1, price: 0 }]
     });
     this.isInventoryModalOpen.set(true);
+    this.isInventoryDropdownOpen.set(false);
   }
 
   public closeInventoryModal() {
@@ -3000,14 +3078,18 @@ export class App implements OnInit, OnDestroy {
   }
 
   public toggleTableStatusDirect(table: any) {
+    if (this.isUpdatingTableStatus()) return;
+    this.isUpdatingTableStatus.set(true);
     const newStatus = table.status === 'empty' ? 'using' : 'empty';
     this.apiService.updateDiningTableStatus(table.id, newStatus).subscribe({
       next: () => {
         this.showToast(`Đã chuyển trạng thái bàn ${table.name} sang ${newStatus === 'empty' ? 'Trống' : 'Đang sử dụng'}!`, 'success');
         this.refreshTablesAndAreas();
+        this.isUpdatingTableStatus.set(false);
       },
       error: () => {
         this.showToast('Không thể thay đổi trạng thái bàn!', 'error');
+        this.isUpdatingTableStatus.set(false);
       }
     });
   }

@@ -1155,8 +1155,55 @@
               </button>
             </div>
 
+            @if (isDashboardLoading()) {
+              <!-- SKELETON FOR DASHBOARD -->
+              <div class="space-y-6 animate-pulse">
+                <!-- Grid 4 thẻ thống kê Skeleton (Responsive 2 cột ở 1025px, 4 cột ở >= 1280px) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+                  @for (i of [1,2,3,4]; track i) {
+                    <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex items-center justify-between">
+                      <div class="space-y-3 w-2/3">
+                        <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-3/4"></div>
+                        <div class="h-8 bg-slate-200 dark:bg-slate-800 rounded-xl w-full"></div>
+                      </div>
+                      <div class="w-12 h-12 bg-slate-200 dark:bg-slate-800 rounded-2xl"></div>
+                    </div>
+                  }
+                </div>
+
+                <!-- Bố cục cột lớn Skeleton (Responsive dọc ở 1025px, chia 2:1 ở >= 1280px) -->
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                  <!-- Biểu đồ Skeleton (Left) -->
+                  <div class="xl:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm h-[380px] flex flex-col justify-between">
+                    <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-md w-1/4"></div>
+                    <div class="h-64 bg-slate-100 dark:bg-slate-800/40 rounded-2xl w-full flex items-end p-3 gap-1 sm:gap-3 justify-around">
+                      @for (i of [40,60,35,80,50,90,75,60,85,45,70,95]; track i) {
+                        <div class="bg-slate-200 dark:bg-slate-800 rounded-t-lg w-2 sm:w-6" [style.height.%]="i"></div>
+                      }
+                    </div>
+                  </div>
+                  <!-- Widget Blockchain & Hoạt động Skeleton (Right) -->
+                  <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm space-y-5 flex flex-col justify-between h-[380px]">
+                    <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-md w-1/2"></div>
+                    <div class="space-y-4 flex-1 pt-4">
+                      @for (i of [1,2,3]; track i) {
+                        <div class="flex items-center gap-3">
+                          <div class="w-10 h-10 bg-slate-200 dark:bg-slate-800 rounded-xl shrink-0"></div>
+                          <div class="space-y-2 flex-1">
+                            <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-3/4"></div>
+                            <div class="h-3 bg-slate-200 dark:bg-slate-800 rounded-md w-1/2"></div>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+
+            <div [class.hidden]="isDashboardLoading()" class="space-y-6">
             <!-- Grid 4 thẻ thống kê số liệu thật -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
               <!-- Doanh thu hôm nay -->
               <div
                 class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex items-center justify-between group hover:scale-[1.02] transition-all"
@@ -1304,10 +1351,10 @@
             </div>
 
             <!-- Biểu đồ & Giao dịch Blockchain mới nhất -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
               <!-- Cột trái: Biểu đồ doanh thu tuần này (Vẽ SVG tùy biến tinh xảo) -->
               <div
-                class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm lg:col-span-2 space-y-6"
+                class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm xl:col-span-2 space-y-6"
               >
                 <div class="flex items-center justify-between">
                   <h4
@@ -1487,6 +1534,7 @@
               </div>
             </div>
           </div>
+          </div>
         }
 
         <!-- ==================== TAB 2: BÁN HÀNG POS ==================== -->
@@ -1536,6 +1584,26 @@
                   }
                 </div>
 
+                @if (isProductsLoading()) {
+                  <!-- SKELETON FOR POS PRODUCTS -->
+                  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4.5 animate-pulse">
+                    @for (i of [1,2,3,4,5,6]; track i) {
+                      <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 overflow-hidden shadow-sm p-4.5 space-y-4 h-[340px] flex flex-col justify-between">
+                        <div class="h-36 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full"></div>
+                        <div class="space-y-2">
+                          <div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4"></div>
+                          <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/2"></div>
+                        </div>
+                        <div class="flex justify-between items-center pt-2">
+                          <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/3"></div>
+                          <div class="h-9 bg-slate-200 dark:bg-slate-800 rounded-xl w-9 rounded-full"></div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+
+                <div [class.hidden]="isProductsLoading()" class="space-y-6">
                 <!-- Grid Danh sách món ăn/đồ uống -->
                 @if (filteredProducts().length === 0) {
                   <div
@@ -1702,6 +1770,7 @@
                     </div>
                   }
                 }
+              </div>
               </div>
 
               <!-- CỘT 3: GIỎ HÀNG & THANH TOÁN (RIGHT) -->
@@ -2147,6 +2216,40 @@
               </div>
             </div>
 
+            @if (isProductsLoading()) {
+              <!-- SKELETON LOADING CHO THỰC ĐƠN -->
+              @if (menuViewMode() === 'table') {
+                <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm overflow-hidden animate-pulse p-6 space-y-4">
+                  <div class="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-full"></div>
+                  @for (i of [1,2,3,4,5]; track i) {
+                    <div class="flex items-center gap-4 py-3 border-b border-slate-50 dark:border-slate-800/40">
+                      <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-lg w-20"></div>
+                      <div class="h-10 bg-slate-200 dark:bg-slate-800 rounded-full w-10 shrink-0"></div>
+                      <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-lg w-1/3"></div>
+                      <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-lg w-1/6"></div>
+                      <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-lg w-1/6"></div>
+                      <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-lg w-10 ml-auto"></div>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5 animate-pulse">
+                  @for (i of [1,2,3,4,5,6,7,8]; track i) {
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 overflow-hidden shadow-sm p-4 space-y-4 h-96 flex flex-col justify-between">
+                      <div class="h-48 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full"></div>
+                      <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4"></div>
+                      <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/2"></div>
+                      <div class="flex justify-between items-center pt-2">
+                        <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/3"></div>
+                        <div class="h-8 bg-slate-200 dark:bg-slate-800 rounded-xl w-16"></div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            }
+
+            <div [class.hidden]="isProductsLoading()" class="space-y-6">
             <!-- CHẾ ĐỘ XEM 1: DẠNG BẢNG (TABLE VIEW) -->
             @if (menuViewMode() === 'table') {
               <div
@@ -2653,6 +2756,7 @@
               </div>
             </div>
           </div>
+          </div>
         }
 
         <!-- ==================== TAB 4: SỔ ĐƠN HÀNG ==================== -->
@@ -2689,6 +2793,48 @@
               </button>
             </div>
 
+            @if (isOrdersLoading()) {
+              <!-- TABLE SKELETON FOR ORDERS -->
+              <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm p-6 space-y-5 animate-pulse">
+                <div class="flex gap-4 items-center justify-between">
+                  <div class="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/3"></div>
+                  <div class="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/4"></div>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse">
+                    <thead>
+                      <tr class="border-b border-slate-200/60 dark:border-slate-800/60">
+                        <th class="p-4.5"><div class="h-5 bg-slate-300 dark:bg-slate-700 rounded-md w-16"></div></th>
+                        <th class="p-4.5"><div class="h-5 bg-slate-300 dark:bg-slate-700 rounded-md w-24"></div></th>
+                        <th class="p-4.5"><div class="h-5 bg-slate-300 dark:bg-slate-700 rounded-md w-20"></div></th>
+                        <th class="p-4.5"><div class="h-5 bg-slate-300 dark:bg-slate-700 rounded-md w-28"></div></th>
+                        <th class="p-4.5"><div class="h-5 bg-slate-300 dark:bg-slate-700 rounded-md w-24"></div></th>
+                        <th class="p-4.5 text-right"><div class="h-5 bg-slate-300 dark:bg-slate-700 rounded-md w-16 ml-auto"></div></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (i of [1,2,3,4,5]; track i) {
+                        <tr class="border-b border-slate-100 dark:border-slate-800/50">
+                          <td class="p-4.5"><div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-12"></div></td>
+                          <td class="p-4.5">
+                            <div class="space-y-1.5">
+                              <div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-32"></div>
+                              <div class="h-3.5 bg-slate-200 dark:bg-slate-800 rounded-md w-20"></div>
+                            </div>
+                          </td>
+                          <td class="p-4.5"><div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-16"></div></td>
+                          <td class="p-4.5"><div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-20"></div></td>
+                          <td class="p-4.5"><div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-24"></div></td>
+                          <td class="p-4.5 text-right"><div class="h-7 bg-slate-200 dark:bg-slate-800 rounded-lg w-20 ml-auto"></div></td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            }
+
+            <div [class.hidden]="isOrdersLoading()" class="space-y-6">
             <!-- Banner cảnh báo đối soát cạn/thiếu đồng bộ Blockchain khi chốt ca -->
             @if (unsyncedCompletedOrders().length > 0) {
               <div
@@ -3192,6 +3338,7 @@
                 </div>
               }
             </div>
+          </div>
           </div>
         }
 
@@ -4151,29 +4298,114 @@
                   <span>+ Tạo Nhóm mới</span>
                 </button>
 
-                <button
-                  (click)="openAddCustomerModal()"
-                  class="px-4.5 py-2.5 bg-[var(--dynamic-primary)] hover:opacity-90 text-white font-bold rounded-xl text-sm shadow-md shadow-[var(--dynamic-primary)]/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-4 w-4 shrink-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
+                <div class="relative inline-flex items-stretch customer-dropdown-container">
+                  <!-- Nút chính (bên trái) - Thêm khách hàng cá nhân mặc định -->
+                  <button
+                    (click)="openAddCustomerModal('individual')"
+                    class="px-4.5 py-2.5 bg-[var(--dynamic-primary)] hover:opacity-90 text-white font-bold rounded-l-xl text-sm shadow-md shadow-[var(--dynamic-primary)]/10 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center gap-1.5 border-r border-white/20"
                   >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2.5"
-                      d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-                    />
-                  </svg>
-                  <span>Thêm Khách hàng</span>
-                </button>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-4 w-4 shrink-0"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2.5"
+                        d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+                      />
+                    </svg>
+                    <span>Thêm Khách hàng</span>
+                  </button>
+
+                  <!-- Nút mũi tên dropdown (bên phải) -->
+                  <button
+                    (click)="isCustomerDropdownOpen.set(!isCustomerDropdownOpen())"
+                    class="px-3 bg-[var(--dynamic-primary)] hover:opacity-90 text-white rounded-r-xl shadow-md shadow-[var(--dynamic-primary)]/10 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center border-l border-black/10"
+                    title="Lựa chọn loại khách hàng"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-4 w-4 transition-transform duration-200"
+                      [class.rotate-180]="isCustomerDropdownOpen()"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      stroke-width="3"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  <!-- Menu Dropdown -->
+                  @if (isCustomerDropdownOpen()) {
+                    <div
+                      class="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-xl py-1.5 z-[100] animate-fade-in"
+                    >
+                      <button
+                        (click)="openAddCustomerModal('individual')"
+                        class="w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-200 transition-colors flex items-center gap-2"
+                      >
+                        <span class="text-base">👤</span>
+                        <div>
+                          <div class="font-semibold text-slate-800 dark:text-slate-200">Khách cá nhân</div>
+                          <div class="text-xs text-slate-400">Khách mua lẻ thông thường</div>
+                        </div>
+                      </button>
+                      <button
+                        (click)="openAddCustomerModal('business')"
+                        class="w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-200 transition-colors flex items-center gap-2 border-t border-slate-100 dark:border-slate-700/50"
+                      >
+                        <span class="text-base">🏢</span>
+                        <div>
+                          <div class="font-semibold text-slate-800 dark:text-slate-200">Khách doanh nghiệp</div>
+                          <div class="text-xs text-slate-400">Có mã số thuế, tên công ty</div>
+                        </div>
+                      </button>
+                    </div>
+                  }
+                </div>
               </div>
             </div>
 
+            @if (isCustomersLoading()) {
+              <!-- TABLE SKELETON FOR CUSTOMERS -->
+              <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm p-6 space-y-5 animate-pulse">
+                <div class="flex gap-4 items-center justify-between">
+                  <div class="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/3"></div>
+                  <div class="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/4"></div>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse">
+                    <thead>
+                      <tr class="border-b border-slate-200/60 dark:border-slate-800/60">
+                        <th class="p-4.5"><div class="h-5 bg-slate-300 dark:bg-slate-700 rounded-md w-16"></div></th>
+                        <th class="p-4.5"><div class="h-5 bg-slate-300 dark:bg-slate-700 rounded-md w-24"></div></th>
+                        <th class="p-4.5"><div class="h-5 bg-slate-300 dark:bg-slate-700 rounded-md w-20"></div></th>
+                        <th class="p-4.5"><div class="h-5 bg-slate-300 dark:bg-slate-700 rounded-md w-28"></div></th>
+                        <th class="p-4.5 text-right"><div class="h-5 bg-slate-300 dark:bg-slate-700 rounded-md w-16 ml-auto"></div></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (i of [1,2,3,4,5]; track i) {
+                        <tr class="border-b border-slate-100 dark:border-slate-800/50">
+                          <td class="p-4.5"><div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-16"></div></td>
+                          <td class="p-4.5"><div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-24"></div></td>
+                          <td class="p-4.5"><div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-20"></div></td>
+                          <td class="p-4.5"><div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-32"></div></td>
+                          <td class="p-4.5 text-right"><div class="h-7 bg-slate-200 dark:bg-slate-800 rounded-lg w-20 ml-auto"></div></td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            }
+
+            <div [class.hidden]="isCustomersLoading()" class="space-y-6">
             <!-- BỐ CỤC 2 CỘT RESPONSIVE -->
             <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
               <!-- CỘT DANH SÁCH KHÁCH HÀNG (LEFT - 2/3 WIDTH) -->
@@ -4182,7 +4414,7 @@
                   class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm overflow-hidden transition-colors"
                 >
                   <div class="p-5 border-b border-slate-100 dark:border-slate-800/60">
-                    <h4 class="font-extrabold text-slate-850 dark:text-white text-base">
+                    <h4 class="font-extrabold text-slate-800 dark:text-white text-base">
                       Danh sách khách hàng
                     </h4>
                   </div>
@@ -4251,7 +4483,7 @@
                                 <div class="flex flex-col min-w-0">
                                   <div class="flex items-center gap-1.5 flex-wrap">
                                     <span
-                                      class="font-extrabold text-slate-850 dark:text-white truncate max-w-[150px]"
+                                      class="font-extrabold text-slate-800 dark:text-white truncate max-w-[150px]"
                                       >{{
                                         cust.type === 'business' ? cust.company_name : cust.name
                                       }}</span
@@ -4387,7 +4619,7 @@
                   class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm overflow-hidden transition-colors"
                 >
                   <div class="p-5 border-b border-slate-100 dark:border-slate-800/60">
-                    <h4 class="font-extrabold text-slate-850 dark:text-white text-base">
+                    <h4 class="font-extrabold text-slate-800 dark:text-white text-base">
                       Nhóm khách hàng
                     </h4>
                   </div>
@@ -4462,6 +4694,7 @@
               </div>
             </div>
           </div>
+          </div>
         }
 
         <!-- ==================== TAB 7: THU CHI TÀI CHÍNH ==================== -->
@@ -4503,29 +4736,132 @@
                     <span>Đồng bộ {{ unsyncedTransactions().length }} phiếu chưa lưu chain</span>
                   </button>
                 }
-                <button
-                  (click)="openAddTransactionModal()"
-                  class="px-4.5 py-2.5 bg-[var(--dynamic-primary)] hover:opacity-90 text-white font-bold rounded-xl text-sm shadow-md shadow-[var(--dynamic-primary)]/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5 self-start sm:self-center"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-4.5 w-4.5 shrink-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
+                <div class="relative inline-flex items-stretch transaction-dropdown-container self-start sm:self-center">
+                  <!-- Nút chính (bên trái) - Lập Phiếu Thu mặc định -->
+                  <button
+                    (click)="openAddTransactionModal('thu')"
+                    class="px-4.5 py-2.5 bg-[var(--dynamic-primary)] hover:opacity-90 text-white font-bold rounded-l-xl text-sm shadow-md shadow-[var(--dynamic-primary)]/10 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center gap-1.5 border-r border-white/20"
                   >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2.5"
-                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                    />
-                  </svg>
-                  <span>Tạo phiếu Thu Chi</span>
-                </button>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-4.5 w-4.5 shrink-0"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2.5"
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                      />
+                    </svg>
+                    <span>Tạo phiếu Thu Chi</span>
+                  </button>
+
+                  <!-- Nút mũi tên dropdown (bên phải) -->
+                  <button
+                    (click)="isTransactionDropdownOpen.set(!isTransactionDropdownOpen())"
+                    class="px-3 bg-[var(--dynamic-primary)] hover:opacity-90 text-white rounded-r-xl shadow-md shadow-[var(--dynamic-primary)]/10 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center border-l border-black/10"
+                    title="Lựa chọn loại phiếu"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-4 w-4 transition-transform duration-200"
+                      [class.rotate-180]="isTransactionDropdownOpen()"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      stroke-width="3"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  <!-- Menu Dropdown -->
+                  @if (isTransactionDropdownOpen()) {
+                    <div
+                      class="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-xl py-1.5 z-[100] animate-fade-in"
+                    >
+                      <button
+                        (click)="openAddTransactionModal('thu')"
+                        class="w-full text-left px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-200 transition-colors flex items-center gap-2"
+                      >
+                        <span class="text-emerald-500 font-bold text-base">📈</span>
+                        <div>
+                          <div class="font-semibold text-slate-800 dark:text-slate-200 text-sm">Lập Phiếu Thu</div>
+                          <div class="text-xs text-slate-400">Ghi nhận dòng tiền vào</div>
+                        </div>
+                      </button>
+                      <button
+                        (click)="openAddTransactionModal('chi')"
+                        class="w-full text-left px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-200 transition-colors flex items-center gap-2 border-t border-slate-100 dark:border-slate-700/50"
+                      >
+                        <span class="text-rose-500 font-bold text-base">📉</span>
+                        <div>
+                          <div class="font-semibold text-slate-800 dark:text-slate-200 text-sm">Lập Phiếu Chi</div>
+                          <div class="text-xs text-slate-400">Ghi nhận dòng tiền ra</div>
+                        </div>
+                      </button>
+                    </div>
+                  }
+                </div>
               </div>
             </div>
 
+            @if (isTransactionsLoading()) {
+              <!-- TABLE SKELETON FOR TRANSACTIONS -->
+              <div class="space-y-6 animate-pulse">
+                <!-- 3 card LED chỉ số Skeleton -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                  @for (i of [1,2,3]; track i) {
+                    <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex items-center justify-between">
+                      <div class="space-y-2">
+                        <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-20"></div>
+                        <div class="h-8 bg-slate-200 dark:bg-slate-800 rounded-xl w-32"></div>
+                      </div>
+                      <div class="w-11 h-11 bg-slate-200 dark:bg-slate-800 rounded-2xl"></div>
+                    </div>
+                  }
+                </div>
+
+                <!-- Bảng giao dịch Skeleton -->
+                <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm p-6 space-y-5">
+                  <div class="flex gap-4 items-center justify-between">
+                    <div class="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/3"></div>
+                    <div class="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/4"></div>
+                  </div>
+                  <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                      <thead>
+                        <tr class="border-b border-slate-200/60 dark:border-slate-800/60">
+                          <th class="p-4.5"><div class="h-5 bg-slate-300 dark:bg-slate-700 rounded-md w-16"></div></th>
+                          <th class="p-4.5"><div class="h-5 bg-slate-300 dark:bg-slate-700 rounded-md w-24"></div></th>
+                          <th class="p-4.5"><div class="h-5 bg-slate-300 dark:bg-slate-700 rounded-md w-20"></div></th>
+                          <th class="p-4.5"><div class="h-5 bg-slate-300 dark:bg-slate-700 rounded-md w-28"></div></th>
+                          <th class="p-4.5"><div class="h-5 bg-slate-300 dark:bg-slate-700 rounded-md w-24"></div></th>
+                          <th class="p-4.5 text-right"><div class="h-5 bg-slate-300 dark:bg-slate-700 rounded-md w-16 ml-auto"></div></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (i of [1,2,3,4,5]; track i) {
+                          <tr class="border-b border-slate-100 dark:border-slate-800/50">
+                            <td class="p-4.5"><div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-16"></div></td>
+                            <td class="p-4.5"><div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-24"></div></td>
+                            <td class="p-4.5"><div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-20"></div></td>
+                            <td class="p-4.5"><div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-32"></div></td>
+                            <td class="p-4.5"><div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-24"></div></td>
+                            <td class="p-4.5 text-right"><div class="h-7 bg-slate-200 dark:bg-slate-800 rounded-lg w-20 ml-auto"></div></td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            }
+
+            <div [class.hidden]="isTransactionsLoading()" class="space-y-6">
             <!-- BẢNG LED CHỈ SỐ TÀI CHÍNH GLASSMORPHISM HOÀN TRÁNG -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
               <!-- Thẻ Tổng Thu -->
@@ -4872,6 +5208,7 @@
               </div>
             </div>
           </div>
+          </div>
         }
 
         <!-- ==================== TAB 8: KHO HÀNG ==================== -->
@@ -4887,28 +5224,111 @@
                 </p>
               </div>
 
-              <button
-                (click)="openAddInventoryModal()"
-                class="px-4.5 py-2.5 bg-[var(--dynamic-primary)] hover:opacity-90 text-white font-bold rounded-xl text-sm shadow-md shadow-[var(--dynamic-primary)]/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5 self-start sm:self-center"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-4.5 w-4.5 shrink-0"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2.5"
-                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"
-                  />
-                </svg>
-                <span>Tạo phiếu Kho</span>
-              </button>
+                <div class="relative inline-flex items-stretch inventory-dropdown-container self-start sm:self-center">
+                  <!-- Nút chính (bên trái) - Nhập kho mặc định -->
+                  <button
+                    (click)="openAddInventoryModal('nhap')"
+                    class="px-4.5 py-2.5 bg-[var(--dynamic-primary)] hover:opacity-90 text-white font-bold rounded-l-xl text-sm shadow-md shadow-[var(--dynamic-primary)]/10 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center gap-1.5 border-r border-white/20"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-4.5 w-4.5 shrink-0"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2.5"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"
+                      />
+                    </svg>
+                    <span>Tạo phiếu Kho</span>
+                  </button>
+
+                  <!-- Nút mũi tên dropdown (bên phải) -->
+                  <button
+                    (click)="isInventoryDropdownOpen.set(!isInventoryDropdownOpen())"
+                    class="px-3 bg-[var(--dynamic-primary)] hover:opacity-90 text-white rounded-r-xl shadow-md shadow-[var(--dynamic-primary)]/10 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center border-l border-black/10"
+                    title="Lựa chọn loại giao dịch kho"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-4 w-4 transition-transform duration-200"
+                      [class.rotate-180]="isInventoryDropdownOpen()"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      stroke-width="3"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  <!-- Menu Dropdown -->
+                  @if (isInventoryDropdownOpen()) {
+                    <div
+                      class="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-xl py-1.5 z-[100] animate-fade-in"
+                    >
+                      <button
+                        (click)="openAddInventoryModal('nhap')"
+                        class="w-full text-left px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-200 transition-colors flex items-center gap-3"
+                      >
+                        <span class="text-emerald-500 font-bold text-lg leading-none">↑</span>
+                        <div>
+                          <div class="font-semibold text-slate-800 dark:text-slate-200 text-sm">Nhập hàng</div>
+                          <div class="text-xs text-slate-400">Nhập nguyên liệu vào kho</div>
+                        </div>
+                      </button>
+                      <button
+                        (click)="openAddInventoryModal('xuat')"
+                        class="w-full text-left px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-200 transition-colors flex items-center gap-3 border-t border-slate-100 dark:border-slate-700/50"
+                      >
+                        <span class="text-rose-500 font-bold text-lg leading-none">↓</span>
+                        <div>
+                          <div class="font-semibold text-slate-800 dark:text-slate-200 text-sm">Xuất hàng</div>
+                          <div class="text-xs text-slate-400">Xuất hao hụt, hư hỏng</div>
+                        </div>
+                      </button>
+                      <button
+                        (click)="openAddInventoryModal('kiem')"
+                        class="w-full text-left px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-200 transition-colors flex items-center gap-3 border-t border-slate-100 dark:border-slate-700/50"
+                      >
+                        <span class="text-blue-500 font-bold text-lg leading-none">⇅</span>
+                        <div>
+                          <div class="font-semibold text-slate-800 dark:text-slate-200 text-sm">Kiểm kho</div>
+                          <div class="text-xs text-slate-400">Kiểm kê số lượng định kỳ</div>
+                        </div>
+                      </button>
+                    </div>
+                  }
+                </div>
             </div>
 
+            @if (isInventoryLoading()) {
+              <!-- TABLE SKELETON FOR INVENTORY -->
+              <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm p-6 space-y-5 animate-pulse">
+                <div class="flex gap-4 items-center justify-between">
+                  <div class="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/3"></div>
+                  <div class="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/4"></div>
+                </div>
+                <div class="overflow-x-auto space-y-4">
+                  <div class="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-full"></div>
+                  @for (i of [1,2,3,4,5]; track i) {
+                    <div class="flex items-center gap-4 py-3 border-b border-slate-50 dark:border-slate-800/40">
+                      <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-lg w-24"></div>
+                      <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-lg w-1/4"></div>
+                      <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-lg w-1/6"></div>
+                      <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-lg w-1/6"></div>
+                      <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-lg w-10 ml-auto"></div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <div [class.hidden]="isInventoryLoading()" class="space-y-6">
             <!-- BỘ LỌC PHIẾU KHO VÀ HÀNH ĐỘNG -->
             <div class="space-y-4">
               <div
@@ -5121,7 +5541,7 @@
               </div>
 
               <!-- ==================== BẢNG BÁO CÁO TỒN KHO THỜI GIAN THỰC ==================== -->
-              <div class="mt-8 pt-6 border-t border-slate-200/60 dark:border-slate-850/60">
+              <div class="mt-8 pt-6 border-t border-slate-200/60 dark:border-slate-800/60">
                 <div
                   class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm overflow-hidden transition-colors"
                 >
@@ -5129,7 +5549,7 @@
                     class="p-5 border-b border-slate-100 dark:border-slate-800/60 flex items-center justify-between flex-wrap gap-2"
                   >
                     <div>
-                      <h4 class="font-extrabold text-slate-850 dark:text-white text-base">
+                      <h4 class="font-extrabold text-slate-800 dark:text-white text-base">
                         Bảng báo cáo Tồn kho hiện tại
                       </h4>
                       <p class="text-xs text-slate-400 dark:text-slate-500">
@@ -5297,6 +5717,7 @@
               </div>
             </div>
           </div>
+          </div>
         }
 
         <!-- ==================== TAB 9: QUẢN LÝ PHÒNG BÀN ==================== -->
@@ -5367,6 +5788,21 @@
                   >
                     Tất cả khu vực
                   </button>
+
+                  @if (isTablesLoading()) {
+                    <!-- TABLES SKELETON -->
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 animate-pulse pt-4">
+                      @for (i of [1,2,3,4,5,6]; track i) {
+                        <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm h-32 flex flex-col justify-between items-center text-center">
+                          <div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-2/3"></div>
+                          <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-1/2"></div>
+                          <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4"></div>
+                        </div>
+                      }
+                    </div>
+                  }
+
+                  <div [class.hidden]="isTablesLoading()" class="space-y-6">
                   @for (area of areas(); track area.id) {
                     <button
                       (click)="activeAreaFilter.set(area.id.toString())"
@@ -5379,7 +5815,7 @@
                     >
                       <span>{{ area.name }}</span>
                       <span
-                        class="text-[10px] text-slate-400 bg-slate-100 dark:bg-slate-850 px-1 py-0.2 rounded font-black"
+                        class="text-[10px] text-slate-400 bg-slate-100 dark:bg-slate-800 px-1 py-0.2 rounded font-black"
                         >{{ area.tables_count || 0 }}</span
                       >
                     </button>
@@ -5436,7 +5872,7 @@
 
             <!-- SƠ ĐỒ LƯỚI BÀN ĂN (RICH AESTHETICS GRID) -->
             <div
-              class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5"
+              class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4"
             >
               @if (filteredDiningTables().length === 0) {
                 <div
@@ -5470,7 +5906,7 @@
                   <div class="flex items-start justify-between">
                     <!-- Tên bàn và Khu vực -->
                     <div class="flex flex-col min-w-0">
-                      <span class="font-black text-slate-850 dark:text-white text-base truncate">{{
+                      <span class="font-black text-slate-800 dark:text-white text-base truncate">{{
                         table.name
                       }}</span>
                       <span
@@ -5517,16 +5953,17 @@
 
                   <!-- 2 Nút hành động Direct -->
                   <div
-                    class="flex gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-850 w-full justify-between items-center text-xs shrink-0"
+                    class="flex gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-800/60 w-full justify-between items-center text-xs shrink-0"
                   >
                     <button
                       (click)="toggleTableStatusDirect(table)"
+                      [disabled]="isUpdatingTableStatus()"
                       [class]="
                         table.status === 'using'
                           ? 'text-amber-600 hover:text-amber-700'
                           : 'text-emerald-600 hover:text-emerald-700'
                       "
-                      class="font-extrabold tracking-wide hover:underline text-[11px]"
+                      class="font-extrabold tracking-wide hover:underline text-[11px] disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {{ table.status === 'using' ? 'Trống bàn' : 'Mở bàn' }}
                     </button>
@@ -5537,7 +5974,7 @@
                       >
                         Sửa
                       </button>
-                      <span class="text-slate-200 dark:text-slate-850">|</span>
+                      <span class="text-slate-200 dark:text-slate-800">|</span>
                       <button
                         (click)="deleteTable(table.id)"
                         class="text-slate-400 hover:text-rose-500 font-bold"
@@ -5556,7 +5993,7 @@
                 class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm transition-colors space-y-4"
               >
                 <div
-                  class="flex items-center justify-between border-b border-slate-100 dark:border-slate-805 pb-4 flex-wrap gap-3"
+                  class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-4 flex-wrap gap-3"
                 >
                   <h4
                     class="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2"
@@ -5616,6 +6053,7 @@
                 </div>
               </div>
             </div>
+          </div>
           </div>
         }
       }
@@ -6059,7 +6497,7 @@
                 <!-- Checkbox tùy chọn đồng bộ Blockchain nhanh -->
                 @if (selectedOrderDetails()?.status === 'pending') {
                   <div
-                    class="flex items-center gap-2 pb-1 bg-slate-50/20 dark:bg-slate-950/10 p-2 rounded-xl border border-slate-100/50 dark:border-slate-850/30"
+                    class="flex items-center gap-2 pb-1 bg-slate-50/20 dark:bg-slate-950/10 p-2 rounded-xl border border-slate-100/50 dark:border-slate-800/30"
                   >
                     <input
                       type="checkbox"
@@ -7695,7 +8133,7 @@
         >
           <!-- Header -->
           <div
-            class="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-805 shrink-0"
+            class="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-800/60 shrink-0"
           >
             <h4 class="text-base font-extrabold text-slate-800 dark:text-white">
               Chi tiết phiếu kho {{ selectedInventoryRecord()?.record_code }}
@@ -7763,7 +8201,7 @@
             <!-- Danh sách chi tiết món -->
             <div class="space-y-3.5">
               <span
-                class="text-xs font-bold text-slate-400 uppercase tracking-wider block border-b border-slate-200/50 dark:border-slate-850 pb-2"
+                class="text-xs font-bold text-slate-400 uppercase tracking-wider block border-b border-slate-200/50 dark:border-slate-800/60 pb-2"
                 >Danh sách sản phẩm</span
               >
               <div class="space-y-2 max-h-48 overflow-y-auto pr-1 no-scrollbar">
@@ -8038,7 +8476,7 @@
             </p>
 
             <div
-              class="bg-slate-50 dark:bg-slate-950 p-4.5 rounded-2xl border border-slate-100 dark:border-slate-850 space-y-3"
+              class="bg-slate-50 dark:bg-slate-950 p-4.5 rounded-2xl border border-slate-100 dark:border-slate-800/60 space-y-3"
             >
               <span
                 class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block"
@@ -8310,7 +8748,7 @@
 
               <!-- Mô tả / Ghi chú -->
               <div
-                class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-850/60 space-y-1"
+                class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800/60 space-y-1"
               >
                 <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider"
                   >Mô tả / Ghi chú</span
@@ -8372,7 +8810,7 @@
                         }
                         @default {
                           <span
-                            class="bg-slate-100 dark:bg-slate-850 text-slate-400 text-[10px] font-black px-2 py-0.5 rounded-lg uppercase tracking-wide"
+                            class="bg-slate-100 dark:bg-slate-800 text-slate-400 text-[10px] font-black px-2 py-0.5 rounded-lg uppercase tracking-wide"
                             >Chưa đồng bộ</span
                           >
                         }
@@ -8393,7 +8831,7 @@
                           )
                         "
                         target="_blank"
-                        class="text-[10px] text-blue-500 font-mono hover:underline break-all block font-bold leading-normal bg-slate-50 dark:bg-slate-950 p-2 rounded-xl border border-slate-100 dark:border-slate-850"
+                        class="text-[10px] text-blue-500 font-mono hover:underline break-all block font-bold leading-normal bg-slate-50 dark:bg-slate-950 p-2 rounded-xl border border-slate-100 dark:border-slate-800/60"
                       >
                         {{ selectedTransactionDetails().tx_hash }} ↗
                       </a>
@@ -8411,7 +8849,7 @@
                       >Chữ ký đối soát DB (HMAC-SHA256):</span
                     >
                     <span
-                      class="font-mono text-[9px] text-slate-500 dark:text-slate-400 break-all bg-slate-50 dark:bg-slate-950 p-2 rounded-xl border border-slate-100 dark:border-slate-850 block font-bold"
+                      class="font-mono text-[9px] text-slate-500 dark:text-slate-400 break-all bg-slate-50 dark:bg-slate-950 p-2 rounded-xl border border-slate-100 dark:border-slate-800/60 block font-bold"
                     >
                       {{ selectedTransactionDetails().verification_hash || 'Chưa tạo' }}
                     </span>
