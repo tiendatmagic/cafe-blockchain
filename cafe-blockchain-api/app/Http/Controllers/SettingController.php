@@ -29,6 +29,7 @@ class SettingController extends Controller
                 'chain_id' => '',
                 'explorer_url' => '',
                 'explorer_api_key' => '',
+                'default_print_size' => '80mm',
             ];
             
             foreach ($defaultSettings as $key => $value) {
@@ -67,6 +68,7 @@ class SettingController extends Controller
             'explorer_api_key' => 'nullable|string|max:255',
             'primary_color' => 'nullable|string|max:7',
             'secondary_color' => 'nullable|string|max:7',
+            'default_print_size' => 'nullable|string|in:80mm,A4,A5',
         ]);
 
         // Lấy các cấu hình hiện tại trong Database để đối soát bảo mật

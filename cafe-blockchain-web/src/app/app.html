@@ -3971,6 +3971,78 @@
                     </div>
                   </div>
 
+                  <!-- Cấu hình điều chỉnh mẫu hóa đơn -->
+                  <div class="border-t border-slate-100 dark:border-slate-800/60 pt-4 space-y-3">
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs font-bold text-slate-400 uppercase tracking-wide"
+                        >Điều chỉnh mẫu hoá đơn</span
+                      >
+                    </div>
+
+                    <div class="space-y-2">
+                      <label
+                        class="text-[11px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1.5"
+                      >
+                        <span>Chọn khổ giấy in mặc định</span>
+                      </label>
+                      <div class="grid grid-cols-3 gap-3">
+                        <!-- Khổ 80mm -->
+                        <div
+                          (click)="(!web3Service.walletConnected() || !web3Service.isOwnerContract()) ? null : updateConfigForm('default_print_size', '80mm')"
+                          [class]="'relative flex flex-col items-center justify-center p-3.5 rounded-2xl border-2 transition-all ' +
+                            (configForm().default_print_size === '80mm' ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)]' : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-600 dark:text-slate-300') +
+                            ((!web3Service.walletConnected() || !web3Service.isOwnerContract()) ? ' opacity-50 cursor-not-allowed' : ' cursor-pointer')"
+                        >
+                          <span class="text-xs font-extrabold">Khổ 80mm</span>
+                          <span class="text-[9px] text-slate-400 mt-1 text-center">Khổ nhỏ (Mặc định)</span>
+                          @if (configForm().default_print_size === '80mm') {
+                            <div class="absolute top-2 right-2 text-[var(--dynamic-primary)]">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                              </svg>
+                            </div>
+                          }
+                        </div>
+
+                        <!-- Khổ A4 -->
+                        <div
+                          (click)="(!web3Service.walletConnected() || !web3Service.isOwnerContract()) ? null : updateConfigForm('default_print_size', 'A4')"
+                          [class]="'relative flex flex-col items-center justify-center p-3.5 rounded-2xl border-2 transition-all ' +
+                            (configForm().default_print_size === 'A4' ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)]' : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-600 dark:text-slate-300') +
+                            ((!web3Service.walletConnected() || !web3Service.isOwnerContract()) ? ' opacity-50 cursor-not-allowed' : ' cursor-pointer')"
+                        >
+                          <span class="text-xs font-extrabold">Khổ A4</span>
+                          <span class="text-[9px] text-slate-400 mt-1 text-center">Khổ lớn (A4)</span>
+                          @if (configForm().default_print_size === 'A4') {
+                            <div class="absolute top-2 right-2 text-[var(--dynamic-primary)]">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                              </svg>
+                            </div>
+                          }
+                        </div>
+
+                        <!-- Khổ A5 -->
+                        <div
+                          (click)="(!web3Service.walletConnected() || !web3Service.isOwnerContract()) ? null : updateConfigForm('default_print_size', 'A5')"
+                          [class]="'relative flex flex-col items-center justify-center p-3.5 rounded-2xl border-2 transition-all ' +
+                            (configForm().default_print_size === 'A5' ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)]' : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-600 dark:text-slate-300') +
+                            ((!web3Service.walletConnected() || !web3Service.isOwnerContract()) ? ' opacity-50 cursor-not-allowed' : ' cursor-pointer')"
+                        >
+                          <span class="text-xs font-extrabold">Khổ A5</span>
+                          <span class="text-[9px] text-slate-400 mt-1 text-center">Khổ lớn (A5)</span>
+                          @if (configForm().default_print_size === 'A5') {
+                            <div class="absolute top-2 right-2 text-[var(--dynamic-primary)]">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                              </svg>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   <!-- Cấu hình màu sắc giao diện động -->
                   <div class="border-t border-slate-100 dark:border-slate-800/60 pt-4 space-y-3.5">
                     <div class="flex items-center justify-between">
@@ -6736,6 +6808,28 @@
                     <span>YÊU CẦU HỦY ĐƠN HÀNG</span>
                   </button>
                 }
+
+                <button
+                  (click)="printOrder(selectedOrderDetails())"
+                  [disabled]="isOrderStatusUpdating() || blockchainSyncLoading()"
+                  class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-600/10 transition-all flex items-center justify-center gap-1.5 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4 shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                    />
+                  </svg>
+                  <span>IN HÓA ĐƠN</span>
+                </button>
 
                 <button
                   (click)="closeOrderDetail()"

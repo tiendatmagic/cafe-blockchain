@@ -87,6 +87,7 @@ export class App implements OnInit, OnDestroy {
     explorer_api_key: '',
     primary_color: '#7c3aed',
     secondary_color: '#c084fc',
+    default_print_size: '80mm',
     has_synced_orders: false,
     has_synced_transactions: false
   });
@@ -186,7 +187,8 @@ export class App implements OnInit, OnDestroy {
     explorer_url: '',
     explorer_api_key: '',
     primary_color: '#7c3aed',
-    secondary_color: '#c084fc'
+    secondary_color: '#c084fc',
+    default_print_size: '80mm'
   });
 
   // Trạng thái Quản trị Owner Ví trên Blockchain
@@ -719,7 +721,10 @@ export class App implements OnInit, OnDestroy {
         this.categoriesList.set(res.categories || []);
 
         if (res.settings) {
-          const settings = { ...res.settings };
+          const settings = {
+            default_print_size: '80mm',
+            ...res.settings
+          };
           this.settings.set(settings);
           this.configForm.set({ ...settings });
           // Áp dụng màu sắc động
@@ -898,7 +903,10 @@ export class App implements OnInit, OnDestroy {
   // Refresh cấu hình
   private loadSettings() {
     this.apiService.getSettings().subscribe(res => {
-      const settings = { ...res };
+      const settings = {
+        default_print_size: '80mm',
+        ...res
+      };
       this.settings.set(settings);
       this.configForm.set({ ...settings });
       this.applyAndCacheDynamicColors(settings.primary_color, settings.secondary_color);
@@ -1602,6 +1610,279 @@ export class App implements OnInit, OnDestroy {
       'crypto': 'Crypto Web3'
     };
     return map[method] || method;
+  }
+
+  // In hóa đơn theo cấu hình khổ giấy mặc định (80mm, A4, A5)
+  public printOrder(order: any) {
+    if (!order) return;
+    
+    const storeName = this.settings().store_name || 'Cafe Web3 POS';
+    const printSize = this.settings().default_print_size || '80mm';
+    const orderCode = order.order_code || ('#' + order.id);
+    const tableNum = order.table_number || 'Mang về';
+    const paymentMethodText = this.getPaymentMethodText(order.payment_method);
+    const orderDate = new Date(order.created_at).toLocaleString('vi-VN');
+    
+    // Tạo iframe ẩn để in
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+    
+    const doc = iframe.contentWindow?.document || iframe.contentDocument;
+    if (!doc) {
+      this.showToast('Không thể khởi tạo tiến trình in ấn!', 'error');
+      document.body.removeChild(iframe);
+      return;
+    }
+    
+    // Xây dựng danh sách món ăn
+    let itemsHtml = '';
+    order.items.forEach((item: any) => {
+      const name = item.product?.name || 'Sản phẩm';
+      const variantStr = item.variant ? ` (${item.variant.variant_name})` : '';
+      const qty = item.quantity || 1;
+      const price = item.price || 0;
+      const total = price * qty;
+      
+      itemsHtml += `
+        <div class="item-row">
+          <span class="item-name">${name}${variantStr}</span>
+          <span class="item-qty">x${qty}</span>
+          <span class="item-price">${price.toLocaleString('vi-VN')}đ</span>
+        </div>
+      `;
+    });
+    
+    // Bằng chứng blockchain nếu có
+    let blockchainHtml = '';
+    if (order.blockchain_status === 'success' && order.tx_hash) {
+      const chainIdVal = order.chain_id || this.settings().chain_id || '';
+      const chainIdStr = chainIdVal.toString().trim();
+      const foundChain = this.POPULAR_CHAINS.find(c => c.chainId === chainIdStr);
+      const networkName = foundChain ? foundChain.name : 'Mạng tùy chỉnh';
+      const networkDisplay = `${networkName} (ID: ${chainIdStr})`;
+
+      blockchainHtml = `
+        <div class="divider"></div>
+        <div class="blockchain-section">
+          <div class="font-bold" style="font-size: 11px; text-transform: uppercase; margin-bottom: 4px;">BẰNG CHỨNG BLOCKCHAIN (WEB3)</div>
+          <div style="font-size: 10px; color: #10b981; font-weight: bold; margin-bottom: 2px;">Ghi nhận Blockchain thành công</div>
+          <div class="blockchain-badge font-mono">${order.tx_hash}</div>
+          <div style="font-size: 8px; color: #6b7280; margin-top: 4px; text-align: center;">Mạng: ${networkDisplay}</div>
+        </div>
+      `;
+    }
+    
+    // HTML đầy đủ
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Hóa đơn ${orderCode}</title>
+        <style>
+          @page {
+            margin: 0;
+            ${printSize === '80mm' ? 'size: 80mm auto;' : (printSize === 'A4' ? 'size: A4; margin: 15mm;' : 'size: A5; margin: 10mm;')}
+          }
+          body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            color: #1f2937;
+            background: #fff;
+            margin: 0;
+            padding: ${printSize === '80mm' ? '4mm' : '0'};
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          .bill-container {
+            width: ${printSize === '80mm' ? '72mm' : '100%'};
+            box-sizing: border-box;
+            margin: 0 auto;
+          }
+          .text-center { text-align: center; }
+          .text-right { text-align: right; }
+          .font-bold { font-weight: bold; }
+          .font-mono { font-family: inherit; }
+          .title {
+            font-size: ${printSize === '80mm' ? '18px' : '24px'};
+            font-weight: bold;
+            margin: 0 0 5px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+          .subtitle {
+            font-size: ${printSize === '80mm' ? '11px' : '13px'};
+            color: #4b5563;
+            margin: 0 0 15px 0;
+          }
+          .info-table {
+            width: 100%;
+            font-size: ${printSize === '80mm' ? '11px' : '13px'};
+            margin-bottom: 12px;
+            border-collapse: collapse;
+          }
+          .info-table td {
+            padding: 3px 0;
+          }
+          .divider {
+            border-top: 1px dashed #9ca3af;
+            margin: 10px 0;
+          }
+          .items-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: ${printSize === '80mm' ? '11px' : '13px'};
+            padding-bottom: 6px;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 8px;
+          }
+          .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            font-size: ${printSize === '80mm' ? '11px' : '13px'};
+            margin-bottom: 6px;
+            line-height: 1.3;
+          }
+          .item-name {
+            flex: 1;
+            padding-right: 10px;
+          }
+          .item-qty {
+            width: 35px;
+            text-align: center;
+            color: #4b5563;
+          }
+          .item-price {
+            width: 90px;
+            text-align: right;
+            font-weight: 600;
+          }
+          .total-section {
+            margin-top: 15px;
+            font-size: ${printSize === '80mm' ? '13px' : '15px'};
+          }
+          .total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 0;
+          }
+          .grand-total {
+            font-size: ${printSize === '80mm' ? '16px' : '20px'};
+            font-weight: bold;
+            color: #000;
+          }
+          .blockchain-section {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 8px;
+            margin-top: 12px;
+          }
+          .blockchain-badge {
+            font-size: 9px;
+            word-break: break-all;
+            background: #f3f4f6;
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #e5e7eb;
+            color: #374151;
+            margin-top: 4px;
+          }
+          .footer-thanks {
+            margin-top: 20px;
+            font-size: ${printSize === '80mm' ? '11px' : '13px'};
+            color: #4b5563;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="bill-container">
+          <div class="text-center">
+            <h1 class="title">${storeName}</h1>
+            <div class="subtitle">HÓA ĐƠN THANH TOÁN</div>
+          </div>
+          
+          <table class="info-table">
+            <tr>
+              <td class="font-bold">Mã đơn:</td>
+              <td class="text-right font-mono font-bold">${orderCode}</td>
+            </tr>
+            <tr>
+              <td>Thời gian:</td>
+              <td class="text-right">${orderDate}</td>
+            </tr>
+            <tr>
+              <td>Bàn số:</td>
+              <td class="text-right font-bold">${tableNum}</td>
+            </tr>
+            <tr>
+              <td>Hình thức:</td>
+              <td class="text-right">${paymentMethodText}</td>
+            </tr>
+          </table>
+          
+          <div class="divider"></div>
+          
+          <div class="items-header">
+            <span>Tên món</span>
+            <div style="display: flex;">
+              <span style="width: 35px; text-align: center;">SL</span>
+              <span style="width: 90px; text-align: right;">Thành tiền</span>
+            </div>
+          </div>
+          
+          <div class="items-container">
+            ${itemsHtml}
+          </div>
+          
+          <div class="divider"></div>
+          
+          <div class="total-section">
+            <div class="total-row grand-total">
+              <span>TỔNG CỘNG:</span>
+              <span class="font-mono">${(order.total_amount || 0).toLocaleString('vi-VN')}đ</span>
+            </div>
+          </div>
+          
+          ${blockchainHtml}
+          
+          <div class="divider"></div>
+          
+          <div class="text-center footer-thanks">
+            <div class="font-bold">Xin cảm ơn quý khách!</div>
+            <div style="margin-top: 2px;">Hẹn gặp lại quý khách lần sau.</div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    doc.open();
+    doc.write(htmlContent);
+    doc.close();
+    
+    // Đợi nội dung load xong và kích hoạt lệnh in
+    iframe.onload = () => {
+      setTimeout(() => {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+        
+        // Dọn dẹp iframe sau khi in (hoặc sau một khoảng thời gian ngắn để tránh lỗi)
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+        }, 1000);
+      }, 500);
+    };
+    
+    this.showToast('Đang khởi tạo máy in cho hóa đơn ' + orderCode, 'success');
   }
 
   // ==================== QUẢN LÝ THỰC ĐƠN (CRUD) ====================
