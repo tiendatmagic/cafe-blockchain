@@ -45,6 +45,24 @@ export class App implements OnInit, OnDestroy {
   public readonly selectedChainName = signal<string>('-- Chọn nhanh mạng phổ biến nhất --');
   public readonly menuViewMode = signal<'table' | 'card'>('card');
 
+  // Cấu hình chế độ thanh toán POS và Modal tính toán tiền thừa
+  public readonly posCheckoutMode = signal<'quick' | 'confirm'>('quick');
+  public readonly isTableDropdownOpen = signal<boolean>(false);
+  public readonly isPosConfirmModalOpen = signal<boolean>(false);
+  public readonly customerCashGiven = signal<number>(0);
+  public readonly isDebtPayment = signal<boolean>(false);
+  public readonly posPaymentMethod = signal<'cash' | 'bank_transfer' | 'crypto'>('cash');
+
+  // Computed Properties cho POS Confirm Modal
+  public readonly posTotalQuantity = computed(() => this.cart().reduce((sum, item) => sum + item.quantity, 0));
+  public readonly posCashReturn = computed(() => Math.max(0, this.customerCashGiven() - this.cartTotal()));
+  public readonly posDebtAmount = computed(() => this.isDebtPayment() ? Math.max(0, this.cartTotal() - this.customerCashGiven()) : 0);
+  public readonly customerCashGivenFormatted = computed(() => {
+    const val = this.customerCashGiven();
+    if (val === 0) return '';
+    return val.toLocaleString('en-US');
+  });
+
   // Dữ liệu từ Laravel Backend
   public readonly dashboardData = signal<any>(null);
   public readonly products = signal<any[]>([]);
@@ -794,6 +812,7 @@ export class App implements OnInit, OnDestroy {
       this.refreshDashboard();
     } else if (tab === 'pos') {
       this.refreshProducts();
+      this.refreshTablesAndAreas(); // Tự động tải sơ đồ bàn ăn cho giỏ hàng POS
     } else if (tab === 'orders') {
       if (isNewTab) this.ordersCurrentPage.set(1);
       this.refreshOrders();
@@ -1222,6 +1241,76 @@ export class App implements OnInit, OnDestroy {
         }
       });
     }
+  }
+
+  // Phân luồng click nút Đặt hàng ở POS (Nhanh / Nâng cao)
+  public handlePosOrderClick() {
+    if (!this.web3Service.walletConnected()) {
+      this.showToast('Vui lòng kết nối ví Web3 để thanh toán và ghi nhận đơn hàng!', 'error');
+      return;
+    }
+
+    if (this.cart().length === 0) {
+      this.showToast('Vui lòng chọn ít nhất một món ăn!', 'error');
+      return;
+    }
+
+    if (this.posCheckoutMode() === 'quick') {
+      this.submitOrder();
+    } else {
+      this.openPosConfirmModal();
+    }
+  }
+
+  // Mở modal xác nhận thanh toán nâng cao
+  public openPosConfirmModal() {
+    this.customerCashGiven.set(this.cartTotal());
+    this.isDebtPayment.set(false);
+    
+    // Đồng bộ phương thức thanh toán hiện tại từ POS sang modal
+    const currentMethod = this.paymentMethod();
+    if (currentMethod === 'cash' || currentMethod === 'bank_transfer' || currentMethod === 'crypto') {
+      this.posPaymentMethod.set(currentMethod);
+    } else {
+      this.posPaymentMethod.set('cash');
+    }
+    
+    this.isPosConfirmModalOpen.set(true);
+  }
+
+  // Chọn nhanh số tiền khách đưa
+  public selectCashGivenQuick(amount: number) {
+    this.customerCashGiven.set(amount);
+  }
+
+  // Xử lý sự kiện gõ số tiền khách đưa (format tự động dấu phẩy)
+  public onCustomerCashGivenInput(event: any) {
+    const inputVal = event.target.value;
+    // Gỡ bỏ tất cả ký tự không phải số (bao gồm cả dấu phẩy)
+    const cleanVal = inputVal.replace(/[^0-9]/g, '');
+    const numVal = Number(cleanVal) || 0;
+    this.customerCashGiven.set(numVal);
+
+    // Cập nhật lại giá trị hiển thị trên input để đảm bảo format đồng bộ ngay khi gõ
+    event.target.value = numVal > 0 ? numVal.toLocaleString('en-US') : '';
+  }
+
+  // Xác nhận và thực hiện đặt hàng từ modal
+  public confirmAndSubmitOrder() {
+    this.paymentMethod.set(this.posPaymentMethod());
+    this.isPosConfirmModalOpen.set(false);
+    this.submitOrder();
+  }
+
+  // Toggle đóng mở dropdown Chọn bàn ăn POS
+  public toggleTableDropdown() {
+    this.isTableDropdownOpen.set(!this.isTableDropdownOpen());
+  }
+
+  // Chọn bàn ăn từ Custom Dropdown
+  public selectTable(tableName: string) {
+    this.tableNumber.set(tableName);
+    this.isTableDropdownOpen.set(false);
   }
 
   // ==================== CHỨC NĂNG SỔ ĐƠN HÀNG ====================
