@@ -71,8 +71,23 @@ export class ApiService {
   }
 
   // 2. Products (Thực đơn) API
-  public getProducts(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/products`, { headers: this.getHeaders() });
+  public getProducts(params?: { page?: number; limit?: number; search?: string; category?: string }): Observable<any> {
+    let httpParams = new HttpParams();
+    if (params) {
+      if (params.page !== undefined) {
+        httpParams = httpParams.set('page', params.page.toString());
+      }
+      if (params.limit !== undefined) {
+        httpParams = httpParams.set('limit', params.limit.toString());
+      }
+      if (params.search !== undefined) {
+        httpParams = httpParams.set('search', params.search);
+      }
+      if (params.category !== undefined) {
+        httpParams = httpParams.set('category', params.category);
+      }
+    }
+    return this.http.get<any>(`${this.baseUrl}/products`, { params: httpParams, headers: this.getHeaders() });
   }
 
   public createProduct(product: any): Observable<any> {

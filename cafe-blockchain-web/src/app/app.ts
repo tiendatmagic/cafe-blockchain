@@ -1,11 +1,11 @@
-import { Component, OnInit, OnDestroy, signal, computed, inject, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, inject, HostListener, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from './services/api.service';
 import { Web3Service } from './services/web3.service';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subject, Subscription } from 'rxjs';
 import { Router, NavigationEnd, RouterModule } from '@angular/router';
-import { filter } from 'rxjs/operators';
+import { filter, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
@@ -20,6 +20,23 @@ export class App implements OnInit, OnDestroy {
   public readonly web3Service = inject(Web3Service);
   private readonly router = inject(Router);
   private readonly colorStorageKey = 'dapp_dynamic_colors';
+
+  // Hệ thống Cache & Debounce cho POS
+  private posProductsCache = new Map<string, { data: any[], totalPages: number, timestamp: number }>();
+  private readonly cacheTTL = 5 * 60 * 1000; // 5 phút (ms)
+  private searchSubject = new Subject<string>();
+  private searchSubscription?: Subscription;
+
+  constructor() {
+    effect(() => {
+      const page = this.posCurrentPage();
+      const category = this.posCategoryFilter();
+      
+      if (this.activeTab() === 'pos') {
+        this.loadPosProducts();
+      }
+    }, { allowSignalWrites: true });
+  }
 
   // Quản lý tab và UI
   public readonly activeTab = signal<string>('dashboard');
@@ -484,18 +501,11 @@ export class App implements OnInit, OnDestroy {
   });
 
   // Phân trang sản phẩm ở trang Bán hàng POS
-  public readonly posItemsPerPage = 9; // Tối đa 9 sản phẩm trên 1 trang theo quy định mới
+  public readonly posItemsPerPage = 9;
   public readonly posCurrentPage = signal<number>(1);
-
-  public readonly paginatedPosProducts = computed(() => {
-    const list = this.filteredProducts();
-    const startIndex = (this.posCurrentPage() - 1) * this.posItemsPerPage;
-    return list.slice(startIndex, startIndex + this.posItemsPerPage);
-  });
-
-  public readonly posTotalPages = computed(() => {
-    return Math.ceil(this.filteredProducts().length / this.posItemsPerPage) || 1;
-  });
+  public readonly posProductsList = signal<any[]>([]);
+  public readonly paginatedPosProducts = computed(() => this.posProductsList());
+  public readonly posTotalPages = signal<number>(1);
 
   public readonly ordersItemsPerPage = 5;
   public readonly ordersCurrentPage = signal<number>(1);
@@ -510,6 +520,53 @@ export class App implements OnInit, OnDestroy {
   public readonly ordersTotalPages = computed(() => {
     return Math.ceil(this.orders().length / this.ordersItemsPerPage) || 1;
   });
+
+  public loadPosProducts() {
+    const page = this.posCurrentPage();
+    const limit = this.posItemsPerPage;
+    const search = this.posSearchQuery();
+    const category = this.posCategoryFilter();
+
+    const cacheKey = `page_${page}_limit_${limit}_search_${search}_category_${category}`;
+    const cached = this.posProductsCache.get(cacheKey);
+    const now = Date.now();
+
+    if (cached && (now - cached.timestamp < this.cacheTTL)) {
+      this.posProductsList.set(cached.data);
+      this.posTotalPages.set(cached.totalPages);
+      return;
+    }
+
+    this.isProductsLoading.set(true);
+    this.apiService.getProducts({ page, limit, search, category }).subscribe({
+      next: (res: any) => {
+        const data = res.data || [];
+        const totalPages = res.last_page || 1;
+
+        this.posProductsList.set(data);
+        this.posTotalPages.set(totalPages);
+
+        this.posProductsCache.set(cacheKey, {
+          data,
+          totalPages,
+          timestamp: now
+        });
+        this.isProductsLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Lỗi tải sản phẩm POS:', err);
+        this.isProductsLoading.set(false);
+      }
+    });
+  }
+
+  public clearPosProductsCache() {
+    this.posProductsCache.clear();
+  }
+
+  public onSearchQueryChange(query: string) {
+    this.searchSubject.next(query);
+  }
 
   // Helper sinh mảng số trang cho giao diện phân trang
   public getPagesArray(totalPages: number): number[] {
@@ -598,10 +655,23 @@ export class App implements OnInit, OnDestroy {
     this.web3Service.accountsChanged$.subscribe((newAccount) => {
       this.handleAccountSwitch(newAccount);
     });
+
+    // Lắng nghe debounce tìm kiếm sản phẩm POS
+    this.searchSubscription = this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe((val) => {
+      this.posSearchQuery.set(val);
+      this.posCurrentPage.set(1);
+      this.loadPosProducts();
+    });
   }
 
   ngOnDestroy() {
     this.clearAutoThemeInterval();
+    if (this.searchSubscription) {
+      this.searchSubscription.unsubscribe();
+    }
   }
 
   // Khởi tạo Light/Dark/Auto Theme
@@ -825,7 +895,10 @@ export class App implements OnInit, OnDestroy {
     if (tab === 'dashboard') {
       this.refreshDashboard();
     } else if (tab === 'pos') {
-      this.refreshProducts();
+      if (this.categoriesList().length === 0) {
+        this.refreshProducts();
+      }
+      this.loadPosProducts();
       this.refreshTablesAndAreas(); // Tự động tải sơ đồ bàn ăn cho giỏ hàng POS
     } else if (tab === 'orders') {
       if (isNewTab) this.ordersCurrentPage.set(1);
@@ -1984,6 +2057,7 @@ export class App implements OnInit, OnDestroy {
         next: (res) => {
           this.showToast('Thêm món ăn thành công!', 'success');
           this.closeMenuModal();
+          this.clearPosProductsCache();
           this.refreshProducts();
           this.isProductSaving.set(false);
         },
@@ -1998,6 +2072,7 @@ export class App implements OnInit, OnDestroy {
         next: (res) => {
           this.showToast('Cập nhật món ăn thành công!', 'success');
           this.closeMenuModal();
+          this.clearPosProductsCache();
           this.refreshProducts();
           this.isProductSaving.set(false);
         },
@@ -2105,6 +2180,7 @@ export class App implements OnInit, OnDestroy {
           this.showToast('Cập nhật danh mục thành công!', 'success');
           this.closeCategoryModal();
           this.loadCategories();
+          this.clearPosProductsCache();
           this.refreshProducts();
           this.isCategoryLoading.set(false);
         },
@@ -2120,6 +2196,7 @@ export class App implements OnInit, OnDestroy {
           this.showToast('Tạo danh mục mới thành công!', 'success');
           this.closeCategoryModal();
           this.loadCategories();
+          this.clearPosProductsCache();
           this.refreshProducts();
           this.isCategoryLoading.set(false);
         },
@@ -2170,6 +2247,7 @@ export class App implements OnInit, OnDestroy {
         this.isDeleteCategoryConfirmOpen.set(false);
         this.deletingCategoryData.set(null);
         this.loadCategories();
+        this.clearPosProductsCache();
         this.refreshProducts();
         this.isCategoryLoading.set(false);
       },
@@ -2206,6 +2284,7 @@ export class App implements OnInit, OnDestroy {
         this.showToast('Xóa món ăn khỏi thực đơn thành công!', 'success');
         this.isDeleteProductConfirmOpen.set(false);
         this.deletingProductData.set(null);
+        this.clearPosProductsCache();
         this.refreshProducts();
         this.isProductDeleting.set(false);
       },

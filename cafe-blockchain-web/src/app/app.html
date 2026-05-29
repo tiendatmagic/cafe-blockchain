@@ -1553,8 +1553,8 @@
                 <div class="relative w-full sm:w-72">
                   <input
                     type="text"
-                    [(ngModel)]="posSearchQuery"
-                    (ngModelChange)="posCurrentPage.set(1)"
+                    [ngModel]="posSearchQuery()"
+                    (ngModelChange)="onSearchQueryChange($event)"
                     placeholder="Tìm tên món nước..."
                     class="w-full px-4.5 py-3 rounded-2xl bg-white dark:bg-slate-900 border-2 border-slate-200/80 dark:border-slate-800/80 text-base focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all"
                   />

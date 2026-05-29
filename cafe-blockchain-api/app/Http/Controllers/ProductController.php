@@ -13,7 +13,29 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-        $products = Product::where('store_owner_address', $storeOwner)->with(['categories', 'variants'])->orderBy('id', 'desc')->get();
+        
+        $query = Product::where('store_owner_address', $storeOwner)
+            ->with(['categories', 'variants'])
+            ->orderBy('id', 'desc');
+        // Lọc theo từ khóa tìm kiếm nếu có
+        if ($request->has('search') && !empty($request->search)) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        // Lọc theo danh mục nếu có
+        if ($request->has('category') && $request->category !== 'Tất cả') {
+            $query->whereHas('categories', function ($q) use ($request) {
+                $q->where('name', $request->category);
+            });
+        }
+        if ($request->has('page') || $request->has('limit')) {
+            $limit = $request->input('limit', 9); // Mặc định 9 sản phẩm một trang
+            $products = $query->paginate($limit);
+        } else {
+            // Mặc định trả về toàn bộ mảng phẳng để tương thích ngược
+            $products = $query->get();
+        }
+
         return response()->json($products);
     }
 
