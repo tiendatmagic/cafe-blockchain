@@ -191,6 +191,9 @@ export class App implements OnInit, OnDestroy {
     default_print_size: '80mm'
   });
 
+  // Trạng thái tab nhỏ trong Cấu hình quán
+  public readonly settingsSubTab = signal<'general' | 'blockchain' | 'permissions'>('general');
+
   // Trạng thái Quản trị Owner Ví trên Blockchain
   public readonly ownersFromChain = signal<string[]>([]);
   public readonly isOwnerModalOpen = signal<boolean>(false);
@@ -551,6 +554,10 @@ export class App implements OnInit, OnDestroy {
       ...form,
       [field]: value
     }));
+  }
+
+  public setSettingsSubTab(subTab: 'general' | 'blockchain' | 'permissions') {
+    this.settingsSubTab.set(subTab);
   }
 
   public updateMenuForm(field: string, value: any) {
