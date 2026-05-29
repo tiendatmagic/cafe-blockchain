@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -19,10 +19,14 @@ export class App implements OnInit, OnDestroy {
   public readonly web3Service = inject(Web3Service);
   private readonly apiService = inject(ApiService);
 
+  public readonly usdtPriceVND = signal<number>(25420);
+
   // Getters từ StateService để binding dễ dàng trong app.html
   public get successMessage() { return this.stateService.successMessage; }
   public get errorMessage() { return this.stateService.errorMessage; }
   public get isWalletModalOpen() { return this.stateService.isWalletModalOpen; }
+  public get settings() { return this.stateService.settings; }
+  public get nativeTokenPriceVND() { return this.stateService.nativeTokenPriceVND; }
 
   // Tính trạng thái sai chain trực tiếp hoặc lấy từ StateService/Web3Service
   public get isWrongChain() {
@@ -36,8 +40,19 @@ export class App implements OnInit, OnDestroy {
   private accountsChangedSub?: any;
 
   ngOnInit() {
-    // Tải dữ liệu ban đầu
-    this.stateService.loadAllData();
+    // Tải cấu hình quán trước
+    this.stateService.loadSettings();
+
+    // Nếu đã có token và ví được lưu trước đó, tải toàn bộ dữ liệu
+    const hasToken = this.apiService.getToken();
+    const hasAddress = typeof window !== 'undefined' ? localStorage.getItem('auth_address') : null;
+
+    if (hasToken && hasAddress) {
+      this.stateService.loadAllData();
+    } else {
+      // Chưa kết nối hoặc session hết hạn, yêu cầu kết nối ví
+      this.stateService.isWalletModalOpen.set(true);
+    }
 
     // Lắng nghe sự kiện thay đổi ví từ Web3Service
     this.accountsChangedSub = this.web3Service.accountsChanged$.subscribe((newAccount) => {
@@ -117,5 +132,16 @@ export class App implements OnInit, OnDestroy {
       console.log('Ví đã ngắt kết nối hoàn toàn');
       this.stateService.showToast('Ví đã ngắt kết nối. Vui lòng kết nối ví để tiếp tục!', 'error');
     }
+  }
+
+  // Sao chép địa chỉ ví vào clipboard
+  public copyAddress() {
+    const address = this.web3Service.currentAccount();
+    if (!address) return;
+    navigator.clipboard.writeText(address).then(() => {
+      this.stateService.showToast('Đã sao chép địa chỉ ví vào bộ nhớ tạm!', 'success');
+    }).catch(err => {
+      this.stateService.showToast('Lỗi sao chép địa chỉ ví!', 'error');
+    });
   }
 }

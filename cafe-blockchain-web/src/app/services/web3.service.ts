@@ -161,6 +161,30 @@ export class Web3Service {
     return this.getNetworkNameByChainId(this.configuredChainId());
   });
 
+  // Tự động nhận diện explorer link cho địa chỉ ví đang kết nối
+  public readonly addressExplorerLink = computed(() => {
+    const account = this.currentAccount();
+    if (!account) return '#';
+    const activeChainId = this.walletConnected() ? this.chainId() : this.configuredChainId();
+    const chain = this.POPULAR_CHAINS.find(c => c.chainId === activeChainId.toString().trim());
+    if (chain) {
+      return `${chain.explorerUrl}/address/${account}`;
+    }
+    return `${this.explorerUrl()}/address/${account}`;
+  });
+
+  public getAddressExplorerLink(account: string | null | undefined, chainId: string | number | null | undefined): string {
+    if (!account) return '#';
+    if (chainId) {
+      const idStr = chainId.toString().trim();
+      const chain = this.POPULAR_CHAINS.find(c => c.chainId === idStr);
+      if (chain) {
+        return `${chain.explorerUrl}/address/${account}`;
+      }
+    }
+    return `${this.explorerUrl()}/address/${account}`;
+  }
+
   public getTxExplorerLink(txHash: string | null | undefined, chainId: string | number | null | undefined): string {
     if (!txHash) return '#';
     if (chainId) {

@@ -1,4 +1,4 @@
-<div class="space-y-6">
+<div class="space-y-6 p-4 sm:p-6">
   <!-- Header tiêu đề tab -->
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div>
@@ -336,7 +336,7 @@
 <!-- Modal Khu vực -->
 @if (isAreaModalOpen()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div (click)="closeAreaModal()" class="fixed inset-0 bg-slate-950/[0.04]"></div>
+    <div (click)="closeAreaModal()" class="fixed inset-0 bg-black/40"></div>
     <div
       class="relative bg-white dark:bg-slate-900 rounded-xl border border-slate-200/60 dark:border-slate-800/60 p-6 max-w-sm w-full shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200"
     >
@@ -409,7 +409,7 @@
 <!-- Modal Bàn ăn -->
 @if (isTableModalOpen()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div (click)="closeTableModal()" class="fixed inset-0 bg-slate-950/[0.04]"></div>
+    <div (click)="closeTableModal()" class="fixed inset-0 bg-black/40"></div>
     <div
       class="relative bg-white dark:bg-slate-900 rounded-xl border border-slate-200/60 dark:border-slate-800/60 p-6 max-w-sm w-full shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200"
     >

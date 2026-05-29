@@ -2,8 +2,8 @@ import { Injectable, inject, signal, computed, effect } from '@angular/core';
 import { ApiService } from './api.service';
 import { Web3Service } from './web3.service';
 import { forkJoin, Subject, Subscription } from 'rxjs';
-import { Router } from '@angular/router';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Router, NavigationEnd } from '@angular/router';
+import { debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -90,6 +90,7 @@ export class StateService {
   private readonly cacheTTL = 5 * 60 * 1000; // 5 phút (ms)
   private searchSubject = new Subject<string>();
   private searchSubscription?: Subscription;
+  private routerSubscription?: Subscription;
 
   // Tự động nhận diện Token giá VND
   public readonly nativeTokenPriceVND = computed(() => {
@@ -130,12 +131,27 @@ export class StateService {
       this.posCurrentPage.set(1);
       this.loadPosProducts();
     });
+
+    // Lắng nghe sự kiện thay đổi route để cập nhật activeTab và tự động refresh dữ liệu tương ứng
+    this.routerSubscription = this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event: any) => {
+      this.syncTabWithUrl(event.urlAfterRedirects || event.url);
+    });
+
+    // Đồng bộ tab lần đầu
+    setTimeout(() => {
+      this.syncTabWithUrl(this.router.url);
+    }, 100);
   }
 
   // Hủy đăng ký khi service bị destroy (thường Injectable root không destroy nhưng viết cho chuẩn)
   public destroy() {
     if (this.searchSubscription) {
       this.searchSubscription.unsubscribe();
+    }
+    if (this.routerSubscription) {
+      this.routerSubscription.unsubscribe();
     }
   }
 
@@ -270,6 +286,7 @@ export class StateService {
           this.web3Service.updateConfig(settings);
         }
         this.refreshTablesAndAreas();
+        this.loadPosProducts();
         this.isLoading.set(false);
       },
       error: (err) => {
@@ -575,5 +592,61 @@ export class StateService {
     this.editingOrderId.set(null);
     this.router.navigate(['/orders']);
     this.showToast('Đã hủy chỉnh sửa đơn hàng', 'success');
+  }
+
+  private syncTabWithUrl(url: string) {
+    const cleanUrl = url.split('?')[0]; // bỏ qua query params nếu có
+    if (cleanUrl.includes('/dashboard')) {
+      this.setTabState('dashboard');
+    } else if (cleanUrl.includes('/pos')) {
+      this.setTabState('pos');
+    } else if (cleanUrl.includes('/menu')) {
+      this.setTabState('menu');
+    } else if (cleanUrl.includes('/orders')) {
+      this.setTabState('orders');
+    } else if (cleanUrl.includes('/settings')) {
+      this.setTabState('settings');
+    } else if (cleanUrl.includes('/customers')) {
+      this.setTabState('customers');
+    } else if (cleanUrl.includes('/financials')) {
+      this.setTabState('financials');
+    } else if (cleanUrl.includes('/inventory')) {
+      this.setTabState('inventory');
+    } else if (cleanUrl.includes('/tables')) {
+      this.setTabState('tables');
+    }
+  }
+
+  private setTabState(tab: string) {
+    const isNewTab = this.activeTab() !== tab;
+    if (isNewTab) {
+      this.activeTab.set(tab);
+      this.isMobileMenuOpen.set(false);
+    }
+
+    // Refresh dữ liệu tương ứng khi đổi tab hoặc khi load trang lần đầu
+    if (tab === 'dashboard') {
+      this.refreshDashboard();
+    } else if (tab === 'pos') {
+      if (this.categoriesList().length === 0) {
+        this.refreshProducts();
+      }
+      this.loadPosProducts();
+      this.refreshTablesAndAreas(); // Tải sơ đồ bàn cho POS
+    } else if (tab === 'orders') {
+      this.refreshOrders();
+    } else if (tab === 'menu') {
+      this.refreshProducts();
+    } else if (tab === 'settings') {
+      this.loadSettings();
+    } else if (tab === 'customers') {
+      this.refreshCustomers();
+    } else if (tab === 'financials') {
+      this.refreshTransactions();
+    } else if (tab === 'inventory') {
+      this.refreshInventory();
+    } else if (tab === 'tables') {
+      this.refreshTablesAndAreas();
+    }
   }
 }

@@ -1,4 +1,4 @@
-<div class="space-y-6 p-6">
+<div class="space-y-6 p-4 sm:p-6">
   <!-- Header tiêu đề tab có bộ chuyển đổi View Mode -->
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div>
@@ -641,7 +641,7 @@
 @if (isMenuModalOpen()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
     <!-- Backdrop overlay -->
-    <div (click)="closeMenuModal()" class="fixed inset-0 bg-slate-950/[0.04]"></div>
+    <div (click)="closeMenuModal()" class="fixed inset-0 bg-black/40"></div>
 
     <!-- Modal Content -->
     <div
@@ -911,7 +911,7 @@
 @if (isCategoryModalOpen()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
     <!-- Backdrop overlay -->
-    <div (click)="closeCategoryModal()" class="fixed inset-0 bg-slate-950/[0.04]"></div>
+    <div (click)="closeCategoryModal()" class="fixed inset-0 bg-black/40"></div>
 
     <!-- Modal Content -->
     <div
@@ -981,7 +981,7 @@
     <!-- Backdrop overlay -->
     <div
       (click)="isDeleteCategoryConfirmOpen.set(false)"
-      class="fixed inset-0 bg-slate-950/[0.04]"
+      class="fixed inset-0 bg-black/40"
     ></div>
 
     <!-- Modal Content -->
@@ -1050,7 +1050,7 @@
     <!-- Backdrop overlay -->
     <div
       (click)="isDeleteProductConfirmOpen.set(false)"
-      class="fixed inset-0 bg-slate-950/[0.04]"
+      class="fixed inset-0 bg-black/40"
     ></div>
 
     <!-- Modal Content -->

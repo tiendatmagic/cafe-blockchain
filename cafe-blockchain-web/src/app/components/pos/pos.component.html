@@ -1,4 +1,4 @@
-<div class="space-y-6 p-6">
+<div class="space-y-6 p-4 sm:p-6">
   <!-- Header tiêu đề tab -->
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div>
@@ -617,7 +617,7 @@
 @if (isVariantSelectModalOpen()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
     <!-- Backdrop overlay -->
-    <div (click)="closeVariantSelectModal()" class="fixed inset-0 bg-slate-950/[0.04]"></div>
+    <div (click)="closeVariantSelectModal()" class="fixed inset-0 bg-black/40"></div>
 
     <!-- Modal Content -->
     <div
@@ -714,7 +714,7 @@
 @if (isPosConfirmModalOpen()) {
   <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
     <!-- Backdrop overlay -->
-    <div (click)="isPosConfirmModalOpen.set(false)" class="fixed inset-0 bg-slate-950/45 backdrop-blur-xs"></div>
+    <div (click)="isPosConfirmModalOpen.set(false)" class="fixed inset-0 bg-black/40"></div>
 
     <!-- Modal Content -->
     <div
