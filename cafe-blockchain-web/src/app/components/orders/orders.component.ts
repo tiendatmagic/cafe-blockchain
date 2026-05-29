@@ -1,0 +1,468 @@
+import { Component, inject, signal, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { StateService } from '../../services/state.service';
+import { ApiService } from '../../services/api.service';
+
+@Component({
+  selector: 'app-orders',
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterModule],
+  templateUrl: './orders.component.html'
+})
+export class OrdersComponent {
+  public readonly stateService = inject(StateService);
+  private readonly apiService = inject(ApiService);
+
+  // Lọc và Phân trang Sổ đơn hàng
+  public readonly orderStatusFilter = signal<string>('all');
+  public readonly orderBlockchainFilter = signal<string>('all');
+  public readonly ordersCurrentPage = signal<number>(1);
+  public readonly ordersItemsPerPage = 5;
+
+  // Trạng thái đồng bộ blockchain & cập nhật
+  public readonly isAutoSyncOnCompleteChecked = signal<boolean>(true);
+  public readonly blockchainSyncLoading = signal<boolean>(false);
+  public readonly isOrderStatusUpdating = signal<boolean>(false);
+
+  // Chi tiết đơn hàng & Hủy đơn hàng
+  public readonly selectedOrderDetails = signal<any>(null);
+  public readonly isOrderDetailModalOpen = signal<boolean>(false);
+  public readonly isCancelExplanationOpen = signal<boolean>(false);
+  public readonly explanationOrderDetails = signal<any>(null);
+
+  // Getters từ StateService
+  public get web3Service() { return this.stateService.web3Service; }
+  public get orders() { return this.stateService.orders; }
+  public get settings() { return this.stateService.settings; }
+  
+  // Danh sách đơn hàng hoàn thành chưa đồng bộ blockchain để hiện cảnh báo đối soát
+  public readonly unsyncedCompletedOrders = computed(() => {
+    return this.orders().filter(o => o.status === 'completed' && o.blockchain_status === 'none');
+  });
+
+  // Phân trang đơn hàng
+  public readonly paginatedOrders = computed(() => {
+    const list = this.orders();
+    const startIndex = (this.ordersCurrentPage() - 1) * this.ordersItemsPerPage;
+    return list.slice(startIndex, startIndex + this.ordersItemsPerPage);
+  });
+
+  public readonly ordersTotalPages = computed(() => {
+    return Math.ceil(this.orders().length / this.ordersItemsPerPage) || 1;
+  });
+
+  // Gọi API làm mới danh sách đơn hàng kèm bộ lọc
+  public refreshOrders() {
+    this.stateService.isOrdersLoading.set(true);
+    this.apiService.getOrders(this.orderStatusFilter(), this.orderBlockchainFilter()).subscribe({
+      next: (res) => {
+        this.stateService.orders.set(res);
+        this.stateService.isOrdersLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Lỗi refresh đơn hàng:', err);
+        this.stateService.isOrdersLoading.set(false);
+      }
+    });
+  }
+
+  // Cập nhật bộ lọc trạng thái đơn hàng
+  public setOrderStatusFilter(status: string) {
+    this.orderStatusFilter.set(status);
+    this.ordersCurrentPage.set(1);
+    this.refreshOrders();
+  }
+
+  // Cập nhật bộ lọc blockchain đơn hàng
+  public setOrderBlockchainFilter(blockchain: string) {
+    this.orderBlockchainFilter.set(blockchain);
+    this.ordersCurrentPage.set(1);
+    this.refreshOrders();
+  }
+
+  // Mở modal xem chi tiết đơn hàng
+  public viewOrderDetail(order: any) {
+    this.selectedOrderDetails.set(order);
+    this.isOrderDetailModalOpen.set(true);
+  }
+
+  // Đóng modal xem chi tiết
+  public closeOrderDetail() {
+    this.isOrderDetailModalOpen.set(false);
+    this.selectedOrderDetails.set(null);
+  }
+
+  // Cập nhật trạng thái đơn hàng (xác nhận thành công / đã hủy)
+  public async updateStatus(orderId: number, status: 'completed' | 'cancelled') {
+    if (!this.web3Service.walletConnected()) {
+      this.stateService.showToast('Vui lòng kết nối ví Web3 để thay đổi trạng thái đơn hàng!', 'error');
+      return;
+    }
+
+    if (status === 'cancelled' || !this.isAutoSyncOnCompleteChecked()) {
+      this.executeStatusUpdateOnly(orderId, status);
+      return;
+    }
+
+    // Hoàn thành đơn hàng đồng thời ghi Blockchain trực tiếp
+    this.isOrderStatusUpdating.set(true);
+    this.blockchainSyncLoading.set(true);
+    this.stateService.showToast('Bắt đầu đồng bộ Blockchain. Vui lòng xác nhận trên ví MetaMask...', 'success');
+
+    const order = this.selectedOrderDetails();
+    if (!order) {
+      this.isOrderStatusUpdating.set(false);
+      this.blockchainSyncLoading.set(false);
+      return;
+    }
+
+    const itemsSummary = order.items.map((item: any) => {
+      const variantStr = item.variant ? ` (${item.variant.variant_name})` : '';
+      return `${item.quantity}x ${item.product.name}${variantStr}`;
+    }).join(', ');
+
+    const result = await this.web3Service.recordOrderOnChain(
+      order.id,
+      order.order_code || '',
+      order.table_number || 'Mang ve',
+      order.total_amount,
+      this.getPaymentMethodText(order.payment_method),
+      itemsSummary
+    );
+
+    if (result.success && result.txHash) {
+      this.stateService.showToast('Giao dịch Blockchain thành công! Đang lưu trạng thái...', 'success');
+
+      this.apiService.updateOrderStatus(orderId, 'completed').subscribe({
+        next: (res) => {
+          this.apiService.syncOrderBlockchain(orderId, result.txHash, 'success', this.web3Service.chainId()).subscribe({
+            next: (syncRes) => {
+              this.stateService.showToast('Hoàn thành đơn hàng và đồng bộ Blockchain thành công!', 'success');
+              this.refreshOrders();
+              if (this.selectedOrderDetails() && this.selectedOrderDetails().id === orderId) {
+                this.selectedOrderDetails.set(syncRes.data);
+              }
+              this.isOrderStatusUpdating.set(false);
+              this.blockchainSyncLoading.set(false);
+            },
+            error: (syncErr) => {
+              console.error('Lỗi đồng bộ TxHash:', syncErr);
+              this.isOrderStatusUpdating.set(false);
+              this.blockchainSyncLoading.set(false);
+            }
+          });
+        },
+        error: (err) => {
+          console.error('Lỗi cập nhật trạng thái:', err);
+          this.stateService.showToast('Cập nhật trạng thái POS thất bại!', 'error');
+          this.isOrderStatusUpdating.set(false);
+          this.blockchainSyncLoading.set(false);
+        }
+      });
+    } else {
+      console.warn('[Blockchain] Giao dịch Blockchain thất bại hoặc bị từ chối, chuyển sang chế độ dự phòng:', result.error);
+      this.stateService.showToast('Ví bị từ chối! Kích hoạt chế độ dự phòng: Lưu Database POS trước.', 'success');
+
+      this.apiService.updateOrderStatus(orderId, 'completed').subscribe({
+        next: (res) => {
+          this.stateService.showToast('Đơn hàng đã được lưu hoàn thành vào Database POS!', 'success');
+          this.refreshOrders();
+          if (this.selectedOrderDetails() && this.selectedOrderDetails().id === orderId) {
+            this.selectedOrderDetails.set(res.data);
+          }
+          this.isOrderStatusUpdating.set(false);
+          this.blockchainSyncLoading.set(false);
+        },
+        error: (err) => {
+          console.error(err);
+          this.stateService.showToast('Cập nhật trạng thái thất bại!', 'error');
+          this.isOrderStatusUpdating.set(false);
+          this.blockchainSyncLoading.set(false);
+        }
+      });
+    }
+  }
+
+  // Cập nhật Database đơn thuần
+  private executeStatusUpdateOnly(orderId: number, status: 'completed' | 'cancelled') {
+    this.isOrderStatusUpdating.set(true);
+    this.apiService.updateOrderStatus(orderId, status).subscribe({
+      next: (res) => {
+        this.stateService.showToast(`Cập nhật trạng thái đơn hàng thành công!`, 'success');
+        this.refreshOrders();
+        if (this.selectedOrderDetails() && this.selectedOrderDetails().id === orderId) {
+          this.selectedOrderDetails.set(res.data);
+        }
+        this.isOrderStatusUpdating.set(false);
+      },
+      error: (err) => {
+        console.error('Loi cap nhat trang thai:', err);
+        this.stateService.showToast('Cập nhật trạng thái thất bại!', 'error');
+        this.isOrderStatusUpdating.set(false);
+      }
+    });
+  }
+
+  // Đồng bộ hóa đơn lên Blockchain EVM
+  public async syncToBlockchain(order: any) {
+    if (order.is_verified === false) {
+      this.stateService.showToast('CẢNH BÁO: Dữ liệu tài chính của đơn hàng này đã bị thay đổi trái phép trong Database! Không thể đồng bộ.', 'error');
+      return;
+    }
+
+    if (!this.web3Service.walletConnected()) {
+      this.stateService.showToast('Vui lòng kết nối ví Web3 để thực hiện tác vụ này!', 'error');
+      return;
+    }
+
+    if (!this.web3Service.contractAddress() || this.web3Service.contractAddress().trim() === '') {
+      this.stateService.showToast('Cửa hàng chưa được cấu hình Smart Contract! Vui lòng truy cập mục Cấu hình hệ thống để deploy contract trước.', 'error');
+      return;
+    }
+
+    if (!this.web3Service.isOwnerContract()) {
+      this.stateService.showToast('Địa chỉ ví thu ngân hiện tại của bạn không được phân quyền (Owner) trên Smart Contract! Hãy nhờ quản lý cấp quyền trong mục Cấu hình.', 'error');
+      return;
+    }
+
+    this.blockchainSyncLoading.set(true);
+    this.stateService.showToast('Vui lòng xác nhận giao dịch trên ví Metamask...', 'success');
+
+    const itemsSummary = order.items.map((item: any) => {
+      const variantStr = item.variant ? ` (${item.variant.variant_name})` : '';
+      return `${item.quantity}x ${item.product.name}${variantStr}`;
+    }).join(', ');
+
+    const result = await this.web3Service.recordOrderOnChain(
+      order.id,
+      order.order_code || '',
+      order.table_number || 'Mang ve',
+      order.total_amount,
+      this.getPaymentMethodText(order.payment_method),
+      itemsSummary
+    );
+
+    if (result.success && result.txHash) {
+      this.stateService.showToast('Giao dịch đã được gửi! Đang đồng bộ trạng thái...', 'success');
+
+      this.apiService.syncOrderBlockchain(order.id, result.txHash, 'success', this.web3Service.chainId()).subscribe({
+        next: (res) => {
+          this.stateService.showToast('Ghi nhận bằng chứng hóa đơn lên Blockchain EVM thành công!', 'success');
+          this.refreshOrders();
+          if (this.selectedOrderDetails() && this.selectedOrderDetails().id === order.id) {
+            this.selectedOrderDetails.set(res.data);
+          }
+          this.blockchainSyncLoading.set(false);
+        },
+        error: (err) => {
+          console.error('Loi cap nhat TxHash len DB:', err);
+          this.blockchainSyncLoading.set(false);
+        }
+      });
+    } else {
+      const errorMsg = result.error || '';
+      const isAlreadyExists = errorMsg.includes('order already exists') || errorMsg.toLowerCase().includes('already exists');
+
+      if (isAlreadyExists) {
+        this.stateService.showToast('Đơn hàng đã tồn tại trên Blockchain. Đang truy vấn bằng chứng gốc...', 'success');
+        const originalTxHash = await this.web3Service.getOriginalTxHashForOrder(order.id);
+
+        if (originalTxHash) {
+          this.apiService.syncOrderBlockchain(order.id, originalTxHash, 'success', this.web3Service.chainId()).subscribe({
+            next: (res) => {
+              this.stateService.showToast('Đối soát thành công! Đã khôi phục bằng chứng blockchain gốc.', 'success');
+              this.refreshOrders();
+              if (this.selectedOrderDetails() && this.selectedOrderDetails().id === order.id) {
+                this.selectedOrderDetails.set(res.data);
+              }
+              this.blockchainSyncLoading.set(false);
+            },
+            error: (err) => {
+              console.error('Lỗi đối soát đơn hàng:', err);
+              this.stateService.showToast(err.error?.message || 'Đối soát thất bại!', 'error');
+              this.blockchainSyncLoading.set(false);
+            }
+          });
+        } else {
+          this.stateService.showToast('Đơn hàng đã có trên blockchain nhưng không thể truy vấn tx_hash gốc. Vui lòng thử lại!', 'error');
+          this.blockchainSyncLoading.set(false);
+        }
+      } else {
+        this.stateService.showToast(result.error || 'Giao dịch thất bại hoặc bị từ chối!', 'error');
+        this.blockchainSyncLoading.set(false);
+      }
+    }
+  }
+
+  // Đồng bộ tuần tự toàn bộ các hóa đơn chưa đồng bộ (khi chốt ca)
+  public async syncAllUnsyncedOrders() {
+    const list = this.unsyncedCompletedOrders();
+    if (list.length === 0) {
+      this.stateService.showToast('Không có đơn hàng nào cần đồng bộ!', 'success');
+      return;
+    }
+
+    if (this.blockchainSyncLoading() || this.isOrderStatusUpdating()) return;
+
+    this.stateService.showToast(`Bắt đầu đồng bộ hàng loạt ${list.length} đơn hàng. Vui lòng ký MetaMask cho từng đơn...`, 'success');
+
+    for (const order of list) {
+      this.selectedOrderDetails.set(order);
+      this.isOrderDetailModalOpen.set(true);
+      await this.syncToBlockchain(order);
+    }
+
+    this.stateService.showToast('Đã hoàn tất tiến trình đồng bộ đối soát ca trực!', 'success');
+  }
+
+  // Khởi động chế độ chỉnh sửa đơn hàng POS
+  public editOrder(order: any) {
+    this.stateService.editOrder(order);
+  }
+
+  // Kích hoạt popup cảnh báo nghiệp vụ khi hủy đơn đã thành công
+  public triggerCancelExplanation(order: any) {
+    this.explanationOrderDetails.set(order);
+    this.isCancelExplanationOpen.set(true);
+  }
+
+  // Sao chép lý do hoàn tiền đối ứng
+  public copyToClipboard(text: string) {
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+      this.stateService.showToast('Đã sao chép lý do chi vào bộ nhớ tạm!', 'success');
+    }).catch(err => {
+      this.stateService.showToast('Không thể tự động sao chép lý do chi!', 'error');
+    });
+  }
+
+  // Dịch phương thức thanh toán
+  public getPaymentMethodText(method: string): string {
+    const map: any = {
+      'cash': 'Tiền mặt',
+      'bank_transfer': 'Chuyển khoản',
+      'crypto': 'Crypto Web3'
+    };
+    return map[method] || method;
+  }
+
+  // In hóa đơn theo khổ giấy config
+  public printOrder(order: any) {
+    if (!order) return;
+    
+    const storeName = this.settings().store_name || 'Cafe Web3 POS';
+    const printSize = this.settings().default_print_size || '80mm';
+    const orderCode = order.order_code || ('#' + order.id);
+    const tableNum = order.table_number || 'Mang về';
+    const paymentMethodText = this.getPaymentMethodText(order.payment_method);
+    const orderDate = new Date(order.created_at).toLocaleString('vi-VN');
+    
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none';
+    document.body.appendChild(iframe);
+    
+    const doc = iframe.contentWindow?.document;
+    if (!doc) return;
+
+    let itemsHtml = '';
+    order.items.forEach((item: any) => {
+      const variantText = item.variant ? `<br><small style="color:#555;font-weight:bold;">Size: ${item.variant.variant_name}</small>` : '';
+      itemsHtml += `
+        <tr>
+          <td style="padding: 4px 0; text-align: left; vertical-align: top;">
+            ${item.product?.name || 'Sản phẩm'}${variantText}
+          </td>
+          <td style="padding: 4px 0; text-align: center; vertical-align: top;">${item.quantity}</td>
+          <td style="padding: 4px 0; text-align: right; vertical-align: top;">${(item.price * item.quantity).toLocaleString('vi-VN')}đ</td>
+        </tr>
+      `;
+    });
+
+    const isWrongChainAlert = order.is_verified === false ? `
+      <div style="border: 2px dashed #ef4444; background: #fee2e2; color: #b91c1c; padding: 8px; border-radius: 8px; margin-top: 10px; font-size: 10px; font-weight: bold; text-align: center;">
+        ⚠️ HÓA ĐƠN BỊ KHÓA ĐỒNG BỘ!<br>Dữ liệu đã bị thay đổi trong Database.
+      </div>
+    ` : '';
+
+    doc.open();
+    doc.write(`
+      <html>
+        <head>
+          <title>In Hóa Đơn</title>
+          <style>
+            @page { size: ${printSize === '80mm' ? '80mm 200mm' : printSize}; margin: 0; }
+            body { font-family: 'Courier New', Courier, monospace; font-size: 12px; line-height: 1.4; color: #000; margin: 0; padding: 10px; width: ${printSize === '80mm' ? '72mm' : 'auto'}; }
+            .text-center { text-align: center; }
+            .bold { font-weight: bold; }
+            .divider { border-top: 1px dashed #000; margin: 8px 0; }
+            .header { font-size: 16px; margin-bottom: 2px; text-transform: uppercase; }
+            table { width: 100%; border-collapse: collapse; margin: 6px 0; }
+            th { border-bottom: 1px solid #000; padding: 4px 0; text-align: left; font-size: 10px; }
+            .total-row { font-size: 14px; font-weight: bold; margin-top: 8px; }
+            .footer { font-size: 10px; margin-top: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="text-center bold header">${storeName}</div>
+          <div class="text-center" style="font-size: 10px;">Blockchain Transparency Ledger</div>
+          <div class="divider"></div>
+          <div>Mã HĐ: <span class="bold">${orderCode}</span></div>
+          <div>Bàn: <span class="bold">${tableNum}</span></div>
+          <div>Thanh toán: ${paymentMethodText}</div>
+          <div>Ngày: ${orderDate}</div>
+          <div class="divider"></div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 55%;">Tên món</th>
+                <th style="width: 15%; text-align: center;">SL</th>
+                <th style="width: 30%; text-align: right;">Thành tiền</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>
+          <div class="divider"></div>
+          <div style="display: flex; justify-content: space-between;" class="total-row">
+            <span>TỔNG TIỀN:</span>
+            <span>${order.total_amount.toLocaleString('vi-VN')}đ</span>
+          </div>
+          ${isWrongChainAlert}
+          <div class="divider"></div>
+          <div class="text-center footer">
+            Cảm ơn quý khách! Hẹn gặp lại!<br>
+            Powered by Blockchain Dapp POS
+          </div>
+          <script>
+            window.onload = function() {
+              window.print();
+              setTimeout(function() { window.frameElement.remove(); }, 1000);
+            }
+          </script>
+        </body>
+      </html>
+    `);
+    doc.close();
+  }
+
+  // Helpers cho template HTML
+  public getPagesArray(totalPages: number): number[] {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+
+  public mathMin(a: number, b: number): number {
+    return Math.min(a, b);
+  }
+
+  public getTxExplorerLink(txHash: string | null | undefined, chainId: string | number | null | undefined): string {
+    return this.web3Service.getTxExplorerLink(txHash, chainId);
+  }
+}

@@ -29,6 +29,19 @@ export class Web3Service {
   public readonly explorerApiKey = signal<string>('');
   public readonly configuredChainId = signal<string>('11155111');
 
+  public readonly POPULAR_CHAINS = [
+    { name: 'Ethereum Mainnet', chainId: '1', rpcUrl: 'https://cloudflare-eth.com', explorerUrl: 'https://etherscan.io' },
+    { name: 'BNB Smart Chain (BSC)', chainId: '56', rpcUrl: 'https://bsc-dataseed.binance.org', explorerUrl: 'https://bscscan.com' },
+    { name: 'Polygon PoS Mainnet', chainId: '137', rpcUrl: 'https://polygon-rpc.com', explorerUrl: 'https://polygonscan.com' },
+    { name: 'Arbitrum One Mainnet', chainId: '42161', rpcUrl: 'https://arb1.arbitrum.io/rpc', explorerUrl: 'https://arbiscan.io' },
+    { name: 'Optimism Mainnet', chainId: '10', rpcUrl: 'https://mainnet.optimism.io', explorerUrl: 'https://optimistic.etherscan.io' },
+    { name: 'Base Mainnet', chainId: '8453', rpcUrl: 'https://mainnet.base.org', explorerUrl: 'https://basescan.org' },
+    { name: 'Avalanche C-Chain', chainId: '43114', rpcUrl: 'https://api.avax.network/ext/bc/C/rpc', explorerUrl: 'https://snowtrace.io' },
+    { name: 'Sepolia Testnet', chainId: '11155111', rpcUrl: 'https://ethereum-sepolia.publicnode.com', explorerUrl: 'https://sepolia.etherscan.io' },
+    { name: 'BSC Testnet', chainId: '97', rpcUrl: 'https://data-seed-prebsc-1-s1.binance.org:8545', explorerUrl: 'https://testnet.bscscan.com' },
+    { name: 'Arbitrum Sepolia', chainId: '421614', rpcUrl: 'https://sepolia-rollup.arbitrum.io/rpc', explorerUrl: 'https://sepolia.arbiscan.io/' },
+  ];
+
   // Địa chỉ ví rút gọn
   public readonly shortAddress = computed(() => {
     const addr = this.currentAccount();
@@ -147,6 +160,18 @@ export class Web3Service {
   public readonly configuredNetworkName = computed(() => {
     return this.getNetworkNameByChainId(this.configuredChainId());
   });
+
+  public getTxExplorerLink(txHash: string | null | undefined, chainId: string | number | null | undefined): string {
+    if (!txHash) return '#';
+    if (chainId) {
+      const idStr = chainId.toString().trim();
+      const chain = this.POPULAR_CHAINS.find(c => c.chainId === idStr);
+      if (chain) {
+        return `${chain.explorerUrl}/tx/${txHash}`;
+      }
+    }
+    return `${this.explorerUrl()}/tx/${txHash}`;
+  }
 
   private provider: BrowserProvider | null = null;
 
