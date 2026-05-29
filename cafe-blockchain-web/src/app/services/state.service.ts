@@ -308,6 +308,7 @@ export class StateService {
         this.products.set(res.products);
         this.categoriesList.set(res.categories || []);
         this.isProductsLoading.set(false);
+        this.loadPosProducts();
       },
       error: (err) => {
         console.error('Lỗi refresh sản phẩm & danh mục:', err);
@@ -438,48 +439,51 @@ export class StateService {
     this.showToast('Đã ngắt kết nối ví Web3 thành công!', 'success');
   }
 
-  // Tải sản phẩm POS có phân trang và Caching
+  // Tải sản phẩm POS có phân trang và Lọc trực tiếp ở Client-side (Không gọi API)
   public loadPosProducts() {
-    const page = this.posCurrentPage();
-    const limit = this.posItemsPerPage;
-    const search = this.posSearchQuery();
+    // Lấy toàn bộ danh sách sản phẩm đã tải trong State
+    let list = this.products();
+
+    // 1. Lọc theo danh mục (Category)
     const category = this.posCategoryFilter();
-
-    const cacheKey = `page_${page}_limit_${limit}_search_${search}_category_${category}`;
-    const cached = this.posProductsCache.get(cacheKey);
-    const now = Date.now();
-
-    if (cached && (now - cached.timestamp < this.cacheTTL)) {
-      this.posProductsList.set(cached.data);
-      this.posTotalPages.set(cached.totalPages);
-      this.posTotalItems.set(cached.totalItems);
-      return;
+    if (category && category !== 'Tất cả') {
+      list = list.filter(p => p.category?.category_name === category || p.category_name === category);
     }
 
-    this.isProductsLoading.set(true);
-    this.apiService.getProducts({ page, limit, search, category }).subscribe({
-      next: (res: any) => {
-        const data = res.data || [];
-        const totalPages = res.last_page || 1;
-        const totalItems = res.total || data.length;
+    // 2. Lọc theo từ khóa tìm kiếm (Search Query) - không phân biệt hoa thường
+    const search = this.posSearchQuery().trim().toLowerCase();
+    if (search) {
+      list = list.filter(p => 
+        p.name.toLowerCase().includes(search) || 
+        p.sku?.toLowerCase().includes(search) ||
+        p.category?.category_name?.toLowerCase().includes(search)
+      );
+    }
 
-        this.posProductsList.set(data);
-        this.posTotalPages.set(totalPages);
-        this.posTotalItems.set(totalItems);
+    // Cập nhật tổng số sản phẩm sau khi lọc
+    const totalItems = list.length;
+    this.posTotalItems.set(totalItems);
 
-        this.posProductsCache.set(cacheKey, {
-          data,
-          totalPages,
-          totalItems,
-          timestamp: now
-        });
-        this.isProductsLoading.set(false);
-      },
-      error: (err) => {
-        console.error('Lỗi tải sản phẩm POS:', err);
-        this.isProductsLoading.set(false);
-      }
-    });
+    // Tính toán tổng số trang
+    const limit = this.posItemsPerPage;
+    const totalPages = Math.ceil(totalItems / limit) || 1;
+    this.posTotalPages.set(totalPages);
+
+    // 3. Phân trang danh sách sản phẩm
+    let page = this.posCurrentPage();
+    // Đảm bảo số trang hiện tại không vượt quá tổng số trang sau khi lọc
+    if (page > totalPages) {
+      page = totalPages;
+      this.posCurrentPage.set(totalPages);
+    }
+    const startIndex = (page - 1) * limit;
+    const paginatedList = list.slice(startIndex, startIndex + limit);
+
+    // Cập nhật danh sách hiển thị
+    this.posProductsList.set(paginatedList);
+    
+    // Đặt loading về false vì đã xử lý xong lập tức
+    this.isProductsLoading.set(false);
   }
 
   public clearPosProductsCache() {
