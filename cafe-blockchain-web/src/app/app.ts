@@ -272,6 +272,8 @@ export class App implements OnInit, OnDestroy {
   public readonly isTransactionModalOpen = signal<boolean>(false);
   public readonly transactionModalType = signal<'add' | 'edit'>('add');
   public readonly editingTransaction = signal<any>(null);
+  public readonly isSyncFinanceToBlockchainChecked = signal<boolean>(false);
+  public readonly isCategoryDropdownOpen = signal<boolean>(false);
   public readonly transactionForm = signal<any>({
     type: 'thu',
     amount: 0,
@@ -2822,6 +2824,8 @@ export class App implements OnInit, OnDestroy {
   public openAddTransactionModal(type: 'thu' | 'chi' = 'thu') {
     this.transactionModalType.set('add');
     this.editingTransaction.set(null);
+    this.isSyncFinanceToBlockchainChecked.set(false);
+    this.isCategoryDropdownOpen.set(false);
     this.transactionForm.set({
       type: type,
       amount: 0,
@@ -2836,6 +2840,7 @@ export class App implements OnInit, OnDestroy {
   public openEditTransactionModal(transaction: any) {
     this.transactionModalType.set('edit');
     this.editingTransaction.set(transaction);
+    this.isCategoryDropdownOpen.set(false);
     this.transactionForm.set({
       type: transaction.type,
       amount: transaction.amount,
@@ -2849,6 +2854,12 @@ export class App implements OnInit, OnDestroy {
   public closeTransactionModal() {
     this.isTransactionModalOpen.set(false);
     this.editingTransaction.set(null);
+    this.isCategoryDropdownOpen.set(false);
+  }
+
+  public selectCategory(category: string) {
+    this.transactionForm().category = category;
+    this.isCategoryDropdownOpen.set(false);
   }
 
   public saveTransaction() {
@@ -2861,11 +2872,15 @@ export class App implements OnInit, OnDestroy {
     this.isTransactionSaving.set(true);
     if (this.transactionModalType() === 'add') {
       this.apiService.createTransaction(form).subscribe({
-        next: () => {
-          this.showToast('Ghi nhận thu chi thành công!', 'success');
-          this.closeTransactionModal();
-          this.refreshTransactions();
-          this.isTransactionSaving.set(false);
+        next: (res) => {
+          if (this.isSyncFinanceToBlockchainChecked()) {
+            this.syncTransactionImmediatelyAfterCreate(res.transaction);
+          } else {
+            this.showToast('Ghi nhận thu chi thành công!', 'success');
+            this.closeTransactionModal();
+            this.refreshTransactions();
+            this.isTransactionSaving.set(false);
+          }
         },
         error: () => {
           this.showToast('Ghi nhận thu chi thất bại!', 'error');
@@ -2886,6 +2901,64 @@ export class App implements OnInit, OnDestroy {
           this.isTransactionSaving.set(false);
         }
       });
+    }
+  }
+
+  public async syncTransactionImmediatelyAfterCreate(tx: any) {
+    if (!this.web3Service.walletConnected()) {
+      this.showToast('Lưu Database thành công. Chưa kết nối ví Web3 để đồng bộ Blockchain!', 'success');
+      this.closeTransactionModal();
+      this.refreshTransactions();
+      this.isTransactionSaving.set(false);
+      return;
+    }
+
+    if (!this.web3Service.financeContractAddress() || this.web3Service.financeContractAddress().trim() === '') {
+      this.showToast('Lưu Database thành công. Chưa cấu hình Smart Contract Tài chính để đồng bộ Blockchain!', 'success');
+      this.closeTransactionModal();
+      this.refreshTransactions();
+      this.isTransactionSaving.set(false);
+      return;
+    }
+
+    this.showToast('Bắt đầu đồng bộ Blockchain. Vui lòng xác nhận trên ví MetaMask...', 'success');
+
+    // Gọi Smart Contract ghi nhận giao dịch tài chính
+    const result = await this.web3Service.recordTransactionOnChain(
+      tx.id,
+      tx.transaction_code || '',
+      tx.type,
+      tx.amount,
+      tx.category,
+      tx.description || ''
+    );
+
+    if (result.success && result.txHash) {
+      this.showToast('Giao dịch Blockchain đã được gửi! Đang đồng bộ trạng thái...', 'success');
+
+      // Gửi TxHash và Chain ID lên Laravel Backend để lưu trữ
+      this.apiService.syncTransactionBlockchain(tx.id, result.txHash, 'success', this.web3Service.chainId()).subscribe({
+        next: () => {
+          this.showToast('Ghi nhận thu chi và đồng bộ Blockchain thành công!', 'success');
+          this.closeTransactionModal();
+          this.refreshTransactions();
+          this.isTransactionSaving.set(false);
+        },
+        error: (err) => {
+          console.error('Loi cap nhat TxHash len DB:', err);
+          this.closeTransactionModal();
+          this.refreshTransactions();
+          this.isTransactionSaving.set(false);
+        }
+      });
+    } else {
+      // MetaMask reject hoặc lỗi chuỗi -> Kích hoạt chế độ dự phòng (đã lưu DB rồi)
+      console.warn('[Blockchain] Giao dịch Blockchain thất bại hoặc bị từ chối, chuyển sang chế độ dự phòng:', result.error);
+      this.showToast('Ví bị từ chối! Kích hoạt chế độ dự phòng: Chỉ ghi nhận vào Database POS.', 'success');
+      
+      this.closeTransactionModal();
+      this.refreshTransactions();
+      this.isTransactionSaving.set(false);
     }
   }
 
