@@ -465,6 +465,49 @@ export class Web3Service {
   }
 
   /**
+   * Gửi native token tới một địa chỉ xác định
+   */
+  public async sendNativeToken(
+    recipientAddress: string,
+    amount: string
+  ): Promise<{ txHash: string; success: boolean; error?: string }> {
+    if (!this.walletConnected() || !this.currentAccount()) {
+      return { txHash: '', success: false, error: 'Chưa kết nối ví Web3!' };
+    }
+
+    if (!this.provider) {
+      return { txHash: '', success: false, error: 'Không tìm thấy provider ví!' };
+    }
+
+    try {
+      const signer = await this.provider.getSigner();
+      const tx = await signer.sendTransaction({
+        to: recipientAddress,
+        value: parseEther(amount)
+      });
+
+      // Theo dõi và cập nhật lại số dư ví sau khi giao dịch hoàn tất trên mạng lưới
+      tx.wait().then(() => {
+        if (this.currentAccount()) {
+          this.updateBalanceAndStatus(this.currentAccount());
+        }
+      }).catch(e => console.error('Lỗi cập nhật số dư sau giao dịch:', e));
+
+      return {
+        txHash: tx.hash,
+        success: true
+      };
+    } catch (err: any) {
+      console.error('Lỗi gửi native token:', err);
+      return {
+        txHash: '',
+        success: false,
+        error: err.reason || err.message || 'Giao dịch bị từ chối hoặc lỗi chuỗi.'
+      };
+    }
+  }
+
+  /**
    * Ghi nhận đơn hàng lên Smart Contract Blockchain
    */
   public async recordOrderOnChain(

@@ -144,4 +144,44 @@ export class App implements OnInit, OnDestroy {
       this.stateService.showToast('Lỗi sao chép địa chỉ ví!', 'error');
     });
   }
+
+  // Quản lý trạng thái và dữ liệu modal gửi Native Token
+  public readonly isSendTokenModalOpen = signal<boolean>(false);
+  public readonly recipientAddress = signal<string>('');
+  public readonly sendAmount = signal<string>('');
+  public readonly isSendingToken = signal<boolean>(false);
+
+  // Hàm thực hiện phát giao dịch gửi Native Token lên blockchain
+  public async handleSendNativeToken() {
+    const to = this.recipientAddress().trim();
+    const amount = this.sendAmount().trim();
+
+    if (!to) {
+      this.stateService.showToast('Vui lòng nhập địa chỉ nhận!', 'error');
+      return;
+    }
+    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+      this.stateService.showToast('Số lượng token không hợp lệ!', 'error');
+      return;
+    }
+
+    this.isSendingToken.set(true);
+    this.stateService.showToast('Đang gửi giao dịch lên blockchain...', 'success');
+
+    try {
+      const res = await this.web3Service.sendNativeToken(to, amount);
+      if (res.success) {
+        this.stateService.showToast('Giao dịch gửi token đã được phát đi thành công!', 'success');
+        this.isSendTokenModalOpen.set(false);
+        this.recipientAddress.set('');
+        this.sendAmount.set('');
+      } else {
+        this.stateService.showToast(res.error || 'Gửi token thất bại!', 'error');
+      }
+    } catch (e: any) {
+      this.stateService.showToast(e.message || 'Gửi token thất bại!', 'error');
+    } finally {
+      this.isSendingToken.set(false);
+    }
+  }
 }
