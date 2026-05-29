@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -11,7 +11,7 @@ import { ApiService } from '../../services/api.service';
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './orders.component.html'
 })
-export class OrdersComponent {
+export class OrdersComponent implements OnInit {
   public readonly stateService = inject(StateService);
   private readonly apiService = inject(ApiService);
 
@@ -37,26 +37,49 @@ export class OrdersComponent {
   public get orders() { return this.stateService.orders; }
   public get settings() { return this.stateService.settings; }
   
+  ngOnInit() {
+    this.refreshOrders();
+  }
+
   // Danh sách đơn hàng hoàn thành chưa đồng bộ blockchain để hiện cảnh báo đối soát
   public readonly unsyncedCompletedOrders = computed(() => {
     return this.orders().filter(o => o.status === 'completed' && o.blockchain_status === 'none');
   });
 
-  // Phân trang đơn hàng
+  // Danh sách đơn hàng đã được lọc cục bộ trên client
+  public readonly filteredOrders = computed(() => {
+    let list = this.orders();
+
+    // 1. Lọc theo trạng thái đơn hàng
+    const status = this.orderStatusFilter();
+    if (status !== 'all') {
+      list = list.filter(o => o.status === status);
+    }
+
+    // 2. Lọc theo trạng thái blockchain
+    const blockchain = this.orderBlockchainFilter();
+    if (blockchain !== 'all') {
+      list = list.filter(o => o.blockchain_status === blockchain);
+    }
+
+    return list;
+  });
+
+  // Phân trang đơn hàng dựa trên danh sách đã lọc cục bộ
   public readonly paginatedOrders = computed(() => {
-    const list = this.orders();
+    const list = this.filteredOrders();
     const startIndex = (this.ordersCurrentPage() - 1) * this.ordersItemsPerPage;
     return list.slice(startIndex, startIndex + this.ordersItemsPerPage);
   });
 
   public readonly ordersTotalPages = computed(() => {
-    return Math.ceil(this.orders().length / this.ordersItemsPerPage) || 1;
+    return Math.ceil(this.filteredOrders().length / this.ordersItemsPerPage) || 1;
   });
 
-  // Gọi API làm mới danh sách đơn hàng kèm bộ lọc
+  // Gọi API lấy toàn bộ danh sách đơn hàng từ máy chủ (lọc client-side tự động xử lý hiển thị)
   public refreshOrders() {
     this.stateService.isOrdersLoading.set(true);
-    this.apiService.getOrders(this.orderStatusFilter(), this.orderBlockchainFilter()).subscribe({
+    this.apiService.getOrders('all', 'all').subscribe({
       next: (res) => {
         this.stateService.orders.set(res);
         this.stateService.isOrdersLoading.set(false);
@@ -68,18 +91,16 @@ export class OrdersComponent {
     });
   }
 
-  // Cập nhật bộ lọc trạng thái đơn hàng
+  // Cập nhật bộ lọc trạng thái đơn hàng (lọc cục bộ tức thì)
   public setOrderStatusFilter(status: string) {
     this.orderStatusFilter.set(status);
     this.ordersCurrentPage.set(1);
-    this.refreshOrders();
   }
 
-  // Cập nhật bộ lọc blockchain đơn hàng
+  // Cập nhật bộ lọc blockchain đơn hàng (lọc cục bộ tức thì)
   public setOrderBlockchainFilter(blockchain: string) {
     this.orderBlockchainFilter.set(blockchain);
     this.ordersCurrentPage.set(1);
-    this.refreshOrders();
   }
 
   // Mở modal xem chi tiết đơn hàng
