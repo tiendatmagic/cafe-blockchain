@@ -9,6 +9,7 @@ pragma solidity ^0.8.35;
 contract CafeWeb3POS {
     struct Order {
         uint256 orderId;
+        string orderCode;
         string tableNumber;
         uint256 totalAmount;
         string paymentMethod;
@@ -32,6 +33,7 @@ contract CafeWeb3POS {
     // Events
     event OrderRecorded(
         uint256 indexed orderId,
+        string orderCode,
         string tableNumber,
         uint256 totalAmount,
         string paymentMethod,
@@ -60,6 +62,7 @@ contract CafeWeb3POS {
      */
     function recordOrder(
         uint256 _orderId,
+        string memory _orderCode,
         string memory _tableNumber,
         uint256 _totalAmount,
         string memory _paymentMethod,
@@ -72,6 +75,7 @@ contract CafeWeb3POS {
 
         Order memory newOrder = Order({
             orderId: _orderId,
+            orderCode: _orderCode,
             tableNumber: _tableNumber,
             totalAmount: _totalAmount,
             paymentMethod: _paymentMethod,
@@ -85,6 +89,7 @@ contract CafeWeb3POS {
 
         emit OrderRecorded(
             _orderId,
+            _orderCode,
             _tableNumber,
             _totalAmount,
             _paymentMethod,
@@ -157,6 +162,7 @@ contract CafeWeb3POS {
         view
         returns (
             uint256 orderId,
+            string memory orderCode,
             string memory tableNumber,
             uint256 totalAmount,
             string memory paymentMethod,
@@ -169,6 +175,7 @@ contract CafeWeb3POS {
         require(o.orderId != 0, "CafeWeb3POS: order does not exist");
         return (
             o.orderId,
+            o.orderCode,
             o.tableNumber,
             o.totalAmount,
             o.paymentMethod,

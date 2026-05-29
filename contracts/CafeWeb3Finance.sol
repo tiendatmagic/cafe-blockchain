@@ -9,6 +9,7 @@ pragma solidity ^0.8.35;
 contract CafeWeb3Finance {
     struct Transaction {
         uint256 txId;
+        string transactionCode;
         uint8 txType;
         uint256 amount;
         string category;
@@ -32,6 +33,7 @@ contract CafeWeb3Finance {
     // Events
     event TransactionRecorded(
         uint256 indexed txId,
+        string transactionCode,
         uint8 txType,
         uint256 amount,
         string category,
@@ -60,6 +62,7 @@ contract CafeWeb3Finance {
      */
     function recordTransaction(
         uint256 _txId,
+        string memory _transactionCode,
         uint8 _txType,
         uint256 _amount,
         string memory _category,
@@ -76,6 +79,7 @@ contract CafeWeb3Finance {
 
         Transaction memory newTx = Transaction({
             txId: _txId,
+            transactionCode: _transactionCode,
             txType: _txType,
             amount: _amount,
             category: _category,
@@ -89,6 +93,7 @@ contract CafeWeb3Finance {
 
         emit TransactionRecorded(
             _txId,
+            _transactionCode,
             _txType,
             _amount,
             _category,
@@ -161,6 +166,7 @@ contract CafeWeb3Finance {
         view
         returns (
             uint256 txId,
+            string memory transactionCode,
             uint8 txType,
             uint256 amount,
             string memory category,
@@ -173,6 +179,7 @@ contract CafeWeb3Finance {
         require(t.txId != 0, "CafeWeb3Finance: transaction does not exist");
         return (
             t.txId,
+            t.transactionCode,
             t.txType,
             t.amount,
             t.category,

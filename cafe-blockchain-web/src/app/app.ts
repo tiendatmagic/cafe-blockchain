@@ -1361,6 +1361,7 @@ export class App implements OnInit, OnDestroy {
     // 2. Gửi giao dịch lên Blockchain trước
     const result = await this.web3Service.recordOrderOnChain(
       order.id,
+      order.order_code || '',
       order.table_number || 'Mang ve',
       order.total_amount,
       this.getPaymentMethodText(order.payment_method),
@@ -1497,6 +1498,7 @@ export class App implements OnInit, OnDestroy {
     // Gọi Smart Contract ghi nhận hóa đơn
     const result = await this.web3Service.recordOrderOnChain(
       order.id,
+      order.order_code || '',
       order.table_number || 'Mang ve',
       order.total_amount,
       this.getPaymentMethodText(order.payment_method),
@@ -2418,6 +2420,7 @@ export class App implements OnInit, OnDestroy {
     // Gọi Smart Contract ghi nhận giao dịch tài chính
     const result = await this.web3Service.recordTransactionOnChain(
       tx.id,
+      tx.transaction_code || '',
       tx.type,
       tx.amount,
       tx.category,

@@ -41,6 +41,12 @@ export const CAFE_WEB3_FINANCE_ABI = [
       },
       {
         "indexed": false,
+        "internalType": "string",
+        "name": "transactionCode",
+        "type": "string"
+      },
+      {
+        "indexed": false,
         "internalType": "uint8",
         "name": "txType",
         "type": "uint8"
@@ -134,6 +140,11 @@ export const CAFE_WEB3_FINANCE_ABI = [
         "type": "uint256"
       },
       {
+        "internalType": "string",
+        "name": "transactionCode",
+        "type": "string"
+      },
+      {
         "internalType": "uint8",
         "name": "txType",
         "type": "uint8"
@@ -224,6 +235,11 @@ export const CAFE_WEB3_FINANCE_ABI = [
         "internalType": "uint256",
         "name": "_txId",
         "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "_transactionCode",
+        "type": "string"
       },
       {
         "internalType": "uint8",

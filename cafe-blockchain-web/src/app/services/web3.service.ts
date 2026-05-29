@@ -420,6 +420,7 @@ export class Web3Service {
    */
   public async recordOrderOnChain(
     orderId: number,
+    orderCode: string,
     tableNumber: string,
     totalAmount: number,
     paymentMethod: string,
@@ -446,6 +447,7 @@ export class Web3Service {
       // Kích hoạt giao dịch ghi đơn hàng
       const tx = await contract['recordOrder'](
         orderId,
+        orderCode || '',
         tableNumber || 'Mang ve',
         Math.round(totalAmount), // Lưu trữ dạng số nguyên lớn (VND)
         paymentMethod,
@@ -813,6 +815,7 @@ export class Web3Service {
    */
   public async recordTransactionOnChain(
     txId: number,
+    transactionCode: string,
     type: 'thu' | 'chi',
     amount: number,
     category: string,
@@ -839,6 +842,7 @@ export class Web3Service {
 
       const tx = await contract['recordTransaction'](
         txId,
+        transactionCode || '',
         txType,
         Math.round(amount),
         category,

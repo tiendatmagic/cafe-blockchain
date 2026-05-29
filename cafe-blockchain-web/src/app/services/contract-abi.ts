@@ -16,6 +16,12 @@ export const CAFE_WEB3_POS_ABI = [
       {
         "indexed": false,
         "internalType": "string",
+        "name": "orderCode",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
         "name": "tableNumber",
         "type": "string"
       },
@@ -122,6 +128,11 @@ export const CAFE_WEB3_POS_ABI = [
       },
       {
         "internalType": "string",
+        "name": "orderCode",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
         "name": "tableNumber",
         "type": "string"
       },
@@ -224,6 +235,11 @@ export const CAFE_WEB3_POS_ABI = [
         "internalType": "uint256",
         "name": "_orderId",
         "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "_orderCode",
+        "type": "string"
       },
       {
         "internalType": "string",
