@@ -490,9 +490,6 @@ export class StateService {
 
     // Cập nhật danh sách hiển thị
     this.posProductsList.set(paginatedList);
-    
-    // Đặt loading về false vì đã xử lý xong lập tức
-    this.isProductsLoading.set(false);
   }
 
   public clearPosProductsCache() {
