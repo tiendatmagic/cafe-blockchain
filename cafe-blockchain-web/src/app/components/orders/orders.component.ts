@@ -25,7 +25,7 @@ export class OrdersComponent implements OnInit {
   public readonly orderSearchQuery = signal<string>('');
 
   // Trạng thái đồng bộ blockchain & cập nhật
-  public readonly isAutoSyncOnCompleteChecked = signal<boolean>(true);
+  public readonly isAutoSyncOnCompleteChecked = signal<boolean>(false);
   public readonly blockchainSyncLoading = signal<boolean>(false);
   public readonly isOrderStatusUpdating = signal<boolean>(false);
 
