@@ -63,7 +63,7 @@ export class StateService {
   });
 
   // Trạng thái POS (Giỏ hàng)
-  public readonly cart = signal<{ product: any, variant: any | null, quantity: number }[]>([]);
+  public readonly cart = signal<{ product: any, variant: any | null, quantity: number, note?: string }[]>([]);
   public readonly cartTotal = computed(() => {
     return this.cart().reduce((sum, item) => {
       const price = item.variant ? item.variant.price : item.product.price;
@@ -74,6 +74,7 @@ export class StateService {
   public readonly paymentMethod = signal<string>('cash');
   public readonly posCategoryFilter = signal<string>('Tất cả');
   public readonly posSearchQuery = signal<string>('');
+  public readonly posSelectedCustomer = signal<any | null>(null);
   public readonly editingOrderId = signal<number | null>(null);
   public readonly isOrderSubmitting = signal<boolean>(false);
 
@@ -559,15 +560,19 @@ export class StateService {
     this.cart.set([]);
     this.tableNumber.set('');
     this.paymentMethod.set('cash');
+    this.posSelectedCustomer.set(null);
   }
 
   public editOrder(order: any) {
     if (!order) return;
 
     this.isOrderSubmitting.set(true);
+    
+    // Nạp lại khách hàng của đơn hàng cũ
+    this.posSelectedCustomer.set(order.customer || null);
 
     // Tái cấu trúc giỏ hàng từ order items
-    const loadedCart: { product: any, variant: any | null, quantity: number }[] = [];
+    const loadedCart: { product: any, variant: any | null, quantity: number, note?: string }[] = [];
     const productsList = this.products();
 
     order.items.forEach((item: any) => {
@@ -580,7 +585,8 @@ export class StateService {
         loadedCart.push({
           product,
           variant,
-          quantity: Number(item.quantity) || 1
+          quantity: Number(item.quantity) || 1,
+          note: item.note || ''
         });
       }
     });

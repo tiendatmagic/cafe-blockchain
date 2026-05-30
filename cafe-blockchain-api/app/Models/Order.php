@@ -12,6 +12,7 @@ class Order extends Model
     protected $fillable = [
         'order_code',
         'table_number',
+        'customer_id',
         'total_amount',
         'payment_method',
         'status',
@@ -107,5 +108,10 @@ class Order extends Model
     public function items()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
     }
 }

@@ -66,20 +66,40 @@ export class CustomersComponent {
   public get customerGroups() { return this.stateService.customerGroups; }
   public get isCustomersLoading() { return this.stateService.isCustomersLoading; }
 
+  private removeSign(str: string): string {
+    if (!str) return '';
+    return str
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
+      .replace(/Đ/g, 'D');
+  }
+
   // Lọc danh sách khách hàng cục bộ tức thời tại client
   public readonly filteredCustomers = computed(() => {
     let list = this.customers();
     const search = this.customerSearchQuery().trim().toLowerCase();
     if (search) {
-      list = list.filter(c => 
-        (c.customer_code && c.customer_code.toLowerCase().includes(search)) ||
-        (c.name && c.name.toLowerCase().includes(search)) ||
-        (c.phone && c.phone.includes(search)) ||
-        (c.email && c.email.toLowerCase().includes(search)) ||
-        (c.company_name && c.company_name.toLowerCase().includes(search)) ||
-        (c.tax_code && c.tax_code.includes(search)) ||
-        (c.id && c.id.toString().includes(search))
-      );
+      const searchClean = this.removeSign(search);
+      list = list.filter(c => {
+        const nameClean = c.name ? this.removeSign(c.name.toLowerCase()) : '';
+        const phoneClean = c.phone ? c.phone.toLowerCase() : '';
+        const emailClean = c.email ? this.removeSign(c.email.toLowerCase()) : '';
+        const codeClean = c.customer_code ? c.customer_code.toLowerCase() : '';
+        const companyClean = c.company_name ? this.removeSign(c.company_name.toLowerCase()) : '';
+        const repClean = c.representative_name ? this.removeSign(c.representative_name.toLowerCase()) : '';
+        const taxClean = c.tax_code ? c.tax_code.toLowerCase() : '';
+        const idClean = c.id ? c.id.toString() : '';
+
+        return nameClean.includes(searchClean) ||
+               phoneClean.includes(searchClean) ||
+               emailClean.includes(searchClean) ||
+               codeClean.includes(searchClean) ||
+               companyClean.includes(searchClean) ||
+               repClean.includes(searchClean) ||
+               taxClean.includes(searchClean) ||
+               idClean.includes(searchClean);
+      });
     }
     return list;
   });
@@ -254,14 +274,23 @@ export class CustomersComponent {
   }
 
   public saveCustomer() {
-    const form = this.customerForm();
-    if (!form.name || !form.name.trim()) {
-      this.stateService.showToast('Tên người đại diện liên hệ là bắt buộc!', 'error');
-      return;
-    }
-    if (form.type === 'business' && (!form.company_name || !form.company_name.trim())) {
-      this.stateService.showToast('Tên công ty / Doanh nghiệp là bắt buộc!', 'error');
-      return;
+    const form = { ...this.customerForm() };
+    
+    // Nếu là doanh nghiệp và người đại diện trống, tự động lấy tên công ty
+    if (form.type === 'business') {
+      if (!form.company_name || !form.company_name.trim()) {
+        this.stateService.showToast('Tên công ty / Doanh nghiệp là bắt buộc!', 'error');
+        return;
+      }
+      if (!form.name || !form.name.trim()) {
+        form.name = form.company_name;
+      }
+    } else {
+      // Cá nhân bắt buộc có tên
+      if (!form.name || !form.name.trim()) {
+        this.stateService.showToast('Tên khách hàng là bắt buộc!', 'error');
+        return;
+      }
     }
 
     this.isCustomerSaving.set(true);

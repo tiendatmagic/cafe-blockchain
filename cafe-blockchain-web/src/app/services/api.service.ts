@@ -165,8 +165,15 @@ export class ApiService {
   }
 
   // 6. Customers (Khách hàng) API
-  public getCustomers(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/customers`, { headers: this.getHeaders() });
+  public getCustomers(search?: string, limit?: number): Observable<any[]> {
+    let url = `${this.baseUrl}/customers`;
+    const params: string[] = [];
+    if (search) params.push(`search=${encodeURIComponent(search)}`);
+    if (limit) params.push(`limit=${limit}`);
+    if (params.length > 0) {
+      url += `?${params.join('&')}`;
+    }
+    return this.http.get<any[]>(url, { headers: this.getHeaders() });
   }
 
   public createCustomer(customer: any): Observable<any> {

@@ -16,8 +16,7 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-        $query = Order::where('store_owner_address', $storeOwner)->with(['items.product', 'items.variant'])->orderBy('id', 'desc');
-
+        $query = Order::where('store_owner_address', $storeOwner)->with(['customer', 'items.product', 'items.variant'])->orderBy('id', 'desc');
         if ($request->has('status') && $request->status != 'all') {
             $query->where('status', $request->status);
         }
@@ -36,7 +35,7 @@ class OrderController extends Controller
     public function show(Request $request, $id)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-        $order = Order::where('store_owner_address', $storeOwner)->with(['items.product', 'items.variant'])->findOrFail($id);
+        $order = Order::where('store_owner_address', $storeOwner)->with(['customer', 'items.product', 'items.variant'])->findOrFail($id);
         return response()->json($order);
     }
 
@@ -49,11 +48,13 @@ class OrderController extends Controller
 
         $validated = $request->validate([
             'table_number' => 'nullable|string|max:50',
+            'customer_id' => 'nullable|integer|exists:customers,id',
             'payment_method' => 'required|string|in:cash,bank_transfer,crypto',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.product_variant_id' => 'nullable|exists:product_variants,id',
             'items.*.quantity' => 'required|integer|min:1',
+            'items.*.note' => 'nullable|string|max:255',
         ]);
 
         try {
@@ -88,12 +89,14 @@ class OrderController extends Controller
                     'product_variant_id' => $variantId,
                     'quantity' => $quantity,
                     'price' => $price,
+                    'note' => $item['note'] ?? null,
                 ];
             }
 
             // Tạo đơn hàng
             $order = Order::create([
                 'table_number' => $validated['table_number'] ?? null,
+                'customer_id' => $validated['customer_id'] ?? null,
                 'total_amount' => $totalAmount,
                 'payment_method' => $validated['payment_method'],
                 'status' => 'pending', // Mặc định là đang chờ xác nhận
@@ -111,7 +114,7 @@ class OrderController extends Controller
 
             return response()->json([
                 'message' => 'Order created successfully.',
-                'data' => Order::with(['items.product', 'items.variant'])->find($order->id)
+                'data' => Order::with(['customer', 'items.product', 'items.variant'])->find($order->id)
             ], 201);
 
         } catch (\Exception $e) {
@@ -145,11 +148,13 @@ class OrderController extends Controller
 
         $validated = $request->validate([
             'table_number' => 'nullable|string|max:50',
+            'customer_id' => 'nullable|integer|exists:customers,id',
             'payment_method' => 'required|string|in:cash,bank_transfer,crypto',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.product_variant_id' => 'nullable|exists:product_variants,id',
             'items.*.quantity' => 'required|integer|min:1',
+            'items.*.note' => 'nullable|string|max:255',
         ]);
 
         try {
@@ -183,12 +188,14 @@ class OrderController extends Controller
                     'product_variant_id' => $variantId,
                     'quantity' => $quantity,
                     'price' => $price,
+                    'note' => $item['note'] ?? null,
                 ];
             }
 
             // Cập nhật thông tin đơn hàng
             $order->update([
                 'table_number' => $validated['table_number'] ?? null,
+                'customer_id' => $validated['customer_id'] ?? null,
                 'total_amount' => $totalAmount,
                 'payment_method' => $validated['payment_method'],
             ]);
@@ -205,7 +212,7 @@ class OrderController extends Controller
 
             return response()->json([
                 'message' => 'Cập nhật đơn hàng thành công.',
-                'data' => Order::with(['items.product', 'items.variant'])->find($order->id)
+                'data' => Order::with(['customer', 'items.product', 'items.variant'])->find($order->id)
             ]);
 
         } catch (\Exception $e) {
@@ -240,7 +247,7 @@ class OrderController extends Controller
 
         return response()->json([
             'message' => 'Order status updated successfully.',
-            'data' => Order::with(['items.product', 'items.variant'])->find($order->id)
+            'data' => Order::with(['customer', 'items.product', 'items.variant'])->find($order->id)
         ]);
     }
 
@@ -320,7 +327,7 @@ class OrderController extends Controller
 
         return response()->json([
             'message' => 'Blockchain sync updated successfully.',
-            'data' => Order::with(['items.product', 'items.variant'])->find($order->id)
+            'data' => Order::with(['customer', 'items.product', 'items.variant'])->find($order->id)
         ]);
     }
 }

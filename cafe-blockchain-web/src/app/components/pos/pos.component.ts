@@ -1,9 +1,11 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { StateService } from '../../services/state.service';
 import { ApiService } from '../../services/api.service';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-pos',
@@ -11,7 +13,7 @@ import { ApiService } from '../../services/api.service';
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './pos.component.html'
 })
-export class PosComponent {
+export class PosComponent implements OnInit, OnDestroy {
   public readonly stateService = inject(StateService);
   private readonly apiService = inject(ApiService);
 
@@ -29,12 +31,79 @@ export class PosComponent {
   public readonly selectedVariantForCart = signal<any>(null);
   public readonly isVariantSelectModalOpen = signal<boolean>(false);
 
+  // Trạng thái Tìm kiếm & Chọn Khách hàng tại POS
+  public readonly posCustomerSearchQuery = signal<string>('');
+  public readonly isCustomerDropdownOpen = signal<boolean>(false);
+  public readonly posSearchedCustomers = signal<any[]>([]);
+  public readonly isCustomerSearching = signal<boolean>(false);
+
+  private customerSearchSubject = new Subject<string>();
+  private customerSearchSubscription?: Subscription;
+
+  private removeSign(str: string): string {
+    if (!str) return '';
+    return str
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
+      .replace(/Đ/g, 'D');
+  }
+
+  public ngOnInit() {
+    this.customerSearchSubscription = this.customerSearchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(query => {
+      this.performCustomerSearch(query);
+    });
+  }
+
+  public ngOnDestroy() {
+    if (this.customerSearchSubscription) {
+      this.customerSearchSubscription.unsubscribe();
+    }
+  }
+
+  public onCustomerSearchChange(query: string) {
+    this.posCustomerSearchQuery.set(query);
+    if (!query.trim()) {
+      this.posSearchedCustomers.set([]);
+      this.isCustomerDropdownOpen.set(false);
+      this.isCustomerSearching.set(false);
+      return;
+    }
+    this.isCustomerDropdownOpen.set(true);
+    this.isCustomerSearching.set(true);
+    this.customerSearchSubject.next(query);
+  }
+
+  private performCustomerSearch(query: string) {
+    if (!query.trim()) {
+      this.posSearchedCustomers.set([]);
+      this.isCustomerSearching.set(false);
+      return;
+    }
+    
+    this.apiService.getCustomers(query, 15).subscribe({
+      next: (res) => {
+        this.posSearchedCustomers.set(res || []);
+        this.isCustomerSearching.set(false);
+      },
+      error: (err) => {
+        console.error('Lỗi tìm kiếm khách hàng động:', err);
+        this.isCustomerSearching.set(false);
+      }
+    });
+  }
+
+
   // Getters từ StateService để sử dụng trực tiếp trong template HTML
   public get web3Service() { return this.stateService.web3Service; }
   public get cart() { return this.stateService.cart; }
   public get cartTotal() { return this.stateService.cartTotal; }
   public get tableNumber() { return this.stateService.tableNumber; }
   public get paymentMethod() { return this.stateService.paymentMethod; }
+  public get posSelectedCustomer() { return this.stateService.posSelectedCustomer; }
   public get posCategoryFilter() { return this.stateService.posCategoryFilter; }
   public get posSearchQuery() { return this.stateService.posSearchQuery; }
   
@@ -227,6 +296,29 @@ export class PosComponent {
     this.submitOrder();
   }
 
+  public selectCustomerForOrder(customer: any) {
+    this.stateService.posSelectedCustomer.set(customer);
+    this.posCustomerSearchQuery.set('');
+    this.isCustomerDropdownOpen.set(false);
+  }
+
+  public deselectCustomer() {
+    this.stateService.posSelectedCustomer.set(null);
+  }
+
+  public updateItemNote(productId: number, variantId: number | null, note: string) {
+    const currentCart = this.cart();
+    const existIndex = currentCart.findIndex(item =>
+      item.product.id === productId &&
+      ((!item.variant && !variantId) || (item.variant && variantId && item.variant.id === variantId))
+    );
+    if (existIndex > -1) {
+      const updated = [...currentCart];
+      updated[existIndex].note = note;
+      this.cart.set(updated);
+    }
+  }
+
   // Phân luồng click nút Đặt hàng ở POS (Nhanh / Nâng cao)
   public handlePosOrderClick() {
     if (!this.web3Service.walletConnected()) {
@@ -261,11 +353,13 @@ export class PosComponent {
     this.isOrderSubmitting.set(true);
     const orderData = {
       table_number: this.tableNumber(),
+      customer_id: this.stateService.posSelectedCustomer()?.id || null,
       payment_method: this.paymentMethod(),
       items: this.cart().map(item => ({
         product_id: item.product.id,
         product_variant_id: item.variant ? item.variant.id : null,
-        quantity: item.quantity
+        quantity: item.quantity,
+        note: item.note || null
       }))
     };
 

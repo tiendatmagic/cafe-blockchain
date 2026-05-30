@@ -13,7 +13,25 @@ class CustomerController extends Controller
     public function index(Request $request)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-        $customers = Customer::where('store_owner_address', $storeOwner)->with('groups')->orderBy('id', 'desc')->get();
+        $query = Customer::where('store_owner_address', $storeOwner);
+        
+        $search = $request->query('search');
+        if ($search) {
+            $searchLower = strtolower(trim($search));
+            $query->where(function($q) use ($searchLower) {
+                $q->whereRaw('LOWER(name) LIKE ?', ["%{$searchLower}%"])
+                  ->orWhereRaw('LOWER(phone) LIKE ?', ["%{$searchLower}%"])
+                  ->orWhereRaw('LOWER(email) LIKE ?', ["%{$searchLower}%"])
+                  ->orWhereRaw('LOWER(customer_code) LIKE ?', ["%{$searchLower}%"])
+                  ->orWhereRaw('LOWER(company_name) LIKE ?', ["%{$searchLower}%"])
+                  ->orWhereRaw('LOWER(representative_name) LIKE ?', ["%{$searchLower}%"]);
+            });
+            $limit = $request->query('limit', 15);
+            $customers = $query->with('groups')->orderBy('id', 'desc')->limit($limit)->get();
+        } else {
+            $customers = $query->with('groups')->orderBy('id', 'desc')->get();
+        }
+        
         return response()->json($customers);
     }
 
