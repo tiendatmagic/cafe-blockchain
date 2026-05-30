@@ -105,9 +105,9 @@
   </div>
 
   <!-- BỐ CỤC 2 CỘT RESPONSIVE -->
-  <div class="grid grid-cols-1 xl:grid-cols-5 gap-6">
+  <div class="grid grid-cols-1 xl:grid-cols-6 gap-6">
     <!-- CỘT 1 & 2: THỰC ĐƠN (LEFT) -->
-    <div class="xl:col-span-3 space-y-6">
+    <div class="xl:col-span-4 space-y-6">
       <!-- Danh mục trượt mượt mà (Horizontal scrolling) -->
       <div class="flex gap-2 overflow-x-auto pb-2 pr-1 no-scrollbar">
         @for (cat of categories(); track cat) {
@@ -355,7 +355,9 @@
             />
             <span class="absolute left-3.5 top-3 text-slate-400 text-xs">👤</span>
             @if (isCustomerSearching()) {
-              <span class="absolute right-3.5 top-3 w-4 h-4 rounded-full border-2 border-slate-200 border-t-purple-650 animate-spin"></span>
+              <span
+                class="absolute right-3.5 top-3 w-4 h-4 rounded-full border-2 border-slate-200 border-t-purple-650 animate-spin"
+              ></span>
             } @else if (posCustomerSearchQuery()) {
               <button
                 type="button"
@@ -376,8 +378,12 @@
               class="absolute top-full left-0 right-0 mt-1 z-30 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 max-h-52 overflow-y-auto no-scrollbar animate-in fade-in slide-in-from-top-1 duration-150"
             >
               @if (isCustomerSearching()) {
-                <div class="p-4.5 text-center text-[10px] text-slate-400 font-bold flex items-center justify-center gap-2">
-                  <div class="w-3.5 h-3.5 rounded-full border-2 border-slate-200 border-t-purple-650 animate-spin"></div>
+                <div
+                  class="p-4.5 text-center text-[10px] text-slate-400 font-bold flex items-center justify-center gap-2"
+                >
+                  <div
+                    class="w-3.5 h-3.5 rounded-full border-2 border-slate-200 border-t-purple-650 animate-spin"
+                  ></div>
                   <span>Đang tìm kiếm khách hàng...</span>
                 </div>
               } @else if (posSearchedCustomers().length > 0) {
@@ -388,11 +394,19 @@
                     class="w-full px-4 py-2 text-left text-xs hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200 font-bold flex items-center justify-between border-b border-slate-100/50 dark:border-slate-800/40 last:border-b-0"
                   >
                     <div class="flex flex-col min-w-0 pr-2">
-                      <span class="font-extrabold text-slate-800 dark:text-white text-[11px] truncate">{{ c.name }}</span>
+                      <span
+                        class="font-extrabold text-slate-800 dark:text-white text-[11px] truncate"
+                        >{{ c.name }}</span
+                      >
                       @if (c.company_name) {
-                        <span class="text-[9px] text-slate-400 dark:text-slate-500 font-bold truncate">🏢 {{ c.company_name }}</span>
+                        <span
+                          class="text-[9px] text-slate-400 dark:text-slate-500 font-bold truncate"
+                          >🏢 {{ c.company_name }}</span
+                        >
                       }
-                      <span class="text-[10px] text-slate-400 font-semibold">{{ c.phone || 'Không có SĐT' }}</span>
+                      <span class="text-[10px] text-slate-400 font-semibold">{{
+                        c.phone || 'Không có SĐT'
+                      }}</span>
                     </div>
                     <span
                       class="text-[9px] bg-purple-500/10 text-purple-600 dark:text-purple-400 px-1.5 py-0.5 rounded font-black uppercase shrink-0"
