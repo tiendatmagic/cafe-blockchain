@@ -48,7 +48,8 @@ export class App implements OnInit, OnDestroy {
     const hasAddress = typeof window !== 'undefined' ? localStorage.getItem('auth_address') : null;
 
     if (hasToken && hasAddress) {
-      this.stateService.loadAllData();
+      // Dữ liệu của tab hiện tại sẽ tự động được tải thông qua setTabState khi router kích hoạt.
+      // Không cần gọi loadAllData() tải trước tất cả các module ở đây để tránh dư thừa và trùng lặp API request.
     } else {
       // Chưa kết nối hoặc session hết hạn, yêu cầu kết nối ví
       this.stateService.isWalletModalOpen.set(true);
