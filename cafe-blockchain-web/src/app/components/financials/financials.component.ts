@@ -20,6 +20,9 @@ export class FinancialsComponent {
   public readonly transactionCurrentPage = signal<number>(1);
   public readonly transactionItemsPerPage = 9;
 
+  // Bộ tìm kiếm tài chính
+  public readonly transactionSearchQuery = signal<string>('');
+
   // Form Lập Phiếu Thu Chi
   public readonly isTransactionModalOpen = signal<boolean>(false);
   public readonly transactionModalType = signal<'add' | 'edit'>('add');
@@ -61,9 +64,25 @@ export class FinancialsComponent {
   });
 
   public readonly filteredTransactions = computed(() => {
-    const list = this.transactions();
+    let list = this.transactions();
     const type = this.transactionTypeFilter();
-    return list.filter(t => type === 'all' || t.type === type);
+    if (type !== 'all') {
+      list = list.filter(t => t.type === type);
+    }
+
+    // Thêm bộ lọc tìm kiếm cục bộ (transaction_code, category, description, amount, blockchain_tx_hash, v.v.)
+    const search = this.transactionSearchQuery().trim().toLowerCase();
+    if (search) {
+      list = list.filter(t => 
+        (t.transaction_code && t.transaction_code.toLowerCase().includes(search)) ||
+        (t.category && t.category.toLowerCase().includes(search)) ||
+        (t.description && t.description.toLowerCase().includes(search)) ||
+        (t.amount && t.amount.toString().includes(search)) ||
+        (t.blockchain_tx_hash && t.blockchain_tx_hash.toLowerCase().includes(search)) ||
+        (t.id && t.id.toString().includes(search))
+      );
+    }
+    return list;
   });
 
   public readonly paginatedTransactions = computed(() => {
@@ -363,8 +382,32 @@ export class FinancialsComponent {
   }
 
   // Helpers cho template HTML
-  public getPagesArray(totalPages: number): number[] {
-    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  public getPagesArray(currentPage: number, totalPages: number): (number | string)[] {
+    const pages: (number | string)[] = [];
+    if (totalPages <= 5) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    
+    pages.push(1);
+    
+    if (currentPage > 3) {
+      pages.push('...');
+    }
+    
+    const start = Math.max(2, currentPage - 1);
+    const end = Math.min(totalPages - 1, currentPage + 1);
+    
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    
+    if (currentPage < totalPages - 2) {
+      pages.push('...');
+    }
+    
+    pages.push(totalPages);
+    
+    return pages;
   }
 
   public mathMin(a: number, b: number): number {

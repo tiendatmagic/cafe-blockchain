@@ -134,10 +134,21 @@
         <div
           class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm overflow-hidden transition-colors"
         >
-          <div class="p-5 border-b border-slate-100 dark:border-slate-800/60">
+          <div class="p-5 border-b border-slate-100 dark:border-slate-800/60 flex items-center justify-between flex-wrap gap-4">
             <h4 class="font-extrabold text-slate-800 dark:text-white text-base">
               Danh sách khách hàng
             </h4>
+            <!-- Search input -->
+            <div class="relative w-full sm:w-60">
+              <input
+                type="text"
+                [ngModel]="customerSearchQuery()"
+                (ngModelChange)="customerSearchQuery.set($event); customerCurrentPage.set(1)"
+                placeholder="Tìm tên, SĐT, công ty..."
+                class="w-full pl-3.5 pr-10 py-2 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-xs focus:outline-none focus:border-purple-500 text-slate-800 dark:text-white transition-all font-semibold"
+              />
+              <span class="absolute right-3 top-2 text-slate-400">🔍</span>
+            </div>
           </div>
 
           <div class="overflow-x-auto">
@@ -295,7 +306,7 @@
           </div>
 
           <!-- Phân trang Khách hàng -->
-          @if (customers().length > customerItemsPerPage) {
+          @if (filteredCustomers().length > customerItemsPerPage) {
             <div
               class="px-6 py-4 border-t border-slate-100 dark:border-slate-800/60 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50/50 dark:bg-slate-950/20"
             >
@@ -304,16 +315,16 @@
                 {{
                   mathMin(
                     (customerCurrentPage() - 1) * customerItemsPerPage + 1,
-                    customers().length
+                    filteredCustomers().length
                   )
                 }}
                 -
                 {{
-                  mathMin(customerCurrentPage() * customerItemsPerPage, customers().length)
+                  mathMin(customerCurrentPage() * customerItemsPerPage, filteredCustomers().length)
                 }}
-                trên tổng {{ customers().length }} khách hàng
+                trên tổng {{ filteredCustomers().length }} khách hàng
               </span>
-              <div class="flex items-center gap-1">
+              <div class="flex items-center gap-1.5">
                 <button
                   (click)="customerCurrentPage.set(customerCurrentPage() - 1)"
                   [disabled]="customerCurrentPage() === 1"
@@ -321,6 +332,25 @@
                 >
                   Trước
                 </button>
+
+                @for (p of getPagesArray(customerCurrentPage(), customerTotalPages()); track $index) {
+                  @if (p === '...') {
+                    <span class="w-8 h-8 flex items-center justify-center text-slate-400 dark:text-slate-600 font-semibold select-none text-xs">...</span>
+                  } @else {
+                    <button
+                      (click)="customerCurrentPage.set($any(p))"
+                      [class]="
+                        p === customerCurrentPage()
+                          ? 'bg-purple-600 text-white font-black shadow-md shadow-purple-500/20'
+                          : 'bg-white dark:bg-slate-900 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200/40 font-semibold'
+                      "
+                      class="w-8 h-8 rounded-lg text-xs font-bold transition-all flex items-center justify-center"
+                    >
+                      {{ p }}
+                    </button>
+                  }
+                }
+
                 <button
                   (click)="customerCurrentPage.set(customerCurrentPage() + 1)"
                   [disabled]="customerCurrentPage() === customerTotalPages()"

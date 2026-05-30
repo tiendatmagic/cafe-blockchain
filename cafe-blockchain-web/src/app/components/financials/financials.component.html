@@ -271,9 +271,24 @@
             Phiếu Chi (-)
           </button>
         </div>
-        <span class="text-xs font-bold text-slate-400"
-          >Tìm thấy {{ filteredTransactions().length }} giao dịch</span
-        >
+        
+        <div class="flex items-center gap-4 w-full sm:w-auto shrink-0 flex-wrap sm:flex-nowrap">
+          <!-- Search input -->
+          <div class="relative w-full sm:w-60">
+            <input
+              type="text"
+              [ngModel]="transactionSearchQuery()"
+              (ngModelChange)="transactionSearchQuery.set($event); transactionCurrentPage.set(1)"
+              placeholder="Tìm danh mục, mô tả, tiền..."
+              class="w-full pl-3.5 pr-10 py-2 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-xs focus:outline-none focus:border-purple-500 text-slate-800 dark:text-white transition-all font-semibold"
+            />
+            <span class="absolute right-3 top-2 text-slate-400">🔍</span>
+          </div>
+
+          <span class="text-xs font-bold text-slate-400 whitespace-nowrap"
+            >Tìm thấy {{ filteredTransactions().length }} giao dịch</span
+          >
+        </div>
       </div>
 
       <!-- Danh sách chi tiết thu chi -->
@@ -480,18 +495,22 @@
                 Trước
               </button>
 
-              @for (p of getPagesArray(transactionTotalPages()); track p) {
-                <button
-                  (click)="transactionCurrentPage.set(p)"
-                  [class]="
-                    p === transactionCurrentPage()
-                      ? 'bg-purple-600 text-white font-black'
-                      : 'bg-white dark:bg-slate-900 text-slate-500'
-                  "
-                  class="w-8.5 h-8.5 rounded-xl text-xs font-bold"
-                >
-                  {{ p }}
-                </button>
+              @for (p of getPagesArray(transactionCurrentPage(), transactionTotalPages()); track $index) {
+                @if (p === '...') {
+                  <span class="w-8.5 h-8.5 flex items-center justify-center text-slate-400 dark:text-slate-600 font-semibold select-none text-xs">...</span>
+                } @else {
+                  <button
+                    (click)="transactionCurrentPage.set($any(p))"
+                    [class]="
+                      p === transactionCurrentPage()
+                        ? 'bg-purple-600 text-white font-black shadow-md shadow-purple-500/20'
+                        : 'bg-white dark:bg-slate-900 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200/40 font-semibold'
+                    "
+                    class="w-8.5 h-8.5 rounded-xl text-xs transition-all"
+                  >
+                    {{ p }}
+                  </button>
+                }
               }
 
               <button

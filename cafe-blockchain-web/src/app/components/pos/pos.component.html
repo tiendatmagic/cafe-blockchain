@@ -194,21 +194,23 @@
                     />
                   </svg>
                 </button>
-
-                @for (pageNum of getPagesArray(posTotalPages()); track pageNum) {
-                  <button
-                    (click)="posCurrentPage.set(pageNum)"
-                    [class]="
-                      pageNum === posCurrentPage()
-                        ? 'bg-purple-600 text-white font-extrabold shadow-md shadow-purple-500/20'
-                        : 'bg-slate-50 hover:bg-slate-100 dark:bg-slate-950/40 dark:hover:bg-slate-950/60 text-slate-600 dark:text-slate-400 border border-slate-200/40 dark:border-slate-800/40 font-semibold'
-                    "
-                    class="w-8.5 h-8.5 rounded-xl text-xs transition-all"
-                  >
-                    {{ pageNum }}
-                  </button>
+                @for (pageNum of getPagesArray(posCurrentPage(), posTotalPages()); track $index) {
+                  @if (pageNum === '...') {
+                    <span class="w-8.5 h-8.5 flex items-center justify-center text-slate-400 dark:text-slate-600 font-semibold select-none text-xs">...</span>
+                  } @else {
+                    <button
+                      (click)="posCurrentPage.set($any(pageNum))"
+                      [class]="
+                        pageNum === posCurrentPage()
+                          ? 'bg-purple-600 text-white font-extrabold shadow-md shadow-purple-500/20'
+                          : 'bg-slate-50 hover:bg-slate-100 dark:bg-slate-950/40 dark:hover:bg-slate-950/60 text-slate-600 dark:text-slate-400 border border-slate-200/40 dark:border-slate-800/40 font-semibold'
+                      "
+                      class="w-8.5 h-8.5 rounded-xl text-xs transition-all"
+                    >
+                      {{ pageNum }}
+                    </button>
+                  }
                 }
-
                 <button
                   (click)="posCurrentPage.set(posCurrentPage() + 1)"
                   [disabled]="posCurrentPage() === posTotalPages()"

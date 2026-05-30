@@ -307,8 +307,34 @@ export class PosComponent {
   }
 
   // Helpers cho template HTML
-  public getPagesArray(totalPages: number): number[] {
-    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  public getPagesArray(currentPage: number, totalPages: number): (number | string)[] {
+    const pages: (number | string)[] = [];
+    if (totalPages <= 5) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    
+    // Luôn thêm trang 1
+    pages.push(1);
+    
+    if (currentPage > 3) {
+      pages.push('...');
+    }
+    
+    const start = Math.max(2, currentPage - 1);
+    const end = Math.min(totalPages - 1, currentPage + 1);
+    
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    
+    if (currentPage < totalPages - 2) {
+      pages.push('...');
+    }
+    
+    // Luôn thêm trang cuối
+    pages.push(totalPages);
+    
+    return pages;
   }
 
   public mathMin(a: number, b: number): number {

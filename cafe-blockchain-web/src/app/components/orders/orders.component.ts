@@ -21,6 +21,9 @@ export class OrdersComponent implements OnInit {
   public readonly ordersCurrentPage = signal<number>(1);
   public readonly ordersItemsPerPage = 5;
 
+  // Bộ tìm kiếm Đơn hàng
+  public readonly orderSearchQuery = signal<string>('');
+
   // Trạng thái đồng bộ blockchain & cập nhật
   public readonly isAutoSyncOnCompleteChecked = signal<boolean>(true);
   public readonly blockchainSyncLoading = signal<boolean>(false);
@@ -60,6 +63,18 @@ export class OrdersComponent implements OnInit {
     const blockchain = this.orderBlockchainFilter();
     if (blockchain !== 'all') {
       list = list.filter(o => o.blockchain_status === blockchain);
+    }
+
+    // 3. Lọc theo từ khóa tìm kiếm (mã đơn hàng order_code, bàn ăn, hoặc tên khách hàng)
+    const search = this.orderSearchQuery().trim().toLowerCase();
+    if (search) {
+      list = list.filter(o => 
+        (o.order_code && o.order_code.toLowerCase().includes(search)) ||
+        (o.table_number && o.table_number.toLowerCase().includes(search)) ||
+        (o.customer && o.customer.name && o.customer.name.toLowerCase().includes(search)) ||
+        (o.customer_name && o.customer_name.toLowerCase().includes(search)) ||
+        (o.id && o.id.toString().includes(search))
+      );
     }
 
     return list;
@@ -475,8 +490,32 @@ export class OrdersComponent implements OnInit {
   }
 
   // Helpers cho template HTML
-  public getPagesArray(totalPages: number): number[] {
-    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  public getPagesArray(currentPage: number, totalPages: number): (number | string)[] {
+    const pages: (number | string)[] = [];
+    if (totalPages <= 5) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    
+    pages.push(1);
+    
+    if (currentPage > 3) {
+      pages.push('...');
+    }
+    
+    const start = Math.max(2, currentPage - 1);
+    const end = Math.min(totalPages - 1, currentPage + 1);
+    
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    
+    if (currentPage < totalPages - 2) {
+      pages.push('...');
+    }
+    
+    pages.push(totalPages);
+    
+    return pages;
   }
 
   public mathMin(a: number, b: number): number {

@@ -20,6 +20,9 @@ export class CustomersComponent {
   public readonly customerItemsPerPage = 9;
   public readonly customerGroupCurrentPage = signal<number>(1);
   public readonly customerGroupItemsPerPage = 9;
+  
+  // Bộ tìm kiếm khách hàng
+  public readonly customerSearchQuery = signal<string>('');
 
   // Form & Modals Khách hàng
   public readonly isCustomerModalOpen = signal<boolean>(false);
@@ -63,15 +66,33 @@ export class CustomersComponent {
   public get customerGroups() { return this.stateService.customerGroups; }
   public get isCustomersLoading() { return this.stateService.isCustomersLoading; }
 
-  // Computed phân trang Khách hàng
+  // Lọc danh sách khách hàng cục bộ tức thời tại client
+  public readonly filteredCustomers = computed(() => {
+    let list = this.customers();
+    const search = this.customerSearchQuery().trim().toLowerCase();
+    if (search) {
+      list = list.filter(c => 
+        (c.customer_code && c.customer_code.toLowerCase().includes(search)) ||
+        (c.name && c.name.toLowerCase().includes(search)) ||
+        (c.phone && c.phone.includes(search)) ||
+        (c.email && c.email.toLowerCase().includes(search)) ||
+        (c.company_name && c.company_name.toLowerCase().includes(search)) ||
+        (c.tax_code && c.tax_code.includes(search)) ||
+        (c.id && c.id.toString().includes(search))
+      );
+    }
+    return list;
+  });
+
+  // Computed phân trang Khách hàng dựa trên danh sách đã lọc
   public readonly paginatedCustomers = computed(() => {
-    const list = this.customers();
+    const list = this.filteredCustomers();
     const startIndex = (this.customerCurrentPage() - 1) * this.customerItemsPerPage;
     return list.slice(startIndex, startIndex + this.customerItemsPerPage);
   });
 
   public readonly customerTotalPages = computed(() => {
-    return Math.ceil(this.customers().length / this.customerItemsPerPage) || 1;
+    return Math.ceil(this.filteredCustomers().length / this.customerItemsPerPage) || 1;
   });
 
   // Computed phân trang Nhóm Khách hàng
@@ -367,8 +388,32 @@ export class CustomersComponent {
   }
 
   // Helpers cho template
-  public getPagesArray(totalPages: number): number[] {
-    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  public getPagesArray(currentPage: number, totalPages: number): (number | string)[] {
+    const pages: (number | string)[] = [];
+    if (totalPages <= 5) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    
+    pages.push(1);
+    
+    if (currentPage > 3) {
+      pages.push('...');
+    }
+    
+    const start = Math.max(2, currentPage - 1);
+    const end = Math.min(totalPages - 1, currentPage + 1);
+    
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    
+    if (currentPage < totalPages - 2) {
+      pages.push('...');
+    }
+    
+    pages.push(totalPages);
+    
+    return pages;
   }
 
   public mathMin(a: number, b: number): number {

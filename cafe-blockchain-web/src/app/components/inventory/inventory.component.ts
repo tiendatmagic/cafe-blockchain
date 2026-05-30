@@ -20,6 +20,9 @@ export class InventoryComponent {
   public readonly inventoryCurrentPage = signal<number>(1);
   public readonly inventoryItemsPerPage = 9;
 
+  // Bộ tìm kiếm Kho hàng
+  public readonly inventorySearchQuery = signal<string>('');
+
   // Form & Modals Kho hàng
   public readonly isInventoryModalOpen = signal<boolean>(false);
   public readonly isInventoryDetailModalOpen = signal<boolean>(false);
@@ -42,9 +45,26 @@ export class InventoryComponent {
 
   // --- Computed Properties Kho hàng ---
   public readonly filteredInventoryRecords = computed(() => {
-    const list = this.inventoryRecords();
+    let list = this.inventoryRecords();
     const type = this.inventoryTypeFilter();
-    return list.filter(r => type === 'all' || r.type === type);
+    if (type !== 'all') {
+      list = list.filter(r => r.type === type);
+    }
+
+    // Thêm tìm kiếm cục bộ (note, record_code, tên món trong record items)
+    const search = this.inventorySearchQuery().trim().toLowerCase();
+    if (search) {
+      list = list.filter(r => 
+        (r.note && r.note.toLowerCase().includes(search)) ||
+        (r.record_code && r.record_code.toLowerCase().includes(search)) ||
+        (r.id && r.id.toString().includes(search)) ||
+        (r.items && r.items.some((item: any) => {
+          const prod = this.products().find(p => p.id === item.product_id);
+          return prod && prod.name.toLowerCase().includes(search);
+        }))
+      );
+    }
+    return list;
   });
 
   public readonly paginatedInventoryRecords = computed(() => {
@@ -273,8 +293,32 @@ export class InventoryComponent {
   }
 
   // Helpers cho template
-  public getPagesArray(totalPages: number): number[] {
-    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  public getPagesArray(currentPage: number, totalPages: number): (number | string)[] {
+    const pages: (number | string)[] = [];
+    if (totalPages <= 5) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    
+    pages.push(1);
+    
+    if (currentPage > 3) {
+      pages.push('...');
+    }
+    
+    const start = Math.max(2, currentPage - 1);
+    const end = Math.min(totalPages - 1, currentPage + 1);
+    
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    
+    if (currentPage < totalPages - 2) {
+      pages.push('...');
+    }
+    
+    pages.push(totalPages);
+    
+    return pages;
   }
 
   public mathMin(a: number, b: number): number {

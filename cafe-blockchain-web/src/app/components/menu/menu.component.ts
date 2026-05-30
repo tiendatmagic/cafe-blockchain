@@ -20,6 +20,10 @@ export class MenuComponent {
   public readonly menuCurrentPage = signal<number>(1);
   public readonly menuItemsPerPage = 9;
 
+  // Bộ lọc & Tìm kiếm Thực đơn cục bộ
+  public readonly menuSearchQuery = signal<string>('');
+  public readonly menuCategoryFilter = signal<string>('Tất cả');
+
   // Form Quản lý Thực đơn (Món ăn)
   public readonly isMenuModalOpen = signal<boolean>(false);
   public readonly menuModalType = signal<'add' | 'edit'>('add');
@@ -58,11 +62,36 @@ export class MenuComponent {
   public get categoriesList() { return this.stateService.categoriesList; }
   public get isProductsLoading() { return this.stateService.isProductsLoading; }
 
-  // Computed properties phục vụ phân trang client
-  public readonly menuTotalPages = computed(() => Math.ceil(this.products().length / this.menuItemsPerPage));
+  // Danh mục có 'Tất cả' ở đầu
+  public readonly categories = computed(() => {
+    const list = this.categoriesList().map(c => c.name);
+    return ['Tất cả', ...list];
+  });
+
+  // Lọc sản phẩm cục bộ tức thời tại client
+  public readonly filteredProducts = computed(() => {
+    return this.products().filter(p => {
+      const category = this.menuCategoryFilter();
+      const matchCategory = category === 'Tất cả' || 
+                            (p.categories && p.categories.some((c: any) => c.name === category)) || 
+                            p.category_name === category || 
+                            p.category?.category_name === category;
+                            
+      const search = this.menuSearchQuery().trim().toLowerCase();
+      const matchSearch = !search || 
+                          p.name.toLowerCase().includes(search) || 
+                          p.sku?.toLowerCase().includes(search) || 
+                          (p.short_description && p.short_description.toLowerCase().includes(search));
+                          
+      return matchCategory && matchSearch;
+    });
+  });
+
+  // Computed properties phục vụ phân trang client dựa trên sản phẩm đã lọc
+  public readonly menuTotalPages = computed(() => Math.ceil(this.filteredProducts().length / this.menuItemsPerPage));
   public readonly paginatedProducts = computed(() => {
     const start = (this.menuCurrentPage() - 1) * this.menuItemsPerPage;
-    return this.products().slice(start, start + this.menuItemsPerPage);
+    return this.filteredProducts().slice(start, start + this.menuItemsPerPage);
   });
 
   // Cập nhật giá trị một trường trong menuForm
@@ -389,8 +418,32 @@ export class MenuComponent {
   }
 
   // Helpers cho template HTML
-  public getPagesArray(totalPages: number): number[] {
-    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  public getPagesArray(currentPage: number, totalPages: number): (number | string)[] {
+    const pages: (number | string)[] = [];
+    if (totalPages <= 5) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    
+    pages.push(1);
+    
+    if (currentPage > 3) {
+      pages.push('...');
+    }
+    
+    const start = Math.max(2, currentPage - 1);
+    const end = Math.min(totalPages - 1, currentPage + 1);
+    
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    
+    if (currentPage < totalPages - 2) {
+      pages.push('...');
+    }
+    
+    pages.push(totalPages);
+    
+    return pages;
   }
 
   public mathMin(a: number, b: number): number {
