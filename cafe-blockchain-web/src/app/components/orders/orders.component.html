@@ -518,14 +518,14 @@
                   <div class="flex items-center justify-end gap-2.5">
                     <button
                       (click)="viewOrderDetail(order)"
-                      class="text-xs font-bold text-purple-600 hover:text-purple-700 hover:underline"
+                      class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-750 dark:text-slate-350 border border-slate-200/20 dark:border-slate-800/20 text-xs font-bold transition-all hover:scale-[1.03] active:scale-[0.97]"
                     >
                       Chi tiết
                     </button>
                     @if (order.status === 'pending' && order.blockchain_status === 'none') {
                       <button
                         (click)="editOrder(order)"
-                        class="px-2 py-1 rounded-lg bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] hover:bg-[var(--dynamic-primary)]/20 text-xs font-bold transition-all"
+                        class="px-2.5 py-1 rounded-lg bg-[var(--dynamic-primary)]/10 hover:bg-[var(--dynamic-primary)]/20 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] border border-[var(--dynamic-primary)]/15 dark:border-[var(--dynamic-secondary)]/15 text-xs font-bold transition-all hover:scale-[1.03] active:scale-[0.97]"
                       >
                         Sửa
                       </button>
