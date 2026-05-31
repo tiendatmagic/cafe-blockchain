@@ -281,5 +281,8 @@ class DatabaseSeeder extends Seeder
             }
             $product->categories()->sync($catIds);
         }
+
+        // Tạo 1000 khách hàng (cá nhân và doanh nghiệp) cho store owner 0x75ad18ef47eda21baff837cac0f1563d0c355555
+        $this->call(CustomerSeeder::class);
     }
 }
