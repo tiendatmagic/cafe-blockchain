@@ -38,7 +38,7 @@ export class Web3Service {
     { name: 'Base Mainnet', chainId: '8453', rpcUrl: 'https://mainnet.base.org', explorerUrl: 'https://basescan.org' },
     { name: 'Avalanche C-Chain', chainId: '43114', rpcUrl: 'https://api.avax.network/ext/bc/C/rpc', explorerUrl: 'https://snowtrace.io' },
     { name: 'Sepolia Testnet', chainId: '11155111', rpcUrl: 'https://ethereum-sepolia.publicnode.com', explorerUrl: 'https://sepolia.etherscan.io' },
-    { name: 'BSC Testnet', chainId: '97', rpcUrl: 'https://data-seed-prebsc-1-s1.binance.org:8545', explorerUrl: 'https://testnet.bscscan.com' },
+    { name: 'BSC Testnet', chainId: '97', rpcUrl: 'https://bnb-testnet.api.onfinality.io/public', explorerUrl: 'https://testnet.bscscan.com' },
     { name: 'Arbitrum Sepolia', chainId: '421614', rpcUrl: 'https://sepolia-rollup.arbitrum.io/rpc', explorerUrl: 'https://sepolia.arbiscan.io/' },
   ];
 
@@ -779,7 +779,7 @@ export class Web3Service {
   private getBackupRpcUrls(chainId: string): string[] {
     const id = chainId.toString().trim();
     switch (id) {
-      case '97':        return ['https://bsc-testnet-rpc.publicnode.com', 'https://bsc-testnet.blockpi.network/v1/rpc/public', 'https://data-seed-prebsc-1-s1.binance.org:8545'];
+      case '97':        return ['https://bnb-testnet.api.onfinality.io/public', 'https://bsc-testnet-rpc.publicnode.com', 'https://bsc-testnet.blockpi.network/v1/rpc/public'];
       case '56':        return ['https://bsc-rpc.publicnode.com', 'https://binance.llamarpc.com', 'https://rpc.ankr.com/bsc'];
       case '1':         return ['https://ethereum-rpc.publicnode.com', 'https://eth.llamarpc.com', 'https://rpc.ankr.com/eth'];
       case '11155111':  return ['https://ethereum-sepolia-rpc.publicnode.com', 'https://sepolia.gateway.tenderly.co', 'https://rpc.ankr.com/eth_sepolia'];
