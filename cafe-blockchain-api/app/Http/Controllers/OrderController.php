@@ -50,6 +50,7 @@ class OrderController extends Controller
             'table_number' => 'nullable|string|max:50',
             'customer_id' => 'nullable|integer|exists:customers,id',
             'payment_method' => 'required|string|in:cash,bank_transfer,crypto',
+            'voucher_id' => 'nullable|integer|exists:vouchers,id',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.product_variant_id' => 'nullable|exists:product_variants,id',
@@ -93,11 +94,35 @@ class OrderController extends Controller
                 ];
             }
 
+            // Áp dụng voucher nếu có
+            $discountAmount = 0;
+            $voucherId = $validated['voucher_id'] ?? null;
+            if ($voucherId) {
+                $voucher = \App\Models\Voucher::where('id', $voucherId)
+                    ->where('store_owner_address', $storeOwner)
+                    ->where('status', 'active')
+                    ->first();
+                if (!$voucher) {
+                    throw new \Exception("Mã giảm giá không hợp lệ hoặc đã được sử dụng!");
+                }
+                
+                // Kiểm tra xem đơn hàng có đạt giá trị tối thiểu để áp dụng voucher không
+                if ($totalAmount < $voucher->min_order_amount) {
+                    throw new \Exception("Đơn hàng chưa đạt giá trị tối thiểu " . number_format($voucher->min_order_amount) . "đ để áp dụng mã giảm giá này!");
+                }
+                
+                $discountAmount = $voucher->discount_amount;
+            }
+
+            $finalTotalAmount = max(0, $totalAmount - $discountAmount);
+
             // Tạo đơn hàng
             $order = Order::create([
                 'table_number' => $validated['table_number'] ?? null,
                 'customer_id' => $validated['customer_id'] ?? null,
-                'total_amount' => $totalAmount,
+                'total_amount' => $finalTotalAmount,
+                'discount_amount' => $discountAmount,
+                'voucher_id' => $voucherId,
                 'payment_method' => $validated['payment_method'],
                 'status' => 'pending', // Mặc định là đang chờ xác nhận
                 'blockchain_status' => 'none',
@@ -150,6 +175,7 @@ class OrderController extends Controller
             'table_number' => 'nullable|string|max:50',
             'customer_id' => 'nullable|integer|exists:customers,id',
             'payment_method' => 'required|string|in:cash,bank_transfer,crypto',
+            'voucher_id' => 'nullable|integer|exists:vouchers,id',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.product_variant_id' => 'nullable|exists:product_variants,id',
@@ -192,11 +218,39 @@ class OrderController extends Controller
                 ];
             }
 
+            // Áp dụng voucher nếu có
+            $discountAmount = 0;
+            $voucherId = $validated['voucher_id'] ?? null;
+            if ($voucherId) {
+                // Kiểm tra voucher có hợp lệ không (có thể voucher này chính là voucher đã được gán cho đơn hàng này trước đó, hoặc voucher active khác)
+                $voucher = \App\Models\Voucher::where('id', $voucherId)
+                    ->where('store_owner_address', $storeOwner)
+                    ->where(function ($q) use ($order) {
+                        $q->where('status', 'active')
+                          ->orWhere('id', $order->voucher_id);
+                    })
+                    ->first();
+                if (!$voucher) {
+                    throw new \Exception("Mã giảm giá không hợp lệ hoặc đã được sử dụng!");
+                }
+                
+                // Kiểm tra xem đơn hàng có đạt giá trị tối thiểu để áp dụng voucher không
+                if ($totalAmount < $voucher->min_order_amount) {
+                    throw new \Exception("Đơn hàng chưa đạt giá trị tối thiểu " . number_format($voucher->min_order_amount) . "đ để áp dụng mã giảm giá này!");
+                }
+                
+                $discountAmount = $voucher->discount_amount;
+            }
+
+            $finalTotalAmount = max(0, $totalAmount - $discountAmount);
+
             // Cập nhật thông tin đơn hàng
             $order->update([
                 'table_number' => $validated['table_number'] ?? null,
                 'customer_id' => $validated['customer_id'] ?? null,
-                'total_amount' => $totalAmount,
+                'total_amount' => $finalTotalAmount,
+                'discount_amount' => $discountAmount,
+                'voucher_id' => $voucherId,
                 'payment_method' => $validated['payment_method'],
             ]);
 

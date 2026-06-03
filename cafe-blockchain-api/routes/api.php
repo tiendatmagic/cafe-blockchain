@@ -31,6 +31,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Dashboard API (Read-only)
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
+    // Vouchers API
+    Route::get('/vouchers', [\App\Http\Controllers\VoucherController::class, 'index']);
+
     // Products API
     Route::get('/products', [ProductController::class, 'index']);
     

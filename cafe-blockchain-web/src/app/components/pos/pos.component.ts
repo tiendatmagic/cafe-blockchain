@@ -36,6 +36,18 @@ export class PosComponent implements OnInit, OnDestroy {
   public readonly isCustomerDropdownOpen = signal<boolean>(false);
   public readonly posSearchedCustomers = signal<any[]>([]);
   public readonly isCustomerSearching = signal<boolean>(false);
+  
+  // Trạng thái Voucher tại POS
+  public readonly posActiveVouchers = signal<any[]>([]);
+  public readonly posSelectedVoucher = signal<any | null>(null);
+
+  // Computed properties cho tổng tiền cuối cùng sau giảm giá
+  public readonly posFinalTotal = computed(() => {
+    const total = this.cartTotal();
+    const voucher = this.posSelectedVoucher();
+    if (!voucher) return total;
+    return Math.max(0, total - voucher.discount_amount);
+  });
 
   private customerSearchSubject = new Subject<string>();
   private customerSearchSubscription?: Subscription;
@@ -84,9 +96,30 @@ export class PosComponent implements OnInit, OnDestroy {
       return;
     }
     
-    this.apiService.getCustomers(query, 15).subscribe({
+    const cleanQuery = query.trim();
+    const isEvmWallet = /^0x[a-fA-F0-9]{40}$/.test(cleanQuery);
+    
+    this.apiService.getCustomers(cleanQuery, 15).subscribe({
       next: (res) => {
-        this.posSearchedCustomers.set(res || []);
+        const results = res || [];
+        
+        if (isEvmWallet) {
+          const hasWallet = results.some(c => c.wallet_address && c.wallet_address.toLowerCase() === cleanQuery.toLowerCase());
+          if (!hasWallet) {
+            const autoCreateOption = {
+              id: -99,
+              name: `Khách ví Web3 (${cleanQuery.substring(0, 6)}...${cleanQuery.substring(38)})`,
+              wallet_address: cleanQuery,
+              customer_code: 'TẠO MỚI',
+              is_auto_create: true
+            };
+            this.posSearchedCustomers.set([autoCreateOption, ...results]);
+            this.isCustomerSearching.set(false);
+            return;
+          }
+        }
+        
+        this.posSearchedCustomers.set(results);
         this.isCustomerSearching.set(false);
       },
       error: (err) => {
@@ -126,8 +159,8 @@ export class PosComponent implements OnInit, OnDestroy {
 
   // Computed properties cho Confirm Modal
   public readonly posTotalQuantity = computed(() => this.cart().reduce((sum, item) => sum + item.quantity, 0));
-  public readonly posCashReturn = computed(() => Math.max(0, this.customerCashGiven() - this.cartTotal()));
-  public readonly posDebtAmount = computed(() => this.isDebtPayment() ? Math.max(0, this.cartTotal() - this.customerCashGiven()) : 0);
+  public readonly posCashReturn = computed(() => Math.max(0, this.customerCashGiven() - this.posFinalTotal()));
+  public readonly posDebtAmount = computed(() => this.isDebtPayment() ? Math.max(0, this.posFinalTotal() - this.customerCashGiven()) : 0);
   public readonly customerCashGivenFormatted = computed(() => {
     const val = this.customerCashGiven();
     if (val === 0) return '';
@@ -262,7 +295,7 @@ export class PosComponent implements OnInit, OnDestroy {
 
   // Mở modal xác nhận thanh toán nâng cao
   public openPosConfirmModal() {
-    this.customerCashGiven.set(this.cartTotal());
+    this.customerCashGiven.set(this.posFinalTotal());
     this.isDebtPayment.set(false);
     
     const currentMethod = this.paymentMethod();
@@ -297,13 +330,74 @@ export class PosComponent implements OnInit, OnDestroy {
   }
 
   public selectCustomerForOrder(customer: any) {
-    this.stateService.posSelectedCustomer.set(customer);
-    this.posCustomerSearchQuery.set('');
-    this.isCustomerDropdownOpen.set(false);
+    if (customer.id === -99 || customer.is_auto_create) {
+      const payload = {
+        name: customer.name,
+        type: 'individual',
+        wallet_address: customer.wallet_address
+      };
+      
+      this.isCustomerSearching.set(true);
+      this.stateService.isLoading.set(true);
+      
+      this.apiService.createCustomer(payload).subscribe({
+        next: (createdRes) => {
+          const newCust = createdRes.customer;
+          this.stateService.posSelectedCustomer.set(newCust);
+          this.posCustomerSearchQuery.set('');
+          this.isCustomerDropdownOpen.set(false);
+          this.posSelectedVoucher.set(null);
+          this.loadActiveVouchers(newCust.id);
+          this.isCustomerSearching.set(false);
+          this.stateService.isLoading.set(false);
+          this.stateService.showToast('Đã tự động tạo hồ sơ khách hàng off-chain cho ví này!', 'success');
+        },
+        error: (err) => {
+          console.error('Lỗi tự động tạo khách hàng từ ví Web3:', err);
+          this.stateService.showToast('Không thể tự động tạo khách hàng!', 'error');
+          this.isCustomerSearching.set(false);
+          this.stateService.isLoading.set(false);
+        }
+      });
+    } else {
+      this.stateService.posSelectedCustomer.set(customer);
+      this.posCustomerSearchQuery.set('');
+      this.isCustomerDropdownOpen.set(false);
+      this.posSelectedVoucher.set(null); // Reset voucher đã chọn
+      this.loadActiveVouchers(customer.id);
+    }
   }
 
   public deselectCustomer() {
     this.stateService.posSelectedCustomer.set(null);
+    this.posActiveVouchers.set([]);
+    this.posSelectedVoucher.set(null);
+  }
+
+  public loadActiveVouchers(customerId: number) {
+    this.apiService.getVouchers(customerId, 'active').subscribe({
+      next: (res) => {
+        this.posActiveVouchers.set(res || []);
+      },
+      error: (err) => {
+        console.error('Lỗi tải voucher của khách hàng:', err);
+      }
+    });
+  }
+
+  public selectVoucher(voucher: any) {
+    if (this.posSelectedVoucher()?.id === voucher?.id) {
+      this.posSelectedVoucher.set(null);
+      this.stateService.showToast('Đã hủy áp dụng mã giảm giá.', 'success');
+    } else {
+      const total = this.cartTotal();
+      if (total < voucher.min_order_amount) {
+        this.stateService.showToast(`Đơn hàng tối thiểu phải đạt ${voucher.min_order_amount.toLocaleString('vi-VN')}đ để áp dụng voucher này!`, 'error');
+        return;
+      }
+      this.posSelectedVoucher.set(voucher);
+      this.stateService.showToast(`Đã áp dụng mã giảm giá ${voucher.discount_amount.toLocaleString('vi-VN')}đ!`, 'success');
+    }
   }
 
   public updateItemNote(productId: number, variantId: number | null, note: string) {
@@ -355,6 +449,7 @@ export class PosComponent implements OnInit, OnDestroy {
       table_number: this.tableNumber(),
       customer_id: this.stateService.posSelectedCustomer()?.id || null,
       payment_method: this.paymentMethod(),
+      voucher_id: this.posSelectedVoucher()?.id || null,
       items: this.cart().map(item => ({
         product_id: item.product.id,
         product_variant_id: item.variant ? item.variant.id : null,

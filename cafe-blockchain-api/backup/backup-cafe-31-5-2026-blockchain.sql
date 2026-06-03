@@ -501,6 +501,7 @@ CREATE TABLE `customers` (
   `business_status` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT 'Đang hoạt động',
   `phone` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `email` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `wallet_address` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `dob` date DEFAULT NULL,
   `gender` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `address` text COLLATE utf8mb4_unicode_ci,
@@ -2045,6 +2046,7 @@ CREATE TABLE `orders` (
   `order_code` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `table_number` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `total_amount` decimal(15,2) NOT NULL,
+  `discount_amount` int NOT NULL DEFAULT '0',
   `payment_method` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `status` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
   `tx_hash` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -2054,7 +2056,8 @@ CREATE TABLE `orders` (
   `verification_hash` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
-  `customer_id` bigint UNSIGNED DEFAULT NULL
+  `customer_id` bigint UNSIGNED DEFAULT NULL,
+  `voucher_id` bigint UNSIGNED DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -2902,6 +2905,26 @@ INSERT INTO `transactions` (`id`, `transaction_code`, `type`, `amount`, `categor
 -- --------------------------------------------------------
 
 --
+-- Cấu trúc bảng cho bảng `vouchers`
+--
+
+CREATE TABLE `vouchers` (
+  `id` bigint UNSIGNED NOT NULL,
+  `code` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `customer_id` bigint UNSIGNED DEFAULT NULL,
+  `wallet_address` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `discount_amount` int NOT NULL DEFAULT '0',
+  `min_order_amount` int NOT NULL DEFAULT '0',
+  `status` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
+  `tx_hash` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `store_owner_address` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Cấu trúc bảng cho bảng `users`
 --
 
@@ -3116,6 +3139,14 @@ ALTER TABLE `users`
   ADD UNIQUE KEY `users_wallet_address_unique` (`wallet_address`);
 
 --
+-- Chỉ mục cho bảng `vouchers`
+--
+ALTER TABLE `vouchers`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `vouchers_code_unique` (`code`),
+  ADD KEY `vouchers_customer_id_foreign` (`customer_id`);
+
+--
 -- AUTO_INCREMENT cho các bảng đã đổ
 --
 
@@ -3228,6 +3259,12 @@ ALTER TABLE `users`
   MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
+-- AUTO_INCREMENT cho bảng `vouchers`
+--
+ALTER TABLE `vouchers`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- Ràng buộc đối với các bảng kết xuất
 --
 
@@ -3263,7 +3300,14 @@ ALTER TABLE `inventory_record_items`
 -- Ràng buộc cho bảng `orders`
 --
 ALTER TABLE `orders`
-  ADD CONSTRAINT `orders_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL;
+  ADD CONSTRAINT `orders_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `orders_voucher_id_foreign` FOREIGN KEY (`voucher_id`) REFERENCES `vouchers` (`id`) ON DELETE SET NULL;
+
+--
+-- Ràng buộc cho bảng `vouchers`
+--
+ALTER TABLE `vouchers`
+  ADD CONSTRAINT `vouchers_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE CASCADE;
 
 --
 -- Ràng buộc cho bảng `order_items`

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class CustomerController extends Controller
 {
@@ -24,12 +25,21 @@ class CustomerController extends Controller
                   ->orWhereRaw('LOWER(email) LIKE ?', ["%{$searchLower}%"])
                   ->orWhereRaw('LOWER(customer_code) LIKE ?', ["%{$searchLower}%"])
                   ->orWhereRaw('LOWER(company_name) LIKE ?', ["%{$searchLower}%"])
-                  ->orWhereRaw('LOWER(representative_name) LIKE ?', ["%{$searchLower}%"]);
+                  ->orWhereRaw('LOWER(representative_name) LIKE ?', ["%{$searchLower}%"])
+                  ->orWhereRaw('LOWER(wallet_address) LIKE ?', ["%{$searchLower}%"]);
             });
             $limit = $request->query('limit', 15);
-            $customers = $query->with('groups')->orderBy('id', 'desc')->limit($limit)->get();
+            $customers = $query->with('groups')
+                ->withCount(['vouchers as active_vouchers_count' => function ($q) {
+                    $q->where('status', 'active');
+                }])
+                ->orderBy('id', 'desc')->limit($limit)->get();
         } else {
-            $customers = $query->with('groups')->orderBy('id', 'desc')->get();
+            $customers = $query->with('groups')
+                ->withCount(['vouchers as active_vouchers_count' => function ($q) {
+                    $q->where('status', 'active');
+                }])
+                ->orderBy('id', 'desc')->get();
         }
         
         return response()->json($customers);
@@ -44,15 +54,37 @@ class CustomerController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:150',
-            'phone' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:100',
+            'phone' => [
+                'nullable',
+                'string',
+                'max:20',
+                Rule::unique('customers')->where(function ($query) use ($storeOwner) {
+                    return $query->where('store_owner_address', $storeOwner);
+                })
+            ],
+            'email' => [
+                'nullable',
+                'email',
+                'max:100',
+                Rule::unique('customers')->where(function ($query) use ($storeOwner) {
+                    return $query->where('store_owner_address', $storeOwner);
+                })
+            ],
             'dob' => 'nullable|date',
             'gender' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:500',
+            'wallet_address' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('customers')->where(function ($query) use ($storeOwner) {
+                    return $query->where('store_owner_address', $storeOwner);
+                })
+            ],
             'group_ids' => 'nullable|array',
             'group_ids.*' => [
                 'exists:customer_groups,id',
-                \Illuminate\Validation\Rule::exists('customer_groups', 'id')->where('store_owner_address', $storeOwner)
+                Rule::exists('customer_groups', 'id')->where('store_owner_address', $storeOwner)
             ],
             'type' => 'nullable|string|in:individual,business',
             'company_name' => 'nullable|string|max:200',
@@ -60,6 +92,10 @@ class CustomerController extends Controller
             'representative_name' => 'nullable|string|max:150',
             'website' => 'nullable|string|max:150',
             'business_status' => 'nullable|string|max:100',
+        ], [
+            'phone.unique' => 'Số điện thoại này đã tồn tại trong danh sách khách hàng của quán!',
+            'email.unique' => 'Địa chỉ email này đã tồn tại trong danh sách khách hàng của quán!',
+            'wallet_address.unique' => 'Địa chỉ ví Web3 này đã tồn tại trong danh sách khách hàng của quán!',
         ]);
 
         $customer = Customer::create([
@@ -69,6 +105,7 @@ class CustomerController extends Controller
             'dob' => $validated['dob'] ?? null,
             'gender' => $validated['gender'] ?? null,
             'address' => $validated['address'] ?? null,
+            'wallet_address' => $validated['wallet_address'] ?? null,
             'store_owner_address' => $storeOwner,
             'type' => $validated['type'] ?? 'individual',
             'company_name' => $validated['company_name'] ?? null,
@@ -82,8 +119,10 @@ class CustomerController extends Controller
             $customer->groups()->sync($validated['group_ids']);
         }
 
-        // Tải lại mối quan hệ nhóm trước khi trả về
-        $customer->load('groups');
+        // Tải lại mối quan hệ nhóm và đếm voucher
+        $customer->load('groups')->loadCount(['vouchers as active_vouchers_count' => function ($q) {
+            $q->where('status', 'active');
+        }]);
 
         return response()->json([
             'message' => 'Customer created successfully.',
@@ -101,15 +140,37 @@ class CustomerController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:150',
-            'phone' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:100',
+            'phone' => [
+                'nullable',
+                'string',
+                'max:20',
+                Rule::unique('customers')->ignore($id)->where(function ($query) use ($storeOwner) {
+                    return $query->where('store_owner_address', $storeOwner);
+                })
+            ],
+            'email' => [
+                'nullable',
+                'email',
+                'max:100',
+                Rule::unique('customers')->ignore($id)->where(function ($query) use ($storeOwner) {
+                    return $query->where('store_owner_address', $storeOwner);
+                })
+            ],
             'dob' => 'nullable|date',
             'gender' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:500',
+            'wallet_address' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('customers')->ignore($id)->where(function ($query) use ($storeOwner) {
+                    return $query->where('store_owner_address', $storeOwner);
+                })
+            ],
             'group_ids' => 'nullable|array',
             'group_ids.*' => [
                 'exists:customer_groups,id',
-                \Illuminate\Validation\Rule::exists('customer_groups', 'id')->where('store_owner_address', $storeOwner)
+                Rule::exists('customer_groups', 'id')->where('store_owner_address', $storeOwner)
             ],
             'type' => 'nullable|string|in:individual,business',
             'company_name' => 'nullable|string|max:200',
@@ -117,6 +178,10 @@ class CustomerController extends Controller
             'representative_name' => 'nullable|string|max:150',
             'website' => 'nullable|string|max:150',
             'business_status' => 'nullable|string|max:100',
+        ], [
+            'phone.unique' => 'Số điện thoại này đã tồn tại trong danh sách khách hàng của quán!',
+            'email.unique' => 'Địa chỉ email này đã tồn tại trong danh sách khách hàng của quán!',
+            'wallet_address.unique' => 'Địa chỉ ví Web3 này đã tồn tại trong danh sách khách hàng của quán!',
         ]);
 
         $customer->update([
@@ -126,6 +191,7 @@ class CustomerController extends Controller
             'dob' => $validated['dob'] ?? null,
             'gender' => $validated['gender'] ?? null,
             'address' => $validated['address'] ?? null,
+            'wallet_address' => $validated['wallet_address'] ?? null,
             'type' => $validated['type'] ?? 'individual',
             'company_name' => $validated['company_name'] ?? null,
             'tax_code' => $validated['tax_code'] ?? null,
@@ -136,7 +202,9 @@ class CustomerController extends Controller
 
         $customer->groups()->sync($validated['group_ids'] ?? []);
 
-        $customer->load('groups');
+        $customer->load('groups')->loadCount(['vouchers as active_vouchers_count' => function ($q) {
+            $q->where('status', 'active');
+        }]);
 
         return response()->json([
             'message' => 'Customer updated successfully.',

@@ -266,13 +266,13 @@
                     <div class="flex items-center justify-end gap-2.5">
                       <button
                         (click)="viewInventoryRecordDetails(record)"
-                        class="text-xs font-bold text-purple-600 hover:text-purple-755 hover:underline"
+                        class="px-2.5 py-1.5 rounded-lg bg-[var(--dynamic-primary)]/10 hover:bg-[var(--dynamic-primary)]/20 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] border border-[var(--dynamic-primary)]/15 dark:border-[var(--dynamic-secondary)]/15 text-xs font-bold transition-all hover:scale-[1.03] active:scale-[0.97]"
                       >
-                        Xem Chi tiết
+                        Chi tiết
                       </button>
                       <button
-                        (click)="deleteInventoryRecord(record.id)"
-                        class="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-500 font-bold rounded-lg text-xs transition-all"
+                        (click)="deleteInventoryRecord(record)"
+                        class="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200/20 dark:border-rose-800/20 text-xs font-bold transition-all hover:scale-[1.03] active:scale-[0.97]"
                       >
                         Xóa
                       </button>
@@ -887,6 +887,42 @@
         >
           Đóng cửa sổ
         </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal Xác nhận Xóa Phiếu Kho -->
+@if (isDeleteRecordConfirmOpen()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div (click)="isDeleteRecordConfirmOpen.set(false)" class="fixed inset-0 bg-black/40"></div>
+    <div
+      class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 p-6 max-w-sm w-full shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200"
+    >
+      <div class="text-center space-y-4">
+        <div class="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-455 flex items-center justify-center mx-auto text-xl font-bold">
+          ⚠️
+        </div>
+        <div class="space-y-1.5">
+          <h4 class="text-base font-extrabold text-slate-800 dark:text-white">Xác nhận xóa phiếu kho</h4>
+          <p class="text-xs text-slate-400 dark:text-slate-500 font-semibold leading-relaxed">
+            Bạn có chắc chắn muốn xóa phiếu kho <strong class="text-slate-800 dark:text-white">{{ deletingRecord()?.record_code }}</strong> thuộc quán <strong class="text-[var(--dynamic-primary)]">{{ stateService.settings().store_name }}</strong> khỏi hệ thống? Hành động này không thể hoàn tác.
+          </p>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button
+            (click)="isDeleteRecordConfirmOpen.set(false)"
+            class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-655 dark:text-slate-355 font-bold text-xs rounded-xl transition-all"
+          >
+            Hủy bỏ
+          </button>
+          <button
+            (click)="confirmDeleteInventoryRecord()"
+            class="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-rose-500/10"
+          >
+            Xác nhận xóa
+          </button>
+        </div>
       </div>
     </div>
   </div>

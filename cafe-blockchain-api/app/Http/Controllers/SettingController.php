@@ -30,6 +30,9 @@ class SettingController extends Controller
                 'explorer_url' => '',
                 'explorer_api_key' => '',
                 'default_print_size' => '80mm',
+                'voucher_gift_min_amount' => '100000',
+                'voucher_discount_amount' => '5000',
+                'voucher_use_min_amount' => '100000',
             ];
             
             foreach ($defaultSettings as $key => $value) {
@@ -42,6 +45,18 @@ class SettingController extends Controller
             if (!isset($settings['finance_contract_address'])) {
                 Setting::setForStore('finance_contract_address', '', $storeOwner);
                 $settings['finance_contract_address'] = '';
+            }
+
+            // Đảm bảo các cấu hình voucher tồn tại trong kết quả
+            foreach ([
+                'voucher_gift_min_amount' => '100000',
+                'voucher_discount_amount' => '5000',
+                'voucher_use_min_amount' => '100000'
+            ] as $key => $defaultVal) {
+                if (!isset($settings[$key])) {
+                    Setting::setForStore($key, $defaultVal, $storeOwner);
+                    $settings[$key] = $defaultVal;
+                }
             }
         }
         
@@ -69,6 +84,9 @@ class SettingController extends Controller
             'primary_color' => 'nullable|string|max:7',
             'secondary_color' => 'nullable|string|max:7',
             'default_print_size' => 'nullable|string|in:80mm,A4,A5',
+            'voucher_gift_min_amount' => 'nullable|integer|min:0',
+            'voucher_discount_amount' => 'nullable|integer|min:0',
+            'voucher_use_min_amount' => 'nullable|integer|min:0',
         ]);
 
         // Lấy các cấu hình hiện tại trong Database để đối soát bảo mật

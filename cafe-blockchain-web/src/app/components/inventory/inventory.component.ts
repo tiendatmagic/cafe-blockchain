@@ -29,6 +29,8 @@ export class InventoryComponent {
   public readonly isInventorySaving = signal<boolean>(false);
   public readonly isInventoryDropdownOpen = signal<boolean>(false);
   public readonly selectedInventoryRecord = signal<any>(null);
+  public readonly isDeleteRecordConfirmOpen = signal<boolean>(false);
+  public readonly deletingRecord = signal<any>(null);
 
   public readonly inventoryForm = signal<any>({
     type: 'nhap',
@@ -265,21 +267,31 @@ export class InventoryComponent {
     });
   }
 
-  public deleteInventoryRecord(id: number) {
-    if (confirm('Bạn có chắc chắn muốn xóa phiếu kho này?')) {
-      this.stateService.isLoading.set(true);
-      this.apiService.deleteInventoryRecord(id).subscribe({
-        next: () => {
-          this.stateService.showToast('Xóa phiếu kho thành công!', 'success');
-          this.refreshInventory();
-          this.stateService.isLoading.set(false);
-        },
-        error: () => {
-          this.stateService.showToast('Xóa phiếu kho thất bại!', 'error');
-          this.stateService.isLoading.set(false);
-        }
-      });
-    }
+  public deleteInventoryRecord(record: any) {
+    this.deletingRecord.set(record);
+    this.isDeleteRecordConfirmOpen.set(true);
+  }
+
+  public confirmDeleteInventoryRecord() {
+    const record = this.deletingRecord();
+    if (!record) return;
+    const id = record.id;
+
+    this.isDeleteRecordConfirmOpen.set(false);
+    this.stateService.isLoading.set(true);
+    this.apiService.deleteInventoryRecord(id).subscribe({
+      next: () => {
+        this.stateService.showToast('Xóa phiếu kho thành công!', 'success');
+        this.refreshInventory();
+        this.deletingRecord.set(null);
+        this.stateService.isLoading.set(false);
+      },
+      error: () => {
+        this.stateService.showToast('Xóa phiếu kho thất bại!', 'error');
+        this.deletingRecord.set(null);
+        this.stateService.isLoading.set(false);
+      }
+    });
   }
 
   public viewInventoryRecordDetails(record: any) {

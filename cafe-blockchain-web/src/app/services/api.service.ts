@@ -118,16 +118,28 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/orders/${id}`, { headers: this.getHeaders() });
   }
 
-  public createOrder(order: { table_number?: string, payment_method: string, items: { product_id: number, quantity: number }[] }): Observable<any> {
+  public createOrder(order: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/orders`, order, { headers: this.getHeaders() });
   }
 
-  public updateOrder(id: number, order: { table_number?: string, payment_method: string, items: { product_id: number, quantity: number }[] }): Observable<any> {
+  public updateOrder(id: number, order: any): Observable<any> {
     return this.http.put(`${this.baseUrl}/orders/${id}`, order, { headers: this.getHeaders() });
   }
 
   public updateOrderStatus(id: number, status: string): Observable<any> {
     return this.http.put(`${this.baseUrl}/orders/${id}/status`, { status }, { headers: this.getHeaders() });
+  }
+
+  // 12. Vouchers API
+  public getVouchers(customerId?: number, status?: string): Observable<any[]> {
+    let params = new HttpParams();
+    if (customerId !== undefined && customerId !== null) {
+      params = params.set('customer_id', customerId.toString());
+    }
+    if (status) {
+      params = params.set('status', status);
+    }
+    return this.http.get<any[]>(`${this.baseUrl}/vouchers`, { params, headers: this.getHeaders() });
   }
 
   public syncOrderBlockchain(id: number, txHash: string, blockchainStatus: string, chainId?: string): Observable<any> {

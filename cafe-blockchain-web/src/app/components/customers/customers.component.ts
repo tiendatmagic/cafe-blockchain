@@ -35,6 +35,12 @@ export class CustomersComponent {
   public readonly isCustomerGroupSaving = signal<boolean>(false);
   public readonly isCustomerDropdownOpen = signal<boolean>(false);
 
+  // Trạng thái modal xác nhận xóa khách hàng & nhóm
+  public readonly isDeleteCustomerConfirmOpen = signal<boolean>(false);
+  public readonly deletingCustomer = signal<any>(null);
+  public readonly isDeleteGroupConfirmOpen = signal<boolean>(false);
+  public readonly deletingGroup = signal<any>(null);
+
   // Tra cứu mã số thuế (VietQR API)
   public readonly isSearchingTax = signal<boolean>(false);
   private taxLookupTimeout: any = null;
@@ -54,7 +60,8 @@ export class CustomersComponent {
     tax_code: '',
     representative_name: '',
     website: '',
-    business_status: 'Đang hoạt động'
+    business_status: 'Đang hoạt động',
+    wallet_address: ''
   });
 
   public readonly customerGroupForm = signal<any>({
@@ -228,7 +235,8 @@ export class CustomersComponent {
       tax_code: '',
       representative_name: '',
       website: '',
-      business_status: 'Đang hoạt động'
+      business_status: 'Đang hoạt động',
+      wallet_address: ''
     });
     this.isCustomerModalOpen.set(true);
     this.isCustomerDropdownOpen.set(false);
@@ -250,7 +258,8 @@ export class CustomersComponent {
       tax_code: customer.tax_code || '',
       representative_name: customer.representative_name || '',
       website: customer.website || '',
-      business_status: customer.business_status || 'Đang hoạt động'
+      business_status: customer.business_status || 'Đang hoạt động',
+      wallet_address: customer.wallet_address || ''
     });
     this.isCustomerModalOpen.set(true);
   }
@@ -324,21 +333,31 @@ export class CustomersComponent {
     }
   }
 
-  public deleteCustomer(id: number) {
-    if (confirm('Bạn có chắc chắn muốn xóa khách hàng này?')) {
-      this.stateService.isLoading.set(true);
-      this.apiService.deleteCustomer(id).subscribe({
-        next: () => {
-          this.stateService.showToast('Xóa khách hàng thành công!', 'success');
-          this.refreshCustomers();
-          this.stateService.isLoading.set(false);
-        },
-        error: () => {
-          this.stateService.showToast('Xóa khách hàng thất bại!', 'error');
-          this.stateService.isLoading.set(false);
-        }
-      });
-    }
+  public deleteCustomer(cust: any) {
+    this.deletingCustomer.set(cust);
+    this.isDeleteCustomerConfirmOpen.set(true);
+  }
+
+  public confirmDeleteCustomer() {
+    const cust = this.deletingCustomer();
+    if (!cust) return;
+    const id = cust.id;
+
+    this.isDeleteCustomerConfirmOpen.set(false);
+    this.stateService.isLoading.set(true);
+    this.apiService.deleteCustomer(id).subscribe({
+      next: () => {
+        this.stateService.showToast('Xóa khách hàng thành công!', 'success');
+        this.refreshCustomers();
+        this.deletingCustomer.set(null);
+        this.stateService.isLoading.set(false);
+      },
+      error: () => {
+        this.stateService.showToast('Xóa khách hàng thất bại!', 'error');
+        this.deletingCustomer.set(null);
+        this.stateService.isLoading.set(false);
+      }
+    });
   }
 
   // --- Customer Group CRUD ---
@@ -399,21 +418,31 @@ export class CustomersComponent {
     }
   }
 
-  public deleteCustomerGroup(id: number) {
-    if (confirm('Bạn có chắc chắn muốn xóa nhóm khách hàng này?')) {
-      this.stateService.isLoading.set(true);
-      this.apiService.deleteCustomerGroup(id).subscribe({
-        next: () => {
-          this.stateService.showToast('Xóa nhóm khách hàng thành công!', 'success');
-          this.refreshCustomers();
-          this.stateService.isLoading.set(false);
-        },
-        error: () => {
-          this.stateService.showToast('Xóa nhóm khách hàng thất bại!', 'error');
-          this.stateService.isLoading.set(false);
-        }
-      });
-    }
+  public deleteCustomerGroup(group: any) {
+    this.deletingGroup.set(group);
+    this.isDeleteGroupConfirmOpen.set(true);
+  }
+
+  public confirmDeleteCustomerGroup() {
+    const group = this.deletingGroup();
+    if (!group) return;
+    const id = group.id;
+
+    this.isDeleteGroupConfirmOpen.set(false);
+    this.stateService.isLoading.set(true);
+    this.apiService.deleteCustomerGroup(id).subscribe({
+      next: () => {
+        this.stateService.showToast('Xóa nhóm khách hàng thành công!', 'success');
+        this.refreshCustomers();
+        this.deletingGroup.set(null);
+        this.stateService.isLoading.set(false);
+      },
+      error: () => {
+        this.stateService.showToast('Xóa nhóm thất bại!', 'error');
+        this.deletingGroup.set(null);
+        this.stateService.isLoading.set(false);
+      }
+    });
   }
 
   // Helpers cho template

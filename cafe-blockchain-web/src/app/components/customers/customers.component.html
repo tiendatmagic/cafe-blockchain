@@ -169,6 +169,9 @@
                 <th class="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">
                   Nhóm khách hàng
                 </th>
+                <th class="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  Ví & Voucher NFT
+                </th>
                 <th
                   class="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider pr-6 text-right"
                 >
@@ -281,6 +284,25 @@
                       }
                     </div>
                   </td>
+                  <td class="p-4">
+                    <div class="flex flex-col gap-1 min-w-[140px]">
+                      @if (cust.wallet_address) {
+                        <span class="font-mono text-[10px] text-slate-600 dark:text-slate-450 bg-slate-100 dark:bg-slate-950 px-1.5 py-0.5 rounded truncate max-w-[140px] font-bold" [title]="cust.wallet_address">
+                          {{ cust.wallet_address.substring(0, 6) }}...{{ cust.wallet_address.substring(cust.wallet_address.length - 4) }}
+                        </span>
+                      } @else {
+                        <span class="text-[10px] text-slate-400 dark:text-slate-600 italic">Chưa liên kết ví</span>
+                      }
+                      
+                      @if (cust.active_vouchers_count && cust.active_vouchers_count > 0) {
+                        <span class="inline-flex items-center gap-1 text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-450 px-2 py-0.5 rounded-full font-black w-max">
+                          🎫 {{ cust.active_vouchers_count }} Voucher
+                        </span>
+                      } @else {
+                        <span class="text-[10px] text-slate-400 dark:text-slate-600 font-semibold animate-pulse">Chưa có voucher</span>
+                      }
+                    </div>
+                  </td>
                   <td class="p-4 pr-6 text-right whitespace-nowrap">
                     <div class="flex items-center justify-end gap-2">
                       <button
@@ -290,7 +312,7 @@
                         Sửa
                       </button>
                       <button
-                        (click)="deleteCustomer(cust.id)"
+                        (click)="deleteCustomer(cust)"
                         class="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200/20 dark:border-rose-800/20 text-xs font-bold transition-all hover:scale-[1.03] active:scale-[0.97]"
                       >
                         Xóa
@@ -401,7 +423,7 @@
                       Sửa
                     </button>
                     <button
-                      (click)="deleteCustomerGroup(group.id)"
+                      (click)="deleteCustomerGroup(group)"
                       class="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200/20 dark:border-rose-800/20 text-xs font-bold transition-all hover:scale-[1.03] active:scale-[0.97]"
                     >
                       Xóa
@@ -739,6 +761,19 @@
           </div>
         }
 
+        <!-- Địa chỉ ví EVM Web3 -->
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+            >Địa chỉ ví Web3 (EVM)</label
+          >
+          <input
+            type="text"
+            [(ngModel)]="customerForm().wallet_address"
+            placeholder="Ví dụ: 0x71C... (dùng để tặng NFT Voucher)"
+            class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-800 text-sm focus:outline-none focus:border-purple-500 text-slate-800 dark:text-white font-mono transition-all font-semibold"
+          />
+        </div>
+
         <!-- Địa chỉ -->
         <div class="space-y-1.5">
           <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
@@ -885,6 +920,78 @@
           }
           <span>Lưu</span>
         </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal Xác nhận Xóa Khách hàng -->
+@if (isDeleteCustomerConfirmOpen()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div (click)="isDeleteCustomerConfirmOpen.set(false)" class="fixed inset-0 bg-black/40"></div>
+    <div
+      class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 p-6 max-w-sm w-full shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200"
+    >
+      <div class="text-center space-y-4">
+        <div class="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-455 flex items-center justify-center mx-auto text-xl font-bold">
+          ⚠️
+        </div>
+        <div class="space-y-1.5">
+          <h4 class="text-base font-extrabold text-slate-800 dark:text-white">Xác nhận xóa khách hàng</h4>
+          <p class="text-xs text-slate-400 dark:text-slate-500 font-semibold leading-relaxed">
+            Bạn có chắc chắn muốn xóa khách hàng <strong class="text-slate-800 dark:text-white">{{ deletingCustomer()?.name }}</strong> thuộc quán <strong class="text-[var(--dynamic-primary)]">{{ stateService.settings().store_name }}</strong> khỏi hệ thống? Hành động này không thể hoàn tác.
+          </p>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button
+            (click)="isDeleteCustomerConfirmOpen.set(false)"
+            class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-655 dark:text-slate-350 font-bold text-xs rounded-xl transition-all"
+          >
+            Hủy bỏ
+          </button>
+          <button
+            (click)="confirmDeleteCustomer()"
+            class="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-rose-500/10"
+          >
+            Xác nhận xóa
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal Xác nhận Xóa Nhóm khách hàng -->
+@if (isDeleteGroupConfirmOpen()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div (click)="isDeleteGroupConfirmOpen.set(false)" class="fixed inset-0 bg-black/40"></div>
+    <div
+      class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 p-6 max-w-sm w-full shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200"
+    >
+      <div class="text-center space-y-4">
+        <div class="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-455 flex items-center justify-center mx-auto text-xl font-bold">
+          ⚠️
+        </div>
+        <div class="space-y-1.5">
+          <h4 class="text-base font-extrabold text-slate-800 dark:text-white">Xác nhận xóa nhóm</h4>
+          <p class="text-xs text-slate-400 dark:text-slate-500 font-semibold leading-relaxed">
+            Bạn có chắc chắn muốn xóa nhóm <strong class="text-slate-800 dark:text-white">{{ deletingGroup()?.name }}</strong> thuộc quán <strong class="text-[var(--dynamic-primary)]">{{ stateService.settings().store_name }}</strong>? Các khách hàng trong nhóm sẽ không bị xóa mà chỉ bị gỡ khỏi nhóm này.
+          </p>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button
+            (click)="isDeleteGroupConfirmOpen.set(false)"
+            class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-655 dark:text-slate-350 font-bold text-xs rounded-xl transition-all"
+          >
+            Hủy bỏ
+          </button>
+          <button
+            (click)="confirmDeleteCustomerGroup()"
+            class="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-rose-500/10"
+          >
+            Xác nhận xóa
+          </button>
+        </div>
       </div>
     </div>
   </div>

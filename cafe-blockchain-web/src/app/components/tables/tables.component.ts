@@ -40,6 +40,12 @@ export class TablesComponent {
     status: 'empty'
   });
 
+  // Trạng thái modal xác nhận xóa
+  public readonly isDeleteAreaConfirmOpen = signal<boolean>(false);
+  public readonly deletingArea = signal<any>(null);
+  public readonly isDeleteTableConfirmOpen = signal<boolean>(false);
+  public readonly deletingTable = signal<any>(null);
+
   // Getters từ StateService
   public get areas() { return this.stateService.areas; }
   public get diningTables() { return this.stateService.diningTables; }
@@ -121,21 +127,31 @@ export class TablesComponent {
     }
   }
 
-  public deleteArea(id: number) {
-    if (confirm('Bạn có chắc chắn muốn xóa khu vực này? Tất cả các bàn trong khu vực cũng sẽ bị xóa.')) {
-      this.stateService.isLoading.set(true);
-      this.apiService.deleteArea(id).subscribe({
-        next: () => {
-          this.stateService.showToast('Xóa khu vực thành công!', 'success');
-          this.refreshTablesAndAreas();
-          this.stateService.isLoading.set(false);
-        },
-        error: () => {
-          this.stateService.showToast('Xóa khu vực thất bại!', 'error');
-          this.stateService.isLoading.set(false);
-        }
-      });
-    }
+  public deleteArea(area: any) {
+    this.deletingArea.set(area);
+    this.isDeleteAreaConfirmOpen.set(true);
+  }
+
+  public confirmDeleteArea() {
+    const area = this.deletingArea();
+    if (!area) return;
+    const id = area.id;
+
+    this.isDeleteAreaConfirmOpen.set(false);
+    this.stateService.isLoading.set(true);
+    this.apiService.deleteArea(id).subscribe({
+      next: () => {
+        this.stateService.showToast('Xóa khu vực thành công!', 'success');
+        this.refreshTablesAndAreas();
+        this.deletingArea.set(null);
+        this.stateService.isLoading.set(false);
+      },
+      error: () => {
+        this.stateService.showToast('Xóa khu vực thất bại!', 'error');
+        this.deletingArea.set(null);
+        this.stateService.isLoading.set(false);
+      }
+    });
   }
 
   // --- Dining Table CRUD ---
@@ -221,21 +237,31 @@ export class TablesComponent {
     });
   }
 
-  public deleteTable(id: number) {
-    if (confirm('Bạn có chắc chắn muốn xóa bàn ăn này?')) {
-      this.stateService.isLoading.set(true);
-      this.apiService.deleteDiningTable(id).subscribe({
-        next: () => {
-          this.stateService.showToast('Xóa bàn ăn thành công!', 'success');
-          this.refreshTablesAndAreas();
-          this.stateService.isLoading.set(false);
-        },
-        error: () => {
-          this.stateService.showToast('Xóa bàn ăn thất bại!', 'error');
-          this.stateService.isLoading.set(false);
-        }
-      });
-    }
+  public deleteTable(table: any) {
+    this.deletingTable.set(table);
+    this.isDeleteTableConfirmOpen.set(true);
+  }
+
+  public confirmDeleteTable() {
+    const table = this.deletingTable();
+    if (!table) return;
+    const id = table.id;
+
+    this.isDeleteTableConfirmOpen.set(false);
+    this.stateService.isLoading.set(true);
+    this.apiService.deleteDiningTable(id).subscribe({
+      next: () => {
+        this.stateService.showToast('Xóa bàn ăn thành công!', 'success');
+        this.refreshTablesAndAreas();
+        this.deletingTable.set(null);
+        this.stateService.isLoading.set(false);
+      },
+      error: () => {
+        this.stateService.showToast('Xóa bàn thất bại!', 'error');
+        this.deletingTable.set(null);
+        this.stateService.isLoading.set(false);
+      }
+    });
   }
 
   // Tiện ích lấy tên khu vực từ id

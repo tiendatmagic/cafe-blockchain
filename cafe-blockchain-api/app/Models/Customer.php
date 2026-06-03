@@ -14,6 +14,7 @@ class Customer extends Model
         'name',
         'phone',
         'email',
+        'wallet_address',
         'dob',
         'gender',
         'address',
@@ -42,5 +43,13 @@ class Customer extends Model
     public function groups()
     {
         return $this->belongsToMany(CustomerGroup::class, 'customer_customer_group', 'customer_id', 'customer_group_id');
+    }
+
+    /**
+     * Mối quan hệ 1-Nhiều với Voucher
+     */
+    public function vouchers()
+    {
+        return $this->hasMany(Voucher::class);
     }
 }

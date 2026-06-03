@@ -342,6 +342,63 @@
           </div>
         </div>
 
+        <!-- Thiết lập chương trình Voucher NFT -->
+        <div class="border-t border-slate-100 dark:border-slate-800/60 pt-4 space-y-3.5">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wide block">Cấu hình Chương trình Voucher NFT</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <!-- Đơn hàng tối thiểu tặng voucher -->
+            <div class="space-y-1.5">
+              <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wide block">Đơn tối thiểu để tặng</label>
+              <div class="relative rounded-2xl bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-800 overflow-hidden focus-within:border-[var(--dynamic-primary)] transition-all">
+                <input
+                  type="number"
+                  [ngModel]="configForm().voucher_gift_min_amount"
+                  (ngModelChange)="updateConfigForm('voucher_gift_min_amount', $event)"
+                  [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                  class="w-full pl-4 pr-9 py-2.5 bg-transparent text-xs font-semibold focus:outline-none text-slate-800 dark:text-white disabled:opacity-50"
+                  placeholder="100,000"
+                />
+                <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400">đ</span>
+              </div>
+            </div>
+
+            <!-- Giá trị giảm giá -->
+            <div class="space-y-1.5">
+              <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wide block">Mức giảm giá của Voucher</label>
+              <div class="relative rounded-2xl bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-800 overflow-hidden focus-within:border-[var(--dynamic-primary)] transition-all">
+                <input
+                  type="number"
+                  [ngModel]="configForm().voucher_discount_amount"
+                  (ngModelChange)="updateConfigForm('voucher_discount_amount', $event)"
+                  [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                  class="w-full pl-4 pr-9 py-2.5 bg-transparent text-xs font-semibold focus:outline-none text-slate-800 dark:text-white disabled:opacity-50"
+                  placeholder="5,000"
+                />
+                <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400">đ</span>
+              </div>
+            </div>
+
+            <!-- Đơn hàng tối thiểu sử dụng voucher -->
+            <div class="space-y-1.5">
+              <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wide block">Đơn tối thiểu áp dụng</label>
+              <div class="relative rounded-2xl bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-800 overflow-hidden focus-within:border-[var(--dynamic-primary)] transition-all">
+                <input
+                  type="number"
+                  [ngModel]="configForm().voucher_use_min_amount"
+                  (ngModelChange)="updateConfigForm('voucher_use_min_amount', $event)"
+                  [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                  class="w-full pl-4 pr-9 py-2.5 bg-transparent text-xs font-semibold focus:outline-none text-slate-800 dark:text-white disabled:opacity-50"
+                  placeholder="100,000"
+                />
+                <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400">đ</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="pt-4">
           <button
             (click)="saveConfig()"

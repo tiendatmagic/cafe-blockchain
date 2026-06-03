@@ -29,7 +29,10 @@ export class SettingsComponent implements OnInit {
     explorer_api_key: '',
     primary_color: '#7c3aed',
     secondary_color: '#c084fc',
-    default_print_size: '80mm'
+    default_print_size: '80mm',
+    voucher_gift_min_amount: 100000,
+    voucher_discount_amount: 5000,
+    voucher_use_min_amount: 100000
   });
 
   // Trạng thái lưu cấu hình & deploy smart contracts
@@ -91,6 +94,9 @@ export class SettingsComponent implements OnInit {
           primary_color: res.primary_color || '#7c3aed',
           secondary_color: res.secondary_color || '#c084fc',
           default_print_size: res.default_print_size || '80mm',
+          voucher_gift_min_amount: res.voucher_gift_min_amount !== undefined ? Number(res.voucher_gift_min_amount) : 100000,
+          voucher_discount_amount: res.voucher_discount_amount !== undefined ? Number(res.voucher_discount_amount) : 5000,
+          voucher_use_min_amount: res.voucher_use_min_amount !== undefined ? Number(res.voucher_use_min_amount) : 100000,
           ...res
         };
         this.configForm.set({ ...settings });

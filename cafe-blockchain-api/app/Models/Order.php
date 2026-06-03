@@ -14,6 +14,8 @@ class Order extends Model
         'table_number',
         'customer_id',
         'total_amount',
+        'discount_amount',
+        'voucher_id',
         'payment_method',
         'status',
         'tx_hash',
@@ -25,6 +27,7 @@ class Order extends Model
 
     protected $casts = [
         'total_amount' => 'float',
+        'discount_amount' => 'integer',
     ];
 
     protected $appends = [
@@ -69,6 +72,42 @@ class Order extends Model
                 $order->verification_hash = $order->generateVerificationHash();
                 $order->saveQuietly();
             }
+
+            if ($order->status === 'completed') {
+                // 1. Đánh dấu voucher áp dụng là đã sử dụng
+                if ($order->voucher_id) {
+                    $voucher = \App\Models\Voucher::where('id', $order->voucher_id)
+                        ->where('status', 'active')
+                        ->first();
+                    if ($voucher) {
+                        $voucher->update(['status' => 'used']);
+                    }
+                }
+
+                // 2. Tự động tặng voucher nếu đủ điều kiện
+                if (($order->wasChanged('status') || $order->wasRecentlyCreated) && $order->customer_id) {
+                    $storeOwner = $order->store_owner_address;
+                    $minGiftAmount = (int)\App\Models\Setting::getForStore('voucher_gift_min_amount', $storeOwner, 100000);
+                    $originalTotal = $order->total_amount + $order->discount_amount;
+                    
+                    if ($originalTotal >= $minGiftAmount) {
+                        $giftDiscount = (int)\App\Models\Setting::getForStore('voucher_discount_amount', $storeOwner, 5000);
+                        $useMinAmount = (int)\App\Models\Setting::getForStore('voucher_use_min_amount', $storeOwner, 100000);
+                        
+                        $customer = \App\Models\Customer::find($order->customer_id);
+                        
+                        \App\Models\Voucher::create([
+                            'code' => 'NFT-' . strtoupper(\Illuminate\Support\Str::random(8)),
+                            'customer_id' => $order->customer_id,
+                            'wallet_address' => $customer ? $customer->wallet_address : null,
+                            'discount_amount' => $giftDiscount,
+                            'min_order_amount' => $useMinAmount,
+                            'status' => 'active',
+                            'store_owner_address' => $storeOwner
+                        ]);
+                    }
+                }
+            }
         });
     }
 
@@ -92,10 +131,12 @@ class Order extends Model
             }
         }
 
-        // Tạo dữ liệu nhạy cảm cần ký (đã bao gồm phương thức thanh toán)
+        // Tạo dữ liệu nhạy cảm cần ký (đã bao gồm phương thức thanh toán và thông tin giảm giá)
         $data = implode('|', [
             strtolower($this->order_code ?? ''),
             $totalAmountFormatted,
+            (int)$this->discount_amount,
+            $this->voucher_id ?? '',
             strtolower($this->payment_method ?? ''),
             $this->table_number ?? '',
             $createdAtStr,
@@ -113,5 +154,10 @@ class Order extends Model
     public function customer()
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function voucher()
+    {
+        return $this->belongsTo(Voucher::class);
     }
 }

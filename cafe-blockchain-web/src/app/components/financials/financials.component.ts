@@ -44,6 +44,10 @@ export class FinancialsComponent {
   public readonly selectedTransactionDetails = signal<any>(null);
   public readonly isTransactionDetailModalOpen = signal<boolean>(false);
   public readonly blockchainSyncLoading = signal<boolean>(false);
+  
+  // Trạng thái modal xác nhận xóa
+  public readonly isDeleteTransactionConfirmOpen = signal<boolean>(false);
+  public readonly deletingTransaction = signal<any>(null);
 
   // Getters từ StateService
   public get web3Service() { return this.stateService.web3Service; }
@@ -254,21 +258,31 @@ export class FinancialsComponent {
     }
   }
 
-  public deleteTransaction(id: number) {
-    if (confirm('Bạn có chắc chắn muốn xóa phiếu thu chi này?')) {
-      this.stateService.isLoading.set(true);
-      this.apiService.deleteTransaction(id).subscribe({
-        next: () => {
-          this.stateService.showToast('Xóa giao dịch thành công!', 'success');
-          this.stateService.refreshTransactions();
-          this.stateService.isLoading.set(false);
-        },
-        error: () => {
-          this.stateService.showToast('Xóa giao dịch thất bại!', 'error');
-          this.stateService.isLoading.set(false);
-        }
-      });
-    }
+  public deleteTransaction(transaction: any) {
+    this.deletingTransaction.set(transaction);
+    this.isDeleteTransactionConfirmOpen.set(true);
+  }
+
+  public confirmDeleteTransaction() {
+    const transaction = this.deletingTransaction();
+    if (!transaction) return;
+    const id = transaction.id;
+
+    this.isDeleteTransactionConfirmOpen.set(false);
+    this.stateService.isLoading.set(true);
+    this.apiService.deleteTransaction(id).subscribe({
+      next: () => {
+        this.stateService.showToast('Xóa giao dịch thành công!', 'success');
+        this.stateService.refreshTransactions();
+        this.deletingTransaction.set(null);
+        this.stateService.isLoading.set(false);
+      },
+      error: () => {
+        this.stateService.showToast('Xóa giao dịch thất bại!', 'error');
+        this.deletingTransaction.set(null);
+        this.stateService.isLoading.set(false);
+      }
+    });
   }
 
   // --- Blockchain Sync ---
