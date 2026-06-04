@@ -763,15 +763,46 @@
 
         <!-- Địa chỉ ví EVM Web3 -->
         <div class="space-y-1.5">
-          <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-            >Địa chỉ ví Web3 (EVM)</label
-          >
+          <label class="text-xs font-bold text-slate-400 uppercase tracking-wide flex items-center justify-between"
+            ><span>Địa chỉ ví Web3 (EVM)</span>
+            @if (customerForm().wallet_address) {
+              <span
+                [class]="customerForm().wallet_address.trim().length === 42 ? 'text-emerald-500' : 'text-amber-500'"
+                class="text-[10px] font-black normal-case"
+              >
+                {{ customerForm().wallet_address.trim().length }}/42 ký tự
+              </span>
+            }
+          </label>
           <input
             type="text"
             [(ngModel)]="customerForm().wallet_address"
             placeholder="Ví dụ: 0x71C... (dùng để tặng NFT Voucher)"
-            class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-800 text-sm focus:outline-none focus:border-purple-500 text-slate-800 dark:text-white font-mono transition-all font-semibold"
+            maxlength="42"
+            [class]="
+              customerForm().wallet_address && customerForm().wallet_address.trim().length > 0 && customerForm().wallet_address.trim().length !== 42
+                ? 'border-amber-400 dark:border-amber-600 focus:border-amber-500'
+                : customerForm().wallet_address && customerForm().wallet_address.trim().length === 42
+                  ? 'border-emerald-400 dark:border-emerald-600 focus:border-emerald-500'
+                  : 'border-slate-200 dark:border-slate-800 focus:border-purple-500'
+            "
+            class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-955 border text-sm focus:outline-none text-slate-800 dark:text-white font-mono transition-all font-semibold"
           />
+          <!-- Progress bar nhập ví -->
+          @if (customerForm().wallet_address && customerForm().wallet_address.trim().length > 0 && customerForm().wallet_address.trim().length < 42) {
+            <div class="space-y-1">
+              <div class="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1 overflow-hidden">
+                <div
+                  class="bg-amber-500 h-1 rounded-full transition-all duration-300"
+                  [style.width.%]="(customerForm().wallet_address.trim().length / 42) * 100"
+                ></div>
+              </div>
+              <span class="text-[9px] text-amber-500 font-bold">⚠️ Phải nhập đủ 42 ký tự EVM (bắt đầu 0x + 40 ký tự hex)</span>
+            </div>
+          }
+          @if (customerForm().wallet_address && customerForm().wallet_address.trim().length === 42) {
+            <span class="text-[9px] text-emerald-500 font-bold">✅ Địa chỉ ví hợp lệ (42 ký tự EVM)</span>
+          }
         </div>
 
         <!-- Địa chỉ -->

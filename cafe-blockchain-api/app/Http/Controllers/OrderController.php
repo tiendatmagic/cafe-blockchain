@@ -16,7 +16,7 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-        $query = Order::where('store_owner_address', $storeOwner)->with(['customer', 'items.product', 'items.variant'])->orderBy('id', 'desc');
+        $query = Order::where('store_owner_address', $storeOwner)->with(['customer', 'items.product', 'items.variant', 'voucher'])->orderBy('id', 'desc');
         if ($request->has('status') && $request->status != 'all') {
             $query->where('status', $request->status);
         }
@@ -35,7 +35,7 @@ class OrderController extends Controller
     public function show(Request $request, $id)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-        $order = Order::where('store_owner_address', $storeOwner)->with(['customer', 'items.product', 'items.variant'])->findOrFail($id);
+        $order = Order::where('store_owner_address', $storeOwner)->with(['customer', 'items.product', 'items.variant', 'voucher'])->findOrFail($id);
         return response()->json($order);
     }
 
@@ -139,7 +139,7 @@ class OrderController extends Controller
 
             return response()->json([
                 'message' => 'Order created successfully.',
-                'data' => Order::with(['customer', 'items.product', 'items.variant'])->find($order->id)
+                'data' => Order::with(['customer', 'items.product', 'items.variant', 'voucher'])->find($order->id)
             ], 201);
 
         } catch (\Exception $e) {
@@ -266,7 +266,7 @@ class OrderController extends Controller
 
             return response()->json([
                 'message' => 'Cập nhật đơn hàng thành công.',
-                'data' => Order::with(['customer', 'items.product', 'items.variant'])->find($order->id)
+                'data' => Order::with(['customer', 'items.product', 'items.variant', 'voucher'])->find($order->id)
             ]);
 
         } catch (\Exception $e) {
@@ -301,7 +301,7 @@ class OrderController extends Controller
 
         return response()->json([
             'message' => 'Order status updated successfully.',
-            'data' => Order::with(['customer', 'items.product', 'items.variant'])->find($order->id)
+            'data' => Order::with(['customer', 'items.product', 'items.variant', 'voucher'])->find($order->id)
         ]);
     }
 
@@ -381,7 +381,7 @@ class OrderController extends Controller
 
         return response()->json([
             'message' => 'Blockchain sync updated successfully.',
-            'data' => Order::with(['customer', 'items.product', 'items.variant'])->find($order->id)
+            'data' => Order::with(['customer', 'items.product', 'items.variant', 'voucher'])->find($order->id)
         ]);
     }
 }

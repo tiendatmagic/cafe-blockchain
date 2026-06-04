@@ -76,7 +76,8 @@ class CustomerController extends Controller
             'wallet_address' => [
                 'nullable',
                 'string',
-                'max:255',
+                'max:42',
+                'regex:/^0x[a-fA-F0-9]{40}$/',
                 Rule::unique('customers')->where(function ($query) use ($storeOwner) {
                     return $query->where('store_owner_address', $storeOwner);
                 })
@@ -96,6 +97,7 @@ class CustomerController extends Controller
             'phone.unique' => 'Số điện thoại này đã tồn tại trong danh sách khách hàng của quán!',
             'email.unique' => 'Địa chỉ email này đã tồn tại trong danh sách khách hàng của quán!',
             'wallet_address.unique' => 'Địa chỉ ví Web3 này đã tồn tại trong danh sách khách hàng của quán!',
+            'wallet_address.regex' => 'Địa chỉ ví Web3 không hợp lệ! Phải đúng 42 ký tự EVM (bắt đầu 0x + 40 ký tự hex).',
         ]);
 
         $customer = Customer::create([
@@ -162,7 +164,8 @@ class CustomerController extends Controller
             'wallet_address' => [
                 'nullable',
                 'string',
-                'max:255',
+                'max:42',
+                'regex:/^0x[a-fA-F0-9]{40}$/',
                 Rule::unique('customers')->ignore($id)->where(function ($query) use ($storeOwner) {
                     return $query->where('store_owner_address', $storeOwner);
                 })
@@ -182,6 +185,7 @@ class CustomerController extends Controller
             'phone.unique' => 'Số điện thoại này đã tồn tại trong danh sách khách hàng của quán!',
             'email.unique' => 'Địa chỉ email này đã tồn tại trong danh sách khách hàng của quán!',
             'wallet_address.unique' => 'Địa chỉ ví Web3 này đã tồn tại trong danh sách khách hàng của quán!',
+            'wallet_address.regex' => 'Địa chỉ ví Web3 không hợp lệ! Phải đúng 42 ký tự EVM (bắt đầu 0x + 40 ký tự hex).',
         ]);
 
         $customer->update([

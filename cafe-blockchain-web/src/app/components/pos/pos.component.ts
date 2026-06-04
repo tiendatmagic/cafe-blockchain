@@ -97,6 +97,21 @@ export class PosComponent implements OnInit, OnDestroy {
     }
     
     const cleanQuery = query.trim();
+    
+    // Kiểm tra nếu chuỗi bắt đầu bằng "0x" (dạng ví EVM) nhưng chưa đủ 42 ký tự
+    // thì KHÔNG gọi API search, chờ người dùng nhập đủ
+    const looksLikeEvmWallet = /^0x[a-fA-F0-9]*$/i.test(cleanQuery);
+    if (looksLikeEvmWallet && cleanQuery.length < 42) {
+      this.posSearchedCustomers.set([{
+        id: -98,
+        name: `Đang nhập ví EVM... (${cleanQuery.length}/42 ký tự)`,
+        customer_code: 'CHỜ',
+        is_pending_wallet: true
+      }]);
+      this.isCustomerSearching.set(false);
+      return;
+    }
+    
     const isEvmWallet = /^0x[a-fA-F0-9]{40}$/.test(cleanQuery);
     
     this.apiService.getCustomers(cleanQuery, 15).subscribe({
@@ -330,6 +345,10 @@ export class PosComponent implements OnInit, OnDestroy {
   }
 
   public selectCustomerForOrder(customer: any) {
+    if (this.isCustomerSearching() || this.stateService.isLoading()) {
+      return; // Chặn click trùng lặp khi đang xử lý
+    }
+
     if (customer.id === -99 || customer.is_auto_create) {
       const payload = {
         name: customer.name,
@@ -354,9 +373,46 @@ export class PosComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           console.error('Lỗi tự động tạo khách hàng từ ví Web3:', err);
-          this.stateService.showToast('Không thể tự động tạo khách hàng!', 'error');
-          this.isCustomerSearching.set(false);
-          this.stateService.isLoading.set(false);
+          
+          // Kiểm tra xem lỗi có phải do ví đã tồn tại hay không (lỗi validation 422 trùng ví)
+          const isWalletExistsError = err.status === 422 && (
+            (err.error?.errors && err.error.errors.wallet_address) ||
+            (err.error?.message && err.error.message.includes('ví Web3 này đã tồn tại'))
+          );
+          
+          if (isWalletExistsError) {
+            // Nếu đã tồn tại ví này, tự động tìm kiếm lại khách hàng đó và chọn
+            this.apiService.getCustomers(customer.wallet_address, 1).subscribe({
+              next: (results) => {
+                const foundCustomer = results && results.find(
+                  (c: any) => c.wallet_address && c.wallet_address.toLowerCase() === customer.wallet_address.toLowerCase()
+                );
+                
+                if (foundCustomer) {
+                  this.stateService.posSelectedCustomer.set(foundCustomer);
+                  this.posCustomerSearchQuery.set('');
+                  this.isCustomerDropdownOpen.set(false);
+                  this.posSelectedVoucher.set(null);
+                  this.loadActiveVouchers(foundCustomer.id);
+                  this.stateService.showToast('Địa chỉ ví đã tồn tại! Đã tự động chọn khách hàng này.', 'success');
+                } else {
+                  this.stateService.showToast('Không thể tự động tạo khách hàng!', 'error');
+                }
+                this.isCustomerSearching.set(false);
+                this.stateService.isLoading.set(false);
+              },
+              error: (searchErr) => {
+                console.error('Lỗi tìm kiếm khách hàng sau khi trùng ví:', searchErr);
+                this.stateService.showToast('Không thể tự động tạo khách hàng!', 'error');
+                this.isCustomerSearching.set(false);
+                this.stateService.isLoading.set(false);
+              }
+            });
+          } else {
+            this.stateService.showToast('Không thể tự động tạo khách hàng!', 'error');
+            this.isCustomerSearching.set(false);
+            this.stateService.isLoading.set(false);
+          }
         }
       });
     } else {

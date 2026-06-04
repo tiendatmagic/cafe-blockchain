@@ -427,6 +427,21 @@ export class OrdersComponent implements OnInit {
       </div>
     ` : '';
 
+    let discountHtml = '';
+    if (order.discount_amount > 0) {
+      const voucherText = order.voucher ? ` (Voucher: ${order.voucher.code})` : '';
+      discountHtml = `
+        <div style="display: flex; justify-content: space-between; font-size: 10px;">
+          <span>Tạm tính:</span>
+          <span>${(order.total_amount + order.discount_amount).toLocaleString('vi-VN')}đ</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 10px; color: #b91c1c;">
+          <span>Giảm giá${voucherText}:</span>
+          <span>-${order.discount_amount.toLocaleString('vi-VN')}đ</span>
+        </div>
+      `;
+    }
+
     doc.open();
     doc.write(`
       <html>
@@ -467,8 +482,9 @@ export class OrdersComponent implements OnInit {
             </tbody>
           </table>
           <div class="divider"></div>
+          ${discountHtml}
           <div style="display: flex; justify-content: space-between;" class="total-row">
-            <span>TỔNG TIỀN:</span>
+            <span>TỔNG THANH TOÁN:</span>
             <span>${order.total_amount.toLocaleString('vi-VN')}đ</span>
           </div>
           ${isWrongChainAlert}

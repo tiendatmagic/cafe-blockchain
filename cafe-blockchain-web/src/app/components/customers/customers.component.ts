@@ -303,6 +303,18 @@ export class CustomersComponent {
     }
 
     this.isCustomerSaving.set(true);
+
+    // Validate địa chỉ ví EVM nếu có nhập: phải đúng 42 ký tự (0x + 40 hex)
+    if (form.wallet_address && form.wallet_address.trim()) {
+      const walletTrimmed = form.wallet_address.trim();
+      const isValidEvmWallet = /^0x[a-fA-F0-9]{40}$/.test(walletTrimmed);
+      if (!isValidEvmWallet) {
+        this.stateService.showToast(`Địa chỉ ví Web3 không hợp lệ! Phải đúng 42 ký tự (hiện ${walletTrimmed.length}/42), bắt đầu bằng 0x.`, 'error');
+        this.isCustomerSaving.set(false);
+        return;
+      }
+    }
+
     if (this.customerModalType() === 'add') {
       this.apiService.createCustomer(form).subscribe({
         next: () => {
