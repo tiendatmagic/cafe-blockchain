@@ -27,7 +27,7 @@
               [class]="
                 posCheckoutMode() === 'quick'
                   ? 'bg-white dark:bg-slate-800 text-purple-600 dark:text-purple-400 shadow-sm font-black'
-                  : 'text-slate-400 hover:text-slate-600 dark:text-slate-550 dark:hover:text-slate-350'
+                  : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300'
               "
               class="p-2 rounded-lg transition-all flex items-center justify-center gap-1 active:scale-[0.95]"
             >
@@ -48,7 +48,7 @@
             </button>
             <!-- Tooltip -->
             <div
-              class="absolute top-full left-1/2 -translate-x-1/2 mt-2.5 hidden group-hover:block bg-slate-950 dark:bg-slate-800 text-white dark:text-slate-100 text-[10px] font-bold px-2.5 py-1.5 rounded-xl whitespace-nowrap shadow-lg border border-slate-700/50 dark:border-slate-650/50 transition-all duration-200 z-50 animate-in fade-in slide-in-from-top-1"
+              class="absolute top-full left-1/2 -translate-x-1/2 mt-2.5 hidden group-hover:block bg-slate-950 dark:bg-slate-800 text-white dark:text-slate-100 text-[10px] font-bold px-2.5 py-1.5 rounded-xl whitespace-nowrap shadow-lg border border-slate-700/50 dark:border-slate-600/50 transition-all duration-200 z-50 animate-in fade-in slide-in-from-top-1"
             >
               Thanh toán nhanh (Ghi nhận ngay)
             </div>
@@ -62,7 +62,7 @@
               [class]="
                 posCheckoutMode() === 'confirm'
                   ? 'bg-white dark:bg-slate-800 text-purple-600 dark:text-purple-400 shadow-sm font-black'
-                  : 'text-slate-400 hover:text-slate-600 dark:text-slate-550 dark:hover:text-slate-350'
+                  : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300'
               "
               class="p-2 rounded-lg transition-all flex items-center justify-center gap-1 active:scale-[0.95]"
             >
@@ -83,7 +83,7 @@
             </button>
             <!-- Tooltip -->
             <div
-              class="absolute top-full left-1/2 -translate-x-1/2 mt-2.5 hidden group-hover:block bg-slate-950 dark:bg-slate-800 text-white dark:text-slate-100 text-[10px] font-bold px-2.5 py-1.5 rounded-xl whitespace-nowrap shadow-lg border border-slate-700/50 dark:border-slate-650/50 transition-all duration-200 z-50 animate-in fade-in slide-in-from-top-1"
+              class="absolute top-full left-1/2 -translate-x-1/2 mt-2.5 hidden group-hover:block bg-slate-950 dark:bg-slate-800 text-white dark:text-slate-100 text-[10px] font-bold px-2.5 py-1.5 rounded-xl whitespace-nowrap shadow-lg border border-slate-700/50 dark:border-slate-600/50 transition-all duration-200 z-50 animate-in fade-in slide-in-from-top-1"
             >
               Hiện xác nhận (Xem chi tiết đơn)
             </div>
@@ -362,7 +362,7 @@
               <button
                 type="button"
                 (click)="onCustomerSearchChange(''); isCustomerDropdownOpen.set(false)"
-                class="absolute right-3.5 top-2.5 text-slate-400 hover:text-slate-650 dark:hover:text-white text-xs font-bold"
+                class="absolute right-3.5 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-white text-xs font-bold"
               >
                 ✕
               </button>
@@ -395,15 +395,22 @@
                     >
                       <div class="flex items-center gap-2">
                         <span class="text-base shrink-0">⌨️</span>
-                        <span class="font-extrabold text-slate-600 dark:text-slate-300 text-[11px]">{{ c.name }}</span>
+                        <span
+                          class="font-extrabold text-slate-600 dark:text-slate-300 text-[11px]"
+                          >{{ c.name }}</span
+                        >
                       </div>
-                      <div class="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                      <div
+                        class="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden"
+                      >
                         <div
                           class="bg-purple-500 h-1.5 rounded-full transition-all duration-300"
                           [style.width.%]="(posCustomerSearchQuery().trim().length / 42) * 100"
                         ></div>
                       </div>
-                      <span class="text-[9px] text-slate-400 font-semibold">Nhập đủ 42 ký tự ví EVM (bắt đầu 0x...) để tìm kiếm</span>
+                      <span class="text-[9px] text-slate-400 font-semibold"
+                        >Nhập đủ 42 ký tự ví EVM (bắt đầu 0x...) để tìm kiếm</span
+                      >
                     </div>
                   } @else {
                     <button
@@ -418,9 +425,13 @@
                             >✨ {{ c.name }}</span
                           >
                           <span class="text-[9px] text-slate-400 font-bold truncate"
-                            >Ví: {{ c.wallet_address.substring(0, 8) }}...{{ c.wallet_address.substring(34) }}</span
+                            >Ví: {{ c.wallet_address.substring(0, 8) }}...{{
+                              c.wallet_address.substring(34)
+                            }}</span
                           >
-                          <span class="text-[10px] text-slate-500 dark:text-slate-400 font-semibold">Tự động tạo hồ sơ off-chain</span>
+                          <span class="text-[10px] text-slate-500 dark:text-slate-400 font-semibold"
+                            >Tự động tạo hồ sơ off-chain</span
+                          >
                         } @else {
                           <span
                             class="font-extrabold text-slate-800 dark:text-white text-[11px] truncate"
@@ -438,7 +449,11 @@
                         }
                       </div>
                       <span
-                        [class]="c.is_auto_create ? 'bg-purple-600 text-white font-black' : 'bg-purple-500/10 text-purple-600 dark:text-purple-400 font-black'"
+                        [class]="
+                          c.is_auto_create
+                            ? 'bg-purple-600 text-white font-black'
+                            : 'bg-purple-500/10 text-purple-600 dark:text-purple-400 font-black'
+                        "
                         class="text-[9px] px-1.5 py-0.5 rounded uppercase shrink-0"
                       >
                         {{ c.customer_code }}
@@ -472,7 +487,7 @@
                     {{ posSelectedCustomer().name }}
                   </span>
                   <span
-                    class="text-[8px] bg-purple-650 text-white px-1.5 py-0.2 rounded font-black uppercase shrink-0 tracking-wider"
+                    class="text-[8px] bg-purple-600 text-white px-1.5 py-0.2 rounded font-black uppercase shrink-0 tracking-wider"
                   >
                     {{ posSelectedCustomer().customer_code }}
                   </span>
@@ -482,12 +497,22 @@
                 >
                   {{ posSelectedCustomer().phone || 'Không có SĐT' }}
                 </span>
+                @if (posSelectedCustomer().wallet_address) {
+                  <span
+                    class="text-[9px] text-purple-600 dark:text-purple-400 font-bold leading-none mt-1.5 truncate"
+                    [title]="posSelectedCustomer().wallet_address"
+                  >
+                    Ví: {{ posSelectedCustomer().wallet_address.substring(0, 8) }}...{{
+                      posSelectedCustomer().wallet_address.substring(34)
+                    }}
+                  </span>
+                }
               </div>
             </div>
             <button
               type="button"
               (click)="deselectCustomer()"
-              class="w-6 h-6 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-500 hover:border-rose-200 dark:hover:bg-rose-950/20 dark:hover:text-rose-450 flex items-center justify-center text-xs font-bold transition-all shadow-sm active:scale-90 shrink-0"
+              class="w-6 h-6 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-500 hover:border-rose-200 dark:hover:bg-rose-950/20 dark:hover:text-rose-400 flex items-center justify-center text-xs font-bold transition-all shadow-sm active:scale-90 shrink-0"
               title="Hủy chọn khách hàng"
             >
               ✕
@@ -497,10 +522,18 @@
           <!-- Hiển thị Voucher NFT Khả Dụng -->
           @if (posActiveVouchers().length > 0) {
             <div class="mt-3.5 space-y-2 animate-in fade-in slide-in-from-top-1 duration-150">
-              <div class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center justify-between">
+              <div
+                class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center justify-between"
+              >
                 <span>Voucher NFT khả dụng ({{ posActiveVouchers().length }})</span>
                 @if (posSelectedVoucher()) {
-                  <button type="button" (click)="posSelectedVoucher.set(null)" class="text-[9px] text-rose-500 font-bold hover:underline">Hủy áp dụng</button>
+                  <button
+                    type="button"
+                    (click)="posSelectedVoucher.set(null)"
+                    class="text-[9px] text-rose-500 font-bold hover:underline"
+                  >
+                    Hủy áp dụng
+                  </button>
                 }
               </div>
               <div class="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto no-scrollbar pr-1">
@@ -510,34 +543,48 @@
                     [class]="
                       posSelectedVoucher()?.code === voucher.code
                         ? 'bg-purple-500/10 dark:bg-purple-500/20 border-purple-500 dark:border-purple-400 text-purple-600 dark:text-purple-400'
-                        : (cartTotal() < voucher.min_order_amount)
+                        : cartTotal() < voucher.min_order_amount
                           ? 'opacity-50 cursor-not-allowed bg-slate-50 dark:bg-slate-950 border-slate-200/50 dark:border-slate-800/50 text-slate-400 dark:text-slate-600'
-                          : 'bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-850/60 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-350'
+                          : 'bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800/60 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
                     "
                     class="flex items-center justify-between px-3 py-2.5 rounded-xl border border-dashed text-xs font-bold cursor-pointer transition-all duration-200 active:scale-[0.98] select-none"
                   >
                     <div class="flex items-center gap-2">
                       <span class="text-base shrink-0">🎫</span>
                       <div class="flex flex-col">
-                        <span class="font-extrabold text-[11px] uppercase tracking-wide leading-tight flex items-center gap-1.5">
+                        <span
+                          class="font-extrabold text-[11px] uppercase tracking-wide leading-tight flex items-center gap-1.5"
+                        >
                           {{ voucher.code }}
                           @if (voucher.isNft) {
-                            <span class="text-[8px] bg-purple-500/20 text-purple-600 dark:text-purple-400 px-1 py-0.5 rounded font-black border border-purple-500/25">NFT 🛡️</span>
+                            <span
+                              class="text-[8px] bg-purple-500/20 text-purple-600 dark:text-purple-400 px-1 py-0.5 rounded font-black border border-purple-500/25"
+                              >NFT 🛡️</span
+                            >
                           }
                         </span>
-                        <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 mt-0.5 flex flex-wrap items-center gap-x-1">
+                        <span
+                          class="text-[9px] font-bold text-slate-400 dark:text-slate-500 mt-0.5 flex flex-wrap items-center gap-x-1"
+                        >
                           <span>Đơn tối thiểu: {{ voucher.min_order_amount | number }}đ</span>
                           @if (voucher.expired_at) {
                             <span>•</span>
-                            <span class="text-rose-500 dark:text-rose-400 font-bold">Hạn dùng: {{ voucher.expired_at | date: 'dd/MM/yyyy' }}</span>
+                            <span class="text-rose-500 dark:text-rose-400 font-bold"
+                              >Hạn dùng: {{ voucher.expired_at | date: 'dd/MM/yyyy' }}</span
+                            >
                           }
                         </span>
                       </div>
                     </div>
                     <div class="flex items-center gap-1.5 shrink-0">
-                      <span class="font-black text-purple-600 dark:text-purple-400">-{{ voucher.discount_amount | number }}đ</span>
+                      <span class="font-black text-purple-600 dark:text-purple-400"
+                        >-{{ voucher.discount_amount | number }}đ</span
+                      >
                       @if (posSelectedVoucher()?.code === voucher.code) {
-                        <span class="w-4 h-4 rounded-full bg-purple-600 dark:bg-purple-500 text-white flex items-center justify-center text-[9px]">✓</span>
+                        <span
+                          class="w-4 h-4 rounded-full bg-purple-600 dark:bg-purple-500 text-white flex items-center justify-center text-[9px]"
+                          >✓</span
+                        >
                       }
                     </div>
                   </div>
@@ -621,7 +668,7 @@
                     [ngModel]="item.note"
                     (ngModelChange)="updateItemNote(item.product.id, item.variant?.id, $event)"
                     placeholder="Nhập ghi chú cho món..."
-                    class="w-full pl-3 pr-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 text-[10px] font-bold text-slate-600 dark:text-slate-350 focus:outline-none focus:border-[var(--dynamic-primary)] transition-all"
+                    class="w-full pl-3 pr-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 text-[10px] font-bold text-slate-600 dark:text-slate-300 focus:outline-none focus:border-[var(--dynamic-primary)] transition-all"
                   />
                 </div>
               </div>
@@ -692,7 +739,7 @@
                           (click)="selectTable(tb.name)"
                           [class.bg-purple-50]="tableNumber() === tb.name"
                           [class.dark:bg-purple-950/40]="tableNumber() === tb.name"
-                          class="w-full px-5 py-2 text-left text-xs hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-650 dark:text-slate-350 font-bold flex items-center justify-between transition-colors"
+                          class="w-full px-5 py-2 text-left text-xs hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-300 font-bold flex items-center justify-between transition-colors"
                         >
                           <span>Bàn {{ tb.name }}</span>
                           <span
@@ -821,19 +868,28 @@
           <!-- Tính tổng tiền -->
           <div class="space-y-1.5 py-1">
             @if (posSelectedVoucher()) {
-              <div class="flex items-center justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
+              <div
+                class="flex items-center justify-between text-xs font-bold text-slate-500 dark:text-slate-400"
+              >
                 <span>Tạm tính</span>
                 <span>{{ cartTotal() | number }}đ</span>
               </div>
-              <div class="flex items-center justify-between text-xs font-bold text-emerald-600 dark:text-emerald-450">
+              <div
+                class="flex items-center justify-between text-xs font-bold text-emerald-600 dark:text-emerald-400"
+              >
                 <span class="flex items-center gap-1">
                   <span>🎫 Giảm giá voucher</span>
-                  <span class="text-[10px] uppercase bg-emerald-100 dark:bg-emerald-950/60 px-1 py-0.2 rounded font-extrabold">{{ posSelectedVoucher().code }}</span>
+                  <span
+                    class="text-[10px] uppercase bg-emerald-100 dark:bg-emerald-950/60 px-1 py-0.2 rounded font-extrabold"
+                    >{{ posSelectedVoucher().code }}</span
+                  >
                 </span>
                 <span>-{{ posSelectedVoucher().discount_amount | number }}đ</span>
               </div>
             }
-            <div class="flex items-center justify-between pt-1 border-t border-dashed border-slate-200/50 dark:border-slate-800/50">
+            <div
+              class="flex items-center justify-between pt-1 border-t border-dashed border-slate-200/50 dark:border-slate-800/50"
+            >
               <span class="text-xs font-extrabold text-slate-500">TỔNG CỘNG HÓA ĐƠN</span>
               <span class="text-xl font-black text-purple-600 dark:text-purple-400">
                 {{ posFinalTotal() | number }} <span class="text-xs font-extrabold">đ</span>
@@ -845,7 +901,7 @@
           @if (editingOrderId()) {
             <button
               (click)="cancelEditOrder()"
-              class="w-full mb-3.5 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-600 hover:text-slate-800 dark:text-slate-350 dark:hover:text-white font-extrabold text-xs transition-all flex items-center justify-center gap-1"
+              class="w-full mb-3.5 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white font-extrabold text-xs transition-all flex items-center justify-center gap-1"
             >
               ✕ Hủy chỉnh sửa đơn hàng
             </button>
@@ -906,7 +962,7 @@
         </h4>
         <button
           (click)="closeVariantSelectModal()"
-          class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-350 p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all"
+          class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -969,7 +1025,7 @@
       <div class="flex gap-3 pt-3 border-t border-slate-100 dark:border-slate-800 shrink-0">
         <button
           (click)="closeVariantSelectModal()"
-          class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-600 dark:text-slate-300 font-bold text-sm rounded-xl transition-all active:scale-[0.99]"
+          class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold text-sm rounded-xl transition-all active:scale-[0.99]"
         >
           Hủy bỏ
         </button>
@@ -1001,7 +1057,7 @@
         <h4 class="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
           <span>Xác nhận thanh toán</span>
           <span
-            class="px-2 py-0.5 text-[10px] bg-purple-550/10 text-purple-600 dark:text-purple-400 rounded-lg font-black uppercase tracking-wide"
+            class="px-2 py-0.5 text-[10px] bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-lg font-black uppercase tracking-wide"
           >
             {{ tableNumber() ? 'Bàn ' + tableNumber() : 'Mang về' }}
           </span>
@@ -1042,11 +1098,14 @@
         @if (posSelectedVoucher()) {
           <!-- Voucher giảm giá -->
           <div
-            class="flex justify-between items-center text-sm font-semibold text-emerald-600 dark:text-emerald-450 animate-in fade-in duration-150"
+            class="flex justify-between items-center text-sm font-semibold text-emerald-600 dark:text-emerald-400 animate-in fade-in duration-150"
           >
             <span class="flex items-center gap-1">
               <span>Voucher giảm giá</span>
-              <span class="text-[9px] uppercase bg-emerald-100 dark:bg-emerald-950/60 px-1 py-0.2 rounded font-black">{{ posSelectedVoucher().code }}</span>
+              <span
+                class="text-[9px] uppercase bg-emerald-100 dark:bg-emerald-950/60 px-1 py-0.2 rounded font-black"
+                >{{ posSelectedVoucher().code }}</span
+              >
             </span>
             <span class="font-bold">-{{ posSelectedVoucher().discount_amount | number }}đ</span>
           </div>
@@ -1162,7 +1221,7 @@
               <button
                 type="button"
                 (click)="selectCashGivenQuick(amount)"
-                class="py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-all border border-transparent hover:border-slate-300 dark:hover:border-slate-700"
+                class="py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-all border border-transparent hover:border-slate-300 dark:hover:border-slate-700"
               >
                 {{
                   amount >= 1000000
@@ -1181,7 +1240,7 @@
       <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex gap-3 shrink-0">
         <button
           (click)="isPosConfirmModalOpen.set(false)"
-          class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-350 font-bold text-sm rounded-2xl transition-all"
+          class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-sm rounded-2xl transition-all"
         >
           Quay lại
         </button>

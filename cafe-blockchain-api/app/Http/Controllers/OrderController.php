@@ -349,7 +349,7 @@ class OrderController extends Controller
         $order = Order::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         $validated = $request->validate([
-            'status' => 'required|string|in:completed,cancelled,pending',
+            'status' => 'required|string|in:completed,cancelled,pending,preparing',
         ]);
 
         $order->status = $validated['status'];

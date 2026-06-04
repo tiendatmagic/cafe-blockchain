@@ -28,15 +28,20 @@ async function main() {
   // Nhận tham số JSON từ stdin hoặc argument đầu tiên
   let inputStr = process.argv[2];
   if (!inputStr) {
-    console.error(JSON.stringify({ success: false, error: 'Thiếu tham số cấu hình JSON.' }));
+    console.error(JSON.stringify({ success: false, error: 'Thiếu tham số cấu hình.' }));
     process.exit(1);
   }
 
   let data;
   try {
-    data = JSON.parse(inputStr);
+    let decodedStr = inputStr;
+    // Nếu không bắt đầu bằng dấu ngoặc nhọn, chứng tỏ đây là chuỗi Base64
+    if (!inputStr.trim().startsWith('{')) {
+      decodedStr = Buffer.from(inputStr, 'base64').toString('utf-8');
+    }
+    data = JSON.parse(decodedStr);
   } catch (err) {
-    console.error(JSON.stringify({ success: false, error: 'Tham số không phải là chuỗi JSON hợp lệ.' }));
+    console.error(JSON.stringify({ success: false, error: 'Tham số không phải là chuỗi JSON hoặc Base64 hợp lệ.' }));
     process.exit(1);
   }
 
@@ -64,8 +69,6 @@ async function main() {
       const receipt = await tx.wait();
       
       // Lấy tokenId từ Event Transfer (Transfer(address(0), to, tokenId))
-      // Trong ERC-721, Transfer event có topic0 là keccak256("Transfer(address,address,uint256)")
-      // Chúng ta có thể parse log thông qua interface của contract
       let tokenId = null;
       for (const log of receipt.logs) {
         try {

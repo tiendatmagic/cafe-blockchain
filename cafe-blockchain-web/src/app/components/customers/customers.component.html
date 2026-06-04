@@ -236,7 +236,7 @@
                         @if (cust.type === 'business') {
                           <div class="flex items-center gap-1.5 flex-wrap mt-0.5">
                             <span
-                              class="text-[10px] text-slate-550 dark:text-slate-400 font-semibold truncate max-w-[150px]"
+                              class="text-[10px] text-slate-500 dark:text-slate-400 font-semibold truncate max-w-[150px]"
                               >Đại diện: {{ cust.name }} | MST: {{ cust.tax_code || '--' }}</span
                             >
                             @if (cust.business_status) {
@@ -245,7 +245,7 @@
                               } @else if (getBusinessStatusColor(cust.business_status) === 'amber') {
                                 <span class="bg-amber-500/10 text-amber-500 text-[8px] font-black px-1.5 py-0.2 rounded uppercase tracking-wider shrink-0" [title]="cust.business_status">Tạm ngưng</span>
                               } @else {
-                                <span class="bg-emerald-500/10 text-emerald-550 text-[8px] font-black px-1.5 py-0.2 rounded uppercase tracking-wider shrink-0" [title]="cust.business_status">Hoạt động</span>
+                                <span class="bg-emerald-500/10 text-emerald-500 text-[8px] font-black px-1.5 py-0.2 rounded uppercase tracking-wider shrink-0" [title]="cust.business_status">Hoạt động</span>
                               }
                             }
                           </div>
@@ -259,7 +259,7 @@
                   </td>
                   <td class="p-4">
                     <div class="flex flex-col">
-                      <span class="font-semibold text-slate-700 dark:text-slate-355">{{
+                      <span class="font-semibold text-slate-700 dark:text-slate-300">{{
                         cust.phone || '--'
                       }}</span>
                       @if (cust.email) {
@@ -287,7 +287,7 @@
                   <td class="p-4">
                     <div class="flex flex-col gap-1 min-w-[140px]">
                       @if (cust.wallet_address) {
-                        <span class="font-mono text-[10px] text-slate-600 dark:text-slate-450 bg-slate-100 dark:bg-slate-950 px-1.5 py-0.5 rounded truncate max-w-[140px] font-bold" [title]="cust.wallet_address">
+                        <span class="font-mono text-[10px] text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-950 px-1.5 py-0.5 rounded truncate max-w-[140px] font-bold" [title]="cust.wallet_address">
                           {{ cust.wallet_address.substring(0, 6) }}...{{ cust.wallet_address.substring(cust.wallet_address.length - 4) }}
                         </span>
                       } @else {
@@ -295,7 +295,7 @@
                       }
                       
                       @if (cust.active_vouchers_count && cust.active_vouchers_count > 0) {
-                        <span class="inline-flex items-center gap-1 text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-450 px-2 py-0.5 rounded-full font-black w-max">
+                        <span class="inline-flex items-center gap-1 text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full font-black w-max">
                           🎫 {{ cust.active_vouchers_count }} Voucher
                         </span>
                       } @else {
@@ -449,14 +449,14 @@
               <button
                 (click)="customerGroupCurrentPage.set(customerGroupCurrentPage() - 1)"
                 [disabled]="customerGroupCurrentPage() === 1"
-                class="text-purple-650 disabled:opacity-40 font-bold text-xs"
+                class="text-purple-600 disabled:opacity-40 font-bold text-xs"
               >
                 Trước
               </button>
               <button
                 (click)="customerGroupCurrentPage.set(customerGroupCurrentPage() + 1)"
                 [disabled]="customerGroupCurrentPage() === customerGroupTotalPages()"
-                class="text-purple-650 disabled:opacity-40 font-bold text-xs"
+                class="text-purple-600 disabled:opacity-40 font-bold text-xs"
               >
                 Sau
               </button>
@@ -490,7 +490,7 @@
         </h4>
         <button
           (click)="closeCustomerModal()"
-          class="text-slate-400 hover:text-slate-650 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+          class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -524,8 +524,8 @@
               (click)="customerForm().type = 'individual'"
               [class]="
                 customerForm().type === 'individual'
-                  ? 'bg-white dark:bg-slate-900 text-purple-650 font-bold shadow-sm'
-                  : 'text-slate-505'
+                  ? 'bg-white dark:bg-slate-900 text-purple-600 font-bold shadow-sm'
+                  : 'text-slate-500'
               "
               class="flex-1 py-1.5 text-xs rounded-xl font-bold transition-all"
             >
@@ -536,8 +536,8 @@
               (click)="customerForm().type = 'business'"
               [class]="
                 customerForm().type === 'business'
-                  ? 'bg-white dark:bg-slate-900 text-purple-650 font-bold shadow-sm'
-                  : 'text-slate-505'
+                  ? 'bg-white dark:bg-slate-900 text-purple-600 font-bold shadow-sm'
+                  : 'text-slate-500'
               "
               class="flex-1 py-1.5 text-xs rounded-xl font-bold transition-all"
             >
@@ -590,10 +590,10 @@
               <div
                 [class]="
                   getBusinessStatusColor(customerForm().business_status) === 'rose'
-                    ? 'bg-rose-50/50 dark:bg-rose-950/10 border-rose-200/50 dark:border-rose-900/30 text-rose-600 dark:text-rose-455'
+                    ? 'bg-rose-50/50 dark:bg-rose-950/10 border-rose-200/50 dark:border-rose-900/30 text-rose-600 dark:text-rose-400'
                     : getBusinessStatusColor(customerForm().business_status) === 'amber'
-                      ? 'bg-amber-50/50 dark:bg-amber-950/10 border-amber-200/50 dark:border-amber-900/30 text-amber-600 dark:text-amber-455'
-                      : 'bg-emerald-50/50 dark:bg-emerald-950/10 border-emerald-200/50 dark:border-emerald-900/30 text-emerald-600 dark:text-emerald-550'
+                      ? 'bg-amber-50/50 dark:bg-amber-950/10 border-amber-200/50 dark:border-amber-900/30 text-amber-600 dark:text-amber-400'
+                      : 'bg-emerald-50/50 dark:bg-emerald-950/10 border-emerald-200/50 dark:border-emerald-900/30 text-emerald-600 dark:text-emerald-500'
                 "
                 class="flex gap-2.5 p-3.5 mt-2.5 rounded-2xl border text-xs font-semibold leading-relaxed transition-all duration-300"
               >
@@ -737,7 +737,7 @@
                   (click)="customerForm().gender = 'Nam'"
                   [class]="
                     customerForm().gender === 'Nam'
-                      ? 'bg-white dark:bg-slate-900 text-purple-650 font-bold shadow-sm'
+                      ? 'bg-white dark:bg-slate-900 text-purple-600 font-bold shadow-sm'
                       : 'text-slate-500'
                   "
                   class="flex-1 py-1.5 text-xs rounded-xl font-bold transition-all"
@@ -749,7 +749,7 @@
                   (click)="customerForm().gender = 'Nữ'"
                   [class]="
                     customerForm().gender === 'Nữ'
-                      ? 'bg-white dark:bg-slate-900 text-purple-650 font-bold shadow-sm'
+                      ? 'bg-white dark:bg-slate-900 text-purple-600 font-bold shadow-sm'
                       : 'text-slate-500'
                   "
                   class="flex-1 py-1.5 text-xs rounded-xl font-bold transition-all"
@@ -786,7 +786,7 @@
                   ? 'border-emerald-400 dark:border-emerald-600 focus:border-emerald-500'
                   : 'border-slate-200 dark:border-slate-800 focus:border-purple-500'
             "
-            class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-955 border text-sm focus:outline-none text-slate-800 dark:text-white font-mono transition-all font-semibold"
+            class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border text-sm focus:outline-none text-slate-800 dark:text-white font-mono transition-all font-semibold"
           />
           <!-- Progress bar nhập ví -->
           @if (customerForm().wallet_address && customerForm().wallet_address.trim().length > 0 && customerForm().wallet_address.trim().length < 42) {
@@ -855,7 +855,7 @@
         <button
           (click)="closeCustomerModal()"
           [disabled]="isCustomerSaving()"
-          class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-350 font-bold text-sm rounded-xl transition-all disabled:opacity-50"
+          class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold text-sm rounded-xl transition-all disabled:opacity-50"
         >
           Hủy bỏ
         </button>
@@ -935,7 +935,7 @@
         <button
           (click)="closeCustomerGroupModal()"
           [disabled]="isCustomerGroupSaving()"
-          class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-350 font-bold text-sm rounded-xl transition-all disabled:opacity-50"
+          class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold text-sm rounded-xl transition-all disabled:opacity-50"
         >
           Hủy
         </button>
@@ -964,7 +964,7 @@
       class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 p-6 max-w-sm w-full shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200"
     >
       <div class="text-center space-y-4">
-        <div class="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-455 flex items-center justify-center mx-auto text-xl font-bold">
+        <div class="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center mx-auto text-xl font-bold">
           ⚠️
         </div>
         <div class="space-y-1.5">
@@ -976,7 +976,7 @@
         <div class="flex gap-3 pt-2">
           <button
             (click)="isDeleteCustomerConfirmOpen.set(false)"
-            class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-655 dark:text-slate-350 font-bold text-xs rounded-xl transition-all"
+            class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs rounded-xl transition-all"
           >
             Hủy bỏ
           </button>
@@ -1000,7 +1000,7 @@
       class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 p-6 max-w-sm w-full shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200"
     >
       <div class="text-center space-y-4">
-        <div class="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-455 flex items-center justify-center mx-auto text-xl font-bold">
+        <div class="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center mx-auto text-xl font-bold">
           ⚠️
         </div>
         <div class="space-y-1.5">
@@ -1012,7 +1012,7 @@
         <div class="flex gap-3 pt-2">
           <button
             (click)="isDeleteGroupConfirmOpen.set(false)"
-            class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-655 dark:text-slate-350 font-bold text-xs rounded-xl transition-all"
+            class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs rounded-xl transition-all"
           >
             Hủy bỏ
           </button>

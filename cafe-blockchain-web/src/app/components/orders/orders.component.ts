@@ -106,6 +106,25 @@ export class OrdersComponent implements OnInit {
     });
   }
 
+  // Cập nhật đơn hàng cục bộ để tránh reload toàn bộ danh sách đơn hàng
+  private updateLocalOrder(updatedOrder: any) {
+    if (!updatedOrder) return;
+    
+    // Cập nhật trong danh sách orders của StateService
+    const currentOrders = this.stateService.orders();
+    const index = currentOrders.findIndex(o => o.id === updatedOrder.id);
+    if (index > -1) {
+      const updatedList = [...currentOrders];
+      updatedList[index] = updatedOrder;
+      this.stateService.orders.set(updatedList);
+    }
+    
+    // Cập nhật selectedOrderDetails nếu đang mở xem chi tiết đơn đó
+    if (this.selectedOrderDetails() && this.selectedOrderDetails().id === updatedOrder.id) {
+      this.selectedOrderDetails.set(updatedOrder);
+    }
+  }
+
   // Cập nhật bộ lọc trạng thái đơn hàng (lọc cục bộ tức thì)
   public setOrderStatusFilter(status: string) {
     this.orderStatusFilter.set(status);
@@ -131,13 +150,13 @@ export class OrdersComponent implements OnInit {
   }
 
   // Cập nhật trạng thái đơn hàng (xác nhận thành công / đã hủy)
-  public async updateStatus(orderId: number, status: 'completed' | 'cancelled') {
+  public async updateStatus(orderId: number, status: 'completed' | 'cancelled' | 'preparing') {
     if (!this.web3Service.walletConnected()) {
       this.stateService.showToast('Vui lòng kết nối ví Web3 để thay đổi trạng thái đơn hàng!', 'error');
       return;
     }
 
-    if (status === 'cancelled' || !this.isAutoSyncOnCompleteChecked()) {
+    if (status === 'cancelled' || status === 'preparing' || !this.isAutoSyncOnCompleteChecked()) {
       this.executeStatusUpdateOnly(orderId, status);
       return;
     }
@@ -176,10 +195,7 @@ export class OrdersComponent implements OnInit {
           this.apiService.syncOrderBlockchain(orderId, result.txHash, 'success', this.web3Service.chainId()).subscribe({
             next: (syncRes) => {
               this.stateService.showToast('Hoàn thành đơn hàng và đồng bộ Blockchain thành công!', 'success');
-              this.refreshOrders();
-              if (this.selectedOrderDetails() && this.selectedOrderDetails().id === orderId) {
-                this.selectedOrderDetails.set(syncRes.data);
-              }
+              this.updateLocalOrder(syncRes.data);
               this.isOrderStatusUpdating.set(false);
               this.blockchainSyncLoading.set(false);
             },
@@ -204,10 +220,7 @@ export class OrdersComponent implements OnInit {
       this.apiService.updateOrderStatus(orderId, 'completed').subscribe({
         next: (res) => {
           this.stateService.showToast('Đơn hàng đã được lưu hoàn thành vào Database POS!', 'success');
-          this.refreshOrders();
-          if (this.selectedOrderDetails() && this.selectedOrderDetails().id === orderId) {
-            this.selectedOrderDetails.set(res.data);
-          }
+          this.updateLocalOrder(res.data);
           this.isOrderStatusUpdating.set(false);
           this.blockchainSyncLoading.set(false);
         },
@@ -222,15 +235,12 @@ export class OrdersComponent implements OnInit {
   }
 
   // Cập nhật Database đơn thuần
-  private executeStatusUpdateOnly(orderId: number, status: 'completed' | 'cancelled') {
+  private executeStatusUpdateOnly(orderId: number, status: 'completed' | 'cancelled' | 'preparing') {
     this.isOrderStatusUpdating.set(true);
     this.apiService.updateOrderStatus(orderId, status).subscribe({
       next: (res) => {
         this.stateService.showToast(`Cập nhật trạng thái đơn hàng thành công!`, 'success');
-        this.refreshOrders();
-        if (this.selectedOrderDetails() && this.selectedOrderDetails().id === orderId) {
-          this.selectedOrderDetails.set(res.data);
-        }
+        this.updateLocalOrder(res.data);
         this.isOrderStatusUpdating.set(false);
       },
       error: (err) => {
@@ -286,10 +296,7 @@ export class OrdersComponent implements OnInit {
       this.apiService.syncOrderBlockchain(order.id, result.txHash, 'success', this.web3Service.chainId()).subscribe({
         next: (res) => {
           this.stateService.showToast('Ghi nhận bằng chứng hóa đơn lên Blockchain EVM thành công!', 'success');
-          this.refreshOrders();
-          if (this.selectedOrderDetails() && this.selectedOrderDetails().id === order.id) {
-            this.selectedOrderDetails.set(res.data);
-          }
+          this.updateLocalOrder(res.data);
           this.blockchainSyncLoading.set(false);
         },
         error: (err) => {
@@ -309,10 +316,7 @@ export class OrdersComponent implements OnInit {
           this.apiService.syncOrderBlockchain(order.id, originalTxHash, 'success', this.web3Service.chainId()).subscribe({
             next: (res) => {
               this.stateService.showToast('Đối soát thành công! Đã khôi phục bằng chứng blockchain gốc.', 'success');
-              this.refreshOrders();
-              if (this.selectedOrderDetails() && this.selectedOrderDetails().id === order.id) {
-                this.selectedOrderDetails.set(res.data);
-              }
+              this.updateLocalOrder(res.data);
               this.blockchainSyncLoading.set(false);
             },
             error: (err) => {

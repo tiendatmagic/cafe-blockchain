@@ -68,6 +68,8 @@ class Order extends Model
 
         // Đề phòng trường hợp tạo mới đơn hàng ở trạng thái completed ngay lập tức (chưa có ID ở sự kiện saving)
         static::saved(function ($order) {
+            $isStatusChanged = $order->wasChanged('status') || $order->wasRecentlyCreated;
+
             if ($order->status === 'completed' && empty($order->verification_hash)) {
                 $order->verification_hash = $order->generateVerificationHash();
                 $order->saveQuietly();
@@ -85,7 +87,7 @@ class Order extends Model
                 }
 
                 // 2. Tự động tặng voucher nếu đủ điều kiện
-                if (($order->wasChanged('status') || $order->wasRecentlyCreated) && $order->customer_id) {
+                if ($isStatusChanged && $order->customer_id) {
                     $storeOwner = $order->store_owner_address;
                     $minGiftAmount = (int)\App\Models\Setting::getForStore('voucher_gift_min_amount', $storeOwner, 100000);
                     $originalTotal = $order->total_amount + $order->discount_amount;

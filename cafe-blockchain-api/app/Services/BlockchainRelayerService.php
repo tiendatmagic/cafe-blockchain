@@ -105,10 +105,10 @@ class BlockchainRelayerService
     private static function executeRelayer(array $payload): array
     {
         $jsonPayload = json_encode($payload);
-        $escapedPayload = escapeshellarg($jsonPayload);
+        $base64Payload = base64_encode($jsonPayload);
         
-        $scriptPath = base_path('bin/relayer.js');
-        $command = "node {$scriptPath} {$escapedPayload} 2>&1";
+        $scriptPath = base_path('bin/relayer.cjs');
+        $command = "node {$scriptPath} {$base64Payload} 2>&1";
 
         try {
             $output = shell_exec($command);

@@ -286,7 +286,7 @@
                       <button
                         (click)="deleteProduct(p.id)"
                         [disabled]="!web3Service.walletConnected()"
-                        class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-950/60 text-rose-600 dark:text-rose-455 text-xs font-extrabold transition-all hover:scale-[1.03] active:scale-[0.97] border border-rose-200/20 dark:border-rose-800/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-950/60 text-rose-600 dark:text-rose-400 text-xs font-extrabold transition-all hover:scale-[1.03] active:scale-[0.97] border border-rose-200/20 dark:border-rose-800/20 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -491,7 +491,7 @@
                   <button
                     (click)="deleteProduct(p.id)"
                     [disabled]="!web3Service.walletConnected()"
-                    class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-950/60 text-rose-600 dark:text-rose-455 text-sm font-extrabold transition-all hover:scale-[1.02] active:scale-[0.98] border border-rose-200/20 dark:border-rose-800/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-950/60 text-rose-600 dark:text-rose-400 text-sm font-extrabold transition-all hover:scale-[1.02] active:scale-[0.98] border border-rose-200/20 dark:border-rose-800/20 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -531,7 +531,7 @@
             <button
               (click)="menuCurrentPage.set(menuCurrentPage() - 1)"
               [disabled]="menuCurrentPage() === 1"
-              class="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-955 border border-slate-200/40 dark:border-slate-800/40 text-slate-600 dark:text-slate-400 disabled:opacity-50 transition-all"
+              class="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-950 border border-slate-200/40 dark:border-slate-800/40 text-slate-600 dark:text-slate-400 disabled:opacity-50 transition-all"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -566,7 +566,7 @@
             <button
               (click)="menuCurrentPage.set(menuCurrentPage() + 1)"
               [disabled]="menuCurrentPage() === menuTotalPages()"
-              class="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-955 border border-slate-200/40 dark:border-slate-800/40 text-slate-600 dark:text-slate-400 disabled:opacity-50 transition-all"
+              class="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-950 border border-slate-200/40 dark:border-slate-800/40 text-slate-600 dark:text-slate-400 disabled:opacity-50 transition-all"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -648,7 +648,7 @@
               class="flex items-center justify-between gap-3 p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-900/60 hover:border-slate-200 dark:hover:border-slate-800 transition-all"
             >
               <span
-                class="text-sm font-extrabold text-slate-700 dark:text-slate-350 truncate pr-2"
+                class="text-sm font-extrabold text-slate-700 dark:text-slate-300 truncate pr-2"
                 >{{ cat.name }}</span
               >
               <div class="flex items-center gap-2 shrink-0">
@@ -693,7 +693,7 @@
         <h4 class="text-lg font-extrabold text-slate-800 dark:text-white">
           {{ menuModalType() === 'add' ? 'Thêm món ăn mới' : 'Cập nhật món ăn' }}
         </h4>
-        <button (click)="closeMenuModal()" class="text-slate-400 hover:text-slate-650 p-1">
+        <button (click)="closeMenuModal()" class="text-slate-400 hover:text-slate-600 p-1">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             class="h-6 w-6"
@@ -874,7 +874,7 @@
                   <button
                     type="button"
                     (click)="removeVariantRow($index)"
-                    class="text-rose-500 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-955/30 transition-all shrink-0"
+                    class="text-rose-500 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all shrink-0"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -963,7 +963,7 @@
         <h4 class="text-base font-extrabold text-slate-800 dark:text-white">
           {{ categoryForm().id ? 'Cập nhật danh mục' : 'Thêm danh mục mới' }}
         </h4>
-        <button (click)="closeCategoryModal()" class="text-slate-400 hover:text-slate-650 p-1">
+        <button (click)="closeCategoryModal()" class="text-slate-400 hover:text-slate-600 p-1">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             class="h-5 w-5"
@@ -1029,7 +1029,7 @@
       class="relative bg-white dark:bg-slate-900 rounded-xl border border-slate-200/60 dark:border-slate-800/60 p-6 max-w-sm w-full shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] space-y-4 animate-in fade-in zoom-in duration-200 transition-colors text-center text-slate-800 dark:text-slate-200"
     >
       <div
-        class="w-12 h-12 rounded-full bg-rose-50 dark:bg-rose-955/30 text-rose-500 flex items-center justify-center mx-auto"
+        class="w-12 h-12 rounded-full bg-rose-50 dark:bg-rose-950/30 text-rose-500 flex items-center justify-center mx-auto"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -1098,7 +1098,7 @@
       class="relative bg-white dark:bg-slate-900 rounded-xl border border-slate-200/60 dark:border-slate-800/60 p-6 max-w-sm w-full shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] space-y-4 animate-in fade-in zoom-in duration-200 transition-colors text-center text-slate-800 dark:text-slate-200"
     >
       <div
-        class="w-12 h-12 rounded-full bg-rose-50 dark:bg-rose-955/30 text-rose-500 flex items-center justify-center mx-auto"
+        class="w-12 h-12 rounded-full bg-rose-50 dark:bg-rose-950/30 text-rose-500 flex items-center justify-center mx-auto"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -1132,7 +1132,7 @@
       <div class="flex gap-3 pt-2">
         <button
           (click)="isDeleteProductConfirmOpen.set(false)"
-          class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-650 dark:text-slate-350 font-bold text-sm rounded-xl transition-all hover:scale-[1.01] active:scale-[0.99]"
+          class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold text-sm rounded-xl transition-all hover:scale-[1.01] active:scale-[0.99]"
         >
           Hủy bỏ
         </button>

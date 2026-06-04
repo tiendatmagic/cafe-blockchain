@@ -1,6 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.35;
 
+interface IERC721Receiver {
+    function onERC721Received(
+        address operator,
+        address from,
+        uint256 tokenId,
+        bytes calldata data
+    ) external returns (bytes4);
+}
+
 contract CafeVoucherNFT {
     // Token Name and Symbol
     string public constant name = "Cafe Web3 Voucher";
@@ -9,7 +18,7 @@ contract CafeVoucherNFT {
     // Cafe owner's wallet address (System Administrator)
     address public owner;
 
-    uint256 private _nextTokenId;
+    uint256 private _nextTokenId = 1; // Bắt đầu từ 1 thay vì 0
 
     // Voucher information structure
     struct VoucherInfo {
@@ -22,6 +31,10 @@ contract CafeVoucherNFT {
     mapping(uint256 => address) private _owners;
     mapping(address => uint256) private _balances;
     mapping(uint256 => string) private _tokenURIs;
+
+    // Mappings for approval
+    mapping(uint256 => address) private _tokenApprovals;
+    mapping(address => mapping(address => bool)) private _operatorApprovals;
 
     // Store detailed voucher information
     mapping(uint256 => VoucherInfo) public vouchers;
@@ -36,6 +49,16 @@ contract CafeVoucherNFT {
         address indexed from,
         address indexed to,
         uint256 indexed tokenId
+    );
+    event Approval(
+        address indexed owner,
+        address indexed approved,
+        uint256 indexed tokenId
+    );
+    event ApprovalForAll(
+        address indexed owner,
+        address indexed operator,
+        bool approved
     );
 
     event VoucherMinted(
@@ -97,6 +120,121 @@ contract CafeVoucherNFT {
         return _tokenURIs[tokenId];
     }
 
+    // Standard ERC-721 Approval logic
+    function approve(address to, uint256 tokenId) public {
+        address tokenOwner = ownerOf(tokenId);
+        require(to != tokenOwner, "Approval to current owner");
+        require(
+            msg.sender == tokenOwner ||
+                isApprovedForAll(tokenOwner, msg.sender),
+            "Not approved or owner"
+        );
+
+        _tokenApprovals[tokenId] = to;
+        emit Approval(tokenOwner, to, tokenId);
+    }
+
+    function getApproved(uint256 tokenId) public view returns (address) {
+        require(
+            _owners[tokenId] != address(0),
+            "Approved query for nonexistent token"
+        );
+        return _tokenApprovals[tokenId];
+    }
+
+    function setApprovalForAll(address operator, bool approved) public {
+        require(operator != msg.sender, "Approve to caller");
+        _operatorApprovals[msg.sender][operator] = approved;
+        emit ApprovalForAll(msg.sender, operator, approved);
+    }
+
+    function isApprovedForAll(
+        address tokenOwner,
+        address operator
+    ) public view returns (bool) {
+        return _operatorApprovals[tokenOwner][operator];
+    }
+
+    function _isApprovedOrOwner(
+        address spender,
+        uint256 tokenId
+    ) internal view returns (bool) {
+        address tokenOwner = ownerOf(tokenId);
+        return (spender == tokenOwner ||
+            getApproved(tokenId) == spender ||
+            isApprovedForAll(tokenOwner, spender));
+    }
+
+    // Standard ERC-721 Transfer logic
+    function transferFrom(address from, address to, uint256 tokenId) public {
+        require(
+            _isApprovedOrOwner(msg.sender, tokenId),
+            "Transfer caller is not owner nor approved"
+        );
+        require(ownerOf(tokenId) == from, "Transfer from incorrect owner");
+        require(to != address(0), "Transfer to the zero address");
+
+        // Clear approval
+        delete _tokenApprovals[tokenId];
+
+        _balances[from] -= 1;
+        _balances[to] += 1;
+        _owners[tokenId] = to;
+
+        emit Transfer(from, to, tokenId);
+    }
+
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public {
+        safeTransferFrom(from, to, tokenId, "");
+    }
+
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes memory data
+    ) public {
+        transferFrom(from, to, tokenId);
+        require(
+            _checkOnERC721Received(from, to, tokenId, data),
+            "Transfer to non ERC721Receiver implementer"
+        );
+    }
+
+    function _checkOnERC721Received(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes memory data
+    ) private returns (bool) {
+        if (to.code.length > 0) {
+            try
+                IERC721Receiver(to).onERC721Received(
+                    msg.sender,
+                    from,
+                    tokenId,
+                    data
+                )
+            returns (bytes4 retval) {
+                return retval == IERC721Receiver.onERC721Received.selector;
+            } catch (bytes memory reason) {
+                if (reason.length == 0) {
+                    revert("Transfer to non ERC721Receiver implementer");
+                } else {
+                    assembly {
+                        revert(add(32, reason), mload(reason))
+                    }
+                }
+            }
+        } else {
+            return true;
+        }
+    }
+
     // Mint a new voucher for a customer (Only Owner/POS can call)
     function mintVoucher(
         address to,
@@ -153,6 +291,7 @@ contract CafeVoucherNFT {
         _balances[tokenOwner] -= 1;
         delete _owners[tokenId];
         delete _tokenURIs[tokenId];
+        delete _tokenApprovals[tokenId]; // Xóa approval khi burn
 
         emit Transfer(tokenOwner, address(0), tokenId);
         emit VoucherUsed(tokenId, orderCode, tokenOwner);
