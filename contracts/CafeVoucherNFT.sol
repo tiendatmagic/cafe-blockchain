@@ -15,10 +15,10 @@ contract CafeVoucherNFT {
     string public constant name = "Cafe Web3 Voucher";
     string public constant symbol = "CFV";
 
-    // Cafe owner's wallet address (System Administrator)
-    address public owner;
+    // Cafe owner's wallet addresses (System Administrators)
+    mapping(address => bool) public owners;
 
-    uint256 private _nextTokenId = 1; // Bắt đầu từ 1 thay vì 0
+    uint256 private _nextTokenId = 1;
 
     // Voucher information structure
     struct VoucherInfo {
@@ -75,13 +75,13 @@ contract CafeVoucherNFT {
         address indexed usedBy
     );
 
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Caller is not the owner");
+    modifier onlyOwners() {
+        require(owners[msg.sender], "Caller is not an owner");
         _;
     }
 
     constructor() {
-        owner = msg.sender;
+        owners[msg.sender] = true;
 
         uint256 chainId;
         assembly {
@@ -241,7 +241,7 @@ contract CafeVoucherNFT {
         string memory _tokenURI,
         uint256 discount,
         uint256 minOrder
-    ) public onlyOwner returns (uint256) {
+    ) public onlyOwners returns (uint256) {
         require(to != address(0), "Mint to zero address");
 
         uint256 tokenId = _nextTokenId++;
@@ -319,9 +319,15 @@ contract CafeVoucherNFT {
         return ecrecover(digest, v, r, s);
     }
 
-    // Transfer contract ownership to a new administrator wallet
-    function transferOwnership(address newOwner) public onlyOwner {
+    // Add a new owner to the contract
+    function addOwner(address newOwner) public onlyOwners {
         require(newOwner != address(0), "New owner is zero address");
-        owner = newOwner;
+        owners[newOwner] = true;
+    }
+
+    // Remove an existing owner from the contract
+    function removeOwner(address targetOwner) public onlyOwners {
+        require(owners[targetOwner], "Target is not an owner");
+        owners[targetOwner] = false;
     }
 }
