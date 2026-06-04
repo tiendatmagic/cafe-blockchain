@@ -1,7 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { StateService } from '../../services/state.service';
 import { ApiService } from '../../services/api.service';
 
@@ -14,15 +14,19 @@ import { ApiService } from '../../services/api.service';
 export class SettingsComponent implements OnInit {
   public readonly stateService = inject(StateService);
   private readonly apiService = inject(ApiService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
-  // Tab nhỏ trong Cấu hình: 'general' | 'blockchain' | 'permissions'
-  public readonly settingsSubTab = signal<'general' | 'blockchain' | 'permissions'>('general');
+  // Tab nhỏ trong Cấu hình: 'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher'
+  public readonly settingsSubTab = signal<'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher'>('general');
 
   // Form Cấu hình hệ thống
   public readonly configForm = signal<any>({
     store_name: '',
     contract_address: '',
     finance_contract_address: '',
+    voucher_contract_address: '',
+    relayer_private_key: '',
     rpc_url: '',
     chain_id: '',
     explorer_url: '',
@@ -32,13 +36,15 @@ export class SettingsComponent implements OnInit {
     default_print_size: '80mm',
     voucher_gift_min_amount: 100000,
     voucher_discount_amount: 5000,
-    voucher_use_min_amount: 100000
+    voucher_use_min_amount: 100000,
+    has_relayer_private_key: false
   });
 
   // Trạng thái lưu cấu hình & deploy smart contracts
   public readonly isConfigSaving = signal<boolean>(false);
   public readonly isDeploying = signal<boolean>(false);
   public readonly isDeployingFinance = signal<boolean>(false);
+  public readonly isDeployingVoucher = signal<boolean>(false);
 
   // Trạng thái Quản trị Owner Ví và ví Kế toán trên Blockchain
   public readonly ownersFromChain = signal<string[]>([]);
@@ -77,6 +83,17 @@ export class SettingsComponent implements OnInit {
 
   public ngOnInit() {
     this.loadSettings();
+
+    // Đồng bộ tab hiện tại với Query Parameter 'tab' trên URL
+    this.route.queryParams.subscribe(params => {
+      const tab = params['tab'];
+      if (tab && ['general', 'blockchain', 'permissions', 'invoice', 'voucher'].includes(tab)) {
+        this.settingsSubTab.set(tab as any);
+        if (tab === 'permissions' && this.web3Service.walletConnected()) {
+          this.loadOwnersList();
+        }
+      }
+    });
   }
 
   // Tải cấu hình
@@ -87,6 +104,8 @@ export class SettingsComponent implements OnInit {
           store_name: res.store_name || '',
           contract_address: res.contract_address || '',
           finance_contract_address: res.finance_contract_address || '',
+          voucher_contract_address: res.voucher_contract_address || '',
+          relayer_private_key: '',
           rpc_url: res.rpc_url || '',
           chain_id: res.chain_id || '',
           explorer_url: res.explorer_url || '',
@@ -97,6 +116,7 @@ export class SettingsComponent implements OnInit {
           voucher_gift_min_amount: res.voucher_gift_min_amount !== undefined ? Number(res.voucher_gift_min_amount) : 100000,
           voucher_discount_amount: res.voucher_discount_amount !== undefined ? Number(res.voucher_discount_amount) : 5000,
           voucher_use_min_amount: res.voucher_use_min_amount !== undefined ? Number(res.voucher_use_min_amount) : 100000,
+          has_relayer_private_key: res.has_relayer_private_key || false,
           ...res
         };
         this.configForm.set({ ...settings });
@@ -117,8 +137,16 @@ export class SettingsComponent implements OnInit {
     });
   }
 
-  public setSettingsSubTab(subTab: 'general' | 'blockchain' | 'permissions') {
+  public setSettingsSubTab(subTab: 'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher') {
     this.settingsSubTab.set(subTab);
+    
+    // Cập nhật query parameter tab trên URL
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab: subTab },
+      queryParamsHandling: 'merge'
+    });
+
     if (subTab === 'permissions' && this.web3Service.walletConnected()) {
       this.loadOwnersList();
     }
@@ -143,6 +171,12 @@ export class SettingsComponent implements OnInit {
       next: (res) => {
         this.stateService.showToast('Lưu cấu hình quán và Blockchain thành công!', 'success');
         this.stateService.settings.set(res.data);
+        // Cập nhật form với dữ liệu phản hồi đã ẩn private key, reset relayer_private_key về trống
+        this.configForm.set({
+          ...this.configForm(),
+          ...res.data,
+          relayer_private_key: ''
+        });
         // Áp dụng màu sắc động
         this.stateService.applyAndCacheDynamicColors(res.data.primary_color, res.data.secondary_color);
         this.web3Service.updateConfig(res.data);
@@ -229,6 +263,36 @@ export class SettingsComponent implements OnInit {
       this.stateService.showToast(res.error || 'Deploy Smart Contract Tài chính thất bại!', 'error');
     }
     this.isDeployingFinance.set(false);
+  }
+
+  // Tự động deploy Smart Contract NFT Voucher mới
+  public async deployVoucherContract() {
+    if (!this.web3Service.walletConnected()) {
+      this.stateService.showToast('Vui lòng kết nối ví Web3 để thực hiện tác vụ này!', 'error');
+      return;
+    }
+
+    this.web3Service.updateConfig({
+      rpc_url: this.configForm().rpc_url,
+      chain_id: this.configForm().chain_id,
+      explorer_url: this.configForm().explorer_url
+    });
+
+    this.isDeployingVoucher.set(true);
+    this.stateService.showToast('Vui lòng xác nhận giao dịch Deploy Smart Contract NFT Voucher trên ví của bạn...', 'success');
+
+    const res = await this.web3Service.deployVoucherContractOnChain(this.configForm().chain_id);
+    if (res.success && res.contractAddress) {
+      this.configForm.update(form => ({
+        ...form,
+        voucher_contract_address: res.contractAddress
+      }));
+      this.web3Service.updateConfig({ voucher_contract_address: res.contractAddress });
+      this.stateService.showToast(`Deploy Smart Contract NFT Voucher thành công! Địa chỉ mới: ${res.contractAddress}. Nhấn LƯU CẤU HÌNH HỆ THỐNG để ghi nhận!`, 'success');
+    } else {
+      this.stateService.showToast(res.error || 'Deploy Smart Contract NFT Voucher thất bại!', 'error');
+    }
+    this.isDeployingVoucher.set(false);
   }
 
   // Tải danh sách Owners trực tiếp từ Smart Contract Blockchain

@@ -25,6 +25,8 @@ class SettingController extends Controller
                 'secondary_color' => '#c084fc',
                 'contract_address' => '',
                 'finance_contract_address' => '',
+                'voucher_contract_address' => '',
+                'relayer_private_key' => '',
                 'rpc_url' => '',
                 'chain_id' => '',
                 'explorer_url' => '',
@@ -47,6 +49,18 @@ class SettingController extends Controller
                 $settings['finance_contract_address'] = '';
             }
 
+            // Đảm bảo voucher_contract_address tồn tại trong kết quả
+            if (!isset($settings['voucher_contract_address'])) {
+                Setting::setForStore('voucher_contract_address', '', $storeOwner);
+                $settings['voucher_contract_address'] = '';
+            }
+
+            // Đảm bảo relayer_private_key tồn tại trong kết quả
+            if (!isset($settings['relayer_private_key'])) {
+                Setting::setForStore('relayer_private_key', '', $storeOwner);
+                $settings['relayer_private_key'] = '';
+            }
+
             // Đảm bảo các cấu hình voucher tồn tại trong kết quả
             foreach ([
                 'voucher_gift_min_amount' => '100000',
@@ -63,6 +77,10 @@ class SettingController extends Controller
         $settings['has_synced_orders'] = \App\Models\Order::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
         $settings['has_synced_transactions'] = \App\Models\Transaction::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
         
+        // Ẩn Private Key thô trước khi gửi về client, chỉ trả về flag boolean trạng thái đã cấu hình
+        $settings['has_relayer_private_key'] = !empty($settings['relayer_private_key'] ?? '');
+        unset($settings['relayer_private_key']);
+
         return response()->json($settings);
     }
 
@@ -77,6 +95,8 @@ class SettingController extends Controller
             'store_name' => 'nullable|string|max:255',
             'contract_address' => 'nullable|string|max:255',
             'finance_contract_address' => 'nullable|string|max:255',
+            'voucher_contract_address' => 'nullable|string|max:255',
+            'relayer_private_key' => 'nullable|string|max:255',
             'rpc_url' => 'nullable|string|max:1000',
             'chain_id' => 'nullable|string|max:50',
             'explorer_url' => 'nullable|string|max:1000',
@@ -161,12 +181,25 @@ class SettingController extends Controller
 
         // Lưu cấu hình nếu các điều kiện bảo mật được thỏa mãn
         foreach ($settingsData as $key => $value) {
+            if ($key === 'relayer_private_key') {
+                if (!empty($value)) {
+                    // Mã hóa khóa bí mật bằng AES-256 (sử dụng APP_KEY của Laravel)
+                    $encryptedValue = \Illuminate\Support\Facades\Crypt::encryptString($value);
+                    Setting::setForStore($key, $encryptedValue, $storeOwner);
+                }
+                // Nếu rỗng, bỏ qua để giữ nguyên khóa cũ đã mã hóa trong database
+                continue;
+            }
             Setting::setForStore($key, $value ?? '', $storeOwner);
         }
 
         $updatedSettings = Setting::where('store_owner_address', $storeOwner)->pluck('value', 'key')->all();
         $updatedSettings['has_synced_orders'] = \App\Models\Order::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
         $updatedSettings['has_synced_transactions'] = \App\Models\Transaction::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
+
+        // Ẩn Private Key thô trước khi phản hồi
+        $updatedSettings['has_relayer_private_key'] = !empty($updatedSettings['relayer_private_key'] ?? '');
+        unset($updatedSettings['relayer_private_key']);
 
         return response()->json([
             'message' => 'Settings updated successfully.',

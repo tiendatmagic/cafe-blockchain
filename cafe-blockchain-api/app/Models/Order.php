@@ -95,20 +95,64 @@ class Order extends Model
                         $useMinAmount = (int)\App\Models\Setting::getForStore('voucher_use_min_amount', $storeOwner, 100000);
                         
                         $customer = \App\Models\Customer::find($order->customer_id);
-                        
-                        \App\Models\Voucher::create([
-                            'code' => 'NFT-' . strtoupper(\Illuminate\Support\Str::random(8)),
-                            'customer_id' => $order->customer_id,
-                            'wallet_address' => $customer ? $customer->wallet_address : null,
-                            'discount_amount' => $giftDiscount,
-                            'min_order_amount' => $useMinAmount,
-                            'status' => 'active',
-                            'store_owner_address' => $storeOwner
-                        ]);
+                        $customerWallet = $customer ? $customer->wallet_address : null;
+                        $voucherContract = \App\Models\Setting::getForStore('voucher_contract_address', $storeOwner);
+
+                        if (!empty($customerWallet) && !empty($voucherContract)) {
+                            // Tạo mã voucher ngẫu nhiên để làm tokenUri và code định danh
+                            $voucherCode = 'NFT-' . strtoupper(\Illuminate\Support\Str::random(8));
+                            $tokenUri = url("/api/vouchers/metadata/{$voucherCode}");
+
+                            // Gọi Relayer thực hiện đúc (mint) NFT trên Blockchain
+                            $relayerResult = \App\Services\BlockchainRelayerService::mintVoucher(
+                                $storeOwner,
+                                $customerWallet,
+                                $tokenUri,
+                                $giftDiscount,
+                                $useMinAmount
+                            );
+
+                            if ($relayerResult['success']) {
+                                // Đúc thành công, tạo bản ghi voucher NFT thật
+                                \App\Models\Voucher::create([
+                                    'code' => $voucherCode,
+                                    'customer_id' => $order->customer_id,
+                                    'wallet_address' => $customerWallet,
+                                    'discount_amount' => $giftDiscount,
+                                    'min_order_amount' => $useMinAmount,
+                                    'status' => 'active',
+                                    'tx_hash' => $relayerResult['txHash'] ?? null,
+                                    'store_owner_address' => $storeOwner
+                                ]);
+                            } else {
+                                // Fallback off-chain voucher nếu mint blockchain lỗi
+                                \Illuminate\Support\Facades\Log::warning("Mint NFT Voucher that bai: " . ($relayerResult['error'] ?? 'Lỗi không xác định') . ". Fallback sang voucher off-chain.");
+                                self::createOffChainVoucher($order, $customerWallet, $giftDiscount, $useMinAmount, $storeOwner);
+                            }
+                        } else {
+                            // Tạo voucher off-chain thông thường
+                            self::createOffChainVoucher($order, $customerWallet, $giftDiscount, $useMinAmount, $storeOwner);
+                        }
                     }
                 }
             }
         });
+    }
+
+    /**
+     * Tạo voucher off-chain thông thường (fallback)
+     */
+    private static function createOffChainVoucher($order, $walletAddress, $discount, $minOrder, $storeOwner)
+    {
+        \App\Models\Voucher::create([
+            'code' => 'NFT-' . strtoupper(\Illuminate\Support\Str::random(8)),
+            'customer_id' => $order->customer_id,
+            'wallet_address' => $walletAddress,
+            'discount_amount' => $discount,
+            'min_order_amount' => $minOrder,
+            'status' => 'active',
+            'store_owner_address' => $storeOwner
+        ]);
     }
 
     /**

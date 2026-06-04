@@ -24,6 +24,8 @@ use Illuminate\Support\Facades\Route;
 // Public routes for Authentication
 Route::get('/auth/nonce', [AuthController::class, 'getNonce']);
 Route::post('/auth/verify', [AuthController::class, 'verifySignature']);
+Route::get('/vouchers/metadata/{code}', [\App\Http\Controllers\VoucherController::class, 'metadata']);
+
 
 // Protected routes (require valid Sanctum token)
 Route::middleware('auth:sanctum')->group(function () {

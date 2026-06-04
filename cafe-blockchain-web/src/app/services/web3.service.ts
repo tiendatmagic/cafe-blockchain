@@ -4,6 +4,8 @@ import { CAFE_WEB3_POS_ABI } from './contract-abi';
 import { CAFE_WEB3_POS_BYTECODE } from './contract-bytecode';
 import { CAFE_WEB3_FINANCE_ABI } from './finance-contract-abi';
 import { CAFE_WEB3_FINANCE_BYTECODE } from './finance-contract-bytecode';
+import { CAFE_VOUCHER_NFT_ABI } from './voucher-contract-abi';
+import { CAFE_VOUCHER_NFT_BYTECODE } from './voucher-contract-bytecode';
 import { Subject } from 'rxjs';
 
 @Injectable({
@@ -24,6 +26,7 @@ export class Web3Service {
   // Cấu hình blockchain (sẽ được cập nhật từ database thông qua ApiService)
   public readonly contractAddress = signal<string>('');
   public readonly financeContractAddress = signal<string>('');
+  public readonly voucherContractAddress = signal<string>('');
   public readonly rpcUrl = signal<string>('https://ethereum-sepolia.publicnode.com');
   public readonly explorerUrl = signal<string>('https://sepolia.etherscan.io');
   public readonly explorerApiKey = signal<string>('');
@@ -207,9 +210,10 @@ export class Web3Service {
   /**
    * Cập nhật cấu hình Blockchain từ API
    */
-  public updateConfig(config: { contract_address?: string, finance_contract_address?: string, rpc_url?: string, explorer_url?: string, chain_id?: string, explorer_api_key?: string }) {
+  public updateConfig(config: { contract_address?: string, finance_contract_address?: string, voucher_contract_address?: string, rpc_url?: string, explorer_url?: string, chain_id?: string, explorer_api_key?: string }) {
     this.contractAddress.set(config.contract_address || '');
     if (config.finance_contract_address !== undefined) this.financeContractAddress.set(config.finance_contract_address || '');
+    if (config.voucher_contract_address !== undefined) this.voucherContractAddress.set(config.voucher_contract_address || '');
     if (config.rpc_url) this.rpcUrl.set(config.rpc_url);
     if (config.explorer_url) this.explorerUrl.set(config.explorer_url);
     if (config.chain_id) this.configuredChainId.set(config.chain_id);
@@ -462,6 +466,46 @@ export class Web3Service {
     if (!this.provider) throw new Error('Không có provider ví');
     const signer = await this.provider.getSigner();
     return await signer.signMessage(message);
+  }
+
+  /**
+   * Ký số thông điệp EIP-712 cho phép sử dụng Voucher NFT (Miễn phí Gas)
+   */
+  public async signVoucherUsageEIP712(tokenId: number, orderCode: string): Promise<string> {
+    if (!this.walletConnected() || !this.currentAccount()) {
+      throw new Error('Chưa kết nối ví Web3!');
+    }
+    if (!this.provider) {
+      throw new Error('Không tìm thấy provider ví Web3!');
+    }
+
+    const signer = await this.provider.getSigner();
+    const chainId = await this.provider.getNetwork().then(n => n.chainId);
+
+    // Cấu hình EIP-712 Domain
+    const domain = {
+      name: 'CafeVoucher',
+      version: '1',
+      chainId: chainId,
+      verifyingContract: this.voucherContractAddress()
+    };
+
+    // Cấu hình Struct Types
+    const types = {
+      UseVoucher: [
+        { name: 'tokenId', type: 'uint256' },
+        { name: 'orderCode', type: 'string' }
+      ]
+    };
+
+    // Giá trị thực tế ký
+    const value = {
+      tokenId: tokenId,
+      orderCode: orderCode
+    };
+
+    // Thực hiện ký bằng signTypedData
+    return await signer.signTypedData(domain, types, value);
   }
 
   /**
@@ -903,6 +947,47 @@ export class Web3Service {
   }
 
   /**
+   * Tự động Deploy Smart Contract NFT Voucher mới lên Blockchain EVM
+   */
+  public async deployVoucherContractOnChain(targetChainId?: string): Promise<{ contractAddress: string; success: boolean; error?: string }> {
+    if (!this.walletConnected() || !this.currentAccount()) {
+      return { contractAddress: '', success: false, error: 'Chưa kết nối ví Web3!' };
+    }
+    if (!this.provider) {
+      return { contractAddress: '', success: false, error: 'Không tìm thấy provider ví Web3!' };
+    }
+
+    const hasCorrectNetwork = await this.ensureCorrectNetwork(targetChainId);
+    if (!hasCorrectNetwork) {
+      return { contractAddress: '', success: false, error: this.walletError() || 'Vui lòng chuyển mạng!' };
+    }
+
+    try {
+      this.provider = new BrowserProvider((window as any).ethereum);
+      const signer = await this.provider.getSigner();
+      const factory = new ContractFactory(CAFE_VOUCHER_NFT_ABI, CAFE_VOUCHER_NFT_BYTECODE, signer);
+      
+      const contract = await factory.deploy();
+      await contract.waitForDeployment();
+      
+      const newAddress = await contract.getAddress();
+      this.voucherContractAddress.set(newAddress);
+      
+      return {
+        contractAddress: newAddress,
+        success: true
+      };
+    } catch (err: any) {
+      console.error('Loi deploy Smart Contract NFT Voucher:', err);
+      return {
+        contractAddress: '',
+        success: false,
+        error: err.reason || err.message || 'Giao dịch deploy bị từ chối hoặc lỗi chuỗi.'
+      };
+    }
+  }
+
+  /**
    * Ghi nhận giao dịch thu chi tài chính lên Smart Contract Blockchain
    */
   public async recordTransactionOnChain(
@@ -1116,6 +1201,62 @@ export class Web3Service {
       return { txHash: tx.hash, success: true };
     } catch (err: any) {
       return { txHash: '', success: false, error: err.reason || err.message };
+    }
+  }
+
+  /**
+   * Truy vấn danh sách NFT Voucher khả dụng của khách hàng trực tiếp từ Blockchain
+   */
+  public async getCustomerVouchersFromChain(customerAddress: string): Promise<any[]> {
+    if (!this.voucherContractAddress() || this.voucherContractAddress().trim() === '') {
+      return [];
+    }
+
+    try {
+      const activeProvider = this.provider || new JsonRpcProvider(this.rpcUrl());
+      const contract = new Contract(this.voucherContractAddress(), CAFE_VOUCHER_NFT_ABI, activeProvider);
+
+      // 1. Quét sự kiện Transfer gửi tới ví khách hàng
+      const filter = contract.filters['Transfer'](null, customerAddress);
+      
+      const events = await contract.queryFilter(filter, 0, 'latest');
+      const tokenIds = Array.from(new Set(events.map((e: any) => e.args[2].toString())));
+
+      const vouchersList: any[] = [];
+
+      // 2. Kiểm tra trạng thái hiện tại của từng token
+      for (const tokenIdStr of tokenIds) {
+        const tokenId = BigInt(tokenIdStr);
+        try {
+          const owner = await contract['ownerOf'](tokenId);
+          
+          if (owner.toLowerCase() === customerAddress.toLowerCase()) {
+            const info = await contract['vouchers'](tokenId);
+            
+            if (info && !info.isUsed) {
+              const tokenUri = await contract['tokenURI'](tokenId);
+              const parts = tokenUri.split('/');
+              const code = parts[parts.length - 1] || `NFT-${tokenId}`;
+
+              vouchersList.push({
+                tokenId: Number(tokenId),
+                code: code,
+                discount_amount: Number(info.discountAmount),
+                min_order_amount: Number(info.minOrderAmount),
+                tokenUri: tokenUri,
+                isNft: true
+              });
+            }
+          }
+        } catch (e) {
+          // Token đã bị burn hoặc lỗi đọc
+        }
+      }
+
+      return vouchersList;
+    } catch (err) {
+      console.error('Lỗi lấy danh sách voucher NFT của khách hàng:', err);
+      return [];
     }
   }
 }

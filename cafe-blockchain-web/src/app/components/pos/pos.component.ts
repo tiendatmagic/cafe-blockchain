@@ -431,9 +431,40 @@ export class PosComponent implements OnInit, OnDestroy {
   }
 
   public loadActiveVouchers(customerId: number) {
+    const customer = this.stateService.posSelectedCustomer();
+    const walletAddress = customer?.wallet_address;
+
     this.apiService.getVouchers(customerId, 'active').subscribe({
-      next: (res) => {
-        this.posActiveVouchers.set(res || []);
+      next: (dbVouchers) => {
+        const vouchers = dbVouchers || [];
+        
+        // Nếu khách hàng có ví Web3 và quán đã cấu hình NFT Voucher contract, quét thêm trên chuỗi
+        if (walletAddress && this.web3Service.voucherContractAddress()) {
+          this.web3Service.getCustomerVouchersFromChain(walletAddress).then(chainVouchers => {
+            if (chainVouchers && chainVouchers.length > 0) {
+              const merged = [...vouchers];
+              chainVouchers.forEach(cv => {
+                const idx = merged.findIndex(mv => mv.code === cv.code);
+                if (idx > -1) {
+                  // Cập nhật thuộc tính NFT và tokenId cho voucher đã đồng bộ trong DB
+                  merged[idx].isNft = true;
+                  merged[idx].tokenId = cv.tokenId;
+                } else {
+                  // Thêm voucher NFT mới quét được trực tiếp từ chuỗi
+                  merged.push(cv);
+                }
+              });
+              this.posActiveVouchers.set(merged);
+            } else {
+              this.posActiveVouchers.set(vouchers);
+            }
+          }).catch(err => {
+            console.error('Lỗi quét voucher NFT từ blockchain:', err);
+            this.posActiveVouchers.set(vouchers);
+          });
+        } else {
+          this.posActiveVouchers.set(vouchers);
+        }
       },
       error: (err) => {
         console.error('Lỗi tải voucher của khách hàng:', err);
@@ -442,7 +473,7 @@ export class PosComponent implements OnInit, OnDestroy {
   }
 
   public selectVoucher(voucher: any) {
-    if (this.posSelectedVoucher()?.id === voucher?.id) {
+    if (this.posSelectedVoucher()?.code === voucher?.code) {
       this.posSelectedVoucher.set(null);
       this.stateService.showToast('Đã hủy áp dụng mã giảm giá.', 'success');
     } else {
@@ -488,8 +519,8 @@ export class PosComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Tạo hoặc Cập nhật đơn hàng từ POS
-  public submitOrder() {
+  // Tạo hoặc Cập nhật đơn hàng từ POS (Hỗ trợ ký số EIP-712 & Relayer)
+  public async submitOrder() {
     if (!this.web3Service.walletConnected()) {
       this.stateService.showToast('Vui lòng kết nối ví Web3 để thanh toán và ghi nhận đơn hàng!', 'error');
       return;
@@ -501,7 +532,9 @@ export class PosComponent implements OnInit, OnDestroy {
     }
 
     this.isOrderSubmitting.set(true);
-    const orderData = {
+    
+    // Khởi tạo thông tin đơn hàng
+    const orderData: any = {
       table_number: this.tableNumber(),
       customer_id: this.stateService.posSelectedCustomer()?.id || null,
       payment_method: this.paymentMethod(),
@@ -514,6 +547,34 @@ export class PosComponent implements OnInit, OnDestroy {
       }))
     };
 
+    const selectedVoucher = this.posSelectedVoucher();
+
+    // Nếu chọn Voucher NFT, kích hoạt quy trình ký số offline EIP-712 qua MetaMask
+    if (selectedVoucher && selectedVoucher.isNft) {
+      try {
+        this.stateService.showToast('Yêu cầu khách hàng xác nhận ký ví để sử dụng NFT Voucher...', 'success');
+        
+        // 1. Tự sinh mã hóa đơn duy nhất ở frontend để khớp với chữ ký EIP-712
+        const orderCode = 'HD-' + Date.now().toString(36).substring(3).toUpperCase() + Math.floor(10 + Math.random() * 90);
+        
+        // 2. Gọi MetaMask yêu cầu khách hàng ký EIP-712 offline (miễn phí gas)
+        const signature = await this.web3Service.signVoucherUsageEIP712(selectedVoucher.tokenId, orderCode);
+        
+        // 3. Gắn thông tin chữ ký và mã đơn hàng vào dữ liệu gửi đi
+        orderData.order_code = orderCode;
+        orderData.voucher_nft_token_id = selectedVoucher.tokenId;
+        orderData.voucher_nft_signature = signature;
+        orderData.voucher_id = selectedVoucher.id || null;
+
+      } catch (signErr: any) {
+        console.error('Lỗi ký số NFT Voucher:', signErr);
+        const errMsg = signErr.reason || signErr.message || 'Khách hàng từ chối ký ví hoặc lỗi kết nối ví!';
+        this.stateService.showToast('Ký xác thực NFT Voucher thất bại: ' + errMsg, 'error');
+        this.isOrderSubmitting.set(false);
+        return;
+      }
+    }
+
     const editId = this.editingOrderId();
 
     if (editId !== null) {
@@ -524,7 +585,7 @@ export class PosComponent implements OnInit, OnDestroy {
           this.editingOrderId.set(null);
           this.isOrderSubmitting.set(false);
           this.stateService.refreshOrders();
-          this.stateService.activeTab.set('orders'); // Chuyển sang orders
+          this.stateService.activeTab.set('orders');
         },
         error: (err) => {
           console.error('Lỗi cập nhật đơn:', err);
@@ -540,11 +601,12 @@ export class PosComponent implements OnInit, OnDestroy {
           this.stateService.clearCart();
           this.isOrderSubmitting.set(false);
           this.stateService.refreshOrders();
-          this.stateService.activeTab.set('orders'); // Chuyển sang orders
+          this.stateService.activeTab.set('orders');
         },
         error: (err) => {
           console.error('Lỗi đặt đơn:', err);
-          this.stateService.showToast('Không thể tạo đơn hàng. Vui lòng kiểm tra lại!', 'error');
+          const errorMsg = err.error?.message || 'Không thể tạo đơn hàng. Vui lòng kiểm tra lại!';
+          this.stateService.showToast(errorMsg, 'error');
           this.isOrderSubmitting.set(false);
         }
       });
