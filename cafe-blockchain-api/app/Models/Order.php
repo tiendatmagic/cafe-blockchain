@@ -122,7 +122,8 @@ class Order extends Model
                                     'min_order_amount' => $useMinAmount,
                                     'status' => 'active',
                                     'tx_hash' => $relayerResult['txHash'] ?? null,
-                                    'store_owner_address' => $storeOwner
+                                    'store_owner_address' => $storeOwner,
+                                    'expired_at' => now()->addMonth()
                                 ]);
                             } else {
                                 // Fallback off-chain voucher nếu mint blockchain lỗi
@@ -151,7 +152,8 @@ class Order extends Model
             'discount_amount' => $discount,
             'min_order_amount' => $minOrder,
             'status' => 'active',
-            'store_owner_address' => $storeOwner
+            'store_owner_address' => $storeOwner,
+            'expired_at' => now()->addMonth()
         ]);
     }
 

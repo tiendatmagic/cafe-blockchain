@@ -131,13 +131,16 @@ export class ApiService {
   }
 
   // 12. Vouchers API
-  public getVouchers(customerId?: number, status?: string): Observable<any[]> {
+  public getVouchers(customerId?: number, status?: string, codes?: string[]): Observable<any[]> {
     let params = new HttpParams();
     if (customerId !== undefined && customerId !== null) {
       params = params.set('customer_id', customerId.toString());
     }
     if (status) {
       params = params.set('status', status);
+    }
+    if (codes && codes.length > 0) {
+      params = params.set('codes', codes.join(','));
     }
     return this.http.get<any[]>(`${this.baseUrl}/vouchers`, { params, headers: this.getHeaders() });
   }

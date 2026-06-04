@@ -525,8 +525,12 @@
                             <span class="text-[8px] bg-purple-500/20 text-purple-600 dark:text-purple-400 px-1 py-0.5 rounded font-black border border-purple-500/25">NFT 🛡️</span>
                           }
                         </span>
-                        <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 mt-0.5">
-                          Đơn tối thiểu: {{ voucher.min_order_amount | number }}đ
+                        <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 mt-0.5 flex flex-wrap items-center gap-x-1">
+                          <span>Đơn tối thiểu: {{ voucher.min_order_amount | number }}đ</span>
+                          @if (voucher.expired_at) {
+                            <span>•</span>
+                            <span class="text-rose-500 dark:text-rose-400 font-bold">Hạn dùng: {{ voucher.expired_at | date: 'dd/MM/yyyy' }}</span>
+                          }
                         </span>
                       </div>
                     </div>

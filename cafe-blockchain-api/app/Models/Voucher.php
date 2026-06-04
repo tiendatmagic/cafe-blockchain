@@ -17,7 +17,12 @@ class Voucher extends Model
         'min_order_amount',
         'status', // active, used, expired
         'tx_hash',
-        'store_owner_address'
+        'store_owner_address',
+        'expired_at'
+    ];
+
+    protected $casts = [
+        'expired_at' => 'datetime'
     ];
 
     /**

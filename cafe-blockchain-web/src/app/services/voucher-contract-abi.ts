@@ -1,5 +1,52 @@
 export const CAFE_VOUCHER_NFT_ABI = [
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "_tokenURI",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "discount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minOrder",
+        "type": "uint256"
+      }
+    ],
+    "name": "mintVoucher",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "stateMutability": "nonpayable",
     "type": "constructor"
@@ -28,6 +75,29 @@ export const CAFE_VOUCHER_NFT_ABI = [
     ],
     "name": "Transfer",
     "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "orderCode",
+        "type": "string"
+      },
+      {
+        "internalType": "bytes",
+        "name": "signature",
+        "type": "bytes"
+      }
+    ],
+    "name": "useVoucherWithSignature",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
     "anonymous": false,
@@ -92,32 +162,6 @@ export const CAFE_VOUCHER_NFT_ABI = [
     "type": "event"
   },
   {
-    "inputs": [],
-    "name": "DOMAIN_SEPARATOR",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "USE_VOUCHER_TYPEHASH",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
@@ -137,37 +181,16 @@ export const CAFE_VOUCHER_NFT_ABI = [
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "to",
-        "type": "address"
-      },
-      {
-        "internalType": "string",
-        "name": "_tokenURI",
-        "type": "string"
-      },
-      {
-        "internalType": "uint256",
-        "name": "discount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "minOrder",
-        "type": "uint256"
-      }
-    ],
-    "name": "mintVoucher",
+    "inputs": [],
+    "name": "DOMAIN_SEPARATOR",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "bytes32",
         "name": "",
-        "type": "uint256"
+        "type": "bytes32"
       }
     ],
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -272,39 +295,16 @@ export const CAFE_VOUCHER_NFT_ABI = [
     "type": "function"
   },
   {
-    "inputs": [
+    "inputs": [],
+    "name": "USE_VOUCHER_TYPEHASH",
+    "outputs": [
       {
-        "internalType": "address",
-        "name": "newOwner",
-        "type": "address"
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
       }
     ],
-    "name": "transferOwnership",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "orderCode",
-        "type": "string"
-      },
-      {
-        "internalType": "bytes",
-        "name": "signature",
-        "type": "bytes"
-      }
-    ],
-    "name": "useVoucherWithSignature",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
     "type": "function"
   },
   {

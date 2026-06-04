@@ -443,33 +443,94 @@ export class PosComponent implements OnInit, OnDestroy {
           this.web3Service.getCustomerVouchersFromChain(walletAddress).then(chainVouchers => {
             if (chainVouchers && chainVouchers.length > 0) {
               const merged = [...vouchers];
+              const missingCodes: string[] = [];
+              const chainVoucherMap = new Map<string, any>();
+
               chainVouchers.forEach(cv => {
+                chainVoucherMap.set(cv.code, cv);
                 const idx = merged.findIndex(mv => mv.code === cv.code);
                 if (idx > -1) {
                   // Cập nhật thuộc tính NFT và tokenId cho voucher đã đồng bộ trong DB
                   merged[idx].isNft = true;
                   merged[idx].tokenId = cv.tokenId;
                 } else {
-                  // Thêm voucher NFT mới quét được trực tiếp từ chuỗi
-                  merged.push(cv);
+                  missingCodes.push(cv.code);
                 }
               });
-              this.posActiveVouchers.set(merged);
+
+              if (missingCodes.length > 0) {
+                // Gọi API lấy thông tin chi tiết từ DB cho các voucher bị thiếu (do chuyển nhượng)
+                this.apiService.getVouchers(undefined, undefined, missingCodes).subscribe({
+                  next: (missingDbVouchers) => {
+                    missingDbVouchers.forEach(mv => {
+                      const cv = chainVoucherMap.get(mv.code);
+                      if (cv) {
+                        // Merge thông tin từ DB (như expired_at, status) vào voucher NFT từ chain
+                        merged.push({
+                          ...mv,
+                          isNft: true,
+                          tokenId: cv.tokenId
+                        });
+                      }
+                    });
+
+                    // Thêm những voucher từ chain mà hoàn toàn không có trong DB (phòng hờ)
+                    missingCodes.forEach(code => {
+                      const alreadyAdded = merged.some(mv => mv.code === code);
+                      if (!alreadyAdded) {
+                        const cv = chainVoucherMap.get(code);
+                        if (cv) merged.push(cv);
+                      }
+                    });
+
+                    this.setAndFilterActiveVouchers(merged);
+                  },
+                  error: (err) => {
+                    console.error('Lỗi lấy voucher chi tiết từ DB cho chain vouchers:', err);
+                    // Fallback: Vẫn thêm chain vouchers thô
+                    missingCodes.forEach(code => {
+                      const cv = chainVoucherMap.get(code);
+                      if (cv) merged.push(cv);
+                    });
+                    this.setAndFilterActiveVouchers(merged);
+                  }
+                });
+              } else {
+                this.setAndFilterActiveVouchers(merged);
+              }
             } else {
-              this.posActiveVouchers.set(vouchers);
+              this.setAndFilterActiveVouchers(vouchers);
             }
           }).catch(err => {
             console.error('Lỗi quét voucher NFT từ blockchain:', err);
-            this.posActiveVouchers.set(vouchers);
+            this.setAndFilterActiveVouchers(vouchers);
           });
         } else {
-          this.posActiveVouchers.set(vouchers);
+          this.setAndFilterActiveVouchers(vouchers);
         }
       },
       error: (err) => {
         console.error('Lỗi tải voucher của khách hàng:', err);
       }
     });
+  }
+
+  private setAndFilterActiveVouchers(vouchers: any[]) {
+    const now = new Date();
+    // Lọc bỏ voucher đã hết hạn hoặc đã được sử dụng
+    const activeVouchers = vouchers.filter(v => {
+      // Bỏ qua nếu voucher không active
+      if (v.status && v.status !== 'active') return false;
+
+      // Kiểm tra hạn sử dụng
+      if (v.expired_at) {
+        const expiry = new Date(v.expired_at);
+        return expiry > now;
+      }
+      return true;
+    });
+
+    this.posActiveVouchers.set(activeVouchers);
   }
 
   public selectVoucher(voucher: any) {

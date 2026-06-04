@@ -1,39 +1,56 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.35;
 
 contract CafeVoucherNFT {
-    // Tên và Ký hiệu của Token
+    // Token Name and Symbol
     string public constant name = "Cafe Web3 Voucher";
     string public constant symbol = "CFV";
 
-    // Địa chỉ ví chủ quán (Owner) quản trị hệ thống
+    // Cafe owner's wallet address (System Administrator)
     address public owner;
 
     uint256 private _nextTokenId;
 
-    // Cấu trúc lưu trữ thông tin Voucher
+    // Voucher information structure
     struct VoucherInfo {
         uint256 discountAmount;
         uint256 minOrderAmount;
         bool isUsed;
     }
 
-    // Các mapping theo chuẩn ERC-721
+    // ERC-721 standard mappings
     mapping(uint256 => address) private _owners;
     mapping(address => uint256) private _balances;
     mapping(uint256 => string) private _tokenURIs;
-    
-    // Lưu trữ thông tin voucher chi tiết
+
+    // Store detailed voucher information
     mapping(uint256 => VoucherInfo) public vouchers;
 
-    // EIP-712 Domain Separator và Typehash
+    // EIP-712 Domain Separator and Type Hash
     bytes32 public DOMAIN_SEPARATOR;
-    bytes32 public constant USE_VOUCHER_TYPEHASH = keccak256("UseVoucher(uint256 tokenId,string orderCode)");
+    bytes32 public constant USE_VOUCHER_TYPEHASH =
+        keccak256("UseVoucher(uint256 tokenId,string orderCode)");
 
-    // Các sự kiện chuẩn ERC-721
-    event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
-    event VoucherMinted(address indexed to, uint256 indexed tokenId, string tokenURI, uint256 discountAmount, uint256 minOrderAmount);
-    event VoucherUsed(uint256 indexed tokenId, string orderCode, address indexed usedBy);
+    // ERC-721 standard events
+    event Transfer(
+        address indexed from,
+        address indexed to,
+        uint256 indexed tokenId
+    );
+
+    event VoucherMinted(
+        address indexed to,
+        uint256 indexed tokenId,
+        string tokenURI,
+        uint256 discountAmount,
+        uint256 minOrderAmount
+    );
+
+    event VoucherUsed(
+        uint256 indexed tokenId,
+        string orderCode,
+        address indexed usedBy
+    );
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Caller is not the owner");
@@ -42,15 +59,17 @@ contract CafeVoucherNFT {
 
     constructor() {
         owner = msg.sender;
-        
+
         uint256 chainId;
         assembly {
             chainId := chainid()
         }
-        
+
         DOMAIN_SEPARATOR = keccak256(
             abi.encode(
-                keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
+                keccak256(
+                    "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
+                ),
                 keccak256(bytes("CafeVoucher")),
                 keccak256(bytes("1")),
                 chainId,
@@ -71,11 +90,14 @@ contract CafeVoucherNFT {
     }
 
     function tokenURI(uint256 tokenId) public view returns (string memory) {
-        require(_owners[tokenId] != address(0), "URI query for nonexistent token");
+        require(
+            _owners[tokenId] != address(0),
+            "URI query for nonexistent token"
+        );
         return _tokenURIs[tokenId];
     }
 
-    // Hàm Mint Voucher mới cho khách hàng (Chỉ Owner/POS gọi)
+    // Mint a new voucher for a customer (Only Owner/POS can call)
     function mintVoucher(
         address to,
         string memory _tokenURI,
@@ -85,7 +107,7 @@ contract CafeVoucherNFT {
         require(to != address(0), "Mint to zero address");
 
         uint256 tokenId = _nextTokenId++;
-        
+
         _balances[to] += 1;
         _owners[tokenId] = to;
         _tokenURIs[tokenId] = _tokenURI;
@@ -98,7 +120,7 @@ contract CafeVoucherNFT {
         return tokenId;
     }
 
-    // Hàm quy đổi và tiêu hủy voucher có chữ ký số của khách hàng (Do Relayer gọi)
+    // Redeem and burn a voucher using the customer's signature (Called by a relayer)
     function useVoucherWithSignature(
         uint256 tokenId,
         string memory orderCode,
@@ -107,7 +129,7 @@ contract CafeVoucherNFT {
         address tokenOwner = ownerOf(tokenId);
         require(!vouchers[tokenId].isUsed, "Voucher already used");
 
-        // Tạo EIP-712 struct hash
+        // Create EIP-712 struct hash
         bytes32 structHash = keccak256(
             abi.encode(
                 USE_VOUCHER_TYPEHASH,
@@ -116,22 +138,18 @@ contract CafeVoucherNFT {
             )
         );
 
-        // Tạo EIP-712 digest
+        // Create EIP-712 digest
         bytes32 digest = keccak256(
-            abi.encodePacked(
-                "\x19\x01",
-                DOMAIN_SEPARATOR,
-                structHash
-            )
+            abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR, structHash)
         );
 
-        // Giải mã chữ ký số
+        // Recover signer address from signature
         address signer = recoverSigner(digest, signature);
         require(signer == tokenOwner, "Invalid signature");
 
-        // Đánh dấu đã dùng và thực hiện tiêu hủy (burn)
+        // Mark voucher as used and burn it
         vouchers[tokenId].isUsed = true;
-        
+
         _balances[tokenOwner] -= 1;
         delete _owners[tokenId];
         delete _tokenURIs[tokenId];
@@ -140,8 +158,11 @@ contract CafeVoucherNFT {
         emit VoucherUsed(tokenId, orderCode, tokenOwner);
     }
 
-    // Hàm phục hồi địa chỉ ví từ chữ ký số (Tương tự ECDSA.recover)
-    function recoverSigner(bytes32 digest, bytes memory signature) public pure returns (address) {
+    // Recover signer address from signature (Similar to ECDSA.recover)
+    function recoverSigner(
+        bytes32 digest,
+        bytes memory signature
+    ) public pure returns (address) {
         if (signature.length != 65) {
             return address(0);
         }
@@ -158,8 +179,8 @@ contract CafeVoucherNFT {
 
         return ecrecover(digest, v, r, s);
     }
-    
-    // Hàm chuyển quyền Owner nếu chủ quán muốn đổi ví quản trị
+
+    // Transfer contract ownership to a new administrator wallet
     function transferOwnership(address newOwner) public onlyOwner {
         require(newOwner != address(0), "New owner is zero address");
         owner = newOwner;

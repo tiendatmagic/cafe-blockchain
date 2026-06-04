@@ -123,6 +123,10 @@ class OrderController extends Controller
                     throw new \Exception("NFT Voucher này đã được sử dụng hoặc đã bị tiêu hủy!");
                 }
 
+                if ($voucher->expired_at && $voucher->expired_at->isPast()) {
+                    throw new \Exception("NFT Voucher này đã hết hạn sử dụng!");
+                }
+
                 if ($totalAmount < $voucher->min_order_amount) {
                     throw new \Exception("Đơn hàng chưa đạt giá trị tối thiểu " . number_format($voucher->min_order_amount) . "đ để áp dụng NFT Voucher!");
                 }
@@ -157,6 +161,10 @@ class OrderController extends Controller
                     ->first();
                 if (!$voucher) {
                     throw new \Exception("Mã giảm giá không hợp lệ hoặc đã được sử dụng!");
+                }
+
+                if ($voucher->expired_at && $voucher->expired_at->isPast()) {
+                    throw new \Exception("Mã giảm giá này đã hết hạn sử dụng!");
                 }
                 
                 // Kiểm tra xem đơn hàng có đạt giá trị tối thiểu để áp dụng voucher không
