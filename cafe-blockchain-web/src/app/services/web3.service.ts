@@ -1301,4 +1301,164 @@ export class Web3Service {
       return null;
     }
   }
+
+  /**
+   * Truy vấn danh sách đơn hàng phân trang trực tiếp từ Blockchain (POS Contract)
+   */
+  public async getOrdersPaginatedFromChain(page: number, limit: number): Promise<{ orders: any[], total: number }> {
+    if (!this.contractAddress()) return { orders: [], total: 0 };
+    try {
+      const activeProvider = new JsonRpcProvider(this.rpcUrl());
+      const contract = new Contract(this.contractAddress(), CAFE_WEB3_POS_ABI, activeProvider);
+      
+      const res = await contract['getOrdersPaginated'](page, limit);
+      const orders = res[0].map((o: any) => ({
+        orderId: Number(o.orderId),
+        orderCode: o.orderCode,
+        tableNumber: o.tableNumber,
+        totalAmount: Number(o.totalAmount),
+        paymentMethod: o.paymentMethod,
+        itemsSummary: o.itemsSummary,
+        timestamp: Number(o.timestamp),
+        recordedBy: o.recordedBy
+      }));
+      return { orders, total: Number(res[1]) };
+    } catch (e) {
+      console.error('Loi doc danh sach orders phan trang tu chuoi:', e);
+      return { orders: [], total: 0 };
+    }
+  }
+
+  /**
+   * Truy vấn danh sách đơn hàng phân trang theo ví cashier trực tiếp từ Blockchain (POS Contract)
+   */
+  public async getUserOrdersPaginatedFromChain(user: string, page: number, limit: number): Promise<{ orders: any[], total: number }> {
+    if (!this.contractAddress() || !user) return { orders: [], total: 0 };
+    try {
+      const activeProvider = new JsonRpcProvider(this.rpcUrl());
+      const contract = new Contract(this.contractAddress(), CAFE_WEB3_POS_ABI, activeProvider);
+      
+      const res = await contract['getUserOrdersPaginated'](user, page, limit);
+      const orders = res[0].map((o: any) => ({
+        orderId: Number(o.orderId),
+        orderCode: o.orderCode,
+        tableNumber: o.tableNumber,
+        totalAmount: Number(o.totalAmount),
+        paymentMethod: o.paymentMethod,
+        itemsSummary: o.itemsSummary,
+        timestamp: Number(o.timestamp),
+        recordedBy: o.recordedBy
+      }));
+      return { orders, total: Number(res[1]) };
+    } catch (e) {
+      console.error('Loi doc danh sach orders phan trang theo vi tu chuoi:', e);
+      return { orders: [], total: 0 };
+    }
+  }
+
+  /**
+   * Tìm kiếm đơn hàng theo mã đơn hàng trực tiếp từ Blockchain (POS Contract)
+   */
+  public async getOrderByCodeFromChain(orderCode: string): Promise<any | null> {
+    if (!this.contractAddress() || !orderCode) return null;
+    try {
+      const activeProvider = new JsonRpcProvider(this.rpcUrl());
+      const contract = new Contract(this.contractAddress(), CAFE_WEB3_POS_ABI, activeProvider);
+      
+      const o = await contract['getOrderByCode'](orderCode);
+      return {
+        orderId: Number(o.orderId),
+        orderCode: o.orderCode,
+        tableNumber: o.tableNumber,
+        totalAmount: Number(o.totalAmount),
+        paymentMethod: o.paymentMethod,
+        itemsSummary: o.itemsSummary,
+        timestamp: Number(o.timestamp),
+        recordedBy: o.recordedBy
+      };
+    } catch (e) {
+      console.warn('Khong tim thay don hang co ma:', orderCode, e);
+      return null;
+    }
+  }
+
+  /**
+   * Truy vấn danh sách phiếu thu chi phân trang trực tiếp từ Blockchain (Finance Contract)
+   */
+  public async getTransactionsPaginatedFromChain(page: number, limit: number): Promise<{ transactions: any[], total: number }> {
+    if (!this.financeContractAddress()) return { transactions: [], total: 0 };
+    try {
+      const activeProvider = new JsonRpcProvider(this.rpcUrl());
+      const contract = new Contract(this.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, activeProvider);
+      
+      const res = await contract['getTransactionsPaginated'](page, limit);
+      const transactions = res[0].map((t: any) => ({
+        txId: Number(t.txId),
+        transactionCode: t.transactionCode,
+        txType: t.txType === 1 ? 'thu' : 'chi',
+        amount: Number(t.amount),
+        category: t.category,
+        description: t.description,
+        timestamp: Number(t.timestamp),
+        recordedBy: t.recordedBy
+      }));
+      return { transactions, total: Number(res[1]) };
+    } catch (e) {
+      console.error('Loi doc danh sach transactions phan trang tu chuoi:', e);
+      return { transactions: [], total: 0 };
+    }
+  }
+
+  /**
+   * Truy vấn danh sách phiếu thu chi phân trang theo ví ghi nhận trực tiếp từ Blockchain (Finance Contract)
+   */
+  public async getUserTransactionsPaginatedFromChain(user: string, page: number, limit: number): Promise<{ transactions: any[], total: number }> {
+    if (!this.financeContractAddress() || !user) return { transactions: [], total: 0 };
+    try {
+      const activeProvider = new JsonRpcProvider(this.rpcUrl());
+      const contract = new Contract(this.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, activeProvider);
+      
+      const res = await contract['getUserTransactionsPaginated'](user, page, limit);
+      const transactions = res[0].map((t: any) => ({
+        txId: Number(t.txId),
+        transactionCode: t.transactionCode,
+        txType: t.txType === 1 ? 'thu' : 'chi',
+        amount: Number(t.amount),
+        category: t.category,
+        description: t.description,
+        timestamp: Number(t.timestamp),
+        recordedBy: t.recordedBy
+      }));
+      return { transactions, total: Number(res[1]) };
+    } catch (e) {
+      console.error('Loi doc danh sach transactions phan trang theo vi tu chuoi:', e);
+      return { transactions: [], total: 0 };
+    }
+  }
+
+  /**
+   * Tìm kiếm phiếu thu chi theo mã trực tiếp từ Blockchain (Finance Contract)
+   */
+  public async getTransactionByCodeFromChain(txCode: string): Promise<any | null> {
+    if (!this.financeContractAddress() || !txCode) return null;
+    try {
+      const activeProvider = new JsonRpcProvider(this.rpcUrl());
+      const contract = new Contract(this.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, activeProvider);
+      
+      const t = await contract['getTransactionByCode'](txCode);
+      return {
+        txId: Number(t.txId),
+        transactionCode: t.transactionCode,
+        txType: t.txType === 1 ? 'thu' : 'chi',
+        amount: Number(t.amount),
+        category: t.category,
+        description: t.description,
+        timestamp: Number(t.timestamp),
+        recordedBy: t.recordedBy
+      };
+    } catch (e) {
+      console.warn('Khong tim thay giao dich co ma:', txCode, e);
+      return null;
+    }
+  }
 }

@@ -1,5 +1,18 @@
 export const CAFE_WEB3_POS_ABI = [
   {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_newOwners",
+        "type": "address[]"
+      }
+    ],
+    "name": "addOwners",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "stateMutability": "nonpayable",
     "type": "constructor"
@@ -88,12 +101,50 @@ export const CAFE_WEB3_POS_ABI = [
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_orderId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "_orderCode",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_tableNumber",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_totalAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "_paymentMethod",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_itemsSummary",
+        "type": "string"
+      }
+    ],
+    "name": "recordOrder",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address[]",
-        "name": "_newOwners",
+        "name": "_ownersToRemove",
         "type": "address[]"
       }
     ],
-    "name": "addOwners",
+    "name": "removeOwners",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -166,12 +217,156 @@ export const CAFE_WEB3_POS_ABI = [
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_orderCode",
+        "type": "string"
+      }
+    ],
+    "name": "getOrderByCode",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "orderId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "orderCode",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "tableNumber",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "paymentMethod",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "itemsSummary",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "recordedBy",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_orderCode",
+        "type": "string"
+      }
+    ],
+    "name": "getOrderIdByCode",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "getOrdersCount",
     "outputs": [
       {
         "internalType": "uint256",
         "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_page",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_limit",
+        "type": "uint256"
+      }
+    ],
+    "name": "getOrdersPaginated",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "orderId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "orderCode",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "tableNumber",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "paymentMethod",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "itemsSummary",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timestamp",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "recordedBy",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct CafeWeb3POS.Order[]",
+        "name": "ordersList",
+        "type": "tuple[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "total",
         "type": "uint256"
       }
     ],
@@ -186,6 +381,120 @@ export const CAFE_WEB3_POS_ABI = [
         "internalType": "address[]",
         "name": "",
         "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      }
+    ],
+    "name": "getUserOrderIds",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      }
+    ],
+    "name": "getUserOrdersCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_page",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_limit",
+        "type": "uint256"
+      }
+    ],
+    "name": "getUserOrdersPaginated",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "orderId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "orderCode",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "tableNumber",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "paymentMethod",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "itemsSummary",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timestamp",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "recordedBy",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct CafeWeb3POS.Order[]",
+        "name": "ordersList",
+        "type": "tuple[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "total",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -227,57 +536,6 @@ export const CAFE_WEB3_POS_ABI = [
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_orderId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "_orderCode",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "_tableNumber",
-        "type": "string"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_totalAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "_paymentMethod",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "_itemsSummary",
-        "type": "string"
-      }
-    ],
-    "name": "recordOrder",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "_ownersToRemove",
-        "type": "address[]"
-      }
-    ],
-    "name": "removeOwners",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   }
 ];
