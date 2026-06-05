@@ -1223,63 +1223,34 @@ export class Web3Service {
         return [];
       }
 
-      // 2. Quét ngược sự kiện Transfer theo từng chunk 99,000 blocks cho đến khi tìm đủ N tokens
-      const currentBlock = await activeProvider.getBlockNumber();
-      let toBlock = currentBlock;
-      const chunkSize = 99000; // Giới hạn RPC < 100,000
-      const maxScanBlocks = 1000000; // Quét tối đa 1 triệu block gần đây (~17 ngày)
-      const limitBlock = Math.max(0, currentBlock - maxScanBlocks);
-
-      const filter = contract.filters['Transfer'](null, customerAddress);
-      const foundTokenIds = new Set<string>();
-
-      while (toBlock > limitBlock && foundTokenIds.size < targetCount) {
-        const fromBlock = Math.max(limitBlock, toBlock - chunkSize);
-        try {
-          const events = await contract.queryFilter(filter, fromBlock, toBlock);
-          for (const event of events) {
-            const ev = event as any;
-            if (ev.args && ev.args[2]) {
-              foundTokenIds.add(ev.args[2].toString());
-            }
-          }
-        } catch (scanErr) {
-          console.warn('[Blockchain] Loi quet chunk logs voucher:', scanErr);
-          break; // Dừng quét nếu gặp sự cố RPC
-        }
-        toBlock = fromBlock - 1;
-      }
-
-      const tokenIds = Array.from(foundTokenIds);
       const vouchersList: any[] = [];
 
-      // 3. Kiểm tra trạng thái hiện tại của từng token
-      for (const tokenIdStr of tokenIds) {
-        const tokenId = BigInt(tokenIdStr);
+      // 2. Lặp qua chỉ mục để lấy trực tiếp các Token ID mà ví này đang sở hữu
+      for (let i = 0; i < targetCount; i++) {
         try {
-          const owner = await contract['ownerOf'](tokenId);
+          const tokenId = await contract['tokenOfOwnerByIndex'](customerAddress, i);
+          const tokenIdNum = Number(tokenId);
           
-          if (owner.toLowerCase() === customerAddress.toLowerCase()) {
-            const info = await contract['vouchers'](tokenId);
-            
-            if (info && !info.isUsed) {
-              const tokenUri = await contract['tokenURI'](tokenId);
-              const parts = tokenUri.split('/');
-              const code = parts[parts.length - 1] || `NFT-${tokenId}`;
+          const info = await contract['vouchers'](tokenIdNum);
+          
+          if (info && !info.isUsed) {
+            const tokenUri = await contract['tokenURI'](tokenIdNum);
+            const parts = tokenUri.split('/');
+            const code = parts[parts.length - 1] || `NFT-${tokenIdNum}`;
 
-              vouchersList.push({
-                tokenId: Number(tokenId),
-                code: code,
-                discount_amount: Number(info.discountAmount),
-                min_order_amount: Number(info.minOrderAmount),
-                tokenUri: tokenUri,
-                isNft: true,
-                status: 'active'
-              });
-            }
+            vouchersList.push({
+              tokenId: tokenIdNum,
+              code: code,
+              discount_amount: Number(info.discountAmount),
+              min_order_amount: Number(info.minOrderAmount),
+              tokenUri: tokenUri,
+              isNft: true,
+              status: 'active'
+            });
           }
-        } catch (e) {
-          // Token đã bị burn hoặc lỗi đọc
+        } catch (tokenErr) {
+          console.warn(`[Blockchain] Lỗi đọc NFT ở chỉ mục ${i}:`, tokenErr);
+          // Tiếp tục lặp nếu một token nào đó bị lỗi
         }
       }
 

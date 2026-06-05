@@ -32,6 +32,10 @@ contract CafeVoucherNFT {
     mapping(address => uint256) private _balances;
     mapping(uint256 => string) private _tokenURIs;
 
+    // Enumerable mappings to support ERC721Enumerable functionality without external dependencies
+    mapping(address => mapping(uint256 => uint256)) private _ownedTokens;
+    mapping(uint256 => uint256) private _ownedTokensIndex;
+
     // Mappings for approval
     mapping(uint256 => address) private _tokenApprovals;
     mapping(address => mapping(address => bool)) private _operatorApprovals;
@@ -106,6 +110,14 @@ contract CafeVoucherNFT {
         return _balances[_owner];
     }
 
+    function tokenOfOwnerByIndex(
+        address owner,
+        uint256 index
+    ) public view returns (uint256) {
+        require(index < balanceOf(owner), "Owner index out of bounds");
+        return _ownedTokens[owner][index];
+    }
+
     function ownerOf(uint256 tokenId) public view returns (address) {
         address tokenOwner = _owners[tokenId];
         require(tokenOwner != address(0), "Token query for nonexistent token");
@@ -177,6 +189,23 @@ contract CafeVoucherNFT {
         // Clear approval
         delete _tokenApprovals[tokenId];
 
+        // Update enumerable tracking for 'from'
+        uint256 lastTokenIndexFrom = _balances[from] - 1;
+        uint256 tokenIndexFrom = _ownedTokensIndex[tokenId];
+
+        if (tokenIndexFrom != lastTokenIndexFrom) {
+            uint256 lastTokenIdFrom = _ownedTokens[from][lastTokenIndexFrom];
+
+            _ownedTokens[from][tokenIndexFrom] = lastTokenIdFrom;
+            _ownedTokensIndex[lastTokenIdFrom] = tokenIndexFrom;
+        }
+        delete _ownedTokens[from][lastTokenIndexFrom];
+
+        // Update enumerable tracking for 'to'
+        uint256 lengthTo = _balances[to];
+        _ownedTokens[to][lengthTo] = tokenId;
+        _ownedTokensIndex[tokenId] = lengthTo;
+
         _balances[from] -= 1;
         _balances[to] += 1;
         _owners[tokenId] = to;
@@ -246,6 +275,11 @@ contract CafeVoucherNFT {
 
         uint256 tokenId = _nextTokenId++;
 
+        // Update enumerable tracking
+        uint256 length = _balances[to];
+        _ownedTokens[to][length] = tokenId;
+        _ownedTokensIndex[tokenId] = length;
+
         _balances[to] += 1;
         _owners[tokenId] = to;
         _tokenURIs[tokenId] = _tokenURI;
@@ -287,6 +321,19 @@ contract CafeVoucherNFT {
 
         // Mark voucher as used and burn it
         vouchers[tokenId].isUsed = true;
+
+        // Update enumerable tracking (remove token from owner)
+        uint256 lastTokenIndex = _balances[tokenOwner] - 1;
+        uint256 tokenIndex = _ownedTokensIndex[tokenId];
+
+        if (tokenIndex != lastTokenIndex) {
+            uint256 lastTokenId = _ownedTokens[tokenOwner][lastTokenIndex];
+
+            _ownedTokens[tokenOwner][tokenIndex] = lastTokenId;
+            _ownedTokensIndex[lastTokenId] = tokenIndex;
+        }
+        delete _ownedTokensIndex[tokenId];
+        delete _ownedTokens[tokenOwner][lastTokenIndex];
 
         _balances[tokenOwner] -= 1;
         delete _owners[tokenId];
