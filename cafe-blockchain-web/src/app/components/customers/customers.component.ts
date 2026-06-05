@@ -96,6 +96,7 @@ export class CustomersComponent {
         const companyClean = c.company_name ? this.removeSign(c.company_name.toLowerCase()) : '';
         const repClean = c.representative_name ? this.removeSign(c.representative_name.toLowerCase()) : '';
         const taxClean = c.tax_code ? c.tax_code.toLowerCase() : '';
+        const walletClean = c.wallet_address ? c.wallet_address.toLowerCase() : '';
         const idClean = c.id ? c.id.toString() : '';
 
         return nameClean.includes(searchClean) ||
@@ -105,6 +106,7 @@ export class CustomersComponent {
                companyClean.includes(searchClean) ||
                repClean.includes(searchClean) ||
                taxClean.includes(searchClean) ||
+               walletClean.includes(searchClean) ||
                idClean.includes(searchClean);
       });
     }

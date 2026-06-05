@@ -8,6 +8,7 @@ import { CustomersComponent } from './components/customers/customers.component';
 import { FinancialsComponent } from './components/financials/financials.component';
 import { InventoryComponent } from './components/inventory/inventory.component';
 import { TablesComponent } from './components/tables/tables.component';
+import { MobileSignComponent } from './components/mobile-sign/mobile-sign.component';
 
 export const routes: Routes = [
   { path: 'dashboard', component: DashboardComponent },
@@ -19,6 +20,7 @@ export const routes: Routes = [
   { path: 'financials', component: FinancialsComponent },
   { path: 'inventory', component: InventoryComponent },
   { path: 'tables', component: TablesComponent },
+  { path: 'mobile-sign', component: MobileSignComponent },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   { path: '**', redirectTo: 'dashboard' }
 ];

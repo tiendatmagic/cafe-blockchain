@@ -1175,11 +1175,11 @@
                 <div class="flex items-center justify-between text-xs font-semibold text-rose-500">
                   <span class="flex items-center gap-1">
                     <span>Giảm giá</span>
-                    @if (selectedOrderDetails()?.voucher) {
+                    @if (selectedOrderDetails()?.voucher_nft_token_id !== null && selectedOrderDetails()?.voucher_nft_token_id !== undefined) {
                       <span
-                        class="text-[9px] bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 font-extrabold px-1 rounded uppercase tracking-wider font-mono"
+                        class="text-[9px] bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider font-mono border border-purple-200/20"
                       >
-                        {{ selectedOrderDetails()?.voucher?.code }}
+                        NFT Voucher #{{ selectedOrderDetails()?.voucher_nft_token_id }}
                       </span>
                     }
                   </span>

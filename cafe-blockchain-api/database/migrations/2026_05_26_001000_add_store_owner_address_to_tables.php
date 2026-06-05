@@ -31,9 +31,9 @@ return new class extends Migration
             $table->string('store_owner_address')->nullable()->after('blockchain_status');
         });
 
-        // 5. Bảng settings (Xóa unique key_chain_id cũ và tạo composite unique mới)
+        // 5. Bảng settings (Xóa unique key cũ và tạo composite unique mới)
         Schema::table('settings', function (Blueprint $table) {
-            $table->dropUnique('settings_key_chain_id_unique');
+            $table->dropUnique('settings_key_unique');
             $table->string('store_owner_address')->nullable()->after('value');
             $table->unique(['key', 'store_owner_address']);
         });

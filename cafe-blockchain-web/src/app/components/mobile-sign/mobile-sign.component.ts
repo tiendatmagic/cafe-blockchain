@@ -1,0 +1,142 @@
+import { Component, inject, signal, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
+import { Web3Service } from '../../services/web3.service';
+import { ApiService } from '../../services/api.service';
+import { StateService } from '../../services/state.service';
+import { JsonRpcProvider, Contract } from 'ethers';
+import { CAFE_VOUCHER_NFT_ABI } from '../../services/voucher-contract-abi';
+
+@Component({
+  selector: 'app-mobile-sign',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './mobile-sign.component.html'
+})
+export class MobileSignComponent implements OnInit {
+  public readonly web3Service = inject(Web3Service);
+  private readonly apiService = inject(ApiService);
+  private readonly stateService = inject(StateService);
+  private readonly route = inject(ActivatedRoute);
+
+  public orderCode = signal<string>('');
+  public tokenId = signal<number | null>(null);
+  public voucherInfo = signal<{ discount: number, minOrder: number, isUsed: boolean } | null>(null);
+
+  public isConnecting = signal<boolean>(false);
+  public isSigning = signal<boolean>(false);
+  public step = signal<'connect' | 'sign' | 'success' | 'error'>('connect');
+  public statusMessage = signal<string>('');
+  public errorMessage = signal<string>('');
+
+  ngOnInit() {
+    this.route.queryParams.subscribe(params => {
+      const code = params['order_code'] || '';
+      const tid = params['token_id'] ? Number(params['token_id']) : null;
+      this.orderCode.set(code);
+      this.tokenId.set(tid);
+
+      if (!code || tid === null) {
+        this.step.set('error');
+        this.errorMessage.set('Thiếu tham số mã hóa đơn hoặc ID Voucher!');
+        return;
+      }
+
+      this.fetchVoucherDetailsOnChain(tid);
+    });
+
+    // Theo dõi trạng thái kết nối ví của khách hàng
+    if (this.web3Service.walletConnected()) {
+      this.step.set('sign');
+    }
+  }
+
+  private async fetchVoucherDetailsOnChain(tokenId: number) {
+    const rpc = this.web3Service.rpcUrl() || 'https://bsc-testnet-rpc.publicnode.com';
+    const contractAddr = this.web3Service.voucherContractAddress();
+
+    if (!contractAddr) {
+      // Fallback hiển thị thông tin mặc định
+      this.voucherInfo.set({ discount: 5000, minOrder: 100000, isUsed: false });
+      return;
+    }
+
+    try {
+      const provider = new JsonRpcProvider(rpc);
+      const contract = new Contract(contractAddr, CAFE_VOUCHER_NFT_ABI, provider);
+      const info = await contract['vouchers'](tokenId);
+      
+      this.voucherInfo.set({
+        discount: Number(info.discountAmount),
+        minOrder: Number(info.minOrderAmount),
+        isUsed: info.isUsed
+      });
+
+      if (info.isUsed) {
+        this.step.set('error');
+        this.errorMessage.set('NFT Voucher này đã được sử dụng hoặc tiêu hủy trước đó!');
+      }
+    } catch (err: any) {
+      console.error('Lỗi lấy thông tin voucher on-chain:', err);
+      // Fallback
+      this.voucherInfo.set({ discount: 5000, minOrder: 100000, isUsed: false });
+    }
+  }
+
+  public async connectWallet() {
+    this.isConnecting.set(true);
+    this.errorMessage.set('');
+    try {
+      const success = await this.web3Service.connectWallet();
+      if (success) {
+        this.step.set('sign');
+      } else {
+        this.errorMessage.set('Không thể kết nối tới ví của bạn. Vui lòng mở ví Metamask di động!');
+      }
+    } catch (err: any) {
+      this.errorMessage.set(err.message || 'Lỗi kết nối ví.');
+    } finally {
+      this.isConnecting.set(false);
+    }
+  }
+
+  public async signVoucher() {
+    const tid = this.tokenId();
+    const code = this.orderCode();
+    if (tid === null || !code) return;
+
+    this.isSigning.set(true);
+    this.errorMessage.set('');
+    this.statusMessage.set('Vui lòng mở ứng dụng ví để duyệt chữ ký số...');
+
+    try {
+      // 1. Thực hiện ký số EIP-712 bằng ví Metamask di động của khách hàng
+      const signature = await this.web3Service.signVoucherUsageEIP712(tid, code);
+
+      this.statusMessage.set('Đang nộp chữ ký lên hệ thống POS...');
+      
+      // 2. POST chữ ký số lên backend Laravel qua endpoint công khai
+      this.apiService.submitVoucherSignature(code, signature).subscribe({
+        next: (res) => {
+          if (res.success) {
+            this.step.set('success');
+          } else {
+            this.step.set('error');
+            this.errorMessage.set(res.message || 'Gửi chữ ký số thất bại!');
+          }
+          this.isSigning.set(false);
+        },
+        error: (err) => {
+          this.step.set('error');
+          this.errorMessage.set(err.error?.message || 'Lỗi gửi chữ ký lên máy POS.');
+          this.isSigning.set(false);
+        }
+      });
+    } catch (err: any) {
+      console.error('Lỗi ký số:', err);
+      this.errorMessage.set(err.reason || err.message || 'Bạn đã từ chối ký ví.');
+      this.statusMessage.set('');
+      this.isSigning.set(false);
+    }
+  }
+}

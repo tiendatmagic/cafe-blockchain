@@ -100,6 +100,43 @@ class BlockchainRelayerService
     }
 
     /**
+     * Truy vấn thông tin chi tiết của một NFT Voucher trực tiếp on-chain
+     *
+     * @param string $storeOwnerAddress Địa chỉ ví của chủ quán
+     * @param int $tokenId ID của token NFT Voucher
+     * @return array
+     */
+    public static function getVoucher(string $storeOwnerAddress, int $tokenId): array
+    {
+        $contractAddress = Setting::getForStore('voucher_contract_address', $storeOwnerAddress);
+        $rpcUrl = Setting::getForStore('rpc_url', $storeOwnerAddress, 'https://ethereum-sepolia.publicnode.com');
+        
+        $encryptedKey = Setting::getForStore('relayer_private_key', $storeOwnerAddress);
+        $privateKey = null;
+        if (!empty($encryptedKey)) {
+            try {
+                $privateKey = \Illuminate\Support\Facades\Crypt::decryptString($encryptedKey);
+            } catch (\Exception $e) {
+                return ['success' => false, 'error' => 'Lỗi giải mã khóa ví Relayer: ' . $e->getMessage()];
+            }
+        }
+
+        if (empty($contractAddress)) {
+            return ['success' => false, 'error' => 'Chưa cấu hình hợp đồng NFT Voucher cho quán!'];
+        }
+
+        $payload = [
+            'action' => 'getVoucher',
+            'privateKey' => $privateKey ?: '0x0000000000000000000000000000000000000000000000000000000000000000',
+            'rpcUrl' => $rpcUrl,
+            'contractAddress' => $contractAddress,
+            'tokenId' => $tokenId
+        ];
+
+        return self::executeRelayer($payload);
+    }
+
+    /**
      * Thực thi lệnh NodeJS để chạy relayer.js
      */
     private static function executeRelayer(array $payload): array

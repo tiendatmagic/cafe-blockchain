@@ -27,6 +27,10 @@ class Customer extends Model
         'business_status'
     ];
 
+    protected $appends = [
+        'active_vouchers_count'
+    ];
+
     protected static function booted()
     {
         // Tự động sinh mã khách hàng ngẫu nhiên 4 ký tự viết hoa/chữ số khi tạo mới
@@ -37,19 +41,16 @@ class Customer extends Model
         });
     }
 
+    public function getActiveVouchersCountAttribute()
+    {
+        return 0;
+    }
+
     /**
      * Mối quan hệ Nhiều-Nhiều với CustomerGroup
      */
     public function groups()
     {
         return $this->belongsToMany(CustomerGroup::class, 'customer_customer_group', 'customer_id', 'customer_group_id');
-    }
-
-    /**
-     * Mối quan hệ 1-Nhiều với Voucher
-     */
-    public function vouchers()
-    {
-        return $this->hasMany(Voucher::class);
     }
 }

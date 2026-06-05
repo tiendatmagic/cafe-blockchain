@@ -30,15 +30,9 @@ class CustomerController extends Controller
             });
             $limit = $request->query('limit', 15);
             $customers = $query->with('groups')
-                ->withCount(['vouchers as active_vouchers_count' => function ($q) {
-                    $q->where('status', 'active');
-                }])
                 ->orderBy('id', 'desc')->limit($limit)->get();
         } else {
             $customers = $query->with('groups')
-                ->withCount(['vouchers as active_vouchers_count' => function ($q) {
-                    $q->where('status', 'active');
-                }])
                 ->orderBy('id', 'desc')->get();
         }
         
@@ -121,10 +115,8 @@ class CustomerController extends Controller
             $customer->groups()->sync($validated['group_ids']);
         }
 
-        // Tải lại mối quan hệ nhóm và đếm voucher
-        $customer->load('groups')->loadCount(['vouchers as active_vouchers_count' => function ($q) {
-            $q->where('status', 'active');
-        }]);
+        // Tải lại mối quan hệ nhóm
+        $customer->load('groups');
 
         return response()->json([
             'message' => 'Customer created successfully.',
@@ -206,9 +198,7 @@ class CustomerController extends Controller
 
         $customer->groups()->sync($validated['group_ids'] ?? []);
 
-        $customer->load('groups')->loadCount(['vouchers as active_vouchers_count' => function ($q) {
-            $q->where('status', 'active');
-        }]);
+        $customer->load('groups');
 
         return response()->json([
             'message' => 'Customer updated successfully.',

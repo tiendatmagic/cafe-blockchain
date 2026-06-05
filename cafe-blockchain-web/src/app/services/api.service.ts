@@ -131,26 +131,22 @@ export class ApiService {
   }
 
   // 12. Vouchers API
-  public getVouchers(customerId?: number, status?: string, codes?: string[]): Observable<any[]> {
-    let params = new HttpParams();
-    if (customerId !== undefined && customerId !== null) {
-      params = params.set('customer_id', customerId.toString());
-    }
-    if (status) {
-      params = params.set('status', status);
-    }
-    if (codes && codes.length > 0) {
-      params = params.set('codes', codes.join(','));
-    }
-    return this.http.get<any[]>(`${this.baseUrl}/vouchers`, { params, headers: this.getHeaders() });
+  public requestVoucherSignature(orderCode: string, tokenId: number): Observable<any> {
+    return this.http.post(`${this.baseUrl}/vouchers/request-sign`, {
+      order_code: orderCode,
+      token_id: tokenId
+    }, { headers: this.getHeaders() });
   }
 
-  public syncVouchersOwnership(customerId: number, walletAddress: string, vouchers: { code: string, token_id: number }[]): Observable<any> {
-    return this.http.post(`${this.baseUrl}/vouchers/sync-ownership`, {
-      customer_id: customerId,
-      wallet_address: walletAddress,
-      vouchers: vouchers
-    }, { headers: this.getHeaders() });
+  public checkVoucherSignature(orderCode: string): Observable<{ status: string, signature: string | null }> {
+    return this.http.get<{ status: string, signature: string | null }>(`${this.baseUrl}/vouchers/check-signature/${orderCode}`, { headers: this.getHeaders() });
+  }
+
+  public submitVoucherSignature(orderCode: string, signature: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/vouchers/submit-signature`, {
+      order_code: orderCode,
+      signature: signature
+    });
   }
 
   public syncOrderBlockchain(id: number, txHash: string, blockchainStatus: string, chainId?: string): Observable<any> {

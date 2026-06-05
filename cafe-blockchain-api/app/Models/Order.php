@@ -15,7 +15,7 @@ class Order extends Model
         'customer_id',
         'total_amount',
         'discount_amount',
-        'voucher_id',
+        'voucher_nft_token_id',
         'payment_method',
         'status',
         'tx_hash',
@@ -76,17 +76,7 @@ class Order extends Model
             }
 
             if ($order->status === 'completed') {
-                // 1. Đánh dấu voucher áp dụng là đã sử dụng
-                if ($order->voucher_id) {
-                    $voucher = \App\Models\Voucher::where('id', $order->voucher_id)
-                        ->where('status', 'active')
-                        ->first();
-                    if ($voucher) {
-                        $voucher->update(['status' => 'used']);
-                    }
-                }
-
-                // 2. Tự động tặng voucher nếu đủ điều kiện
+                // Tự động tặng voucher nếu đủ điều kiện
                 if ($isStatusChanged && $order->customer_id) {
                     $storeOwner = $order->store_owner_address;
                     $minGiftAmount = (int)\App\Models\Setting::getForStore('voucher_gift_min_amount', $storeOwner, 100000);
@@ -101,8 +91,8 @@ class Order extends Model
                         $voucherContract = \App\Models\Setting::getForStore('voucher_contract_address', $storeOwner);
 
                         if (!empty($customerWallet) && !empty($voucherContract)) {
-                            // Tạo mã voucher ngẫu nhiên để làm tokenUri và code định danh
-                            $voucherCode = 'NFT-' . strtoupper(\Illuminate\Support\Str::random(8));
+                            // Tạo mã voucher ngẫu nhiên chứa thông tin discount và minOrder
+                            $voucherCode = 'NFT-' . $giftDiscount . '-' . $useMinAmount . '-' . strtoupper(\Illuminate\Support\Str::random(6));
                             $tokenUri = url("/api/vouchers/metadata/{$voucherCode}");
 
                             // Gọi Relayer thực hiện đúc (mint) NFT trên Blockchain
@@ -115,48 +105,15 @@ class Order extends Model
                             );
 
                             if ($relayerResult['success']) {
-                                // Đúc thành công, tạo bản ghi voucher NFT thật
-                                \App\Models\Voucher::create([
-                                    'code' => $voucherCode,
-                                    'customer_id' => $order->customer_id,
-                                    'wallet_address' => $customerWallet,
-                                    'discount_amount' => $giftDiscount,
-                                    'min_order_amount' => $useMinAmount,
-                                    'status' => 'active',
-                                    'tx_hash' => $relayerResult['txHash'] ?? null,
-                                    'store_owner_address' => $storeOwner,
-                                    'expired_at' => now()->addMonth()
-                                ]);
+                                \Illuminate\Support\Facades\Log::info("Minted NFT Voucher successfully with code: {$voucherCode}, TxHash: " . ($relayerResult['txHash'] ?? ''));
                             } else {
-                                // Fallback off-chain voucher nếu mint blockchain lỗi
-                                \Illuminate\Support\Facades\Log::warning("Mint NFT Voucher that bai: " . ($relayerResult['error'] ?? 'Lỗi không xác định') . ". Fallback sang voucher off-chain.");
-                                self::createOffChainVoucher($order, $customerWallet, $giftDiscount, $useMinAmount, $storeOwner);
+                                \Illuminate\Support\Facades\Log::warning("Mint NFT Voucher that bai: " . ($relayerResult['error'] ?? 'Lỗi không xác định'));
                             }
-                        } else {
-                            // Tạo voucher off-chain thông thường
-                            self::createOffChainVoucher($order, $customerWallet, $giftDiscount, $useMinAmount, $storeOwner);
                         }
                     }
                 }
             }
         });
-    }
-
-    /**
-     * Tạo voucher off-chain thông thường (fallback)
-     */
-    private static function createOffChainVoucher($order, $walletAddress, $discount, $minOrder, $storeOwner)
-    {
-        \App\Models\Voucher::create([
-            'code' => 'NFT-' . strtoupper(\Illuminate\Support\Str::random(8)),
-            'customer_id' => $order->customer_id,
-            'wallet_address' => $walletAddress,
-            'discount_amount' => $discount,
-            'min_order_amount' => $minOrder,
-            'status' => 'active',
-            'store_owner_address' => $storeOwner,
-            'expired_at' => now()->addMonth()
-        ]);
     }
 
     /**
@@ -184,7 +141,7 @@ class Order extends Model
             strtolower($this->order_code ?? ''),
             $totalAmountFormatted,
             (int)$this->discount_amount,
-            $this->voucher_id ?? '',
+            $this->voucher_nft_token_id ?? '',
             strtolower($this->payment_method ?? ''),
             $this->table_number ?? '',
             $createdAtStr,
@@ -202,10 +159,5 @@ class Order extends Model
     public function customer()
     {
         return $this->belongsTo(Customer::class);
-    }
-
-    public function voucher()
-    {
-        return $this->belongsTo(Voucher::class);
     }
 }

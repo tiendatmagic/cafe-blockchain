@@ -109,6 +109,28 @@ async function main() {
         orderCode: orderCode
       }));
 
+    } else if (action === 'getVoucher') {
+      const { tokenId } = data;
+      if (tokenId === undefined) {
+        console.error(JSON.stringify({ success: false, error: 'Thiếu tokenId để getVoucher.' }));
+        process.exit(1);
+      }
+
+      const owner = await contract.ownerOf(tokenId);
+      const info = await contract.vouchers(tokenId);
+      const tokenUri = await contract.tokenURI(tokenId);
+
+      console.log(JSON.stringify({
+        success: true,
+        action: 'getVoucher',
+        tokenId: tokenId,
+        owner: owner,
+        discountAmount: info.discountAmount.toString(),
+        minOrderAmount: info.minOrderAmount.toString(),
+        isUsed: info.isUsed,
+        tokenUri: tokenUri
+      }));
+
     } else {
       console.error(JSON.stringify({ success: false, error: `Action '${action}' không được hỗ trợ.` }));
       process.exit(1);

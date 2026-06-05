@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Voucher;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class VoucherController extends Controller
 {
@@ -12,67 +13,53 @@ class VoucherController extends Controller
      */
     public function index(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-
-        $query = Voucher::where('store_owner_address', $storeOwner);
-
-        if ($request->has('codes') && !empty($request->codes)) {
-            $codes = is_array($request->codes) ? $request->codes : explode(',', $request->codes);
-            $query->whereIn('code', $codes);
-        } elseif ($request->has('customer_id') && !empty($request->customer_id)) {
-            $query->where('customer_id', $request->customer_id);
-        }
-
-        if ($request->has('status') && !empty($request->status)) {
-            $query->where('status', $request->status);
-        }
-
-        $vouchers = $query->orderBy('id', 'desc')->get();
-
-        return response()->json($vouchers);
+        // Trả về mảng trống vì đã chuyển sang lưu voucher on-chain phi tập trung hoàn toàn
+        return response()->json([]);
     }
 
     /**
-     * Phục vụ JSON metadata chuẩn ERC-721 cho NFT Voucher
+     * Phục vụ JSON metadata chuẩn ERC-721 cho NFT Voucher (Không dùng database)
      */
     public function metadata($code)
     {
-        $voucher = Voucher::where('code', $code)->first();
-        if (!$voucher) {
-            return response()->json(['error' => 'Voucher metadata not found'], 404);
+        $parts = explode('-', $code);
+        
+        $discountAmount = 5000; // Mặc định
+        $minOrderAmount = 100000; // Mặc định
+
+        if (count($parts) >= 3 && $parts[0] === 'NFT') {
+            $discountAmount = (int)$parts[1];
+            $minOrderAmount = (int)$parts[2];
         }
 
-        $discountFormatted = number_format($voucher->discount_amount) . 'đ';
-        $minOrderFormatted = number_format($voucher->min_order_amount) . 'đ';
+        $discountFormatted = number_format($discountAmount) . 'đ';
+        $minOrderFormatted = number_format($minOrderAmount) . 'đ';
 
         $attributes = [
             [
                 'trait_type' => 'Discount Amount (VND)',
-                'value' => (int)$voucher->discount_amount,
+                'value' => $discountAmount,
                 'display_type' => 'number'
             ],
             [
                 'trait_type' => 'Min Order (VND)',
-                'value' => (int)$voucher->min_order_amount,
+                'value' => $minOrderAmount,
                 'display_type' => 'number'
             ],
             [
                 'trait_type' => 'Voucher Code',
-                'value' => $voucher->code
+                'value' => $code
             ],
             [
                 'trait_type' => 'Status',
-                'value' => $voucher->status
-            ]
-        ];
-
-        if ($voucher->expired_at) {
-            $attributes[] = [
+                'value' => 'active'
+            ],
+            [
                 'display_type' => 'date',
                 'trait_type' => 'Expiration Date',
-                'value' => $voucher->expired_at->timestamp
-            ];
-        }
+                'value' => time() + (30 * 24 * 60 * 60) // Hạn dùng 30 ngày
+            ]
+        ];
 
         return response()->json([
             'name' => "Cafe Web3 NFT Voucher " . $discountFormatted,
@@ -83,40 +70,85 @@ class VoucherController extends Controller
     }
 
     /**
-     * Đồng bộ quyền sở hữu các NFT Voucher dựa trên dữ liệu blockchain từ frontend
+     * Hàm syncOwnership cũ (không cần đồng bộ do đã phi tập trung, giữ để tránh lỗi API)
      */
     public function syncOwnership(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-        
-        $validated = $request->validate([
-            'customer_id' => 'required|integer|exists:customers,id',
-            'wallet_address' => 'required|string|max:42',
-            'vouchers' => 'present|array',
-            'vouchers.*.code' => 'required|string',
-            'vouchers.*.token_id' => 'required|integer',
-        ]);
-        
-        $customerId = $validated['customer_id'];
-        $walletAddress = strtolower($validated['wallet_address']);
-        
-        foreach ($validated['vouchers'] as $v) {
-            $voucher = Voucher::where('code', $v['code'])
-                ->where('store_owner_address', $storeOwner)
-                ->first();
-                
-            if ($voucher) {
-                // Nếu chủ sở hữu hiện tại trong DB khác với ví nhận hiện tại
-                if ($voucher->customer_id != $customerId || strtolower($voucher->wallet_address) != $walletAddress) {
-                    $voucher->update([
-                        'customer_id' => $customerId,
-                        'wallet_address' => $walletAddress,
-                    ]);
-                }
-            }
-        }
-        
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * POS đăng ký yêu cầu ký ví của khách hàng di động
+     */
+    public function requestSign(Request $request)
+    {
+        $validated = $request->validate([
+            'order_code' => 'required|string|max:50',
+            'token_id' => 'required|integer',
+        ]);
+
+        DB::table('voucher_signatures')->updateOrInsert(
+            ['order_code' => $validated['order_code']],
+            [
+                'token_id' => $validated['token_id'],
+                'signature' => null,
+                'status' => 'pending',
+                'created_at' => now(),
+                'updated_at' => now()
+            ]
+        );
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Khách hàng gửi chữ ký số từ điện thoại di động
+     */
+    public function submitSignature(Request $request)
+    {
+        $validated = $request->validate([
+            'order_code' => 'required|string|max:50',
+            'signature' => 'required|string',
+        ]);
+
+        $affected = DB::table('voucher_signatures')
+            ->where('order_code', $validated['order_code'])
+            ->update([
+                'signature' => $validated['signature'],
+                'status' => 'signed',
+                'updated_at' => now()
+            ]);
+
+        if ($affected === 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy yêu cầu ký số cho hóa đơn này hoặc chữ ký không hợp lệ!'
+            ], 404);
+        }
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * POS kiểm tra trạng thái chữ ký số của hóa đơn (Polling)
+     */
+    public function checkSignature($orderCode)
+    {
+        $sigRecord = DB::table('voucher_signatures')
+            ->where('order_code', $orderCode)
+            ->first();
+
+        if (!$sigRecord) {
+            return response()->json([
+                'status' => 'not_found',
+                'signature' => null
+            ]);
+        }
+
+        return response()->json([
+            'status' => $sigRecord->status,
+            'signature' => $sigRecord->signature
+        ]);
     }
 }
 

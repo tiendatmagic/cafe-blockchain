@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/auth/nonce', [AuthController::class, 'getNonce']);
 Route::post('/auth/verify', [AuthController::class, 'verifySignature']);
 Route::get('/vouchers/metadata/{code}', [\App\Http\Controllers\VoucherController::class, 'metadata']);
+Route::post('/vouchers/submit-signature', [\App\Http\Controllers\VoucherController::class, 'submitSignature']);
 
 
 // Protected routes (require valid Sanctum token)
@@ -36,6 +37,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Vouchers API
     Route::get('/vouchers', [\App\Http\Controllers\VoucherController::class, 'index']);
     Route::post('/vouchers/sync-ownership', [\App\Http\Controllers\VoucherController::class, 'syncOwnership']);
+    Route::post('/vouchers/request-sign', [\App\Http\Controllers\VoucherController::class, 'requestSign']);
+    Route::get('/vouchers/check-signature/{orderCode}', [\App\Http\Controllers\VoucherController::class, 'checkSignature']);
 
     // Products API
     Route::get('/products', [ProductController::class, 'index']);

@@ -16,7 +16,7 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-        $query = Order::where('store_owner_address', $storeOwner)->with(['customer', 'items.product', 'items.variant', 'voucher'])->orderBy('id', 'desc');
+        $query = Order::where('store_owner_address', $storeOwner)->with(['customer', 'items.product', 'items.variant'])->orderBy('id', 'desc');
         if ($request->has('status') && $request->status != 'all') {
             $query->where('status', $request->status);
         }
@@ -35,7 +35,7 @@ class OrderController extends Controller
     public function show(Request $request, $id)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-        $order = Order::where('store_owner_address', $storeOwner)->with(['customer', 'items.product', 'items.variant', 'voucher'])->findOrFail($id);
+        $order = Order::where('store_owner_address', $storeOwner)->with(['customer', 'items.product', 'items.variant'])->findOrFail($id);
         return response()->json($order);
     }
 
@@ -51,7 +51,6 @@ class OrderController extends Controller
             'table_number' => 'nullable|string|max:50',
             'customer_id' => 'nullable|integer|exists:customers,id',
             'payment_method' => 'required|string|in:cash,bank_transfer,crypto',
-            'voucher_id' => 'nullable|integer|exists:vouchers,id',
             'voucher_nft_token_id' => 'nullable|integer',
             'voucher_nft_signature' => 'nullable|string',
             'items' => 'required|array|min:1',
@@ -99,7 +98,6 @@ class OrderController extends Controller
 
             // Áp dụng voucher nếu có
             $discountAmount = 0;
-            $voucherId = $validated['voucher_id'] ?? null;
             $voucherNftTokenId = $validated['voucher_nft_token_id'] ?? null;
             $voucherNftSignature = $validated['voucher_nft_signature'] ?? null;
 
@@ -107,37 +105,39 @@ class OrderController extends Controller
                 // Sử dụng Voucher dạng NFT (EIP-712 & Relayer)
                 $orderCode = $validated['order_code'] ?? null;
                 if (empty($orderCode)) {
-                    throw new \Exception("Thiếu mã hóa đơn (order_code) khi áp dụng chữ ký số NFT Voucher!");
+                    $orderCode = 'HD-' . strtoupper(bin2hex(random_bytes(3)));
+                    $validated['order_code'] = $orderCode;
                 }
 
-                // Tìm bản ghi voucher tương ứng trong DB dựa vào voucher_id gửi lên, hoặc fallback theo code format NFT-{tokenId}
-                $voucher = null;
-                if ($voucherId) {
-                    $voucher = \App\Models\Voucher::where('id', $voucherId)
-                        ->where('store_owner_address', $storeOwner)
-                        ->first();
+                // Kiểm tra khách hàng có liên kết ví EVM hay không
+                $customer = null;
+                if (!empty($validated['customer_id'])) {
+                    $customer = \App\Models\Customer::find($validated['customer_id']);
                 }
 
-                if (!$voucher) {
-                    $voucher = \App\Models\Voucher::where('code', 'NFT-' . $voucherNftTokenId)
-                        ->where('store_owner_address', $storeOwner)
-                        ->first();
+                if (!$customer || empty($customer->wallet_address)) {
+                    throw new \Exception("NFT Voucher chỉ áp dụng cho khách hàng có liên kết ví EVM!");
                 }
 
-                if (!$voucher) {
-                    throw new \Exception("Không tìm thấy thông tin NFT Voucher tương ứng trong cơ sở dữ liệu!");
+                // Truy vấn thông tin voucher directly on-chain
+                $relayerGet = \App\Services\BlockchainRelayerService::getVoucher($storeOwner, (int)$voucherNftTokenId);
+                if (!$relayerGet['success']) {
+                    throw new \Exception("Không thể xác thực NFT Voucher từ Blockchain: " . ($relayerGet['error'] ?? 'Lỗi không xác định'));
                 }
 
-                if ($voucher->status !== 'active') {
-                    throw new \Exception("NFT Voucher này đã được sử dụng hoặc đã bị tiêu hủy!");
+                if ($relayerGet['isUsed']) {
+                    throw new \Exception("NFT Voucher này đã được sử dụng hoặc đã bị tiêu hủy trên chuỗi!");
                 }
 
-                if ($voucher->expired_at && $voucher->expired_at->isPast()) {
-                    throw new \Exception("NFT Voucher này đã hết hạn sử dụng!");
+                // Kiểm tra chủ sở hữu NFT có khớp với ví của khách hàng không
+                if (strtolower($relayerGet['owner']) !== strtolower($customer->wallet_address)) {
+                    throw new \Exception("NFT Voucher này không thuộc sở hữu của khách hàng được chọn!");
                 }
 
-                if ($totalAmount < $voucher->min_order_amount) {
-                    throw new \Exception("Đơn hàng chưa đạt giá trị tối thiểu " . number_format($voucher->min_order_amount) . "đ để áp dụng NFT Voucher!");
+                // Kiểm tra xem đơn hàng có đạt giá trị tối thiểu để áp dụng voucher không
+                $blockchainMinOrder = (int)$relayerGet['minOrderAmount'];
+                if ($totalAmount < $blockchainMinOrder) {
+                    throw new \Exception("Đơn hàng chưa đạt giá trị tối thiểu " . number_format($blockchainMinOrder) . "đ để áp dụng NFT Voucher!");
                 }
 
                 // Thực hiện gọi Relayer để tiêu hủy (burn) NFT Voucher trên chuỗi bằng chữ ký số của khách hàng
@@ -153,35 +153,7 @@ class OrderController extends Controller
                 }
 
                 // Tiêu hủy thành công, ghi nhận discount
-                $discountAmount = $voucher->discount_amount;
-                $voucherId = $voucher->id;
-
-                // Cập nhật trạng thái voucher thành đã dùng và điền tx_hash
-                $voucher->update([
-                    'status' => 'used',
-                    'tx_hash' => $relayerResult['txHash'] ?? null
-                ]);
-
-            } elseif ($voucherId) {
-                // Sử dụng Voucher thông thường (off-chain)
-                $voucher = \App\Models\Voucher::where('id', $voucherId)
-                    ->where('store_owner_address', $storeOwner)
-                    ->where('status', 'active')
-                    ->first();
-                if (!$voucher) {
-                    throw new \Exception("Mã giảm giá không hợp lệ hoặc đã được sử dụng!");
-                }
-
-                if ($voucher->expired_at && $voucher->expired_at->isPast()) {
-                    throw new \Exception("Mã giảm giá này đã hết hạn sử dụng!");
-                }
-                
-                // Kiểm tra xem đơn hàng có đạt giá trị tối thiểu để áp dụng voucher không
-                if ($totalAmount < $voucher->min_order_amount) {
-                    throw new \Exception("Đơn hàng chưa đạt giá trị tối thiểu " . number_format($voucher->min_order_amount) . "đ để áp dụng mã giảm giá này!");
-                }
-                
-                $discountAmount = $voucher->discount_amount;
+                $discountAmount = (int)$relayerGet['discountAmount'];
             }
 
             $finalTotalAmount = max(0, $totalAmount - $discountAmount);
@@ -193,7 +165,7 @@ class OrderController extends Controller
                 'customer_id' => $validated['customer_id'] ?? null,
                 'total_amount' => $finalTotalAmount,
                 'discount_amount' => $discountAmount,
-                'voucher_id' => $voucherId,
+                'voucher_nft_token_id' => $voucherNftTokenId,
                 'payment_method' => $validated['payment_method'],
                 'status' => 'pending', // Mặc định là đang chờ xác nhận
                 'blockchain_status' => 'none',
@@ -210,7 +182,7 @@ class OrderController extends Controller
 
             return response()->json([
                 'message' => 'Order created successfully.',
-                'data' => Order::with(['customer', 'items.product', 'items.variant', 'voucher'])->find($order->id)
+                'data' => Order::with(['customer', 'items.product', 'items.variant'])->find($order->id)
             ], 201);
 
 
@@ -247,7 +219,8 @@ class OrderController extends Controller
             'table_number' => 'nullable|string|max:50',
             'customer_id' => 'nullable|integer|exists:customers,id',
             'payment_method' => 'required|string|in:cash,bank_transfer,crypto',
-            'voucher_id' => 'nullable|integer|exists:vouchers,id',
+            'voucher_nft_token_id' => 'nullable|integer',
+            'voucher_nft_signature' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.product_variant_id' => 'nullable|exists:product_variants,id',
@@ -292,26 +265,59 @@ class OrderController extends Controller
 
             // Áp dụng voucher nếu có
             $discountAmount = 0;
-            $voucherId = $validated['voucher_id'] ?? null;
-            if ($voucherId) {
-                // Kiểm tra voucher có hợp lệ không (có thể voucher này chính là voucher đã được gán cho đơn hàng này trước đó, hoặc voucher active khác)
-                $voucher = \App\Models\Voucher::where('id', $voucherId)
-                    ->where('store_owner_address', $storeOwner)
-                    ->where(function ($q) use ($order) {
-                        $q->where('status', 'active')
-                          ->orWhere('id', $order->voucher_id);
-                    })
-                    ->first();
-                if (!$voucher) {
-                    throw new \Exception("Mã giảm giá không hợp lệ hoặc đã được sử dụng!");
+            $voucherNftTokenId = $validated['voucher_nft_token_id'] ?? null;
+            $voucherNftSignature = $validated['voucher_nft_signature'] ?? null;
+
+            if ($order->voucher_nft_token_id !== null) {
+                // Đơn hàng đã áp dụng voucher từ trước
+                if ($voucherNftTokenId !== null && (int)$voucherNftTokenId !== (int)$order->voucher_nft_token_id) {
+                    throw new \Exception("Không thể thay đổi NFT Voucher đã được áp dụng và tiêu hủy cho đơn hàng này!");
                 }
-                
-                // Kiểm tra xem đơn hàng có đạt giá trị tối thiểu để áp dụng voucher không
-                if ($totalAmount < $voucher->min_order_amount) {
-                    throw new \Exception("Đơn hàng chưa đạt giá trị tối thiểu " . number_format($voucher->min_order_amount) . "đ để áp dụng mã giảm giá này!");
+                // Giữ nguyên mức giảm giá cũ
+                $discountAmount = $order->discount_amount;
+                $voucherNftTokenId = $order->voucher_nft_token_id;
+            } elseif ($voucherNftTokenId !== null && !empty($voucherNftSignature)) {
+                // Áp dụng voucher mới
+                $customer = null;
+                if (!empty($validated['customer_id'])) {
+                    $customer = \App\Models\Customer::find($validated['customer_id']);
                 }
-                
-                $discountAmount = $voucher->discount_amount;
+
+                if (!$customer || empty($customer->wallet_address)) {
+                    throw new \Exception("NFT Voucher chỉ áp dụng cho khách hàng có liên kết ví EVM!");
+                }
+
+                // Truy vấn thông tin voucher directly on-chain
+                $relayerGet = \App\Services\BlockchainRelayerService::getVoucher($storeOwner, (int)$voucherNftTokenId);
+                if (!$relayerGet['success']) {
+                    throw new \Exception("Không thể xác thực NFT Voucher từ Blockchain: " . ($relayerGet['error'] ?? 'Lỗi không xác định'));
+                }
+
+                if ($relayerGet['isUsed']) {
+                    throw new \Exception("NFT Voucher này đã được sử dụng hoặc đã bị tiêu hủy trên chuỗi!");
+                }
+
+                if (strtolower($relayerGet['owner']) !== strtolower($customer->wallet_address)) {
+                    throw new \Exception("NFT Voucher này không thuộc sở hữu của khách hàng được chọn!");
+                }
+
+                $blockchainMinOrder = (int)$relayerGet['minOrderAmount'];
+                if ($totalAmount < $blockchainMinOrder) {
+                    throw new \Exception("Đơn hàng chưa đạt giá trị tối thiểu " . number_format($blockchainMinOrder) . "đ để áp dụng NFT Voucher!");
+                }
+
+                $relayerResult = \App\Services\BlockchainRelayerService::useVoucher(
+                    $storeOwner,
+                    (int)$voucherNftTokenId,
+                    $order->order_code,
+                    $voucherNftSignature
+                );
+
+                if (!$relayerResult['success']) {
+                    throw new \Exception("Không thể quy đổi NFT Voucher trên Blockchain: " . ($relayerResult['error'] ?? 'Lỗi không xác định'));
+                }
+
+                $discountAmount = (int)$relayerGet['discountAmount'];
             }
 
             $finalTotalAmount = max(0, $totalAmount - $discountAmount);
@@ -322,7 +328,7 @@ class OrderController extends Controller
                 'customer_id' => $validated['customer_id'] ?? null,
                 'total_amount' => $finalTotalAmount,
                 'discount_amount' => $discountAmount,
-                'voucher_id' => $voucherId,
+                'voucher_nft_token_id' => $voucherNftTokenId,
                 'payment_method' => $validated['payment_method'],
             ]);
 
@@ -338,7 +344,7 @@ class OrderController extends Controller
 
             return response()->json([
                 'message' => 'Cập nhật đơn hàng thành công.',
-                'data' => Order::with(['customer', 'items.product', 'items.variant', 'voucher'])->find($order->id)
+                'data' => Order::with(['customer', 'items.product', 'items.variant'])->find($order->id)
             ]);
 
         } catch (\Exception $e) {
@@ -373,7 +379,7 @@ class OrderController extends Controller
 
         return response()->json([
             'message' => 'Order status updated successfully.',
-            'data' => Order::with(['customer', 'items.product', 'items.variant', 'voucher'])->find($order->id)
+            'data' => Order::with(['customer', 'items.product', 'items.variant'])->find($order->id)
         ]);
     }
 
@@ -453,7 +459,7 @@ class OrderController extends Controller
 
         return response()->json([
             'message' => 'Blockchain sync updated successfully.',
-            'data' => Order::with(['customer', 'items.product', 'items.variant', 'voucher'])->find($order->id)
+            'data' => Order::with(['customer', 'items.product', 'items.variant'])->find($order->id)
         ]);
     }
 }

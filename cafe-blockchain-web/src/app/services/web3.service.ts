@@ -1260,4 +1260,45 @@ export class Web3Service {
       return [];
     }
   }
+
+  /**
+   * Truy vấn trực tiếp một NFT Voucher theo ID từ Blockchain không qua quét block events.
+   */
+  public async getSingleVoucherFromChain(tokenId: number): Promise<any | null> {
+    if (!this.voucherContractAddress() || this.voucherContractAddress().trim() === '') {
+      return null;
+    }
+
+    try {
+      const activeProvider = new JsonRpcProvider(this.rpcUrl());
+      const contract = new Contract(this.voucherContractAddress(), CAFE_VOUCHER_NFT_ABI, activeProvider);
+
+      // 1. Kiểm tra chủ sở hữu
+      const owner = await contract['ownerOf'](tokenId);
+      
+      // 2. Đọc thông tin chi tiết voucher
+      const info = await contract['vouchers'](tokenId);
+      
+      if (info) {
+        const tokenUri = await contract['tokenURI'](tokenId);
+        const parts = tokenUri.split('/');
+        const code = parts[parts.length - 1] || `NFT-${tokenId}`;
+
+        return {
+          tokenId: Number(tokenId),
+          code: code,
+          discount_amount: Number(info.discountAmount),
+          min_order_amount: Number(info.minOrderAmount),
+          tokenUri: tokenUri,
+          isNft: true,
+          status: info.isUsed ? 'used' : 'active',
+          ownerAddress: owner
+        };
+      }
+      return null;
+    } catch (err) {
+      console.error(`Lỗi đọc NFT Voucher ID ${tokenId} trực tiếp từ chain:`, err);
+      return null;
+    }
+  }
 }

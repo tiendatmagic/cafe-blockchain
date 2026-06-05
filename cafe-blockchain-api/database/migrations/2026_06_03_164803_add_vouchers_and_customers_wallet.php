@@ -15,23 +15,9 @@ return new class extends Migration
             $table->string('wallet_address')->nullable()->after('email');
         });
 
-        // 2. Tạo bảng vouchers
-        Schema::create('vouchers', function (Blueprint $table) {
-            $table->id();
-            $table->string('code')->unique();
-            $table->foreignId('customer_id')->nullable()->constrained('customers')->onDelete('cascade');
-            $table->string('wallet_address')->nullable();
-            $table->integer('discount_amount')->default(0);
-            $table->integer('min_order_amount')->default(0);
-            $table->string('status')->default('active'); // active, used, expired
-            $table->string('tx_hash')->nullable();
-            $table->string('store_owner_address')->nullable();
-            $table->timestamps();
-        });
-
-        // 3. Thêm voucher_id và discount_amount vào bảng orders
+        // 2. Thêm voucher_nft_token_id và discount_amount vào bảng orders
         Schema::table('orders', function (Blueprint $table) {
-            $table->foreignId('voucher_id')->nullable()->constrained('vouchers')->onDelete('set null');
+            $table->unsignedBigInteger('voucher_nft_token_id')->nullable()->after('total_amount');
             $table->integer('discount_amount')->default(0)->after('total_amount');
         });
     }
@@ -42,11 +28,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->dropForeign(['voucher_id']);
-            $table->dropColumn(['voucher_id', 'discount_amount']);
+            $table->dropColumn(['voucher_nft_token_id', 'discount_amount']);
         });
-
-        Schema::dropIfExists('vouchers');
 
         Schema::table('customers', function (Blueprint $table) {
             $table->dropColumn('wallet_address');
