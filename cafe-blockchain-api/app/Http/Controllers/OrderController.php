@@ -110,10 +110,19 @@ class OrderController extends Controller
                     throw new \Exception("Thiếu mã hóa đơn (order_code) khi áp dụng chữ ký số NFT Voucher!");
                 }
 
-                // Tìm bản ghi voucher tương ứng trong DB bằng format code: NFT-{tokenId}
-                $voucher = \App\Models\Voucher::where('code', 'NFT-' . $voucherNftTokenId)
-                    ->where('store_owner_address', $storeOwner)
-                    ->first();
+                // Tìm bản ghi voucher tương ứng trong DB dựa vào voucher_id gửi lên, hoặc fallback theo code format NFT-{tokenId}
+                $voucher = null;
+                if ($voucherId) {
+                    $voucher = \App\Models\Voucher::where('id', $voucherId)
+                        ->where('store_owner_address', $storeOwner)
+                        ->first();
+                }
+
+                if (!$voucher) {
+                    $voucher = \App\Models\Voucher::where('code', 'NFT-' . $voucherNftTokenId)
+                        ->where('store_owner_address', $storeOwner)
+                        ->first();
+                }
 
                 if (!$voucher) {
                     throw new \Exception("Không tìm thấy thông tin NFT Voucher tương ứng trong cơ sở dữ liệu!");

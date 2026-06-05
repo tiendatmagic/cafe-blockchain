@@ -1213,7 +1213,7 @@ export class Web3Service {
     }
 
     try {
-      const activeProvider = this.provider || new JsonRpcProvider(this.rpcUrl());
+      const activeProvider = new JsonRpcProvider(this.rpcUrl());
       const contract = new Contract(this.voucherContractAddress(), CAFE_VOUCHER_NFT_ABI, activeProvider);
 
       // 1. Quét sự kiện Transfer gửi tới ví khách hàng
@@ -1244,7 +1244,8 @@ export class Web3Service {
                 discount_amount: Number(info.discountAmount),
                 min_order_amount: Number(info.minOrderAmount),
                 tokenUri: tokenUri,
-                isNft: true
+                isNft: true,
+                status: 'active'
               });
             }
           }

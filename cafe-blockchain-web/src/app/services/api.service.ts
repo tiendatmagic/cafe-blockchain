@@ -145,6 +145,14 @@ export class ApiService {
     return this.http.get<any[]>(`${this.baseUrl}/vouchers`, { params, headers: this.getHeaders() });
   }
 
+  public syncVouchersOwnership(customerId: number, walletAddress: string, vouchers: { code: string, token_id: number }[]): Observable<any> {
+    return this.http.post(`${this.baseUrl}/vouchers/sync-ownership`, {
+      customer_id: customerId,
+      wallet_address: walletAddress,
+      vouchers: vouchers
+    }, { headers: this.getHeaders() });
+  }
+
   public syncOrderBlockchain(id: number, txHash: string, blockchainStatus: string, chainId?: string): Observable<any> {
     return this.http.put(`${this.baseUrl}/orders/${id}/sync`, {
       tx_hash: txHash,

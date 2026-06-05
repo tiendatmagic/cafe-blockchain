@@ -35,6 +35,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Vouchers API
     Route::get('/vouchers', [\App\Http\Controllers\VoucherController::class, 'index']);
+    Route::post('/vouchers/sync-ownership', [\App\Http\Controllers\VoucherController::class, 'syncOwnership']);
 
     // Products API
     Route::get('/products', [ProductController::class, 'index']);

@@ -81,4 +81,42 @@ class VoucherController extends Controller
             'attributes' => $attributes
         ]);
     }
+
+    /**
+     * Đồng bộ quyền sở hữu các NFT Voucher dựa trên dữ liệu blockchain từ frontend
+     */
+    public function syncOwnership(Request $request)
+    {
+        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        
+        $validated = $request->validate([
+            'customer_id' => 'required|integer|exists:customers,id',
+            'wallet_address' => 'required|string|max:42',
+            'vouchers' => 'present|array',
+            'vouchers.*.code' => 'required|string',
+            'vouchers.*.token_id' => 'required|integer',
+        ]);
+        
+        $customerId = $validated['customer_id'];
+        $walletAddress = strtolower($validated['wallet_address']);
+        
+        foreach ($validated['vouchers'] as $v) {
+            $voucher = Voucher::where('code', $v['code'])
+                ->where('store_owner_address', $storeOwner)
+                ->first();
+                
+            if ($voucher) {
+                // Nếu chủ sở hữu hiện tại trong DB khác với ví nhận hiện tại
+                if ($voucher->customer_id != $customerId || strtolower($voucher->wallet_address) != $walletAddress) {
+                    $voucher->update([
+                        'customer_id' => $customerId,
+                        'wallet_address' => $walletAddress,
+                    ]);
+                }
+            }
+        }
+        
+        return response()->json(['success' => true]);
+    }
 }
+

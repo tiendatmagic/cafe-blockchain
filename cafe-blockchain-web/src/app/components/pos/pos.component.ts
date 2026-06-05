@@ -434,83 +434,122 @@ export class PosComponent implements OnInit, OnDestroy {
     const customer = this.stateService.posSelectedCustomer();
     const walletAddress = customer?.wallet_address;
 
-    this.apiService.getVouchers(customerId, 'active').subscribe({
-      next: (dbVouchers) => {
-        const vouchers = dbVouchers || [];
-        
-        // Nếu khách hàng có ví Web3 và quán đã cấu hình NFT Voucher contract, quét thêm trên chuỗi
-        if (walletAddress && this.web3Service.voucherContractAddress()) {
-          this.web3Service.getCustomerVouchersFromChain(walletAddress).then(chainVouchers => {
-            if (chainVouchers && chainVouchers.length > 0) {
-              const merged = [...vouchers];
-              const missingCodes: string[] = [];
-              const chainVoucherMap = new Map<string, any>();
-
-              chainVouchers.forEach(cv => {
-                chainVoucherMap.set(cv.code, cv);
-                const idx = merged.findIndex(mv => mv.code === cv.code);
-                if (idx > -1) {
-                  // Cập nhật thuộc tính NFT và tokenId cho voucher đã đồng bộ trong DB
-                  merged[idx].isNft = true;
-                  merged[idx].tokenId = cv.tokenId;
-                } else {
-                  missingCodes.push(cv.code);
+    // 1. Nếu khách hàng có ví Web3 và quán đã cấu hình NFT Voucher contract, tiến hành kiểm tra trên chuỗi trước
+    if (walletAddress && this.web3Service.voucherContractAddress()) {
+      this.web3Service.getCustomerVouchersFromChain(walletAddress).then(chainVouchers => {
+        if (chainVouchers && chainVouchers.length > 0) {
+          // 2. Gửi danh sách voucher on-chain lên backend để đồng bộ quyền sở hữu (customer_id và wallet_address)
+          const syncData = chainVouchers.map(cv => ({ code: cv.code, token_id: cv.tokenId }));
+          this.apiService.syncVouchersOwnership(customerId, walletAddress, syncData).subscribe({
+            next: () => {
+              // 3. Sau khi đồng bộ thành công, lấy toàn bộ danh sách voucher hoạt động mới nhất từ DB
+              this.apiService.getVouchers(customerId, 'active').subscribe({
+                next: (dbVouchers) => {
+                  const merged = (dbVouchers || []).map(dv => {
+                    const cv = chainVouchers.find(c => c.code === dv.code);
+                    return {
+                      ...dv,
+                      isNft: cv ? true : dv.isNft,
+                      tokenId: cv ? cv.tokenId : dv.tokenId
+                    };
+                  });
+                  this.setAndFilterActiveVouchers(merged);
+                },
+                error: (err) => {
+                  console.error('Lỗi tải voucher từ DB sau khi đồng bộ:', err);
+                  this.setAndFilterActiveVouchers(chainVouchers);
                 }
               });
-
-              if (missingCodes.length > 0) {
-                // Gọi API lấy thông tin chi tiết từ DB cho các voucher bị thiếu (do chuyển nhượng)
-                this.apiService.getVouchers(undefined, undefined, missingCodes).subscribe({
-                  next: (missingDbVouchers) => {
-                    missingDbVouchers.forEach(mv => {
-                      const cv = chainVoucherMap.get(mv.code);
-                      if (cv) {
-                        // Merge thông tin từ DB (như expired_at, status) vào voucher NFT từ chain
-                        merged.push({
-                          ...mv,
-                          isNft: true,
-                          tokenId: cv.tokenId
-                        });
-                      }
-                    });
-
-                    // Thêm những voucher từ chain mà hoàn toàn không có trong DB (phòng hờ)
-                    missingCodes.forEach(code => {
-                      const alreadyAdded = merged.some(mv => mv.code === code);
-                      if (!alreadyAdded) {
-                        const cv = chainVoucherMap.get(code);
-                        if (cv) merged.push(cv);
-                      }
-                    });
-
-                    this.setAndFilterActiveVouchers(merged);
-                  },
-                  error: (err) => {
-                    console.error('Lỗi lấy voucher chi tiết từ DB cho chain vouchers:', err);
-                    // Fallback: Vẫn thêm chain vouchers thô
-                    missingCodes.forEach(code => {
-                      const cv = chainVoucherMap.get(code);
-                      if (cv) merged.push(cv);
-                    });
-                    this.setAndFilterActiveVouchers(merged);
-                  }
-                });
-              } else {
-                this.setAndFilterActiveVouchers(merged);
-              }
-            } else {
-              this.setAndFilterActiveVouchers(vouchers);
+            },
+            error: (syncErr) => {
+              console.error('Lỗi đồng bộ sở hữu voucher NFT:', syncErr);
+              // Fallback: Nếu đồng bộ lỗi, chạy quy trình cũ không đồng bộ DB
+              this.loadActiveVouchersFallback(customerId, walletAddress, chainVouchers);
             }
-          }).catch(err => {
-            console.error('Lỗi quét voucher NFT từ blockchain:', err);
-            this.setAndFilterActiveVouchers(vouchers);
           });
         } else {
-          this.setAndFilterActiveVouchers(vouchers);
+          // Không có voucher nào trên chain, chỉ tải từ DB
+          this.loadVouchersFromDbOnly(customerId);
         }
+      }).catch(err => {
+        console.error('Lỗi quét voucher NFT từ blockchain:', err);
+        this.loadVouchersFromDbOnly(customerId);
+      });
+    } else {
+      // Khách hàng không có ví hoặc quán không cấu hình NFT contract
+      this.loadVouchersFromDbOnly(customerId);
+    }
+  }
+
+  private loadVouchersFromDbOnly(customerId: number) {
+    this.apiService.getVouchers(customerId, 'active').subscribe({
+      next: (dbVouchers) => {
+        this.setAndFilterActiveVouchers(dbVouchers || []);
       },
       error: (err) => {
         console.error('Lỗi tải voucher của khách hàng:', err);
+      }
+    });
+  }
+
+  private loadActiveVouchersFallback(customerId: number, walletAddress: string, chainVouchers: any[]) {
+    this.apiService.getVouchers(customerId, 'active').subscribe({
+      next: (dbVouchers) => {
+        const vouchers = dbVouchers || [];
+        const merged = [...vouchers];
+        const missingCodes: string[] = [];
+        const chainVoucherMap = new Map<string, any>();
+
+        chainVouchers.forEach(cv => {
+          chainVoucherMap.set(cv.code, cv);
+          const idx = merged.findIndex(mv => mv.code === cv.code);
+          if (idx > -1) {
+            merged[idx].isNft = true;
+            merged[idx].tokenId = cv.tokenId;
+          } else {
+            missingCodes.push(cv.code);
+          }
+        });
+
+        if (missingCodes.length > 0) {
+          this.apiService.getVouchers(undefined, undefined, missingCodes).subscribe({
+            next: (missingDbVouchers) => {
+              missingDbVouchers.forEach(mv => {
+                const cv = chainVoucherMap.get(mv.code);
+                if (cv) {
+                  merged.push({
+                    ...mv,
+                    isNft: true,
+                    tokenId: cv.tokenId
+                  });
+                }
+              });
+
+              missingCodes.forEach(code => {
+                const alreadyAdded = merged.some(mv => mv.code === code);
+                if (!alreadyAdded) {
+                  const cv = chainVoucherMap.get(code);
+                  if (cv) merged.push(cv);
+                }
+              });
+
+              this.setAndFilterActiveVouchers(merged);
+            },
+            error: (err) => {
+              console.error('Lỗi lấy voucher chi tiết từ DB (fallback):', err);
+              missingCodes.forEach(code => {
+                const cv = chainVoucherMap.get(code);
+                if (cv) merged.push(cv);
+              });
+              this.setAndFilterActiveVouchers(merged);
+            }
+          });
+        } else {
+          this.setAndFilterActiveVouchers(merged);
+        }
+      },
+      error: (err) => {
+        console.error('Lỗi tải voucher (fallback):', err);
       }
     });
   }
