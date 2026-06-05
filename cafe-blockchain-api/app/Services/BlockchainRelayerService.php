@@ -55,6 +55,40 @@ class BlockchainRelayerService
     }
 
     /**
+     * Kiểm tra xem Voucher NFT cho mã đơn hàng này đã được đúc on-chain hay chưa
+     */
+    public static function checkVoucherMinted(string $storeOwnerAddress, string $customerAddress, string $orderCode): array
+    {
+        $contractAddress = Setting::getForStore('voucher_contract_address', $storeOwnerAddress);
+        $rpcUrl = Setting::getForStore('rpc_url', $storeOwnerAddress, 'https://ethereum-sepolia.publicnode.com');
+        
+        $encryptedKey = Setting::getForStore('relayer_private_key', $storeOwnerAddress);
+        $privateKey = null;
+        if (!empty($encryptedKey)) {
+            try {
+                $privateKey = \Illuminate\Support\Facades\Crypt::decryptString($encryptedKey);
+            } catch (\Exception $e) {
+                // Bỏ qua lỗi giải mã vì check view không bắt buộc dùng khóa Relayer thật
+            }
+        }
+
+        if (empty($contractAddress)) {
+            return ['success' => false, 'error' => 'Chưa cấu hình hợp đồng NFT Voucher cho quán!'];
+        }
+
+        $payload = [
+            'action' => 'checkMinted',
+            'privateKey' => $privateKey ?: '0x0000000000000000000000000000000000000000000000000000000000000000',
+            'rpcUrl' => $rpcUrl,
+            'contractAddress' => $contractAddress,
+            'to' => $customerAddress,
+            'orderCode' => $orderCode
+        ];
+
+        return self::executeRelayer($payload);
+    }
+
+    /**
      * Thực hiện quy đổi và tiêu hủy (burn) voucher NFT sử dụng chữ ký số EIP-712
      *
      * @param string $storeOwnerAddress Địa chỉ ví của chủ quán

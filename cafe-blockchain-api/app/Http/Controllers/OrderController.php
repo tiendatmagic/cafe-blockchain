@@ -462,4 +462,90 @@ class OrderController extends Controller
             'data' => Order::with(['customer', 'items.product', 'items.variant'])->find($order->id)
         ]);
     }
+
+    /**
+     * Tặng lại Voucher NFT thủ công cho đơn hàng thành công & đã đồng bộ blockchain
+     */
+    public function mintVoucherManual(Request $request, $id)
+    {
+        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $order = Order::where('store_owner_address', $storeOwner)->with('customer')->findOrFail($id);
+
+        // 1. Kiểm tra các ràng buộc nghiệp vụ
+        if ($order->status !== 'completed') {
+            return response()->json(['message' => 'Chỉ có thể tặng voucher cho đơn hàng đã hoàn thành!'], 400);
+        }
+
+        if ($order->blockchain_status !== 'success') {
+            return response()->json(['message' => 'Chỉ có thể tặng voucher cho đơn hàng đã đồng bộ blockchain thành công!'], 400);
+        }
+
+        if ($order->voucher_nft_token_id !== null) {
+            return response()->json(['message' => 'Đơn hàng này đã có Voucher NFT liên kết (Token ID: ' . $order->voucher_nft_token_id . ').'], 400);
+        }
+
+        if (!$order->customer || empty($order->customer->wallet_address)) {
+            return response()->json(['message' => 'Khách hàng của đơn hàng này không liên kết ví Web3!'], 400);
+        }
+
+        $minGiftAmount = (int)\App\Models\Setting::getForStore('voucher_gift_min_amount', $storeOwner, 100000);
+        $originalTotal = $order->total_amount + $order->discount_amount;
+        if ($originalTotal < $minGiftAmount) {
+            return response()->json(['message' => 'Đơn hàng chưa đạt giá trị tối thiểu ' . number_format($minGiftAmount) . 'đ để được tặng voucher!'], 400);
+        }
+
+        $giftDiscount = (int)\App\Models\Setting::getForStore('voucher_discount_amount', $storeOwner, 5000);
+        $useMinAmount = (int)\App\Models\Setting::getForStore('voucher_use_min_amount', $storeOwner, 100000);
+        $customerWallet = $order->customer->wallet_address;
+
+        // 2. Chống mint trùng: Gọi Relayer checkMinted on-chain trước
+        $checkResult = \App\Services\BlockchainRelayerService::checkVoucherMinted(
+            $storeOwner,
+            $customerWallet,
+            $order->order_code
+        );
+
+        if ($checkResult['success'] && $checkResult['exists']) {
+            // Đã tồn tại voucher NFT on-chain cho đơn hàng này
+            $order->voucher_nft_token_id = (int)$checkResult['tokenId'];
+            $order->verification_hash = $order->generateVerificationHash();
+            $order->saveQuietly();
+
+            return response()->json([
+                'message' => 'Phát hiện Voucher NFT đã được đúc thành công trước đó trên Blockchain! Đã khôi phục liên kết dữ liệu.',
+                'data' => Order::with(['customer', 'items.product', 'items.variant'])->find($order->id)
+            ]);
+        }
+
+        // 3. Tiến hành đúc Voucher NFT mới
+        $voucherCode = 'NFT-' . $giftDiscount . '-' . $useMinAmount . '-' . $order->order_code;
+        $tokenUri = url("/api/vouchers/metadata/{$voucherCode}");
+
+        $relayerResult = \App\Services\BlockchainRelayerService::mintVoucher(
+            $storeOwner,
+            $customerWallet,
+            $tokenUri,
+            $giftDiscount,
+            $useMinAmount
+        );
+
+        if (!$relayerResult['success']) {
+            return response()->json([
+                'message' => 'Không thể đúc Voucher NFT qua Blockchain Relayer: ' . ($relayerResult['error'] ?? 'Lỗi không xác định')
+            ], 500);
+        }
+
+        // 4. Lưu lại thông tin đúc thành công vào database
+        $tokenId = isset($relayerResult['tokenId']) ? (int)$relayerResult['tokenId'] : null;
+        if ($tokenId) {
+            $order->voucher_nft_token_id = $tokenId;
+            $order->verification_hash = $order->generateVerificationHash();
+            $order->saveQuietly();
+        }
+
+        return response()->json([
+            'message' => 'Tặng và đúc thành công Voucher NFT cho khách hàng!',
+            'data' => Order::with(['customer', 'items.product', 'items.variant'])->find($order->id)
+        ]);
+    }
 }

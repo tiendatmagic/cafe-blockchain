@@ -28,6 +28,7 @@ export class OrdersComponent implements OnInit {
   public readonly isAutoSyncOnCompleteChecked = signal<boolean>(false);
   public readonly blockchainSyncLoading = signal<boolean>(false);
   public readonly isOrderStatusUpdating = signal<boolean>(false);
+  public readonly isMintingVoucherManual = signal<boolean>(false);
 
   // Chi tiết đơn hàng & Hủy đơn hàng
   public readonly selectedOrderDetails = signal<any>(null);
@@ -151,47 +152,45 @@ export class OrdersComponent implements OnInit {
 
   // Cập nhật trạng thái đơn hàng (xác nhận thành công / đã hủy)
   public async updateStatus(orderId: number, status: 'completed' | 'cancelled' | 'preparing') {
-    if (!this.web3Service.walletConnected()) {
-      this.stateService.showToast('Vui lòng kết nối ví Web3 để thay đổi trạng thái đơn hàng!', 'error');
-      return;
-    }
-
     if (status === 'cancelled' || status === 'preparing' || !this.isAutoSyncOnCompleteChecked()) {
       this.executeStatusUpdateOnly(orderId, status);
       return;
     }
 
-    // Hoàn thành đơn hàng đồng thời ghi Blockchain trực tiếp
-    this.isOrderStatusUpdating.set(true);
-    this.blockchainSyncLoading.set(true);
-    this.stateService.showToast('Bắt đầu đồng bộ Blockchain. Vui lòng xác nhận trên ví MetaMask...', 'success');
-
-    const order = this.selectedOrderDetails();
-    if (!order) {
-      this.isOrderStatusUpdating.set(false);
-      this.blockchainSyncLoading.set(false);
+    if (!this.web3Service.walletConnected()) {
+      this.stateService.showToast('Vui lòng kết nối ví Web3 để đồng bộ hóa đơn lên Blockchain!', 'error');
       return;
     }
 
-    const itemsSummary = order.items.map((item: any) => {
-      const variantStr = item.variant ? ` (${item.variant.variant_name})` : '';
-      return `${item.quantity}x ${item.product.name}${variantStr}`;
-    }).join(', ');
+    const order = this.selectedOrderDetails();
+    if (!order) return;
 
-    const result = await this.web3Service.recordOrderOnChain(
-      order.id,
-      order.order_code || '',
-      order.table_number || 'Mang ve',
-      order.total_amount,
-      this.getPaymentMethodText(order.payment_method),
-      itemsSummary
-    );
+    this.isOrderStatusUpdating.set(true);
+    this.blockchainSyncLoading.set(true);
 
-    if (result.success && result.txHash) {
-      this.stateService.showToast('Giao dịch Blockchain thành công! Đang lưu trạng thái...', 'success');
+    // 1. Lưu Database POS trước
+    this.apiService.updateOrderStatus(orderId, 'completed').subscribe({
+      next: async (res) => {
+        this.stateService.showToast('Đơn hàng đã được hoàn thành cục bộ! Đang ghi nhận lên Blockchain...', 'success');
+        this.updateLocalOrder(res.data);
 
-      this.apiService.updateOrderStatus(orderId, 'completed').subscribe({
-        next: (res) => {
+        // 2. Ký giao dịch Blockchain sau khi DB lưu thành công
+        const itemsSummary = order.items.map((item: any) => {
+          const variantStr = item.variant ? ` (${item.variant.variant_name})` : '';
+          return `${item.quantity}x ${item.product.name}${variantStr}`;
+        }).join(', ');
+
+        const result = await this.web3Service.recordOrderOnChain(
+          order.id,
+          order.order_code || '',
+          order.table_number || 'Mang ve',
+          order.total_amount,
+          this.getPaymentMethodText(order.payment_method),
+          itemsSummary
+        );
+
+        if (result.success && result.txHash) {
+          // 3. Đồng bộ txHash vào DB
           this.apiService.syncOrderBlockchain(orderId, result.txHash, 'success', this.web3Service.chainId()).subscribe({
             next: (syncRes) => {
               this.stateService.showToast('Hoàn thành đơn hàng và đồng bộ Blockchain thành công!', 'success');
@@ -205,33 +204,20 @@ export class OrdersComponent implements OnInit {
               this.blockchainSyncLoading.set(false);
             }
           });
-        },
-        error: (err) => {
-          console.error('Lỗi cập nhật trạng thái:', err);
-          this.stateService.showToast('Cập nhật trạng thái POS thất bại!', 'error');
+        } else {
+          console.warn('[Blockchain] Giao dịch Blockchain thất bại hoặc bị từ chối:', result.error);
+          this.stateService.showToast('Giao dịch Blockchain thất bại hoặc bị từ chối! Bạn có thể đồng bộ/đối soát lại sau.', 'error');
           this.isOrderStatusUpdating.set(false);
           this.blockchainSyncLoading.set(false);
         }
-      });
-    } else {
-      console.warn('[Blockchain] Giao dịch Blockchain thất bại hoặc bị từ chối, chuyển sang chế độ dự phòng:', result.error);
-      this.stateService.showToast('Ví bị từ chối! Kích hoạt chế độ dự phòng: Lưu Database POS trước.', 'success');
-
-      this.apiService.updateOrderStatus(orderId, 'completed').subscribe({
-        next: (res) => {
-          this.stateService.showToast('Đơn hàng đã được lưu hoàn thành vào Database POS!', 'success');
-          this.updateLocalOrder(res.data);
-          this.isOrderStatusUpdating.set(false);
-          this.blockchainSyncLoading.set(false);
-        },
-        error: (err) => {
-          console.error(err);
-          this.stateService.showToast('Cập nhật trạng thái thất bại!', 'error');
-          this.isOrderStatusUpdating.set(false);
-          this.blockchainSyncLoading.set(false);
-        }
-      });
-    }
+      },
+      error: (err) => {
+        console.error('Lỗi cập nhật trạng thái:', err);
+        this.stateService.showToast('Cập nhật trạng thái POS thất bại!', 'error');
+        this.isOrderStatusUpdating.set(false);
+        this.blockchainSyncLoading.set(false);
+      }
+    });
   }
 
   // Cập nhật Database đơn thuần
@@ -355,6 +341,29 @@ export class OrdersComponent implements OnInit {
     }
 
     this.stateService.showToast('Đã hoàn tất tiến trình đồng bộ đối soát ca trực!', 'success');
+  }
+
+  // Tặng và đúc lại Voucher NFT thủ công
+  public mintVoucherManual(order: any) {
+    if (!order) return;
+    if (this.isMintingVoucherManual()) return;
+
+    this.isMintingVoucherManual.set(true);
+    this.stateService.showToast('Đang đúc và gửi tặng Voucher NFT thủ công...', 'success');
+
+    this.apiService.mintVoucherManual(order.id).subscribe({
+      next: (res) => {
+        this.stateService.showToast(res.message || 'Tặng Voucher NFT thành công!', 'success');
+        this.updateLocalOrder(res.data);
+        this.isMintingVoucherManual.set(false);
+      },
+      error: (err) => {
+        console.error('Lỗi đúc Voucher NFT thủ công:', err);
+        const errMsg = err.error?.message || 'Có lỗi xảy ra khi đúc Voucher NFT!';
+        this.stateService.showToast(errMsg, 'error');
+        this.isMintingVoucherManual.set(false);
+      }
+    });
   }
 
   // Khởi động chế độ chỉnh sửa đơn hàng POS

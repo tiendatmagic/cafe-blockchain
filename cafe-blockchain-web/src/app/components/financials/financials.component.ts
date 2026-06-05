@@ -205,7 +205,7 @@ export class FinancialsComponent {
 
   public async syncTransactionImmediatelyAfterCreate(tx: any) {
     if (!this.web3Service.walletConnected()) {
-      this.stateService.showToast('Lưu Database thành công. Chưa kết nối ví Web3 để đồng bộ Blockchain!', 'success');
+      this.stateService.showToast('Ghi nhận thu chi thành công cục bộ! Chưa kết nối ví Web3 để đồng bộ Blockchain.', 'error');
       this.closeTransactionModal();
       this.stateService.refreshTransactions();
       this.isTransactionSaving.set(false);
@@ -213,7 +213,7 @@ export class FinancialsComponent {
     }
 
     if (!this.web3Service.financeContractAddress() || this.web3Service.financeContractAddress().trim() === '') {
-      this.stateService.showToast('Lưu Database thành công. Chưa cấu hình Smart Contract Tài chính để đồng bộ Blockchain!', 'success');
+      this.stateService.showToast('Ghi nhận thu chi thành công cục bộ! Chưa cấu hình Smart Contract để đồng bộ Blockchain.', 'error');
       this.closeTransactionModal();
       this.stateService.refreshTransactions();
       this.isTransactionSaving.set(false);
@@ -249,8 +249,8 @@ export class FinancialsComponent {
         }
       });
     } else {
-      console.warn('[Blockchain] Giao dịch Blockchain thất bại hoặc bị từ chối, chuyển sang chế độ dự phòng:', result.error);
-      this.stateService.showToast('Ví bị từ chối! Kích hoạt chế độ dự phòng: Chỉ ghi nhận vào Database POS.', 'success');
+      console.warn('[Blockchain] Giao dịch Blockchain thất bại hoặc bị từ chối:', result.error);
+      this.stateService.showToast('Phiếu thu chi đã lưu cục bộ thành công! Giao dịch blockchain thất bại hoặc bị từ chối.', 'error');
       
       this.closeTransactionModal();
       this.stateService.refreshTransactions();

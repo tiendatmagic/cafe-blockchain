@@ -21,7 +21,9 @@ const ABI = [
   "function mintVoucher(address to, string _tokenURI, uint256 discount, uint256 minOrder) public returns (uint256)",
   "function useVoucherWithSignature(uint256 tokenId, string orderCode, bytes signature) public",
   "function balanceOf(address owner) public view returns (uint256)",
-  "function ownerOf(uint256 tokenId) public view returns (address)"
+  "function ownerOf(uint256 tokenId) public view returns (address)",
+  "function tokenURI(uint256 tokenId) public view returns (string)",
+  "event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)"
 ];
 
 async function main() {
@@ -129,6 +131,72 @@ async function main() {
         minOrderAmount: info.minOrderAmount.toString(),
         isUsed: info.isUsed,
         tokenUri: tokenUri
+      }));
+
+    } else if (action === 'checkMinted') {
+      const { to, orderCode } = data;
+      if (!to || !orderCode) {
+        console.error(JSON.stringify({ success: false, error: 'Thiếu thông tin check (to, orderCode).' }));
+        process.exit(1);
+      }
+
+      const balance = await contract.balanceOf(to);
+      const targetCount = Number(balance);
+
+      if (targetCount === 0) {
+        console.log(JSON.stringify({
+          success: true,
+          action: 'checkMinted',
+          exists: false
+        }));
+        process.exit(0);
+      }
+
+      // Quét Transfer event giật lùi để tìm tokenId (chia chunk 99k block tránh giới hạn RPC)
+      let foundTokenId = null;
+      let tokensChecked = [];
+      const filter = contract.filters.Transfer(null, to);
+      const currentBlock = await provider.getBlockNumber();
+      const maxScanBlocks = 1000000;
+      const scanStart = Math.max(0, currentBlock - maxScanBlocks);
+      const chunkSize = 99000;
+
+      let endBlock = currentBlock;
+      while (endBlock > scanStart && tokensChecked.length < targetCount) {
+        let startBlock = Math.max(scanStart, endBlock - chunkSize);
+        try {
+          const events = await contract.queryFilter(filter, startBlock, endBlock);
+          // Duyệt từ mới nhất về cũ nhất
+          for (let i = events.length - 1; i >= 0; i--) {
+            const event = events[i];
+            const tokenId = event.args[2].toString();
+            if (!tokensChecked.includes(tokenId)) {
+              tokensChecked.push(tokenId);
+              try {
+                const tokenUri = await contract.tokenURI(tokenId);
+                if (tokenUri.includes(orderCode)) {
+                  foundTokenId = tokenId;
+                  break;
+                }
+              } catch (e) {
+                // Bỏ qua nếu token đã bị burn hoặc lỗi đọc
+              }
+            }
+          }
+          if (foundTokenId !== null) {
+            break;
+          }
+        } catch (err) {
+          // Bỏ qua lỗi chunk này hoặc giảm bớt chunk size
+        }
+        endBlock = startBlock - 1;
+      }
+
+      console.log(JSON.stringify({
+        success: true,
+        action: 'checkMinted',
+        exists: foundTokenId !== null,
+        tokenId: foundTokenId
       }));
 
     } else {

@@ -91,8 +91,8 @@ class Order extends Model
                         $voucherContract = \App\Models\Setting::getForStore('voucher_contract_address', $storeOwner);
 
                         if (!empty($customerWallet) && !empty($voucherContract)) {
-                            // Tạo mã voucher ngẫu nhiên chứa thông tin discount và minOrder
-                            $voucherCode = 'NFT-' . $giftDiscount . '-' . $useMinAmount . '-' . strtoupper(\Illuminate\Support\Str::random(6));
+                            // Tạo mã voucher gắn với mã đơn hàng thay vì ngẫu nhiên
+                            $voucherCode = 'NFT-' . $giftDiscount . '-' . $useMinAmount . '-' . $order->order_code;
                             $tokenUri = url("/api/vouchers/metadata/{$voucherCode}");
 
                             // Gọi Relayer thực hiện đúc (mint) NFT trên Blockchain
@@ -106,6 +106,13 @@ class Order extends Model
 
                             if ($relayerResult['success']) {
                                 \Illuminate\Support\Facades\Log::info("Minted NFT Voucher successfully with code: {$voucherCode}, TxHash: " . ($relayerResult['txHash'] ?? ''));
+                                
+                                // Cập nhật token_id vào DB POS để hoàn tất liên kết
+                                if (!empty($relayerResult['tokenId'])) {
+                                    $order->voucher_nft_token_id = (int)$relayerResult['tokenId'];
+                                    $order->verification_hash = $order->generateVerificationHash();
+                                    $order->saveQuietly();
+                                }
                             } else {
                                 \Illuminate\Support\Facades\Log::warning("Mint NFT Voucher that bai: " . ($relayerResult['error'] ?? 'Lỗi không xác định'));
                             }

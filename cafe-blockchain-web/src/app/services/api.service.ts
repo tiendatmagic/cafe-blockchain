@@ -157,6 +157,10 @@ export class ApiService {
     }, { headers: this.getHeaders() });
   }
 
+  public mintVoucherManual(orderId: number): Observable<any> {
+    return this.http.post(`${this.baseUrl}/orders/${orderId}/mint-voucher-manual`, {}, { headers: this.getHeaders() });
+  }
+
   // 4. Settings (Cấu hình) API
   public getSettings(): Observable<any> {
     return this.http.get(`${this.baseUrl}/settings`, { headers: this.getHeaders() });

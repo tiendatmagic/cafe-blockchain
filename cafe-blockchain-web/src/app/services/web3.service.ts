@@ -686,7 +686,7 @@ export class Web3Service {
           console.warn('[Blockchain] Order', orderId, 'khong ton tai tren Smart Contract.');
           return null;
         }
-        orderTimestamp = Number(orderData[5]); // timestamp field
+        orderTimestamp = Number(orderData[6]); // timestamp field
         console.log('[Blockchain] Order', orderId, 'xac minh OK. Timestamp:', new Date(orderTimestamp * 1000).toISOString());
       } catch {
         console.warn('[Blockchain] Khong the goi getOrder() - order co the khong ton tai.');
@@ -748,10 +748,10 @@ export class Web3Service {
           const blockDiff = Math.floor(timeDiff / blockTime);
           const approxBlock = currentBlock - blockDiff;
 
-          // Scan range: ±100K blocks xung quanh block ước lượng
-          const scanStart = Math.max(0, approxBlock - 100000);
-          const scanEnd = Math.min(currentBlock, approxBlock + 100000);
-          const chunkSize = 10000;
+          // Scan range: Tối ưu ±5K blocks để tránh lỗi Rate Limit HTTP 429
+          const scanStart = Math.max(0, approxBlock - 5000);
+          const scanEnd = Math.min(currentBlock, approxBlock + 5000);
+          const chunkSize = 5000;
 
           console.log(`[Blockchain] Scan blocks ${scanStart} - ${scanEnd} (approx: ${approxBlock}, chunk: ${chunkSize})`);
 
@@ -1056,7 +1056,7 @@ export class Web3Service {
           console.warn('[Blockchain] Transaction', txId, 'khong ton tai tren Smart Contract.');
           return null;
         }
-        orderTimestamp = Number(txData[5]); // timestamp field
+        orderTimestamp = Number(txData[6]); // timestamp field
       } catch {
         console.warn('[Blockchain] Khong the goi getTransaction() - transaction co the khong ton tai.');
         return null;
@@ -1104,9 +1104,9 @@ export class Web3Service {
           const blockDiff = Math.floor(timeDiff / blockTime);
           const approxBlock = currentBlock - blockDiff;
 
-          const scanStart = Math.max(0, approxBlock - 100000);
-          const scanEnd = Math.min(currentBlock, approxBlock + 100000);
-          const chunkSize = 10000;
+          const scanStart = Math.max(0, approxBlock - 5000);
+          const scanEnd = Math.min(currentBlock, approxBlock + 5000);
+          const chunkSize = 5000;
 
           const filter = backupContract.filters['TransactionRecorded'](txId);
           let found = false;
@@ -1216,15 +1216,44 @@ export class Web3Service {
       const activeProvider = new JsonRpcProvider(this.rpcUrl());
       const contract = new Contract(this.voucherContractAddress(), CAFE_VOUCHER_NFT_ABI, activeProvider);
 
-      // 1. Quét sự kiện Transfer gửi tới ví khách hàng
-      const filter = contract.filters['Transfer'](null, customerAddress);
-      
-      const events = await contract.queryFilter(filter, 0, 'latest');
-      const tokenIds = Array.from(new Set(events.map((e: any) => e.args[2].toString())));
+      // 1. Đọc số dư NFT thực tế của ví khách hàng
+      const balance = await contract['balanceOf'](customerAddress);
+      const targetCount = Number(balance);
+      if (targetCount === 0) {
+        return [];
+      }
 
+      // 2. Quét ngược sự kiện Transfer theo từng chunk 99,000 blocks cho đến khi tìm đủ N tokens
+      const currentBlock = await activeProvider.getBlockNumber();
+      let toBlock = currentBlock;
+      const chunkSize = 99000; // Giới hạn RPC < 100,000
+      const maxScanBlocks = 1000000; // Quét tối đa 1 triệu block gần đây (~17 ngày)
+      const limitBlock = Math.max(0, currentBlock - maxScanBlocks);
+
+      const filter = contract.filters['Transfer'](null, customerAddress);
+      const foundTokenIds = new Set<string>();
+
+      while (toBlock > limitBlock && foundTokenIds.size < targetCount) {
+        const fromBlock = Math.max(limitBlock, toBlock - chunkSize);
+        try {
+          const events = await contract.queryFilter(filter, fromBlock, toBlock);
+          for (const event of events) {
+            const ev = event as any;
+            if (ev.args && ev.args[2]) {
+              foundTokenIds.add(ev.args[2].toString());
+            }
+          }
+        } catch (scanErr) {
+          console.warn('[Blockchain] Loi quet chunk logs voucher:', scanErr);
+          break; // Dừng quét nếu gặp sự cố RPC
+        }
+        toBlock = fromBlock - 1;
+      }
+
+      const tokenIds = Array.from(foundTokenIds);
       const vouchersList: any[] = [];
 
-      // 2. Kiểm tra trạng thái hiện tại của từng token
+      // 3. Kiểm tra trạng thái hiện tại của từng token
       for (const tokenIdStr of tokenIds) {
         const tokenId = BigInt(tokenIdStr);
         try {
