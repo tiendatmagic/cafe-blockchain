@@ -29,6 +29,32 @@ export class MobileSignComponent implements OnInit {
   public statusMessage = signal<string>('');
   public errorMessage = signal<string>('');
 
+  get isWrongChain(): boolean {
+    return this.web3Service.walletConnected() && 
+           this.web3Service.chainId() !== '' &&
+           this.web3Service.chainId() !== this.web3Service.configuredChainId();
+  }
+
+  public async switchNetwork() {
+    this.errorMessage.set('');
+    try {
+      const success = await this.web3Service.ensureCorrectNetwork();
+      if (!success) {
+        this.errorMessage.set('Không thể chuyển mạng tự động. Vui lòng tự chuyển mạng trong ví của bạn!');
+      }
+    } catch (err: any) {
+      this.errorMessage.set(err.message || 'Lỗi khi chuyển mạng.');
+    }
+  }
+
+  public get themeMode() {
+    return this.stateService.themeMode;
+  }
+
+  public toggleTheme() {
+    this.stateService.toggleTheme();
+  }
+
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
       const code = params['order_code'] || '';
@@ -42,7 +68,22 @@ export class MobileSignComponent implements OnInit {
         return;
       }
 
-      this.fetchVoucherDetailsOnChain(tid);
+      // Tải cấu hình public của quán từ backend để lấy màu sắc động & địa chỉ contract blockchain
+      this.apiService.getPublicSettings(code).subscribe({
+        next: (settings) => {
+          if (settings) {
+            this.web3Service.updateConfig(settings);
+            this.stateService.applyDynamicColors(settings.primary_color, settings.secondary_color);
+          }
+          // Tải thông tin voucher on-chain sau khi đã có config của quán
+          this.fetchVoucherDetailsOnChain(tid);
+        },
+        error: (err) => {
+          console.error('Lỗi tải cấu hình public của quán:', err);
+          this.step.set('error');
+          this.errorMessage.set(err.error?.message || 'Không thể tải thông tin hóa đơn và cấu hình của quán. Vui lòng kiểm tra lại đường dẫn!');
+        }
+      });
     });
 
     // Theo dõi trạng thái kết nối ví của khách hàng

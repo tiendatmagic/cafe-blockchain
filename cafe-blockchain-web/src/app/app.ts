@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { StateService } from './services/state.service';
 import { Web3Service } from './services/web3.service';
 import { ApiService } from './services/api.service';
@@ -20,6 +20,11 @@ export class App implements OnInit, OnDestroy {
   private readonly apiService = inject(ApiService);
 
   public readonly usdtPriceVND = signal<number>(25420);
+  private readonly router = inject(Router);
+
+  public get isMobileSignRoute(): boolean {
+    return this.router.url.includes('/mobile-sign');
+  }
 
   // Getters từ StateService để binding dễ dàng trong app.html
   public get successMessage() { return this.stateService.successMessage; }
@@ -40,8 +45,12 @@ export class App implements OnInit, OnDestroy {
   private accountsChangedSub?: any;
 
   ngOnInit() {
-    // Tải cấu hình quán trước
-    this.stateService.loadSettings();
+    const isMobileSign = typeof window !== 'undefined' && window.location.pathname.includes('/mobile-sign');
+
+    // Chỉ tải cấu hình quán của admin khi không ở trang ký số di động
+    if (!isMobileSign) {
+      this.stateService.loadSettings();
+    }
 
     // Nếu đã có token và ví được lưu trước đó, tải toàn bộ dữ liệu
     const hasToken = this.apiService.getToken();
@@ -52,7 +61,9 @@ export class App implements OnInit, OnDestroy {
       // Không cần gọi loadAllData() tải trước tất cả các module ở đây để tránh dư thừa và trùng lặp API request.
     } else {
       // Chưa kết nối hoặc session hết hạn, yêu cầu kết nối ví
-      this.stateService.isWalletModalOpen.set(true);
+      if (!isMobileSign) {
+        this.stateService.isWalletModalOpen.set(true);
+      }
     }
 
     // Lắng nghe sự kiện thay đổi ví từ Web3Service

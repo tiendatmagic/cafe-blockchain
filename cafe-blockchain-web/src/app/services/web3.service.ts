@@ -27,10 +27,10 @@ export class Web3Service {
   public readonly contractAddress = signal<string>('');
   public readonly financeContractAddress = signal<string>('');
   public readonly voucherContractAddress = signal<string>('');
-  public readonly rpcUrl = signal<string>('https://ethereum-sepolia.publicnode.com');
-  public readonly explorerUrl = signal<string>('https://sepolia.etherscan.io');
+  public readonly rpcUrl = signal<string>('https://bnb-testnet.api.onfinality.io/public');
+  public readonly explorerUrl = signal<string>('https://testnet.bscscan.com');
   public readonly explorerApiKey = signal<string>('');
-  public readonly configuredChainId = signal<string>('11155111');
+  public readonly configuredChainId = signal<string>('97');
 
   public readonly POPULAR_CHAINS = [
     { name: 'Ethereum Mainnet', chainId: '1', rpcUrl: 'https://cloudflare-eth.com', explorerUrl: 'https://etherscan.io' },

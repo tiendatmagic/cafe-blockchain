@@ -166,6 +166,10 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/settings`, { headers: this.getHeaders() });
   }
 
+  public getPublicSettings(orderCode: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/settings/public?order_code=${orderCode}`);
+  }
+
   public updateSettings(settings: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/settings`, settings, { headers: this.getHeaders() });
   }

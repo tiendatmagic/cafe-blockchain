@@ -23,6 +23,7 @@ const ABI = [
   "function balanceOf(address owner) public view returns (uint256)",
   "function ownerOf(uint256 tokenId) public view returns (address)",
   "function tokenURI(uint256 tokenId) public view returns (string)",
+  "function vouchers(uint256 tokenId) public view returns (uint256 discountAmount, uint256 minOrderAmount, bool isUsed)",
   "event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)"
 ];
 

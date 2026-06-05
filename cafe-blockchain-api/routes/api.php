@@ -26,6 +26,7 @@ Route::get('/auth/nonce', [AuthController::class, 'getNonce']);
 Route::post('/auth/verify', [AuthController::class, 'verifySignature']);
 Route::get('/vouchers/metadata/{code}', [\App\Http\Controllers\VoucherController::class, 'metadata']);
 Route::post('/vouchers/submit-signature', [\App\Http\Controllers\VoucherController::class, 'submitSignature']);
+Route::get('/settings/public', [SettingController::class, 'getPublicSettings']);
 
 
 // Protected routes (require valid Sanctum token)

@@ -1,14 +1,14 @@
 <!-- CẢNH BÁO SAI CHAIN HỆ THỐNG - THIẾT KẾ KÍNH MỜ SANG TRỌNG -->
 @if (isWrongChain) {
   <div
-    class="fixed top-0 left-0 right-0 z-[10000] bg-amber-500/90 dark:bg-amber-600/95 backdrop-blur-md text-white px-4 py-3 flex items-center justify-between text-xs sm:text-sm font-bold shadow-lg border-b border-amber-400/20 transition-all duration-300"
+    class="fixed top-0 left-0 right-0 z-[10000] bg-amber-500/90 dark:bg-amber-600/95 backdrop-blur-md text-white px-4 py-3 flex flex-col sm:flex-row items-center justify-between text-xs sm:text-sm font-bold shadow-lg border-b border-amber-400/20 transition-all duration-300 gap-3"
   >
     <div class="flex items-center gap-3">
       <div
-        class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center animate-bounce text-amber-100 shrink-0"
+        class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center text-amber-100 shrink-0"
       >
         <svg
-          xmlns="http://www.w3.org/2050/svg"
+          xmlns="http://www.w3.org/2000/svg"
           class="h-5 w-5"
           fill="none"
           viewBox="0 0 24 24"
@@ -33,7 +33,7 @@
     </div>
     <button
       (click)="web3Service.ensureCorrectNetwork()"
-      class="shrink-0 bg-white hover:bg-amber-50 text-amber-600 dark:text-amber-700 font-extrabold text-xs px-4 py-2 rounded-xl transition-all duration-200 shadow-md shadow-amber-950/20 active:scale-95 hover:scale-[1.03] flex items-center gap-1.5"
+      class="shrink-0 bg-white hover:bg-amber-50 text-amber-600 dark:text-amber-700 font-extrabold text-xs px-4 py-2.5 rounded-xl transition-all duration-200 shadow-md shadow-amber-950/20 active:scale-95 hover:scale-[1.03] flex items-center justify-center gap-1.5 w-full sm:w-auto"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -169,103 +169,117 @@
 
 <!-- CONTAINER CHÍNH -->
 <div
-  class="flex flex-col lg:flex-row h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 font-sans antialiased overflow-hidden"
-  [class.pt-[56px]]="isWrongChain"
+  [class]="
+    isMobileSignRoute
+      ? 'h-screen bg-slate-900 overflow-y-auto'
+      : 'flex flex-col lg:flex-row h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 font-sans antialiased overflow-hidden'
+  "
+  [class.pt-[56px]]="isWrongChain && !isMobileSignRoute"
 >
-  <!-- Sidebar Menu bên trái -->
-  <app-sidebar></app-sidebar>
+  @if (!isMobileSignRoute) {
+    <!-- Sidebar Menu bên trái -->
+    <app-sidebar></app-sidebar>
+  }
 
   <!-- Cột nội dung bên phải hiển thị động -->
-  <main class="flex-1 flex flex-col min-w-0 overflow-y-auto relative h-screen">
-    <!-- HEADER DESKTOP CHUNG - SANG TRỌNG ĐẲNG CẤP -->
-    <header
-      class="hidden lg:flex items-center justify-between px-8 py-5 bg-white dark:bg-slate-900 border-b border-slate-200/60 dark:border-slate-800/60 shrink-0 transition-colors duration-300"
-    >
-      <div>
-        <h2 class="text-xl font-extrabold text-slate-800 dark:text-white tracking-tight">
-          {{ settings().store_name || 'Blockchain Cafe & Bistro' }}
-        </h2>
-        <p class="text-xs text-slate-400 dark:text-slate-500 font-medium mt-0.5">
-          Hệ thống Số bán hàng POS Web3 tích hợp Blockchain thông minh
-        </p>
-      </div>
-
-      <!-- Tỷ giá & Widget ví -->
-      <div class="flex items-center gap-4">
-        <!-- Badge BNB -->
-        <div
-          class="px-3.5 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-950/20 text-purple-600 dark:text-purple-400 text-xs font-bold border border-purple-200/10 dark:border-purple-800/10"
-        >
-          1 {{ web3Service.nativeTokenSymbol() }} = {{ nativeTokenPriceVND() | number }}đ
+  <main
+    [class]="
+      isMobileSignRoute
+        ? 'w-full min-h-screen relative'
+        : 'flex-1 flex flex-col min-w-0 overflow-y-auto relative h-screen'
+    "
+  >
+    @if (!isMobileSignRoute) {
+      <!-- HEADER DESKTOP CHUNG - SANG TRỌNG ĐẲNG CẤP -->
+      <header
+        class="hidden lg:flex items-center justify-between px-8 py-5 bg-white dark:bg-slate-900 border-b border-slate-200/60 dark:border-slate-800/60 shrink-0 transition-colors duration-300"
+      >
+        <div>
+          <h2 class="text-xl font-extrabold text-slate-800 dark:text-white tracking-tight">
+            {{ settings().store_name || 'Blockchain Cafe & Bistro' }}
+          </h2>
+          <p class="text-xs text-slate-400 dark:text-slate-500 font-medium mt-0.5">
+            Hệ thống Số bán hàng POS Web3 tích hợp Blockchain thông minh
+          </p>
         </div>
 
-        <!-- Badge USDT -->
-        <div
-          class="px-3.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold border border-emerald-200/10 dark:border-emerald-800/10"
-        >
-          1 USDT = {{ usdtPriceVND() | number }}đ
-        </div>
-
-        <!-- Widget Ví Web3 -->
-        @if (web3Service.walletConnected()) {
+        <!-- Tỷ giá & Widget ví -->
+        <div class="flex items-center gap-4">
+          <!-- Badge BNB -->
           <div
-            (click)="isWalletModalOpen.set(true)"
-            class="flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border-2 border-purple-100 dark:border-purple-900/40 cursor-pointer hover:border-purple-300 dark:hover:border-purple-700 transition-all hover:scale-[1.01] active:scale-[0.99]"
+            class="px-3.5 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-950/20 text-purple-600 dark:text-purple-400 text-xs font-bold border border-purple-200/10 dark:border-purple-800/10"
           >
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
-            <div class="flex flex-col text-left leading-none">
-              <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400">{{
-                web3Service.shortAddress()
-              }}</span>
-              <span class="text-xs font-extrabold text-purple-600 dark:text-purple-400 mt-0.5">
-                {{ web3Service.walletBalance() }} {{ web3Service.nativeTokenSymbol() }}
-              </span>
-            </div>
-            <!-- Bánh răng Settings -->
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-4.5 w-4.5 text-purple-600 dark:text-purple-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-              />
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-              />
-            </svg>
+            1 {{ web3Service.nativeTokenSymbol() }} = {{ nativeTokenPriceVND() | number }}đ
           </div>
-        } @else {
-          <button
-            (click)="connectWalletAndSign()"
-            class="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-extrabold text-xs shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all"
+
+          <!-- Badge USDT -->
+          <div
+            class="px-3.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold border border-emerald-200/10 dark:border-emerald-800/10"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-4 w-4 shrink-0"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="2.5"
+            1 USDT = {{ usdtPriceVND() | number }}đ
+          </div>
+
+          <!-- Widget Ví Web3 -->
+          @if (web3Service.walletConnected()) {
+            <div
+              (click)="isWalletModalOpen.set(true)"
+              class="flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border-2 border-purple-100 dark:border-purple-900/40 cursor-pointer hover:border-purple-300 dark:hover:border-purple-700 transition-all hover:scale-[1.01] active:scale-[0.99]"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 5h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2z"
-              />
-            </svg>
-            <span>KẾT NỐI VÍ WEB3</span>
-          </button>
-        }
-      </div>
-    </header>
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+              <div class="flex flex-col text-left leading-none">
+                <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400">{{
+                  web3Service.shortAddress()
+                }}</span>
+                <span class="text-xs font-extrabold text-purple-600 dark:text-purple-400 mt-0.5">
+                  {{ web3Service.walletBalance() }} {{ web3Service.nativeTokenSymbol() }}
+                </span>
+              </div>
+              <!-- Bánh răng Settings -->
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4.5 w-4.5 text-purple-600 dark:text-purple-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+            </div>
+          } @else {
+            <button
+              (click)="connectWalletAndSign()"
+              class="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-extrabold text-xs shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4 shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2.5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 5h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2z"
+                />
+              </svg>
+              <span>KẾT NỐI VÍ WEB3</span>
+            </button>
+          }
+        </div>
+      </header>
+    }
 
     <router-outlet></router-outlet>
   </main>

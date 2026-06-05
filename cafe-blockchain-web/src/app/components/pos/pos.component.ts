@@ -22,6 +22,7 @@ export class PosComponent implements OnInit, OnDestroy {
   // Trạng thái quét QR ký số NFT Voucher
   public readonly showSignQrModal = signal<boolean>(false);
   public readonly signQrCodeUrl = signal<string>('');
+  public readonly signLink = signal<string>('');
   public readonly signOrderCode = signal<string>('');
   public readonly signTokenId = signal<number | null>(null);
   private signaturePollingInterval: any = null;
@@ -649,6 +650,7 @@ export class PosComponent implements OnInit, OnDestroy {
             this.signOrderCode.set(orderCode);
             this.signTokenId.set(selectedVoucher.tokenId);
             this.signQrCodeUrl.set(qrApiUrl);
+            this.signLink.set(qrData);
             this.showSignQrModal.set(true);
             
             // 5. Bắt đầu polling
@@ -716,8 +718,21 @@ export class PosComponent implements OnInit, OnDestroy {
   public closeSignQrModal() {
     this.stopSignaturePolling();
     this.showSignQrModal.set(false);
+    this.signLink.set('');
     this.isOrderSubmitting.set(false);
     this.stateService.showToast('Đã hủy áp dụng ký số voucher NFT.');
+  }
+
+  // Sao chép liên kết ký số
+  public copySignLink() {
+    const link = this.signLink();
+    if (!link) return;
+    navigator.clipboard.writeText(link).then(() => {
+      this.stateService.showToast('Đã copy đường link ký số!', 'success');
+    }).catch(err => {
+      console.error('Không thể copy link:', err);
+      this.stateService.showToast('Không thể copy link, vui lòng thử lại!', 'error');
+    });
   }
 
   // Thực hiện gọi API nộp đơn hàng cuối cùng

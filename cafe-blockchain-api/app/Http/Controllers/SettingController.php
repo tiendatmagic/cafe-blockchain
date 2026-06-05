@@ -9,70 +9,61 @@ use Illuminate\Support\Facades\Http;
 class SettingController extends Controller
 {
     /**
+     * Khởi tạo và chuẩn hóa cấu hình mặc định cho cửa hàng (Mạng BSC Testnet 97)
+     */
+    private function ensureDefaultSettings($storeOwner)
+    {
+        $settings = Setting::where('store_owner_address', $storeOwner)->pluck('value', 'key')->all();
+        
+        $defaultSettings = [
+            'store_name' => 'Cafe Web3 POS',
+            'primary_color' => '#7c3aed',
+            'secondary_color' => '#c084fc',
+            'contract_address' => '0xC6b3fc5a2E5Aba0e5a0B6eD8FaCD412A76dC5D2A',
+            'finance_contract_address' => '0x7988500670EC631F7be36eD91E367760f380d6Af',
+            'voucher_contract_address' => '0xc6828e46E100B248173e28a33e8D92662Cd1A8c7',
+            'relayer_private_key' => '',
+            'rpc_url' => 'https://bnb-testnet.api.onfinality.io/public',
+            'chain_id' => '97',
+            'explorer_url' => 'https://testnet.bscscan.com',
+            'explorer_api_key' => '',
+            'default_print_size' => '80mm',
+            'voucher_gift_min_amount' => '100000',
+            'voucher_discount_amount' => '5000',
+            'voucher_use_min_amount' => '100000',
+        ];
+
+        if (empty($settings)) {
+            foreach ($defaultSettings as $key => $value) {
+                Setting::setForStore($key, $value, $storeOwner);
+            }
+            $settings = Setting::where('store_owner_address', $storeOwner)->pluck('value', 'key')->all();
+        } else {
+            // Đảm bảo tất cả các key mặc định đều tồn tại trong database
+            $changed = false;
+            foreach ($defaultSettings as $key => $defaultValue) {
+                if (!isset($settings[$key])) {
+                    Setting::setForStore($key, $defaultValue, $storeOwner);
+                    $settings[$key] = $defaultValue;
+                    $changed = true;
+                }
+            }
+            if ($changed) {
+                $settings = Setting::where('store_owner_address', $storeOwner)->pluck('value', 'key')->all();
+            }
+        }
+
+        return $settings;
+    }
+
+    /**
      * Lấy danh sách cấu hình
      */
     public function index(Request $request)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
         
-        $settings = Setting::where('store_owner_address', $storeOwner)->pluck('value', 'key')->all();
-        
-        // Nếu chưa có cấu hình nào thì khởi tạo mặc định cho cửa hàng
-        if (empty($settings)) {
-            $defaultSettings = [
-                'store_name' => 'Cafe Web3 POS',
-                'primary_color' => '#7c3aed',
-                'secondary_color' => '#c084fc',
-                'contract_address' => '',
-                'finance_contract_address' => '',
-                'voucher_contract_address' => '',
-                'relayer_private_key' => '',
-                'rpc_url' => '',
-                'chain_id' => '',
-                'explorer_url' => '',
-                'explorer_api_key' => '',
-                'default_print_size' => '80mm',
-                'voucher_gift_min_amount' => '100000',
-                'voucher_discount_amount' => '5000',
-                'voucher_use_min_amount' => '100000',
-            ];
-            
-            foreach ($defaultSettings as $key => $value) {
-                Setting::setForStore($key, $value, $storeOwner);
-            }
-            
-            $settings = Setting::where('store_owner_address', $storeOwner)->pluck('value', 'key')->all();
-        } else {
-            // Đảm bảo finance_contract_address tồn tại trong kết quả
-            if (!isset($settings['finance_contract_address'])) {
-                Setting::setForStore('finance_contract_address', '', $storeOwner);
-                $settings['finance_contract_address'] = '';
-            }
-
-            // Đảm bảo voucher_contract_address tồn tại trong kết quả
-            if (!isset($settings['voucher_contract_address'])) {
-                Setting::setForStore('voucher_contract_address', '', $storeOwner);
-                $settings['voucher_contract_address'] = '';
-            }
-
-            // Đảm bảo relayer_private_key tồn tại trong kết quả
-            if (!isset($settings['relayer_private_key'])) {
-                Setting::setForStore('relayer_private_key', '', $storeOwner);
-                $settings['relayer_private_key'] = '';
-            }
-
-            // Đảm bảo các cấu hình voucher tồn tại trong kết quả
-            foreach ([
-                'voucher_gift_min_amount' => '100000',
-                'voucher_discount_amount' => '5000',
-                'voucher_use_min_amount' => '100000'
-            ] as $key => $defaultVal) {
-                if (!isset($settings[$key])) {
-                    Setting::setForStore($key, $defaultVal, $storeOwner);
-                    $settings[$key] = $defaultVal;
-                }
-            }
-        }
+        $settings = $this->ensureDefaultSettings($storeOwner);
         
         $settings['has_synced_orders'] = \App\Models\Order::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
         $settings['has_synced_transactions'] = \App\Models\Transaction::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
@@ -205,5 +196,40 @@ class SettingController extends Controller
             'message' => 'Settings updated successfully.',
             'data' => $updatedSettings
         ]);
+    }
+
+    /**
+     * Lấy cấu hình public của quán dựa vào mã hóa đơn (order_code)
+     */
+    public function getPublicSettings(Request $request)
+    {
+        $orderCode = $request->query('order_code');
+        if (empty($orderCode)) {
+            return response()->json(['message' => 'Thiếu mã hóa đơn!'], 400);
+        }
+
+        // Tìm đơn hàng để lấy store_owner_address của quán
+        $order = \App\Models\Order::where('order_code', $orderCode)->first();
+        if (!$order) {
+            return response()->json(['message' => 'Không tìm thấy đơn hàng tương ứng!'], 404);
+        }
+
+        $storeOwner = strtolower($order->store_owner_address);
+        $settings = $this->ensureDefaultSettings($storeOwner);
+
+        // Chỉ trả về các cấu hình an toàn cho client
+        $publicSettings = [
+            'store_name' => $settings['store_name'] ?? 'Cafe Web3 POS',
+            'primary_color' => $settings['primary_color'] ?? '#7c3aed',
+            'secondary_color' => $settings['secondary_color'] ?? '#c084fc',
+            'contract_address' => $settings['contract_address'] ?? '',
+            'finance_contract_address' => $settings['finance_contract_address'] ?? '',
+            'voucher_contract_address' => $settings['voucher_contract_address'] ?? '',
+            'rpc_url' => $settings['rpc_url'] ?? '',
+            'chain_id' => $settings['chain_id'] ?? '',
+            'explorer_url' => $settings['explorer_url'] ?? '',
+        ];
+
+        return response()->json($publicSettings);
     }
 }
