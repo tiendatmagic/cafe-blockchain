@@ -442,6 +442,15 @@ export class Web3Service {
   }
 
   /**
+   * Chuyển đổi UUID dạng chuỗi sang số Hex 256-bit (tương thích uint256 Solidity)
+   */
+  public convertUuidToUint256(uuid: string): string {
+    if (!uuid) return '0';
+    const hex = uuid.replace(/-/g, '').toLowerCase();
+    return '0x' + hex;
+  }
+
+  /**
    * Ngắt kết nối ví (Client-side reset)
    */
   public disconnectWallet() {
@@ -555,7 +564,7 @@ export class Web3Service {
    * Ghi nhận đơn hàng lên Smart Contract Blockchain
    */
   public async recordOrderOnChain(
-    orderId: number,
+    orderId: string | number,
     orderCode: string,
     tableNumber: string,
     totalAmount: number,
@@ -580,9 +589,11 @@ export class Web3Service {
       const signer = await this.provider.getSigner();
       const contract = new Contract(this.contractAddress(), CAFE_WEB3_POS_ABI, signer);
 
+      const finalOrderId = typeof orderId === 'string' ? this.convertUuidToUint256(orderId) : orderId;
+
       // Kích hoạt giao dịch ghi đơn hàng
       const tx = await contract['recordOrder'](
-        orderId,
+        finalOrderId,
         orderCode || '',
         tableNumber || 'Mang ve',
         Math.round(totalAmount), // Lưu trữ dạng số nguyên lớn (VND)
@@ -673,21 +684,22 @@ export class Web3Service {
    *   3. Dùng backup RPC (publicnode) để query event log — vì Binance RPC
    *      default không hỗ trợ eth_getLogs, và MetaMask provider cũng thường bị giới hạn
    */
-  public async getOriginalTxHashForOrder(orderId: number): Promise<string | null> {
+  public async getOriginalTxHashForOrder(orderId: string | number): Promise<string | null> {
     if (!this.provider || !this.contractAddress()) return null;
     try {
       const contract = new Contract(this.contractAddress(), CAFE_WEB3_POS_ABI, this.provider);
+      const finalOrderId = typeof orderId === 'string' ? this.convertUuidToUint256(orderId) : orderId;
 
       // ===== BƯỚC 1: Xác minh đơn hàng tồn tại + lấy timestamp =====
       let orderTimestamp = 0;
       try {
-        const orderData = await contract['getOrder'](orderId);
+        const orderData = await contract['getOrder'](finalOrderId);
         if (!orderData || Number(orderData[0]) === 0) {
-          console.warn('[Blockchain] Order', orderId, 'khong ton tai tren Smart Contract.');
+          console.warn('[Blockchain] Order', finalOrderId, 'khong ton tai tren Smart Contract.');
           return null;
         }
         orderTimestamp = Number(orderData[6]); // timestamp field
-        console.log('[Blockchain] Order', orderId, 'xac minh OK. Timestamp:', new Date(orderTimestamp * 1000).toISOString());
+        console.log('[Blockchain] Order', finalOrderId, 'xac minh OK. Timestamp:', new Date(orderTimestamp * 1000).toISOString());
       } catch {
         console.warn('[Blockchain] Khong the goi getOrder() - order co the khong ton tai.');
         return null;
@@ -702,7 +714,8 @@ export class Web3Service {
         try {
           console.log('[Blockchain] Thu truy van nhanh qua API Explorer:', explorerApiUrl);
           // Tạo topic1 bằng cách pad hex orderId sang 32 bytes (64 ký tự)
-          const topic1 = '0x' + orderId.toString(16).padStart(64, '0');
+          const cleanHexId = typeof finalOrderId === 'string' ? finalOrderId.replace('0x', '') : finalOrderId.toString(16);
+          const topic1 = '0x' + cleanHexId.padStart(64, '0');
           // Lấy topic0 từ ABI sự kiện
           const topic0 = contract.interface.getEvent('OrderRecorded')?.topicHash;
           
@@ -755,7 +768,7 @@ export class Web3Service {
 
           console.log(`[Blockchain] Scan blocks ${scanStart} - ${scanEnd} (approx: ${approxBlock}, chunk: ${chunkSize})`);
 
-          const filter = backupContract.filters['OrderRecorded'](orderId);
+          const filter = backupContract.filters['OrderRecorded'](finalOrderId);
           let found = false;
 
           for (let start = scanStart; start <= scanEnd; start += chunkSize) {
@@ -991,7 +1004,7 @@ export class Web3Service {
    * Ghi nhận giao dịch thu chi tài chính lên Smart Contract Blockchain
    */
   public async recordTransactionOnChain(
-    txId: number,
+    txId: string | number,
     transactionCode: string,
     type: 'thu' | 'chi',
     amount: number,
@@ -1015,10 +1028,11 @@ export class Web3Service {
       const signer = await this.provider.getSigner();
       const contract = new Contract(this.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, signer);
 
+      const finalTxId = typeof txId === 'string' ? this.convertUuidToUint256(txId) : txId;
       const txType = type === 'thu' ? 1 : 0;
 
       const tx = await contract['recordTransaction'](
-        txId,
+        finalTxId,
         transactionCode || '',
         txType,
         Math.round(amount),
@@ -1044,16 +1058,17 @@ export class Web3Service {
   /**
    * Truy vấn tx_hash gốc của giao dịch thu chi đã tồn tại trên Blockchain.
    */
-  public async getOriginalTxHashForTransaction(txId: number): Promise<string | null> {
+  public async getOriginalTxHashForTransaction(txId: string | number): Promise<string | null> {
     if (!this.provider || !this.financeContractAddress()) return null;
     try {
       const contract = new Contract(this.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, this.provider);
+      const finalTxId = typeof txId === 'string' ? this.convertUuidToUint256(txId) : txId;
 
       let orderTimestamp = 0;
       try {
-        const txData = await contract['getTransaction'](txId);
+        const txData = await contract['getTransaction'](finalTxId);
         if (!txData || Number(txData[0]) === 0) {
-          console.warn('[Blockchain] Transaction', txId, 'khong ton tai tren Smart Contract.');
+          console.warn('[Blockchain] Transaction', finalTxId, 'khong ton tai tren Smart Contract.');
           return null;
         }
         orderTimestamp = Number(txData[6]); // timestamp field
@@ -1068,7 +1083,8 @@ export class Web3Service {
       const apiKey = this.explorerApiKey();
       if (explorerApiUrl && apiKey && apiKey.trim() !== '') {
         try {
-          const topic1 = '0x' + txId.toString(16).padStart(64, '0');
+          const cleanHexId = typeof finalTxId === 'string' ? finalTxId.replace('0x', '') : finalTxId.toString(16);
+          const topic1 = '0x' + cleanHexId.padStart(64, '0');
           const topic0 = contract.interface.getEvent('TransactionRecorded')?.topicHash;
           
           if (topic0) {
@@ -1108,7 +1124,7 @@ export class Web3Service {
           const scanEnd = Math.min(currentBlock, approxBlock + 5000);
           const chunkSize = 5000;
 
-          const filter = backupContract.filters['TransactionRecorded'](txId);
+          const filter = backupContract.filters['TransactionRecorded'](finalTxId);
           let found = false;
 
           for (let start = scanStart; start <= scanEnd; start += chunkSize) {

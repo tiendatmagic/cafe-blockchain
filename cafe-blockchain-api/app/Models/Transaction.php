@@ -9,6 +9,9 @@ class Transaction extends Model
 {
     use HasFactory;
 
+    public $incrementing = false;
+    protected $keyType = 'string';
+
     protected $fillable = [
         'transaction_code',
         'type',
@@ -45,8 +48,11 @@ class Transaction extends Model
 
     protected static function booted()
     {
-        // Tự động sinh mã giao dịch ngẫu nhiên 6 ký tự viết hoa/chữ số khi tạo mới
+        // Tự động sinh mã giao dịch ngẫu nhiên 6 ký tự viết hoa/chữ số và UUIDv7 khi tạo mới
         static::creating(function ($transaction) {
+            if (empty($transaction->id)) {
+                $transaction->id = (string) \Illuminate\Support\Str::uuid7();
+            }
             if (empty($transaction->transaction_code)) {
                 $transaction->transaction_code = 'TC-' . strtoupper(bin2hex(random_bytes(3)));
             }

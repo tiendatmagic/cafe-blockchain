@@ -151,7 +151,7 @@ export class OrdersComponent implements OnInit {
   }
 
   // Cập nhật trạng thái đơn hàng (xác nhận thành công / đã hủy)
-  public async updateStatus(orderId: number, status: 'completed' | 'cancelled' | 'preparing') {
+  public async updateStatus(orderId: string | number, status: 'completed' | 'cancelled' | 'preparing') {
     if (status === 'cancelled' || status === 'preparing' || !this.isAutoSyncOnCompleteChecked()) {
       this.executeStatusUpdateOnly(orderId, status);
       return;
@@ -221,7 +221,7 @@ export class OrdersComponent implements OnInit {
   }
 
   // Cập nhật Database đơn thuần
-  private executeStatusUpdateOnly(orderId: number, status: 'completed' | 'cancelled' | 'preparing') {
+  private executeStatusUpdateOnly(orderId: string | number, status: 'completed' | 'cancelled' | 'preparing') {
     this.isOrderStatusUpdating.set(true);
     this.apiService.updateOrderStatus(orderId, status).subscribe({
       next: (res) => {

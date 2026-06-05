@@ -9,6 +9,9 @@ class Order extends Model
 {
     use HasFactory;
 
+    public $incrementing = false;
+    protected $keyType = 'string';
+
     protected $fillable = [
         'order_code',
         'table_number',
@@ -52,8 +55,11 @@ class Order extends Model
 
     protected static function booted()
     {
-        // Tự động sinh mã đơn hàng ngẫu nhiên 6 ký tự viết hoa/chữ số khi tạo mới
+        // Tự động sinh mã đơn hàng ngẫu nhiên 6 ký tự viết hoa/chữ số và UUIDv7 khi tạo mới
         static::creating(function ($order) {
+            if (empty($order->id)) {
+                $order->id = (string) \Illuminate\Support\Str::uuid7();
+            }
             if (empty($order->order_code)) {
                 $order->order_code = 'HD-' . strtoupper(bin2hex(random_bytes(3)));
             }

@@ -114,7 +114,7 @@ export class ApiService {
     return this.http.get<any[]>(`${this.baseUrl}/orders`, { params, headers: this.getHeaders() });
   }
 
-  public getOrder(id: number): Observable<any> {
+  public getOrder(id: string | number): Observable<any> {
     return this.http.get(`${this.baseUrl}/orders/${id}`, { headers: this.getHeaders() });
   }
 
@@ -122,11 +122,11 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/orders`, order, { headers: this.getHeaders() });
   }
 
-  public updateOrder(id: number, order: any): Observable<any> {
+  public updateOrder(id: string | number, order: any): Observable<any> {
     return this.http.put(`${this.baseUrl}/orders/${id}`, order, { headers: this.getHeaders() });
   }
 
-  public updateOrderStatus(id: number, status: string): Observable<any> {
+  public updateOrderStatus(id: string | number, status: string): Observable<any> {
     return this.http.put(`${this.baseUrl}/orders/${id}/status`, { status }, { headers: this.getHeaders() });
   }
 
@@ -149,7 +149,7 @@ export class ApiService {
     });
   }
 
-  public syncOrderBlockchain(id: number, txHash: string, blockchainStatus: string, chainId?: string): Observable<any> {
+  public syncOrderBlockchain(id: string | number, txHash: string, blockchainStatus: string, chainId?: string): Observable<any> {
     return this.http.put(`${this.baseUrl}/orders/${id}/sync`, {
       tx_hash: txHash,
       blockchain_status: blockchainStatus,
@@ -157,7 +157,7 @@ export class ApiService {
     }, { headers: this.getHeaders() });
   }
 
-  public mintVoucherManual(orderId: number): Observable<any> {
+  public mintVoucherManual(orderId: string | number): Observable<any> {
     return this.http.post(`${this.baseUrl}/orders/${orderId}/mint-voucher-manual`, {}, { headers: this.getHeaders() });
   }
 
@@ -245,15 +245,15 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/transactions`, transaction, { headers: this.getHeaders() });
   }
 
-  public updateTransaction(id: number, transaction: any): Observable<any> {
+  public updateTransaction(id: string | number, transaction: any): Observable<any> {
     return this.http.put(`${this.baseUrl}/transactions/${id}`, transaction, { headers: this.getHeaders() });
   }
 
-  public deleteTransaction(id: number): Observable<any> {
+  public deleteTransaction(id: string | number): Observable<any> {
     return this.http.delete(`${this.baseUrl}/transactions/${id}`, { headers: this.getHeaders() });
   }
 
-  public syncTransactionBlockchain(id: number, txHash: string, blockchainStatus: string, chainId?: string): Observable<any> {
+  public syncTransactionBlockchain(id: string | number, txHash: string, blockchainStatus: string, chainId?: string): Observable<any> {
     return this.http.put(`${this.baseUrl}/transactions/${id}/sync`, {
       tx_hash: txHash,
       blockchain_status: blockchainStatus,
