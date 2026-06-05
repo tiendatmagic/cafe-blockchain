@@ -23,6 +23,9 @@ export class MobileSignComponent implements OnInit {
   public tokenId = signal<number | null>(null);
   public voucherInfo = signal<{ discount: number, minOrder: number, isUsed: boolean } | null>(null);
   public tempOrder = signal<any | null>(null);
+  public orderStatus = signal<string | null>(null);
+  public blockchainStatus = signal<string | null>(null);
+  public txHash = signal<string | null>(null);
 
   public isConnecting = signal<boolean>(false);
   public isSigning = signal<boolean>(false);
@@ -77,6 +80,15 @@ export class MobileSignComponent implements OnInit {
             this.stateService.applyDynamicColors(settings.primary_color, settings.secondary_color);
             if (settings.temp_order) {
               this.tempOrder.set(settings.temp_order);
+            }
+            this.orderStatus.set(settings.order_status || null);
+            this.blockchainStatus.set(settings.blockchain_status || null);
+            this.txHash.set(settings.tx_hash || null);
+
+            // Nếu đơn hàng đã hoàn tất (thanh toán xong), ta chuyển sang step 'success' ngay
+            if (settings.order_status === 'completed') {
+              this.step.set('success');
+              return;
             }
           }
           // Tải thông tin voucher on-chain sau khi đã có config của quán

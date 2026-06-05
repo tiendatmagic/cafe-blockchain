@@ -229,7 +229,7 @@ class SettingController extends Controller
                 ->join('products', 'order_items.product_id', '=', 'products.id')
                 ->leftJoin('product_variants', 'order_items.product_variant_id', '=', 'product_variants.id')
                 ->where('order_items.order_id', $order->id)
-                ->select('products.name as product_name', 'product_variants.name as variant_name', 'order_items.quantity', 'order_items.price')
+                ->select('products.name as product_name', 'product_variants.variant_name as variant_name', 'order_items.quantity', 'order_items.price')
                 ->get();
                 
             $tempOrderData = [
@@ -256,6 +256,9 @@ class SettingController extends Controller
             'chain_id' => $settings['chain_id'] ?? '',
             'explorer_url' => $settings['explorer_url'] ?? '',
             'temp_order' => $tempOrderData, // Trả về thông tin đơn hàng tạm thời/thực tế để client hiển thị
+            'order_status' => $order ? $order->status : null,
+            'blockchain_status' => $order ? $order->blockchain_status : null,
+            'tx_hash' => $order ? $order->tx_hash : null,
         ];
 
         return response()->json($publicSettings);

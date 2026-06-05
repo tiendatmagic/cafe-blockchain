@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
@@ -18,9 +18,19 @@ export class App implements OnInit, OnDestroy {
   public readonly stateService = inject(StateService);
   public readonly web3Service = inject(Web3Service);
   private readonly apiService = inject(ApiService);
+  private readonly elementRef = inject(ElementRef);
 
-  public readonly usdtPriceVND = signal<number>(25420);
+  public readonly isPriceDropdownOpen = signal<boolean>(false);
+  public get usdtPriceVND() { return this.stateService.usdtPriceVND; }
   private readonly router = inject(Router);
+
+  @HostListener('document:click', ['$event'])
+  public onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!this.elementRef.nativeElement.querySelector('#price-dropdown-container')?.contains(target)) {
+      this.isPriceDropdownOpen.set(false);
+    }
+  }
 
   public get isMobileSignRoute(): boolean {
     return this.router.url.includes('/mobile-sign');
