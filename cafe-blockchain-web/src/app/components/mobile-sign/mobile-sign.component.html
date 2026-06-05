@@ -240,92 +240,7 @@
       </div>
     }
 
-    <!-- Chi tiết đơn hàng tạm thời -->
-    @if (tempOrder() && (step() === 'connect' || step() === 'sign')) {
-      <div
-        class="mb-6 p-5 rounded-3xl bg-white/70 dark:bg-slate-800/40 border border-slate-200/40 dark:border-slate-700/20 shadow-lg backdrop-blur-md animate-in fade-in slide-in-from-top-2 duration-300"
-      >
-        <div
-          class="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-700/40 pb-3 mb-3"
-        >
-          <div class="flex flex-col">
-            <span
-              class="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold uppercase tracking-wider"
-              >Mã hóa đơn</span
-            >
-            <span class="text-sm font-black text-slate-700 dark:text-slate-200 uppercase">{{
-              orderCode()
-            }}</span>
-          </div>
-          @if (tempOrder().table_number) {
-            <div
-              class="px-3 py-1 bg-purple-100 dark:bg-purple-500/20 border border-purple-200/50 dark:border-purple-500/30 rounded-xl text-xs font-black text-purple-600 dark:text-purple-400"
-            >
-              Bàn: {{ tempOrder().table_number }}
-            </div>
-          }
-        </div>
 
-        <!-- Danh sách món -->
-        <div class="space-y-3 max-h-48 overflow-y-auto pr-1 mb-2">
-          @for (item of tempOrder().items; track $index) {
-            <div
-              class="flex items-start justify-between text-xs py-1 border-b border-slate-100 dark:border-slate-800/30 last:border-0"
-            >
-              <div class="flex flex-col max-w-[70%]">
-                <span class="font-extrabold text-slate-800 dark:text-slate-200 leading-tight">
-                  {{ item.product_name }}
-                </span>
-                @if (item.variant_name) {
-                  <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 mt-0.5">
-                    Mẫu: {{ item.variant_name }}
-                  </span>
-                }
-                @if (item.note) {
-                  <span
-                    class="text-[9px] text-amber-600 dark:text-amber-500 font-bold mt-0.5 italic"
-                  >
-                    * Ghi chú: {{ item.note }}
-                  </span>
-                }
-              </div>
-              <div class="flex flex-col items-end shrink-0">
-                <span class="font-black text-slate-700 dark:text-slate-300"
-                  >{{ item.price | number }}đ</span
-                >
-                <span class="text-[10px] font-bold text-slate-400">x{{ item.quantity }}</span>
-              </div>
-            </div>
-          }
-        </div>
-
-        <!-- Tổng cộng đơn hàng -->
-        <div class="border-t border-slate-200/60 dark:border-slate-700/40 mt-4 pt-3 space-y-2">
-          <div class="flex justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
-            <span>Tổng tiền món:</span>
-            <span class="text-slate-800 dark:text-slate-200"
-              >{{ tempOrder().total_amount | number }}đ</span
-            >
-          </div>
-          @if (tempOrder().discount_amount > 0) {
-            <div
-              class="flex justify-between text-xs font-bold text-emerald-600 dark:text-emerald-400"
-            >
-              <span>Voucher giảm giá:</span>
-              <span>-{{ tempOrder().discount_amount | number }}đ</span>
-            </div>
-          }
-          <div
-            class="flex justify-between text-sm font-black text-slate-800 dark:text-white border-t border-dashed border-slate-200 dark:border-slate-700/40 pt-2.5"
-          >
-            <span>Cần thanh toán:</span>
-            <span class="text-purple-600 dark:text-purple-400 text-base"
-              >{{ tempOrder().final_amount | number }}đ</span
-            >
-          </div>
-        </div>
-      </div>
-    }
 
     <!-- STEP: ERROR -->
     @if (step() === 'error') {
@@ -428,12 +343,14 @@
               orderCode()
             }}</span>
           </div>
-          <div
-            class="flex justify-between text-[10px] font-bold text-slate-500 dark:text-slate-400"
-          >
-            <span>Voucher Token ID:</span>
-            <span class="text-slate-700 dark:text-slate-200 font-black">#{{ tokenId() }}</span>
-          </div>
+          @if (tokenId() !== null) {
+            <div
+              class="flex justify-between text-[10px] font-bold text-slate-500 dark:text-slate-400"
+            >
+              <span>Voucher Token ID:</span>
+              <span class="text-slate-700 dark:text-slate-200 font-black">#{{ tokenId() }}</span>
+            </div>
+          }
           @if (txHash()) {
             <div
               class="flex flex-col gap-1.5 pt-2 border-t border-slate-200/40 dark:border-slate-700/20"
@@ -628,6 +545,93 @@
           >
             Đổi ví kết nối
           </button>
+        </div>
+      </div>
+    }
+
+    <!-- Chi tiết đơn hàng/Biên lai (Hiển thị dưới dạng thông tin đối soát ở mọi step) -->
+    @if (tempOrder()) {
+      <div
+        class="mt-6 p-5 rounded-3xl bg-white/70 dark:bg-slate-800/40 border border-slate-200/40 dark:border-slate-700/20 shadow-lg backdrop-blur-md animate-in fade-in slide-in-from-bottom-2 duration-300"
+      >
+        <div
+          class="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-700/40 pb-3 mb-3"
+        >
+          <div class="flex flex-col">
+            <span
+              class="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold uppercase tracking-wider"
+              >Chi tiết hóa đơn</span
+            >
+            <span class="text-sm font-black text-slate-700 dark:text-slate-200 uppercase">{{
+              orderCode()
+            }}</span>
+          </div>
+          @if (tempOrder().table_number) {
+            <div
+              class="px-3 py-1 bg-purple-100 dark:bg-purple-500/20 border border-purple-200/50 dark:border-purple-500/30 rounded-xl text-xs font-black text-purple-600 dark:text-purple-400"
+            >
+              Bàn: {{ tempOrder().table_number }}
+            </div>
+          }
+        </div>
+
+        <!-- Danh sách món -->
+        <div class="space-y-3 max-h-48 overflow-y-auto pr-1 mb-2">
+          @for (item of tempOrder().items; track $index) {
+            <div
+              class="flex items-start justify-between text-xs py-1 border-b border-slate-100 dark:border-slate-800/30 last:border-0"
+            >
+              <div class="flex flex-col max-w-[70%]">
+                <span class="font-extrabold text-slate-800 dark:text-slate-200 leading-tight">
+                  {{ item.product_name }}
+                </span>
+                @if (item.variant_name) {
+                  <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 mt-0.5">
+                    Mẫu: {{ item.variant_name }}
+                  </span>
+                }
+                @if (item.note) {
+                  <span
+                    class="text-[9px] text-amber-600 dark:text-amber-500 font-bold mt-0.5 italic"
+                  >
+                    * Ghi chú: {{ item.note }}
+                  </span>
+                }
+              </div>
+              <div class="flex flex-col items-end shrink-0">
+                <span class="font-black text-slate-700 dark:text-slate-300"
+                  >{{ item.price | number }}đ</span
+                >
+                <span class="text-[10px] font-bold text-slate-400">x{{ item.quantity }}</span>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Tổng cộng đơn hàng -->
+        <div class="border-t border-slate-200/60 dark:border-slate-700/40 mt-4 pt-3 space-y-2">
+          <div class="flex justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
+            <span>Tổng tiền món:</span>
+            <span class="text-slate-800 dark:text-slate-200"
+              >{{ tempOrder().total_amount | number }}đ</span
+            >
+          </div>
+          @if (tempOrder().discount_amount > 0) {
+            <div
+              class="flex justify-between text-xs font-bold text-emerald-600 dark:text-emerald-400"
+            >
+              <span>Voucher giảm giá:</span>
+              <span>-{{ tempOrder().discount_amount | number }}đ</span>
+            </div>
+          }
+          <div
+            class="flex justify-between text-sm font-black text-slate-800 dark:text-white border-t border-dashed border-slate-200 dark:border-slate-700/40 pt-2.5"
+          >
+            <span>Cần thanh toán:</span>
+            <span class="text-purple-600 dark:text-purple-400 text-base"
+              >{{ tempOrder().final_amount | number }}đ</span
+            >
+          </div>
         </div>
       </div>
     }

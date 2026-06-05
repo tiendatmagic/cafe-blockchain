@@ -67,9 +67,9 @@ export class MobileSignComponent implements OnInit {
       this.orderCode.set(code);
       this.tokenId.set(tid);
 
-      if (!code || tid === null) {
+      if (!code) {
         this.step.set('error');
-        this.errorMessage.set('Thiếu tham số mã hóa đơn hoặc ID Voucher!');
+        this.errorMessage.set('Thiếu tham số mã hóa đơn!');
         return;
       }
 
@@ -86,6 +86,12 @@ export class MobileSignComponent implements OnInit {
             this.blockchainStatus.set(settings.blockchain_status || null);
             this.txHash.set(settings.tx_hash || null);
             this.orderVoucherTokenId.set(settings.voucher_nft_token_id ? Number(settings.voucher_nft_token_id) : null);
+
+            // Nếu không truyền token_id, đây là yêu cầu xem biên lai/trạng thái đơn hàng thông thường
+            if (tid === null) {
+              this.step.set('success');
+              return;
+            }
 
             // 1. Nếu đơn hàng đã bị hủy, chuyển sang step 'success' ngay để hiển thị màn hình báo hủy
             if (settings.order_status === 'cancelled') {
@@ -109,7 +115,9 @@ export class MobileSignComponent implements OnInit {
             }
           }
           // Tải thông tin voucher on-chain sau khi đã có config của quán
-          this.fetchVoucherDetailsOnChain(tid);
+          if (tid !== null) {
+            this.fetchVoucherDetailsOnChain(tid);
+          }
         },
         error: (err) => {
           console.error('Lỗi tải cấu hình public của quán:', err);
