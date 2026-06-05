@@ -171,6 +171,7 @@ class OrderController extends Controller
                 'voucher_nft_token_id' => $voucherNftTokenId,
                 'payment_method' => $validated['payment_method'],
                 'status' => 'pending', // Mặc định là đang chờ xác nhận
+                'tx_hash' => $relayerResult['txHash'] ?? null,
                 'blockchain_status' => 'none',
                 'store_owner_address' => $storeOwner,
             ]);
@@ -336,6 +337,7 @@ class OrderController extends Controller
                 'discount_amount' => $discountAmount,
                 'voucher_nft_token_id' => $voucherNftTokenId,
                 'payment_method' => $validated['payment_method'],
+                'tx_hash' => isset($relayerResult['txHash']) ? $relayerResult['txHash'] : $order->tx_hash,
             ]);
 
             // Xóa toàn bộ chi tiết đơn hàng cũ và tạo mới
@@ -486,8 +488,8 @@ class OrderController extends Controller
             return response()->json(['message' => 'Chỉ có thể tặng voucher cho đơn hàng đã đồng bộ blockchain thành công!'], 400);
         }
 
-        if ($order->voucher_nft_token_id !== null) {
-            return response()->json(['message' => 'Đơn hàng này đã có Voucher NFT liên kết (Token ID: ' . $order->voucher_nft_token_id . ').'], 400);
+        if ($order->gift_voucher_nft_token_id !== null) {
+            return response()->json(['message' => 'Đơn hàng này đã được tặng Voucher NFT rồi (Token ID: ' . $order->gift_voucher_nft_token_id . ').'], 400);
         }
 
         if (!$order->customer || empty($order->customer->wallet_address)) {
@@ -513,7 +515,7 @@ class OrderController extends Controller
 
         if ($checkResult['success'] && $checkResult['exists']) {
             // Đã tồn tại voucher NFT on-chain cho đơn hàng này
-            $order->voucher_nft_token_id = (int)$checkResult['tokenId'];
+            $order->gift_voucher_nft_token_id = (int)$checkResult['tokenId'];
             $order->verification_hash = $order->generateVerificationHash();
             $order->saveQuietly();
 
@@ -544,7 +546,7 @@ class OrderController extends Controller
         // 4. Lưu lại thông tin đúc thành công vào database
         $tokenId = isset($relayerResult['tokenId']) ? (int)$relayerResult['tokenId'] : null;
         if ($tokenId) {
-            $order->voucher_nft_token_id = $tokenId;
+            $order->gift_voucher_nft_token_id = $tokenId;
             $order->verification_hash = $order->generateVerificationHash();
             $order->saveQuietly();
         }

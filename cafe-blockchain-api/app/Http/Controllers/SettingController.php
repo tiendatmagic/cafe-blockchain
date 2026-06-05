@@ -260,6 +260,7 @@ class SettingController extends Controller
             'blockchain_status' => $order ? $order->blockchain_status : null,
             'tx_hash' => $order ? $order->tx_hash : null,
             'voucher_nft_token_id' => $order ? $order->voucher_nft_token_id : null,
+            'gift_voucher_nft_token_id' => $order ? $order->gift_voucher_nft_token_id : null,
         ];
 
         return response()->json($publicSettings);

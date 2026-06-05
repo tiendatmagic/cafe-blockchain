@@ -19,6 +19,7 @@ class Order extends Model
         'total_amount',
         'discount_amount',
         'voucher_nft_token_id',
+        'gift_voucher_nft_token_id',
         'payment_method',
         'status',
         'tx_hash',
@@ -113,9 +114,9 @@ class Order extends Model
                             if ($relayerResult['success']) {
                                 \Illuminate\Support\Facades\Log::info("Minted NFT Voucher successfully with code: {$voucherCode}, TxHash: " . ($relayerResult['txHash'] ?? ''));
                                 
-                                // Cập nhật token_id vào DB POS để hoàn tất liên kết
+                                // Cập nhật token_id được tặng vào DB POS để hoàn tất liên kết
                                 if (!empty($relayerResult['tokenId'])) {
-                                    $order->voucher_nft_token_id = (int)$relayerResult['tokenId'];
+                                    $order->gift_voucher_nft_token_id = (int)$relayerResult['tokenId'];
                                     $order->verification_hash = $order->generateVerificationHash();
                                     $order->saveQuietly();
                                 }
