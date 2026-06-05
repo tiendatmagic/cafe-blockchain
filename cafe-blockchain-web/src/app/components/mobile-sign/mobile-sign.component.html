@@ -1,20 +1,32 @@
-<div class="min-vh-100 bg-slate-900 text-white flex flex-col justify-between p-6 relative overflow-hidden font-sans">
+<div
+  class="min-vh-100 bg-slate-900 text-white flex flex-col justify-between p-6 relative overflow-hidden font-sans"
+>
   <!-- Gradient Background Effects -->
-  <div class="absolute w-96 h-96 rounded-full bg-purple-600/10 blur-[120px] top-[-10%] left-[-20%] pointer-events-none"></div>
-  <div class="absolute w-96 h-96 rounded-full bg-blue-600/10 blur-[120px] bottom-[-10%] right-[-20%] pointer-events-none"></div>
+  <div
+    class="absolute w-96 h-96 rounded-full bg-purple-600/10 blur-[120px] top-[-10%] left-[-20%] pointer-events-none"
+  ></div>
+  <div
+    class="absolute w-96 h-96 rounded-full bg-blue-600/10 blur-[120px] bottom-[-10%] right-[-20%] pointer-events-none"
+  ></div>
 
   <!-- Header -->
   <header class="flex items-center justify-between z-10 py-4 border-b border-slate-800/60">
     <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/25">
+      <div
+        class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/25"
+      >
         <span class="text-xl">☕</span>
       </div>
       <div class="flex flex-col">
-        <span class="font-extrabold text-sm uppercase tracking-wider text-slate-200">Cafe Web3 POS</span>
+        <span class="font-extrabold text-sm uppercase tracking-wider text-slate-200"
+          >Cafe Web3 POS</span
+        >
         <span class="text-[10px] text-slate-400 font-bold tracking-wide">NFT Voucher Gate</span>
       </div>
     </div>
-    <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/40 border border-slate-700/30 text-[10px] font-black text-slate-300">
+    <div
+      class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/40 border border-slate-700/30 text-[10px] font-black text-slate-300"
+    >
       <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
       BSC TESTNET 97
     </div>
@@ -22,16 +34,22 @@
 
   <!-- Main Content Card -->
   <main class="my-auto py-8 z-10 max-w-md w-full mx-auto">
-    
     <!-- STEP: ERROR -->
     @if (step() === 'error') {
-      <div class="bg-rose-950/20 border border-rose-500/30 rounded-3xl p-6 text-center shadow-xl animate-in fade-in zoom-in-95 duration-200">
-        <div class="w-16 h-16 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center mx-auto mb-4 text-3xl">
+      <div
+        class="bg-rose-950/20 border border-rose-500/30 rounded-3xl p-6 text-center shadow-xl animate-in fade-in zoom-in-95 duration-200"
+      >
+        <div
+          class="w-16 h-16 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center mx-auto mb-4 text-3xl"
+        >
           ⚠️
         </div>
         <h2 class="text-lg font-black text-rose-400 mb-2">Đã xảy ra lỗi</h2>
         <p class="text-xs font-bold text-slate-400 leading-relaxed">{{ errorMessage() }}</p>
-        <button (click)="step.set('connect')" class="mt-6 px-6 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold rounded-2xl transition-all active:scale-95">
+        <button
+          (click)="step.set('connect')"
+          class="mt-6 px-6 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold rounded-2xl transition-all active:scale-95"
+        >
           Thử lại
         </button>
       </div>
@@ -39,8 +57,12 @@
 
     <!-- STEP: SUCCESS -->
     @if (step() === 'success') {
-      <div class="bg-emerald-950/25 border border-emerald-500/30 rounded-3xl p-6 text-center shadow-xl animate-in fade-in zoom-in-95 duration-200">
-        <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-emerald-500 to-green-400 flex items-center justify-center mx-auto mb-5 text-4xl shadow-lg shadow-emerald-500/25 animate-bounce">
+      <div
+        class="bg-emerald-950/25 border border-emerald-500/30 rounded-3xl p-6 text-center shadow-xl animate-in fade-in zoom-in-95 duration-200"
+      >
+        <div
+          class="w-20 h-20 rounded-full bg-gradient-to-tr from-emerald-500 to-green-400 flex items-center justify-center mx-auto mb-5 text-4xl shadow-lg shadow-emerald-500/25 animate-bounce"
+        >
           ✓
         </div>
         <h2 class="text-xl font-black text-emerald-400 mb-2">Ký Số Thành Công!</h2>
@@ -50,7 +72,9 @@
         <p class="text-[10px] text-slate-400 font-bold">
           Thu ngân sẽ hoàn tất việc lập hóa đơn cho bạn tại quầy ngay lập tức.
         </p>
-        <div class="mt-6 p-4 rounded-2xl bg-slate-800/40 border border-slate-700/20 text-left space-y-1.5">
+        <div
+          class="mt-6 p-4 rounded-2xl bg-slate-800/40 border border-slate-700/20 text-left space-y-1.5"
+        >
           <div class="flex justify-between text-[10px] font-bold text-slate-400">
             <span>Mã hóa đơn:</span>
             <span class="text-slate-200 font-black uppercase">{{ orderCode() }}</span>
@@ -65,34 +89,49 @@
 
     <!-- STEP: CONNECT WALLET -->
     @if (step() === 'connect') {
-      <div class="bg-slate-800/30 border border-slate-700/30 backdrop-blur-md rounded-3xl p-6 shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div
+        class="bg-slate-800/30 border border-slate-700/30 backdrop-blur-md rounded-3xl p-6 shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-300"
+      >
         <h2 class="text-lg font-black text-slate-200 mb-4 flex items-center gap-2">
           <span>🎫</span> Áp Dụng NFT Voucher
         </h2>
 
         <!-- Voucher Details Card -->
         @if (voucherInfo()) {
-          <div class="p-4 rounded-2xl bg-gradient-to-r from-purple-900/40 to-indigo-900/40 border border-purple-500/20 mb-6 flex items-center justify-between">
+          <div
+            class="p-4 rounded-2xl bg-gradient-to-r from-purple-900/40 to-indigo-900/40 border border-purple-500/20 mb-6 flex items-center justify-between"
+          >
             <div class="flex items-center gap-3">
               <span class="text-2xl">🎁</span>
               <div class="flex flex-col">
-                <span class="text-[10px] font-black text-purple-400 uppercase tracking-wide">Trị giá Voucher</span>
-                <span class="text-xl font-black text-white leading-tight">{{ voucherInfo()?.discount | number }}đ</span>
-                <span class="text-[9px] font-bold text-slate-400 mt-0.5">Đơn tối thiểu: {{ voucherInfo()?.minOrder | number }}đ</span>
+                <span class="text-[10px] font-black text-purple-400 uppercase tracking-wide"
+                  >Trị giá Voucher</span
+                >
+                <span class="text-xl font-black text-white leading-tight"
+                  >{{ voucherInfo()?.discount | number }}đ</span
+                >
+                <span class="text-[9px] font-bold text-slate-400 mt-0.5"
+                  >Đơn tối thiểu: {{ voucherInfo()?.minOrder | number }}đ</span
+                >
               </div>
             </div>
-            <div class="px-2 py-1 bg-purple-500/25 border border-purple-500/40 rounded-lg text-[8px] font-black text-purple-300 uppercase tracking-wide">
+            <div
+              class="px-2 py-1 bg-purple-500/25 border border-purple-500/40 rounded-lg text-[8px] font-black text-purple-300 uppercase tracking-wide"
+            >
               Token #{{ tokenId() }}
             </div>
           </div>
         }
 
         <p class="text-xs text-slate-400 font-bold mb-6 leading-relaxed">
-          Vui lòng kết nối ví Metamask di động chứa NFT Voucher của bạn để thực hiện xác thực chữ ký. Thao tác này hoàn toàn **không tốn gas**.
+          Vui lòng kết nối ví Metamask di động chứa NFT Voucher của bạn để thực hiện xác thực chữ
+          ký. Thao tác này hoàn toàn **không tốn gas**.
         </p>
 
         @if (errorMessage()) {
-          <div class="mb-4 text-xs font-bold text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-xl p-3">
+          <div
+            class="mb-4 text-xs font-bold text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-xl p-3"
+          >
             {{ errorMessage() }}
           </div>
         }
@@ -103,7 +142,9 @@
           class="w-full py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 text-xs font-black rounded-2xl transition-all shadow-lg shadow-purple-500/25 hover:shadow-purple-500/35 flex items-center justify-center gap-2 active:scale-[0.98]"
         >
           @if (isConnecting()) {
-            <span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            <span
+              class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+            ></span>
             Đang kết nối...
           } @else {
             <span class="text-base">🦊</span> Kết nối ví Metamask
@@ -114,43 +155,66 @@
 
     <!-- STEP: SIGN SIGNATURE -->
     @if (step() === 'sign') {
-      <div class="bg-slate-800/30 border border-slate-700/30 backdrop-blur-md rounded-3xl p-6 shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div
+        class="bg-slate-800/30 border border-slate-700/30 backdrop-blur-md rounded-3xl p-6 shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-300"
+      >
         <h2 class="text-lg font-black text-slate-200 mb-4 flex items-center gap-2">
           <span>🔒</span> Xác Thực Chữ Ký
         </h2>
 
         <!-- Connected Wallet Display -->
-        <div class="p-3 rounded-xl bg-slate-800/60 border border-slate-700/40 text-[10px] font-bold text-slate-400 flex items-center justify-between mb-6">
+        <div
+          class="p-3 rounded-xl bg-slate-800/60 border border-slate-700/40 text-[10px] font-bold text-slate-400 flex items-center justify-between mb-6"
+        >
           <span>Ví đang kết nối:</span>
-          <span class="font-mono text-purple-400 font-bold">{{ web3Service.currentAccount() | slice:0:6 }}...{{ web3Service.currentAccount() | slice:-4 }}</span>
+          <span class="font-mono text-purple-400 font-bold"
+            >{{ web3Service.currentAccount() | slice: 0 : 6 }}...{{
+              web3Service.currentAccount() | slice: -4
+            }}</span
+          >
         </div>
 
         @if (voucherInfo()) {
-          <div class="p-4 rounded-2xl bg-gradient-to-r from-purple-900/40 to-indigo-900/40 border border-purple-500/20 mb-6 flex items-center justify-between">
+          <div
+            class="p-4 rounded-2xl bg-gradient-to-r from-purple-900/40 to-indigo-900/40 border border-purple-500/20 mb-6 flex items-center justify-between"
+          >
             <div class="flex items-center gap-3">
               <span class="text-2xl">🎁</span>
               <div class="flex flex-col">
-                <span class="text-[10px] font-black text-purple-400 uppercase tracking-wide">Khấu trừ hóa đơn</span>
-                <span class="text-xl font-black text-white leading-tight">-{{ voucherInfo()?.discount | number }}đ</span>
-                <span class="text-[9px] font-bold text-slate-400 mt-0.5">Áp dụng cho đơn: {{ orderCode() }}</span>
+                <span class="text-[10px] font-black text-purple-400 uppercase tracking-wide"
+                  >Khấu trừ hóa đơn</span
+                >
+                <span class="text-xl font-black text-white leading-tight"
+                  >-{{ voucherInfo()?.discount | number }}đ</span
+                >
+                <span class="text-[9px] font-bold text-slate-400 mt-0.5"
+                  >Áp dụng cho đơn: {{ orderCode() }}</span
+                >
               </div>
             </div>
           </div>
         }
 
         <p class="text-xs text-slate-400 font-bold mb-6 leading-relaxed">
-          Nhấp nút phía dưới để sinh chữ ký số EIP-712 bảo mật, chứng minh bạn là chủ sở hữu thực sự của NFT Token #{{ tokenId() }} và đồng ý thanh toán cho hóa đơn {{ orderCode() }}.
+          Nhấp nút phía dưới để sinh chữ ký số EIP-712 bảo mật, chứng minh bạn là chủ sở hữu thực sự
+          của NFT Token #{{ tokenId() }} và đồng ý thanh toán cho hóa đơn {{ orderCode() }}.
         </p>
 
         @if (statusMessage()) {
-          <div class="mb-4 text-xs font-bold text-purple-400 bg-purple-500/10 border border-purple-500/20 rounded-xl p-3 flex items-center gap-2">
-            <span class="w-3.5 h-3.5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></span>
+          <div
+            class="mb-4 text-xs font-bold text-purple-400 bg-purple-500/10 border border-purple-500/20 rounded-xl p-3 flex items-center gap-2"
+          >
+            <span
+              class="w-3.5 h-3.5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"
+            ></span>
             {{ statusMessage() }}
           </div>
         }
 
         @if (errorMessage()) {
-          <div class="mb-4 text-xs font-bold text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-xl p-3">
+          <div
+            class="mb-4 text-xs font-bold text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-xl p-3"
+          >
             {{ errorMessage() }}
           </div>
         }
@@ -162,13 +226,15 @@
             class="w-full py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 text-xs font-black rounded-2xl transition-all shadow-lg shadow-purple-500/25 flex items-center justify-center gap-2 active:scale-[0.98]"
           >
             @if (isSigning()) {
-              <span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              <span
+                class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+              ></span>
               Đang ký xác nhận...
             } @else {
-              <span>🔏</span> Ký Xác Nhận Sử Dụng
+              <span></span> Ký Xác Nhận Sử Dụng
             }
           </button>
-          
+
           <button
             (click)="step.set('connect')"
             [disabled]="isSigning()"
@@ -179,11 +245,12 @@
         </div>
       </div>
     }
-
   </main>
 
   <!-- Footer -->
-  <footer class="text-center z-10 py-4 text-[10px] text-slate-500 font-bold border-t border-slate-800/40 mt-8">
+  <footer
+    class="text-center z-10 py-4 text-[10px] text-slate-500 font-bold border-t border-slate-800/40 mt-8"
+  >
     Bản quyền thuộc Cafe Web3 POS • Được bảo vệ bằng mật mã học Blockchain
   </footer>
 </div>
