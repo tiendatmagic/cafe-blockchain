@@ -26,6 +26,7 @@ export class MobileSignComponent implements OnInit {
   public orderStatus = signal<string | null>(null);
   public blockchainStatus = signal<string | null>(null);
   public txHash = signal<string | null>(null);
+  public orderVoucherTokenId = signal<number | null>(null);
 
   public isConnecting = signal<boolean>(false);
   public isSigning = signal<boolean>(false);
@@ -84,10 +85,26 @@ export class MobileSignComponent implements OnInit {
             this.orderStatus.set(settings.order_status || null);
             this.blockchainStatus.set(settings.blockchain_status || null);
             this.txHash.set(settings.tx_hash || null);
+            this.orderVoucherTokenId.set(settings.voucher_nft_token_id ? Number(settings.voucher_nft_token_id) : null);
 
-            // Nếu đơn hàng đã hoàn tất (thanh toán xong), ta chuyển sang step 'success' ngay
-            if (settings.order_status === 'completed') {
+            // 1. Nếu đơn hàng đã bị hủy, chuyển sang step 'success' ngay để hiển thị màn hình báo hủy
+            if (settings.order_status === 'cancelled') {
               this.step.set('success');
+              return;
+            }
+
+            // 2. Nếu voucher đã được áp dụng thành công cho đơn hàng này rồi, chuyển sang step 'success' ngay
+            const orderVoucherId = settings.voucher_nft_token_id ? Number(settings.voucher_nft_token_id) : null;
+            if (orderVoucherId !== null && orderVoucherId === tid) {
+              this.step.set('success');
+              return;
+            }
+
+            // 3. Nếu đơn hàng đã hoàn tất (completed) hoặc đang chuẩn bị (preparing) nhưng không phải do voucher này áp dụng
+            // (hoặc chưa áp dụng voucher nào, hoặc áp dụng voucher khác), thì không cho phép ký ví nữa vì đơn hàng đã được xử lý.
+            if (settings.order_status === 'completed' || settings.order_status === 'preparing') {
+              this.step.set('error');
+              this.errorMessage.set('Đơn hàng đã được xử lý hoặc thanh toán từ trước, không thể áp dụng NFT Voucher này nữa!');
               return;
             }
           }
@@ -130,8 +147,13 @@ export class MobileSignComponent implements OnInit {
       });
 
       if (info.isUsed) {
-        this.step.set('error');
-        this.errorMessage.set('NFT Voucher này đã được sử dụng hoặc tiêu hủy trước đó!');
+        const isMatchedOrder = this.orderStatus() !== null && this.orderVoucherTokenId() === tokenId;
+        if (isMatchedOrder) {
+          this.step.set('success');
+        } else {
+          this.step.set('error');
+          this.errorMessage.set('NFT Voucher này đã được sử dụng hoặc tiêu hủy trước đó!');
+        }
       }
     } catch (err: any) {
       console.error('Lỗi lấy thông tin voucher on-chain:', err);
