@@ -118,6 +118,17 @@ contract CafeVoucherNFT {
         return _ownedTokens[owner][index];
     }
 
+    function getTokensOfOwner(
+        address owner
+    ) public view returns (uint256[] memory) {
+        uint256 tokenCount = balanceOf(owner);
+        uint256[] memory tokenIds = new uint256[](tokenCount);
+        for (uint256 i = 0; i < tokenCount; i++) {
+            tokenIds[i] = _ownedTokens[owner][i];
+        }
+        return tokenIds;
+    }
+
     function ownerOf(uint256 tokenId) public view returns (address) {
         address tokenOwner = _owners[tokenId];
         require(tokenOwner != address(0), "Token query for nonexistent token");

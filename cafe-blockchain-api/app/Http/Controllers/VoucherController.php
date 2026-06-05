@@ -35,6 +35,16 @@ class VoucherController extends Controller
         $discountFormatted = number_format($discountAmount) . 'đ';
         $minOrderFormatted = number_format($minOrderAmount) . 'đ';
 
+        $expirationTime = time() + (30 * 24 * 60 * 60); // Mặc định hạn dùng 30 ngày
+        if (count($parts) >= 4) {
+            $orderCodeParts = array_slice($parts, 3);
+            $orderCode = implode('-', $orderCodeParts);
+            $order = DB::table('orders')->where('order_code', $orderCode)->first();
+            if ($order) {
+                $expirationTime = strtotime($order->created_at) + (30 * 24 * 60 * 60);
+            }
+        }
+
         $attributes = [
             [
                 'trait_type' => 'Discount Amount (VND)',
@@ -57,7 +67,7 @@ class VoucherController extends Controller
             [
                 'display_type' => 'date',
                 'trait_type' => 'Expiration Date',
-                'value' => time() + (30 * 24 * 60 * 60) // Hạn dùng 30 ngày
+                'value' => $expirationTime
             ]
         ];
 

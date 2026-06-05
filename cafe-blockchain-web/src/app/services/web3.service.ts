@@ -1232,21 +1232,18 @@ export class Web3Service {
       const activeProvider = new JsonRpcProvider(this.rpcUrl());
       const contract = new Contract(this.voucherContractAddress(), CAFE_VOUCHER_NFT_ABI, activeProvider);
 
-      // 1. Đọc số dư NFT thực tế của ví khách hàng
-      const balance = await contract['balanceOf'](customerAddress);
-      const targetCount = Number(balance);
-      if (targetCount === 0) {
+      // 1. Lấy toàn bộ danh sách Token ID của ví khách hàng bằng 1 cuộc gọi duy nhất
+      const tokenIds = await contract['getTokensOfOwner'](customerAddress);
+      if (!tokenIds || tokenIds.length === 0) {
         return [];
       }
 
       const vouchersList: any[] = [];
 
-      // 2. Lặp qua chỉ mục để lấy trực tiếp các Token ID mà ví này đang sở hữu
-      for (let i = 0; i < targetCount; i++) {
+      // 2. Duyệt qua từng Token ID để lấy thông tin chi tiết
+      for (const tokenId of tokenIds) {
         try {
-          const tokenId = await contract['tokenOfOwnerByIndex'](customerAddress, i);
           const tokenIdNum = Number(tokenId);
-          
           const info = await contract['vouchers'](tokenIdNum);
           
           if (info && !info.isUsed) {
@@ -1265,8 +1262,8 @@ export class Web3Service {
             });
           }
         } catch (tokenErr) {
-          console.warn(`[Blockchain] Lỗi đọc NFT ở chỉ mục ${i}:`, tokenErr);
-          // Tiếp tục lặp nếu một token nào đó bị lỗi
+          console.warn(`[Blockchain] Lỗi đọc thông tin NFT Voucher ID ${tokenId}:`, tokenErr);
+          // Tiếp tục xử lý các token tiếp theo nếu một token bị lỗi
         }
       }
 
