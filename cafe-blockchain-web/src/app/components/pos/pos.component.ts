@@ -643,10 +643,13 @@ export class PosComponent implements OnInit, OnDestroy {
         const tempOrderData = {
           table_number: orderData.table_number,
           payment_method: orderData.payment_method,
+          customer_id: orderData.customer_id,
           total_amount: this.cartTotal(),
           discount_amount: this.posSelectedVoucher()?.discount_amount || 0,
           final_amount: this.posFinalTotal(),
           items: this.cart().map(item => ({
+            product_id: item.product.id,
+            product_variant_id: item.variant ? item.variant.id : null,
             product_name: item.product.name,
             variant_name: item.variant ? (item.variant.variant_name || item.variant.name) : null,
             quantity: item.quantity,
@@ -660,7 +663,7 @@ export class PosComponent implements OnInit, OnDestroy {
             // 3. Tạo link QR trỏ tới trang ký số di động
             const currentUrl = window.location.origin;
             const qrData = `${currentUrl}/mobile-sign?order_code=${orderCode}&token_id=${selectedVoucher.tokenId}`;
-            const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}`;
+            const qrApiUrl = `https://quickchart.io/qr?text=${encodeURIComponent(qrData)}&size=250`;
             
             // 4. Cập nhật signal để hiển thị modal QR
             this.signOrderCode.set(orderCode);
@@ -702,17 +705,14 @@ export class PosComponent implements OnInit, OnDestroy {
           if (res && res.status === 'signed' && res.signature) {
             this.stopSignaturePolling();
             this.showSignQrModal.set(false);
-            this.stateService.showToast('Khách hàng đã ký số thành công! Đang hoàn tất đơn hàng...', 'success');
+            this.stateService.showToast('Khách hàng đã ký số và chốt đơn hàng thành công!', 'success');
             
-            // Gắn thông tin chữ ký và mã đơn hàng đã ký vào dữ liệu
-            const finalOrderData = {
-              ...orderData,
-              order_code: orderCode,
-              voucher_nft_token_id: this.signTokenId(),
-              voucher_nft_signature: res.signature
-            };
-            
-            this.submitFinalOrder(finalOrderData);
+            // Vì Backend đã tự động tạo đơn hàng chính thức từ temp_order_data khi nhận chữ ký,
+            // POS thu ngân chỉ cần dọn dẹp giỏ hàng và tải lại danh sách đơn hàng
+            this.stateService.clearCart();
+            this.isOrderSubmitting.set(false);
+            this.stateService.refreshOrders();
+            this.stateService.activeTab.set('orders');
           }
         },
         error: (err) => {

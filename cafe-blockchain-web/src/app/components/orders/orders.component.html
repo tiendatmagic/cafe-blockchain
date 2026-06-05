@@ -748,6 +748,28 @@
                     </div>
                   </div>
                 }
+                @if (selectedOrderDetails()?.gift_voucher_nft_token_id) {
+                  <div
+                    class="col-span-2 pt-2 border-t border-slate-200/50 dark:border-slate-800 flex items-center gap-2"
+                  >
+                    <div
+                      class="w-6 h-6 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 flex items-center justify-center text-xs shrink-0 shadow-sm"
+                    >
+                      🎁
+                    </div>
+                    <div class="flex flex-col min-w-0">
+                      <span
+                        class="text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-none"
+                        >Voucher tặng kèm (NFT)</span
+                      >
+                      <span
+                        class="font-extrabold text-emerald-600 dark:text-emerald-400 text-[11px] truncate mt-0.5"
+                      >
+                        Token ID: #{{ selectedOrderDetails()?.gift_voucher_nft_token_id }}
+                      </span>
+                    </div>
+                  </div>
+                }
               </div>
 
               <!-- Bằng chứng Blockchain -->

@@ -143,22 +143,100 @@ class VoucherController extends Controller
             'signature' => 'required|string',
         ]);
 
-        $affected = DB::table('voucher_signatures')
+        $sigRecord = DB::table('voucher_signatures')
             ->where('order_code', $validated['order_code'])
-            ->update([
-                'signature' => $validated['signature'],
-                'status' => 'signed',
-                'updated_at' => now()
-            ]);
+            ->first();
 
-        if ($affected === 0) {
+        if (!$sigRecord) {
             return response()->json([
                 'success' => false,
                 'message' => 'Không tìm thấy yêu cầu ký số cho hóa đơn này hoặc chữ ký không hợp lệ!'
             ], 404);
         }
 
-        return response()->json(['success' => true]);
+        if ($sigRecord->status === 'signed') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Hóa đơn này đã được ký số và chốt đơn trước đó!'
+            ], 400);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $storeOwner = strtolower($sigRecord->store_owner_address);
+            $voucherNftTokenId = (int)$sigRecord->token_id;
+            $orderCode = $sigRecord->order_code;
+            $voucherNftSignature = $validated['signature'];
+
+            // 1. Thực hiện quy đổi (burn) NFT Voucher trên Blockchain thông qua Relayer
+            $relayerResult = \App\Services\BlockchainRelayerService::useVoucher(
+                $storeOwner,
+                $voucherNftTokenId,
+                $orderCode,
+                $voucherNftSignature
+            );
+
+            if (!$relayerResult['success']) {
+                throw new \Exception("Không thể quy đổi NFT Voucher trên Blockchain: " . ($relayerResult['error'] ?? 'Lỗi không xác định'));
+            }
+
+            // 2. Tự động tạo đơn hàng chính thức từ temp_order_data
+            $tempOrderData = !empty($sigRecord->temp_order_data) ? json_decode($sigRecord->temp_order_data, true) : null;
+            if (empty($tempOrderData) || empty($tempOrderData['items'])) {
+                throw new \Exception("Dữ liệu giỏ hàng tạm thời không hợp lệ hoặc đã bị xóa!");
+            }
+
+            $discountAmount = (int)($tempOrderData['discount_amount'] ?? 0);
+            $finalTotalAmount = (float)($tempOrderData['final_amount'] ?? 0);
+
+            // Tạo đơn hàng
+            $order = \App\Models\Order::create([
+                'order_code' => $orderCode,
+                'table_number' => $tempOrderData['table_number'] ?? null,
+                'customer_id' => $tempOrderData['customer_id'] ?? null,
+                'total_amount' => $finalTotalAmount,
+                'discount_amount' => $discountAmount,
+                'voucher_nft_token_id' => $voucherNftTokenId,
+                'payment_method' => $tempOrderData['payment_method'] ?? 'cash',
+                'status' => 'pending', // Mặc định là đang chờ xác nhận
+                'tx_hash' => $relayerResult['txHash'] ?? null,
+                'blockchain_status' => 'none',
+                'store_owner_address' => $storeOwner,
+            ]);
+
+            // Tạo các chi tiết món ăn
+            foreach ($tempOrderData['items'] as $item) {
+                \App\Models\OrderItem::create([
+                    'order_id' => $order->id,
+                    'product_id' => $item['product_id'],
+                    'product_variant_id' => $item['product_variant_id'] ?? null,
+                    'quantity' => $item['quantity'],
+                    'price' => $item['price'],
+                    'note' => $item['note'] ?? null,
+                ]);
+            }
+
+            // 3. Cập nhật chữ ký số và chuyển trạng thái yêu cầu sang signed
+            DB::table('voucher_signatures')
+                ->where('order_code', $orderCode)
+                ->update([
+                    'signature' => $voucherNftSignature,
+                    'status' => 'signed',
+                    'updated_at' => now()
+                ]);
+
+            DB::commit();
+
+            return response()->json(['success' => true]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi chốt đơn hàng tự động: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
