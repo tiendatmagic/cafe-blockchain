@@ -131,10 +131,17 @@ export class ApiService {
   }
 
   // 12. Vouchers API
-  public requestVoucherSignature(orderCode: string, tokenId: number): Observable<any> {
+  public requestVoucherSignature(orderCode: string, tokenId: number, tempOrderData?: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/vouchers/request-sign`, {
       order_code: orderCode,
-      token_id: tokenId
+      token_id: tokenId,
+      temp_order_data: tempOrderData
+    }, { headers: this.getHeaders() });
+  }
+
+  public cancelVoucherSignature(orderCode: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/vouchers/cancel-sign`, {
+      order_code: orderCode
     }, { headers: this.getHeaders() });
   }
 

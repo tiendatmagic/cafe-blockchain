@@ -210,11 +210,38 @@ class SettingController extends Controller
 
         // Tìm đơn hàng để lấy store_owner_address của quán
         $order = \App\Models\Order::where('order_code', $orderCode)->first();
+        $tempOrderData = null;
+
         if (!$order) {
-            return response()->json(['message' => 'Không tìm thấy đơn hàng tương ứng!'], 404);
+            // Thử tìm trong bảng voucher_signatures xem có thông tin tạm thời không
+            $sigRecord = \Illuminate\Support\Facades\DB::table('voucher_signatures')->where('order_code', $orderCode)->first();
+            if ($sigRecord && !empty($sigRecord->store_owner_address)) {
+                $storeOwner = strtolower($sigRecord->store_owner_address);
+                $tempOrderData = !empty($sigRecord->temp_order_data) ? json_decode($sigRecord->temp_order_data, true) : null;
+            } else {
+                return response()->json(['message' => 'Không tìm thấy đơn hàng tương ứng!'], 404);
+            }
+        } else {
+            $storeOwner = strtolower($order->store_owner_address);
+            
+            // Nếu đơn hàng đã lưu thực tế, gom thông tin chi tiết hóa đơn
+            $orderItems = \Illuminate\Support\Facades\DB::table('order_items')
+                ->join('products', 'order_items.product_id', '=', 'products.id')
+                ->leftJoin('product_variants', 'order_items.product_variant_id', '=', 'product_variants.id')
+                ->where('order_items.order_id', $order->id)
+                ->select('products.name as product_name', 'product_variants.name as variant_name', 'order_items.quantity', 'order_items.price')
+                ->get();
+                
+            $tempOrderData = [
+                'table_number' => $order->table_number,
+                'payment_method' => $order->payment_method,
+                'total_amount' => $order->total_amount + $order->discount_amount, // Giá gốc trước giảm
+                'discount_amount' => $order->discount_amount,
+                'final_amount' => $order->total_amount,
+                'items' => $orderItems
+            ];
         }
 
-        $storeOwner = strtolower($order->store_owner_address);
         $settings = $this->ensureDefaultSettings($storeOwner);
 
         // Chỉ trả về các cấu hình an toàn cho client
@@ -228,6 +255,7 @@ class SettingController extends Controller
             'rpc_url' => $settings['rpc_url'] ?? '',
             'chain_id' => $settings['chain_id'] ?? '',
             'explorer_url' => $settings['explorer_url'] ?? '',
+            'temp_order' => $tempOrderData, // Trả về thông tin đơn hàng tạm thời/thực tế để client hiển thị
         ];
 
         return response()->json($publicSettings);

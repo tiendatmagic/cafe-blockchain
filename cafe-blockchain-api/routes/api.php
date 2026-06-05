@@ -39,6 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/vouchers', [\App\Http\Controllers\VoucherController::class, 'index']);
     Route::post('/vouchers/sync-ownership', [\App\Http\Controllers\VoucherController::class, 'syncOwnership']);
     Route::post('/vouchers/request-sign', [\App\Http\Controllers\VoucherController::class, 'requestSign']);
+    Route::post('/vouchers/cancel-sign', [\App\Http\Controllers\VoucherController::class, 'cancelSign']);
     Route::get('/vouchers/check-signature/{orderCode}', [\App\Http\Controllers\VoucherController::class, 'checkSignature']);
 
     // Products API

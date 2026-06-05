@@ -154,6 +154,9 @@ class OrderController extends Controller
 
                 // Tiêu hủy thành công, ghi nhận discount
                 $discountAmount = (int)$relayerGet['discountAmount'];
+
+                // Xóa chữ ký và đơn hàng tạm thời sau khi quy đổi thành công
+                DB::table('voucher_signatures')->where('order_code', $orderCode)->delete();
             }
 
             $finalTotalAmount = max(0, $totalAmount - $discountAmount);
@@ -318,6 +321,9 @@ class OrderController extends Controller
                 }
 
                 $discountAmount = (int)$relayerGet['discountAmount'];
+
+                // Xóa chữ ký và đơn hàng tạm thời sau khi quy đổi thành công
+                DB::table('voucher_signatures')->where('order_code', $order->order_code)->delete();
             }
 
             $finalTotalAmount = max(0, $totalAmount - $discountAmount);

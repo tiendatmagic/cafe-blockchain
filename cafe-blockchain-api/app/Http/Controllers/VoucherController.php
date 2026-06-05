@@ -95,18 +95,40 @@ class VoucherController extends Controller
         $validated = $request->validate([
             'order_code' => 'required|string|max:50',
             'token_id' => 'required|integer',
+            'temp_order_data' => 'nullable|array',
         ]);
+
+        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+
+        // Dọn dẹp các yêu cầu ký số đã quá 1 giờ (tránh rác database)
+        DB::table('voucher_signatures')->where('created_at', '<', now()->subHour())->delete();
 
         DB::table('voucher_signatures')->updateOrInsert(
             ['order_code' => $validated['order_code']],
             [
                 'token_id' => $validated['token_id'],
+                'store_owner_address' => $storeOwner,
+                'temp_order_data' => isset($validated['temp_order_data']) ? json_encode($validated['temp_order_data'], JSON_UNESCAPED_UNICODE) : null,
                 'signature' => null,
                 'status' => 'pending',
                 'created_at' => now(),
                 'updated_at' => now()
             ]
         );
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * POS hủy bỏ yêu cầu ký ví (khi thu ngân đóng modal QR)
+     */
+    public function cancelSign(Request $request)
+    {
+        $validated = $request->validate([
+            'order_code' => 'required|string|max:50',
+        ]);
+
+        DB::table('voucher_signatures')->where('order_code', $validated['order_code'])->delete();
 
         return response()->json(['success' => true]);
     }

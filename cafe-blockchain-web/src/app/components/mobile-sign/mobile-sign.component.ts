@@ -22,6 +22,7 @@ export class MobileSignComponent implements OnInit {
   public orderCode = signal<string>('');
   public tokenId = signal<number | null>(null);
   public voucherInfo = signal<{ discount: number, minOrder: number, isUsed: boolean } | null>(null);
+  public tempOrder = signal<any | null>(null);
 
   public isConnecting = signal<boolean>(false);
   public isSigning = signal<boolean>(false);
@@ -74,6 +75,9 @@ export class MobileSignComponent implements OnInit {
           if (settings) {
             this.web3Service.updateConfig(settings);
             this.stateService.applyDynamicColors(settings.primary_color, settings.secondary_color);
+            if (settings.temp_order) {
+              this.tempOrder.set(settings.temp_order);
+            }
           }
           // Tải thông tin voucher on-chain sau khi đã có config của quán
           this.fetchVoucherDetailsOnChain(tid);

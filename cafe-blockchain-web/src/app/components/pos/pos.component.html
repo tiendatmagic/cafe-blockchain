@@ -1292,33 +1292,13 @@
 <!-- ==================== MODAL QUÉT QR KÝ SỐ VOUCHER NFT ==================== -->
 @if (showSignQrModal()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-    <!-- Backdrop overlay -->
-    <div (click)="closeSignQrModal()" class="fixed inset-0 bg-black/60 backdrop-blur-sm"></div>
+    <!-- Backdrop overlay (Không cho phép đóng khi click ngoài card) -->
+    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm"></div>
 
     <!-- Modal Content -->
     <div
       class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 p-6 max-w-sm w-full shadow-[0_20px_50px_rgba(0,0,0,0.3)] text-slate-800 dark:text-slate-200 flex flex-col items-center text-center animate-in fade-in zoom-in duration-200"
     >
-      <!-- Close button -->
-      <button
-        (click)="closeSignQrModal()"
-        class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2.5"
-            d="M6 18L18 6M6 6l12 12"
-          />
-        </svg>
-      </button>
 
       <!-- Icon & Title -->
       <div
@@ -1424,11 +1404,51 @@
 
       <!-- Action buttons -->
       <button
-        (click)="closeSignQrModal()"
+        (click)="showCancelSignConfirmModal.set(true)"
         class="w-full py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-2xl transition-all"
       >
         Hủy áp dụng
       </button>
+    </div>
+  </div>
+}
+
+<!-- ==================== MODAL XÁC NHẬN HỦY KÝ SỐ VOUCHER NFT ==================== -->
+@if (showCancelSignConfirmModal()) {
+  <div class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+    <!-- Backdrop overlay (Không cho phép đóng khi click ngoài) -->
+    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm"></div>
+
+    <!-- Modal Content -->
+    <div
+      class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 p-6 max-w-sm w-full shadow-[0_20px_50px_rgba(0,0,0,0.4)] text-slate-800 dark:text-slate-200 flex flex-col items-center text-center animate-in fade-in zoom-in duration-200"
+    >
+      <!-- Warning Icon -->
+      <div
+        class="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center text-2xl mb-3 shrink-0"
+      >
+        ⚠️
+      </div>
+      <h4 class="text-base font-black text-slate-800 dark:text-white">Hủy yêu cầu ký số?</h4>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 px-3 leading-relaxed">
+        Bạn có chắc chắn muốn hủy yêu cầu ký số Voucher NFT cho hóa đơn này không? Dữ liệu đơn hàng tạm thời sẽ bị xóa bỏ hoàn toàn.
+      </p>
+
+      <!-- Actions -->
+      <div class="w-full flex gap-3 mt-6">
+        <button
+          (click)="showCancelSignConfirmModal.set(false)"
+          class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-2xl transition-all active:scale-[0.98]"
+        >
+          Quay lại
+        </button>
+        <button
+          (click)="confirmCancelSign()"
+          class="flex-1 py-3 bg-gradient-to-r from-rose-500 to-red-600 text-white font-extrabold text-xs rounded-2xl shadow-lg shadow-rose-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+        >
+          Xác nhận hủy
+        </button>
+      </div>
     </div>
   </div>
 }

@@ -21,6 +21,7 @@ export class PosComponent implements OnInit, OnDestroy {
 
   // Trạng thái quét QR ký số NFT Voucher
   public readonly showSignQrModal = signal<boolean>(false);
+  public readonly showCancelSignConfirmModal = signal<boolean>(false);
   public readonly signQrCodeUrl = signal<string>('');
   public readonly signLink = signal<string>('');
   public readonly signOrderCode = signal<string>('');
@@ -638,8 +639,23 @@ export class PosComponent implements OnInit, OnDestroy {
         // 1. Tự sinh mã hóa đơn duy nhất ở frontend để khớp với chữ ký EIP-712
         const orderCode = 'HD-' + Date.now().toString(36).substring(3).toUpperCase() + Math.floor(10 + Math.random() * 90);
         
-        // 2. Đăng ký yêu cầu ký lên Backend
-        this.apiService.requestVoucherSignature(orderCode, selectedVoucher.tokenId).subscribe({
+        // 2. Đăng ký yêu cầu ký lên Backend cùng thông tin đơn hàng tạm thời
+        const tempOrderData = {
+          table_number: orderData.table_number,
+          payment_method: orderData.payment_method,
+          total_amount: this.cartTotal(),
+          discount_amount: this.posSelectedVoucher()?.discount_amount || 0,
+          final_amount: this.posFinalTotal(),
+          items: this.cart().map(item => ({
+            product_name: item.product.name,
+            variant_name: item.variant ? (item.variant.variant_name || item.variant.name) : null,
+            quantity: item.quantity,
+            price: item.variant ? item.variant.price : item.product.price,
+            note: item.note || null
+          }))
+        };
+
+        this.apiService.requestVoucherSignature(orderCode, selectedVoucher.tokenId, tempOrderData).subscribe({
           next: () => {
             // 3. Tạo link QR trỏ tới trang ký số di động
             const currentUrl = window.location.origin;
@@ -718,9 +734,24 @@ export class PosComponent implements OnInit, OnDestroy {
   public closeSignQrModal() {
     this.stopSignaturePolling();
     this.showSignQrModal.set(false);
+
+    // Gọi API để hủy và xóa yêu cầu ký số cùng đơn hàng tạm thời trên Backend
+    const code = this.signOrderCode();
+    if (code) {
+      this.apiService.cancelVoucherSignature(code).subscribe({
+        error: (err) => console.error('Lỗi khi hủy chữ ký tạm thời:', err)
+      });
+    }
+
     this.signLink.set('');
     this.isOrderSubmitting.set(false);
     this.stateService.showToast('Đã hủy áp dụng ký số voucher NFT.');
+  }
+
+  // Xác nhận hủy yêu cầu ký số
+  public confirmCancelSign() {
+    this.showCancelSignConfirmModal.set(false);
+    this.closeSignQrModal();
   }
 
   // Sao chép liên kết ký số
