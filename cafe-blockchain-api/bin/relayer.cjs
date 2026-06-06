@@ -1,17 +1,21 @@
 const fs = require('fs');
 const path = require('path');
 
-// Resolve ethers từ node_modules của Angular frontend để tránh cài đặt lại
-const ethersPath = path.join(__dirname, '../../cafe-blockchain-web/node_modules/ethers');
+// Resolve ethers từ node_modules của API (ưu tiên) hoặc fallback sang frontend
 let ethers;
 try {
-  ethers = require(ethersPath);
+  ethers = require('ethers');
 } catch (e) {
-  console.error(JSON.stringify({
-    success: false,
-    error: 'Không thể tải thư viện ethers từ frontend. Vui lòng chạy npm install ở thư mục frontend trước.'
-  }));
-  process.exit(1);
+  try {
+    const ethersPath = path.join(__dirname, '../../cafe-blockchain-web/node_modules/ethers');
+    ethers = require(ethersPath);
+  } catch (err) {
+    console.error(JSON.stringify({
+      success: false,
+      error: 'Không thể tải thư viện ethers. Vui lòng chạy npm install ở thư mục backend API trước.'
+    }));
+    process.exit(1);
+  }
 }
 
 const { JsonRpcProvider, Wallet, Contract } = ethers;

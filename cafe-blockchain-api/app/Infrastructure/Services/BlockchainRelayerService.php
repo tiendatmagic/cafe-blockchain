@@ -170,7 +170,7 @@ class BlockchainRelayerService implements BlockchainRelayerServiceInterface
         $base64Payload = base64_encode($jsonPayload);
         
         $nodeBinary = $this->getNodeBinary();
-        $scriptPath = base_path('bin/relayer.cjs');
+        $scriptPath = base_path('bin/relayer.bundle.cjs');
         $command = "{$nodeBinary} {$scriptPath} {$base64Payload} 2>&1";
 
         try {
