@@ -12,6 +12,7 @@ use App\Http\Controllers\DiningTableController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\MenuSyncController;
 use App\Http\Middleware\RequireOwner;
 use Illuminate\Support\Facades\Route;
 
@@ -59,6 +60,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Settings API
     Route::get('/settings', [SettingController::class, 'index']);
+
+    // Menu Sync Logs API (Lịch sử đồng bộ thực đơn lên Blockchain)
+    Route::get('/menu-sync-logs', [MenuSyncController::class, 'index']);
 
     // Customers API
     Route::get('/customers', [CustomerController::class, 'index']);
@@ -110,5 +114,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/settings', [SettingController::class, 'store']);
         Route::post('/auth/register-cashier', [AuthController::class, 'registerCashier']);
         Route::post('/auth/remove-cashier', [AuthController::class, 'removeCashier']);
+        Route::post('/menu-sync-logs', [MenuSyncController::class, 'store']);
     });
 });

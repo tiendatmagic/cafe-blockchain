@@ -706,7 +706,204 @@
           }
         </div>
       </div>
-    </div>
+    <!-- LỊCH SỬ ĐỒNG BỘ THỰC ĐƠN LÊN BLOCKCHAIN -->
+    @if (web3Service.walletConnected() && web3Service.menuRegistryContractAddress()) {
+      <div class="mt-8 pt-6 border-t border-slate-200/60 dark:border-slate-800/60">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm transition-colors">
+
+          <!-- Header -->
+          <div class="flex items-center justify-between px-6 pt-5 pb-4 border-b border-slate-100 dark:border-slate-800/60 flex-wrap gap-3">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-2xl bg-gradient-to-br from-violet-500/20 to-purple-500/10 flex items-center justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <h4 class="text-base font-extrabold text-slate-800 dark:text-white">Lịch sử Đồng bộ Blockchain</h4>
+                <p class="text-xs text-slate-400 mt-0.5">Các lần đã đồng bộ thực đơn lên Smart Contract Menu Registry</p>
+              </div>
+              @if (menuSyncLogs().length > 0) {
+                <span class="text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/40 px-2.5 py-1 rounded-xl">
+                  {{ menuSyncLogs().length }} lần
+                </span>
+              }
+            </div>
+
+            <!-- Nút làm mới -->
+            <button
+              (click)="loadMenuSyncLogs()"
+              [disabled]="isMenuSyncLogsLoading()"
+              class="flex items-center gap-1.5 px-3.5 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-slate-800/50 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" [class.animate-spin]="isMenuSyncLogsLoading()" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.99m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+              </svg>
+              <span>{{ isMenuSyncLogsLoading() ? 'Đang tải...' : 'Làm mới' }}</span>
+            </button>
+          </div>
+
+          <!-- Body -->
+          <div class="p-5">
+
+            <!-- Trạng thái loading -->
+            @if (isMenuSyncLogsLoading()) {
+              <div class="space-y-3 animate-pulse">
+                @for (i of [1,2,3]; track i) {
+                  <div class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-950">
+                    <div class="w-8 h-8 rounded-xl bg-slate-200 dark:bg-slate-800 shrink-0"></div>
+                    <div class="flex-1 space-y-2">
+                      <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded-lg w-1/3"></div>
+                      <div class="h-3 bg-slate-200 dark:bg-slate-800 rounded-lg w-2/3"></div>
+                    </div>
+                    <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded-lg w-20 hidden sm:block"></div>
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- Lỗi -->
+            @else if (menuSyncLogsError()) {
+              <div class="flex items-center gap-3 p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200/40 dark:border-rose-800/30 text-rose-600 dark:text-rose-400 text-sm font-semibold">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+                {{ menuSyncLogsError() }}
+              </div>
+            }
+
+            <!-- Trống -->
+            @else if (menuSyncLogs().length === 0) {
+              <div class="text-center py-12 space-y-3">
+                <div class="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 8.485-7.5 11.9-7.5 11.9s-7.5-3.415-7.5-11.9a7.5 7.5 0 0 1 15 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 6.375a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0z" />
+                  </svg>
+                </div>
+                <p class="text-sm font-bold text-slate-500 dark:text-slate-400">Chưa có lịch sử đồng bộ</p>
+                <p class="text-xs text-slate-400 dark:text-slate-500">Nhấn nút <strong>Đồng bộ Blockchain</strong> ở trên để bắt đầu!</p>
+              </div>
+            }
+
+            <!-- Danh sách lịch sử -->
+            @else {
+              <!-- Desktop: Bảng đầy đủ -->
+              <div class="hidden sm:block overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[600px]">
+                  <thead>
+                    <tr class="border-b border-slate-100 dark:border-slate-800/60">
+                      <th class="pb-3 text-xs font-bold text-slate-400 uppercase tracking-wider pl-1">#</th>
+                      <th class="pb-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Thời gian</th>
+                      <th class="pb-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Ví đồng bộ</th>
+                      <th class="pb-3 text-xs font-bold text-slate-400 uppercase tracking-wider text-center">Số món</th>
+                      <th class="pb-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Transaction Hash</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-50 dark:divide-slate-800/30">
+                    @for (log of menuSyncLogs(); track log.id; let i = $index) {
+                      <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/10 transition-colors">
+                        <td class="py-3.5 pl-1 text-xs font-bold text-slate-400">{{ i + 1 }}</td>
+                        <td class="py-3.5">
+                          <div class="flex flex-col gap-0.5">
+                            <span class="text-sm font-bold text-slate-700 dark:text-slate-200">{{ formatSyncDate(log.synced_at) }}</span>
+                            @if (log.chain_id) {
+                              <span class="text-xs text-slate-400 font-medium">Chain ID: {{ log.chain_id }}</span>
+                            }
+                          </div>
+                        </td>
+                        <td class="py-3.5">
+                          <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-xl bg-gradient-to-br from-violet-500/20 to-purple-500/10 flex items-center justify-center shrink-0">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                              </svg>
+                            </div>
+                            <span class="font-mono text-xs font-bold text-slate-600 dark:text-slate-300">{{ shortAddress(log.synced_by) }}</span>
+                          </div>
+                        </td>
+                        <td class="py-3.5 text-center">
+                          <span class="inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 text-xs font-extrabold px-2.5 py-1 rounded-xl">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" />
+                            </svg>
+                            {{ log.product_count }} món
+                          </span>
+                        </td>
+                        <td class="py-3.5">
+                          @if (log.tx_hash) {
+                            <a
+                              [href]="web3Service.explorerUrl() + '/tx/' + log.tx_hash"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              class="flex items-center gap-1.5 group/link"
+                            >
+                              <span class="font-mono text-xs text-violet-600 dark:text-violet-400 font-bold group-hover/link:underline">{{ shortAddress(log.tx_hash) }}</span>
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-slate-400 group-hover/link:text-violet-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                              </svg>
+                            </a>
+                          } @else {
+                            <span class="text-xs text-slate-400 italic">—</span>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Mobile: Dạng card -->
+              <div class="sm:hidden space-y-3">
+                @for (log of menuSyncLogs(); track log.id; let i = $index) {
+                  <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-900/60 space-y-3">
+                    <!-- Row 1: Số thứ tự + Thời gian -->
+                    <div class="flex items-start justify-between gap-2">
+                      <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-violet-100 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 text-xs font-extrabold flex items-center justify-center shrink-0">{{ i + 1 }}</span>
+                        <div>
+                          <p class="text-xs font-extrabold text-slate-700 dark:text-slate-200">{{ formatSyncDate(log.synced_at) }}</p>
+                          @if (log.chain_id) {
+                            <p class="text-[10px] text-slate-400 mt-0.5">Chain ID: {{ log.chain_id }}</p>
+                          }
+                        </div>
+                      </div>
+                      <span class="inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 text-xs font-extrabold px-2.5 py-1 rounded-xl shrink-0">
+                        {{ log.product_count }} món
+                      </span>
+                    </div>
+
+                    <!-- Row 2: Ví đồng bộ -->
+                    <div class="flex items-center gap-2">
+                      <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-16 shrink-0">Ví:</span>
+                      <span class="font-mono text-xs font-bold text-slate-600 dark:text-slate-300">{{ shortAddress(log.synced_by) }}</span>
+                    </div>
+
+                    <!-- Row 3: TxHash -->
+                    @if (log.tx_hash) {
+                      <div class="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/40">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-16 shrink-0">TxHash:</span>
+                        <a
+                          [href]="web3Service.explorerUrl() + '/tx/' + log.tx_hash"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="flex items-center gap-1 group/link"
+                        >
+                          <span class="font-mono text-xs text-violet-600 dark:text-violet-400 font-bold underline">{{ shortAddress(log.tx_hash) }}</span>
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                          </svg>
+                        </a>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
   </div>
 </div>
 

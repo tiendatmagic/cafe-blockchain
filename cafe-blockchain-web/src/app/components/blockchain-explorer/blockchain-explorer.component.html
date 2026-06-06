@@ -969,44 +969,66 @@
                 </div>
 
                 <div>
-                  <p class="text-xs text-slate-500 dark:text-slate-400 font-medium mb-3">
-                    Danh sách món ăn đã đồng bộ ({{ result.products.length }} món)
-                  </p>
-                  <div
-                    class="grid grid-cols-1 gap-2 max-h-[350px] overflow-y-auto pr-1 no-scrollbar"
-                  >
+                  <!-- Header section với badge số lượng -->
+                  <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                      <div class="w-7 h-7 rounded-xl bg-gradient-to-br from-violet-500/20 to-purple-500/10 flex items-center justify-center shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" />
+                        </svg>
+                      </div>
+                      <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">
+                        Danh sách món ăn đã đồng bộ
+                      </p>
+                    </div>
+                    <span class="inline-flex items-center gap-1 bg-violet-500/10 border border-violet-500/20 text-violet-600 dark:text-violet-400 text-xs font-extrabold px-2.5 py-1 rounded-xl">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
+                      </svg>
+                      {{ result.products.length }} món
+                    </span>
+                  </div>
+
+                  <!-- Danh sách cuộn -->
+                  <div class="grid grid-cols-1 gap-2.5 max-h-[380px] overflow-y-auto pr-1 no-scrollbar">
                     @for (prod of result.products; track prod.sku) {
                       <div
-                        class="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-205 dark:border-slate-900 flex items-center justify-between font-mono text-xs animate-in fade-in duration-250 transition-colors duration-300"
+                        class="group p-3 rounded-2xl bg-slate-50/80 dark:bg-slate-950/70 border border-slate-200/60 dark:border-slate-800/60 hover:border-violet-300/40 dark:hover:border-violet-700/40 hover:bg-violet-50/20 dark:hover:bg-violet-950/10 flex items-center justify-between gap-3 transition-all duration-200"
                       >
-                        <div class="flex items-center gap-3">
-                          <img
-                            [src]="getProductImage(prod.image, prod.sku)"
-                            (error)="handleImageError($event)"
-                            class="w-10 h-10 rounded-lg object-cover bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shrink-0"
-                          />
-                          <div class="space-y-1 font-sans">
-                            <p
-                              class="font-bold text-slate-700 dark:text-slate-200 uppercase truncate max-w-[180px] font-mono"
-                            >
+                        <!-- Ảnh + Tên + SKU -->
+                        <div class="flex items-center gap-3 min-w-0">
+                          <div class="relative shrink-0">
+                            <img
+                              [src]="getProductImage(prod.image, prod.sku)"
+                              (error)="handleImageError($event)"
+                              class="w-11 h-11 rounded-xl object-cover bg-slate-100 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/60 group-hover:border-violet-300/40 transition-all"
+                            />
+                            <!-- Trạng thái mini dot -->
+                            <span
+                              class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white dark:border-slate-950"
+                              [class]="prod.status ? 'bg-emerald-500' : 'bg-slate-400'"
+                            ></span>
+                          </div>
+                          <div class="min-w-0 space-y-0.5">
+                            <p class="font-extrabold text-slate-800 dark:text-white text-xs truncate max-w-[160px] group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors font-sans">
                               {{ prod.name }}
                             </p>
-                            <div class="text-xs text-slate-500">
-                              <span>SKU: {{ prod.sku || 'N/A' }}</span>
-                            </div>
+                            <p class="text-[10px] font-mono text-slate-400 dark:text-slate-500">
+                              SKU: {{ prod.sku || 'N/A' }}
+                            </p>
                           </div>
                         </div>
-                        <div class="text-right">
-                          <p class="font-bold text-slate-700 dark:text-slate-200 font-mono">
+
+                        <!-- Giá + Badge trạng thái -->
+                        <div class="text-right shrink-0 space-y-1">
+                          <p class="font-black text-amber-600 dark:text-amber-400 text-sm font-mono leading-none">
                             {{ prod.price.toLocaleString('vi-VN') }}đ
                           </p>
                           <span
-                            class="inline-flex px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider"
-                            [ngClass]="
-                              prod.status
-                                ? 'bg-emerald-500/10 text-emerald-650 dark:text-emerald-400'
-                                : 'bg-red-500/10 text-red-650 dark:text-red-400'
-                            "
+                            class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wide"
+                            [class]="prod.status
+                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200/40 dark:border-slate-700/40'"
                           >
                             {{ prod.status ? 'Còn món' : 'Hết món' }}
                           </span>

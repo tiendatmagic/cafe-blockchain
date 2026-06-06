@@ -182,6 +182,15 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/settings`, settings, { headers: this.getHeaders() });
   }
 
+  // Menu Sync Logs (Lịch sử đồng bộ thực đơn lên Blockchain)
+  public getMenuSyncLogs(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/menu-sync-logs`, { headers: this.getHeaders() });
+  }
+
+  public createMenuSyncLog(data: { synced_by: string; tx_hash: string; product_count: number; chain_id: string }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/menu-sync-logs`, data, { headers: this.getHeaders() });
+  }
+
   // 5. Categories (Danh mục) API
   public getCategories(): Observable<any[]> {
     return this.http.get<any[]>(`${this.baseUrl}/categories`, { headers: this.getHeaders() });

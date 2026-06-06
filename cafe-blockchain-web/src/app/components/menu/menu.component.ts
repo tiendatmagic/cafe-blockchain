@@ -38,6 +38,11 @@ export class MenuComponent implements OnInit, OnDestroy {
   public readonly isOwnerMenuRegistry = signal<boolean>(false);
   private accountSubscription: any;
 
+  // Lịch sử đồng bộ thực đơn
+  public readonly menuSyncLogs = signal<any[]>([]);
+  public readonly isMenuSyncLogsLoading = signal<boolean>(false);
+  public readonly menuSyncLogsError = signal<string>('');
+
   public readonly menuForm = signal<any>({
     sku: '',
     name: '',
@@ -487,6 +492,7 @@ export class MenuComponent implements OnInit, OnDestroy {
 
   public ngOnInit() {
     this.checkMenuRegistryOwnerPermission();
+    this.loadMenuSyncLogs();
 
     // Lắng nghe ví thay đổi tài khoản
     this.accountSubscription = this.web3Service.accountsChanged$.subscribe(() => {
@@ -545,6 +551,20 @@ export class MenuComponent implements OnInit, OnDestroy {
     if (res.success && res.txHash) {
       this.stateService.showToast(`Đồng bộ thực đơn lên Blockchain thành công! Hash: ${res.txHash}`, 'success');
       
+      // Ghi nhận lịch sử đồng bộ vào Backend (offchain log)
+      this.apiService.createMenuSyncLog({
+        synced_by: this.web3Service.currentAccount(),
+        tx_hash: res.txHash,
+        product_count: productList.length,
+        chain_id: this.web3Service.configuredChainId()
+      }).subscribe({
+        next: () => {
+          console.log('Đã ghi nhận lịch sử đồng bộ thực đơn.');
+          this.loadMenuSyncLogs();
+        },
+        error: (err) => console.error('Lỗi ghi nhận lịch sử đồng bộ:', err)
+      });
+      
       // Cập nhật cấu hình đã đồng bộ menu vào Laravel Backend
       this.apiService.updateSettings({
         ...this.stateService.settings(),
@@ -562,5 +582,45 @@ export class MenuComponent implements OnInit, OnDestroy {
       this.stateService.showToast(res.error || 'Đồng bộ thực đơn thất bại!', 'error');
     }
     this.isMenuSyncing.set(false);
+  }
+
+  /**
+   * Tải lịch sử đồng bộ thực đơn từ Backend
+   */
+  public loadMenuSyncLogs() {
+    if (!this.web3Service.walletConnected()) return;
+    this.isMenuSyncLogsLoading.set(true);
+    this.menuSyncLogsError.set('');
+    this.apiService.getMenuSyncLogs().subscribe({
+      next: (logs) => {
+        this.menuSyncLogs.set(logs);
+        this.isMenuSyncLogsLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Lỗi tải lịch sử đồng bộ:', err);
+        this.menuSyncLogsError.set('Không thể tải lịch sử. Vui lòng thử lại.');
+        this.isMenuSyncLogsLoading.set(false);
+      }
+    });
+  }
+
+  /**
+   * Rút gọn địa chỉ ví để hiển thị
+   */
+  public shortAddress(addr: string): string {
+    if (!addr) return '';
+    return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
+  }
+
+  /**
+   * Định dạng ngày giờ hiển thị
+   */
+  public formatSyncDate(isoStr: string): string {
+    if (!isoStr) return '';
+    const d = new Date(isoStr);
+    return d.toLocaleString('vi-VN', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
   }
 }
