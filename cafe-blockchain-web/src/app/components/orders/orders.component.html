@@ -727,7 +727,7 @@
                     </div>
                     <div class="flex flex-col min-w-0">
                       <span
-                        class="text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-none"
+                        class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none"
                         >KHÁCH HÀNG</span
                       >
                       <span
@@ -739,7 +739,7 @@
                       </span>
                       @if (selectedOrderDetails()?.customer.wallet_address) {
                         <span
-                          class="text-[9px] text-purple-600 dark:text-purple-400 font-bold leading-none mt-1 truncate max-w-full block"
+                          class="text-xs text-purple-600 dark:text-purple-400 font-bold leading-none mt-1 truncate max-w-full block"
                           [title]="selectedOrderDetails()?.customer.wallet_address"
                         >
                           Ví: {{ selectedOrderDetails()?.customer.wallet_address }}
@@ -759,7 +759,7 @@
                     </div>
                     <div class="flex flex-col min-w-0">
                       <span
-                        class="text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-none"
+                        class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none"
                         >Voucher tặng kèm (NFT)</span
                       >
                       <span
@@ -792,7 +792,7 @@
                     </p>
                     @if (selectedOrderDetails()?.blockchain_status === 'success') {
                       <div class="pt-1.5 border-t border-red-500/10 flex flex-col gap-1">
-                        <span class="text-[9px] text-slate-400 uppercase tracking-wider font-bold"
+                        <span class="text-[10px] text-slate-400 uppercase tracking-wider font-bold"
                           >Mã giao dịch Blockchain gốc:</span
                         >
                         <a
@@ -880,7 +880,7 @@
                   >
                     <span>Đồng bộ Blockchain lập tức</span>
                     <span
-                      class="text-[9px] bg-purple-100 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 px-1.5 py-0.5 rounded border border-purple-200/50 dark:border-purple-800/30 uppercase tracking-wide font-black"
+                      class="text-[10px] bg-purple-100 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 px-1.5 py-0.5 rounded border border-purple-200/50 dark:border-purple-800/30 uppercase tracking-wide font-black"
                       >Web3</span
                     >
                   </label>
@@ -1202,7 +1202,7 @@
                         >
                         @if (item.variant) {
                           <span
-                            class="text-[9px] bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0"
+                            class="text-[10px] bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0"
                             >{{ item.variant.variant_name }}</span
                           >
                         }
@@ -1246,7 +1246,7 @@
                       selectedOrderDetails()?.voucher_nft_token_id !== undefined
                     ) {
                       <span
-                        class="text-[9px] bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider font-mono border border-purple-200/20"
+                        class="text-[10px] bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider font-mono border border-purple-200/20"
                       >
                         NFT Voucher #{{ selectedOrderDetails()?.voucher_nft_token_id }}
                       </span>

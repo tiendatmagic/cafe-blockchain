@@ -245,12 +245,12 @@
                           >
                           @if (cust.type === 'business') {
                             <span
-                              class="bg-indigo-500/10 text-indigo-500 text-[9px] font-black px-1.5 py-0.2 rounded uppercase tracking-wider shrink-0"
+                              class="bg-indigo-500/10 text-indigo-500 text-[10px] font-black px-1.5 py-0.2 rounded uppercase tracking-wider shrink-0"
                               >DN</span
                             >
                           } @else {
                             <span
-                              class="bg-emerald-500/10 text-emerald-500 text-[9px] font-black px-1.5 py-0.2 rounded uppercase tracking-wider shrink-0"
+                              class="bg-emerald-500/10 text-emerald-500 text-[10px] font-black px-1.5 py-0.2 rounded uppercase tracking-wider shrink-0"
                               >CN</span
                             >
                           }
@@ -658,7 +658,7 @@
 
                 <div class="flex flex-col gap-0.5 min-w-0">
                   <span
-                    class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider"
+                    class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider"
                     >Tình trạng hoạt động (Cục Thuế)</span
                   >
                   <span class="font-extrabold leading-snug break-words">
@@ -858,7 +858,7 @@
                   [style.width.%]="(customerForm().wallet_address.trim().length / 42) * 100"
                 ></div>
               </div>
-              <span class="text-[9px] text-amber-500 font-bold"
+              <span class="text-[10px] text-amber-500 font-bold"
                 >⚠️ Phải nhập đủ 42 ký tự EVM (bắt đầu 0x + 40 ký tự hex)</span
               >
             </div>
@@ -866,7 +866,7 @@
           @if (
             customerForm().wallet_address && customerForm().wallet_address.trim().length === 42
           ) {
-            <span class="text-[9px] text-emerald-500 font-bold"
+            <span class="text-[10px] text-emerald-500 font-bold"
               >✅ Địa chỉ ví hợp lệ (42 ký tự EVM)</span
             >
           }

@@ -198,7 +198,7 @@
                   <div class="absolute top-3 left-3 flex flex-wrap gap-1 max-w-[calc(100%-24px)]">
                     @for (cat of p.categories; track cat.id) {
                       <span
-                        class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm text-purple-600 dark:text-purple-400 text-[9px] font-extrabold px-2 py-0.5 rounded-xl shadow-sm border border-purple-200/10 dark:border-purple-800/10"
+                        class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm text-purple-600 dark:text-purple-400 text-[10px] font-extrabold px-2 py-0.5 rounded-xl shadow-sm border border-purple-200/10 dark:border-purple-800/10"
                       >
                         {{ cat.name }}
                       </span>
@@ -407,7 +407,7 @@
                           [style.width.%]="(posCustomerSearchQuery().trim().length / 42) * 100"
                         ></div>
                       </div>
-                      <span class="text-[9px] text-slate-400 font-semibold"
+                      <span class="text-[10px] text-slate-400 font-semibold"
                         >Nhập đủ 42 ký tự ví EVM (bắt đầu 0x...) để tìm kiếm</span
                       >
                     </div>
@@ -423,7 +423,7 @@
                             class="font-extrabold text-purple-600 dark:text-purple-400 text-xs truncate"
                             >✨ {{ c.name }}</span
                           >
-                          <span class="text-[9px] text-slate-400 font-bold truncate"
+                          <span class="text-[10px] text-slate-400 font-bold truncate"
                             >Ví: {{ c.wallet_address.substring(0, 8) }}...{{
                               c.wallet_address.substring(34)
                             }}</span
@@ -438,7 +438,7 @@
                           >
                           @if (c.company_name) {
                             <span
-                              class="text-[9px] text-slate-400 dark:text-slate-500 font-bold truncate"
+                              class="text-[10px] text-slate-400 dark:text-slate-500 font-bold truncate"
                               >🏢 {{ c.company_name }}</span
                             >
                           }
@@ -453,7 +453,7 @@
                             ? 'bg-purple-600 text-white font-black'
                             : 'bg-purple-500/10 text-purple-600 dark:text-purple-400 font-black'
                         "
-                        class="text-[9px] px-1.5 py-0.5 rounded uppercase shrink-0"
+                        class="text-[10px] px-1.5 py-0.5 rounded uppercase shrink-0"
                       >
                         {{ c.customer_code }}
                       </span>
@@ -498,7 +498,7 @@
                 </span>
                 @if (posSelectedCustomer().wallet_address) {
                   <span
-                    class="text-[9px] text-purple-600 dark:text-purple-400 font-bold leading-none mt-1.5 truncate"
+                    class="text-[10px] text-purple-600 dark:text-purple-400 font-bold leading-none mt-1.5 truncate"
                     [title]="posSelectedCustomer().wallet_address"
                   >
                     Ví: {{ posSelectedCustomer().wallet_address.substring(0, 8) }}...{{
@@ -524,7 +524,7 @@
               class="mt-3.5 p-3 bg-purple-500/5 dark:bg-purple-500/10 border border-purple-500/20 dark:border-purple-500/30 rounded-2xl space-y-2 animate-in slide-in-from-top-1 duration-150"
             >
               <label
-                class="text-[9px] font-black text-purple-600 dark:text-purple-400 uppercase tracking-wider block"
+                class="text-[10px] font-black text-purple-600 dark:text-purple-400 uppercase tracking-wider block"
               >
                 Áp dụng NFT Voucher theo ID
               </label>
@@ -564,7 +564,7 @@
                   <button
                     type="button"
                     (click)="posSelectedVoucher.set(null)"
-                    class="text-[9px] text-rose-500 font-bold hover:underline"
+                    class="text-[10px] text-rose-500 font-bold hover:underline"
                   >
                     Hủy áp dụng
                   </button>
@@ -597,7 +597,7 @@
                           }
                         </span>
                         <span
-                          class="text-[9px] font-bold text-slate-400 dark:text-slate-500 mt-0.5 flex flex-wrap items-center gap-x-1"
+                          class="text-[10px] font-bold text-slate-400 dark:text-slate-500 mt-0.5 flex flex-wrap items-center gap-x-1"
                         >
                           <span>Đơn tối thiểu: {{ voucher.min_order_amount | number }}đ</span>
                           @if (voucher.expired_at) {
@@ -615,7 +615,7 @@
                       >
                       @if (posSelectedVoucher()?.code === voucher.code) {
                         <span
-                          class="w-4 h-4 rounded-full bg-purple-600 dark:bg-purple-500 text-white flex items-center justify-center text-[9px]"
+                          class="w-4 h-4 rounded-full bg-purple-600 dark:bg-purple-500 text-white flex items-center justify-center text-[10px]"
                           >✓</span
                         >
                       }
@@ -781,7 +781,7 @@
                                 ? 'bg-amber-500/10 text-amber-500'
                                 : 'bg-emerald-500/10 text-emerald-500'
                             "
-                            class="px-1.5 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wide"
+                            class="px-1.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wide"
                           >
                             {{ tb.status === 'using' ? 'Sử dụng' : 'Trống' }}
                           </span>
@@ -918,7 +918,7 @@
                     {{ posSelectedVoucher().code }}
                     @if (posSelectedVoucher().isNft) {
                       <span
-                        class="text-[9px] font-black text-emerald-700 dark:text-emerald-300 ml-1"
+                        class="text-[10px] font-black text-emerald-700 dark:text-emerald-300 ml-1"
                         >#{{ posSelectedVoucher().tokenId }}</span
                       >
                     }
@@ -1143,11 +1143,11 @@
             <span class="flex items-center gap-1">
               <span>Voucher giảm giá</span>
               <span
-                class="text-[9px] uppercase bg-emerald-100 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded font-black"
+                class="text-[10px] uppercase bg-emerald-100 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded font-black"
               >
                 {{ posSelectedVoucher().code }}
                 @if (posSelectedVoucher().isNft) {
-                  <span class="text-[9px] font-black text-emerald-700 dark:text-emerald-300 ml-1"
+                  <span class="text-[10px] font-black text-emerald-700 dark:text-emerald-300 ml-1"
                     >#{{ posSelectedVoucher().tokenId }}</span
                   >
                 }

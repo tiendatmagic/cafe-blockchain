@@ -447,7 +447,7 @@
                 "
               >
                 <span class="text-xs font-extrabold">Khổ 80mm</span>
-                <span class="text-[9px] text-slate-400 mt-1 text-center">Khổ nhỏ (Mặc định)</span>
+                <span class="text-[10px] text-slate-400 mt-1 text-center">Khổ nhỏ (Mặc định)</span>
                 @if (configForm().default_print_size === '80mm') {
                   <div class="absolute top-2 right-2 text-[var(--dynamic-primary)]">
                     <svg
@@ -484,7 +484,7 @@
                 "
               >
                 <span class="text-xs font-extrabold">Khổ A4</span>
-                <span class="text-[9px] text-slate-400 mt-1 text-center">Khổ lớn (A4)</span>
+                <span class="text-[10px] text-slate-400 mt-1 text-center">Khổ lớn (A4)</span>
                 @if (configForm().default_print_size === 'A4') {
                   <div class="absolute top-2 right-2 text-[var(--dynamic-primary)]">
                     <svg
@@ -521,7 +521,7 @@
                 "
               >
                 <span class="text-xs font-extrabold">Khổ A5</span>
-                <span class="text-[9px] text-slate-400 mt-1 text-center">Khổ lớn (A5)</span>
+                <span class="text-[10px] text-slate-400 mt-1 text-center">Khổ lớn (A5)</span>
                 @if (configForm().default_print_size === 'A5') {
                   <div class="absolute top-2 right-2 text-[var(--dynamic-primary)]">
                     <svg
@@ -696,12 +696,12 @@
               settings().voucher_contract_address === '' || !settings().voucher_contract_address
             ) {
               <span
-                class="bg-rose-500/10 text-rose-500 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse"
+                class="bg-rose-500/10 text-rose-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse"
                 >Chưa Deploy</span
               >
             } @else {
               <span
-                class="bg-emerald-500/10 text-emerald-500 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider"
+                class="bg-emerald-500/10 text-emerald-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider"
                 >Đã Deploy</span
               >
             }
@@ -761,12 +761,12 @@
             >
             @if (!configForm().has_relayer_private_key) {
               <span
-                class="bg-rose-500/10 text-rose-500 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider"
+                class="bg-rose-500/10 text-rose-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider"
                 >Chưa Cấu Hình</span
               >
             } @else {
               <span
-                class="bg-emerald-500/10 text-emerald-500 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider"
+                class="bg-emerald-500/10 text-emerald-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider"
                 >Đã Cấu Hình 🛡️</span
               >
             }
@@ -893,17 +893,17 @@
             >
             @if (settings().contract_address === '') {
               <span
-                class="bg-rose-500/10 text-rose-500 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse"
+                class="bg-rose-500/10 text-rose-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse"
                 >Chưa Deploy</span
               >
             } @else if (!settings().has_synced_orders) {
               <span
-                class="bg-amber-500/10 text-amber-600 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse"
+                class="bg-amber-500/10 text-amber-600 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse"
                 >Chưa sử dụng (Có thể sửa)</span
               >
             } @else {
               <span
-                class="bg-emerald-500/10 text-emerald-500 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider"
+                class="bg-emerald-500/10 text-emerald-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider"
                 >Đã khóa vĩnh viễn</span
               >
             }
@@ -965,17 +965,17 @@
             >
             @if (settings().finance_contract_address === '') {
               <span
-                class="bg-rose-500/10 text-rose-500 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse"
+                class="bg-rose-500/10 text-rose-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse"
                 >Chưa Deploy</span
               >
             } @else if (!settings().has_synced_transactions) {
               <span
-                class="bg-amber-500/10 text-amber-600 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse"
+                class="bg-amber-500/10 text-amber-600 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse"
                 >Chưa sử dụng (Có thể sửa)</span
               >
             } @else {
               <span
-                class="bg-emerald-500/10 text-emerald-500 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider"
+                class="bg-emerald-500/10 text-emerald-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider"
                 >Đã khóa vĩnh viễn</span
               >
             }
@@ -1045,12 +1045,12 @@
               !settings().menu_registry_contract_address
             ) {
               <span
-                class="bg-rose-500/10 text-rose-500 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse"
+                class="bg-rose-500/10 text-rose-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse"
                 >Chưa Deploy</span
               >
             } @else {
               <span
-                class="bg-emerald-500/10 text-emerald-500 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider"
+                class="bg-emerald-500/10 text-emerald-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider"
                 >Đã Deploy</span
               >
             }
