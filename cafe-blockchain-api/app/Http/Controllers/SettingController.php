@@ -33,6 +33,7 @@ class SettingController extends Controller
             'voucher_discount_amount' => '5000',
             'voucher_use_min_amount' => '100000',
             'show_crypto_payment' => '0',
+            'has_synced_menu' => '0',
         ];
 
         if (empty($settings)) {
@@ -102,12 +103,15 @@ class SettingController extends Controller
             'voucher_discount_amount' => 'nullable|integer|min:0',
             'voucher_use_min_amount' => 'nullable|integer|min:0',
             'show_crypto_payment' => 'nullable|string|in:0,1',
+            'has_synced_menu' => 'nullable|string|in:0,1',
         ]);
 
         // Lấy các cấu hình hiện tại trong Database để đối soát bảo mật
         $existingChainId = Setting::getForStore('chain_id', $storeOwner);
         $existingContractAddress = Setting::getForStore('contract_address', $storeOwner);
         $existingFinanceContractAddress = Setting::getForStore('finance_contract_address', $storeOwner);
+        $existingMenuRegistryContractAddress = Setting::getForStore('menu_registry_contract_address', $storeOwner);
+        $hasSyncedMenu = Setting::getForStore('has_synced_menu', $storeOwner) === '1';
 
         // Lấy số lượng đơn hàng và giao dịch tài chính đã đồng bộ thành công lên Blockchain
         $hasSyncedOrders = \App\Domain\Entities\Order::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
@@ -131,6 +135,13 @@ class SettingController extends Controller
         if ($hasSyncedTransactions && !empty($existingFinanceContractAddress) && isset($settingsData['finance_contract_address']) && $settingsData['finance_contract_address'] !== $existingFinanceContractAddress) {
             return response()->json([
                 'message' => 'Địa chỉ Smart Contract Tài chính đã được sử dụng để đồng bộ giao dịch lên Blockchain và bị khóa vĩnh viễn! Không thể chỉnh sửa.'
+            ], 400);
+        }
+
+        // 4. Logic khóa cứng địa chỉ Smart Contract Menu Registry linh hoạt (chỉ khóa khi đã đồng bộ thực đơn thành công)
+        if ($hasSyncedMenu && !empty($existingMenuRegistryContractAddress) && isset($settingsData['menu_registry_contract_address']) && $settingsData['menu_registry_contract_address'] !== $existingMenuRegistryContractAddress) {
+            return response()->json([
+                'message' => 'Địa chỉ Smart Contract Menu Registry đã được sử dụng để đồng bộ thực đơn lên Blockchain và bị khóa vĩnh viễn! Không thể chỉnh sửa.'
             ], 400);
         }
 
@@ -268,6 +279,7 @@ class SettingController extends Controller
             'finance_contract_address' => $settings['finance_contract_address'] ?? '',
             'voucher_contract_address' => $settings['voucher_contract_address'] ?? '',
             'menu_registry_contract_address' => $settings['menu_registry_contract_address'] ?? '',
+            'has_synced_menu' => $settings['has_synced_menu'] ?? '0',
             'rpc_url' => $settings['rpc_url'] ?? '',
             'chain_id' => $settings['chain_id'] ?? '',
             'explorer_url' => $settings['explorer_url'] ?? '',

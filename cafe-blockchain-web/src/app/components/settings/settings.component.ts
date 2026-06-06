@@ -39,6 +39,7 @@ export class SettingsComponent implements OnInit {
     voucher_discount_amount: 5000,
     voucher_use_min_amount: 100000,
     show_crypto_payment: '0',
+    has_synced_menu: '0',
     has_relayer_private_key: false
   });
 
@@ -55,6 +56,7 @@ export class SettingsComponent implements OnInit {
   public readonly isOwnerActionLoading = signal<boolean>(false);
   public readonly isDeleteOwnerConfirmOpen = signal<boolean>(false);
   public readonly deletingOwnerAddress = signal<string>('');
+  public readonly isOwnersLoading = signal<boolean>(false);
 
   public readonly financeOwnersFromChain = signal<string[]>([]);
   public readonly newFinanceOwnerAddress = signal<string>('');
@@ -73,6 +75,9 @@ export class SettingsComponent implements OnInit {
   public readonly isVoucherOwnerActionLoading = signal<boolean>(false);
   public readonly isDeleteVoucherOwnerConfirmOpen = signal<boolean>(false);
   public readonly deletingVoucherOwnerAddress = signal<string>('');
+  public readonly isFinanceOwnersLoading = signal<boolean>(false);
+  public readonly isMenuOwnersLoading = signal<boolean>(false);
+  public readonly isVoucherOwnersLoading = signal<boolean>(false);
 
   // Dropdown chọn mạng
   public readonly isChainDropdownOpen = signal<boolean>(false);
@@ -132,10 +137,15 @@ export class SettingsComponent implements OnInit {
           voucher_discount_amount: res.voucher_discount_amount !== undefined ? Number(res.voucher_discount_amount) : 5000,
           voucher_use_min_amount: res.voucher_use_min_amount !== undefined ? Number(res.voucher_use_min_amount) : 100000,
           show_crypto_payment: res.show_crypto_payment || '0',
+          has_synced_menu: res.has_synced_menu || '0',
           has_relayer_private_key: res.has_relayer_private_key || false,
           ...res
         };
         this.configForm.set({ ...settings });
+
+        // Đồng bộ cấu hình vào Web3Service và StateService để đảm bảo các cuộc gọi blockchain sử dụng đúng cấu hình mới nhất
+        this.stateService.settings.set(settings);
+        this.web3Service.updateConfig(settings);
         
         // Cập nhật tên mạng hiển thị
         const match = this.POPULAR_CHAINS.find(c => c.chainId === settings.chain_id);
@@ -344,8 +354,16 @@ export class SettingsComponent implements OnInit {
   // Tải danh sách Owners trực tiếp từ Smart Contract Blockchain
   public async loadOwnersList() {
     if (this.web3Service.walletConnected()) {
-      const list = await this.web3Service.getOwnersFromChain();
-      this.ownersFromChain.set(list);
+      this.isOwnersLoading.set(true);
+      try {
+        const list = await this.web3Service.getOwnersFromChain();
+        this.ownersFromChain.set(list);
+      } catch (e) {
+        console.error('Lỗi nạp danh sách owners ví thu ngân:', e);
+        this.ownersFromChain.set([]);
+      } finally {
+        this.isOwnersLoading.set(false);
+      }
       await this.loadFinanceOwnersList();
       await this.loadMenuOwnersList();
       await this.loadVoucherOwnersList();
@@ -388,8 +406,18 @@ export class SettingsComponent implements OnInit {
   // Tải danh sách ví Kế toán trực tiếp từ Smart Contract Blockchain
   public async loadFinanceOwnersList() {
     if (this.web3Service.walletConnected() && this.web3Service.financeContractAddress()) {
-      const list = await this.web3Service.getFinanceOwnersFromChain();
-      this.financeOwnersFromChain.set(list);
+      this.isFinanceOwnersLoading.set(true);
+      try {
+        const list = await this.web3Service.getFinanceOwnersFromChain();
+        this.financeOwnersFromChain.set(list);
+      } catch (e) {
+        console.error('Lỗi nạp danh sách owners ví kế toán:', e);
+        this.financeOwnersFromChain.set([]);
+      } finally {
+        this.isFinanceOwnersLoading.set(false);
+      }
+    } else {
+      this.financeOwnersFromChain.set([]);
     }
   }
 
@@ -532,8 +560,18 @@ export class SettingsComponent implements OnInit {
   // Tải danh sách ví Menu Registry trực tiếp từ Smart Contract Blockchain
   public async loadMenuOwnersList() {
     if (this.web3Service.walletConnected() && this.web3Service.menuRegistryContractAddress()) {
-      const list = await this.web3Service.getMenuRegistryOwnersFromChain();
-      this.menuOwnersFromChain.set(list);
+      this.isMenuOwnersLoading.set(true);
+      try {
+        const list = await this.web3Service.getMenuRegistryOwnersFromChain();
+        this.menuOwnersFromChain.set(list);
+      } catch (e) {
+        console.error('Lỗi nạp danh sách owners ví menu registry:', e);
+        this.menuOwnersFromChain.set([]);
+      } finally {
+        this.isMenuOwnersLoading.set(false);
+      }
+    } else {
+      this.menuOwnersFromChain.set([]);
     }
   }
 
@@ -615,8 +653,18 @@ export class SettingsComponent implements OnInit {
   // Tải danh sách ví Voucher NFT trực tiếp từ Smart Contract Blockchain
   public async loadVoucherOwnersList() {
     if (this.web3Service.walletConnected() && this.web3Service.voucherContractAddress()) {
-      const list = await this.web3Service.getVoucherOwnersFromChain();
-      this.voucherOwnersFromChain.set(list);
+      this.isVoucherOwnersLoading.set(true);
+      try {
+        const list = await this.web3Service.getVoucherOwnersFromChain();
+        this.voucherOwnersFromChain.set(list);
+      } catch (e) {
+        console.error('Lỗi nạp danh sách owners ví voucher nft:', e);
+        this.voucherOwnersFromChain.set([]);
+      } finally {
+        this.isVoucherOwnersLoading.set(false);
+      }
+    } else {
+      this.voucherOwnersFromChain.set([]);
     }
   }
 

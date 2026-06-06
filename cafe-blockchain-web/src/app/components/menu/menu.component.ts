@@ -544,6 +544,20 @@ export class MenuComponent implements OnInit, OnDestroy {
     const res = await this.web3Service.updateMenuOnChain(productList);
     if (res.success && res.txHash) {
       this.stateService.showToast(`Đồng bộ thực đơn lên Blockchain thành công! Hash: ${res.txHash}`, 'success');
+      
+      // Cập nhật cấu hình đã đồng bộ menu vào Laravel Backend
+      this.apiService.updateSettings({
+        ...this.stateService.settings(),
+        has_synced_menu: '1'
+      }).subscribe({
+        next: (settingsRes) => {
+          this.stateService.settings.set(settingsRes.data);
+          console.log('Đã cập nhật trạng thái has_synced_menu lên backend.');
+        },
+        error: (err) => {
+          console.error('Lỗi cập nhật trạng thái has_synced_menu lên backend:', err);
+        }
+      });
     } else {
       this.stateService.showToast(res.error || 'Đồng bộ thực đơn thất bại!', 'error');
     }
