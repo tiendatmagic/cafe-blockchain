@@ -376,6 +376,7 @@ export class StateService {
         if (res.settings) {
           const settings = {
             default_print_size: '80mm',
+            show_crypto_payment: '0',
             ...res.settings
           };
           this.settings.set(settings);
@@ -449,6 +450,7 @@ export class StateService {
     this.apiService.getSettings().subscribe(res => {
       const settings = {
         default_print_size: '80mm',
+        show_crypto_payment: '0',
         ...res
       };
       this.settings.set(settings);
