@@ -66,8 +66,15 @@ export class ApiService {
   }
 
   // 1. Dashboard API
-  public getDashboard(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/dashboard`, { headers: this.getHeaders() });
+  public getDashboard(startDate?: string, endDate?: string): Observable<any> {
+    let params = new HttpParams();
+    if (startDate) {
+      params = params.set('start_date', startDate);
+    }
+    if (endDate) {
+      params = params.set('end_date', endDate);
+    }
+    return this.http.get(`${this.baseUrl}/dashboard`, { params, headers: this.getHeaders() });
   }
 
   // 2. Products (Thực đơn) API

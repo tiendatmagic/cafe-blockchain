@@ -1,15 +1,24 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { StateService } from '../../services/state.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './dashboard.component.html'
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
   public readonly stateService = inject(StateService);
+
+  public activeDatePreset = '7days'; // 'today' | '7days' | '30days' | 'thisMonth' | 'custom'
+  public tempStartDate = '';
+  public tempEndDate = '';
+
+  // Phân trang cảnh báo tồn kho thấp
+  public lowStockCurrentPage = 1;
+  public readonly lowStockPageSize = 9;
 
   public get dashboardData() {
     return this.stateService.dashboardData;
@@ -108,5 +117,146 @@ export class DashboardComponent {
     const data = this.dashboardData();
     if (!data || !data.payment_methods_chart) return 0;
     return data.payment_methods_chart.reduce((sum: number, item: any) => sum + item.count, 0);
+  }
+
+  public ngOnInit() {
+    // Khởi tạo bộ lọc ngày mặc định là 7 ngày qua nếu chưa có bộ lọc nào được thiết lập
+    if (!this.stateService.dashboardStartDate() || !this.stateService.dashboardEndDate()) {
+      this.setDatePreset('7days');
+    } else {
+      // Nhận diện lại preset hiện tại từ StateService
+      this.tempStartDate = this.stateService.dashboardStartDate();
+      this.tempEndDate = this.stateService.dashboardEndDate();
+      
+      const todayStr = this.formatDate(new Date());
+      if (this.tempStartDate === todayStr && this.tempEndDate === todayStr) {
+        this.activeDatePreset = 'today';
+      } else {
+        const check7 = new Date();
+        check7.setDate(check7.getDate() - 6);
+        const check7Str = this.formatDate(check7);
+        if (this.tempStartDate === check7Str && this.tempEndDate === todayStr) {
+          this.activeDatePreset = '7days';
+        } else {
+          const check30 = new Date();
+          check30.setDate(check30.getDate() - 29);
+          const check30Str = this.formatDate(check30);
+          if (this.tempStartDate === check30Str && this.tempEndDate === todayStr) {
+            this.activeDatePreset = '30days';
+          } else {
+            const checkMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+            const checkMonthStr = this.formatDate(checkMonth);
+            if (this.tempStartDate === checkMonthStr && this.tempEndDate === todayStr) {
+              this.activeDatePreset = 'thisMonth';
+            } else {
+              this.activeDatePreset = 'custom';
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private formatDate(d: Date): string {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  public setDatePreset(preset: string) {
+    this.activeDatePreset = preset;
+    const today = new Date();
+    let start = '';
+    let end = this.formatDate(today);
+
+    if (preset === 'today') {
+      start = this.formatDate(today);
+    } else if (preset === '7days') {
+      const d = new Date();
+      d.setDate(today.getDate() - 6);
+      start = this.formatDate(d);
+    } else if (preset === '30days') {
+      const d = new Date();
+      d.setDate(today.getDate() - 29);
+      start = this.formatDate(d);
+    } else if (preset === 'thisMonth') {
+      const d = new Date(today.getFullYear(), today.getMonth(), 1);
+      start = this.formatDate(d);
+    }
+
+    if (preset !== 'custom') {
+      this.tempStartDate = start;
+      this.tempEndDate = end;
+      this.stateService.dashboardStartDate.set(start);
+      this.stateService.dashboardEndDate.set(end);
+      this.stateService.refreshDashboard();
+    }
+  }
+
+  public onCustomDatesChange() {
+    if (this.tempStartDate && this.tempEndDate) {
+      this.stateService.dashboardStartDate.set(this.tempStartDate);
+      this.stateService.dashboardEndDate.set(this.tempEndDate);
+      this.stateService.refreshDashboard();
+    }
+  }
+
+  public getMaxRevenue(): number {
+    const data = this.dashboardData();
+    if (!data || !data.weekly_chart || data.weekly_chart.length === 0) {
+      return 200000;
+    }
+    const max = Math.max(...data.weekly_chart.map((item: any) => item.revenue || 0));
+    return max > 0 ? max : 200000;
+  }
+
+  // Phân trang: Lấy danh sách cảnh báo tồn kho theo trang hiện tại
+  public getLowStockPaged(): any[] {
+    const data = this.dashboardData();
+    if (!data?.low_stock_alerts) return [];
+    const start = (this.lowStockCurrentPage - 1) * this.lowStockPageSize;
+    return data.low_stock_alerts.slice(start, start + this.lowStockPageSize);
+  }
+
+  public getLowStockTotalPages(): number {
+    const data = this.dashboardData();
+    if (!data?.low_stock_alerts) return 0;
+    return Math.ceil(data.low_stock_alerts.length / this.lowStockPageSize);
+  }
+
+  public getLowStockTotalCount(): number {
+    const data = this.dashboardData();
+    return data?.low_stock_alerts?.length ?? 0;
+  }
+
+  public goToLowStockPage(page: number) {
+    const total = this.getLowStockTotalPages();
+    if (page >= 1 && page <= total) {
+      this.lowStockCurrentPage = page;
+    }
+  }
+
+  // Smart pagination: trả về mảng số trang + 'ellipsis' để rút gọn
+  public getLowStockDisplayPages(): (number | '...')[] {
+    const total = this.getLowStockTotalPages();
+    const cur = this.lowStockCurrentPage;
+    if (total <= 7) {
+      return Array.from({ length: total }, (_, i) => i + 1);
+    }
+    const pages: (number | '...')[] = [];
+    // Luôn hiện trang 1
+    pages.push(1);
+    // Ellipsis trái nếu cur > 3
+    if (cur > 3) pages.push('...');
+    // Các trang xung quanh trang hiện tại
+    const start = Math.max(2, cur - 1);
+    const end = Math.min(total - 1, cur + 1);
+    for (let i = start; i <= end; i++) pages.push(i);
+    // Ellipsis phải nếu cur < total - 2
+    if (cur < total - 2) pages.push('...');
+    // Luôn hiện trang cuối
+    pages.push(total);
+    return pages;
   }
 }

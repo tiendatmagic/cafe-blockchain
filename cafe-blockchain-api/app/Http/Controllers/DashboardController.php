@@ -15,6 +15,16 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        
+        // Nhận bộ lọc thời gian từ query
+        $startDate = $request->query('start_date');
+        $endDate = $request->query('end_date');
+        
+        if (empty($startDate) || empty($endDate)) {
+            $startDate = Carbon::today()->subDays(6)->toDateString();
+            $endDate = Carbon::today()->toDateString();
+        }
+
         $today = Carbon::today();
         
         // 1. Doanh thu hôm nay (các đơn completed hôm nay)
@@ -42,10 +52,16 @@ class DashboardController extends Controller
             ->whereIn('blockchain_status', ['none', 'pending'])
             ->count();
 
-        // 5. Biểu đồ doanh thu tuần này (7 ngày gần nhất)
+        // 5. Biểu đồ doanh thu trong kỳ (theo start_date và end_date)
         $weeklyChart = [];
-        for ($i = 6; $i >= 0; $i--) {
-            $date = Carbon::today()->subDays($i);
+        $start = Carbon::parse($startDate);
+        $end = Carbon::parse($endDate);
+        $daysDiff = $start->diffInDays($end);
+        
+        // Giới hạn tối đa 60 ngày để tránh quá tải CPU/RAM
+        $limitDays = min($daysDiff, 60);
+        for ($i = 0; $i <= $limitDays; $i++) {
+            $date = $start->copy()->addDays($i);
             $dayName = $this->getVietnameseDayName($date->dayOfWeek);
             
             $revenue = Order::where('store_owner_address', $storeOwner)
@@ -53,10 +69,20 @@ class DashboardController extends Controller
                 ->whereDate('created_at', $date)
                 ->sum('total_amount');
 
+            $cryptoRevenue = Order::where('store_owner_address', $storeOwner)
+                ->where('status', 'completed')
+                ->where('payment_method', 'crypto')
+                ->whereDate('created_at', $date)
+                ->sum('total_amount');
+
+            $fiatRevenue = $revenue - $cryptoRevenue;
+
             $weeklyChart[] = [
                 'date' => $date->format('Y-m-d'),
                 'day_name' => $dayName,
-                'revenue' => (float)$revenue
+                'revenue' => (float)$revenue,
+                'crypto_revenue' => (float)$cryptoRevenue,
+                'fiat_revenue' => (float)$fiatRevenue
             ];
         }
 
@@ -67,9 +93,10 @@ class DashboardController extends Controller
             ->limit(5)
             ->get(['id', 'table_number', 'total_amount', 'tx_hash', 'blockchain_status', 'updated_at']);
 
-        // 7. Thống kê phương thức thanh toán để vẽ biểu đồ hình tròn (các đơn completed)
+        // 7. Thống kê phương thức thanh toán trong khoảng thời gian được lọc
         $paymentMethodsStats = Order::where('store_owner_address', $storeOwner)
             ->where('status', 'completed')
+            ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
             ->select('payment_method', DB::raw('count(*) as count'), DB::raw('sum(total_amount) as amount'))
             ->groupBy('payment_method')
             ->get()
@@ -102,6 +129,67 @@ class DashboardController extends Controller
             ]
         ];
 
+        // 8. Top 5 sản phẩm bán chạy nhất trong khoảng thời gian được lọc
+        $bestSellers = DB::table('order_items')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->leftJoin('product_variants', 'order_items.product_variant_id', '=', 'product_variants.id')
+            ->where('orders.store_owner_address', $storeOwner)
+            ->where('orders.status', 'completed')
+            ->whereBetween('orders.created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->select(
+                'products.name as name',
+                'product_variants.variant_name as variant_name',
+                DB::raw('SUM(order_items.quantity) as total_quantity'),
+                DB::raw('SUM(order_items.quantity * order_items.price) as total_revenue')
+            )
+            ->groupBy('products.id', 'products.name', 'product_variants.id', 'product_variants.variant_name')
+            ->orderByDesc('total_quantity')
+            ->limit(5)
+            ->get();
+
+        // 9. Tính toán cảnh báo tồn kho thấp (các sản phẩm có tồn kho <= 10)
+        $products = \App\Domain\Entities\Product::where('store_owner_address', $storeOwner)->with('variants')->get();
+        $inventoryRecords = \App\Domain\Entities\InventoryRecord::where('store_owner_address', $storeOwner)->with('items')->get();
+        $completedOrders = Order::where('store_owner_address', $storeOwner)->where('status', 'completed')->with('items')->get();
+        
+        $lowStockAlerts = [];
+        foreach ($products as $p) {
+            $variants = $p->variants;
+            if (count($variants) > 0) {
+                foreach ($variants as $v) {
+                    $stock = $this->calculateStock($p->id, $v->id, $inventoryRecords, $completedOrders);
+                    if ($stock <= 10) {
+                        $lowStockAlerts[] = [
+                            'product_name' => $p->name,
+                            'variant_name' => $v->variant_name,
+                            'sku' => $v->sku ?? $p->sku,
+                            'stock' => $stock
+                        ];
+                    }
+                }
+            } else {
+                $stock = $this->calculateStock($p->id, null, $inventoryRecords, $completedOrders);
+                if ($stock <= 10) {
+                    $lowStockAlerts[] = [
+                        'product_name' => $p->name,
+                        'variant_name' => null,
+                        'sku' => $p->sku,
+                        'stock' => $stock
+                    ];
+                }
+            }
+        }
+
+        // 10. Trạng thái bàn ăn
+        $totalTables = \App\Domain\Entities\DiningTable::where('store_owner_address', $storeOwner)->count();
+        $occupiedTables = \App\Domain\Entities\DiningTable::where('store_owner_address', $storeOwner)->where('status', 'using')->count();
+        
+        // 11. Thống kê Voucher NFT từ bảng orders
+        $totalVouchers = Order::where('store_owner_address', $storeOwner)->whereNotNull('gift_voucher_nft_token_id')->count();
+        $usedVouchers = Order::where('store_owner_address', $storeOwner)->where('status', 'completed')->whereNotNull('voucher_nft_token_id')->count();
+        $totalDiscount = (float)Order::where('store_owner_address', $storeOwner)->where('status', 'completed')->whereNotNull('voucher_nft_token_id')->sum('discount_amount');
+
         return response()->json([
             'today_revenue' => (float)$todayRevenue,
             'today_orders_count' => $todayOrdersCount,
@@ -111,8 +199,95 @@ class DashboardController extends Controller
             'pending_web3_count' => $pendingWeb3Count,
             'weekly_chart' => $weeklyChart,
             'latest_blockchain_transactions' => $latestBlockchainTransactions,
-            'payment_methods_chart' => $paymentMethodsChart
+            'payment_methods_chart' => $paymentMethodsChart,
+            'best_sellers' => $bestSellers,
+            'low_stock_alerts' => $lowStockAlerts,
+            'tables_occupancy' => [
+                'total' => $totalTables,
+                'occupied' => $occupiedTables,
+                'vacant' => max(0, $totalTables - $occupiedTables)
+            ],
+            'voucher_activity' => [
+                'total_minted' => $totalVouchers,
+                'used' => $usedVouchers,
+                'total_discount' => $totalDiscount
+            ]
         ]);
+    }
+
+    /**
+     * Thuật toán tính toán tồn kho cho một sản phẩm/biến thể dựa trên Nhập - Xuất - Bán hàng
+     */
+    private function calculateStock($productId, $variantId, $records, $orders)
+    {
+        $latestKiemDate = null;
+        $latestKiemQty = 0;
+
+        // Tìm phiếu kiểm kho gần nhất
+        foreach ($records as $r) {
+            if ($r->type === 'kiem') {
+                $item = null;
+                foreach ($r->items as $i) {
+                    if ($i->product_id == $productId && $i->product_variant_id == $variantId) {
+                        $item = $i;
+                        break;
+                    }
+                }
+                if ($item) {
+                    $rDate = Carbon::parse($r->record_date);
+                    if ($latestKiemDate === null || $rDate->gt($latestKiemDate)) {
+                        $latestKiemDate = $rDate;
+                        $latestKiemQty = (int)$item->quantity;
+                    }
+                }
+            }
+        }
+
+        $totalIn = 0;
+        $totalOut = 0;
+        $totalSold = 0;
+
+        // Cộng các giao dịch nhập/xuất sau ngày kiểm kho
+        foreach ($records as $r) {
+            $rDate = Carbon::parse($r->record_date);
+            if ($latestKiemDate === null || $rDate->gt($latestKiemDate)) {
+                $item = null;
+                foreach ($r->items as $i) {
+                    if ($i->product_id == $productId && $i->product_variant_id == $variantId) {
+                        $item = $i;
+                        break;
+                    }
+                }
+                if ($item) {
+                    $qty = (int)$item->quantity;
+                    if ($r->type === 'nhap') {
+                        $totalIn += $qty;
+                    } elseif ($r->type === 'xuat') {
+                        $totalOut += $qty;
+                    }
+                }
+            }
+        }
+
+        // Trừ các sản phẩm bán ra từ đơn hàng hoàn thành sau ngày kiểm kho
+        foreach ($orders as $o) {
+            $oDate = Carbon::parse($o->created_at);
+            if ($latestKiemDate === null || $oDate->gt($latestKiemDate)) {
+                $item = null;
+                foreach ($o->items as $i) {
+                    if ($i->product_id == $productId && $i->product_variant_id == $variantId) {
+                        $item = $i;
+                        break;
+                    }
+                }
+                if ($item) {
+                    $totalSold += (int)$item->quantity;
+                }
+            }
+        }
+
+        $baseQty = $latestKiemDate !== null ? $latestKiemQty : 0;
+        return $baseQty + $totalIn - $totalOut - $totalSold;
     }
 
     /**

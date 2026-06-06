@@ -36,6 +36,8 @@ export class StateService {
   public readonly errorMessage = signal<string>('');
 
   // Dữ liệu toàn cục tải từ Backend
+  public readonly dashboardStartDate = signal<string>('');
+  public readonly dashboardEndDate = signal<string>('');
   public readonly dashboardData = signal<any>(null);
   public readonly products = signal<any[]>([]);
   public readonly orders = signal<any[]>([]);
@@ -362,7 +364,7 @@ export class StateService {
 
     this.isLoading.set(true);
     forkJoin({
-      dashboard: this.apiService.getDashboard(),
+      dashboard: this.apiService.getDashboard(this.dashboardStartDate(), this.dashboardEndDate()),
       products: this.apiService.getProducts(),
       orders: this.apiService.getOrders(),
       settings: this.apiService.getSettings(),
@@ -435,7 +437,7 @@ export class StateService {
   // Refresh dữ liệu dashboard
   public refreshDashboard() {
     this.isDashboardLoading.set(true);
-    this.apiService.getDashboard().subscribe({
+    this.apiService.getDashboard(this.dashboardStartDate(), this.dashboardEndDate()).subscribe({
       next: (res) => {
         this.dashboardData.set(res);
         this.isDashboardLoading.set(false);
