@@ -103,7 +103,8 @@ class Order extends Model
                             $tokenUri = url("/api/vouchers/metadata/{$voucherCode}");
 
                             // Gọi Relayer thực hiện đúc (mint) NFT trên Blockchain
-                            $relayerResult = \App\Services\BlockchainRelayerService::mintVoucher(
+                            $blockchainService = app(\App\Application\Common\Interfaces\BlockchainRelayerServiceInterface::class);
+                            $relayerResult = $blockchainService->mintVoucher(
                                 $storeOwner,
                                 $customerWallet,
                                 $tokenUri,

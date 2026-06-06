@@ -288,8 +288,7 @@
             <input
               type="text"
               [(ngModel)]="customPosAddress"
-              class="w-full bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 text-slate-800 dark:text-slate-200 font-mono transition-all focus:outline-none"
-              [class]="isDarkMode() ? 'bg-slate-950!' : ''"
+              class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 text-slate-800 dark:text-slate-200 font-mono transition-all focus:outline-none"
             />
           </div>
           <div>
@@ -299,8 +298,7 @@
             <input
               type="text"
               [(ngModel)]="customFinanceAddress"
-              class="w-full bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 text-slate-800 dark:text-slate-200 font-mono transition-all focus:outline-none"
-              [class]="isDarkMode() ? 'bg-slate-950!' : ''"
+              class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 text-slate-800 dark:text-slate-200 font-mono transition-all focus:outline-none"
             />
           </div>
           <div>
@@ -342,7 +340,7 @@
           @if (connectionStatus() === 'custom') {
             <button
               (click)="resetToAuto()"
-              class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-slate-350 dark:hover:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-semibold hover:bg-slate-105 dark:hover:bg-slate-800/30 transition-all focus:outline-none"
+              class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-slate-350 dark:hover:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800/30 transition-all focus:outline-none"
             >
               Nhận cấu hình tự động
             </button>
@@ -372,7 +370,7 @@
         >
           Tra Cứu Sổ Cái Phân Tán Công Khai
         </h2>
-        <p class="text-xs text-slate-550 dark:text-slate-400 max-w-lg">
+        <p class="text-xs text-slate-500 dark:text-slate-400 max-w-lg">
           Dữ liệu được lưu trữ onchain. Mọi hóa đơn (HD-...) và phiếu thu chi (TC-...) đều có thể
           được xác thực chéo trực tiếp từ mạng lưới Blockchain phi tập trung.
         </p>
@@ -568,7 +566,7 @@
                   </span>
                 </div>
                 <h3
-                  class="text-xl sm:text-2xl font-black text-slate-850 dark:text-white font-mono mt-1 break-all transition-colors duration-300"
+                  class="text-xl sm:text-2xl font-black text-slate-800 dark:text-white font-mono mt-1 break-all transition-colors duration-300"
                 >
                   @if (result.type === 'order') {
                     {{ result.orderCode }}
@@ -621,7 +619,7 @@
                     <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">
                       Bàn phục vụ
                     </p>
-                    <p class="text-base text-slate-705 dark:text-slate-200 font-bold mt-0.5">
+                    <p class="text-base text-slate-700 dark:text-slate-200 font-bold mt-0.5">
                       Bàn {{ result.tableNumber }}
                     </p>
                   </div>
@@ -630,7 +628,7 @@
                       Hình thức thanh toán
                     </p>
                     <p
-                      class="text-base text-slate-705 dark:text-slate-200 font-bold capitalize mt-0.5"
+                      class="text-base text-slate-700 dark:text-slate-200 font-bold capitalize mt-0.5"
                     >
                       {{ result.paymentMethod }}
                     </p>
@@ -693,7 +691,7 @@
                   </div>
                   <div>
                     <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Hạng mục</p>
-                    <p class="text-base text-slate-705 dark:text-slate-200 font-bold mt-0.5">
+                    <p class="text-base text-slate-700 dark:text-slate-200 font-bold mt-0.5">
                       {{ result.category }}
                     </p>
                   </div>
@@ -909,7 +907,7 @@
                       <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">
                         Tên món ăn
                       </p>
-                      <h4 class="text-lg font-black text-slate-850 dark:text-white mt-0.5">
+                      <h4 class="text-lg font-black text-slate-800 dark:text-white mt-0.5">
                         {{ result.name }}
                       </h4>
                     </div>
@@ -1065,7 +1063,7 @@
                   >
                     @if (detailProducts().length === 0) {
                       <p
-                        class="text-xs text-slate-550 dark:text-slate-400 italic py-4 text-center font-sans"
+                        class="text-xs text-slate-500 dark:text-slate-400 italic py-4 text-center font-sans"
                       >
                         Chưa chọn mốc hoặc đang tải món ăn từ blockchain...
                       </p>
@@ -1132,14 +1130,14 @@
                         <button
                           (click)="changeDetailProductPage('prev')"
                           [disabled]="detailProductPage() === 1"
-                          class="px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 hover:bg-slate-105 dark:hover:bg-slate-900 text-slate-605 dark:text-slate-300 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer shadow-sm focus:outline-none"
+                          class="px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-300 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer shadow-sm focus:outline-none"
                         >
                           Trang trước
                         </button>
                         <button
                           (click)="changeDetailProductPage('next')"
                           [disabled]="detailProductPage() === totalDetailProductPages"
-                          class="px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 hover:bg-slate-105 dark:hover:bg-slate-900 text-slate-605 dark:text-slate-300 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer shadow-sm focus:outline-none"
+                          class="px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-300 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer shadow-sm focus:outline-none"
                         >
                           Trang sau
                         </button>
@@ -1487,7 +1485,7 @@
                               {{ order.orderCode }}
                             </p>
                             <div
-                              class="flex items-center gap-1.5 text-xs text-slate-550 dark:text-slate-500"
+                              class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-500"
                             >
                               <span>Bàn {{ order.tableNumber }}</span>
                               <span>•</span>
@@ -1535,7 +1533,7 @@
                               {{ tx.transactionCode }}
                             </p>
                             <div
-                              class="flex items-center gap-1.5 text-xs text-slate-550 dark:text-slate-500"
+                              class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-500"
                             >
                               <span class="capitalize">{{ tx.category }}</span>
                               <span>•</span>
@@ -1591,7 +1589,7 @@
                               Voucher ID #{{ v.tokenId }}
                             </p>
                             <div
-                              class="flex items-center gap-1.5 text-xs text-slate-550 dark:text-slate-500 font-sans"
+                              class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-500 font-sans"
                             >
                               <span>Owner: {{ formatAddress(v.owner) }}</span>
                             </div>
@@ -1669,7 +1667,7 @@
                               Đồng bộ thực đơn
                             </p>
                             <div
-                              class="flex items-center gap-1.5 text-xs text-slate-550 dark:text-slate-500"
+                              class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-500"
                             >
                               <span>{{ item.timestamp | date: 'HH:mm dd/MM/yy' }}</span>
                               <span>•</span>
@@ -1716,7 +1714,7 @@
                     (activeTab() === 'voucher' && voucherPage() === 1) ||
                     (activeTab() === 'menu' && menuPage() === 1)
                   "
-                  class="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 hover:bg-slate-100 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-300 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer shadow-sm focus:outline-none transition-colors duration-300"
+                  class="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-300 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer shadow-sm focus:outline-none transition-colors duration-300"
                 >
                   Trang trước
                 </button>
@@ -1729,7 +1727,7 @@
                     (activeTab() === 'voucher' && voucherPage() * limit >= voucherTotal()) ||
                     (activeTab() === 'menu' && menuPage() * limit >= menuTotal())
                   "
-                  class="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 hover:bg-slate-100 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-300 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer shadow-sm focus:outline-none transition-colors duration-300"
+                  class="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-300 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer shadow-sm focus:outline-none transition-colors duration-300"
                 >
                   Trang sau
                 </button>
