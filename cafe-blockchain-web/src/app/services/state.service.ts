@@ -531,14 +531,18 @@ export class StateService {
   }
 
   // Ngắt kết nối ví
-  public disconnectWalletAndClose() {
+  public disconnectWalletAndClose(message?: string, isError = false) {
     this.web3Service.disconnectWallet();
     this.apiService.removeToken();
     if (typeof window !== 'undefined') {
       localStorage.removeItem('auth_address');
     }
     this.isWalletModalOpen.set(false);
-    this.showToast('Đã ngắt kết nối ví Web3 thành công!', 'success');
+    if (message) {
+      this.showToast(message, isError ? 'error' : 'success');
+    } else {
+      this.showToast('Đã ngắt kết nối ví Web3 thành công!', 'success');
+    }
   }
 
   // Tải sản phẩm POS có phân trang và Lọc trực tiếp ở Client-side (Không gọi API)
