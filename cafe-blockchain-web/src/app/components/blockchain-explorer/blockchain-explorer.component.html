@@ -379,7 +379,7 @@
           <select
             [(ngModel)]="searchType"
             name="searchType"
-            class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-xl px-4 py-3 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 text-slate-800 dark:text-slate-200 cursor-pointer appearance-none transition-all focus:outline-none"
+            class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 text-slate-800 dark:text-slate-200 cursor-pointer appearance-none transition-all focus:outline-none"
           >
             <option value="order">Hóa đơn (HD)</option>
             <option value="transaction">Phiếu thu/chi (TC)</option>
@@ -413,7 +413,7 @@
             name="searchQuery"
             (ngModelChange)="onSearchQueryChange()"
             placeholder="Nhập mã hóa đơn (HD-...), phiếu (TC-...), ví (0x...) hoặc ID NFT..."
-            class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-xl pl-4 pr-10 py-3 text-sm font-mono focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 text-slate-800 dark:text-slate-200 placeholder-slate-450 dark:placeholder-slate-500 transition-all uppercase focus:outline-none"
+            class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-4 pr-10 py-3 text-sm font-mono focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 text-slate-800 dark:text-slate-200 placeholder-slate-450 dark:placeholder-slate-500 transition-all uppercase focus:outline-none"
           />
           @if (searchQuery) {
             <button
@@ -552,9 +552,9 @@
                   </span>
                   <span class="text-xs text-slate-400 dark:text-slate-500 font-mono">
                     @if (result.type === 'order') {
-                      ID #{{ result.orderId }}
+                      <span [title]="formatUuid(result.orderId)">ID #{{ formatUuidShort(result.orderId) }}</span>
                     } @else if (result.type === 'transaction') {
-                      ID #{{ result.txId }}
+                      <span [title]="formatUuid(result.txId)">ID #{{ formatUuidShort(result.txId) }}</span>
                     } @else if (result.type === 'voucher_detail') {
                       Token ID #{{ result.tokenId }}
                     } @else if (result.type === 'menu_history_detail') {
@@ -1348,7 +1348,7 @@
             <button
               (click)="loadDataForActiveTab()"
               [disabled]="isLatestDataLoading()"
-              class="p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 hover:bg-slate-100 dark:hover:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-all disabled:opacity-50 cursor-pointer shadow-sm focus:outline-none transition-colors duration-300"
+              class="p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-all disabled:opacity-50 cursor-pointer shadow-sm focus:outline-none transition-colors duration-300"
               title="Làm mới"
             >
               <svg

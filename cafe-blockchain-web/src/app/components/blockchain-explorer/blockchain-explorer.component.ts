@@ -331,7 +331,7 @@ export class BlockchainExplorerComponent implements OnInit {
         } else {
           this.searchResult.set({
             type: 'order',
-            orderId: Number(orderData.orderId),
+            orderId: orderData.orderId.toString(),
             orderCode: orderData.orderCode,
             tableNumber: orderData.tableNumber,
             totalAmount: Number(orderData.totalAmount),
@@ -350,7 +350,7 @@ export class BlockchainExplorerComponent implements OnInit {
         } else {
           this.searchResult.set({
             type: 'transaction',
-            txId: Number(txData.txId),
+            txId: txData.txId.toString(),
             transactionCode: txData.transactionCode,
             txType: txData.txType === 1 ? 'thu' : 'chi',
             amount: Number(txData.amount),
@@ -529,7 +529,7 @@ export class BlockchainExplorerComponent implements OnInit {
           const res = await posContract['getOrdersPaginated'](this.orderPage(), this.limit);
           if (res && res[0]) {
             const orders = res[0].map((o: any) => ({
-              orderId: Number(o.orderId),
+              orderId: o.orderId.toString(),
               orderCode: o.orderCode,
               tableNumber: o.tableNumber,
               totalAmount: Number(o.totalAmount),
@@ -551,7 +551,7 @@ export class BlockchainExplorerComponent implements OnInit {
           const res = await financeContract['getTransactionsPaginated'](this.transactionPage(), this.limit);
           if (res && res[0]) {
             const transactions = res[0].map((t: any) => ({
-              txId: Number(t.txId),
+              txId: t.txId.toString(),
               transactionCode: t.transactionCode,
               txType: t.txType === 1 ? 'thu' : 'chi',
               amount: Number(t.amount),
@@ -783,6 +783,25 @@ export class BlockchainExplorerComponent implements OnInit {
     if (!addr) return '';
     if (addr.length < 12) return addr;
     return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
+  }
+
+  public formatUuid(uint256Val: any): string {
+    if (!uint256Val) return '';
+    try {
+      const bigVal = BigInt(uint256Val);
+      if (bigVal < 1000000n) return bigVal.toString();
+      let hex = bigVal.toString(16).toLowerCase();
+      hex = hex.padStart(32, '0');
+      return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+    } catch {
+      return uint256Val.toString();
+    }
+  }
+
+  public formatUuidShort(uint256Val: any): string {
+    const uuid = this.formatUuid(uint256Val);
+    if (uuid.length < 15) return uuid;
+    return `${uuid.substring(0, 8)}...${uuid.substring(uuid.length - 4)}`;
   }
 
   public getTxExplorerLink(txHash: string | null | undefined): string {
