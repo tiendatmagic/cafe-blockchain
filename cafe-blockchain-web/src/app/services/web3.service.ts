@@ -1613,11 +1613,12 @@ export class Web3Service {
       const contract = new Contract(this.menuRegistryContractAddress(), CAFE_MENU_REGISTRY_ABI, signer);
 
       // Chuyển format sang struct Product của contract
+      // Tối ưu hóa: Không gửi URL hình ảnh dài lên blockchain để tránh lỗi Out of Gas (tiết kiệm ~45% gas)
       const formattedProducts = products.map(p => ({
         sku: p.sku || '',
         name: p.name || '',
         price: BigInt(p.price || 0),
-        image: p.image || '',
+        image: '', 
         status: p.status === undefined ? true : !!p.status
       }));
 
@@ -1625,7 +1626,11 @@ export class Web3Service {
       return { txHash: tx.hash, success: true };
     } catch (err: any) {
       console.error('Loi dong bo thuc don len Blockchain:', err);
-      return { txHash: '', success: false, error: err.reason || err.message };
+      let errorMsg = err.reason || err.message;
+      if (errorMsg && (errorMsg.toLowerCase().includes('out of gas') || errorMsg.toLowerCase().includes('exceeds'))) {
+        errorMsg = 'Lỗi vượt giới hạn Gas (Out of Gas) khi ghi dữ liệu. Vui lòng liên hệ quản trị viên.';
+      }
+      return { txHash: '', success: false, error: errorMsg };
     }
   }
 

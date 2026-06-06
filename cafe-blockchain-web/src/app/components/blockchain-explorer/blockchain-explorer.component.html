@@ -444,7 +444,7 @@
                 <!-- Menu Product Detail view -->
                 <div class="flex flex-col sm:flex-row gap-5 border-b border-slate-800/60 pb-5">
                   <img 
-                    [src]="getProductImage(result.image)" 
+                    [src]="getProductImage(result.image, result.sku)" 
                     (error)="handleImageError($event)"
                     class="w-full sm:w-36 h-36 rounded-2xl object-cover bg-slate-900 border border-slate-800 shrink-0"
                   />
@@ -774,45 +774,49 @@
                   <div class="flex items-center justify-between mb-2">
                     <h4 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider font-mono">Thực đơn Onchain</h4>
                     @if (menuLastUpdated() > 0) {
-                      <span class="text-[9px] text-slate-550 font-mono">Cập nhật: {{ menuLastUpdated() | date:'HH:mm dd/MM/yy' }}</span>
+                      <span class="text-[9px] text-slate-550 font-mono">Thời gian sửa đổi: {{ menuLastUpdated() | date:'HH:mm dd/MM/yy' }}</span>
                     }
                   </div>
-                  @if (menuProducts().length === 0) {
+                  @if (menuLastUpdated() === 0) {
                     <p class="text-xs text-slate-500 italic py-4 text-center">Chưa đồng bộ thực đơn lên chuỗi.</p>
                   } @else {
-                    <div class="space-y-2 max-h-[400px] overflow-y-auto pr-1 no-scrollbar">
-                      @for (prod of menuProducts(); track prod.sku) {
-                        <div
-                          (click)="selectProductItem(prod)"
-                          class="p-3.5 rounded-xl bg-slate-950/60 border border-slate-900 hover:border-amber-500/40 hover:bg-slate-900/30 transition-all cursor-pointer flex items-center justify-between group font-mono text-xs"
-                        >
-                          <div class="flex items-center gap-3">
-                            <img 
-                              [src]="getProductImage(prod.image)" 
-                              (error)="handleImageError($event)"
-                              class="w-10 h-10 rounded-lg object-cover bg-slate-900 border border-slate-800 shrink-0"
-                            />
-                            <div class="space-y-1">
-                              <p class="font-bold text-slate-200 group-hover:text-amber-400 transition-colors uppercase truncate max-w-[150px]">
-                                {{ prod.name }}
-                              </p>
-                              <div class="flex items-center gap-1.5 text-[10px] text-slate-500">
-                                <span>SKU: {{ prod.sku || 'N/A' }}</span>
+                    @if (menuProducts().length === 0) {
+                      <p class="text-xs text-slate-500 italic py-4 text-center">Thực đơn đang trống (Đã đồng bộ mảng rỗng).</p>
+                    } @else {
+                      <div class="space-y-2 max-h-[400px] overflow-y-auto pr-1 no-scrollbar">
+                        @for (prod of menuProducts(); track prod.sku) {
+                          <div
+                            (click)="selectProductItem(prod)"
+                            class="p-3.5 rounded-xl bg-slate-950/60 border border-slate-900 hover:border-amber-500/40 hover:bg-slate-900/30 transition-all cursor-pointer flex items-center justify-between group font-mono text-xs"
+                          >
+                            <div class="flex items-center gap-3">
+                              <img 
+                                [src]="getProductImage(prod.image, prod.sku)" 
+                                (error)="handleImageError($event)"
+                                class="w-10 h-10 rounded-lg object-cover bg-slate-900 border border-slate-800 shrink-0"
+                              />
+                              <div class="space-y-1">
+                                <p class="font-bold text-slate-200 group-hover:text-amber-400 transition-colors uppercase truncate max-w-[150px]">
+                                  {{ prod.name }}
+                                </p>
+                                <div class="flex items-center gap-1.5 text-[10px] text-slate-500">
+                                  <span>SKU: {{ prod.sku || 'N/A' }}</span>
+                                </div>
                               </div>
                             </div>
+                            <div class="text-right font-mono">
+                              <p class="font-bold text-slate-200">
+                                {{ prod.price.toLocaleString('vi-VN') }}đ
+                              </p>
+                              <span class="inline-flex px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider"
+                                    [ngClass]="prod.status ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'">
+                                {{ prod.status ? 'Còn món' : 'Hết món' }}
+                              </span>
+                            </div>
                           </div>
-                          <div class="text-right font-mono">
-                            <p class="font-bold text-slate-200">
-                              {{ prod.price.toLocaleString('vi-VN') }}đ
-                            </p>
-                            <span class="inline-flex px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider"
-                                  [ngClass]="prod.status ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'">
-                              {{ prod.status ? 'Còn món' : 'Hết món' }}
-                            </span>
-                          </div>
-                        </div>
-                      }
-                    </div>
+                        }
+                      </div>
+                    }
                   }
                 </div>
               }

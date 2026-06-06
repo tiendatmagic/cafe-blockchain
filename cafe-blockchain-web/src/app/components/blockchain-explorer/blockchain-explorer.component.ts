@@ -83,9 +83,26 @@ export class BlockchainExplorerComponent implements OnInit {
   public readonly menuProducts = signal<any[]>([]);
   public readonly menuLastUpdated = signal<number>(0);
   public readonly isLatestDataLoading = signal<boolean>(false);
+  public readonly localProducts = signal<any[]>([]);
 
   ngOnInit() {
     this.initConfiguration();
+    this.loadLocalProducts();
+  }
+
+  /**
+   * Tải danh sách sản phẩm cục bộ từ API để làm nguồn hình ảnh fallback
+   */
+  public loadLocalProducts() {
+    this.apiService.getProducts({ limit: 1000 }).subscribe({
+      next: (res) => {
+        const list = res.data || res || [];
+        this.localProducts.set(list);
+      },
+      error: (err) => {
+        console.warn('Không thể tải sản phẩm từ local API phục vụ fallback hình ảnh:', err);
+      }
+    });
   }
 
   /**
@@ -644,19 +661,26 @@ export class BlockchainExplorerComponent implements OnInit {
    * Chọn nhanh một món ăn từ tab thực đơn để xem chi tiết
    */
   public selectProductItem(prod: any) {
+    const displayImage = prod.image || this.getProductImage(prod.image, prod.sku);
     this.searchResult.set({
       type: 'menu_detail',
       sku: prod.sku,
       name: prod.name,
       price: prod.price,
-      image: prod.image,
+      image: displayImage,
       status: prod.status
     });
     this.searchError.set('');
   }
 
-  public getProductImage(imagePath: string): string {
+  public getProductImage(imagePath: string, sku?: string): string {
     if (!imagePath || !imagePath.trim()) {
+      if (sku) {
+        const localProd = this.localProducts().find(p => p.sku === sku);
+        if (localProd && localProd.image) {
+          return localProd.image;
+        }
+      }
       return 'not-found.webp';
     }
     return imagePath;
