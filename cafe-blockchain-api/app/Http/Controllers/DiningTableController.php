@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DiningTable;
+use App\Domain\Entities\DiningTable;
 use Illuminate\Http\Request;
 
 class DiningTableController extends Controller

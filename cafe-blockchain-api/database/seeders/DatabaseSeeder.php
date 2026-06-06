@@ -2,10 +2,10 @@
  
 namespace Database\Seeders;
  
-use App\Models\User;
-use App\Models\Category;
-use App\Models\Product;
-use App\Models\Setting;
+use App\Domain\Entities\User;
+use App\Domain\Entities\Category;
+use App\Domain\Entities\Product;
+use App\Domain\Entities\Setting;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
  

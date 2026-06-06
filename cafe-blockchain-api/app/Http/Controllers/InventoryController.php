@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\InventoryRecord;
-use App\Models\InventoryRecordItem;
-use App\Models\Product;
+use App\Domain\Entities\InventoryRecord;
+use App\Domain\Entities\InventoryRecordItem;
+use App\Domain\Entities\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 

@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Transaction;
+use App\Domain\Entities\Transaction;
 use Illuminate\Console\Command;
 
 class ResignTransactions extends Command

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Setting;
+use App\Domain\Entities\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -66,8 +66,8 @@ class SettingController extends Controller
         
         $settings = $this->ensureDefaultSettings($storeOwner);
         
-        $settings['has_synced_orders'] = \App\Models\Order::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
-        $settings['has_synced_transactions'] = \App\Models\Transaction::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
+        $settings['has_synced_orders'] = \App\Domain\Entities\Order::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
+        $settings['has_synced_transactions'] = \App\Domain\Entities\Transaction::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
         
         // Ẩn Private Key thô trước khi gửi về client, chỉ trả về flag boolean trạng thái đã cấu hình
         $settings['has_relayer_private_key'] = !empty($settings['relayer_private_key'] ?? '');
@@ -108,8 +108,8 @@ class SettingController extends Controller
         $existingFinanceContractAddress = Setting::getForStore('finance_contract_address', $storeOwner);
 
         // Lấy số lượng đơn hàng và giao dịch tài chính đã đồng bộ thành công lên Blockchain
-        $hasSyncedOrders = \App\Models\Order::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
-        $hasSyncedTransactions = \App\Models\Transaction::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
+        $hasSyncedOrders = \App\Domain\Entities\Order::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
+        $hasSyncedTransactions = \App\Domain\Entities\Transaction::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
 
         // 1. Logic khóa cứng Mạng Blockchain (Chain ID)
         if (!empty($existingChainId) && isset($settingsData['chain_id']) && $settingsData['chain_id'] !== $existingChainId) {
@@ -187,8 +187,8 @@ class SettingController extends Controller
         }
 
         $updatedSettings = Setting::where('store_owner_address', $storeOwner)->pluck('value', 'key')->all();
-        $updatedSettings['has_synced_orders'] = \App\Models\Order::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
-        $updatedSettings['has_synced_transactions'] = \App\Models\Transaction::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
+        $updatedSettings['has_synced_orders'] = \App\Domain\Entities\Order::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
+        $updatedSettings['has_synced_transactions'] = \App\Domain\Entities\Transaction::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
 
         // Ẩn Private Key thô trước khi phản hồi
         $updatedSettings['has_relayer_private_key'] = !empty($updatedSettings['relayer_private_key'] ?? '');
@@ -217,12 +217,12 @@ class SettingController extends Controller
                 $storeOwner = strtolower($firstSetting->store_owner_address);
             } else {
                 // Thử lấy ví admin đầu tiên từ users
-                $firstUser = \App\Models\User::first();
+                $firstUser = \App\Domain\Entities\User::first();
                 $storeOwner = $firstUser ? strtolower($firstUser->store_owner_address ?: $firstUser->wallet_address) : '';
             }
         } else {
             // Tìm đơn hàng để lấy store_owner_address của quán
-            $order = \App\Models\Order::where('order_code', $orderCode)->first();
+            $order = \App\Domain\Entities\Order::where('order_code', $orderCode)->first();
 
             if (!$order) {
                 // Thử tìm trong bảng voucher_signatures xem có thông tin tạm thời không

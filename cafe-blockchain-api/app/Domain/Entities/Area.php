@@ -1,21 +1,21 @@
 <?php
- 
-namespace App\Models;
- 
+
+namespace App\Domain\Entities;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
- 
-class Category extends Model
+
+class Area extends Model
 {
     use HasFactory;
- 
+
     protected $fillable = ['name', 'store_owner_address'];
- 
+
     /**
-     * Mối quan hệ Nhiều-Nhiều với Product
+     * Mối quan hệ Một-Nhiều với DiningTable
      */
-    public function products()
+    public function tables()
     {
-        return $this->belongsToMany(Product::class);
+        return $this->hasMany(DiningTable::class, 'area_id');
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Order;
+use App\Domain\Entities\Order;
 use Illuminate\Console\Command;
 
 class ResignOrders extends Command

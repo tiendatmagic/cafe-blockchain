@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Transaction;
+use App\Domain\Entities\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -151,8 +151,8 @@ class TransactionController extends Controller
 
         // Chỉ kiểm tra chéo qua RPC nếu trạng thái đồng bộ được đặt là success
         if ($validated['blockchain_status'] === 'success') {
-            $contractAddress = \App\Models\Setting::getForStore('finance_contract_address', $storeOwner);
-            $rpcUrl = \App\Models\Setting::getForStore('rpc_url', $storeOwner, 'https://ethereum-sepolia.publicnode.com');
+            $contractAddress = \App\Domain\Entities\Setting::getForStore('finance_contract_address', $storeOwner);
+            $rpcUrl = \App\Domain\Entities\Setting::getForStore('rpc_url', $storeOwner, 'https://ethereum-sepolia.publicnode.com');
             
             if (!empty($contractAddress)) {
                 try {

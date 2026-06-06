@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\Category;
-use App\Models\Product;
-use App\Models\ProductVariant;
+use App\Domain\Entities\Category;
+use App\Domain\Entities\Product;
+use App\Domain\Entities\ProductVariant;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 

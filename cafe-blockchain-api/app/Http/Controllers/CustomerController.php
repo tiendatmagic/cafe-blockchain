@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Customer;
+use App\Domain\Entities\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 

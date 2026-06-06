@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Domain\Entities;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -86,16 +86,16 @@ class Order extends Model
                 // Tự động tặng voucher nếu đủ điều kiện
                 if ($isStatusChanged && $order->customer_id) {
                     $storeOwner = $order->store_owner_address;
-                    $minGiftAmount = (int)\App\Models\Setting::getForStore('voucher_gift_min_amount', $storeOwner, 100000);
+                    $minGiftAmount = (int)\App\Domain\Entities\Setting::getForStore('voucher_gift_min_amount', $storeOwner, 100000);
                     $originalTotal = $order->total_amount + $order->discount_amount;
                     
                     if ($originalTotal >= $minGiftAmount) {
-                        $giftDiscount = (int)\App\Models\Setting::getForStore('voucher_discount_amount', $storeOwner, 5000);
-                        $useMinAmount = (int)\App\Models\Setting::getForStore('voucher_use_min_amount', $storeOwner, 100000);
+                        $giftDiscount = (int)\App\Domain\Entities\Setting::getForStore('voucher_discount_amount', $storeOwner, 5000);
+                        $useMinAmount = (int)\App\Domain\Entities\Setting::getForStore('voucher_use_min_amount', $storeOwner, 100000);
                         
-                        $customer = \App\Models\Customer::find($order->customer_id);
+                        $customer = \App\Domain\Entities\Customer::find($order->customer_id);
                         $customerWallet = $customer ? $customer->wallet_address : null;
-                        $voucherContract = \App\Models\Setting::getForStore('voucher_contract_address', $storeOwner);
+                        $voucherContract = \App\Domain\Entities\Setting::getForStore('voucher_contract_address', $storeOwner);
 
                         if (!empty($customerWallet) && !empty($voucherContract)) {
                             // Tạo mã voucher gắn với mã đơn hàng thay vì ngẫu nhiên

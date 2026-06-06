@@ -11,7 +11,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(
+            \App\Application\Common\Interfaces\BlockchainRelayerServiceInterface::class,
+            \App\Infrastructure\Services\BlockchainRelayerService::class
+        );
     }
 
     /**

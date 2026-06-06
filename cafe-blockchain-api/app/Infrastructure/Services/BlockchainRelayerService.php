@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Services;
+namespace App\Infrastructure\Services;
 
-use App\Models\Setting;
+use App\Application\Common\Interfaces\BlockchainRelayerServiceInterface;
+use App\Domain\Entities\Setting;
 use Illuminate\Support\Facades\Log;
 
-class BlockchainRelayerService
+class BlockchainRelayerService implements BlockchainRelayerServiceInterface
 {
     /**
      * Thực hiện đúc (mint) một NFT Voucher mới
@@ -17,7 +18,7 @@ class BlockchainRelayerService
      * @param int $minOrderAmount Số tiền tối thiểu của hóa đơn để sử dụng (ví dụ 100000)
      * @return array Mảng chứa thông tin kết quả (success, txHash, tokenId)
      */
-    public static function mintVoucher(string $storeOwnerAddress, string $toAddress, string $tokenUri, int $discountAmount, int $minOrderAmount): array
+    public function mintVoucher(string $storeOwnerAddress, string $toAddress, string $tokenUri, int $discountAmount, int $minOrderAmount): array
     {
         $contractAddress = Setting::getForStore('voucher_contract_address', $storeOwnerAddress);
         $rpcUrl = Setting::getForStore('rpc_url', $storeOwnerAddress, 'https://ethereum-sepolia.publicnode.com');
@@ -51,13 +52,13 @@ class BlockchainRelayerService
             'minOrderAmount' => $minOrderAmount
         ];
 
-        return self::executeRelayer($payload);
+        return $this->executeRelayer($payload);
     }
 
     /**
      * Kiểm tra xem Voucher NFT cho mã đơn hàng này đã được đúc on-chain hay chưa
      */
-    public static function checkVoucherMinted(string $storeOwnerAddress, string $customerAddress, string $orderCode): array
+    public function checkVoucherMinted(string $storeOwnerAddress, string $customerAddress, string $orderCode): array
     {
         $contractAddress = Setting::getForStore('voucher_contract_address', $storeOwnerAddress);
         $rpcUrl = Setting::getForStore('rpc_url', $storeOwnerAddress, 'https://ethereum-sepolia.publicnode.com');
@@ -85,19 +86,13 @@ class BlockchainRelayerService
             'orderCode' => $orderCode
         ];
 
-        return self::executeRelayer($payload);
+        return $this->executeRelayer($payload);
     }
 
     /**
      * Thực hiện quy đổi và tiêu hủy (burn) voucher NFT sử dụng chữ ký số EIP-712
-     *
-     * @param string $storeOwnerAddress Địa chỉ ví của chủ quán
-     * @param int $tokenId ID của token NFT Voucher
-     * @param string $orderCode Mã hóa đơn (ví dụ HD-12345)
-     * @param string $signature Chữ ký số EIP-712 của khách hàng
-     * @return array
      */
-    public static function useVoucher(string $storeOwnerAddress, int $tokenId, string $orderCode, string $signature): array
+    public function useVoucher(string $storeOwnerAddress, int $tokenId, string $orderCode, string $signature): array
     {
         $contractAddress = Setting::getForStore('voucher_contract_address', $storeOwnerAddress);
         $rpcUrl = Setting::getForStore('rpc_url', $storeOwnerAddress, 'https://ethereum-sepolia.publicnode.com');
@@ -130,17 +125,13 @@ class BlockchainRelayerService
             'signature' => $signature
         ];
 
-        return self::executeRelayer($payload);
+        return $this->executeRelayer($payload);
     }
 
     /**
      * Truy vấn thông tin chi tiết của một NFT Voucher trực tiếp on-chain
-     *
-     * @param string $storeOwnerAddress Địa chỉ ví của chủ quán
-     * @param int $tokenId ID của token NFT Voucher
-     * @return array
      */
-    public static function getVoucher(string $storeOwnerAddress, int $tokenId): array
+    public function getVoucher(string $storeOwnerAddress, int $tokenId): array
     {
         $contractAddress = Setting::getForStore('voucher_contract_address', $storeOwnerAddress);
         $rpcUrl = Setting::getForStore('rpc_url', $storeOwnerAddress, 'https://ethereum-sepolia.publicnode.com');
@@ -167,13 +158,13 @@ class BlockchainRelayerService
             'tokenId' => $tokenId
         ];
 
-        return self::executeRelayer($payload);
+        return $this->executeRelayer($payload);
     }
 
     /**
      * Thực thi lệnh NodeJS để chạy relayer.js
      */
-    private static function executeRelayer(array $payload): array
+    private function executeRelayer(array $payload): array
     {
         $jsonPayload = json_encode($payload);
         $base64Payload = base64_encode($jsonPayload);

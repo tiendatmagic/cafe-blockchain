@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CustomerGroup;
+use App\Domain\Entities\CustomerGroup;
 use Illuminate\Http\Request;
 
 class CustomerGroupController extends Controller

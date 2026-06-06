@@ -2,11 +2,11 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Order;
-use App\Models\Transaction;
-use App\Models\Customer;
-use App\Models\Product;
-use App\Models\InventoryRecord;
+use App\Domain\Entities\Order;
+use App\Domain\Entities\Transaction;
+use App\Domain\Entities\Customer;
+use App\Domain\Entities\Product;
+use App\Domain\Entities\InventoryRecord;
 use Illuminate\Console\Command;
 
 class GeneratePublicCodes extends Command

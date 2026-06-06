@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Customer;
-use App\Models\CustomerGroup;
+use App\Domain\Entities\Customer;
+use App\Domain\Entities\CustomerGroup;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
