@@ -19,6 +19,8 @@ class OrderItem extends Model
     ];
 
     protected $casts = [
+        'product_id' => 'integer',
+        'product_variant_id' => 'integer',
         'price' => 'float',
         'quantity' => 'integer',
     ];

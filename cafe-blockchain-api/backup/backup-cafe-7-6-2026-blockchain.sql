@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: localhost:3306
--- Thời gian đã tạo: Th6 06, 2026 lúc 06:52 PM
+-- Thời gian đã tạo: Th6 06, 2026 lúc 07:04 PM
 -- Phiên bản máy phục vụ: 8.0.30
 -- Phiên bản PHP: 8.3.28
 
@@ -1570,7 +1570,8 @@ INSERT INTO `orders` (`id`, `order_code`, `table_number`, `total_amount`, `disco
 ('019e9ae6-4792-7152-9bc4-c9f9be92e2dd', 'HD-78ADD4', NULL, 282000.00, 0, NULL, 8, 'cash', 'completed', '0x7b7bba37c5cbb455de13b1cd878f491a846a0d356c76bcb199e3729a71074021', '97', 'success', '0x75ad18ef47eda21baff837cac0f1563d0c355555', '297757b2a3b6d46c8daf552f876e1c5ef3e7b3291b716cd6fb5c2c4d909244d3', '2026-06-05 20:07:23', '2026-06-05 20:07:48', 1002),
 ('019e9aec-6f08-70dd-934b-0ca175e700bf', 'HD-S3P0M17', NULL, 240000.00, 5000, 6, 9, 'bank_transfer', 'completed', '0xe38fe1feb9ab84c66de877dd940954c30da53b65bc49185b8c26d0c9ba5af0d8', '97', 'success', '0x75ad18ef47eda21baff837cac0f1563d0c355555', 'a3bdf4d43f28707db8928871420d8808c84d259c49b839d20247a6d1ec6c4199', '2026-06-05 20:14:06', '2026-06-06 00:59:46', 1001),
 ('019e9cb2-0d73-72e0-9383-4afefa33b0ad', 'HD-9SXSL19', NULL, 142000.00, 5000, 9, 10, 'cash', 'completed', '0x942a252be09f935cc2fc082fe4fa85ab40a9b8b94a8f8d5e6476a3bbf20be9fc', '97', 'success', '0x75ad18ef47eda21baff837cac0f1563d0c355555', '51549433db25edd88058fa2e51c49a68567f732ae743733a0ba47c1b659118d8', '2026-06-06 04:29:35', '2026-06-06 04:34:47', 1001),
-('019e9d2a-6b8a-7351-9ac1-7878ac344ea3', 'HD-A721C6', NULL, 45000.00, 0, NULL, NULL, 'cash', 'cancelled', NULL, NULL, 'none', '0x75ad18ef47eda21baff837cac0f1563d0c355555', NULL, '2026-06-06 06:41:03', '2026-06-06 06:41:15', NULL);
+('019e9d2a-6b8a-7351-9ac1-7878ac344ea3', 'HD-A721C6', NULL, 45000.00, 0, NULL, NULL, 'cash', 'cancelled', NULL, NULL, 'none', '0x75ad18ef47eda21baff837cac0f1563d0c355555', NULL, '2026-06-06 06:41:03', '2026-06-06 06:41:15', NULL),
+('019e9e4e-0256-730d-a57a-13657af82a46', 'HD-8B5ED8', NULL, 301000.00, 0, NULL, 1, 'e_wallet', 'completed', '0x5fed428f2bd72d83aa85b7b7f14df3dac45fb8dcb52996394a67a7e7f555ea31', '97', 'success', '0x75ad18ef47eda21baff837cac0f1563d0c355555', 'c7c915af6932c9cb8673384c515e07542b67e7d4b48b49be5bb8beccb62f661b', '2026-06-06 11:59:33', '2026-06-06 12:04:35', 1001);
 
 -- --------------------------------------------------------
 
@@ -1619,7 +1620,9 @@ INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_variant_id`,
 (22, '019e9ae6-4792-7152-9bc4-c9f9be92e2dd', 529, NULL, 3, 49000.00, '2026-06-05 20:07:23', '2026-06-05 20:07:23', NULL),
 (23, '019e9aec-6f08-70dd-934b-0ca175e700bf', 532, NULL, 5, 49000.00, '2026-06-05 20:14:06', '2026-06-05 20:14:06', NULL),
 (24, '019e9cb2-0d73-72e0-9383-4afefa33b0ad', 436, NULL, 3, 49000.00, '2026-06-06 04:29:35', '2026-06-06 04:29:35', NULL),
-(25, '019e9d2a-6b8a-7351-9ac1-7878ac344ea3', 530, 87, 1, 45000.00, '2026-06-06 06:41:03', '2026-06-06 06:41:03', NULL);
+(25, '019e9d2a-6b8a-7351-9ac1-7878ac344ea3', 530, 87, 1, 45000.00, '2026-06-06 06:41:03', '2026-06-06 06:41:03', NULL),
+(26, '019e9e4e-0256-730d-a57a-13657af82a46', 532, NULL, 5, 50000.00, '2026-06-06 11:59:33', '2026-06-06 11:59:33', NULL),
+(27, '019e9e4e-0256-730d-a57a-13657af82a46', 530, 88, 1, 51000.00, '2026-06-06 11:59:33', '2026-06-06 11:59:33', NULL);
 
 -- --------------------------------------------------------
 
@@ -1657,7 +1660,7 @@ CREATE TABLE `personal_access_tokens` (
 --
 
 INSERT INTO `personal_access_tokens` (`id`, `tokenable_type`, `tokenable_id`, `name`, `token`, `abilities`, `last_used_at`, `expires_at`, `created_at`, `updated_at`) VALUES
-(1, 'App\\Domain\\Entities\\User', 1, 'pos-access-token', '4b66d2d0403a62c9f3c1992e8d421dbcc94a978dbdd1223824d2b25827dc61d2', '[\"*\"]', '2026-06-06 11:46:57', NULL, '2026-06-06 11:37:09', '2026-06-06 11:46:57');
+(1, 'App\\Domain\\Entities\\User', 1, 'pos-access-token', '4b66d2d0403a62c9f3c1992e8d421dbcc94a978dbdd1223824d2b25827dc61d2', '[\"*\"]', '2026-06-06 12:04:27', NULL, '2026-06-06 11:37:09', '2026-06-06 12:04:27');
 
 -- --------------------------------------------------------
 
@@ -1974,7 +1977,8 @@ INSERT INTO `transactions` (`id`, `transaction_code`, `type`, `amount`, `categor
 ('019e9902-1f44-711d-8b35-c0d49c900d84', 'TC-9E3B28', 'thu', 10000.00, 'Tiền mặt bằng', NULL, '2026-06-05', '0x75ad18ef47eda21baff837cac0f1563d0c355555', '0x307e5c045ea87831121f21d916974397d1ac240215e69a22fb329460c32256cb', 'success', '97', 'fbfb8dc6a0cbd44ea9d9b36c59fd3a79c0d854e5c6e9f835fb9ecb469e651b67', '2026-06-05 11:18:33', '2026-06-05 11:18:58'),
 ('019e9902-3abe-72bf-a7e1-9cea9cbbb529', 'TC-CFEDDC', 'thu', 10000.00, 'Nhập nguyên liệu', NULL, '2026-06-05', '0x75ad18ef47eda21baff837cac0f1563d0c355555', '0xfeb4424982a00500777b7a80e425fc067e50442fc38d0b2924af5c455b73858a', 'success', '97', '85bb788913ecff09e865fd23d83bbc76a5465a5adcb3fba9bc00204de46bd5e6', '2026-06-05 11:18:40', '2026-06-05 11:18:55'),
 ('019e99c2-be07-72a7-857d-2d36f8461617', 'TC-638ABE', 'chi', 200000.00, 'Lương nhân viên', NULL, '2026-06-05', '0x75ad18ef47eda21baff837cac0f1563d0c355555', '0x8238f4583aff502a8cb792bb30d6bc1be003b8579f862a0ed6bfcdf1014f04ec', 'success', '97', '8a0a33813a82c504ebe60ca2a82efd4ff17cd4cc6bbc678e8058c1b6ebb86997', '2026-06-05 14:48:57', '2026-06-05 14:49:29'),
-('019e99c3-80f0-731f-88d5-9f60713ccc1f', 'TC-49697F', 'chi', 500000.00, 'Tiền mặt bằng', 'trả tiền mặt bằng', '2026-06-05', '0x75ad18ef47eda21baff837cac0f1563d0c355555', '0x89a7c2b490b3f2d13cbce991f76a9cec119c706304ced81fed2b85dc42dbe78c', 'success', '97', 'c438727ba495035e06a8af233d167d1ec7dcabffc06e96b8d5ec3769fd864eba', '2026-06-05 14:49:47', '2026-06-05 14:49:57');
+('019e99c3-80f0-731f-88d5-9f60713ccc1f', 'TC-49697F', 'chi', 500000.00, 'Tiền mặt bằng', 'trả tiền mặt bằng', '2026-06-05', '0x75ad18ef47eda21baff837cac0f1563d0c355555', '0x89a7c2b490b3f2d13cbce991f76a9cec119c706304ced81fed2b85dc42dbe78c', 'success', '97', 'c438727ba495035e06a8af233d167d1ec7dcabffc06e96b8d5ec3769fd864eba', '2026-06-05 14:49:47', '2026-06-05 14:49:57'),
+('019e9e51-d380-73de-bd4b-445e84a96e42', 'TC-9773F9', 'chi', 5000000.00, 'Tiền mặt bằng', NULL, '2026-06-06', '0x75ad18ef47eda21baff837cac0f1563d0c355555', '0xd2e2596d657a57b04e0fe0af98b9ba00c15e2b410eb97749ecf667add310c726', 'success', '97', 'd3c7171ca14cf1d925750612e5516dccf8551db6a6f5fa3a01d0df22ec4dc5af', '2026-06-06 12:03:43', '2026-06-06 12:03:49');
 
 -- --------------------------------------------------------
 
@@ -2287,7 +2291,7 @@ ALTER TABLE `migrations`
 -- AUTO_INCREMENT cho bảng `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT cho bảng `personal_access_tokens`

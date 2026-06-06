@@ -676,11 +676,11 @@ export class StateService {
     const productsList = this.products();
 
     order.items.forEach((item: any) => {
-      const product = productsList.find(p => p.id === item.product_id);
+      const product = productsList.find(p => Number(p.id) === Number(item.product_id));
       if (product) {
         let variant: any = null;
         if (item.product_variant_id && product.variants) {
-          variant = product.variants.find((v: any) => v.id === item.product_variant_id) || null;
+          variant = product.variants.find((v: any) => Number(v.id) === Number(item.product_variant_id)) || null;
         }
         loadedCart.push({
           product,
