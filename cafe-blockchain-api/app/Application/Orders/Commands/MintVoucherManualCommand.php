@@ -20,30 +20,51 @@ class MintVoucherManualCommand
     {
         $order = Order::where('store_owner_address', $storeOwner)->with('customer')->findOrFail($id);
 
-        if ($order->status !== 'completed') {
-            throw new \Exception("Chỉ có thể tặng voucher cho đơn hàng đã hoàn thành!");
+        if ($order->status !== 'completed' && $order->status !== 'cancelled') {
+            throw new \Exception("Chỉ có thể tặng/hoàn trả voucher cho đơn hàng đã hoàn thành hoặc đã hủy!");
         }
 
-        if ($order->blockchain_status !== 'success') {
-            throw new \Exception("Chỉ có thể tặng voucher cho đơn hàng đã đồng bộ blockchain thành công!");
+        if ($order->status === 'completed' && $order->blockchain_status !== 'success') {
+            throw new \Exception("Chỉ có thể tặng voucher cho đơn hàng đã hoàn thành khi đã đồng bộ blockchain thành công!");
+        }
+
+        if ($order->status === 'cancelled' && $order->voucher_nft_token_id === null) {
+            throw new \Exception("Đơn hàng đã hủy này không áp dụng NFT Voucher nào, không thể tặng lại!");
         }
 
         if ($order->gift_voucher_nft_token_id !== null) {
-            throw new \Exception("Đơn hàng này đã được tặng Voucher NFT rồi (Token ID: " . $order->gift_voucher_nft_token_id . ").");
+            $message = $order->status === 'cancelled' 
+                ? "Đơn hàng này đã được hoàn trả Voucher NFT rồi (Token ID: " . $order->gift_voucher_nft_token_id . ")."
+                : "Đơn hàng này đã được tặng Voucher NFT rồi (Token ID: " . $order->gift_voucher_nft_token_id . ").";
+            throw new \Exception($message);
         }
 
         if (!$order->customer || empty($order->customer->wallet_address)) {
             throw new \Exception("Khách hàng của đơn hàng này không liên kết ví Web3!");
         }
 
-        $minGiftAmount = (int)Setting::getForStore('voucher_gift_min_amount', $storeOwner, 100000);
-        $originalTotal = $order->total_amount + $order->discount_amount;
-        if ($originalTotal < $minGiftAmount) {
-            throw new \Exception("Đơn hàng chưa đạt giá trị tối thiểu " . number_format($minGiftAmount) . "đ để được tặng voucher!");
-        }
-
         $giftDiscount = (int)Setting::getForStore('voucher_discount_amount', $storeOwner, 5000);
         $useMinAmount = (int)Setting::getForStore('voucher_use_min_amount', $storeOwner, 100000);
+
+        if ($order->status === 'completed') {
+            $minGiftAmount = (int)Setting::getForStore('voucher_gift_min_amount', $storeOwner, 100000);
+            $originalTotal = $order->total_amount + $order->discount_amount;
+            if ($originalTotal < $minGiftAmount) {
+                throw new \Exception("Đơn hàng chưa đạt giá trị tối thiểu " . number_format($minGiftAmount) . "đ để được tặng voucher!");
+            }
+        } else {
+            // Trường hợp cancelled: Lấy lại thông tin của voucher đã áp dụng
+            try {
+                $relayerGet = $this->blockchainService->getVoucher($storeOwner, (int)$order->voucher_nft_token_id);
+                if ($relayerGet['success']) {
+                    $giftDiscount = (int)$relayerGet['discountAmount'];
+                    $useMinAmount = (int)$relayerGet['minOrderAmount'];
+                }
+            } catch (\Exception $e) {
+                $giftDiscount = $order->discount_amount ?: $giftDiscount;
+            }
+        }
+
         $customerWallet = $order->customer->wallet_address;
 
         // Chống mint trùng: Gọi Relayer checkMinted on-chain trước
