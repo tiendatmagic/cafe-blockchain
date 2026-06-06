@@ -76,6 +76,18 @@ export class PosComponent implements OnInit, OnDestroy {
       .replace(/Đ/g, 'D');
   }
 
+  public formatVoucherCode(code: string | undefined | null): string {
+    if (!code) return '';
+    if (code.startsWith('NFT-') && code.length > 15) {
+      const parts = code.split('-');
+      if (parts.length >= 2) {
+        const lastPart = parts[parts.length - 1];
+        return `NFT-...-${lastPart}`;
+      }
+    }
+    return code;
+  }
+
   public ngOnInit() {
     this.customerSearchSubscription = this.customerSearchSubject.pipe(
       debounceTime(300),

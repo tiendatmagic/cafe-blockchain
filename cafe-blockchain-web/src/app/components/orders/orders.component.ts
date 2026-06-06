@@ -442,7 +442,7 @@ export class OrdersComponent implements OnInit {
 
     let discountHtml = '';
     if (order.discount_amount > 0) {
-      const voucherText = order.voucher ? ` (Voucher: ${order.voucher.code})` : '';
+      const voucherText = order.voucher ? ` (Voucher: ${this.formatVoucherCode(order.voucher.code)})` : '';
       discountHtml = `
         <div style="display: flex; justify-content: space-between; font-size: 10px;">
           <span>Tạm tính:</span>
@@ -553,5 +553,17 @@ export class OrdersComponent implements OnInit {
 
   public getTxExplorerLink(txHash: string | null | undefined, chainId: string | number | null | undefined): string {
     return this.web3Service.getTxExplorerLink(txHash, chainId);
+  }
+
+  public formatVoucherCode(code: string | undefined | null): string {
+    if (!code) return '';
+    if (code.startsWith('NFT-') && code.length > 15) {
+      const parts = code.split('-');
+      if (parts.length >= 2) {
+        const lastPart = parts[parts.length - 1];
+        return `NFT-...-${lastPart}`;
+      }
+    }
+    return code;
   }
 }

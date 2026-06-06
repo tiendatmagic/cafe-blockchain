@@ -312,7 +312,7 @@
 
     <!-- CỘT 3: GIỎ HÀNG & THANH TOÁN (RIGHT) -->
     <div
-      class="xl:col-span-2 bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex flex-col h-auto xl:h-[calc(100vh-115px)] min-h-[400px] xl:min-h-[620px] xl:sticky xl:top-[85px] transition-colors duration-300"
+      class="xl:col-span-2 bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex flex-col h-auto xl:h-[calc(100vh-115px)] min-h-[400px] xl:min-h-[600px] xl:sticky xl:top-[50px] transition-colors duration-300"
     >
       <div
         class="flex items-center justify-between pb-4 border-b border-slate-200/60 dark:border-slate-800/60"
@@ -517,197 +517,211 @@
               ✕
             </button>
           </div>
-
-          <!-- Nhập ID NFT Voucher thủ công -->
-          @if (posSelectedCustomer()?.wallet_address) {
-            <div
-              class="mt-3.5 p-3 bg-purple-500/5 dark:bg-purple-500/10 border border-purple-500/20 dark:border-purple-500/30 rounded-2xl space-y-2 animate-in slide-in-from-top-1 duration-150"
-            >
-              <label
-                class="text-[10px] font-black text-purple-600 dark:text-purple-400 uppercase tracking-wider block"
-              >
-                Áp dụng NFT Voucher theo ID
-              </label>
-              <div class="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Nhập ID NFT (ví dụ: 12)"
-                  [ngModel]="nftVoucherInputId()"
-                  (ngModelChange)="nftVoucherInputId.set($event)"
-                  class="flex-1 px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-800 dark:text-white focus:outline-none focus:border-purple-500 transition-colors"
-                />
-                <button
-                  type="button"
-                  (click)="applyNftVoucherById()"
-                  [disabled]="isNftVoucherLoading() || !nftVoucherInputId().trim()"
-                  class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-1.5 shrink-0 active:scale-[0.98]"
-                >
-                  @if (isNftVoucherLoading()) {
-                    <div
-                      class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                    ></div>
-                  }
-                  <span>Áp dụng</span>
-                </button>
-              </div>
-            </div>
-          }
-
-          <!-- Hiển thị Voucher NFT Khả Dụng -->
-          @if (posActiveVouchers().length > 0) {
-            <div class="mt-3.5 space-y-2 animate-in fade-in slide-in-from-top-1 duration-150">
-              <div
-                class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center justify-between"
-              >
-                <span>Voucher NFT khả dụng ({{ posActiveVouchers().length }})</span>
-                @if (posSelectedVoucher()) {
-                  <button
-                    type="button"
-                    (click)="posSelectedVoucher.set(null)"
-                    class="text-[10px] text-rose-500 font-bold hover:underline"
-                  >
-                    Hủy áp dụng
-                  </button>
-                }
-              </div>
-              <div class="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto no-scrollbar pr-1">
-                @for (voucher of posActiveVouchers(); track voucher.code) {
-                  <div
-                    (click)="selectVoucher(voucher)"
-                    [class]="
-                      posSelectedVoucher()?.code === voucher.code
-                        ? 'bg-purple-500/10 dark:bg-purple-500/20 border-purple-500 dark:border-purple-400 text-purple-600 dark:text-purple-400'
-                        : cartTotal() < voucher.min_order_amount
-                          ? 'opacity-50 cursor-not-allowed bg-slate-50 dark:bg-slate-950 border-slate-200/50 dark:border-slate-800/50 text-slate-400 dark:text-slate-600'
-                          : 'bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800/60 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
-                    "
-                    class="flex items-center justify-between px-3 py-2.5 rounded-xl border border-dashed text-xs font-bold cursor-pointer transition-all duration-200 active:scale-[0.98] select-none"
-                  >
-                    <div class="flex items-center gap-2">
-                      <div class="flex flex-col">
-                        <span
-                          class="font-extrabold text-xs uppercase tracking-wide leading-tight flex items-center gap-1.5"
-                        >
-                          {{ voucher.code }}
-                          @if (voucher.isNft) {
-                            <span
-                              class="text-[8px] bg-purple-500/20 text-purple-600 dark:text-purple-400 px-1.5 py-0.5 rounded font-black border border-purple-500/25"
-                              >NFT #{{ voucher.tokenId }}</span
-                            >
-                          }
-                        </span>
-                        <span
-                          class="text-[10px] font-bold text-slate-400 dark:text-slate-500 mt-0.5 flex flex-wrap items-center gap-x-1"
-                        >
-                          <span>Đơn tối thiểu: {{ voucher.min_order_amount | number }}đ</span>
-                          @if (voucher.expired_at) {
-                            <span>•</span>
-                            <span class="text-rose-500 dark:text-rose-400 font-bold"
-                              >Hạn dùng: {{ voucher.expired_at | date: 'dd/MM/yyyy' }}</span
-                            >
-                          }
-                        </span>
-                      </div>
-                    </div>
-                    <div class="flex items-center gap-1.5 shrink-0">
-                      <span class="font-black text-purple-600 dark:text-purple-400"
-                        >-{{ voucher.discount_amount | number }}đ</span
-                      >
-                      @if (posSelectedVoucher()?.code === voucher.code) {
-                        <span
-                          class="w-4 h-4 rounded-full bg-purple-600 dark:bg-purple-500 text-white flex items-center justify-center text-[10px]"
-                          >✓</span
-                        >
-                      }
-                    </div>
-                  </div>
-                }
-              </div>
-            </div>
-          }
         }
       </div>
 
-      <!-- Danh sách món đã chọn -->
-      <div class="flex-1 overflow-y-auto py-4 space-y-3 pr-1">
-        @if (cart().length === 0) {
-          <div class="flex flex-col items-center justify-center h-full text-center gap-3">
-            <svg
-              class="h-10 w-10 text-slate-300 dark:text-slate-700"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+      <!-- Vùng cuộn chính của Giỏ hàng (Voucher & Món ăn) -->
+      <div class="flex-1 overflow-y-auto py-4 space-y-4 pr-1 no-scrollbar-on-scroll">
+        <!-- Nhập ID NFT Voucher thủ công -->
+        @if (posSelectedCustomer() && posSelectedCustomer()?.wallet_address) {
+          <div
+            class="p-3 bg-purple-500/5 dark:bg-purple-500/10 border border-purple-500/20 dark:border-purple-500/30 rounded-2xl space-y-2 animate-in slide-in-from-top-1 duration-150 shrink-0"
+          >
+            <label
+              class="text-[10px] font-black text-purple-600 dark:text-purple-400 uppercase tracking-wider block"
             >
-              <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
-              <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
-            </svg>
-            <span class="text-xs font-bold text-slate-400">Giỏ hàng trống!</span>
-            <span class="text-xs text-slate-400/80 px-4"
-              >Hãy chọn món ngon từ thực đơn bên trái để ghi nhận hóa đơn.</span
-            >
+              Áp dụng NFT Voucher theo ID
+            </label>
+            <div class="flex gap-2">
+              <input
+                type="text"
+                placeholder="Nhập ID NFT (ví dụ: 12)"
+                [ngModel]="nftVoucherInputId()"
+                (ngModelChange)="nftVoucherInputId.set($event)"
+                class="flex-1 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-800 dark:text-white focus:outline-none focus:border-purple-500 transition-colors"
+              />
+              <button
+                type="button"
+                (click)="applyNftVoucherById()"
+                [disabled]="isNftVoucherLoading() || !nftVoucherInputId().trim()"
+                class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-1.5 shrink-0 active:scale-[0.98]"
+              >
+                @if (isNftVoucherLoading()) {
+                  <div
+                    class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
+                  ></div>
+                }
+                <span>Áp dụng</span>
+              </button>
+            </div>
           </div>
-        } @else {
-          @for (item of cart(); track item.product.id + '_' + (item.variant?.id || 'default')) {
+        }
+
+        <!-- Hiển thị Voucher NFT Khả Dụng -->
+        @if (posSelectedCustomer() && posActiveVouchers().length > 0) {
+          <div class="space-y-2 animate-in fade-in slide-in-from-top-1 duration-150 shrink-0">
             <div
-              class="flex flex-col gap-2 p-3 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-900/60 group animate-in fade-in slide-in-from-top-1 duration-150"
+              class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center justify-between"
             >
-              <div class="flex items-center justify-between gap-3">
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-1.5 flex-wrap">
-                    <h6
-                      class="text-sm font-bold text-slate-800 dark:text-white line-clamp-2 whitespace-normal leading-tight"
-                    >
-                      {{ item.product.name }}
-                    </h6>
-                    @if (item.variant) {
+              <span>Voucher NFT khả dụng ({{ posActiveVouchers().length }})</span>
+              @if (posSelectedVoucher()) {
+                <button
+                  type="button"
+                  (click)="posSelectedVoucher.set(null)"
+                  class="text-[10px] text-rose-500 font-bold hover:underline"
+                >
+                  Hủy áp dụng
+                </button>
+              }
+            </div>
+            <div class="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto no-scrollbar pr-1">
+              @for (voucher of posActiveVouchers(); track voucher.code) {
+                <div
+                  (click)="selectVoucher(voucher)"
+                  [class]="
+                    posSelectedVoucher()?.code === voucher.code
+                      ? 'bg-purple-500/10 dark:bg-purple-500/20 border-purple-500 dark:border-purple-400 text-purple-600 dark:text-purple-400'
+                      : cartTotal() < voucher.min_order_amount
+                        ? 'opacity-50 cursor-not-allowed bg-slate-50 dark:bg-slate-950 border-slate-200/50 dark:border-slate-800/50 text-slate-400 dark:text-slate-600'
+                        : 'bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800/60 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
+                  "
+                  class="flex items-center justify-between px-3 py-2.5 rounded-xl border border-dashed text-xs font-bold cursor-pointer transition-all duration-200 active:scale-[0.98] select-none"
+                >
+                  <div class="flex items-center gap-2">
+                    <div class="flex flex-col">
                       <span
-                        class="text-xs bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-extrabold px-1.5 py-0.5 rounded-md uppercase tracking-wider shrink-0"
-                        >{{ item.variant.variant_name }}</span
+                        class="font-extrabold text-xs uppercase tracking-wide leading-tight flex items-center gap-1.5"
+                      >
+                        {{ formatVoucherCode(voucher.code) }}
+                        @if (voucher.isNft) {
+                          <span
+                            class="text-[8px] bg-purple-500/20 text-purple-600 dark:text-purple-400 px-1.5 py-0.5 rounded font-black border border-purple-500/25"
+                            >NFT #{{ voucher.tokenId }}</span
+                          >
+                        }
+                      </span>
+                      <span
+                        class="text-[10px] font-bold text-slate-400 dark:text-slate-500 mt-0.5 flex flex-wrap items-center gap-x-1"
+                      >
+                        <span>Đơn tối thiểu: {{ voucher.min_order_amount | number }}đ</span>
+                        @if (voucher.expired_at) {
+                          <span>•</span>
+                          <span class="text-rose-500 dark:text-rose-400 font-bold"
+                            >Hạn dùng: {{ voucher.expired_at | date: 'dd/MM/yyyy' }}</span
+                          >
+                        }
+                      </span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-1.5 shrink-0">
+                    <span class="font-black text-purple-600 dark:text-purple-400"
+                      >-{{ voucher.discount_amount | number }}đ</span
+                    >
+                    @if (posSelectedVoucher()?.code === voucher.code) {
+                      <span
+                        class="w-4 h-4 rounded-full bg-purple-600 dark:bg-purple-500 text-white flex items-center justify-center text-[10px]"
+                        >✓</span
                       >
                     }
                   </div>
-                  <span class="text-xs text-slate-400 font-bold"
-                    >{{ (item.variant ? item.variant.price : item.product.price) | number }}đ</span
-                  >
                 </div>
-                <div class="flex items-center gap-2 shrink-0">
-                  <button
-                    (click)="removeFromCart(item.product.id, item.variant?.id)"
-                    class="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-rose-50 hover:text-rose-500 flex items-center justify-center text-sm font-bold transition-all"
-                  >
-                    -
-                  </button>
-                  <span
-                    class="text-sm font-extrabold text-slate-800 dark:text-white min-w-5 text-center"
-                    >{{ item.quantity }}</span
-                  >
-                  <button
-                    (click)="increaseQuantity(item.product.id, item.variant?.id)"
-                    class="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-[var(--dynamic-primary)] hover:text-white flex items-center justify-center text-sm font-bold transition-all hover:scale-105 active:scale-95"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-
-              <!-- Ô Nhập Ghi chú dưới sản phẩm (Theo thiết kế Sổ Bán Hàng) -->
-              <div class="pt-1.5 border-t border-slate-200/40 dark:border-slate-900/60">
-                <div class="relative">
-                  <input
-                    type="text"
-                    [ngModel]="item.note"
-                    (ngModelChange)="updateItemNote(item.product.id, item.variant?.id, $event)"
-                    placeholder="Nhập ghi chú cho món..."
-                    class="w-full pl-3 pr-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 text-xs font-bold text-slate-600 dark:text-slate-300 focus:outline-none focus:border-[var(--dynamic-primary)] transition-all"
-                  />
-                </div>
-              </div>
+              }
             </div>
-          }
+          </div>
         }
+
+        <!-- Tiêu đề phân đoạn Món đã chọn -->
+        @if (cart().length > 0) {
+          <div
+            class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider pt-2 border-t border-slate-100 dark:border-slate-800/40 shrink-0"
+          >
+            Món đã chọn ({{ posTotalQuantity() }})
+          </div>
+        }
+
+        <!-- Danh sách món đã chọn thực tế -->
+        <div class="space-y-3">
+          @if (cart().length === 0) {
+            <div class="flex flex-col items-center justify-center py-10 text-center gap-3">
+              <svg
+                class="h-10 w-10 text-slate-300 dark:text-slate-700"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+              </svg>
+              <span class="text-xs font-bold text-slate-400">Giỏ hàng trống!</span>
+              <span class="text-xs text-slate-400/80 px-4"
+                >Hãy chọn món ngon từ thực đơn bên trái để ghi nhận hóa đơn.</span
+              >
+            </div>
+          } @else {
+            @for (item of cart(); track item.product.id + '_' + (item.variant?.id || 'default')) {
+              <div
+                class="flex flex-col gap-2 p-3 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-900/60 group animate-in fade-in slide-in-from-top-1 duration-150"
+              >
+                <div class="flex items-center justify-between gap-3">
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <h6
+                        class="text-sm font-bold text-slate-800 dark:text-white line-clamp-2 whitespace-normal leading-tight"
+                      >
+                        {{ item.product.name }}
+                      </h6>
+                      @if (item.variant) {
+                        <span
+                          class="text-xs bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-extrabold px-1.5 py-0.5 rounded-md uppercase tracking-wider shrink-0"
+                          >{{ item.variant.variant_name }}</span
+                        >
+                      }
+                    </div>
+                    <span class="text-xs text-slate-400 font-bold"
+                      >{{
+                        (item.variant ? item.variant.price : item.product.price) | number
+                      }}đ</span
+                    >
+                  </div>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <button
+                      (click)="removeFromCart(item.product.id, item.variant?.id)"
+                      class="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-rose-50 hover:text-rose-500 flex items-center justify-center text-sm font-bold transition-all"
+                    >
+                      -
+                    </button>
+                    <span
+                      class="text-sm font-extrabold text-slate-800 dark:text-white min-w-5 text-center"
+                      >{{ item.quantity }}</span
+                    >
+                    <button
+                      (click)="increaseQuantity(item.product.id, item.variant?.id)"
+                      class="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-[var(--dynamic-primary)] hover:text-white flex items-center justify-center text-sm font-bold transition-all hover:scale-105 active:scale-95"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Ô Nhập Ghi chú dưới sản phẩm (Theo thiết kế Sổ Bán Hàng) -->
+                <div class="pt-1.5 border-t border-slate-200/40 dark:border-slate-900/60">
+                  <div class="relative">
+                    <input
+                      type="text"
+                      [ngModel]="item.note"
+                      (ngModelChange)="updateItemNote(item.product.id, item.variant?.id, $event)"
+                      placeholder="Nhập ghi chú cho món..."
+                      class="w-full pl-3 pr-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 text-xs font-bold text-slate-600 dark:text-slate-300 focus:outline-none focus:border-[var(--dynamic-primary)] transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+            }
+          }
+        </div>
       </div>
 
       <!-- Cấu hình chi tiết hóa đơn đặt món -->
@@ -915,7 +929,7 @@
                   <span
                     class="text-xs uppercase bg-emerald-100 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded font-extrabold"
                   >
-                    {{ posSelectedVoucher().code }}
+                    {{ formatVoucherCode(posSelectedVoucher().code) }}
                     @if (posSelectedVoucher().isNft) {
                       <span
                         class="text-[10px] font-black text-emerald-700 dark:text-emerald-300 ml-1"
@@ -1145,7 +1159,7 @@
               <span
                 class="text-[10px] uppercase bg-emerald-100 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded font-black"
               >
-                {{ posSelectedVoucher().code }}
+                {{ formatVoucherCode(posSelectedVoucher().code) }}
                 @if (posSelectedVoucher().isNft) {
                   <span class="text-[10px] font-black text-emerald-700 dark:text-emerald-300 ml-1"
                     >#{{ posSelectedVoucher().tokenId }}</span
@@ -1380,6 +1394,28 @@
               </svg>
               <span>Copy</span>
             </button>
+            <a
+              [href]="signLink()"
+              target="_blank"
+              class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 active:scale-[0.98]"
+              title="Mở liên kết ký số"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-3.5 w-3.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2.5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                />
+              </svg>
+              <span>Mở link</span>
+            </a>
           </div>
         </div>
       }
