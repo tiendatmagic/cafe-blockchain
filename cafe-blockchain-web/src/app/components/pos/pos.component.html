@@ -14,7 +14,7 @@
         class="flex items-center gap-1.5 bg-slate-100/80 dark:bg-slate-900 p-1 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 w-full sm:w-auto shadow-sm"
       >
         <span
-          class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider pl-2.5 pr-1 whitespace-nowrap"
+          class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider pl-2.5 pr-1 whitespace-nowrap"
         >
           Chế độ
         </span>
@@ -48,7 +48,7 @@
             </button>
             <!-- Tooltip -->
             <div
-              class="absolute top-full left-1/2 -translate-x-1/2 mt-2.5 hidden group-hover:block bg-slate-950 dark:bg-slate-800 text-white dark:text-slate-100 text-[10px] font-bold px-2.5 py-1.5 rounded-xl whitespace-nowrap shadow-lg border border-slate-700/50 dark:border-slate-600/50 transition-all duration-200 z-50 animate-in fade-in slide-in-from-top-1"
+              class="absolute top-full left-1/2 -translate-x-1/2 mt-2.5 hidden group-hover:block bg-slate-950 dark:bg-slate-800 text-white dark:text-slate-100 text-xs font-bold px-2.5 py-1.5 rounded-xl whitespace-nowrap shadow-lg border border-slate-700/50 dark:border-slate-600/50 transition-all duration-200 z-50 animate-in fade-in slide-in-from-top-1"
             >
               Thanh toán nhanh (Ghi nhận ngay)
             </div>
@@ -83,7 +83,7 @@
             </button>
             <!-- Tooltip -->
             <div
-              class="absolute top-full left-1/2 -translate-x-1/2 mt-2.5 hidden group-hover:block bg-slate-950 dark:bg-slate-800 text-white dark:text-slate-100 text-[10px] font-bold px-2.5 py-1.5 rounded-xl whitespace-nowrap shadow-lg border border-slate-700/50 dark:border-slate-600/50 transition-all duration-200 z-50 animate-in fade-in slide-in-from-top-1"
+              class="absolute top-full left-1/2 -translate-x-1/2 mt-2.5 hidden group-hover:block bg-slate-950 dark:bg-slate-800 text-white dark:text-slate-100 text-xs font-bold px-2.5 py-1.5 rounded-xl whitespace-nowrap shadow-lg border border-slate-700/50 dark:border-slate-600/50 transition-all duration-200 z-50 animate-in fade-in slide-in-from-top-1"
             >
               Hiện xác nhận (Xem chi tiết đơn)
             </div>
@@ -216,7 +216,7 @@
                     </h5>
                     @if (p.short_description) {
                       <p
-                        class="text-[11px] text-slate-400 dark:text-slate-500 font-medium line-clamp-2 mt-0.5 leading-relaxed"
+                        class="text-xs text-slate-400 dark:text-slate-500 font-medium line-clamp-2 mt-0.5 leading-relaxed"
                       >
                         {{ p.short_description }}
                       </p>
@@ -379,7 +379,7 @@
             >
               @if (isCustomerSearching()) {
                 <div
-                  class="p-4.5 text-center text-[10px] text-slate-400 font-bold flex items-center justify-center gap-2"
+                  class="p-4.5 text-center text-xs text-slate-400 font-bold flex items-center justify-center gap-2"
                 >
                   <div
                     class="w-3.5 h-3.5 rounded-full border-2 border-slate-200 border-t-purple-650 animate-spin"
@@ -395,10 +395,9 @@
                     >
                       <div class="flex items-center gap-2">
                         <span class="text-base shrink-0">⌨️</span>
-                        <span
-                          class="font-extrabold text-slate-600 dark:text-slate-300 text-[11px]"
-                          >{{ c.name }}</span
-                        >
+                        <span class="font-extrabold text-slate-600 dark:text-slate-300 text-xs">{{
+                          c.name
+                        }}</span>
                       </div>
                       <div
                         class="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden"
@@ -421,7 +420,7 @@
                       <div class="flex flex-col min-w-0 pr-2">
                         @if (c.is_auto_create) {
                           <span
-                            class="font-extrabold text-purple-600 dark:text-purple-400 text-[11px] truncate"
+                            class="font-extrabold text-purple-600 dark:text-purple-400 text-xs truncate"
                             >✨ {{ c.name }}</span
                           >
                           <span class="text-[9px] text-slate-400 font-bold truncate"
@@ -429,12 +428,12 @@
                               c.wallet_address.substring(34)
                             }}</span
                           >
-                          <span class="text-[10px] text-slate-500 dark:text-slate-400 font-semibold"
+                          <span class="text-xs text-slate-500 dark:text-slate-400 font-semibold"
                             >Tự động tạo hồ sơ off-chain</span
                           >
                         } @else {
                           <span
-                            class="font-extrabold text-slate-800 dark:text-white text-[11px] truncate"
+                            class="font-extrabold text-slate-800 dark:text-white text-xs truncate"
                             >{{ c.name }}</span
                           >
                           @if (c.company_name) {
@@ -443,7 +442,7 @@
                               >🏢 {{ c.company_name }}</span
                             >
                           }
-                          <span class="text-[10px] text-slate-400 font-semibold">{{
+                          <span class="text-xs text-slate-400 font-semibold">{{
                             c.phone || 'Không có SĐT'
                           }}</span>
                         }
@@ -462,7 +461,7 @@
                   }
                 }
               } @else {
-                <div class="p-3 text-center text-[10px] text-slate-400 font-bold">
+                <div class="p-3 text-center text-xs text-slate-400 font-bold">
                   Không tìm thấy khách hàng!
                 </div>
               }
@@ -493,7 +492,7 @@
                   </span>
                 </div>
                 <span
-                  class="text-[10px] text-slate-500 dark:text-slate-400 font-bold leading-none mt-0.5"
+                  class="text-xs text-slate-500 dark:text-slate-400 font-bold leading-none mt-0.5"
                 >
                   {{ posSelectedCustomer().phone || 'Không có SĐT' }}
                 </span>
@@ -558,7 +557,7 @@
           @if (posActiveVouchers().length > 0) {
             <div class="mt-3.5 space-y-2 animate-in fade-in slide-in-from-top-1 duration-150">
               <div
-                class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center justify-between"
+                class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center justify-between"
               >
                 <span>Voucher NFT khả dụng ({{ posActiveVouchers().length }})</span>
                 @if (posSelectedVoucher()) {
@@ -587,7 +586,7 @@
                     <div class="flex items-center gap-2">
                       <div class="flex flex-col">
                         <span
-                          class="font-extrabold text-[11px] uppercase tracking-wide leading-tight flex items-center gap-1.5"
+                          class="font-extrabold text-xs uppercase tracking-wide leading-tight flex items-center gap-1.5"
                         >
                           {{ voucher.code }}
                           @if (voucher.isNft) {
@@ -646,7 +645,7 @@
               <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
             </svg>
             <span class="text-xs font-bold text-slate-400">Giỏ hàng trống!</span>
-            <span class="text-[11px] text-slate-400/80 px-4"
+            <span class="text-xs text-slate-400/80 px-4"
               >Hãy chọn món ngon từ thực đơn bên trái để ghi nhận hóa đơn.</span
             >
           </div>
@@ -665,7 +664,7 @@
                     </h6>
                     @if (item.variant) {
                       <span
-                        class="text-[10px] bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-extrabold px-1.5 py-0.5 rounded-md uppercase tracking-wider shrink-0"
+                        class="text-xs bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-extrabold px-1.5 py-0.5 rounded-md uppercase tracking-wider shrink-0"
                         >{{ item.variant.variant_name }}</span
                       >
                     }
@@ -702,7 +701,7 @@
                     [ngModel]="item.note"
                     (ngModelChange)="updateItemNote(item.product.id, item.variant?.id, $event)"
                     placeholder="Nhập ghi chú cho món..."
-                    class="w-full pl-3 pr-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 text-[10px] font-bold text-slate-600 dark:text-slate-300 focus:outline-none focus:border-[var(--dynamic-primary)] transition-all"
+                    class="w-full pl-3 pr-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 text-xs font-bold text-slate-600 dark:text-slate-300 focus:outline-none focus:border-[var(--dynamic-primary)] transition-all"
                   />
                 </div>
               </div>
@@ -736,7 +735,7 @@
                   }
                 </span>
                 <span
-                  class="text-slate-400 text-[10px] transition-transform duration-200"
+                  class="text-slate-400 text-xs transition-transform duration-200"
                   [class.rotate-180]="isTableDropdownOpen()"
                   >▼</span
                 >
@@ -762,7 +761,7 @@
 
                   @for (area of areas(); track area.id) {
                     <div
-                      class="px-4 py-1.5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider bg-slate-50/50 dark:bg-slate-950/40 border-y border-slate-100/50 dark:border-slate-800/40 my-1"
+                      class="px-4 py-1.5 text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider bg-slate-50/50 dark:bg-slate-950/40 border-y border-slate-100/50 dark:border-slate-800/40 my-1"
                     >
                       {{ area.name }}
                     </div>
@@ -851,7 +850,7 @@
                   }
                 </span>
                 <span
-                  class="text-slate-400 text-[10px] transition-transform duration-200"
+                  class="text-slate-400 text-xs transition-transform duration-200"
                   [class.rotate-180]="isPaymentDropdownOpen()"
                   >▼</span
                 >
@@ -914,11 +913,14 @@
                 <span class="flex items-center gap-1">
                   <span>Giảm giá voucher</span>
                   <span
-                    class="text-[10px] uppercase bg-emerald-100 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded font-extrabold"
+                    class="text-xs uppercase bg-emerald-100 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded font-extrabold"
                   >
                     {{ posSelectedVoucher().code }}
                     @if (posSelectedVoucher().isNft) {
-                      <span class="text-[9px] font-black text-emerald-700 dark:text-emerald-300 ml-1">#{{ posSelectedVoucher().tokenId }}</span>
+                      <span
+                        class="text-[9px] font-black text-emerald-700 dark:text-emerald-300 ml-1"
+                        >#{{ posSelectedVoucher().tokenId }}</span
+                      >
                     }
                   </span>
                 </span>
@@ -1095,7 +1097,7 @@
         <h4 class="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
           <span>Xác nhận thanh toán</span>
           <span
-            class="px-2 py-0.5 text-[10px] bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-lg font-black uppercase tracking-wide"
+            class="px-2 py-0.5 text-xs bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-lg font-black uppercase tracking-wide"
           >
             {{ tableNumber() ? 'Bàn ' + tableNumber() : 'Mang về' }}
           </span>
@@ -1145,7 +1147,9 @@
               >
                 {{ posSelectedVoucher().code }}
                 @if (posSelectedVoucher().isNft) {
-                  <span class="text-[9px] font-black text-emerald-700 dark:text-emerald-300 ml-1">#{{ posSelectedVoucher().tokenId }}</span>
+                  <span class="text-[9px] font-black text-emerald-700 dark:text-emerald-300 ml-1"
+                    >#{{ posSelectedVoucher().tokenId }}</span
+                  >
                 }
               </span>
             </span>
@@ -1166,7 +1170,7 @@
         <!-- Khách đã đưa -->
         <div class="space-y-1.5">
           <label
-            class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block"
+            class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block"
           >
             Khách đã đưa
           </label>
@@ -1190,7 +1194,7 @@
         <!-- Tiền thừa -->
         <div class="flex flex-col pt-1">
           <span
-            class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider"
+            class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider"
           >
             Tiền thừa trả khách
           </span>
@@ -1204,7 +1208,7 @@
         <!-- Phương thức thanh toán -->
         <div class="space-y-1.5">
           <label
-            class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block"
+            class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block"
           >
             Phương thức thanh toán
           </label>
@@ -1251,7 +1255,7 @@
         <!-- Gợi ý số tiền nhanh -->
         <div class="space-y-1.5">
           <label
-            class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block"
+            class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block"
           >
             Gợi ý nhanh số tiền khách đưa
           </label>
@@ -1307,7 +1311,6 @@
     <div
       class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 p-6 max-w-sm w-full shadow-[0_20px_50px_rgba(0,0,0,0.3)] text-slate-800 dark:text-slate-200 flex flex-col items-center text-center animate-in fade-in zoom-in duration-200"
     >
-
       <!-- Icon & Title -->
       <div
         class="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center text-2xl mb-3 shrink-0"
@@ -1335,7 +1338,7 @@
             <div
               class="w-8 h-8 rounded-full border-3 border-purple-500/20 border-t-purple-500 animate-spin"
             ></div>
-            <span class="text-[10px] font-bold">Đang tạo mã QR...</span>
+            <span class="text-xs font-bold">Đang tạo mã QR...</span>
           </div>
         }
       </div>
@@ -1344,7 +1347,7 @@
       @if (signLink()) {
         <div class="w-full mb-5 px-1">
           <label
-            class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block text-left mb-1.5"
+            class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block text-left mb-1.5"
           >
             Đường link ký số
           </label>
@@ -1439,7 +1442,8 @@
       </div>
       <h4 class="text-base font-black text-slate-800 dark:text-white">Hủy yêu cầu ký số?</h4>
       <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 px-3 leading-relaxed">
-        Bạn có chắc chắn muốn hủy yêu cầu ký số Voucher NFT cho hóa đơn này không? Dữ liệu đơn hàng tạm thời sẽ bị xóa bỏ hoàn toàn.
+        Bạn có chắc chắn muốn hủy yêu cầu ký số Voucher NFT cho hóa đơn này không? Dữ liệu đơn hàng
+        tạm thời sẽ bị xóa bỏ hoàn toàn.
       </p>
 
       <!-- Actions -->

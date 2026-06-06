@@ -126,7 +126,7 @@
             >
               Cảnh báo đối soát ca trực
             </h5>
-            <p class="text-[11px] text-slate-600 dark:text-slate-400 font-bold leading-normal">
+            <p class="text-xs text-slate-600 dark:text-slate-400 font-bold leading-normal">
               Phát hiện
               <span class="text-amber-600 dark:text-amber-400 font-extrabold text-xs shrink-0"
                 >{{ unsyncedCompletedOrders().length }} đơn hàng</span
@@ -173,7 +173,7 @@
       <div class="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-4.5 w-full">
         <!-- Lọc trạng thái đơn hàng -->
         <div class="flex flex-col gap-1.5">
-          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider"
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider"
             >Trạng thái đơn hàng</span
           >
           <div
@@ -296,7 +296,7 @@
 
         <!-- Lọc trạng thái blockchain -->
         <div class="flex flex-col gap-1.5">
-          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider"
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider"
             >Blockchain (Bằng chứng hóa đơn)</span
           >
           <div
@@ -369,7 +369,7 @@
 
         <!-- Tìm kiếm đơn hàng -->
         <div class="flex flex-col gap-1.5 ml-auto w-full sm:w-64">
-          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider"
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider"
             >Tìm kiếm đơn hàng</span
           >
           <div class="relative w-full">
@@ -459,27 +459,27 @@
                 <td class="p-4.5 whitespace-nowrap">
                   @if (order.is_verified === false) {
                     <span
-                      class="bg-rose-500/15 text-rose-600 text-[10px] font-extrabold px-2.5 py-1 rounded-xl border border-rose-500/20 shadow-sm animate-pulse"
+                      class="bg-rose-500/15 text-rose-600 text-xs font-extrabold px-2.5 py-1 rounded-xl border border-rose-500/20 shadow-sm animate-pulse"
                       >⚠️ DB bị can thiệp!</span
                     >
                   } @else if (order.status === 'completed') {
                     <span
-                      class="bg-emerald-500/10 text-emerald-500 text-[10px] font-extrabold px-2.5 py-1 rounded-xl"
+                      class="bg-emerald-500/10 text-emerald-500 text-xs font-extrabold px-2.5 py-1 rounded-xl"
                       >Thành công</span
                     >
                   } @else if (order.status === 'cancelled') {
                     <span
-                      class="bg-rose-500/10 text-rose-500 text-[10px] font-extrabold px-2.5 py-1 rounded-xl"
+                      class="bg-rose-500/10 text-rose-500 text-xs font-extrabold px-2.5 py-1 rounded-xl"
                       >Đã hủy</span
                     >
                   } @else if (order.status === 'preparing') {
                     <span
-                      class="bg-blue-500/10 text-blue-500 text-[10px] font-extrabold px-2.5 py-1 rounded-xl animate-pulse"
+                      class="bg-blue-500/10 text-blue-500 text-xs font-extrabold px-2.5 py-1 rounded-xl animate-pulse"
                       >Đang chuẩn bị</span
                     >
                   } @else {
                     <span
-                      class="bg-amber-500/10 text-amber-500 text-[10px] font-extrabold px-2.5 py-1 rounded-xl animate-pulse"
+                      class="bg-amber-500/10 text-amber-500 text-xs font-extrabold px-2.5 py-1 rounded-xl animate-pulse"
                       >Chờ xác nhận</span
                     >
                   }
@@ -505,7 +505,7 @@
                     @if (order.is_verified === false) {
                       <div class="flex flex-col gap-1 items-start">
                         <span
-                          class="px-2 py-0.5 rounded-lg bg-red-500/10 text-red-500 font-bold text-[10px] flex items-center gap-1 border border-red-500/15 shadow-sm animate-pulse"
+                          class="px-2 py-0.5 rounded-lg bg-red-500/10 text-red-500 font-bold text-xs flex items-center gap-1 border border-red-500/15 shadow-sm animate-pulse"
                         >
                           ⚠️ Dữ liệu bị thay đổi!
                         </span>
@@ -692,7 +692,7 @@
                 class="grid grid-cols-2 gap-3 text-xs bg-slate-50/50 dark:bg-slate-950/20 p-4 rounded-2xl border border-slate-100 dark:border-slate-900/60"
               >
                 <div>
-                  <span class="text-slate-400 font-bold block uppercase tracking-wider text-[10px]"
+                  <span class="text-slate-400 font-bold block uppercase tracking-wider text-xs"
                     >BÀN SỐ</span
                   >
                   <span class="font-extrabold text-slate-700 dark:text-slate-300 text-sm">{{
@@ -700,7 +700,7 @@
                   }}</span>
                 </div>
                 <div>
-                  <span class="text-slate-400 font-bold block uppercase tracking-wider text-[10px]"
+                  <span class="text-slate-400 font-bold block uppercase tracking-wider text-xs"
                     >THANH TOÁN</span
                   >
                   <span class="font-extrabold text-slate-700 dark:text-slate-300 text-sm">{{
@@ -708,11 +708,11 @@
                   }}</span>
                 </div>
                 <div class="col-span-2 pt-2 border-t border-slate-200/50 dark:border-slate-800">
-                  <span class="text-slate-400 font-bold block uppercase tracking-wider text-[10px]"
+                  <span class="text-slate-400 font-bold block uppercase tracking-wider text-xs"
                     >THỜI GIAN ĐẶT HÀNG</span
                   >
                   <span
-                    class="font-extrabold text-slate-700 dark:text-slate-300 text-[11px] font-mono"
+                    class="font-extrabold text-slate-700 dark:text-slate-300 text-xs font-mono"
                     >{{ selectedOrderDetails()?.created_at | date: 'dd/MM/yyyy HH:mm:ss' }}</span
                   >
                 </div>
@@ -721,7 +721,7 @@
                     class="col-span-2 pt-2 border-t border-slate-200/50 dark:border-slate-800 flex items-center gap-2"
                   >
                     <div
-                      class="w-6 h-6 rounded-lg bg-purple-600 text-white flex items-center justify-center font-extrabold text-[10px] shrink-0 shadow-sm"
+                      class="w-6 h-6 rounded-lg bg-purple-600 text-white flex items-center justify-center font-extrabold text-xs shrink-0 shadow-sm"
                     >
                       {{ selectedOrderDetails()?.customer.name.charAt(0).toUpperCase() }}
                     </div>
@@ -731,7 +731,7 @@
                         >KHÁCH HÀNG</span
                       >
                       <span
-                        class="font-extrabold text-slate-700 dark:text-slate-300 text-[11px] truncate mt-0.5"
+                        class="font-extrabold text-slate-700 dark:text-slate-300 text-xs truncate mt-0.5"
                       >
                         {{ selectedOrderDetails()?.customer.name }} ({{
                           selectedOrderDetails()?.customer.customer_code
@@ -763,7 +763,7 @@
                         >Voucher tặng kèm (NFT)</span
                       >
                       <span
-                        class="font-extrabold text-emerald-600 dark:text-emerald-400 text-[11px] truncate mt-0.5"
+                        class="font-extrabold text-emerald-600 dark:text-emerald-400 text-xs truncate mt-0.5"
                       >
                         Token ID: #{{ selectedOrderDetails()?.gift_voucher_nft_token_id }}
                       </span>
@@ -774,7 +774,7 @@
 
               <!-- Bằng chứng Blockchain -->
               <div class="space-y-1 text-xs">
-                <span class="text-slate-400 font-bold block uppercase tracking-wider text-[10px]"
+                <span class="text-slate-400 font-bold block uppercase tracking-wider text-xs"
                   >Bằng chứng Blockchain (Web3)</span
                 >
                 @if (selectedOrderDetails()?.is_verified === false) {
@@ -786,7 +786,7 @@
                     >
                       <span>⚠️ CẢNH BÁO: Dữ liệu DB bị can thiệp trái phép!</span>
                     </div>
-                    <p class="text-slate-500 dark:text-slate-400 text-[10px] leading-relaxed">
+                    <p class="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
                       Số tiền hoặc thông tin đơn hàng hiện tại trong Database đã bị sửa đổi lệch so
                       với chữ ký số gốc (HMAC-SHA256).
                     </p>
@@ -803,7 +803,7 @@
                             )
                           "
                           target="_blank"
-                          class="text-[10px] text-blue-500 font-mono hover:underline break-all block font-bold leading-tight"
+                          class="text-xs text-blue-500 font-mono hover:underline break-all block font-bold leading-tight"
                         >
                           tx: {{ selectedOrderDetails()?.tx_hash }} ↗
                         </a>
@@ -826,7 +826,7 @@
                         )
                       "
                       target="_blank"
-                      class="text-[10px] text-blue-500 font-mono hover:underline break-all block font-bold leading-tight"
+                      class="text-xs text-blue-500 font-mono hover:underline break-all block font-bold leading-tight"
                     >
                       tx: {{ selectedOrderDetails()?.tx_hash }} ↗
                     </a>
@@ -1045,7 +1045,7 @@
                     >
                       <span>⚠️ CẢNH BÁO: Dữ liệu đơn bị sửa đổi trái phép!</span>
                     </div>
-                    <p class="text-slate-500 dark:text-slate-400 text-[10px] leading-relaxed">
+                    <p class="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
                       Chữ ký số đối soát (HMAC-SHA256) không trùng khớp với dữ liệu hiện tại trong
                       DB. Giao dịch đồng bộ Blockchain bị khóa vĩnh viễn để bảo toàn tính minh bạch
                       và chống gian lận.
@@ -1213,7 +1213,7 @@
                     </div>
                     @if (item.note) {
                       <div
-                        class="flex items-center gap-1.5 text-[11px] text-purple-600 dark:text-purple-400 font-bold bg-purple-500/5 dark:bg-purple-500/10 px-2 py-0.5 rounded-lg w-fit mt-0.5 animate-in slide-in-from-left-1 duration-150"
+                        class="flex items-center gap-1.5 text-xs text-purple-600 dark:text-purple-400 font-bold bg-purple-500/5 dark:bg-purple-500/10 px-2 py-0.5 rounded-lg w-fit mt-0.5 animate-in slide-in-from-left-1 duration-150"
                       >
                         <span>Ghi chú: {{ item.note }}</span>
                       </div>
@@ -1260,7 +1260,7 @@
               <div
                 class="flex items-center justify-between pt-1.5 border-t border-dashed border-slate-200 dark:border-slate-800"
               >
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider"
+                <span class="text-xs font-black text-slate-400 uppercase tracking-wider"
                   >TỔNG TIỀN THANH TOÁN</span
                 >
                 <span class="text-xl font-black text-[var(--dynamic-primary)] font-mono">
@@ -1306,7 +1306,7 @@
           <h4 class="text-base font-black text-rose-600 dark:text-rose-400 uppercase tracking-wide">
             Cảnh báo Nghiệp vụ
           </h4>
-          <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider"
+          <span class="text-xs text-slate-400 font-bold uppercase tracking-wider"
             >Hóa đơn đã hoàn thành</span
           >
         </div>
@@ -1324,7 +1324,7 @@
           class="bg-slate-50 dark:bg-slate-950 p-4.5 rounded-2xl border border-slate-100 dark:border-slate-800/60 space-y-3 animate-in duration-200"
         >
           <span
-            class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block"
+            class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block"
             >Hướng dẫn xử lý chuẩn của quán:</span
           >
 
@@ -1375,7 +1375,7 @@
                 }}"</span
               >
               <span
-                class="text-[10px] text-purple-600 font-bold mt-1.5 flex items-center gap-1.5 animate-pulse"
+                class="text-xs text-purple-600 font-bold mt-1.5 flex items-center gap-1.5 animate-pulse"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

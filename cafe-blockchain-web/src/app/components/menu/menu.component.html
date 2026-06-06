@@ -2,9 +2,7 @@
   <!-- Header tiêu đề tab có bộ chuyển đổi View Mode -->
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div>
-      <h3 class="text-2xl font-extrabold text-slate-800 dark:text-white">
-        Quản lý Thực đơn
-      </h3>
+      <h3 class="text-2xl font-extrabold text-slate-800 dark:text-white">Quản lý Thực đơn</h3>
       <p class="text-sm text-slate-500 dark:text-slate-400">
         Thêm, sửa, hoặc gỡ bỏ các món đồ uống và món ăn trong danh mục thực đơn của quán.
       </p>
@@ -78,11 +76,24 @@
           class="flex items-center gap-1.5 px-4.5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 text-white font-bold rounded-xl text-sm shadow-md shadow-purple-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           @if (isMenuSyncing()) {
-            <div class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"></div>
+            <div
+              class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
+            ></div>
             <span>Đang đồng bộ...</span>
           } @else {
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.21" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4 shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.21"
+              />
             </svg>
             <span>Đồng bộ Blockchain</span>
           }
@@ -115,7 +126,10 @@
   </div>
 
   <!-- Bộ tìm kiếm và lọc danh mục thực đơn (Search & Category filter) -->
-  <div [class.hidden]="isProductsLoading()" class="flex flex-col md:flex-row gap-4 items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm transition-colors duration-300">
+  <div
+    [class.hidden]="isProductsLoading()"
+    class="flex flex-col md:flex-row gap-4 items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm transition-colors duration-300"
+  >
     <!-- Danh mục trượt mượt mà (Horizontal scrolling) -->
     <div class="flex gap-2 overflow-x-auto pb-1.5 pr-1 no-scrollbar w-full md:max-w-[70%]">
       @for (cat of categories(); track cat) {
@@ -149,10 +163,14 @@
   @if (isProductsLoading()) {
     <!-- SKELETON LOADING CHO THỰC ĐƠN -->
     @if (menuViewMode() === 'table') {
-      <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm overflow-hidden animate-pulse p-6 space-y-4">
+      <div
+        class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm overflow-hidden animate-pulse p-6 space-y-4"
+      >
         <div class="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-full"></div>
-        @for (i of [1,2,3,4,5]; track i) {
-          <div class="flex items-center gap-4 py-3 border-b border-slate-50 dark:border-slate-800/40">
+        @for (i of [1, 2, 3, 4, 5]; track i) {
+          <div
+            class="flex items-center gap-4 py-3 border-b border-slate-50 dark:border-slate-800/40"
+          >
             <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-lg w-20"></div>
             <div class="h-10 bg-slate-200 dark:bg-slate-800 rounded-full w-10 shrink-0"></div>
             <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-lg w-1/3"></div>
@@ -163,9 +181,13 @@
         }
       </div>
     } @else {
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5 animate-pulse">
-        @for (i of [1,2,3,4,5,6,7,8]; track i) {
-          <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 overflow-hidden shadow-sm p-4 space-y-4 h-96 flex flex-col justify-between">
+      <div
+        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5 animate-pulse"
+      >
+        @for (i of [1, 2, 3, 4, 5, 6, 7, 8]; track i) {
+          <div
+            class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 overflow-hidden shadow-sm p-4 space-y-4 h-96 flex flex-col justify-between"
+          >
             <div class="h-48 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full"></div>
             <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4"></div>
             <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/2"></div>
@@ -191,9 +213,7 @@
               <tr
                 class="border-b border-slate-200/60 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-950/20"
               >
-                <th
-                  class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider pl-6"
-                >
+                <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider pl-6">
                   Mã SKU
                 </th>
                 <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
@@ -217,9 +237,7 @@
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800/50">
               @for (p of paginatedProducts(); track p.id) {
-                <tr
-                  class="hover:bg-slate-50/40 dark:hover:bg-slate-800/10 transition-colors"
-                >
+                <tr class="hover:bg-slate-50/40 dark:hover:bg-slate-800/10 transition-colors">
                   <td
                     class="p-4.5 pl-6 font-mono font-bold text-xs text-[var(--dynamic-primary)] whitespace-nowrap"
                   >
@@ -240,7 +258,7 @@
                         >
                         @if (p.short_description) {
                           <span
-                            class="text-[11px] text-slate-400 dark:text-slate-500 font-medium truncate mt-0.5 max-w-[180px] sm:max-w-xs"
+                            class="text-xs text-slate-400 dark:text-slate-500 font-medium truncate mt-0.5 max-w-[180px] sm:max-w-xs"
                             >{{ p.short_description }}</span
                           >
                         }
@@ -251,7 +269,7 @@
                     <div class="flex flex-wrap gap-1 max-w-[150px]">
                       @for (cat of p.categories; track cat.id) {
                         <span
-                          class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[11px] font-extrabold px-2.5 py-1 rounded-xl whitespace-nowrap"
+                          class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-extrabold px-2.5 py-1 rounded-xl whitespace-nowrap"
                         >
                           {{ cat.name }}
                         </span>
@@ -266,12 +284,12 @@
                   <td class="p-4.5 whitespace-nowrap">
                     @if (p.status) {
                       <span
-                        class="bg-emerald-500/10 text-emerald-500 text-[10px] font-extrabold px-2.5 py-1 rounded-xl"
+                        class="bg-emerald-500/10 text-emerald-500 text-xs font-extrabold px-2.5 py-1 rounded-xl"
                         >Đang bán</span
                       >
                     } @else {
                       <span
-                        class="bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 text-[10px] font-extrabold px-2.5 py-1 rounded-xl"
+                        class="bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 text-xs font-extrabold px-2.5 py-1 rounded-xl"
                         >Ngừng bán</span
                       >
                     }
@@ -358,17 +376,16 @@
                   stroke="currentColor"
                   stroke-width="2.5"
                 >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M15 19l-7-7 7-7"
-                  />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
 
               @for (pageNum of getPagesArray(menuCurrentPage(), menuTotalPages()); track $index) {
                 @if (pageNum === '...') {
-                  <span class="w-8.5 h-8.5 flex items-center justify-center text-slate-400 dark:text-slate-600 font-semibold select-none text-xs">...</span>
+                  <span
+                    class="w-8.5 h-8.5 flex items-center justify-center text-slate-400 dark:text-slate-600 font-semibold select-none text-xs"
+                    >...</span
+                  >
                 } @else {
                   <button
                     (click)="menuCurrentPage.set($any(pageNum))"
@@ -428,9 +445,7 @@
               ></div>
 
               <!-- Category badge Nhiều-Nhiều -->
-              <div
-                class="absolute top-3 left-3 flex flex-wrap gap-1 max-w-[calc(100%-40px)]"
-              >
+              <div class="absolute top-3 left-3 flex flex-wrap gap-1 max-w-[calc(100%-40px)]">
                 @for (cat of p.categories; track cat.id) {
                   <span
                     class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm text-purple-600 dark:text-purple-400 text-[9px] font-extrabold px-2 py-0.5 rounded-xl shadow-sm border border-purple-200/10 dark:border-purple-800/10 whitespace-nowrap"
@@ -442,7 +457,7 @@
 
               <!-- Status badge -->
               <span
-                class="absolute top-3 right-3 backdrop-blur-sm text-[10px] font-extrabold px-2.5 py-1 rounded-xl shadow-sm border"
+                class="absolute top-3 right-3 backdrop-blur-sm text-xs font-extrabold px-2.5 py-1 rounded-xl shadow-sm border"
                 [class]="
                   p.status
                     ? 'bg-emerald-500/95 text-white border-emerald-400/20'
@@ -463,7 +478,7 @@
                 </h5>
                 @if (p.short_description) {
                   <p
-                    class="text-[11px] text-slate-400 dark:text-slate-500 font-medium line-clamp-2 mt-0.5 leading-relaxed"
+                    class="text-xs text-slate-400 dark:text-slate-500 font-medium line-clamp-2 mt-0.5 leading-relaxed"
                   >
                     {{ p.short_description }}
                   </p>
@@ -566,7 +581,10 @@
 
             @for (pageNum of getPagesArray(menuCurrentPage(), menuTotalPages()); track $index) {
               @if (pageNum === '...') {
-                <span class="w-8.5 h-8.5 flex items-center justify-center text-slate-400 dark:text-slate-600 font-semibold select-none text-xs">...</span>
+                <span
+                  class="w-8.5 h-8.5 flex items-center justify-center text-slate-400 dark:text-slate-600 font-semibold select-none text-xs"
+                  >...</span
+                >
               } @else {
                 <button
                   (click)="menuCurrentPage.set($any(pageNum))"
@@ -622,11 +640,7 @@
               stroke="currentColor"
               stroke-width="2"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M4 6h16M4 12h16M4 18h7"
-              />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7" />
             </svg>
             <span>Quản lý danh mục sản phẩm</span>
             <span
@@ -1038,10 +1052,7 @@
 @if (isDeleteCategoryConfirmOpen()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
     <!-- Backdrop overlay -->
-    <div
-      (click)="isDeleteCategoryConfirmOpen.set(false)"
-      class="fixed inset-0 bg-black/40"
-    ></div>
+    <div (click)="isDeleteCategoryConfirmOpen.set(false)" class="fixed inset-0 bg-black/40"></div>
 
     <!-- Modal Content -->
     <div
@@ -1107,10 +1118,7 @@
 @if (isDeleteProductConfirmOpen()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
     <!-- Backdrop overlay -->
-    <div
-      (click)="isDeleteProductConfirmOpen.set(false)"
-      class="fixed inset-0 bg-black/40"
-    ></div>
+    <div (click)="isDeleteProductConfirmOpen.set(false)" class="fixed inset-0 bg-black/40"></div>
 
     <!-- Modal Content -->
     <div

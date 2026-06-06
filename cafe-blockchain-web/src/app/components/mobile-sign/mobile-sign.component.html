@@ -167,7 +167,7 @@
 
       <!-- Badge Network -->
       <div
-        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-200 dark:bg-slate-800/40 border border-slate-300 dark:border-slate-700/30 text-[10px] font-black text-slate-600 dark:text-slate-300 transition-colors"
+        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-200 dark:bg-slate-800/40 border border-slate-300 dark:border-slate-700/30 text-xs font-black text-slate-600 dark:text-slate-300 transition-colors"
       >
         <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
         {{ web3Service.configuredNetworkName() | uppercase }}
@@ -206,9 +206,7 @@
               class="text-xs font-extrabold uppercase tracking-wide text-amber-700 dark:text-amber-400"
               >Sai mạng kết nối</span
             >
-            <span
-              class="text-[11px] font-bold text-slate-600 dark:text-slate-300 leading-snug mt-0.5"
-            >
+            <span class="text-xs font-bold text-slate-600 dark:text-slate-300 leading-snug mt-0.5">
               Ví của bạn đang ở mạng khác. Quán yêu cầu kết nối mạng
               <span class="underline decoration-wavy decoration-amber-500/50 font-black">{{
                 web3Service.configuredNetworkName()
@@ -239,8 +237,6 @@
         </button>
       </div>
     }
-
-
 
     <!-- STEP: ERROR -->
     @if (step() === 'error') {
@@ -297,7 +293,7 @@
           <p class="text-xs font-bold text-slate-600 dark:text-slate-300 leading-relaxed mb-1">
             Hóa đơn này đã hoàn tất thanh toán và Voucher NFT đã được áp dụng thành công.
           </p>
-          <p class="text-[10px] text-slate-400 dark:text-slate-500 font-bold">
+          <p class="text-xs text-slate-400 dark:text-slate-500 font-bold">
             Cảm ơn bạn đã trải nghiệm dịch vụ thanh toán Web3 của quán!
           </p>
         } @else if (orderStatus() === 'pending' || orderStatus() === 'preparing') {
@@ -307,7 +303,7 @@
           <p class="text-xs font-bold text-slate-600 dark:text-slate-300 leading-relaxed mb-1">
             Hóa đơn đã được ghi nhận trên hệ thống và Voucher NFT đã được áp dụng thành công.
           </p>
-          <p class="text-[10px] text-slate-400 dark:text-slate-500 font-bold">
+          <p class="text-xs text-slate-400 dark:text-slate-500 font-bold">
             Thu ngân đang chuẩn bị món hoặc xử lý thanh toán cho bạn tại quầy.
           </p>
         } @else if (orderStatus() === 'cancelled') {
@@ -317,7 +313,7 @@
           <p class="text-xs font-bold text-slate-600 dark:text-slate-300 leading-relaxed mb-1">
             Hóa đơn này đã bị hủy bỏ trên hệ thống của quán.
           </p>
-          <p class="text-[10px] text-slate-400 dark:text-slate-500 font-bold">
+          <p class="text-xs text-slate-400 dark:text-slate-500 font-bold">
             Vui lòng liên hệ thu ngân tại quầy nếu cần hỗ trợ thêm thông tin.
           </p>
         } @else {
@@ -327,7 +323,7 @@
           <p class="text-xs font-bold text-slate-600 dark:text-slate-300 leading-relaxed mb-1">
             Chữ ký xác nhận sử dụng NFT Voucher đã được nộp thành công lên máy POS.
           </p>
-          <p class="text-[10px] text-slate-400 dark:text-slate-500 font-bold">
+          <p class="text-xs text-slate-400 dark:text-slate-500 font-bold">
             Thu ngân sẽ hoàn tất việc lập hóa đơn cho bạn tại quầy ngay lập tức.
           </p>
         }
@@ -335,18 +331,14 @@
         <div
           class="mt-6 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-700/20 text-left space-y-1.5"
         >
-          <div
-            class="flex justify-between text-[10px] font-bold text-slate-500 dark:text-slate-400"
-          >
+          <div class="flex justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
             <span>Mã hóa đơn:</span>
             <span class="text-slate-700 dark:text-slate-200 font-black uppercase">{{
               orderCode()
             }}</span>
           </div>
           @if (tokenId() !== null) {
-            <div
-              class="flex justify-between text-[10px] font-bold text-slate-500 dark:text-slate-400"
-            >
+            <div class="flex justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
               <span>Voucher Token ID:</span>
               <span class="text-slate-700 dark:text-slate-200 font-black">#{{ tokenId() }}</span>
             </div>
@@ -361,7 +353,7 @@
               <a
                 [href]="web3Service.explorerUrl() + '/tx/' + txHash()"
                 target="_blank"
-                class="text-[10px] font-bold text-purple-600 dark:text-purple-400 truncate hover:underline flex items-center gap-1 leading-none font-mono"
+                class="text-xs font-bold text-purple-600 dark:text-purple-400 truncate hover:underline flex items-center gap-1 leading-none font-mono"
               >
                 {{ txHash() }}
                 <svg
@@ -405,7 +397,7 @@
               <span class="text-2xl animate-pulse">🎁</span>
               <div class="flex flex-col">
                 <span
-                  class="text-[10px] font-black text-purple-600 dark:text-purple-400 uppercase tracking-wide"
+                  class="text-xs font-black text-purple-600 dark:text-purple-400 uppercase tracking-wide"
                   >Trị giá Voucher</span
                 >
                 <span class="text-xl font-black text-slate-800 dark:text-white leading-tight"
@@ -467,7 +459,7 @@
 
         <!-- Connected Wallet Display -->
         <div
-          class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/40 text-[10px] font-bold text-slate-500 dark:text-slate-400 flex items-center justify-between mb-6"
+          class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/40 text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center justify-between mb-6"
         >
           <span>Ví đang kết nối:</span>
           <span class="font-mono text-purple-600 dark:text-purple-500 font-bold"
@@ -484,7 +476,7 @@
             <div class="flex items-center gap-3">
               <div class="flex flex-col">
                 <span
-                  class="text-[10px] font-black text-purple-600 dark:text-purple-400 uppercase tracking-wide"
+                  class="text-xs font-black text-purple-600 dark:text-purple-400 uppercase tracking-wide"
                   >Khấu trừ hóa đơn</span
                 >
                 <span class="text-xl font-black text-slate-800 dark:text-white leading-tight"
@@ -541,7 +533,7 @@
           <button
             (click)="step.set('connect')"
             [disabled]="isSigning()"
-            class="w-full py-3 border border-purple-300 dark:border-purple-500/30 hover:border-purple-400 dark:hover:border-purple-500/50 hover:bg-purple-50 dark:hover:bg-purple-500/5 text-[11px] font-bold text-purple-600 dark:text-purple-500 rounded-2xl transition-all active:scale-[0.98]"
+            class="w-full py-3 border border-purple-300 dark:border-purple-500/30 hover:border-purple-400 dark:hover:border-purple-500/50 hover:bg-purple-50 dark:hover:bg-purple-500/5 text-xs font-bold text-purple-600 dark:text-purple-500 rounded-2xl transition-all active:scale-[0.98]"
           >
             Đổi ví kết nối
           </button>
@@ -559,7 +551,7 @@
         >
           <div class="flex flex-col">
             <span
-              class="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold uppercase tracking-wider"
+              class="text-xs text-slate-400 dark:text-slate-500 font-extrabold uppercase tracking-wider"
               >Chi tiết hóa đơn</span
             >
             <span class="text-sm font-black text-slate-700 dark:text-slate-200 uppercase">{{
@@ -586,7 +578,7 @@
                   {{ item.product_name }}
                 </span>
                 @if (item.variant_name) {
-                  <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 mt-0.5">
+                  <span class="text-xs font-bold text-slate-400 dark:text-slate-500 mt-0.5">
                     Mẫu: {{ item.variant_name }}
                   </span>
                 }
@@ -602,7 +594,7 @@
                 <span class="font-black text-slate-700 dark:text-slate-300"
                   >{{ item.price | number }}đ</span
                 >
-                <span class="text-[10px] font-bold text-slate-400">x{{ item.quantity }}</span>
+                <span class="text-xs font-bold text-slate-400">x{{ item.quantity }}</span>
               </div>
             </div>
           }
@@ -639,7 +631,7 @@
 
   <!-- Footer -->
   <footer
-    class="text-center z-10 py-4 text-[10px] text-slate-400 dark:text-slate-500 font-bold border-t border-slate-200 dark:border-slate-800/40 mt-8 transition-colors duration-300"
+    class="text-center z-10 py-4 text-xs text-slate-400 dark:text-slate-500 font-bold border-t border-slate-200 dark:border-slate-800/40 mt-8 transition-colors duration-300"
   >
     Bản quyền thuộc Cafe Web3 POS • Được bảo vệ bằng mật mã học Blockchain
   </footer>

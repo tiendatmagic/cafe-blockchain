@@ -231,7 +231,7 @@
                 class="absolute right-0 mt-2 w-64 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/60 rounded-2xl shadow-xl shadow-slate-200/40 dark:shadow-black/40 z-[9995] py-2.5 animate-in fade-in slide-in-from-top-2 duration-150"
               >
                 <div
-                  class="px-4.5 py-1 border-b border-slate-100 dark:border-slate-800/60 mb-1.5 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-normal"
+                  class="px-4.5 py-1 border-b border-slate-100 dark:border-slate-800/60 mb-1.5 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-normal"
                 >
                   Tỷ giá thị trường (VND)
                 </div>
@@ -286,7 +286,7 @@
             >
               <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
               <div class="flex flex-col text-left leading-none">
-                <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400">{{
+                <span class="text-xs font-bold text-slate-500 dark:text-slate-400">{{
                   web3Service.shortAddress()
                 }}</span>
                 <span class="text-xs font-extrabold text-purple-600 dark:text-purple-400 mt-0.5">
@@ -432,7 +432,7 @@
               <!-- Mục đã kết nối ví & Địa chỉ ví ở bên phải -->
               <div class="flex-1 min-w-0 flex flex-col items-start">
                 <p
-                  class="text-[10px] text-emerald-600 dark:text-emerald-400 font-extrabold uppercase tracking-widest leading-none"
+                  class="text-xs text-emerald-600 dark:text-emerald-400 font-extrabold uppercase tracking-widest leading-none"
                 >
                   Đã kết nối thành công
                 </p>
@@ -488,7 +488,7 @@
 
             <!-- Bảng thông tin Blockchain bên dưới -->
             <div
-              class="mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800/60 flex flex-col gap-2 text-[11px] w-full font-semibold text-slate-500 dark:text-slate-400"
+              class="mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800/60 flex flex-col gap-2 text-xs w-full font-semibold text-slate-500 dark:text-slate-400"
             >
               <div class="flex items-center justify-between">
                 <span>Mạng kết nối:</span>
@@ -612,7 +612,7 @@
               </div>
               <div class="flex items-center gap-1">
                 <span
-                  class="text-[10px] bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider"
+                  class="text-xs bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider"
                   >Phổ biến</span
                 >
                 <svg
@@ -628,7 +628,7 @@
               </div>
             </button>
 
-            <p class="text-[11px] text-slate-400 dark:text-slate-500 text-center px-4 pt-2">
+            <p class="text-xs text-slate-400 dark:text-slate-500 text-center px-4 pt-2">
               Bằng việc kết nối ví, bạn đồng ý với các điều khoản bảo mật của hệ thống POS
               Blockchain.
             </p>
@@ -678,7 +678,7 @@
               <h3 class="text-base font-extrabold text-slate-800 dark:text-slate-100 leading-tight">
                 Gửi Native Token
               </h3>
-              <p class="text-[11px] text-slate-400 dark:text-slate-500 leading-tight">
+              <p class="text-xs text-slate-400 dark:text-slate-500 leading-tight">
                 Chuyển {{ web3Service.nativeTokenSymbol() }} trực tiếp trên mạng
                 {{ web3Service.networkName() }}
               </p>
@@ -746,7 +746,7 @@
               />
               <button
                 (click)="sendAmount.set(web3Service.walletBalance())"
-                class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-extrabold text-[var(--dynamic-primary)] dark:text-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/10 dark:bg-[var(--dynamic-primary)]/20 hover:bg-[var(--dynamic-primary)]/20 border border-[var(--dynamic-primary)]/20 dark:border-[var(--dynamic-primary)]/30 px-2 py-1 rounded-md transition-colors"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-extrabold text-[var(--dynamic-primary)] dark:text-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/10 dark:bg-[var(--dynamic-primary)]/20 hover:bg-[var(--dynamic-primary)]/20 border border-[var(--dynamic-primary)]/20 dark:border-[var(--dynamic-primary)]/30 px-2 py-1 rounded-md transition-colors"
               >
                 TẤT CẢ
               </button>
