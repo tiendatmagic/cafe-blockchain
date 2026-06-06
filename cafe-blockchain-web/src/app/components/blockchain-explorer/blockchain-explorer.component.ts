@@ -8,6 +8,7 @@ import { CAFE_WEB3_FINANCE_ABI } from '../../services/finance-contract-abi';
 import { CAFE_VOUCHER_NFT_ABI } from '../../services/voucher-contract-abi';
 import { CAFE_MENU_REGISTRY_ABI } from '../../services/menu-registry-contract-abi';
 import { ApiService } from '../../services/api.service';
+import { StateService } from '../../services/state.service';
 
 @Component({
   selector: 'app-blockchain-explorer',
@@ -17,6 +18,19 @@ import { ApiService } from '../../services/api.service';
 })
 export class BlockchainExplorerComponent implements OnInit {
   private readonly apiService = inject(ApiService);
+  public readonly stateService = inject(StateService);
+
+  public get themeMode() {
+    return this.stateService.themeMode;
+  }
+
+  public get isDarkMode() {
+    return this.stateService.isDarkMode;
+  }
+
+  public toggleTheme() {
+    this.stateService.toggleTheme();
+  }
 
   // Cấu hình kết nối hiện tại
   public readonly storeName = signal<string>('Cafe Web3 POS');
