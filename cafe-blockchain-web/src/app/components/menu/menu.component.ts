@@ -521,6 +521,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   /**
    * Đồng bộ toàn bộ thực đơn hiện tại của quán lên Blockchain (Menu Registry)
    */
+
   public async syncMenuToBlockchain() {
     if (!this.web3Service.walletConnected()) {
       this.stateService.showToast('Vui lòng kết nối ví Web3 trước!', 'error');
@@ -545,9 +546,48 @@ export class MenuComponent implements OnInit, OnDestroy {
     }
 
     this.isMenuSyncing.set(true);
+    this.stateService.showToast('Đang kiểm tra dữ liệu thực đơn so với Blockchain...', 'success');
+
+    try {
+      const chainData = await this.web3Service.getAllMenuProductsFromChain();
+      const chainProducts = chainData?.products || [];
+      
+      let hasChanged = false;
+      if (productList.length !== chainProducts.length) {
+        hasChanged = true;
+      } else {
+        for (let i = 0; i < productList.length; i++) {
+          const local = productList[i];
+          const chain = chainProducts[i];
+          
+          const localStatus = local.status === undefined ? true : !!local.status;
+          const chainStatus = chain.status === undefined ? true : !!chain.status;
+          
+          if (
+            local.sku !== chain.sku ||
+            local.name !== chain.name ||
+            Number(local.price) !== Number(chain.price) ||
+            localStatus !== chainStatus
+          ) {
+            hasChanged = true;
+            break;
+          }
+        }
+      }
+
+      if (!hasChanged) {
+        this.stateService.showToast('Thực đơn trên Blockchain đã trùng khớp hoàn toàn với thực đơn hiện tại. Không cần đồng bộ!', 'success');
+        this.isMenuSyncing.set(false);
+        return;
+      }
+    } catch (err) {
+      console.warn('Không thể so sánh thực đơn onchain, bỏ qua và tiến hành đồng bộ:', err);
+    }
+
     this.stateService.showToast('Vui lòng xác nhận giao dịch đồng bộ Thực đơn trên ví MetaMask của bạn...', 'success');
 
     const res = await this.web3Service.updateMenuOnChain(productList);
+
     if (res.success && res.txHash) {
       this.stateService.showToast(`Đồng bộ thực đơn lên Blockchain thành công! Hash: ${res.txHash}`, 'success');
       
