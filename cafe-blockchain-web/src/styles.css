@@ -47,6 +47,7 @@
   /* Ghi đè màu purple hệ thống để tự động chuyển đổi tất cả class bg-purple-*, text-purple-* */
   --color-purple-50: color-mix(in srgb, var(--color-primary) 5%, white);
   --color-purple-100: color-mix(in srgb, var(--color-primary) 12%, white);
+  --color-purple-400: var(--color-secondary);
   --color-purple-500: var(--color-primary);
   --color-purple-600: var(--color-primary);
   --color-purple-700: color-mix(in srgb, var(--color-primary) 90%, black);

@@ -19,11 +19,11 @@
         <span>+ Tạo Nhóm mới</span>
       </button>
 
-      <div class="relative inline-flex items-stretch customer-dropdown-container">
+      <div class="relative inline-flex items-stretch customer-dropdown-container rounded-xl bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] shadow-md shadow-[var(--dynamic-primary)]/20 hover:scale-[1.01] active:scale-[0.99] transition-all">
         <!-- Nút chính (bên trái) - Thêm khách hàng cá nhân mặc định -->
         <button
           (click)="openAddCustomerModal('individual')"
-          class="px-4.5 py-2.5 bg-[var(--dynamic-primary)] hover:opacity-90 text-white font-bold rounded-l-xl text-sm shadow-md shadow-[var(--dynamic-primary)]/10 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center gap-1.5 border-r border-white/20"
+          class="px-4.5 py-2.5 bg-transparent hover:bg-white/10 text-white font-bold rounded-l-xl text-sm flex items-center gap-1.5 border-r border-white/20 transition-all"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -45,7 +45,7 @@
         <!-- Nút mũi tên dropdown (bên phải) -->
         <button
           (click)="isCustomerDropdownOpen.set(!isCustomerDropdownOpen())"
-          class="px-3 bg-[var(--dynamic-primary)] hover:opacity-90 text-white rounded-r-xl shadow-md shadow-[var(--dynamic-primary)]/10 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center border-l border-black/10"
+          class="px-3 bg-transparent hover:bg-white/10 text-white rounded-r-xl flex items-center justify-center transition-all"
           title="Lựa chọn loại khách hàng"
         >
           <svg

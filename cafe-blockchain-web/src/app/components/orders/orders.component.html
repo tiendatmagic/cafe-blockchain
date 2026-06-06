@@ -10,7 +10,7 @@
     </div>
     <button
       (click)="refreshOrders()"
-      class="flex items-center gap-1.5 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+      class="flex items-center gap-1.5 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-semibold hover:bg-[var(--dynamic-primary)]/[0.04] hover:text-[var(--dynamic-primary)] hover:border-[var(--dynamic-primary)]/30 active:scale-95 transition-all"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -23,7 +23,7 @@
           stroke-linecap="round"
           stroke-linejoin="round"
           stroke-width="2"
-          d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H12v9"
+          d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.99m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
         />
       </svg>
       <span>Làm mới</span>
@@ -139,7 +139,7 @@
         <button
           (click)="syncAllUnsyncedOrders()"
           [disabled]="blockchainSyncLoading() || isOrderStatusUpdating()"
-          class="w-full sm:w-auto px-4.5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700 text-white text-xs font-black shadow-md shadow-amber-500/15 flex items-center justify-center gap-1.5 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+          class="w-full sm:w-auto px-4.5 py-2.5 rounded-xl bg-[var(--dynamic-secondary)]/10 hover:bg-[var(--dynamic-secondary)]/20 border border-[var(--dynamic-secondary)]/20 text-[var(--dynamic-secondary)] text-xs font-black hover:scale-[1.02] active:scale-[0.95] transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0 flex items-center justify-center gap-1.5"
         >
           @if (blockchainSyncLoading()) {
             <div
@@ -157,7 +157,7 @@
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H12v9"
+                d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.99m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
               />
             </svg>
           }
@@ -168,9 +168,10 @@
 
     <!-- THANH LỌC ĐƠN HÀNG -->
     <div
-      class="bg-white dark:bg-slate-900 p-4.5 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex flex-col lg:flex-row gap-5 justify-between items-start lg:items-center transition-colors duration-300"
+      class="bg-white dark:bg-slate-900 p-4.5 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex flex-col lg:flex-row gap-5 justify-between items-stretch lg:items-end transition-colors duration-300"
     >
-      <div class="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-4.5 w-full">
+      <!-- Nhóm bộ lọc (trạng thái + blockchain) -->
+      <div class="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-4.5">
         <!-- Lọc trạng thái đơn hàng -->
         <div class="flex flex-col gap-1.5">
           <span class="text-xs font-bold text-slate-400 uppercase tracking-wider"
@@ -366,22 +367,35 @@
             </button>
           </div>
         </div>
+      </div>
 
-        <!-- Tìm kiếm đơn hàng -->
-        <div class="flex flex-col gap-1.5 ml-auto w-full sm:w-64">
-          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider"
-            >Tìm kiếm đơn hàng</span
+      <!-- Tìm kiếm đơn hàng -->
+      <div class="flex flex-col gap-1.5 w-full lg:w-72 shrink-0">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider"
+          >Tìm kiếm đơn hàng</span
+        >
+        <div class="relative w-full">
+          <input
+            type="text"
+            [ngModel]="orderSearchQuery()"
+            (ngModelChange)="orderSearchQuery.set($event); ordersCurrentPage.set(1)"
+            placeholder="Mã đơn, số bàn, khách..."
+            class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-xs focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all font-semibold"
+          />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="absolute left-3 top-3 h-4 w-4 text-slate-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2.5"
           >
-          <div class="relative w-full">
-            <input
-              type="text"
-              [ngModel]="orderSearchQuery()"
-              (ngModelChange)="orderSearchQuery.set($event); ordersCurrentPage.set(1)"
-              placeholder="Mã đơn, số bàn, khách..."
-              class="w-full pl-3.5 pr-10 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-xs focus:outline-none focus:border-purple-500 text-slate-800 dark:text-white transition-all font-semibold"
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
             />
-            <span class="absolute right-3 top-2.5 text-slate-400">🔍</span>
-          </div>
+          </svg>
         </div>
       </div>
     </div>
@@ -1096,7 +1110,7 @@
                   <button
                     (click)="mintVoucherManual(selectedOrderDetails())"
                     [disabled]="isMintingVoucherManual()"
-                    class="w-full py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-xs rounded-xl shadow-md shadow-purple-500/10 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+                    class="w-full py-2.5 bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-md shadow-[var(--dynamic-primary)]/10 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
                   >
                     @if (isMintingVoucherManual()) {
                       <div

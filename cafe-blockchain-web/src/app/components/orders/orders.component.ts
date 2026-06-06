@@ -19,7 +19,7 @@ export class OrdersComponent implements OnInit {
   public readonly orderStatusFilter = signal<string>('all');
   public readonly orderBlockchainFilter = signal<string>('all');
   public readonly ordersCurrentPage = signal<number>(1);
-  public readonly ordersItemsPerPage = 5;
+  public readonly ordersItemsPerPage = 9;
 
   // Bộ tìm kiếm Đơn hàng
   public readonly orderSearchQuery = signal<string>('');

@@ -10,7 +10,7 @@
     </div>
     <button
       (click)="loadAllData()"
-      class="flex items-center gap-1.5 self-start sm:self-center px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+      class="flex items-center gap-1.5 self-start sm:self-center px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-semibold hover:bg-[var(--dynamic-primary)]/[0.04] hover:text-[var(--dynamic-primary)] hover:border-[var(--dynamic-primary)]/30 active:scale-95 transition-all"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -23,7 +23,7 @@
           stroke-linecap="round"
           stroke-linejoin="round"
           stroke-width="2"
-          d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H12v9"
+          d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.99m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
         />
       </svg>
       <span>Làm mới</span>
@@ -266,32 +266,26 @@
           <div class="relative w-full h-64 flex items-end justify-between pt-8 pb-2 px-2 sm:px-4">
             <!-- Trục Y lưới mờ -->
             <div
-              class="absolute inset-y-8 left-0 right-0 flex flex-col justify-between pointer-events-none"
+              class="absolute inset-y-8 left-0 right-12 flex flex-col justify-between pointer-events-none"
             >
-              <div
-                class="border-t border-slate-100 dark:border-slate-800/60 w-full text-right text-xs text-slate-400 font-semibold pr-2 pt-0.5"
-              >
-                200k
-              </div>
-              <div
-                class="border-t border-slate-100 dark:border-slate-800/60 w-full text-right text-xs text-slate-400 font-semibold pr-2 pt-0.5"
-              >
-                100k
-              </div>
-              <div
-                class="border-t border-slate-100 dark:border-slate-800/60 w-full text-right text-xs text-slate-400 font-semibold pr-2 pt-0.5"
-              >
-                50k
-              </div>
-              <div
-                class="border-t border-slate-200 dark:border-slate-800 w-full text-right text-xs text-slate-400 font-semibold pr-2 pt-0.5"
-              >
-                0đ
-              </div>
+              <div class="border-t border-slate-100 dark:border-slate-800/60 w-full pt-0.5"></div>
+              <div class="border-t border-slate-100 dark:border-slate-800/60 w-full pt-0.5"></div>
+              <div class="border-t border-slate-100 dark:border-slate-800/60 w-full pt-0.5"></div>
+              <div class="border-t border-slate-200 dark:border-slate-800 w-full pt-0.5"></div>
+            </div>
+
+            <!-- Nhãn trục Y bên phải không bị che -->
+            <div
+              class="absolute inset-y-8 right-0 w-12 flex flex-col justify-between pointer-events-none text-left text-xs text-slate-400 font-semibold pl-2 pt-0.5"
+            >
+              <div>200k</div>
+              <div>100k</div>
+              <div>50k</div>
+              <div>0đ</div>
             </div>
 
             <!-- Các Cột biểu đồ vẽ bằng SVG động mượt mà -->
-            <div class="w-full h-44 flex items-end justify-between gap-2.5 sm:gap-6 z-10">
+            <div class="w-[calc(100%-48px)] h-44 flex items-end justify-between gap-2.5 sm:gap-6 z-10">
               @for (item of dashboardData()?.weekly_chart; track item.date) {
                 <div class="flex-1 flex flex-col items-center gap-2 group cursor-pointer">
                   <div class="relative w-full flex items-end justify-center h-32">
@@ -307,7 +301,7 @@
                       [style.height.%]="
                         item.revenue > 0 ? mathMin(100, (item.revenue / 200000) * 100) : 5
                       "
-                      class="w-full rounded-t-xl bg-gradient-to-t from-purple-600/70 to-purple-500 shadow-lg shadow-purple-500/10 group-hover:from-purple-500 group-hover:to-indigo-500 transition-all duration-300"
+                      class="w-full rounded-t-xl bg-gradient-to-t from-purple-600/70 to-purple-500 shadow-lg shadow-purple-500/10 group-hover:from-purple-500 group-hover:to-[var(--dynamic-secondary)] transition-all duration-300"
                     ></div>
                   </div>
                   <span
