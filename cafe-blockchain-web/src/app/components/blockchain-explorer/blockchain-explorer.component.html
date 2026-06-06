@@ -944,28 +944,51 @@
                     </p>
                   </div>
                 </div>
-              } @else if (result.type === 'menu_history_detail') {
-                <!-- Menu History Detail view (Danh sách món ăn của lần đồng bộ đó) -->
+              } @else if (result.type === 'menu_history_detail' || result.type === 'menu_current_detail') {
+                <!-- Chi tiết thực đơn (Hiện tại hoặc Cột mốc lịch sử) -->
                 <div
                   class="border-b border-slate-100 dark:border-slate-800/60 pb-4 mb-4 transition-colors duration-300"
                 >
                   <h4
                     class="text-xs font-bold text-slate-500 uppercase tracking-wider font-mono mb-1"
                   >
-                    Thời gian sửa đổi thực đơn
+                    @if (result.type === 'menu_current_detail') {
+                      Thời điểm cập nhật mới nhất
+                    } @else {
+                      Thời gian sửa đổi thực đơn
+                    }
                   </h4>
                   <p class="text-base font-extrabold text-amber-600 dark:text-amber-400 font-mono">
                     {{ result.timestamp | date: 'HH:mm:ss dd/MM/yyyy' }}
                   </p>
-                  <p
-                    class="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1"
-                  >
-                    <span>Người thực hiện:</span>
-                    <span
-                      class="font-mono text-slate-600 dark:text-slate-300 break-all select-all"
-                      >{{ result.updatedBy }}</span
+                  @if (result.type === 'menu_history_detail') {
+                    <p
+                      class="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1"
                     >
-                  </p>
+                      <span>Người thực hiện:</span>
+                      <span
+                        class="font-mono text-slate-600 dark:text-slate-300 break-all select-all"
+                        >{{ result.updatedBy }}</span
+                      >
+                    </p>
+                    @if (result.txHash) {
+                      <p
+                        class="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1"
+                      >
+                        <span>Giao dịch:</span>
+                        <a
+                          [href]="getTxExplorerLink(result.txHash)"
+                          target="_blank"
+                          class="font-mono text-purple-600 dark:text-purple-400 hover:underline break-all"
+                          >{{ formatAddress(result.txHash) }}</a
+                        >
+                      </p>
+                    }
+                  } @else {
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      Dữ liệu thực đơn hiện hành đang hoạt động trên Blockchain.
+                    </p>
+                  }
                 </div>
 
                 <div>
@@ -978,20 +1001,29 @@
                         </svg>
                       </div>
                       <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">
-                        Danh sách món ăn đã đồng bộ
+                        @if (result.type === 'menu_current_detail') {
+                          Thực đơn hiện tại onchain
+                        } @else {
+                          Danh sách món ăn đã đồng bộ
+                        }
                       </p>
                     </div>
                     <span class="inline-flex items-center gap-1 bg-violet-500/10 border border-violet-500/20 text-violet-600 dark:text-violet-400 text-xs font-extrabold px-2.5 py-1 rounded-xl">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
                       </svg>
-                      {{ result.products.length }} món
+                      {{ detailProductTotal() }} món
                     </span>
                   </div>
 
                   <!-- Danh sách cuộn -->
                   <div class="grid grid-cols-1 gap-2.5 max-h-[380px] overflow-y-auto pr-1 no-scrollbar">
-                    @for (prod of result.products; track prod.sku) {
+                    @if (detailProducts().length === 0) {
+                      <p class="text-xs text-slate-550 dark:text-slate-400 italic py-4 text-center font-sans">
+                        Chưa chọn mốc hoặc đang tải món ăn từ blockchain...
+                      </p>
+                    }
+                    @for (prod of detailProducts(); track prod.sku) {
                       <div
                         class="group p-3 rounded-2xl bg-slate-50/80 dark:bg-slate-950/70 border border-slate-200/60 dark:border-slate-800/60 hover:border-violet-300/40 dark:hover:border-violet-700/40 hover:bg-violet-50/20 dark:hover:bg-violet-950/10 flex items-center justify-between gap-3 transition-all duration-200"
                       >
@@ -1013,7 +1045,7 @@
                             <p class="font-extrabold text-slate-800 dark:text-white text-xs truncate max-w-[160px] group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors font-sans">
                               {{ prod.name }}
                             </p>
-                            <p class="text-[10px] font-mono text-slate-400 dark:text-slate-500">
+                            <p class="text-[10px] font-mono text-slate-450 dark:text-slate-500">
                               SKU: {{ prod.sku || 'N/A' }}
                             </p>
                           </div>
@@ -1036,6 +1068,31 @@
                       </div>
                     }
                   </div>
+
+                  <!-- Bộ điều khiển phân trang cho danh sách món ăn chi tiết -->
+                  @if (totalDetailProductPages > 1) {
+                    <div
+                      class="flex items-center justify-between border-t border-slate-200 dark:border-slate-900 mt-4 pt-3 text-xs text-slate-500 dark:text-slate-400 font-mono transition-colors duration-300"
+                    >
+                      <span>Trang {{ detailProductPage() }} / {{ totalDetailProductPages }}</span>
+                      <div class="flex gap-2">
+                        <button
+                          (click)="changeDetailProductPage('prev')"
+                          [disabled]="detailProductPage() === 1"
+                          class="px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 hover:bg-slate-105 dark:hover:bg-slate-900 text-slate-605 dark:text-slate-300 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer shadow-sm focus:outline-none"
+                        >
+                          Trang trước
+                        </button>
+                        <button
+                          (click)="changeDetailProductPage('next')"
+                          [disabled]="detailProductPage() === totalDetailProductPages"
+                          class="px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 hover:bg-slate-105 dark:hover:bg-slate-900 text-slate-605 dark:text-slate-300 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer shadow-sm focus:outline-none"
+                        >
+                          Trang sau
+                        </button>
+                      </div>
+                    </div>
+                  }
                 </div>
               }
 
@@ -1515,6 +1572,18 @@
                   >
                     Lịch sử sửa đổi thực đơn
                   </h4>
+
+                  <div class="mb-3.5">
+                    <button
+                      (click)="viewCurrentMenuOnChain()"
+                      class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-95 text-white text-xs font-extrabold flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:shadow-amber-500/10 transition-all focus:outline-none"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      Xem Thực Đơn Hiện Tại Onchain
+                    </button>
+                  </div>
                   @if (menuHistory().length === 0) {
                     <p class="text-xs text-slate-500 italic py-4 text-center font-sans">
                       Chưa có lần đồng bộ thực đơn nào trên chuỗi.

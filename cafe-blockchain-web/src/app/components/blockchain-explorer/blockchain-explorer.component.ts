@@ -106,6 +106,13 @@ export class BlockchainExplorerComponent implements OnInit {
   public readonly isLatestDataLoading = signal<boolean>(false);
   public readonly localProducts = signal<any[]>([]);
 
+  // Các biến phục vụ phân trang danh sách món ăn ở cột trái (chi tiết)
+  public readonly detailProductPage = signal<number>(1);
+  public readonly detailProductLimit = 10;
+  public readonly detailProductTotal = signal<number>(0);
+  public readonly detailProducts = signal<any[]>([]);
+  private allHistoryProducts: any[] = [];
+
   ngOnInit() {
     this.initConfiguration();
     this.loadLocalProducts();
@@ -612,62 +619,97 @@ export class BlockchainExplorerComponent implements OnInit {
             console.warn('Không lấy được lastUpdated của menu registry:', e);
           }
 
-          // Lấy event MenuUpdated dùng chunked block range để tương thích mọi RPC node
-          // (tránh lỗi "block range too large" hoặc "query returned more than 10000 results")
-          const filter = menuRegistryContract.filters['MenuUpdated']();
-          const latestBlock = await provider.getBlockNumber();
-          
-          // Thử lấy 200,000 block gần nhất trước (~7 ngày BSC, ~1 tháng Ethereum)
-          // Nếu RPC báo block range quá lớn → tự động giảm xuống chunk 5,000 block
-          let allEvents: any[] = [];
-          const SAFE_RANGE = 200_000;
-          const CHUNK_SIZE = 5_000;
-          const fromBlockFull = Math.max(0, latestBlock - SAFE_RANGE);
-
+          // 1. Thử dùng getMilestonesPaginated (phân trang onchain từ contract mới)
           try {
-            // Thử 1: Query toàn bộ 200k block một lần (nhanh hơn nếu RPC cho phép)
-            allEvents = await menuRegistryContract.queryFilter(filter, fromBlockFull, latestBlock);
-          } catch (rangeErr: any) {
-            const errMsg = (rangeErr?.message || '').toLowerCase();
-            const isRangeError = errMsg.includes('block range') || errMsg.includes('too large')
-              || errMsg.includes('10000') || errMsg.includes('exceed') || errMsg.includes('limit');
+            const totalCount = await menuRegistryContract['getMilestonesCount']();
+            const total = Number(totalCount);
+            this.menuTotal.set(total);
 
-            if (isRangeError) {
-              // Thử 2: Chunk 5,000 block/lần từ block gần nhất về trước
-              console.warn('[MenuRegistry] RPC giới hạn block range, chuyển sang chunked query (5000 block/chunk)...');
-              allEvents = [];
-              for (let toBlock = latestBlock; toBlock >= fromBlockFull; toBlock -= CHUNK_SIZE) {
-                const fromBlock = Math.max(fromBlockFull, toBlock - CHUNK_SIZE + 1);
+            if (total > 0) {
+              const currentPage = this.menuPage();
+              const offset = (currentPage - 1) * this.limit;
+              
+              const res = await menuRegistryContract['getMilestonesPaginated'](offset, this.limit);
+              const milestonesList = res[0];
+              const filter = menuRegistryContract.filters['MenuUpdated']();
+
+              // Truy vấn song song txHash cho các milestone của trang hiện tại
+              const paginatedHistory = await Promise.all(milestonesList.map(async (m: any) => {
+                const blockNum = Number(m.blockNumber);
+                let txHash = '';
                 try {
-                  const chunk = await menuRegistryContract.queryFilter(filter, fromBlock, toBlock);
-                  allEvents.push(...chunk);
-                } catch (chunkErr) {
-                  console.warn(`Bỏ qua block range ${fromBlock}-${toBlock}:`, chunkErr);
+                  // Chỉ quét đúng 1 block cụ thể chứa milestone -> Cực kỳ nhanh và an toàn
+                  const events = await menuRegistryContract.queryFilter(filter, blockNum, blockNum);
+                  txHash = events.length > 0 ? events[0].transactionHash : '';
+                } catch (err) {
+                  console.warn(`Lỗi lấy txHash cho milestone tại block ${blockNum}:`, err);
                 }
-              }
-            } else {
-              throw rangeErr; // Lỗi khác thì ném lên
+                return {
+                  txHash: txHash,
+                  blockNumber: blockNum,
+                  updatedBy: m.updatedBy,
+                  timestamp: Number(m.timestamp) * 1000,
+                  productCount: Number(m.productCount)
+                };
+              }));
+
+              this.menuHistory.set(paginatedHistory);
             }
+          } catch (contractErr) {
+            // 2. Fallback: Nếu contract chưa nâng cấp (không có hàm milestones) -> dùng cách quét event log cũ
+            console.warn('[MenuRegistry] getMilestonesPaginated không khả dụng, fallback sang event query logs:', contractErr);
+            
+            const filter = menuRegistryContract.filters['MenuUpdated']();
+            const latestBlock = await provider.getBlockNumber();
+            
+            let allEvents: any[] = [];
+            const SAFE_RANGE = 200_000;
+            const CHUNK_SIZE = 5_000;
+            const fromBlockFull = Math.max(0, latestBlock - SAFE_RANGE);
+
+            try {
+              allEvents = await menuRegistryContract.queryFilter(filter, fromBlockFull, latestBlock);
+            } catch (rangeErr: any) {
+              const errMsg = (rangeErr?.message || '').toLowerCase();
+              const isRangeError = errMsg.includes('block range') || errMsg.includes('too large')
+                || errMsg.includes('10000') || errMsg.includes('exceed') || errMsg.includes('limit');
+
+              if (isRangeError) {
+                console.warn('[MenuRegistry] RPC giới hạn block range, chuyển sang chunked query...');
+                allEvents = [];
+                for (let toBlock = latestBlock; toBlock >= fromBlockFull; toBlock -= CHUNK_SIZE) {
+                  const fromBlock = Math.max(fromBlockFull, toBlock - CHUNK_SIZE + 1);
+                  try {
+                    const chunk = await menuRegistryContract.queryFilter(filter, fromBlock, toBlock);
+                    allEvents.push(...chunk);
+                  } catch (chunkErr) {
+                    console.warn(`Bỏ qua block range ${fromBlock}-${toBlock}:`, chunkErr);
+                  }
+                }
+              } else {
+                throw rangeErr;
+              }
+            }
+
+            const formattedHistory = allEvents.map((e: any) => {
+              const args = e.args;
+              return {
+                txHash: e.transactionHash,
+                blockNumber: e.blockNumber,
+                updatedBy: args ? args[0] : '',
+                timestamp: args ? Number(args[1]) * 1000 : 0,
+                productCount: args ? Number(args[2]) : 0
+              };
+            }).sort((a, b) => b.timestamp - a.timestamp);
+
+            this.menuTotal.set(formattedHistory.length);
+
+            const currentPage = this.menuPage();
+            const start = (currentPage - 1) * this.limit;
+            const paginatedHistory = formattedHistory.slice(start, start + this.limit);
+
+            this.menuHistory.set(paginatedHistory);
           }
-
-          const formattedHistory = allEvents.map((e: any) => {
-            const args = e.args;
-            return {
-              txHash: e.transactionHash,
-              blockNumber: e.blockNumber,
-              updatedBy: args ? args[0] : '',
-              timestamp: args ? Number(args[1]) * 1000 : 0,
-              productCount: args ? Number(args[2]) : 0
-            };
-          }).sort((a, b) => b.timestamp - a.timestamp);
-
-          this.menuTotal.set(formattedHistory.length);
-
-          const currentPage = this.menuPage();
-          const start = (currentPage - 1) * this.limit;
-          const paginatedHistory = formattedHistory.slice(start, start + this.limit);
-
-          this.menuHistory.set(paginatedHistory);
         } catch (err) {
           console.warn('Không thể load lịch sử thực đơn từ Smart Contract Menu Registry:', err);
         }
@@ -775,12 +817,111 @@ export class BlockchainExplorerComponent implements OnInit {
   }
 
   /**
+   * Tính tổng số trang cho chi tiết món ăn ở cột trái
+   */
+  public get totalDetailProductPages(): number {
+    return Math.ceil(this.detailProductTotal() / this.detailProductLimit) || 1;
+  }
+
+  /**
+   * Thay đổi trang cho danh sách chi tiết món ăn ở cột trái
+   */
+  public changeDetailProductPage(direction: 'next' | 'prev') {
+    const cur = this.detailProductPage();
+    const totalPages = this.totalDetailProductPages;
+    if (direction === 'next' && cur < totalPages) {
+      this.detailProductPage.set(cur + 1);
+      this.updateDetailProducts();
+    } else if (direction === 'prev' && cur > 1) {
+      this.detailProductPage.set(cur - 1);
+      this.updateDetailProducts();
+    }
+  }
+
+  /**
+   * Cập nhật danh sách món ăn hiển thị ở cột trái dựa trên trang hiện tại
+   */
+  public async updateDetailProducts() {
+    const result = this.searchResult();
+    if (!result) return;
+
+    const currentPage = this.detailProductPage();
+    const start = (currentPage - 1) * this.detailProductLimit;
+
+    if (result.type === 'menu_history_detail') {
+      // Phân trang client-side dựa trên dữ liệu đã giải mã sẵn ở allHistoryProducts
+      const paginated = this.allHistoryProducts.slice(start, start + this.detailProductLimit);
+      this.detailProducts.set(paginated);
+    } else if (result.type === 'menu_current_detail') {
+      // Phân trang onchain gọi trực tiếp getProductsPaginated từ blockchain
+      this.isSearching.set(true);
+      try {
+        const provider = new JsonRpcProvider(this.rpcUrl());
+        const menuRegistryContract = new Contract(this.menuRegistryContractAddress(), CAFE_MENU_REGISTRY_ABI, provider);
+
+        const res = await menuRegistryContract['getProductsPaginated'](start, this.detailProductLimit);
+        if (res && res[0]) {
+          const products = res[0].map((p: any) => ({
+            sku: p.sku,
+            name: p.name,
+            price: Number(p.price),
+            image: p.image,
+            status: p.status
+          }));
+          this.detailProducts.set(products);
+          this.detailProductTotal.set(Number(res[1]));
+        }
+      } catch (err) {
+        console.warn('Lỗi lấy thực đơn hiện tại onchain:', err);
+        this.searchError.set('Không thể tải thực đơn hiện tại từ Blockchain.');
+      } finally {
+        this.isSearching.set(false);
+      }
+    }
+  }
+
+  /**
+   * Xem thực đơn hiện tại trực tiếp từ Blockchain (cột trái) có phân trang onchain
+   */
+  public async viewCurrentMenuOnChain() {
+    this.isSearching.set(true);
+    this.searchError.set('');
+    this.searchResult.set(null);
+    this.detailProductPage.set(1);
+    this.detailProductTotal.set(0);
+    this.detailProducts.set([]);
+    this.allHistoryProducts = [];
+
+    try {
+      const provider = new JsonRpcProvider(this.rpcUrl());
+      const menuRegistryContract = new Contract(this.menuRegistryContractAddress(), CAFE_MENU_REGISTRY_ABI, provider);
+      const lastUpdatedRaw = await menuRegistryContract['lastUpdated']();
+
+      this.searchResult.set({
+        type: 'menu_current_detail',
+        timestamp: Number(lastUpdatedRaw) * 1000
+      });
+
+      await this.updateDetailProducts();
+    } catch (err: any) {
+      console.error('Lỗi khi xem thực đơn hiện tại:', err);
+      this.searchError.set(err.message || 'Lỗi khi tải thực đơn hiện tại từ blockchain.');
+    } finally {
+      this.isSearching.set(false);
+    }
+  }
+
+  /**
    * Chọn một mốc lịch sử sửa đổi thực đơn, giải mã transaction input data và hiển thị chi tiết ở cột trái
    */
   public async selectMenuHistory(item: any) {
     this.isSearching.set(true);
     this.searchError.set('');
     this.searchResult.set(null);
+    this.detailProductPage.set(1);
+    this.detailProductTotal.set(0);
+    this.detailProducts.set([]);
+    this.allHistoryProducts = [];
 
     try {
       const provider = new JsonRpcProvider(this.rpcUrl());
@@ -805,13 +946,17 @@ export class BlockchainExplorerComponent implements OnInit {
         status: p.status
       }));
 
+      this.allHistoryProducts = products;
+      this.detailProductTotal.set(products.length);
+
       this.searchResult.set({
         type: 'menu_history_detail',
         timestamp: item.timestamp,
         updatedBy: item.updatedBy,
-        txHash: item.txHash,
-        products: products
+        txHash: item.txHash
       });
+
+      await this.updateDetailProducts();
     } catch (err: any) {
       console.error('Lỗi giải mã lịch sử thực đơn:', err);
       this.searchError.set(err.message || 'Lỗi khi giải mã thực đơn từ blockchain.');

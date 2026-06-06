@@ -15,8 +15,18 @@ contract CafeMenuRegistry {
         bool status;
     }
 
+    struct Milestone {
+        address updatedBy;
+        uint256 timestamp;
+        uint256 productCount;
+        uint256 blockNumber;
+    }
+
     // Array storing the products list
     Product[] private _products;
+
+    // Array storing the sync milestones list
+    Milestone[] private _milestones;
 
     // Last updated timestamp
     uint256 public lastUpdated;
@@ -53,6 +63,14 @@ contract CafeMenuRegistry {
             _products.push(_newProducts[i]);
         }
         lastUpdated = block.timestamp;
+
+        _milestones.push(Milestone({
+            updatedBy: msg.sender,
+            timestamp: block.timestamp,
+            productCount: _newProducts.length,
+            blockNumber: block.number
+        }));
+
         emit MenuUpdated(msg.sender, block.timestamp, _newProducts.length);
     }
 
@@ -95,6 +113,41 @@ contract CafeMenuRegistry {
 
         for (uint256 i = 0; i < count; i++) {
             products[i] = _products[_offset + i];
+        }
+    }
+
+    /**
+     * @dev Gets the total count of milestones (sync history)
+     */
+    function getMilestonesCount() public view returns (uint256) {
+        return _milestones.length;
+    }
+
+    /**
+     * @dev Gets milestones with pagination support (newest first)
+     * @param _offset Starting index from the end (0 is the latest milestone)
+     * @param _limit  Maximum number of milestones to return
+     * @return milestonesList Array of milestones for this page
+     * @return total          Total number of milestones
+     */
+    function getMilestonesPaginated(
+        uint256 _offset,
+        uint256 _limit
+    ) public view returns (Milestone[] memory milestonesList, uint256 total) {
+        total = _milestones.length;
+
+        if (_offset >= total || _limit == 0) {
+            return (new Milestone[](0), total);
+        }
+
+        uint256 end = _offset + _limit;
+        if (end > total) end = total;
+
+        uint256 count = end - _offset;
+        milestonesList = new Milestone[](count);
+
+        for (uint256 i = 0; i < count; i++) {
+            milestonesList[i] = _milestones[total - 1 - (_offset + i)];
         }
     }
 
