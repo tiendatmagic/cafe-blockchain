@@ -1636,6 +1636,8 @@ export class Web3Service {
 
   /**
    * Tải toàn bộ danh sách thực đơn trực tiếp từ Blockchain (Menu Registry Contract)
+   * Ưu tiên dùng getProductsPaginated() (contract mới) để an toàn với RPC,
+   * fallback sang getAllProducts() nếu contract cũ chưa có hàm paginated.
    */
   public async getAllMenuProductsFromChain(): Promise<{ products: any[], lastUpdated: number }> {
     if (!this.menuRegistryContractAddress()) {
@@ -1647,18 +1649,45 @@ export class Web3Service {
       const contract = new Contract(this.menuRegistryContractAddress(), CAFE_MENU_REGISTRY_ABI, activeProvider);
 
       const lastUpdatedRaw = await contract['lastUpdated']();
-      const rawProducts = await contract['getAllProducts']();
 
-      const products = rawProducts.map((p: any) => ({
-        sku: p.sku,
-        name: p.name,
-        price: Number(p.price),
-        image: p.image,
-        status: p.status
-      }));
+      // Thử dùng getProductsPaginated (contract mới) trước - an toàn hơn với RPC và số lượng lớn
+      let allProducts: any[] = [];
+      try {
+        const total = Number(await contract['getProductsCount']());
+        if (total === 0) {
+          return { products: [], lastUpdated: Number(lastUpdatedRaw) * 1000 };
+        }
+
+        // Chunk 100 sản phẩm mỗi lần query để tránh timeout RPC
+        const CHUNK_SIZE = 100;
+        for (let offset = 0; offset < total; offset += CHUNK_SIZE) {
+          const result = await contract['getProductsPaginated'](offset, CHUNK_SIZE);
+          const chunk = result[0]; // tuple[0] = products
+          for (const p of chunk) {
+            allProducts.push({
+              sku: p.sku,
+              name: p.name,
+              price: Number(p.price),
+              image: p.image,
+              status: p.status
+            });
+          }
+        }
+      } catch (paginatedErr) {
+        // Fallback: contract cũ không có getProductsPaginated → dùng getAllProducts()
+        console.warn('[MenuRegistry] getProductsPaginated không khả dụng, fallback sang getAllProducts():', paginatedErr);
+        const rawProducts = await contract['getAllProducts']();
+        allProducts = rawProducts.map((p: any) => ({
+          sku: p.sku,
+          name: p.name,
+          price: Number(p.price),
+          image: p.image,
+          status: p.status
+        }));
+      }
 
       return {
-        products,
+        products: allProducts,
         lastUpdated: Number(lastUpdatedRaw) * 1000
       };
     } catch (e) {

@@ -276,5 +276,41 @@ export const CAFE_MENU_REGISTRY_ABI = [
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_offset",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_limit",
+        "type": "uint256"
+      }
+    ],
+    "name": "getProductsPaginated",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "string", "name": "sku", "type": "string" },
+          { "internalType": "string", "name": "name", "type": "string" },
+          { "internalType": "uint256", "name": "price", "type": "uint256" },
+          { "internalType": "string", "name": "image", "type": "string" },
+          { "internalType": "bool", "name": "status", "type": "bool" }
+        ],
+        "internalType": "struct CafeMenuRegistry.Product[]",
+        "name": "products",
+        "type": "tuple[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "total",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   }
 ];

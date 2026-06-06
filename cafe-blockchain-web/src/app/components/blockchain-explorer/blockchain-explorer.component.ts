@@ -612,10 +612,45 @@ export class BlockchainExplorerComponent implements OnInit {
             console.warn('Không lấy được lastUpdated của menu registry:', e);
           }
 
+          // Lấy event MenuUpdated dùng chunked block range để tương thích mọi RPC node
+          // (tránh lỗi "block range too large" hoặc "query returned more than 10000 results")
           const filter = menuRegistryContract.filters['MenuUpdated']();
-          const events = await menuRegistryContract.queryFilter(filter);
+          const latestBlock = await provider.getBlockNumber();
           
-          const formattedHistory = events.map((e: any) => {
+          // Thử lấy 200,000 block gần nhất trước (~7 ngày BSC, ~1 tháng Ethereum)
+          // Nếu RPC báo block range quá lớn → tự động giảm xuống chunk 5,000 block
+          let allEvents: any[] = [];
+          const SAFE_RANGE = 200_000;
+          const CHUNK_SIZE = 5_000;
+          const fromBlockFull = Math.max(0, latestBlock - SAFE_RANGE);
+
+          try {
+            // Thử 1: Query toàn bộ 200k block một lần (nhanh hơn nếu RPC cho phép)
+            allEvents = await menuRegistryContract.queryFilter(filter, fromBlockFull, latestBlock);
+          } catch (rangeErr: any) {
+            const errMsg = (rangeErr?.message || '').toLowerCase();
+            const isRangeError = errMsg.includes('block range') || errMsg.includes('too large')
+              || errMsg.includes('10000') || errMsg.includes('exceed') || errMsg.includes('limit');
+
+            if (isRangeError) {
+              // Thử 2: Chunk 5,000 block/lần từ block gần nhất về trước
+              console.warn('[MenuRegistry] RPC giới hạn block range, chuyển sang chunked query (5000 block/chunk)...');
+              allEvents = [];
+              for (let toBlock = latestBlock; toBlock >= fromBlockFull; toBlock -= CHUNK_SIZE) {
+                const fromBlock = Math.max(fromBlockFull, toBlock - CHUNK_SIZE + 1);
+                try {
+                  const chunk = await menuRegistryContract.queryFilter(filter, fromBlock, toBlock);
+                  allEvents.push(...chunk);
+                } catch (chunkErr) {
+                  console.warn(`Bỏ qua block range ${fromBlock}-${toBlock}:`, chunkErr);
+                }
+              }
+            } else {
+              throw rangeErr; // Lỗi khác thì ném lên
+            }
+          }
+
+          const formattedHistory = allEvents.map((e: any) => {
             const args = e.args;
             return {
               txHash: e.transactionHash,

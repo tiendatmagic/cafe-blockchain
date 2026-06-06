@@ -71,6 +71,34 @@ contract CafeMenuRegistry {
     }
 
     /**
+     * @dev Gets products with pagination support
+     * @param _offset Starting index (0-indexed)
+     * @param _limit  Maximum number of products to return
+     * @return products Array of products for this page
+     * @return total   Total number of products (for client-side pagination)
+     */
+    function getProductsPaginated(
+        uint256 _offset,
+        uint256 _limit
+    ) public view returns (Product[] memory products, uint256 total) {
+        total = _products.length;
+
+        if (_offset >= total || _limit == 0) {
+            return (new Product[](0), total);
+        }
+
+        uint256 end = _offset + _limit;
+        if (end > total) end = total;
+
+        uint256 count = end - _offset;
+        products = new Product[](count);
+
+        for (uint256 i = 0; i < count; i++) {
+            products[i] = _products[_offset + i];
+        }
+    }
+
+    /**
      * @dev Gets a specific product by index
      */
     function getProduct(uint256 _index) public view returns (
