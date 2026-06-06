@@ -67,6 +67,41 @@ class DashboardController extends Controller
             ->limit(5)
             ->get(['id', 'table_number', 'total_amount', 'tx_hash', 'blockchain_status', 'updated_at']);
 
+        // 7. Thống kê phương thức thanh toán để vẽ biểu đồ hình tròn (các đơn completed)
+        $paymentMethodsStats = Order::where('store_owner_address', $storeOwner)
+            ->where('status', 'completed')
+            ->select('payment_method', DB::raw('count(*) as count'), DB::raw('sum(total_amount) as amount'))
+            ->groupBy('payment_method')
+            ->get()
+            ->keyBy('payment_method');
+
+        $paymentMethodsChart = [
+            [
+                'method' => 'cash',
+                'name' => 'Tiền mặt',
+                'count' => isset($paymentMethodsStats['cash']) ? (int)$paymentMethodsStats['cash']->count : 0,
+                'amount' => isset($paymentMethodsStats['cash']) ? (float)$paymentMethodsStats['cash']->amount : 0.0
+            ],
+            [
+                'method' => 'bank_transfer',
+                'name' => 'Chuyển khoản',
+                'count' => isset($paymentMethodsStats['bank_transfer']) ? (int)$paymentMethodsStats['bank_transfer']->count : 0,
+                'amount' => isset($paymentMethodsStats['bank_transfer']) ? (float)$paymentMethodsStats['bank_transfer']->amount : 0.0
+            ],
+            [
+                'method' => 'crypto',
+                'name' => 'Crypto Web3',
+                'count' => isset($paymentMethodsStats['crypto']) ? (int)$paymentMethodsStats['crypto']->count : 0,
+                'amount' => isset($paymentMethodsStats['crypto']) ? (float)$paymentMethodsStats['crypto']->amount : 0.0
+            ],
+            [
+                'method' => 'e_wallet',
+                'name' => 'Ví điện tử',
+                'count' => isset($paymentMethodsStats['e_wallet']) ? (int)$paymentMethodsStats['e_wallet']->count : 0,
+                'amount' => isset($paymentMethodsStats['e_wallet']) ? (float)$paymentMethodsStats['e_wallet']->amount : 0.0
+            ]
+        ];
+
         return response()->json([
             'today_revenue' => (float)$todayRevenue,
             'today_orders_count' => $todayOrdersCount,
@@ -75,7 +110,8 @@ class DashboardController extends Controller
             'web3_revenue' => (float)$web3Revenue,
             'pending_web3_count' => $pendingWeb3Count,
             'weekly_chart' => $weeklyChart,
-            'latest_blockchain_transactions' => $latestBlockchainTransactions
+            'latest_blockchain_transactions' => $latestBlockchainTransactions,
+            'payment_methods_chart' => $paymentMethodsChart
         ]);
     }
 

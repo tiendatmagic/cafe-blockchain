@@ -392,7 +392,8 @@ export class OrdersComponent implements OnInit {
     const map: any = {
       'cash': 'Tiền mặt',
       'bank_transfer': 'Chuyển khoản',
-      'crypto': 'Crypto Web3'
+      'crypto': 'Crypto',
+      'e_wallet': 'Ví điện tử'
     };
     return map[method] || method;
   }

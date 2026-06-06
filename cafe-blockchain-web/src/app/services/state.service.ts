@@ -58,6 +58,7 @@ export class StateService {
     primary_color: '#7c3aed',
     secondary_color: '#c084fc',
     default_print_size: '80mm',
+    show_crypto_payment: '0',
     has_synced_orders: false,
     has_synced_transactions: false
   });

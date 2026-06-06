@@ -38,6 +38,7 @@ export class SettingsComponent implements OnInit {
     voucher_gift_min_amount: 100000,
     voucher_discount_amount: 5000,
     voucher_use_min_amount: 100000,
+    show_crypto_payment: '0',
     has_relayer_private_key: false
   });
 
@@ -130,6 +131,7 @@ export class SettingsComponent implements OnInit {
           voucher_gift_min_amount: res.voucher_gift_min_amount !== undefined ? Number(res.voucher_gift_min_amount) : 100000,
           voucher_discount_amount: res.voucher_discount_amount !== undefined ? Number(res.voucher_discount_amount) : 5000,
           voucher_use_min_amount: res.voucher_use_min_amount !== undefined ? Number(res.voucher_use_min_amount) : 100000,
+          show_crypto_payment: res.show_crypto_payment || '0',
           has_relayer_private_key: res.has_relayer_private_key || false,
           ...res
         };

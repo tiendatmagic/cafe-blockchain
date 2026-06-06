@@ -39,7 +39,7 @@ export class PosComponent implements OnInit, OnDestroy {
   public readonly isPosConfirmModalOpen = signal<boolean>(false);
   public readonly customerCashGiven = signal<number>(0);
   public readonly isDebtPayment = signal<boolean>(false);
-  public readonly posPaymentMethod = signal<'cash' | 'bank_transfer' | 'crypto'>('cash');
+  public readonly posPaymentMethod = signal<'cash' | 'bank_transfer' | 'crypto' | 'e_wallet'>('cash');
 
   // Trạng thái chọn kích thước/biến thể
   public readonly activeSelectingProduct = signal<any>(null);
@@ -192,6 +192,7 @@ export class PosComponent implements OnInit, OnDestroy {
   public get editingOrderId() { return this.stateService.editingOrderId; }
   public get isOrderSubmitting() { return this.stateService.isOrderSubmitting; }
 
+  public get settings() { return this.stateService.settings; }
   public get products() { return this.stateService.products; }
   public get categoriesList() { return this.stateService.categoriesList; }
   public get areas() { return this.stateService.areas; }
@@ -341,7 +342,7 @@ export class PosComponent implements OnInit, OnDestroy {
     this.isDebtPayment.set(false);
     
     const currentMethod = this.paymentMethod();
-    if (currentMethod === 'cash' || currentMethod === 'bank_transfer' || currentMethod === 'crypto') {
+    if (currentMethod === 'cash' || currentMethod === 'bank_transfer' || currentMethod === 'crypto' || currentMethod === 'e_wallet') {
       this.posPaymentMethod.set(currentMethod);
     } else {
       this.posPaymentMethod.set('cash');

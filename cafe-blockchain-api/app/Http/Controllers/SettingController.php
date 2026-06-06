@@ -32,6 +32,7 @@ class SettingController extends Controller
             'voucher_gift_min_amount' => '100000',
             'voucher_discount_amount' => '5000',
             'voucher_use_min_amount' => '100000',
+            'show_crypto_payment' => '0',
         ];
 
         if (empty($settings)) {
@@ -100,6 +101,7 @@ class SettingController extends Controller
             'voucher_gift_min_amount' => 'nullable|integer|min:0',
             'voucher_discount_amount' => 'nullable|integer|min:0',
             'voucher_use_min_amount' => 'nullable|integer|min:0',
+            'show_crypto_payment' => 'nullable|string|in:0,1',
         ]);
 
         // Lấy các cấu hình hiện tại trong Database để đối soát bảo mật
@@ -269,6 +271,7 @@ class SettingController extends Controller
             'rpc_url' => $settings['rpc_url'] ?? '',
             'chain_id' => $settings['chain_id'] ?? '',
             'explorer_url' => $settings['explorer_url'] ?? '',
+            'show_crypto_payment' => $settings['show_crypto_payment'] ?? '0',
             'temp_order' => $tempOrderData, // Trả về thông tin đơn hàng tạm thời/thực tế để client hiển thị
             'order_status' => $order ? $order->status : null,
             'blockchain_status' => $order ? $order->blockchain_status : null,
