@@ -169,11 +169,32 @@ class BlockchainRelayerService implements BlockchainRelayerServiceInterface
         $jsonPayload = json_encode($payload);
         $base64Payload = base64_encode($jsonPayload);
         
+        $nodeBinary = $this->getNodeBinary();
         $scriptPath = base_path('bin/relayer.cjs');
-        $command = "node {$scriptPath} {$base64Payload} 2>&1";
+        $command = "{$nodeBinary} {$scriptPath} {$base64Payload} 2>&1";
 
         try {
-            $output = shell_exec($command);
+            $output = null;
+            if (function_exists('shell_exec')) {
+                $output = \shell_exec($command);
+            } elseif (function_exists('exec')) {
+                $results = [];
+                \exec($command, $results);
+                $output = implode("\n", $results);
+            } elseif (function_exists('system')) {
+                ob_start();
+                \system($command);
+                $output = ob_get_clean();
+            } elseif (function_exists('passthru')) {
+                ob_start();
+                \passthru($command);
+                $output = ob_get_clean();
+            } else {
+                return [
+                    'success' => false,
+                    'error' => 'Các hàm thực thi lệnh hệ thống (shell_exec, exec, system, passthru) đều bị vô hiệu hóa trên hosting của bạn vì lý do bảo mật.'
+                ];
+            }
             
             if (empty($output)) {
                 return [
@@ -199,5 +220,102 @@ class BlockchainRelayerService implements BlockchainRelayerServiceInterface
                 'error' => 'Lỗi thực thi Relayer: ' . $e->getMessage()
             ];
         }
+    }
+
+    /**
+     * Dò tìm đường dẫn thực thi của lệnh node trên hệ thống
+     */
+    private function getNodeBinary(): string
+    {
+        // 1. Ưu tiên cấu hình trong .env
+        $envNode = env('NODE_BINARY');
+        if (!empty($envNode)) {
+            return $envNode;
+        }
+
+        // 1.5. Kiểm tra xem có Node.js Standalone/Portable đi kèm trong thư mục dự án không
+        if (PHP_OS_FAMILY === 'Windows') {
+            $portablePath = base_path('bin/node-bin/node.exe');
+            if (is_file($portablePath)) {
+                return $portablePath;
+            }
+        } else {
+            $portablePath = base_path('bin/node-bin/node');
+            if (is_file($portablePath)) {
+                if (!is_executable($portablePath)) {
+                    @chmod($portablePath, 0755);
+                }
+                return $portablePath;
+            }
+        }
+
+        // 2. Kiểm tra xem lệnh 'node' mặc định có hoạt động không
+        $testCmd = PHP_OS_FAMILY === 'Windows' ? 'where node' : 'which node';
+        $path = null;
+        try {
+            if (function_exists('shell_exec')) {
+                $path = trim(\shell_exec($testCmd));
+            } elseif (function_exists('exec')) {
+                $results = [];
+                \exec($testCmd, $results);
+                $path = trim(implode('', $results));
+            }
+        } catch (\Exception $e) {
+            // Bỏ qua lỗi
+        }
+
+        if (!empty($path) && !str_contains($path, 'not found') && !str_contains($path, 'no node in')) {
+            return $path;
+        }
+
+        // 3. Nếu là Linux, dò tìm các đường dẫn tuyệt đối phổ biến của Node
+        if (PHP_OS_FAMILY !== 'Windows') {
+            $commonPaths = [
+                '/usr/local/bin/node',
+                '/usr/bin/node',
+                '/opt/node/bin/node',
+                '/opt/nodejs/bin/node',
+                '/usr/share/node/bin/node',
+            ];
+
+            // Trích xuất thư mục home của user chạy hosting
+            $home = $_SERVER['HOME'] ?? getenv('HOME');
+            if (empty($home)) {
+                $basePath = base_path();
+                if (str_starts_with($basePath, '/home/')) {
+                    $parts = explode('/', $basePath);
+                    if (count($parts) >= 3) {
+                        $home = '/' . $parts[1] . '/' . $parts[2];
+                    }
+                }
+            }
+
+            if (!empty($home)) {
+                // Dò tìm các thư mục phiên bản node trong thư mục .nvm của NVM
+                $nvmDir = $home . '/.nvm/versions/node';
+                if (is_dir($nvmDir)) {
+                    $versions = scandir($nvmDir);
+                    if ($versions !== false) {
+                        foreach ($versions as $version) {
+                            if ($version !== '.' && $version !== '..') {
+                                $nvmPath = "{$nvmDir}/{$version}/bin/node";
+                                if (is_file($nvmPath) && is_executable($nvmPath)) {
+                                    return $nvmPath;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            foreach ($commonPaths as $p) {
+                if (is_file($p) && is_executable($p)) {
+                    return $p;
+                }
+            }
+        }
+
+        // Mặc định trả về 'node'
+        return 'node';
     }
 }
