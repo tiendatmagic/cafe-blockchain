@@ -477,6 +477,52 @@
                     </p>
                   </div>
                 </div>
+              } @else if (result.type === 'menu_history_detail') {
+                <!-- Menu History Detail view (Danh sách món ăn của lần đồng bộ đó) -->
+                <div class="border-b border-slate-800/60 pb-4 mb-4">
+                  <h4 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider font-mono mb-1">Thời gian sửa đổi thực đơn</h4>
+                  <p class="text-base font-extrabold text-amber-400 font-mono">
+                    {{ result.timestamp | date:'HH:mm:ss dd/MM/yyyy' }}
+                  </p>
+                  <p class="text-xs text-slate-400 mt-1 flex items-center gap-1">
+                    <span>Người thực hiện:</span>
+                    <span class="font-mono text-slate-300 break-all select-all">{{ result.updatedBy }}</span>
+                  </p>
+                </div>
+
+                <div>
+                  <p class="text-xs text-slate-500 font-medium mb-3">Danh sách món ăn đã đồng bộ ({{ result.products.length }} món)</p>
+                  <div class="grid grid-cols-1 gap-2 max-h-[350px] overflow-y-auto pr-1 no-scrollbar">
+                    @for (prod of result.products; track prod.sku) {
+                      <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-900 flex items-center justify-between font-mono text-xs animate-in fade-in duration-250">
+                        <div class="flex items-center gap-3">
+                          <img 
+                            [src]="getProductImage(prod.image, prod.sku)" 
+                            (error)="handleImageError($event)"
+                            class="w-10 h-10 rounded-lg object-cover bg-slate-900 border border-slate-800 shrink-0"
+                          />
+                          <div class="space-y-1">
+                            <p class="font-bold text-slate-200 uppercase truncate max-w-[180px]">
+                              {{ prod.name }}
+                            </p>
+                            <div class="text-[10px] text-slate-500">
+                              <span>SKU: {{ prod.sku || 'N/A' }}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="text-right">
+                          <p class="font-bold text-slate-200 font-mono">
+                            {{ prod.price.toLocaleString('vi-VN') }}đ
+                          </p>
+                          <span class="inline-flex px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider"
+                                [ngClass]="prod.status ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'">
+                            {{ prod.status ? 'Còn món' : 'Hết món' }}
+                          </span>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
               }
 
               <!-- Blockchain Block info -->
@@ -490,19 +536,19 @@
                   <span class="text-slate-350 ml-1">
                     @if (result.type === 'order') { POS Registry }
                     @else if (result.type === 'transaction') { Financial Ledger }
-                    @else if (result.type === 'menu_detail') { Menu Registry }
+                    @else if (result.type === 'menu_detail' || result.type === 'menu_history_detail') { Menu Registry }
                     @else { Voucher ERC-721 }
                   </span>
                 </div>
                 <div class="md:col-span-2 flex items-center justify-between">
                   <div>
                     <span class="text-slate-500">Smart Contract:</span>
-                    <span class="text-purple-400/80 ml-1" [title]="result.type === 'order' ? posContractAddress() : (result.type === 'transaction' ? financeContractAddress() : (result.type === 'menu_detail' ? menuRegistryContractAddress() : voucherContractAddress()))">
-                      {{ formatAddress(result.type === 'order' ? posContractAddress() : (result.type === 'transaction' ? financeContractAddress() : (result.type === 'menu_detail' ? menuRegistryContractAddress() : voucherContractAddress()))) }}
+                    <span class="text-purple-400/80 ml-1" [title]="result.type === 'order' ? posContractAddress() : (result.type === 'transaction' ? financeContractAddress() : ((result.type === 'menu_detail' || result.type === 'menu_history_detail') ? menuRegistryContractAddress() : voucherContractAddress()))">
+                      {{ formatAddress(result.type === 'order' ? posContractAddress() : (result.type === 'transaction' ? financeContractAddress() : ((result.type === 'menu_detail' || result.type === 'menu_history_detail') ? menuRegistryContractAddress() : voucherContractAddress()))) }}
                     </span>
                   </div>
                   <a
-                    [href]="explorerUrl() + '/address/' + (result.type === 'order' ? posContractAddress() : (result.type === 'transaction' ? financeContractAddress() : (result.type === 'menu_detail' ? menuRegistryContractAddress() : voucherContractAddress())))"
+                    [href]="explorerUrl() + '/address/' + (result.type === 'order' ? posContractAddress() : (result.type === 'transaction' ? financeContractAddress() : ((result.type === 'menu_detail' || result.type === 'menu_history_detail') ? menuRegistryContractAddress() : voucherContractAddress())))"
                     target="_blank"
                     class="text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-0.5"
                   >
@@ -636,7 +682,7 @@
               [class.text-slate-400]="activeTab() !== 'menu'"
               [class.hover:text-slate-200]="activeTab() !== 'menu'"
             >
-              Thực đơn ({{ menuProducts().length }})
+              Thực đơn ({{ menuTotal() }})
             </button>
           </div>
 
@@ -768,90 +814,75 @@
                 </div>
               }
 
-              <!-- Menu Products list -->
+              <!-- Menu History list -->
               @if (activeTab() === 'menu') {
                 <div>
-                  <div class="flex items-center justify-between mb-2">
-                    <h4 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider font-mono">Thực đơn Onchain</h4>
-                    @if (menuLastUpdated() > 0) {
-                      <span class="text-[9px] text-slate-550 font-mono">Thời gian sửa đổi: {{ menuLastUpdated() | date:'HH:mm dd/MM/yy' }}</span>
-                    }
-                  </div>
-                  @if (menuLastUpdated() === 0) {
-                    <p class="text-xs text-slate-500 italic py-4 text-center">Chưa đồng bộ thực đơn lên chuỗi.</p>
+                  <h4 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 font-mono">Lịch sử sửa đổi thực đơn</h4>
+                  @if (menuHistory().length === 0) {
+                    <p class="text-xs text-slate-500 italic py-4 text-center">Chưa có lần đồng bộ thực đơn nào trên chuỗi.</p>
                   } @else {
-                    @if (menuProducts().length === 0) {
-                      <p class="text-xs text-slate-500 italic py-4 text-center">Thực đơn đang trống (Đã đồng bộ mảng rỗng).</p>
-                    } @else {
-                      <div class="space-y-2 max-h-[400px] overflow-y-auto pr-1 no-scrollbar">
-                        @for (prod of menuProducts(); track prod.sku) {
-                          <div
-                            (click)="selectProductItem(prod)"
-                            class="p-3.5 rounded-xl bg-slate-950/60 border border-slate-900 hover:border-amber-500/40 hover:bg-slate-900/30 transition-all cursor-pointer flex items-center justify-between group font-mono text-xs"
-                          >
-                            <div class="flex items-center gap-3">
-                              <img 
-                                [src]="getProductImage(prod.image, prod.sku)" 
-                                (error)="handleImageError($event)"
-                                class="w-10 h-10 rounded-lg object-cover bg-slate-900 border border-slate-800 shrink-0"
-                              />
-                              <div class="space-y-1">
-                                <p class="font-bold text-slate-200 group-hover:text-amber-400 transition-colors uppercase truncate max-w-[150px]">
-                                  {{ prod.name }}
-                                </p>
-                                <div class="flex items-center gap-1.5 text-[10px] text-slate-500">
-                                  <span>SKU: {{ prod.sku || 'N/A' }}</span>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="text-right font-mono">
-                              <p class="font-bold text-slate-200">
-                                {{ prod.price.toLocaleString('vi-VN') }}đ
-                              </p>
-                              <span class="inline-flex px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider"
-                                    [ngClass]="prod.status ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'">
-                                {{ prod.status ? 'Còn món' : 'Hết món' }}
-                              </span>
+                    <div class="space-y-2 max-h-[400px] overflow-y-auto pr-1 no-scrollbar">
+                      @for (item of menuHistory(); track item.txHash) {
+                        <div
+                          (click)="selectMenuHistory(item)"
+                          class="p-3.5 rounded-xl bg-slate-950/60 border border-slate-900 hover:border-amber-500/40 hover:bg-slate-900/30 transition-all cursor-pointer flex items-center justify-between group font-mono text-xs"
+                        >
+                          <div class="space-y-1">
+                            <p class="font-bold text-slate-200 group-hover:text-amber-400 transition-colors uppercase">
+                              Đồng bộ thực đơn
+                            </p>
+                            <div class="flex items-center gap-1.5 text-[10px] text-slate-500">
+                              <span>{{ item.timestamp | date:'HH:mm dd/MM/yy' }}</span>
+                              <span>•</span>
+                              <span>By {{ formatAddress(item.updatedBy) }}</span>
                             </div>
                           </div>
-                        }
-                      </div>
-                    }
+                          <div class="text-right">
+                            <p class="font-bold text-amber-400 font-mono">
+                              {{ item.productCount }} món
+                            </p>
+                            <span class="text-[9px] text-slate-500 block">
+                              Block #{{ item.blockNumber }}
+                            </span>
+                          </div>
+                        </div>
+                      }
+                    </div>
                   }
                 </div>
               }
             </div>
 
             <!-- Pagination Control UI -->
-            @if (activeTab() !== 'menu') {
-              <div class="flex items-center justify-between border-t border-slate-900 mt-4 pt-3.5 text-xs text-slate-400 font-mono">
-                <div>
-                  @if (activeTab() === 'order') {
-                    <span>Trang {{ orderPage() }} / {{ totalOrderPages }}</span>
-                  } @else if (activeTab() === 'transaction') {
-                    <span>Trang {{ transactionPage() }} / {{ totalTransactionPages }}</span>
-                  } @else if (activeTab() === 'voucher') {
-                    <span>Trang {{ voucherPage() }} / {{ totalVoucherPages }}</span>
-                  }
-                </div>
-                <div class="flex gap-2">
-                  <button
-                    (click)="changePage('prev')"
-                    [disabled]="(activeTab() === 'order' && orderPage() === 1) || (activeTab() === 'transaction' && transactionPage() === 1) || (activeTab() === 'voucher' && voucherPage() === 1)"
-                    class="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-850 hover:bg-slate-900 hover:text-white text-slate-300 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
-                  >
-                    Trang trước
-                  </button>
-                  <button
-                    (click)="changePage('next')"
-                    [disabled]="(activeTab() === 'order' && orderPage() * limit >= orderTotal()) || (activeTab() === 'transaction' && transactionPage() * limit >= transactionTotal()) || (activeTab() === 'voucher' && voucherPage() * limit >= voucherTotal())"
-                    class="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-850 hover:bg-slate-900 hover:text-white text-slate-300 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
-                  >
-                    Trang sau
-                  </button>
-                </div>
+            <div class="flex items-center justify-between border-t border-slate-900 mt-4 pt-3.5 text-xs text-slate-400 font-mono">
+              <div>
+                @if (activeTab() === 'order') {
+                  <span>Trang {{ orderPage() }} / {{ totalOrderPages }}</span>
+                } @else if (activeTab() === 'transaction') {
+                  <span>Trang {{ transactionPage() }} / {{ totalTransactionPages }}</span>
+                } @else if (activeTab() === 'voucher') {
+                  <span>Trang {{ voucherPage() }} / {{ totalVoucherPages }}</span>
+                } @else if (activeTab() === 'menu') {
+                  <span>Trang {{ menuPage() }} / {{ totalMenuPages }}</span>
+                }
               </div>
-            }
+              <div class="flex gap-2">
+                <button
+                  (click)="changePage('prev')"
+                  [disabled]="(activeTab() === 'order' && orderPage() === 1) || (activeTab() === 'transaction' && transactionPage() === 1) || (activeTab() === 'voucher' && voucherPage() === 1) || (activeTab() === 'menu' && menuPage() === 1)"
+                  class="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-855 hover:bg-slate-900 hover:text-white text-slate-300 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+                >
+                  Trang trước
+                </button>
+                <button
+                  (click)="changePage('next')"
+                  [disabled]="(activeTab() === 'order' && orderPage() * limit >= orderTotal()) || (activeTab() === 'transaction' && transactionPage() * limit >= transactionTotal()) || (activeTab() === 'voucher' && voucherPage() * limit >= voucherTotal()) || (activeTab() === 'menu' && menuPage() * limit >= menuTotal())"
+                  class="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-855 hover:bg-slate-900 hover:text-white text-slate-300 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+                >
+                  Trang sau
+                </button>
+              </div>
+            </div>
           }
         </div>
       </section>

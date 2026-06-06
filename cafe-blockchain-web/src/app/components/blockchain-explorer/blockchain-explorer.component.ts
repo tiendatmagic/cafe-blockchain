@@ -2,7 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { JsonRpcProvider, Contract } from 'ethers';
+import { JsonRpcProvider, Contract, Interface } from 'ethers';
 import { CAFE_WEB3_POS_ABI } from '../../services/contract-abi';
 import { CAFE_WEB3_FINANCE_ABI } from '../../services/finance-contract-abi';
 import { CAFE_VOUCHER_NFT_ABI } from '../../services/voucher-contract-abi';
@@ -76,12 +76,19 @@ export class BlockchainExplorerComponent implements OnInit {
     return Math.ceil(this.voucherTotal() / this.limit) || 1;
   }
 
+  public get totalMenuPages(): number {
+    return Math.ceil(this.menuTotal() / this.limit) || 1;
+  }
+
   // Danh sách dữ liệu mới nhất hiển thị trên tabs
   public readonly latestOrders = signal<any[]>([]);
   public readonly latestTransactions = signal<any[]>([]);
   public readonly latestVouchers = signal<any[]>([]);
   public readonly menuProducts = signal<any[]>([]);
   public readonly menuLastUpdated = signal<number>(0);
+  public readonly menuPage = signal<number>(1);
+  public readonly menuTotal = signal<number>(0);
+  public readonly menuHistory = signal<any[]>([]);
   public readonly isLatestDataLoading = signal<boolean>(false);
   public readonly localProducts = signal<any[]>([]);
 
@@ -411,6 +418,9 @@ export class BlockchainExplorerComponent implements OnInit {
     }
 
     this.activeTab.set(tab);
+    if (tab === 'menu') {
+      this.menuPage.set(1);
+    }
 
     // Kiểm tra xem dữ liệu của tab được chọn đã có sẵn chưa
     let hasData = false;
@@ -420,7 +430,7 @@ export class BlockchainExplorerComponent implements OnInit {
       hasData = true;
     } else if (tab === 'voucher' && this.latestVouchers().length > 0) {
       hasData = true;
-    } else if (tab === 'menu' && this.menuProducts().length > 0) {
+    } else if (tab === 'menu' && this.menuHistory().length > 0) {
       hasData = true;
     }
 
@@ -460,6 +470,15 @@ export class BlockchainExplorerComponent implements OnInit {
         this.loadDataForActiveTab();
       } else if (direction === 'prev' && cur > 1) {
         this.voucherPage.set(cur - 1);
+        this.loadDataForActiveTab();
+      }
+    } else if (tab === 'menu') {
+      const cur = this.menuPage();
+      if (direction === 'next' && cur * this.limit < this.menuTotal()) {
+        this.menuPage.set(cur + 1);
+        this.loadDataForActiveTab();
+      } else if (direction === 'prev' && cur > 1) {
+        this.menuPage.set(cur - 1);
         this.loadDataForActiveTab();
       }
     }
@@ -568,24 +587,40 @@ export class BlockchainExplorerComponent implements OnInit {
           console.warn('Không thể load danh sách vouchers từ Smart Contract Voucher:', err);
         }
       } else if (tab === 'menu') {
-        this.menuProducts.set([]);
+        this.menuHistory.set([]);
         try {
           const menuRegistryContract = new Contract(this.menuRegistryContractAddress(), CAFE_MENU_REGISTRY_ABI, provider);
-          const rawProducts = await menuRegistryContract['getAllProducts']();
-          const lastUpdatedRaw = await menuRegistryContract['lastUpdated']();
+          
+          try {
+            const lastUpdatedRaw = await menuRegistryContract['lastUpdated']();
+            this.menuLastUpdated.set(Number(lastUpdatedRaw) * 1000);
+          } catch (e) {
+            console.warn('Không lấy được lastUpdated của menu registry:', e);
+          }
 
-          const products = rawProducts.map((p: any) => ({
-            sku: p.sku,
-            name: p.name,
-            price: Number(p.price),
-            image: p.image,
-            status: p.status
-          }));
+          const filter = menuRegistryContract.filters['MenuUpdated']();
+          const events = await menuRegistryContract.queryFilter(filter);
+          
+          const formattedHistory = events.map((e: any) => {
+            const args = e.args;
+            return {
+              txHash: e.transactionHash,
+              blockNumber: e.blockNumber,
+              updatedBy: args ? args[0] : '',
+              timestamp: args ? Number(args[1]) * 1000 : 0,
+              productCount: args ? Number(args[2]) : 0
+            };
+          }).sort((a, b) => b.timestamp - a.timestamp);
 
-          this.menuProducts.set(products);
-          this.menuLastUpdated.set(Number(lastUpdatedRaw) * 1000);
+          this.menuTotal.set(formattedHistory.length);
+
+          const currentPage = this.menuPage();
+          const start = (currentPage - 1) * this.limit;
+          const paginatedHistory = formattedHistory.slice(start, start + this.limit);
+
+          this.menuHistory.set(paginatedHistory);
         } catch (err) {
-          console.warn('Không thể load danh sách thực đơn từ Smart Contract Menu Registry:', err);
+          console.warn('Không thể load lịch sử thực đơn từ Smart Contract Menu Registry:', err);
         }
       }
     } catch (e) {
@@ -688,5 +723,51 @@ export class BlockchainExplorerComponent implements OnInit {
 
   public handleImageError(event: any) {
     event.target.src = 'not-found.webp';
+  }
+
+  /**
+   * Chọn một mốc lịch sử sửa đổi thực đơn, giải mã transaction input data và hiển thị chi tiết ở cột trái
+   */
+  public async selectMenuHistory(item: any) {
+    this.isSearching.set(true);
+    this.searchError.set('');
+    this.searchResult.set(null);
+
+    try {
+      const provider = new JsonRpcProvider(this.rpcUrl());
+      const tx = await provider.getTransaction(item.txHash);
+      if (!tx) {
+        throw new Error('Không tìm thấy dữ liệu giao dịch trên blockchain.');
+      }
+
+      // Khởi tạo Interface và giải mã input data
+      const contractInterface = new Interface(CAFE_MENU_REGISTRY_ABI);
+      const parsedTx = contractInterface.parseTransaction({ data: tx.data });
+      if (!parsedTx || !parsedTx.args || !parsedTx.args[0]) {
+        throw new Error('Giao dịch không chứa dữ liệu thực đơn hợp lệ.');
+      }
+
+      // parsedTx.args[0] là danh sách Product struct
+      const products = parsedTx.args[0].map((p: any) => ({
+        sku: p.sku,
+        name: p.name,
+        price: Number(p.price),
+        image: p.image,
+        status: p.status
+      }));
+
+      this.searchResult.set({
+        type: 'menu_history_detail',
+        timestamp: item.timestamp,
+        updatedBy: item.updatedBy,
+        txHash: item.txHash,
+        products: products
+      });
+    } catch (err: any) {
+      console.error('Lỗi giải mã lịch sử thực đơn:', err);
+      this.searchError.set(err.message || 'Lỗi khi giải mã thực đơn từ blockchain.');
+    } finally {
+      this.isSearching.set(false);
+    }
   }
 }
