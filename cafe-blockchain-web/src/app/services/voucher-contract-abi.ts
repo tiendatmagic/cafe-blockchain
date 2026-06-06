@@ -170,12 +170,12 @@ export const CAFE_VOUCHER_NFT_ABI = [
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "newOwner",
-        "type": "address"
+        "internalType": "address[]",
+        "name": "_newOwners",
+        "type": "address[]"
       }
     ],
-    "name": "addOwner",
+    "name": "addOwners",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -237,6 +237,19 @@ export const CAFE_VOUCHER_NFT_ABI = [
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "getOwners",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -269,6 +282,25 @@ export const CAFE_VOUCHER_NFT_ABI = [
       }
     ],
     "name": "isApprovedForAll",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "isOwner",
     "outputs": [
       {
         "internalType": "bool",
@@ -348,17 +380,17 @@ export const CAFE_VOUCHER_NFT_ABI = [
   {
     "inputs": [
       {
-        "internalType": "address",
+        "internalType": "uint256",
         "name": "",
-        "type": "address"
+        "type": "uint256"
       }
     ],
     "name": "owners",
     "outputs": [
       {
-        "internalType": "bool",
+        "internalType": "address",
         "name": "",
-        "type": "bool"
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -391,12 +423,12 @@ export const CAFE_VOUCHER_NFT_ABI = [
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "targetOwner",
-        "type": "address"
+        "internalType": "address[]",
+        "name": "_ownersToRemove",
+        "type": "address[]"
       }
     ],
-    "name": "removeOwner",
+    "name": "removeOwners",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

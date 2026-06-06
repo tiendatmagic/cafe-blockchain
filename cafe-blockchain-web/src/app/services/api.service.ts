@@ -173,8 +173,9 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/settings`, { headers: this.getHeaders() });
   }
 
-  public getPublicSettings(orderCode: string): Observable<any> {
-    return this.http.get(`${this.baseUrl}/settings/public?order_code=${orderCode}`);
+  public getPublicSettings(orderCode?: string): Observable<any> {
+    const url = orderCode ? `${this.baseUrl}/settings/public?order_code=${orderCode}` : `${this.baseUrl}/settings/public`;
+    return this.http.get(url);
   }
 
   public updateSettings(settings: any): Observable<any> {

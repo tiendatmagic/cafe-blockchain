@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -11,7 +11,7 @@ import { ApiService } from '../../services/api.service';
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './menu.component.html'
 })
-export class MenuComponent {
+export class MenuComponent implements OnInit, OnDestroy {
   public readonly stateService = inject(StateService);
   private readonly apiService = inject(ApiService);
 
@@ -32,6 +32,11 @@ export class MenuComponent {
   public readonly isProductDeleting = signal<boolean>(false);
   public readonly deletingProductData = signal<any>(null);
   public readonly isDeleteProductConfirmOpen = signal<boolean>(false);
+
+  // Đồng bộ Blockchain Menu signals
+  public readonly isMenuSyncing = signal<boolean>(false);
+  public readonly isOwnerMenuRegistry = signal<boolean>(false);
+  private accountSubscription: any;
 
   public readonly menuForm = signal<any>({
     sku: '',
@@ -478,5 +483,70 @@ export class MenuComponent {
   // Set MenuViewMode
   public setMenuViewMode(mode: 'table' | 'card') {
     this.menuViewMode.set(mode);
+  }
+
+  public ngOnInit() {
+    this.checkMenuRegistryOwnerPermission();
+
+    // Lắng nghe ví thay đổi tài khoản
+    this.accountSubscription = this.web3Service.accountsChanged$.subscribe(() => {
+      this.checkMenuRegistryOwnerPermission();
+    });
+  }
+
+  public ngOnDestroy() {
+    if (this.accountSubscription) {
+      this.accountSubscription.unsubscribe();
+    }
+  }
+
+  /**
+   * Kiểm tra quyền quản trị Menu Registry của ví hiện tại
+   */
+  public async checkMenuRegistryOwnerPermission() {
+    if (this.web3Service.walletConnected() && this.web3Service.currentAccount() && this.web3Service.menuRegistryContractAddress()) {
+      const isOwner = await this.web3Service.checkIsOwnerOfMenuRegistry(this.web3Service.currentAccount());
+      this.isOwnerMenuRegistry.set(isOwner);
+    } else {
+      this.isOwnerMenuRegistry.set(false);
+    }
+  }
+
+  /**
+   * Đồng bộ toàn bộ thực đơn hiện tại của quán lên Blockchain (Menu Registry)
+   */
+  public async syncMenuToBlockchain() {
+    if (!this.web3Service.walletConnected()) {
+      this.stateService.showToast('Vui lòng kết nối ví Web3 trước!', 'error');
+      return;
+    }
+
+    if (!this.web3Service.menuRegistryContractAddress()) {
+      this.stateService.showToast('Hợp đồng Menu Registry chưa được deploy hoặc chưa cấu hình! Vui lòng vào Cài đặt thiết lập trước.', 'error');
+      return;
+    }
+
+    await this.checkMenuRegistryOwnerPermission();
+    if (!this.isOwnerMenuRegistry()) {
+      this.stateService.showToast('Ví của bạn không có quyền quản trị (Owner) hợp đồng Menu Registry này!', 'error');
+      return;
+    }
+
+    const productList = this.products();
+    if (productList.length === 0) {
+      this.stateService.showToast('Thực đơn hiện tại của quán đang trống, không có gì để đồng bộ!', 'error');
+      return;
+    }
+
+    this.isMenuSyncing.set(true);
+    this.stateService.showToast('Vui lòng xác nhận giao dịch đồng bộ Thực đơn trên ví MetaMask của bạn...', 'success');
+
+    const res = await this.web3Service.updateMenuOnChain(productList);
+    if (res.success && res.txHash) {
+      this.stateService.showToast(`Đồng bộ thực đơn lên Blockchain thành công! Hash: ${res.txHash}`, 'success');
+    } else {
+      this.stateService.showToast(res.error || 'Đồng bộ thực đơn thất bại!', 'error');
+    }
+    this.isMenuSyncing.set(false);
   }
 }

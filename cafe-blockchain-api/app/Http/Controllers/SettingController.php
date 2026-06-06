@@ -22,6 +22,7 @@ class SettingController extends Controller
             'contract_address' => '0xC6b3fc5a2E5Aba0e5a0B6eD8FaCD412A76dC5D2A',
             'finance_contract_address' => '0x7988500670EC631F7be36eD91E367760f380d6Af',
             'voucher_contract_address' => '0xc6828e46E100B248173e28a33e8D92662Cd1A8c7',
+            'menu_registry_contract_address' => '',
             'relayer_private_key' => '',
             'rpc_url' => 'https://bnb-testnet.api.onfinality.io/public',
             'chain_id' => '97',
@@ -87,6 +88,7 @@ class SettingController extends Controller
             'contract_address' => 'nullable|string|max:255',
             'finance_contract_address' => 'nullable|string|max:255',
             'voucher_contract_address' => 'nullable|string|max:255',
+            'menu_registry_contract_address' => 'nullable|string|max:255',
             'relayer_private_key' => 'nullable|string|max:255',
             'rpc_url' => 'nullable|string|max:1000',
             'chain_id' => 'nullable|string|max:50',
@@ -204,42 +206,53 @@ class SettingController extends Controller
     public function getPublicSettings(Request $request)
     {
         $orderCode = $request->query('order_code');
-        if (empty($orderCode)) {
-            return response()->json(['message' => 'Thiếu mã hóa đơn!'], 400);
-        }
-
-        // Tìm đơn hàng để lấy store_owner_address của quán
-        $order = \App\Models\Order::where('order_code', $orderCode)->first();
+        $storeOwner = null;
         $tempOrderData = null;
+        $order = null;
 
-        if (!$order) {
-            // Thử tìm trong bảng voucher_signatures xem có thông tin tạm thời không
-            $sigRecord = \Illuminate\Support\Facades\DB::table('voucher_signatures')->where('order_code', $orderCode)->first();
-            if ($sigRecord && !empty($sigRecord->store_owner_address)) {
-                $storeOwner = strtolower($sigRecord->store_owner_address);
-                $tempOrderData = !empty($sigRecord->temp_order_data) ? json_decode($sigRecord->temp_order_data, true) : null;
+        if (empty($orderCode)) {
+            // Lấy store_owner_address đầu tiên từ bảng settings
+            $firstSetting = Setting::whereNotNull('store_owner_address')->first();
+            if ($firstSetting) {
+                $storeOwner = strtolower($firstSetting->store_owner_address);
             } else {
-                return response()->json(['message' => 'Không tìm thấy đơn hàng tương ứng!'], 404);
+                // Thử lấy ví admin đầu tiên từ users
+                $firstUser = \App\Models\User::first();
+                $storeOwner = $firstUser ? strtolower($firstUser->store_owner_address ?: $firstUser->wallet_address) : '';
             }
         } else {
-            $storeOwner = strtolower($order->store_owner_address);
-            
-            // Nếu đơn hàng đã lưu thực tế, gom thông tin chi tiết hóa đơn
-            $orderItems = \Illuminate\Support\Facades\DB::table('order_items')
-                ->join('products', 'order_items.product_id', '=', 'products.id')
-                ->leftJoin('product_variants', 'order_items.product_variant_id', '=', 'product_variants.id')
-                ->where('order_items.order_id', $order->id)
-                ->select('products.name as product_name', 'product_variants.variant_name as variant_name', 'order_items.quantity', 'order_items.price')
-                ->get();
+            // Tìm đơn hàng để lấy store_owner_address của quán
+            $order = \App\Models\Order::where('order_code', $orderCode)->first();
+
+            if (!$order) {
+                // Thử tìm trong bảng voucher_signatures xem có thông tin tạm thời không
+                $sigRecord = \Illuminate\Support\Facades\DB::table('voucher_signatures')->where('order_code', $orderCode)->first();
+                if ($sigRecord && !empty($sigRecord->store_owner_address)) {
+                    $storeOwner = strtolower($sigRecord->store_owner_address);
+                    $tempOrderData = !empty($sigRecord->temp_order_data) ? json_decode($sigRecord->temp_order_data, true) : null;
+                } else {
+                    return response()->json(['message' => 'Không tìm thấy đơn hàng tương ứng!'], 404);
+                }
+            } else {
+                $storeOwner = strtolower($order->store_owner_address);
                 
-            $tempOrderData = [
-                'table_number' => $order->table_number,
-                'payment_method' => $order->payment_method,
-                'total_amount' => $order->total_amount + $order->discount_amount, // Giá gốc trước giảm
-                'discount_amount' => $order->discount_amount,
-                'final_amount' => $order->total_amount,
-                'items' => $orderItems
-            ];
+                // Nếu đơn hàng đã lưu thực tế, gom thông tin chi tiết hóa đơn
+                $orderItems = \Illuminate\Support\Facades\DB::table('order_items')
+                    ->join('products', 'order_items.product_id', '=', 'products.id')
+                    ->leftJoin('product_variants', 'order_items.product_variant_id', '=', 'product_variants.id')
+                    ->where('order_items.order_id', $order->id)
+                    ->select('products.name as product_name', 'product_variants.variant_name as variant_name', 'order_items.quantity', 'order_items.price')
+                    ->get();
+                    
+                $tempOrderData = [
+                    'table_number' => $order->table_number,
+                    'payment_method' => $order->payment_method,
+                    'total_amount' => $order->total_amount + $order->discount_amount, // Giá gốc trước giảm
+                    'discount_amount' => $order->discount_amount,
+                    'final_amount' => $order->total_amount,
+                    'items' => $orderItems
+                ];
+            }
         }
 
         $settings = $this->ensureDefaultSettings($storeOwner);
@@ -252,6 +265,7 @@ class SettingController extends Controller
             'contract_address' => $settings['contract_address'] ?? '',
             'finance_contract_address' => $settings['finance_contract_address'] ?? '',
             'voucher_contract_address' => $settings['voucher_contract_address'] ?? '',
+            'menu_registry_contract_address' => $settings['menu_registry_contract_address'] ?? '',
             'rpc_url' => $settings['rpc_url'] ?? '',
             'chain_id' => $settings['chain_id'] ?? '',
             'explorer_url' => $settings['explorer_url'] ?? '',

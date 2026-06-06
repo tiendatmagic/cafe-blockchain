@@ -26,6 +26,7 @@ export class SettingsComponent implements OnInit {
     contract_address: '',
     finance_contract_address: '',
     voucher_contract_address: '',
+    menu_registry_contract_address: '',
     relayer_private_key: '',
     rpc_url: '',
     chain_id: '',
@@ -45,6 +46,7 @@ export class SettingsComponent implements OnInit {
   public readonly isDeploying = signal<boolean>(false);
   public readonly isDeployingFinance = signal<boolean>(false);
   public readonly isDeployingVoucher = signal<boolean>(false);
+  public readonly isDeployingMenuRegistry = signal<boolean>(false);
 
   // Trạng thái Quản trị Owner Ví và ví Kế toán trên Blockchain
   public readonly ownersFromChain = signal<string[]>([]);
@@ -58,6 +60,18 @@ export class SettingsComponent implements OnInit {
   public readonly isFinanceOwnerActionLoading = signal<boolean>(false);
   public readonly isDeleteFinanceOwnerConfirmOpen = signal<boolean>(false);
   public readonly deletingFinanceOwnerAddress = signal<string>('');
+
+  public readonly menuOwnersFromChain = signal<string[]>([]);
+  public readonly newMenuOwnerAddress = signal<string>('');
+  public readonly isMenuOwnerActionLoading = signal<boolean>(false);
+  public readonly isDeleteMenuOwnerConfirmOpen = signal<boolean>(false);
+  public readonly deletingMenuOwnerAddress = signal<string>('');
+
+  public readonly voucherOwnersFromChain = signal<string[]>([]);
+  public readonly newVoucherOwnerAddress = signal<string>('');
+  public readonly isVoucherOwnerActionLoading = signal<boolean>(false);
+  public readonly isDeleteVoucherOwnerConfirmOpen = signal<boolean>(false);
+  public readonly deletingVoucherOwnerAddress = signal<string>('');
 
   // Dropdown chọn mạng
   public readonly isChainDropdownOpen = signal<boolean>(false);
@@ -295,12 +309,44 @@ export class SettingsComponent implements OnInit {
     this.isDeployingVoucher.set(false);
   }
 
+  // Tự động deploy Smart Contract Menu Registry mới
+  public async deployMenuRegistryContract() {
+    if (!this.web3Service.walletConnected()) {
+      this.stateService.showToast('Vui lòng kết nối ví Web3 để thực hiện tác vụ này!', 'error');
+      return;
+    }
+
+    this.web3Service.updateConfig({
+      rpc_url: this.configForm().rpc_url,
+      chain_id: this.configForm().chain_id,
+      explorer_url: this.configForm().explorer_url
+    });
+
+    this.isDeployingMenuRegistry.set(true);
+    this.stateService.showToast('Vui lòng xác nhận giao dịch Deploy Smart Contract Menu Registry trên ví của bạn...', 'success');
+
+    const res = await this.web3Service.deployMenuRegistryContractOnChain(this.configForm().chain_id);
+    if (res.success && res.contractAddress) {
+      this.configForm.update(form => ({
+        ...form,
+        menu_registry_contract_address: res.contractAddress
+      }));
+      this.web3Service.updateConfig({ menu_registry_contract_address: res.contractAddress });
+      this.stateService.showToast(`Deploy Smart Contract Menu Registry thành công! Địa chỉ mới: ${res.contractAddress}. Nhấn LƯU CẤU HÌNH HỆ THỐNG để ghi nhận!`, 'success');
+    } else {
+      this.stateService.showToast(res.error || 'Deploy Smart Contract Menu Registry thất bại!', 'error');
+    }
+    this.isDeployingMenuRegistry.set(false);
+  }
+
   // Tải danh sách Owners trực tiếp từ Smart Contract Blockchain
   public async loadOwnersList() {
     if (this.web3Service.walletConnected()) {
       const list = await this.web3Service.getOwnersFromChain();
       this.ownersFromChain.set(list);
       await this.loadFinanceOwnersList();
+      await this.loadMenuOwnersList();
+      await this.loadVoucherOwnersList();
     }
   }
 
@@ -479,5 +525,171 @@ export class SettingsComponent implements OnInit {
     this.selectedChainName.set(`${chain.name} (ID: ${chain.chainId})`);
     this.stateService.showToast(`Đã tự động điền cấu hình mạng: ${chain.name}!`, 'success');
     this.isChainDropdownOpen.set(false);
+  }
+
+  // Tải danh sách ví Menu Registry trực tiếp từ Smart Contract Blockchain
+  public async loadMenuOwnersList() {
+    if (this.web3Service.walletConnected() && this.web3Service.menuRegistryContractAddress()) {
+      const list = await this.web3Service.getMenuRegistryOwnersFromChain();
+      this.menuOwnersFromChain.set(list);
+    }
+  }
+
+  // Thêm ví Menu Registry mới trên Blockchain
+  public async addMenuOwnerAddress() {
+    if (!this.web3Service.walletConnected()) {
+      this.stateService.showToast('Vui lòng kết nối ví Web3 để thực hiện tác vụ này!', 'error');
+      return;
+    }
+    const address = this.newMenuOwnerAddress().trim();
+    if (!address.startsWith('0x') || address.length !== 42) {
+      this.stateService.showToast('Địa chỉ ví EVM không hợp lệ (phải bắt đầu bằng 0x và dài 42 ký tự)!', 'error');
+      return;
+    }
+
+    this.isMenuOwnerActionLoading.set(true);
+    this.stateService.showToast('Vui lòng xác nhận giao dịch thêm ví Quản trị Thực đơn trên ví của bạn...', 'success');
+
+    const res = await this.web3Service.addMenuRegistryOwnersOnChain([address]);
+    if (res.success && res.txHash) {
+      this.stateService.showToast(`Giao dịch thêm ví Quản trị Thực đơn thành công! TxHash: ${res.txHash}`, 'success');
+      this.newMenuOwnerAddress.set('');
+
+      // Đồng bộ đăng ký ví vào Laravel Backend
+      this.apiService.registerCashier(address).subscribe({
+        next: () => console.log('Đã đồng bộ đăng ký quản trị thực đơn vào DB.'),
+        error: (err) => console.error('Lỗi đồng bộ đăng ký quản trị thực đơn:', err)
+      });
+
+      await this.loadMenuOwnersList();
+    } else {
+      this.stateService.showToast(res.error || 'Thêm ví Quản trị Thực đơn thất bại!', 'error');
+    }
+    this.isMenuOwnerActionLoading.set(false);
+  }
+
+  public removeMenuOwnerAddress(address: string) {
+    if (!this.web3Service.walletConnected()) {
+      this.stateService.showToast('Vui lòng kết nối ví Web3 để thực hiện tác vụ này!', 'error');
+      return;
+    }
+    if (address.toLowerCase() === this.web3Service.currentAccount().toLowerCase()) {
+      this.stateService.showToast('Không thể tự xóa ví chính mình khỏi quyền quản trị!', 'error');
+      return;
+    }
+
+    this.deletingMenuOwnerAddress.set(address);
+    this.isDeleteMenuOwnerConfirmOpen.set(true);
+  }
+
+  public async confirmDeleteMenuOwner() {
+    if (this.isMenuOwnerActionLoading()) return;
+
+    const address = this.deletingMenuOwnerAddress();
+    if (!address) return;
+
+    this.isMenuOwnerActionLoading.set(true);
+    this.stateService.showToast('Vui lòng xác nhận giao dịch xóa ví Quản trị Thực đơn trên ví của bạn...', 'success');
+
+    const res = await this.web3Service.removeMenuRegistryOwnersOnChain([address]);
+    if (res.success && res.txHash) {
+      this.stateService.showToast(`Giao dịch xóa ví Quản trị Thực đơn thành công! TxHash: ${res.txHash}`, 'success');
+      this.isDeleteMenuOwnerConfirmOpen.set(false);
+      this.deletingMenuOwnerAddress.set('');
+
+      // Đồng bộ gỡ ví khỏi Laravel Backend
+      this.apiService.removeCashier(address).subscribe({
+        next: () => console.log('Đã đồng bộ gỡ quản trị thực đơn khỏi DB.'),
+        error: (err) => console.error('Lỗi đồng bộ gỡ quản trị thực đơn khỏi DB:', err)
+      });
+
+      await this.loadMenuOwnersList();
+    } else {
+      this.stateService.showToast(res.error || 'Xóa ví Quản trị Thực đơn thất bại!', 'error');
+    }
+    this.isMenuOwnerActionLoading.set(false);
+  }
+
+  // Tải danh sách ví Voucher NFT trực tiếp từ Smart Contract Blockchain
+  public async loadVoucherOwnersList() {
+    if (this.web3Service.walletConnected() && this.web3Service.voucherContractAddress()) {
+      const list = await this.web3Service.getVoucherOwnersFromChain();
+      this.voucherOwnersFromChain.set(list);
+    }
+  }
+
+  // Thêm ví Voucher NFT mới trên Blockchain
+  public async addVoucherOwnerAddress() {
+    if (!this.web3Service.walletConnected()) {
+      this.stateService.showToast('Vui lòng kết nối ví Web3 để thực hiện tác vụ này!', 'error');
+      return;
+    }
+    const address = this.newVoucherOwnerAddress().trim();
+    if (!address.startsWith('0x') || address.length !== 42) {
+      this.stateService.showToast('Địa chỉ ví EVM không hợp lệ (phải bắt đầu bằng 0x và dài 42 ký tự)!', 'error');
+      return;
+    }
+
+    this.isVoucherOwnerActionLoading.set(true);
+    this.stateService.showToast('Vui lòng xác nhận giao dịch thêm ví Quản trị Voucher trên ví của bạn...', 'success');
+
+    const res = await this.web3Service.addVoucherOwnersOnChain([address]);
+    if (res.success && res.txHash) {
+      this.stateService.showToast(`Giao dịch thêm ví Quản trị Voucher thành công! TxHash: ${res.txHash}`, 'success');
+      this.newVoucherOwnerAddress.set('');
+
+      // Đồng bộ đăng ký ví vào Laravel Backend
+      this.apiService.registerCashier(address).subscribe({
+        next: () => console.log('Đã đồng bộ đăng ký quản trị voucher vào DB.'),
+        error: (err) => console.error('Lỗi đồng bộ đăng ký quản trị voucher:', err)
+      });
+
+      await this.loadVoucherOwnersList();
+    } else {
+      this.stateService.showToast(res.error || 'Thêm ví Quản trị Voucher thất bại!', 'error');
+    }
+    this.isVoucherOwnerActionLoading.set(false);
+  }
+
+  public removeVoucherOwnerAddress(address: string) {
+    if (!this.web3Service.walletConnected()) {
+      this.stateService.showToast('Vui lòng kết nối ví Web3 để thực hiện tác vụ này!', 'error');
+      return;
+    }
+    if (address.toLowerCase() === this.web3Service.currentAccount().toLowerCase()) {
+      this.stateService.showToast('Không thể tự xóa ví chính mình khỏi quyền quản trị!', 'error');
+      return;
+    }
+
+    this.deletingVoucherOwnerAddress.set(address);
+    this.isDeleteVoucherOwnerConfirmOpen.set(true);
+  }
+
+  public async confirmDeleteVoucherOwner() {
+    if (this.isVoucherOwnerActionLoading()) return;
+
+    const address = this.deletingVoucherOwnerAddress();
+    if (!address) return;
+
+    this.isVoucherOwnerActionLoading.set(true);
+    this.stateService.showToast('Vui lòng xác nhận giao dịch xóa ví Quản trị Voucher trên ví của bạn...', 'success');
+
+    const res = await this.web3Service.removeVoucherOwnersOnChain([address]);
+    if (res.success && res.txHash) {
+      this.stateService.showToast(`Giao dịch xóa ví Quản trị Voucher thành công! TxHash: ${res.txHash}`, 'success');
+      this.isDeleteVoucherOwnerConfirmOpen.set(false);
+      this.deletingVoucherOwnerAddress.set('');
+
+      // Đồng bộ gỡ ví khỏi Laravel Backend
+      this.apiService.removeCashier(address).subscribe({
+        next: () => console.log('Đã đồng bộ gỡ quản trị voucher khỏi DB.'),
+        error: (err) => console.error('Lỗi đồng bộ gỡ quản trị voucher khỏi DB:', err)
+      });
+
+      await this.loadVoucherOwnersList();
+    } else {
+      this.stateService.showToast(res.error || 'Xóa ví Quản trị Voucher thất bại!', 'error');
+    }
+    this.isVoucherOwnerActionLoading.set(false);
   }
 }

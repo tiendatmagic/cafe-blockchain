@@ -9,6 +9,7 @@ import { FinancialsComponent } from './components/financials/financials.componen
 import { InventoryComponent } from './components/inventory/inventory.component';
 import { TablesComponent } from './components/tables/tables.component';
 import { MobileSignComponent } from './components/mobile-sign/mobile-sign.component';
+import { BlockchainExplorerComponent } from './components/blockchain-explorer/blockchain-explorer.component';
 
 export const routes: Routes = [
   { path: 'dashboard', component: DashboardComponent },
@@ -21,6 +22,7 @@ export const routes: Routes = [
   { path: 'inventory', component: InventoryComponent },
   { path: 'tables', component: TablesComponent },
   { path: 'mobile-sign', component: MobileSignComponent },
+  { path: 'blockchain-explorer', component: BlockchainExplorerComponent },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   { path: '**', redirectTo: 'dashboard' }
 ];

@@ -32,8 +32,8 @@ export class App implements OnInit, OnDestroy {
     }
   }
 
-  public get isMobileSignRoute(): boolean {
-    return this.router.url.includes('/mobile-sign');
+  public get isPublicLayout(): boolean {
+    return this.router.url.includes('/mobile-sign') || this.router.url.includes('/blockchain-explorer');
   }
 
   // Getters từ StateService để binding dễ dàng trong app.html
@@ -55,10 +55,13 @@ export class App implements OnInit, OnDestroy {
   private accountsChangedSub?: any;
 
   ngOnInit() {
-    const isMobileSign = typeof window !== 'undefined' && window.location.pathname.includes('/mobile-sign');
+    const isPublic = typeof window !== 'undefined' && (
+      window.location.pathname.includes('/mobile-sign') || 
+      window.location.pathname.includes('/blockchain-explorer')
+    );
 
-    // Chỉ tải cấu hình quán của admin khi không ở trang ký số di động
-    if (!isMobileSign) {
+    // Chỉ tải cấu hình quán của admin khi không ở trang public
+    if (!isPublic) {
       this.stateService.loadSettings();
     }
 
@@ -71,7 +74,7 @@ export class App implements OnInit, OnDestroy {
       // Không cần gọi loadAllData() tải trước tất cả các module ở đây để tránh dư thừa và trùng lặp API request.
     } else {
       // Chưa kết nối hoặc session hết hạn, yêu cầu kết nối ví
-      if (!isMobileSign) {
+      if (!isPublic) {
         this.stateService.isWalletModalOpen.set(true);
       }
     }

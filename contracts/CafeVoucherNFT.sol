@@ -15,8 +15,11 @@ contract CafeVoucherNFT {
     string public constant name = "Cafe Web3 Voucher";
     string public constant symbol = "CFV";
 
-    // Cafe owner's wallet addresses (System Administrators)
-    mapping(address => bool) public owners;
+    // Mapping to check owner permissions
+    mapping(address => bool) public isOwner;
+
+    // Array storing the list of owners
+    address[] public owners;
 
     uint256 private _nextTokenId = 1;
 
@@ -80,12 +83,13 @@ contract CafeVoucherNFT {
     );
 
     modifier onlyOwners() {
-        require(owners[msg.sender], "Caller is not an owner");
+        require(isOwner[msg.sender], "Caller is not an owner");
         _;
     }
 
     constructor() {
-        owners[msg.sender] = true;
+        isOwner[msg.sender] = true;
+        owners.push(msg.sender);
 
         uint256 chainId;
         assembly {
@@ -377,15 +381,41 @@ contract CafeVoucherNFT {
         return ecrecover(digest, v, r, s);
     }
 
-    // Add a new owner to the contract
-    function addOwner(address newOwner) public onlyOwners {
-        require(newOwner != address(0), "New owner is zero address");
-        owners[newOwner] = true;
+    // Add multiple new owners
+    function addOwners(address[] memory _newOwners) public onlyOwners {
+        for (uint256 i = 0; i < _newOwners.length; i++) {
+            address newOwner = _newOwners[i];
+            require(newOwner != address(0), "CafeVoucherNFT: invalid owner address");
+            if (!isOwner[newOwner]) {
+                isOwner[newOwner] = true;
+                owners.push(newOwner);
+            }
+        }
     }
 
-    // Remove an existing owner from the contract
-    function removeOwner(address targetOwner) public onlyOwners {
-        require(owners[targetOwner], "Target is not an owner");
-        owners[targetOwner] = false;
+    // Remove multiple existing owners
+    function removeOwners(address[] memory _ownersToRemove) public onlyOwners {
+        require(_ownersToRemove.length < owners.length, "CafeVoucherNFT: cannot remove all owners");
+        for (uint256 i = 0; i < _ownersToRemove.length; i++) {
+            address ownerToRemove = _ownersToRemove[i];
+            require(ownerToRemove != msg.sender, "CafeVoucherNFT: cannot remove self");
+            if (isOwner[ownerToRemove]) {
+                isOwner[ownerToRemove] = false;
+
+                // Reconstruct owners array
+                for (uint256 j = 0; j < owners.length; j++) {
+                    if (owners[j] == ownerToRemove) {
+                        owners[j] = owners[owners.length - 1];
+                        owners.pop();
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    // Get the list of current owners
+    function getOwners() public view returns (address[] memory) {
+        return owners;
     }
 }

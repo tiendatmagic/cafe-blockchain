@@ -1,0 +1,668 @@
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { JsonRpcProvider, Contract } from 'ethers';
+import { CAFE_WEB3_POS_ABI } from '../../services/contract-abi';
+import { CAFE_WEB3_FINANCE_ABI } from '../../services/finance-contract-abi';
+import { CAFE_VOUCHER_NFT_ABI } from '../../services/voucher-contract-abi';
+import { CAFE_MENU_REGISTRY_ABI } from '../../services/menu-registry-contract-abi';
+import { ApiService } from '../../services/api.service';
+
+@Component({
+  selector: 'app-blockchain-explorer',
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterModule],
+  templateUrl: './blockchain-explorer.component.html'
+})
+export class BlockchainExplorerComponent implements OnInit {
+  private readonly apiService = inject(ApiService);
+
+  // Cấu hình kết nối hiện tại
+  public readonly storeName = signal<string>('Cafe Web3 POS');
+  public readonly rpcUrl = signal<string>('https://bsc-testnet-rpc.publicnode.com');
+  public readonly posContractAddress = signal<string>('0xB35E2987932C7D6499f93d8CE5ac90CF43DD8c38');
+  public readonly financeContractAddress = signal<string>('0x7988500670EC631F7be36eD91E367760f380d6Af');
+  public readonly voucherContractAddress = signal<string>('0xc6828e46E100B248173e28a33e8D92662Cd1A8c7');
+  public readonly menuRegistryContractAddress = signal<string>('');
+  public readonly explorerUrl = signal<string>('https://testnet.bscscan.com');
+  public readonly chainId = signal<string>('97');
+
+  // Trạng thái kết nối
+  public readonly connectionStatus = signal<'api' | 'offline_fallback' | 'custom' | 'loading'>('loading');
+
+  // Cấu hình tùy chỉnh (form)
+  public customRpcUrl = '';
+  public customPosAddress = '';
+  public customFinanceAddress = '';
+  public customVoucherAddress = '';
+  public customMenuRegistryAddress = '';
+  public customExplorerUrl = '';
+  public customChainId = '';
+
+  // Trạng thái hiển thị menu cài đặt
+  public readonly isSettingsOpen = signal<boolean>(false);
+
+  // Dữ liệu Tìm kiếm
+  public searchQuery = '';
+  public searchType: 'order' | 'transaction' | 'voucher' = 'order';
+  public readonly isSearching = signal<boolean>(false);
+  public readonly searchResult = signal<any | null>(null);
+  public readonly searchError = signal<string>('');
+
+  // Quản lý Tab & Phân trang luồng dữ liệu onchain
+  public readonly activeTab = signal<'order' | 'transaction' | 'voucher' | 'menu'>('order');
+  public readonly limit = 10;
+  
+  public readonly orderPage = signal<number>(1);
+  public readonly orderTotal = signal<number>(0);
+  
+  public readonly transactionPage = signal<number>(1);
+  public readonly transactionTotal = signal<number>(0);
+  
+  public readonly voucherPage = signal<number>(1);
+  public readonly voucherTotal = signal<number>(0);
+
+  // Getters hỗ trợ phân trang
+  public get totalOrderPages(): number {
+    return Math.ceil(this.orderTotal() / this.limit) || 1;
+  }
+
+  public get totalTransactionPages(): number {
+    return Math.ceil(this.transactionTotal() / this.limit) || 1;
+  }
+
+  public get totalVoucherPages(): number {
+    return Math.ceil(this.voucherTotal() / this.limit) || 1;
+  }
+
+  // Danh sách dữ liệu mới nhất hiển thị trên tabs
+  public readonly latestOrders = signal<any[]>([]);
+  public readonly latestTransactions = signal<any[]>([]);
+  public readonly latestVouchers = signal<any[]>([]);
+  public readonly menuProducts = signal<any[]>([]);
+  public readonly menuLastUpdated = signal<number>(0);
+  public readonly isLatestDataLoading = signal<boolean>(false);
+
+  ngOnInit() {
+    this.initConfiguration();
+  }
+
+  /**
+   * Khởi tạo cấu hình (Thử từ localStorage -> API -> Fallback cứng)
+   */
+  public initConfiguration() {
+    const cachedConfig = localStorage.getItem('cafe_blockchain_explorer_config');
+    if (cachedConfig) {
+      try {
+        const config = JSON.parse(cachedConfig);
+        this.rpcUrl.set(config.rpcUrl);
+        this.posContractAddress.set(config.posContractAddress);
+        this.financeContractAddress.set(config.financeContractAddress);
+        this.voucherContractAddress.set(config.voucherContractAddress);
+        this.menuRegistryContractAddress.set(config.menuRegistryContractAddress || '');
+        this.explorerUrl.set(config.explorerUrl);
+        this.chainId.set(config.chainId);
+        this.storeName.set(config.storeName || 'Cấu hình tùy chỉnh');
+        this.connectionStatus.set('custom');
+        
+        this.syncToCustomFields();
+        this.loadDataForActiveTab();
+        return;
+      } catch (e) {
+        console.error('Lỗi đọc cấu hình cache, thử tải từ API:', e);
+      }
+    }
+
+    this.loadFromApi();
+  }
+
+  /**
+   * Tải cấu hình từ API của quán
+   */
+  public loadFromApi() {
+    this.connectionStatus.set('loading');
+    this.apiService.getPublicSettings().subscribe({
+      next: (res) => {
+        this.rpcUrl.set(res.rpc_url || 'https://bsc-testnet-rpc.publicnode.com');
+        this.posContractAddress.set(res.contract_address || '0xB35E2987932C7D6499f93d8CE5ac90CF43DD8c38');
+        this.financeContractAddress.set(res.finance_contract_address || '0x7988500670EC631F7be36eD91E367760f380d6Af');
+        this.voucherContractAddress.set(res.voucher_contract_address || '0xc6828e46E100B248173e28a33e8D92662Cd1A8c7');
+        this.menuRegistryContractAddress.set(res.menu_registry_contract_address || '');
+        this.explorerUrl.set(res.explorer_url || 'https://testnet.bscscan.com');
+        this.chainId.set(res.chain_id || '97');
+        this.storeName.set(res.store_name || 'Cafe Web3 POS');
+        this.connectionStatus.set('api');
+
+        this.syncToCustomFields();
+        this.loadDataForActiveTab();
+      },
+      error: (err) => {
+        console.warn('API sập hoặc lỗi, chuyển sang chế độ Offline Fallback:', err);
+        this.useOfflineFallback();
+      }
+    });
+  }
+
+  /**
+   * Kích hoạt chế độ Offline Fallback
+   */
+  public useOfflineFallback() {
+    this.rpcUrl.set('https://bsc-testnet-rpc.publicnode.com');
+    this.posContractAddress.set('0xB35E2987932C7D6499f93d8CE5ac90CF43DD8c38');
+    this.financeContractAddress.set('0x7988500670EC631F7be36eD91E367760f380d6Af');
+    this.voucherContractAddress.set('0xc6828e46E100B248173e28a33e8D92662Cd1A8c7');
+    this.menuRegistryContractAddress.set('');
+    this.explorerUrl.set('https://testnet.bscscan.com');
+    this.chainId.set('97');
+    this.storeName.set('Mạng BSC Testnet (Fallback)');
+    this.connectionStatus.set('offline_fallback');
+
+    this.syncToCustomFields();
+    this.loadDataForActiveTab();
+  }
+
+  /**
+   * Đồng bộ các biến signal sang các trường form custom
+   */
+  private syncToCustomFields() {
+    this.customRpcUrl = this.rpcUrl();
+    this.customPosAddress = this.posContractAddress();
+    this.customFinanceAddress = this.financeContractAddress();
+    this.customVoucherAddress = this.voucherContractAddress();
+    this.customMenuRegistryAddress = this.menuRegistryContractAddress();
+    this.customExplorerUrl = this.explorerUrl();
+    this.customChainId = this.chainId();
+  }
+
+  /**
+   * Lưu cấu hình chỉnh sửa thủ công
+   */
+  public saveCustomSettings() {
+    if (!this.customRpcUrl || !this.customPosAddress || !this.customFinanceAddress) {
+      alert('Vui lòng điền đầy đủ thông tin RPC và Smart Contract POS & Tài chính!');
+      return;
+    }
+
+    const config = {
+      rpcUrl: this.customRpcUrl.trim(),
+      posContractAddress: this.customPosAddress.trim(),
+      financeContractAddress: this.customFinanceAddress.trim(),
+      voucherContractAddress: this.customVoucherAddress.trim(),
+      menuRegistryContractAddress: this.customMenuRegistryAddress.trim(),
+      explorerUrl: this.customExplorerUrl.trim(),
+      chainId: this.customChainId.trim(),
+      storeName: 'Cấu hình tùy chỉnh'
+    };
+
+    localStorage.setItem('cafe_blockchain_explorer_config', JSON.stringify(config));
+
+    this.rpcUrl.set(config.rpcUrl);
+    this.posContractAddress.set(config.posContractAddress);
+    this.financeContractAddress.set(config.financeContractAddress);
+    this.voucherContractAddress.set(config.voucherContractAddress);
+    this.menuRegistryContractAddress.set(config.menuRegistryContractAddress);
+    this.explorerUrl.set(config.explorerUrl);
+    this.chainId.set(config.chainId);
+    this.storeName.set(config.storeName);
+    this.connectionStatus.set('custom');
+    this.isSettingsOpen.set(false);
+
+    // Reset trang về 1 khi đổi mạng/contract
+    this.orderPage.set(1);
+    this.transactionPage.set(1);
+    this.voucherPage.set(1);
+
+    // Xóa dữ liệu cũ của cả 4 tab để kích hoạt tải lại theo mạng mới
+    this.latestOrders.set([]);
+    this.latestTransactions.set([]);
+    this.latestVouchers.set([]);
+    this.menuProducts.set([]);
+    
+    this.loadDataForActiveTab();
+  }
+
+  /**
+   * Xóa cấu hình tùy chỉnh để quay lại cấu hình tự động
+   */
+  public resetToAuto() {
+    localStorage.removeItem('cafe_blockchain_explorer_config');
+
+    // Reset trang về 1 khi đổi mạng/contract
+    this.orderPage.set(1);
+    this.transactionPage.set(1);
+    this.voucherPage.set(1);
+
+    // Xóa dữ liệu cũ của cả 4 tab
+    this.latestOrders.set([]);
+    this.latestTransactions.set([]);
+    this.latestVouchers.set([]);
+    this.menuProducts.set([]);
+
+    this.loadFromApi();
+  }
+
+  /**
+   * Tự động nhận diện loại tìm kiếm khi gõ mã
+   */
+  public onSearchQueryChange() {
+    const query = this.searchQuery.trim().toUpperCase();
+    if (query.startsWith('HD-')) {
+      this.searchType = 'order';
+    } else if (query.startsWith('TC-') || query.startsWith('PC-')) {
+      this.searchType = 'transaction';
+    } else if (query.startsWith('0X') && query.length === 42) {
+      this.searchType = 'voucher';
+    } else if (/^\d+$/.test(query)) {
+      this.searchType = 'voucher';
+    }
+  }
+
+  /**
+   * Thực hiện tra cứu onchain trực tiếp qua RPC
+   */
+  public async searchOnChain() {
+    const query = this.searchQuery.trim();
+    if (!query) {
+      this.searchError.set('Vui lòng nhập thông tin cần tra cứu.');
+      this.searchResult.set(null);
+      return;
+    }
+
+    this.isSearching.set(true);
+    this.searchError.set('');
+    this.searchResult.set(null);
+
+    try {
+      const provider = new JsonRpcProvider(this.rpcUrl());
+      
+      if (this.searchType === 'order') {
+        const contract = new Contract(this.posContractAddress(), CAFE_WEB3_POS_ABI, provider);
+        const orderData = await contract['getOrderByCode'](query);
+        
+        if (!orderData || orderData.orderCode !== query) {
+          this.searchError.set(`Không tìm thấy dữ liệu hóa đơn "${query}" trên blockchain.`);
+        } else {
+          this.searchResult.set({
+            type: 'order',
+            orderId: Number(orderData.orderId),
+            orderCode: orderData.orderCode,
+            tableNumber: orderData.tableNumber,
+            totalAmount: Number(orderData.totalAmount),
+            paymentMethod: orderData.paymentMethod,
+            itemsSummary: orderData.itemsSummary,
+            timestamp: Number(orderData.timestamp) * 1000,
+            recordedBy: orderData.recordedBy
+          });
+        }
+      } else if (this.searchType === 'transaction') {
+        const contract = new Contract(this.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, provider);
+        const txData = await contract['getTransactionByCode'](query);
+
+        if (!txData || txData.transactionCode !== query) {
+          this.searchError.set(`Không tìm thấy dữ liệu phiếu thu/chi "${query}" trên blockchain.`);
+        } else {
+          this.searchResult.set({
+            type: 'transaction',
+            txId: Number(txData.txId),
+            transactionCode: txData.transactionCode,
+            txType: txData.txType === 1 ? 'thu' : 'chi',
+            amount: Number(txData.amount),
+            category: txData.category,
+            description: txData.description,
+            timestamp: Number(txData.timestamp) * 1000,
+            recordedBy: txData.recordedBy
+          });
+        }
+      } else if (this.searchType === 'voucher') {
+        const contract = new Contract(this.voucherContractAddress(), CAFE_VOUCHER_NFT_ABI, provider);
+        
+        if (query.startsWith('0x') && query.length === 42) {
+          // Tra cứu ví sở hữu
+          const tokenIds = await contract['getTokensOfOwner'](query);
+          const vouchersList: any[] = [];
+          
+          for (let i = 0; i < tokenIds.length; i++) {
+            const id = Number(tokenIds[i]);
+            const info = await contract['vouchers'](id);
+            vouchersList.push({
+              tokenId: id,
+              discountAmount: Number(info.discountAmount),
+              minOrderAmount: Number(info.minOrderAmount),
+              isUsed: info.isUsed
+            });
+          }
+          
+          this.searchResult.set({
+            type: 'voucher_owner',
+            address: query,
+            vouchers: vouchersList
+          });
+        } else if (/^\d+$/.test(query)) {
+          // Tra cứu ID NFT
+          const tokenId = Number(query);
+          const info = await contract['vouchers'](tokenId);
+
+          if (Number(info.discountAmount) === 0) {
+            this.searchError.set(`Voucher NFT ID ${tokenId} chưa được mint hoặc không tồn tại.`);
+            this.isSearching.set(false);
+            return;
+          }
+
+          let owner = '0x0000000000000000000000000000000000000000';
+          if (!info.isUsed) {
+            try {
+              owner = await contract['ownerOf'](tokenId);
+            } catch (e) {
+              console.warn(`Không tìm thấy owner cho voucher active ID ${tokenId}:`, e);
+            }
+          }
+          
+          let tokenUri = '';
+          try {
+            tokenUri = await contract['tokenURI'](tokenId);
+          } catch (e) {}
+
+          this.searchResult.set({
+            type: 'voucher_detail',
+            tokenId: tokenId,
+            owner: owner,
+            discountAmount: Number(info.discountAmount),
+            minOrderAmount: Number(info.minOrderAmount),
+            isUsed: info.isUsed,
+            tokenUri: tokenUri
+          });
+        } else {
+          this.searchError.set('Vui lòng nhập địa chỉ ví hợp lệ (0x...) hoặc ID NFT Voucher (số nguyên).');
+        }
+      }
+    } catch (e: any) {
+      console.error('Lỗi khi tra cứu onchain:', e);
+      this.searchError.set(`Lỗi truy vấn RPC Node: ${e.message || 'Không thể kết nối đến RPC node. Hãy kiểm tra cài đặt mạng!'}`);
+    } finally {
+      this.isSearching.set(false);
+    }
+  }
+
+  /**
+   * Chuyển tab hiển thị dữ liệu onchain
+   */
+  public selectTab(tab: 'order' | 'transaction' | 'voucher' | 'menu') {
+    // Nếu bấm trùng tab đang active thì không làm gì cả
+    if (this.activeTab() === tab) {
+      return;
+    }
+
+    this.activeTab.set(tab);
+
+    // Kiểm tra xem dữ liệu của tab được chọn đã có sẵn chưa
+    let hasData = false;
+    if (tab === 'order' && this.latestOrders().length > 0) {
+      hasData = true;
+    } else if (tab === 'transaction' && this.latestTransactions().length > 0) {
+      hasData = true;
+    } else if (tab === 'voucher' && this.latestVouchers().length > 0) {
+      hasData = true;
+    } else if (tab === 'menu' && this.menuProducts().length > 0) {
+      hasData = true;
+    }
+
+    // Chỉ tải dữ liệu onchain nếu tab đó chưa có dữ liệu
+    if (!hasData) {
+      this.loadDataForActiveTab();
+    }
+  }
+
+  /**
+   * Thay đổi trang hiển thị dữ liệu
+   */
+  public changePage(direction: 'next' | 'prev') {
+    const tab = this.activeTab();
+    if (tab === 'order') {
+      const cur = this.orderPage();
+      if (direction === 'next' && cur * this.limit < this.orderTotal()) {
+        this.orderPage.set(cur + 1);
+        this.loadDataForActiveTab();
+      } else if (direction === 'prev' && cur > 1) {
+        this.orderPage.set(cur - 1);
+        this.loadDataForActiveTab();
+      }
+    } else if (tab === 'transaction') {
+      const cur = this.transactionPage();
+      if (direction === 'next' && cur * this.limit < this.transactionTotal()) {
+        this.transactionPage.set(cur + 1);
+        this.loadDataForActiveTab();
+      } else if (direction === 'prev' && cur > 1) {
+        this.transactionPage.set(cur - 1);
+        this.loadDataForActiveTab();
+      }
+    } else if (tab === 'voucher') {
+      const cur = this.voucherPage();
+      if (direction === 'next' && cur * this.limit < this.voucherTotal()) {
+        this.voucherPage.set(cur + 1);
+        this.loadDataForActiveTab();
+      } else if (direction === 'prev' && cur > 1) {
+        this.voucherPage.set(cur - 1);
+        this.loadDataForActiveTab();
+      }
+    }
+  }
+
+  /**
+   * Tải dữ liệu tương ứng cho Tab đang chọn
+   */
+  public async loadDataForActiveTab() {
+    this.isLatestDataLoading.set(true);
+    const tab = this.activeTab();
+
+    try {
+      const provider = new JsonRpcProvider(this.rpcUrl());
+
+      if (tab === 'order') {
+        this.latestOrders.set([]);
+        try {
+          const posContract = new Contract(this.posContractAddress(), CAFE_WEB3_POS_ABI, provider);
+          const res = await posContract['getOrdersPaginated'](this.orderPage(), this.limit);
+          if (res && res[0]) {
+            const orders = res[0].map((o: any) => ({
+              orderId: Number(o.orderId),
+              orderCode: o.orderCode,
+              tableNumber: o.tableNumber,
+              totalAmount: Number(o.totalAmount),
+              paymentMethod: o.paymentMethod,
+              itemsSummary: o.itemsSummary,
+              timestamp: Number(o.timestamp) * 1000,
+              recordedBy: o.recordedBy
+            }));
+            this.latestOrders.set(orders);
+            this.orderTotal.set(Number(res[1]));
+          }
+        } catch (err) {
+          console.warn('Không thể load danh sách orders từ Smart Contract POS:', err);
+        }
+      } else if (tab === 'transaction') {
+        this.latestTransactions.set([]);
+        try {
+          const financeContract = new Contract(this.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, provider);
+          const res = await financeContract['getTransactionsPaginated'](this.transactionPage(), this.limit);
+          if (res && res[0]) {
+            const transactions = res[0].map((t: any) => ({
+              txId: Number(t.txId),
+              transactionCode: t.transactionCode,
+              txType: t.txType === 1 ? 'thu' : 'chi',
+              amount: Number(t.amount),
+              category: t.category,
+              description: t.description,
+              timestamp: Number(t.timestamp) * 1000,
+              recordedBy: t.recordedBy
+            }));
+            this.latestTransactions.set(transactions);
+            this.transactionTotal.set(Number(res[1]));
+          }
+        } catch (err) {
+          console.warn('Không thể load danh sách transactions từ Smart Contract Tài chính:', err);
+        }
+      } else if (tab === 'voucher') {
+        this.latestVouchers.set([]);
+        try {
+          const voucherContract = new Contract(this.voucherContractAddress(), CAFE_VOUCHER_NFT_ABI, provider);
+          const maxId = await this.getMaxTokenId(voucherContract);
+          this.voucherTotal.set(maxId);
+
+          if (maxId > 0) {
+            const currentPage = this.voucherPage();
+            const startId = maxId - (currentPage - 1) * this.limit;
+            const endId = Math.max(1, startId - this.limit + 1);
+
+            const promises: Promise<any>[] = [];
+            for (let id = startId; id >= endId; id--) {
+              promises.push((async () => {
+                try {
+                  const info = await voucherContract['vouchers'](id);
+                  if (Number(info.discountAmount) > 0) {
+                    let owner = '0x0000000000000000000000000000000000000000';
+                    if (!info.isUsed) {
+                      try {
+                        owner = await voucherContract['ownerOf'](id);
+                      } catch (e) {
+                        console.warn(`Lỗi lấy owner cho voucher ID ${id}:`, e);
+                      }
+                    }
+                    return {
+                      tokenId: id,
+                      discountAmount: Number(info.discountAmount),
+                      minOrderAmount: Number(info.minOrderAmount),
+                      isUsed: info.isUsed,
+                      owner: owner
+                    };
+                  }
+                } catch (err) {
+                  console.warn(`Lỗi load voucher ID ${id}:`, err);
+                }
+                return null;
+              })());
+            }
+
+            const results = await Promise.all(promises);
+            const vouchersList = results.filter(v => v !== null);
+            this.latestVouchers.set(vouchersList);
+          }
+        } catch (err) {
+          console.warn('Không thể load danh sách vouchers từ Smart Contract Voucher:', err);
+        }
+      } else if (tab === 'menu') {
+        this.menuProducts.set([]);
+        try {
+          const menuRegistryContract = new Contract(this.menuRegistryContractAddress(), CAFE_MENU_REGISTRY_ABI, provider);
+          const rawProducts = await menuRegistryContract['getAllProducts']();
+          const lastUpdatedRaw = await menuRegistryContract['lastUpdated']();
+
+          const products = rawProducts.map((p: any) => ({
+            sku: p.sku,
+            name: p.name,
+            price: Number(p.price),
+            image: p.image,
+            status: p.status
+          }));
+
+          this.menuProducts.set(products);
+          this.menuLastUpdated.set(Number(lastUpdatedRaw) * 1000);
+        } catch (err) {
+          console.warn('Không thể load danh sách thực đơn từ Smart Contract Menu Registry:', err);
+        }
+      }
+    } catch (e) {
+      console.error('Lỗi khi tải dữ liệu từ chuỗi:', e);
+    } finally {
+      this.isLatestDataLoading.set(false);
+    }
+  }
+
+  /**
+   * Dò tìm Token ID Voucher lớn nhất bằng tìm kiếm nhị phân
+   */
+  private async getMaxTokenId(contract: Contract): Promise<number> {
+    let low = 1;
+    let high = 500; // Khoảng ước lượng ban đầu
+    let maxId = 0;
+
+    // Quét mở rộng khoảng nếu vượt quá ước lượng
+    while (true) {
+      try {
+        const info = await contract['vouchers'](high);
+        if (Number(info.discountAmount) > 0) {
+          low = high;
+          high = high * 2;
+        } else {
+          break;
+        }
+      } catch (e) {
+        break;
+      }
+    }
+
+    // Tìm kiếm nhị phân chính xác Token ID lớn nhất có discountAmount > 0
+    while (low <= high) {
+      const mid = Math.floor((low + high) / 2);
+      try {
+        const info = await contract['vouchers'](mid);
+        if (Number(info.discountAmount) > 0) {
+          maxId = mid;
+          low = mid + 1;
+        } else {
+          high = mid - 1;
+        }
+      } catch (e) {
+        high = mid - 1;
+      }
+    }
+    return maxId;
+  }
+
+  /**
+   * Chọn nhanh một hóa đơn/giao dịch/voucher từ bảng feed để tra cứu chi tiết
+   */
+  public selectItem(code: string, type: 'order' | 'transaction' | 'voucher') {
+    this.searchQuery = code;
+    this.searchType = type;
+    this.searchOnChain();
+  }
+
+  // Helpers
+  public formatAddress(addr: string): string {
+    if (!addr) return '';
+    if (addr.length < 12) return addr;
+    return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
+  }
+
+  public getTxExplorerLink(txHash: string | null | undefined): string {
+    if (!txHash) return '#';
+    return `${this.explorerUrl()}/tx/${txHash}`;
+  }
+
+  /**
+   * Chọn nhanh một món ăn từ tab thực đơn để xem chi tiết
+   */
+  public selectProductItem(prod: any) {
+    this.searchResult.set({
+      type: 'menu_detail',
+      sku: prod.sku,
+      name: prod.name,
+      price: prod.price,
+      image: prod.image,
+      status: prod.status
+    });
+    this.searchError.set('');
+  }
+
+  public getProductImage(imagePath: string): string {
+    if (!imagePath || !imagePath.trim()) {
+      return 'not-found.webp';
+    }
+    return imagePath;
+  }
+
+  public handleImageError(event: any) {
+    event.target.src = 'not-found.webp';
+  }
+}
