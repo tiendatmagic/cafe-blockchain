@@ -544,6 +544,10 @@
                       Ví sở hữu Voucher
                     } @else if (result.type === 'voucher_detail') {
                       Voucher NFT
+                    } @else if (result.type === 'menu_current_detail') {
+                      Thực đơn Onchain
+                    } @else if (result.type === 'menu_history_detail') {
+                      Mốc lịch sử thực đơn
                     }
                   </span>
                   <span class="text-xs text-slate-400 dark:text-slate-500 font-mono">
@@ -553,6 +557,8 @@
                       ID #{{ result.txId }}
                     } @else if (result.type === 'voucher_detail') {
                       Token ID #{{ result.tokenId }}
+                    } @else if (result.type === 'menu_history_detail') {
+                      Block #{{ result.blockNumber }}
                     }
                   </span>
                 </div>
@@ -567,6 +573,10 @@
                     {{ formatAddress(result.address) }}
                   } @else if (result.type === 'voucher_detail') {
                     Voucher #{{ result.tokenId }}
+                  } @else if (result.type === 'menu_current_detail') {
+                    Thực đơn hiện tại
+                  } @else if (result.type === 'menu_history_detail') {
+                    Sửa đổi tại block #{{ result.blockNumber }}
                   }
                 </h3>
               </div>
@@ -1152,7 +1162,7 @@
                     } @else if (result.type === 'transaction') {
                       Financial Ledger
                     } @else if (
-                      result.type === 'menu_detail' || result.type === 'menu_history_detail'
+                      result.type === 'menu_detail' || result.type === 'menu_history_detail' || result.type === 'menu_current_detail'
                     ) {
                       Menu Registry
                     } @else {
@@ -1170,7 +1180,7 @@
                           ? posContractAddress()
                           : result.type === 'transaction'
                             ? financeContractAddress()
-                            : result.type === 'menu_detail' || result.type === 'menu_history_detail'
+                            : result.type === 'menu_detail' || result.type === 'menu_history_detail' || result.type === 'menu_current_detail'
                               ? menuRegistryContractAddress()
                               : voucherContractAddress()
                       "
@@ -1182,7 +1192,8 @@
                             : result.type === 'transaction'
                               ? financeContractAddress()
                               : result.type === 'menu_detail' ||
-                                  result.type === 'menu_history_detail'
+                                  result.type === 'menu_history_detail' ||
+                                  result.type === 'menu_current_detail'
                                 ? menuRegistryContractAddress()
                                 : voucherContractAddress()
                         )
@@ -1197,7 +1208,7 @@
                         ? posContractAddress()
                         : result.type === 'transaction'
                           ? financeContractAddress()
-                          : result.type === 'menu_detail' || result.type === 'menu_history_detail'
+                          : result.type === 'menu_detail' || result.type === 'menu_history_detail' || result.type === 'menu_current_detail'
                             ? menuRegistryContractAddress()
                             : voucherContractAddress())
                     "

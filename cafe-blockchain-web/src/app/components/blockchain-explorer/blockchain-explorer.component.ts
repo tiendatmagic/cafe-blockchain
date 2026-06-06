@@ -9,6 +9,7 @@ import { CAFE_VOUCHER_NFT_ABI } from '../../services/voucher-contract-abi';
 import { CAFE_MENU_REGISTRY_ABI } from '../../services/menu-registry-contract-abi';
 import { ApiService } from '../../services/api.service';
 import { StateService } from '../../services/state.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-blockchain-explorer',
@@ -406,6 +407,12 @@ export class BlockchainExplorerComponent implements OnInit {
           let tokenUri = '';
           try {
             tokenUri = await contract['tokenURI'](tokenId);
+            if (tokenUri) {
+              const match = tokenUri.match(/\/vouchers\/metadata\/[A-Za-z0-9\-]+/);
+              if (match) {
+                tokenUri = `${environment.apiBaseUrl}${match[0]}`;
+              }
+            }
           } catch (e) {}
 
           this.searchResult.set({
@@ -853,23 +860,38 @@ export class BlockchainExplorerComponent implements OnInit {
       const paginated = this.allHistoryProducts.slice(start, start + this.detailProductLimit);
       this.detailProducts.set(paginated);
     } else if (result.type === 'menu_current_detail') {
-      // Phân trang onchain gọi trực tiếp getProductsPaginated từ blockchain
+      // Phân trang onchain gọi trực tiếp getProductsPaginated từ blockchain, có fallback sang getAllProducts
       this.isSearching.set(true);
       try {
         const provider = new JsonRpcProvider(this.rpcUrl());
         const menuRegistryContract = new Contract(this.menuRegistryContractAddress(), CAFE_MENU_REGISTRY_ABI, provider);
 
-        const res = await menuRegistryContract['getProductsPaginated'](start, this.detailProductLimit);
-        if (res && res[0]) {
-          const products = res[0].map((p: any) => ({
+        try {
+          const res = await menuRegistryContract['getProductsPaginated'](start, this.detailProductLimit);
+          if (res && res[0]) {
+            const products = res[0].map((p: any) => ({
+              sku: p.sku,
+              name: p.name,
+              price: Number(p.price),
+              image: p.image,
+              status: p.status
+            }));
+            this.detailProducts.set(products);
+            this.detailProductTotal.set(Number(res[1]));
+          }
+        } catch (paginatedErr) {
+          console.warn('[MenuRegistry] getProductsPaginated không khả dụng, fallback sang getAllProducts():', paginatedErr);
+          const rawProducts = await menuRegistryContract['getAllProducts']();
+          const allProducts = rawProducts.map((p: any) => ({
             sku: p.sku,
             name: p.name,
             price: Number(p.price),
             image: p.image,
             status: p.status
           }));
-          this.detailProducts.set(products);
-          this.detailProductTotal.set(Number(res[1]));
+          this.detailProductTotal.set(allProducts.length);
+          const paginated = allProducts.slice(start, start + this.detailProductLimit);
+          this.detailProducts.set(paginated);
         }
       } catch (err) {
         console.warn('Lỗi lấy thực đơn hiện tại onchain:', err);
