@@ -599,7 +599,7 @@ export class Web3Service {
       const tx = await contract['recordOrder'](
         finalOrderId,
         orderCode || '',
-        tableNumber || 'Mang ve',
+        tableNumber || 'Mang về',
         Math.round(totalAmount), // Lưu trữ dạng số nguyên lớn (VND)
         paymentMethod,
         itemsSummary

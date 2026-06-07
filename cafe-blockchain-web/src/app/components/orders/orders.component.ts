@@ -183,7 +183,7 @@ export class OrdersComponent implements OnInit {
         const result = await this.web3Service.recordOrderOnChain(
           order.id,
           order.order_code || '',
-          order.table_number || 'Mang ve',
+          order.table_number || 'Mang về',
           order.total_amount,
           this.getPaymentMethodText(order.payment_method),
           itemsSummary
@@ -270,7 +270,7 @@ export class OrdersComponent implements OnInit {
     const result = await this.web3Service.recordOrderOnChain(
       order.id,
       order.order_code || '',
-      order.table_number || 'Mang ve',
+      order.table_number || 'Mang về',
       order.total_amount,
       this.getPaymentMethodText(order.payment_method),
       itemsSummary
