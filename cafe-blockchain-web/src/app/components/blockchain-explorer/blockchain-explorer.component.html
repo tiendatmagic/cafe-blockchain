@@ -254,7 +254,7 @@
               d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
             />
           </svg>
-          Cấu hình Kết nối Trực tiếp (Trường hợp Database MySQL Quán sập)
+          Cấu hình Kết nối Trực tiếp (Thông tin bất cứ quán nào)
         </h3>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
@@ -552,9 +552,13 @@
                   </span>
                   <span class="text-xs text-slate-400 dark:text-slate-500 font-mono">
                     @if (result.type === 'order') {
-                      <span [title]="formatUuid(result.orderId)">ID #{{ formatUuidShort(result.orderId) }}</span>
+                      <span [title]="formatUuid(result.orderId)"
+                        >ID #{{ formatUuidShort(result.orderId) }}</span
+                      >
                     } @else if (result.type === 'transaction') {
-                      <span [title]="formatUuid(result.txId)">ID #{{ formatUuidShort(result.txId) }}</span>
+                      <span [title]="formatUuid(result.txId)"
+                        >ID #{{ formatUuidShort(result.txId) }}</span
+                      >
                     } @else if (result.type === 'voucher_detail') {
                       Token ID #{{ result.tokenId }}
                     } @else if (result.type === 'menu_history_detail') {
@@ -1162,7 +1166,9 @@
                     } @else if (result.type === 'transaction') {
                       Financial Ledger
                     } @else if (
-                      result.type === 'menu_detail' || result.type === 'menu_history_detail' || result.type === 'menu_current_detail'
+                      result.type === 'menu_detail' ||
+                      result.type === 'menu_history_detail' ||
+                      result.type === 'menu_current_detail'
                     ) {
                       Menu Registry
                     } @else {
@@ -1180,7 +1186,9 @@
                           ? posContractAddress()
                           : result.type === 'transaction'
                             ? financeContractAddress()
-                            : result.type === 'menu_detail' || result.type === 'menu_history_detail' || result.type === 'menu_current_detail'
+                            : result.type === 'menu_detail' ||
+                                result.type === 'menu_history_detail' ||
+                                result.type === 'menu_current_detail'
                               ? menuRegistryContractAddress()
                               : voucherContractAddress()
                       "
@@ -1208,7 +1216,9 @@
                         ? posContractAddress()
                         : result.type === 'transaction'
                           ? financeContractAddress()
-                          : result.type === 'menu_detail' || result.type === 'menu_history_detail' || result.type === 'menu_current_detail'
+                          : result.type === 'menu_detail' ||
+                              result.type === 'menu_history_detail' ||
+                              result.type === 'menu_current_detail'
                             ? menuRegistryContractAddress()
                             : voucherContractAddress())
                     "
@@ -1300,8 +1310,8 @@
                 Độc lập với Database
               </p>
               <p class="text-slate-600 dark:text-slate-400 leading-relaxed">
-                Khi database MySQL của quán bị sập hoặc dữ liệu bị xóa, trang này vẫn hoạt động bình
-                thường nhờ cơ chế gọi trực tiếp (Ethers.js RPC) lên Smart Contract.
+                Khi database MySQL của quán không hoạt động hoặc dữ liệu bị xóa, trang này vẫn hoạt
+                động bình thường nhờ cơ chế gọi trực tiếp (Ethers.js RPC) lên Smart Contract.
               </p>
             </div>
             <div

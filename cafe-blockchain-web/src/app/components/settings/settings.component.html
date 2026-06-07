@@ -272,7 +272,7 @@
             <span class="text-xs font-bold text-slate-800 dark:text-white block"
               >Cho phép thanh toán Crypto</span
             >
-            <span class="text-[10px] text-slate-400 font-semibold block leading-tight">
+            <span class="text-xs text-slate-400 font-semibold block leading-tight">
               Bật/tắt việc chấp nhận thanh toán bằng Crypto tại màn hình bán hàng POS.
             </span>
           </div>
@@ -1093,15 +1093,15 @@
               (ngModelChange)="updateConfigForm('menu_registry_contract_address', $event)"
               placeholder="Chưa deploy hợp đồng Menu Registry. Vui lòng bấm Deploy..."
               [disabled]="
-                (settings().menu_registry_contract_address !== '' && settings().has_synced_menu === '1') ||
+                (settings().menu_registry_contract_address !== '' &&
+                  settings().has_synced_menu === '1') ||
                 !web3Service.walletConnected() ||
                 !web3Service.isOwnerContract()
               "
               class="flex-1 h-[42px] px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all disabled:opacity-50 min-w-0 font-semibold"
             />
             @if (
-              settings().menu_registry_contract_address === '' ||
-              settings().has_synced_menu !== '1'
+              settings().menu_registry_contract_address === '' || settings().has_synced_menu !== '1'
             ) {
               <button
                 type="button"
@@ -1445,12 +1445,17 @@
 
               <div class="space-y-2 max-h-[180px] overflow-y-auto pr-1 no-scrollbar">
                 @if (isOwnersLoading()) {
-                  <span class="text-xs text-slate-400 italic block py-4 text-center flex items-center justify-center gap-1.5"
-                    ><div class="w-3.5 h-3.5 rounded-full border-2 border-[var(--dynamic-primary)]/30 border-t-[var(--dynamic-primary)] animate-spin"></div> Đang nạp danh sách ví từ Blockchain...</span
+                  <span
+                    class="text-xs text-slate-400 italic block py-4 text-center flex items-center justify-center gap-1.5"
+                    ><div
+                      class="w-3.5 h-3.5 rounded-full border-2 border-[var(--dynamic-primary)]/30 border-t-[var(--dynamic-primary)] animate-spin"
+                    ></div>
+                    Đang nạp danh sách ví từ Blockchain...</span
                   >
                 } @else if (ownersFromChain().length === 0) {
                   <span class="text-xs text-rose-500 italic block py-4 text-center font-semibold"
-                    >⚠️ Không tìm thấy ví nào hoặc hợp đồng không tương thích (Vui lòng deploy lại hợp đồng mới).</span
+                    >⚠️ Không tìm thấy ví nào hoặc hợp đồng không tương thích (Vui lòng deploy lại
+                    hợp đồng mới).</span
                   >
                 }
                 @for (owner of ownersFromChain(); track owner) {
@@ -1559,12 +1564,17 @@
                     >Chưa deploy hợp đồng Tài chính.</span
                   >
                 } @else if (isFinanceOwnersLoading()) {
-                  <span class="text-xs text-slate-400 italic block py-4 text-center flex items-center justify-center gap-1.5"
-                    ><div class="w-3.5 h-3.5 rounded-full border-2 border-[var(--dynamic-primary)]/30 border-t-[var(--dynamic-primary)] animate-spin"></div> Đang nạp danh sách ví từ Blockchain...</span
+                  <span
+                    class="text-xs text-slate-400 italic block py-4 text-center flex items-center justify-center gap-1.5"
+                    ><div
+                      class="w-3.5 h-3.5 rounded-full border-2 border-[var(--dynamic-primary)]/30 border-t-[var(--dynamic-primary)] animate-spin"
+                    ></div>
+                    Đang nạp danh sách ví từ Blockchain...</span
                   >
                 } @else if (financeOwnersFromChain().length === 0) {
                   <span class="text-xs text-rose-500 italic block py-4 text-center font-semibold"
-                    >⚠️ Không tìm thấy ví nào hoặc hợp đồng không tương thích (Vui lòng deploy lại hợp đồng mới).</span
+                    >⚠️ Không tìm thấy ví nào hoặc hợp đồng không tương thích (Vui lòng deploy lại
+                    hợp đồng mới).</span
                   >
                 }
                 @for (owner of financeOwnersFromChain(); track owner) {
@@ -1673,12 +1683,17 @@
                     >Chưa deploy hợp đồng Voucher NFT.</span
                   >
                 } @else if (isVoucherOwnersLoading()) {
-                  <span class="text-xs text-slate-400 italic block py-4 text-center flex items-center justify-center gap-1.5"
-                    ><div class="w-3.5 h-3.5 rounded-full border-2 border-[var(--dynamic-primary)]/30 border-t-[var(--dynamic-primary)] animate-spin"></div> Đang nạp danh sách ví từ Blockchain...</span
+                  <span
+                    class="text-xs text-slate-400 italic block py-4 text-center flex items-center justify-center gap-1.5"
+                    ><div
+                      class="w-3.5 h-3.5 rounded-full border-2 border-[var(--dynamic-primary)]/30 border-t-[var(--dynamic-primary)] animate-spin"
+                    ></div>
+                    Đang nạp danh sách ví từ Blockchain...</span
                   >
                 } @else if (voucherOwnersFromChain().length === 0) {
                   <span class="text-xs text-rose-500 italic block py-4 text-center font-semibold"
-                    >⚠️ Không tìm thấy ví nào hoặc hợp đồng không tương thích (Vui lòng deploy lại hợp đồng mới).</span
+                    >⚠️ Không tìm thấy ví nào hoặc hợp đồng không tương thích (Vui lòng deploy lại
+                    hợp đồng mới).</span
                   >
                 }
                 @for (owner of voucherOwnersFromChain(); track owner) {
@@ -1787,12 +1802,17 @@
                     >Chưa deploy hợp đồng Menu Registry.</span
                   >
                 } @else if (isMenuOwnersLoading()) {
-                  <span class="text-xs text-slate-400 italic block py-4 text-center flex items-center justify-center gap-1.5"
-                    ><div class="w-3.5 h-3.5 rounded-full border-2 border-[var(--dynamic-primary)]/30 border-t-[var(--dynamic-primary)] animate-spin"></div> Đang nạp danh sách ví từ Blockchain...</span
+                  <span
+                    class="text-xs text-slate-400 italic block py-4 text-center flex items-center justify-center gap-1.5"
+                    ><div
+                      class="w-3.5 h-3.5 rounded-full border-2 border-[var(--dynamic-primary)]/30 border-t-[var(--dynamic-primary)] animate-spin"
+                    ></div>
+                    Đang nạp danh sách ví từ Blockchain...</span
                   >
                 } @else if (menuOwnersFromChain().length === 0) {
                   <span class="text-xs text-rose-500 italic block py-4 text-center font-semibold"
-                    >⚠️ Không tìm thấy ví nào hoặc hợp đồng không tương thích (Vui lòng deploy lại hợp đồng mới).</span
+                    >⚠️ Không tìm thấy ví nào hoặc hợp đồng không tương thích (Vui lòng deploy lại
+                    hợp đồng mới).</span
                   >
                 }
                 @for (owner of menuOwnersFromChain(); track owner) {

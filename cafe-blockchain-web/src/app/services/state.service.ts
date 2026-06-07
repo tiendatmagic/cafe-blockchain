@@ -762,6 +762,8 @@ export class StateService {
     } else if (tab === 'financials') {
       this.refreshTransactions();
     } else if (tab === 'inventory') {
+      this.refreshProducts();
+      this.refreshOrders();
       this.refreshInventory();
     } else if (tab === 'tables') {
       this.refreshTablesAndAreas();

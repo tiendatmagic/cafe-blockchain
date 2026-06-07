@@ -162,6 +162,50 @@ export class InventoryComponent {
     return stocks;
   });
 
+  // ===================== BÁO CÁO TỒN KHO: Flatten + Tìm kiếm + Phân trang =====================
+  public readonly stockReportSearch = signal<string>('');
+  public readonly stockReportCurrentPage = signal<number>(1);
+  public readonly stockReportItemsPerPage = 20;
+
+  /** Danh sách phẳng tất cả rows (product + variant hoặc product solo) */
+  public readonly flatStockRows = computed(() => {
+    const rows: { product: any; variant: any | null }[] = [];
+    for (const p of this.products()) {
+      if (p.variants && p.variants.length > 0) {
+        for (const v of p.variants) {
+          rows.push({ product: p, variant: v });
+        }
+      } else {
+        rows.push({ product: p, variant: null });
+      }
+    }
+    return rows;
+  });
+
+  /** Lọc theo từ khoá tìm kiếm */
+  public readonly filteredStockRows = computed(() => {
+    const q = this.stockReportSearch().trim().toLowerCase();
+    if (!q) return this.flatStockRows();
+    return this.flatStockRows().filter(r =>
+      r.product.name.toLowerCase().includes(q) ||
+      (r.variant?.variant_name && r.variant.variant_name.toLowerCase().includes(q)) ||
+      (r.variant?.sku && r.variant.sku.toLowerCase().includes(q)) ||
+      (r.product.sku && r.product.sku.toLowerCase().includes(q))
+    );
+  });
+
+  /** Cắt theo trang hiện tại */
+  public readonly paginatedStockRows = computed(() => {
+    const start = (this.stockReportCurrentPage() - 1) * this.stockReportItemsPerPage;
+    return this.filteredStockRows().slice(start, start + this.stockReportItemsPerPage);
+  });
+
+  public readonly stockReportTotalPages = computed(() =>
+    Math.ceil(this.filteredStockRows().length / this.stockReportItemsPerPage) || 1
+  );
+
+
+
   public getProductStock(productId: number, variantId: number | null = null): number {
     const key = `${productId}_${variantId}`;
     return this.productStocks()[key] !== undefined ? this.productStocks()[key] : 0;
