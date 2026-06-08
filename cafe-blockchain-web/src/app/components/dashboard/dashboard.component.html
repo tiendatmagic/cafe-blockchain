@@ -30,6 +30,7 @@
     </button>
   </div>
 
+  @if (web3Service.walletConnected()) {
   <!-- Bộ lọc thời gian Dashboard -->
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 shadow-sm rounded-3xl">
     <div class="flex flex-wrap items-center gap-2">
@@ -876,6 +877,29 @@
 
         </div>
       </div>
+    </div>
+  }
+  } @else {
+    <!-- BANNER YÊU CẦU KẾT NỐI VÍ WEB3 (Premium Glassmorphism) -->
+    <div class="flex flex-col items-center justify-center min-h-[450px] p-8 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/50 dark:border-slate-800/50 rounded-3xl shadow-lg text-center max-w-2xl mx-auto my-10 animate-in fade-in zoom-in-95 duration-300">
+      <div class="w-20 h-20 rounded-full bg-purple-100 dark:bg-purple-950/40 flex items-center justify-center text-purple-600 dark:text-purple-400 mb-6 shadow-inner animate-bounce-slow">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-[var(--dynamic-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+      </div>
+      <h4 class="text-xl font-extrabold text-slate-800 dark:text-white tracking-tight mb-3">Kết nối ví Web3 để xem báo cáo</h4>
+      <p class="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-8 leading-relaxed">
+        Để xem thống kê doanh thu, xu hướng bán hàng, cơ cấu thanh toán và các giao dịch blockchain của cửa hàng, vui lòng kết nối ví Metamask để xác thực quyền truy cập.
+      </p>
+      <button
+        (click)="stateService.connectWalletAndSign()"
+        class="flex items-center gap-2.5 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] text-white font-extrabold text-sm shadow-lg shadow-[var(--dynamic-primary)]/25 hover:shadow-[var(--dynamic-primary)]/40 hover:scale-[1.03] active:scale-[0.98] transition-all cursor-pointer"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 5h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2z" />
+        </svg>
+        <span>KẾT NỐI VÍ METAMASK</span>
+      </button>
     </div>
   }
 </div>

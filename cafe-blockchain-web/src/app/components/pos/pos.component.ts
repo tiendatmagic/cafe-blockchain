@@ -225,6 +225,10 @@ export class PosComponent implements OnInit, OnDestroy {
     });
   });
 
+  public connectWalletAndSign() {
+    this.stateService.connectWalletAndSign();
+  }
+
   // Thêm sản phẩm vào giỏ
   public addToCart(product: any, variant: any = null) {
     if (product.variants && product.variants.length > 0 && !variant) {

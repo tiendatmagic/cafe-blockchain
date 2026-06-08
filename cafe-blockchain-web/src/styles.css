@@ -60,11 +60,11 @@
   
   --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 
-  /* Giới hạn bo góc tối đa 10px trên toàn hệ thống */
-  --radius-xl: 10px;
-  --radius-2xl: 10px;
-  --radius-3xl: 10px;
-  --radius-4xl: 10px;
+  /* Giới hạn bo góc tối đa 15px trên toàn hệ thống */
+  --radius-xl: 15px;
+  --radius-2xl: 15px;
+  --radius-3xl: 15px;
+  --radius-4xl: 15px;
 }
 
 body {
