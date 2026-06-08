@@ -185,7 +185,16 @@ export class ApiService {
     return this.http.get(url);
   }
 
+  public getPublicStoreBySlug(slug: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/store/${slug}`);
+  }
+
+  public createPublicOrder(slug: string, orderData: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/store/${slug}/orders`, orderData);
+  }
+
   public updateSettings(settings: any): Observable<any> {
+
     return this.http.post(`${this.baseUrl}/settings`, settings, { headers: this.getHeaders() });
   }
 

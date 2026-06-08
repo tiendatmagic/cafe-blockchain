@@ -17,8 +17,8 @@ export class SettingsComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
-  // Tab nhỏ trong Cấu hình: 'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher'
-  public readonly settingsSubTab = signal<'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher'>('general');
+  // Tab nhỏ trong Cấu hình: 'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher' | 'store'
+  public readonly settingsSubTab = signal<'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher' | 'store'>('general');
 
   // Form Cấu hình hệ thống
   public readonly configForm = signal<any>({
@@ -40,8 +40,15 @@ export class SettingsComponent implements OnInit {
     voucher_use_min_amount: 100000,
     show_crypto_payment: '0',
     has_synced_menu: '0',
+    website_slug: '',
+    store_categories: '',
     has_relayer_private_key: false
   });
+
+  // Quản lý các danh mục cho Website Cửa hàng
+  public readonly categoriesList = signal<any[]>([]);
+  public readonly selectedCategories = signal<string[]>([]);
+
 
   // Trạng thái lưu cấu hình & deploy smart contracts
   public readonly isConfigSaving = signal<boolean>(false);
@@ -103,11 +110,12 @@ export class SettingsComponent implements OnInit {
 
   public ngOnInit() {
     this.loadSettings();
+    this.loadStoreCategories();
 
     // Đồng bộ tab hiện tại với Query Parameter 'tab' trên URL
     this.route.queryParams.subscribe(params => {
       const tab = params['tab'];
-      if (tab && ['general', 'blockchain', 'permissions', 'invoice', 'voucher'].includes(tab)) {
+      if (tab && ['general', 'blockchain', 'permissions', 'invoice', 'voucher', 'store'].includes(tab)) {
         this.settingsSubTab.set(tab as any);
         if (tab === 'permissions' && this.web3Service.walletConnected()) {
           this.loadOwnersList();
@@ -138,10 +146,13 @@ export class SettingsComponent implements OnInit {
           voucher_use_min_amount: res.voucher_use_min_amount !== undefined ? Number(res.voucher_use_min_amount) : 100000,
           show_crypto_payment: res.show_crypto_payment || '0',
           has_synced_menu: res.has_synced_menu || '0',
+          website_slug: res.website_slug || '',
+          store_categories: res.store_categories || '',
           has_relayer_private_key: res.has_relayer_private_key || false,
           ...res
         };
         this.configForm.set({ ...settings });
+        this.syncSelectedCategories();
 
         // Đồng bộ cấu hình vào Web3Service và StateService để đảm bảo các cuộc gọi blockchain sử dụng đúng cấu hình mới nhất
         this.stateService.settings.set(settings);
@@ -163,7 +174,7 @@ export class SettingsComponent implements OnInit {
     });
   }
 
-  public setSettingsSubTab(subTab: 'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher') {
+  public setSettingsSubTab(subTab: 'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher' | 'store') {
     this.settingsSubTab.set(subTab);
     
     // Cập nhật query parameter tab trên URL
@@ -177,6 +188,83 @@ export class SettingsComponent implements OnInit {
       this.loadOwnersList();
     }
   }
+
+  // --- Hỗ trợ cấu hình Website Cửa hàng ---
+  public loadStoreCategories() {
+    this.apiService.getCategories().subscribe(res => {
+      if (res) {
+        this.categoriesList.set(res);
+        this.syncSelectedCategories();
+      }
+    });
+  }
+
+  public syncSelectedCategories() {
+    const csv = this.configForm().store_categories || '';
+    if (csv === 'all') {
+      this.selectedCategories.set(this.categoriesList().map(c => c.id.toString()));
+    } else if (csv === '') {
+      this.selectedCategories.set([]);
+    } else {
+      this.selectedCategories.set(csv.split(','));
+    }
+  }
+
+  public isCategorySelected(categoryId: any): boolean {
+    return this.selectedCategories().includes(categoryId.toString());
+  }
+
+  public toggleCategorySelection(categoryId: any) {
+    const idStr = categoryId.toString();
+    const current = [...this.selectedCategories()];
+    const index = current.indexOf(idStr);
+    
+    if (index > -1) {
+      current.splice(index, 1);
+    } else {
+      current.push(idStr);
+    }
+    
+    this.selectedCategories.set(current);
+    
+    // Nếu chọn hết, lưu là 'all' để tiện đồng bộ sau này hoặc lưu chuỗi CSV
+    if (current.length === this.categoriesList().length && current.length > 0) {
+      this.updateConfigForm('store_categories', 'all');
+    } else {
+      this.updateConfigForm('store_categories', current.join(','));
+    }
+  }
+
+  public selectAllCategories() {
+    const allIds = this.categoriesList().map(c => c.id.toString());
+    this.selectedCategories.set(allIds);
+    this.updateConfigForm('store_categories', 'all');
+  }
+
+  public clearAllCategories() {
+    this.selectedCategories.set([]);
+    this.updateConfigForm('store_categories', '');
+  }
+
+  public getFullStoreLink(): string {
+    const slug = this.configForm().website_slug || '';
+    if (!slug) return '';
+    if (typeof window !== 'undefined') {
+      return `${window.location.protocol}//${window.location.host}/store/${slug}`;
+    }
+    return `http://localhost:4200/store/${slug}`;
+  }
+
+  public copyStoreLink() {
+    const link = this.getFullStoreLink();
+    if (!link) return;
+    navigator.clipboard.writeText(link).then(() => {
+      this.stateService.showToast('Đã sao chép liên kết Website Cửa hàng!', 'success');
+    }).catch(err => {
+      this.stateService.showToast('Lỗi sao chép liên kết!', 'error');
+    });
+  }
+
 
   public updateConfigForm(field: string, value: any) {
     this.configForm.update(form => ({

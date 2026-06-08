@@ -33,7 +33,9 @@ export class App implements OnInit, OnDestroy {
   }
 
   public get isPublicLayout(): boolean {
-    return this.router.url.includes('/mobile-sign') || this.router.url.includes('/blockchain-explorer');
+    return this.router.url.includes('/mobile-sign') || 
+           this.router.url.includes('/blockchain-explorer') ||
+           this.router.url.includes('/store/');
   }
 
   // Getters từ StateService để binding dễ dàng trong app.html
@@ -57,8 +59,10 @@ export class App implements OnInit, OnDestroy {
   ngOnInit() {
     const isPublic = typeof window !== 'undefined' && (
       window.location.pathname.includes('/mobile-sign') || 
-      window.location.pathname.includes('/blockchain-explorer')
+      window.location.pathname.includes('/blockchain-explorer') ||
+      window.location.pathname.includes('/store/')
     );
+
 
     // Chỉ tải cấu hình quán của admin khi không ở trang public
     if (!isPublic) {

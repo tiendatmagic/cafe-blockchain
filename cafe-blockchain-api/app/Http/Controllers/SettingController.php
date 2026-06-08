@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Domain\Entities\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
+use App\Application\Orders\Commands\CreateOrderCommand;
+
 
 class SettingController extends Controller
 {
@@ -34,6 +37,8 @@ class SettingController extends Controller
             'voucher_use_min_amount' => '100000',
             'show_crypto_payment' => '0',
             'has_synced_menu' => '0',
+            'website_slug' => '',
+            'store_categories' => '',
         ];
 
         if (empty($settings)) {
@@ -104,6 +109,8 @@ class SettingController extends Controller
             'voucher_use_min_amount' => 'nullable|integer|min:0',
             'show_crypto_payment' => 'nullable|string|in:0,1',
             'has_synced_menu' => 'nullable|string|in:0,1',
+            'website_slug' => 'nullable|string|max:100',
+            'store_categories' => 'nullable|string',
         ]);
 
         // Lấy các cấu hình hiện tại trong Database để đối soát bảo mật
@@ -112,6 +119,48 @@ class SettingController extends Controller
         $existingFinanceContractAddress = Setting::getForStore('finance_contract_address', $storeOwner);
         $existingMenuRegistryContractAddress = Setting::getForStore('menu_registry_contract_address', $storeOwner);
         $hasSyncedMenu = Setting::getForStore('has_synced_menu', $storeOwner) === '1';
+
+        // Xử lý logic cho website_slug
+        $slugInput = isset($settingsData['website_slug']) ? trim($settingsData['website_slug']) : '';
+        $currentSlug = Setting::getForStore('website_slug', $storeOwner);
+
+        if (!empty($slugInput)) {
+            // Làm sạch slug và chuyển sang không dấu
+            $processedSlug = Str::slug($this->removeVietnameseAccents($slugInput), '-');
+            
+            // Kiểm tra trùng lặp trên hệ thống
+            $existing = Setting::where('key', 'website_slug')
+                ->where('value', $processedSlug)
+                ->where('store_owner_address', '!=', $storeOwner)
+                ->exists();
+            if ($existing) {
+                return response()->json([
+                    'message' => 'Slug website đã được sử dụng bởi quán khác, vui lòng chọn slug khác!'
+                ], 400);
+            }
+            $settingsData['website_slug'] = $processedSlug;
+        } else {
+            if (!empty($currentSlug)) {
+                $settingsData['website_slug'] = $currentSlug;
+            } else {
+                $storeName = $settingsData['store_name'] ?? Setting::getForStore('store_name', $storeOwner, 'Cafe Web3 POS');
+                $baseSlug = Str::slug($this->removeVietnameseAccents($storeName), '-');
+                if (empty($baseSlug)) {
+                    $baseSlug = 'cafe-web3';
+                }
+                
+                do {
+                    $processedSlug = $baseSlug . '-' . strtolower(Str::random(4));
+                    $exists = Setting::where('key', 'website_slug')
+                        ->where('value', $processedSlug)
+                        ->where('store_owner_address', '!=', $storeOwner)
+                        ->exists();
+                } while ($exists);
+                
+                $settingsData['website_slug'] = $processedSlug;
+            }
+        }
+
 
         // Lấy số lượng đơn hàng và giao dịch tài chính đã đồng bộ thành công lên Blockchain
         $hasSyncedOrders = \App\Domain\Entities\Order::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
@@ -284,6 +333,8 @@ class SettingController extends Controller
             'chain_id' => $settings['chain_id'] ?? '',
             'explorer_url' => $settings['explorer_url'] ?? '',
             'show_crypto_payment' => $settings['show_crypto_payment'] ?? '0',
+            'website_slug' => $settings['website_slug'] ?? '',
+            'store_categories' => $settings['store_categories'] ?? '',
             'temp_order' => $tempOrderData, // Trả về thông tin đơn hàng tạm thời/thực tế để client hiển thị
             'order_status' => $order ? $order->status : null,
             'blockchain_status' => $order ? $order->blockchain_status : null,
@@ -294,4 +345,167 @@ class SettingController extends Controller
 
         return response()->json($publicSettings);
     }
+
+    /**
+     * Hàm loại bỏ dấu tiếng Việt để tạo slug chính xác
+     */
+    private function removeVietnameseAccents($str)
+    {
+        $unicode = [
+            'a' => 'á|à|ả|ã|ạ|ă|ắ|ằ|ẳ|ẵ|ặ|â|ấ|ầ|ẩ|ẫ|ậ',
+            'd' => 'đ',
+            'e' => 'é|è|ẻ|ẽ|ẹ|ê|ế|ề|ể|ễ|ệ',
+            'i' => 'í|ì|ỉ|ĩ|ị',
+            'o' => 'ó|ò|ỏ|õ|ọ|ô|ố|ồ|ổ|ỗ|ộ|ơ|ớ|ờ|ở|ỡ|ợ',
+            'u' => 'ú|ù|ủ|ũ|ụ|ư|ứ|ừ|ử|ữ|ự',
+            'y' => 'ý|ỳ|ỷ|ỹ|ỵ',
+            'A' => 'Á|À|Ả|Ã|Ạ|Ă|Ắ|Ằ|Ẳ|Ẵ|Ặ|Â|Ấ|Ầ|Ẩ|Ẫ|Ậ',
+            'D' => 'Đ',
+            'E' => 'É|È|Ẻ|Ẽ|Ẹ|Ê|Ế|Ề|Ể|Ễ|Ệ',
+            'I' => 'Í|Ì|Ỉ|Ĩ|Ị',
+            'O' => 'Ó|Ò|Ỏ|Õ|Ọ|Ô|Ố|Ồ|Ổ|Ỗ|Ộ|Ơ|Ớ|Ờ|Ở|Ỡ|Ợ',
+            'U' => 'Ú|Ù|Ủ|Ũ|Ụ|Ư|Ứ|Ừ|Ử|Ữ|Ự',
+            'Y' => 'Ý|Ỳ|Ỷ|Ỹ|Ỵ',
+        ];
+        foreach ($unicode as $nonUnicode => $uni) {
+            $str = preg_replace("/($uni)/i", $nonUnicode, $str);
+        }
+        return $str;
+    }
+
+    /**
+     * Lấy chi tiết thông tin cửa hàng, danh mục và thực đơn bằng website_slug công khai
+     */
+    public function getStoreDetailsBySlug(string $slug)
+    {
+        $setting = Setting::where('key', 'website_slug')->where('value', $slug)->first();
+        if (!$setting) {
+            return response()->json(['message' => 'Cửa hàng không tồn tại!'], 404);
+        }
+
+        $storeOwner = strtolower($setting->store_owner_address);
+        
+        // Đảm bảo có settings đầy đủ
+        $settings = $this->ensureDefaultSettings($storeOwner);
+
+        // Chỉ trả về các cấu hình an toàn cho client
+        $publicSettings = [
+            'store_name' => $settings['store_name'] ?? 'Cafe Web3 POS',
+            'primary_color' => $settings['primary_color'] ?? '#7c3aed',
+            'secondary_color' => $settings['secondary_color'] ?? '#c084fc',
+            'contract_address' => $settings['contract_address'] ?? '',
+            'finance_contract_address' => $settings['finance_contract_address'] ?? '',
+            'voucher_contract_address' => $settings['voucher_contract_address'] ?? '',
+            'menu_registry_contract_address' => $settings['menu_registry_contract_address'] ?? '',
+            'has_synced_menu' => $settings['has_synced_menu'] ?? '0',
+            'rpc_url' => $settings['rpc_url'] ?? '',
+            'chain_id' => $settings['chain_id'] ?? '',
+            'explorer_url' => $settings['explorer_url'] ?? '',
+            'show_crypto_payment' => $settings['show_crypto_payment'] ?? '0',
+            'website_slug' => $settings['website_slug'] ?? '',
+            'store_categories' => $settings['store_categories'] ?? '',
+        ];
+
+        // Lấy các danh mục của quán
+        $categoriesQuery = \App\Domain\Entities\Category::where('store_owner_address', $storeOwner);
+        $storeCategoriesCsv = $settings['store_categories'] ?? '';
+        
+        if (!empty($storeCategoriesCsv) && $storeCategoriesCsv !== 'all') {
+            $categoryIds = explode(',', $storeCategoriesCsv);
+            $categoriesQuery->whereIn('id', $categoryIds);
+        }
+        $categories = $categoriesQuery->get();
+
+        // Lấy sản phẩm thuộc các danh mục này
+        $categoryIdsToLoad = $categories->pluck('id')->all();
+        $products = \App\Domain\Entities\Product::where('store_owner_address', $storeOwner)
+            ->where('status', 1)
+            ->whereHas('categories', function($q) use ($categoryIdsToLoad) {
+                $q->whereIn('categories.id', $categoryIdsToLoad);
+            })
+            ->with(['variants', 'categories' => function($q) use ($categoryIdsToLoad) {
+                $q->whereIn('categories.id', $categoryIdsToLoad);
+            }])
+            ->get();
+
+        // Thêm đường dẫn ảnh đầy đủ cho sản phẩm nếu cần
+        foreach ($products as $product) {
+            if ($product->image && !str_starts_with($product->image, 'http')) {
+                $product->image = url($product->image);
+            }
+        }
+
+        return response()->json([
+            'store' => $publicSettings,
+            'categories' => $categories,
+            'products' => $products
+        ]);
+    }
+
+    /**
+     * Tạo đơn hàng mới từ website cửa hàng (công khai)
+     */
+    public function createStoreOrderBySlug(Request $request, string $slug, CreateOrderCommand $command)
+    {
+        $setting = Setting::where('key', 'website_slug')->where('value', $slug)->first();
+        if (!$setting) {
+            return response()->json(['message' => 'Cửa hàng không tồn tại!'], 404);
+        }
+
+        $storeOwner = strtolower($setting->store_owner_address);
+
+        $validated = $request->validate([
+            'customer_name' => 'required|string|max:255',
+            'customer_phone' => 'required|string|max:50',
+            'table_number' => 'nullable|string|max:255', // Chứa số bàn hoặc địa chỉ giao hàng
+            'payment_method' => 'required|string|in:cash,bank_transfer',
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.product_variant_id' => 'nullable|exists:product_variants,id',
+            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.note' => 'nullable|string|max:255',
+        ]);
+
+        try {
+            // Tìm hoặc tạo khách hàng mới
+            $customer = \App\Domain\Entities\Customer::firstOrCreate(
+                [
+                    'phone' => $validated['customer_phone'],
+                    'store_owner_address' => $storeOwner
+                ],
+                [
+                    'name' => $validated['customer_name'],
+                    'customer_code' => 'KH-' . strtoupper(bin2hex(random_bytes(2))),
+                ]
+            );
+
+            // Cập nhật tên khách hàng nếu họ đổi tên khi đặt hàng
+            if ($customer->name !== $validated['customer_name']) {
+                $customer->name = $validated['customer_name'];
+                $customer->save();
+            }
+
+            // Chuẩn bị payload để tạo đơn hàng qua CreateOrderCommand
+            $orderData = [
+                'table_number' => $validated['table_number'] ?? null,
+                'customer_id' => $customer->id,
+                'payment_method' => $validated['payment_method'],
+                'items' => $validated['items']
+            ];
+
+            // Thực thi tạo đơn hàng
+            $order = $command->execute($storeOwner, $orderData);
+
+            return response()->json([
+                'message' => 'Đặt đơn hàng thành công!',
+                'data' => \App\Domain\Entities\Order::with(['customer', 'items.product', 'items.variant'])->find($order->id)
+            ], 201);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Đặt đơn hàng thất bại: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
+
