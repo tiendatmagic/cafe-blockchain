@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { Title } from '@angular/platform-browser';
+import { StateService } from '../../services/state.service';
 
 interface CartItem {
   product: any;
@@ -23,6 +24,15 @@ export class StoreComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly apiService = inject(ApiService);
   private readonly titleService = inject(Title);
+  private readonly stateService = inject(StateService);
+
+  public get themeMode() {
+    return this.stateService.themeMode;
+  }
+
+  public toggleTheme() {
+    this.stateService.toggleTheme();
+  }
 
   // Dữ liệu quán
   public readonly storeSettings = signal<any>(null);
@@ -38,6 +48,10 @@ export class StoreComponent implements OnInit {
   public readonly isCartOpen = signal<boolean>(false);
   public readonly isOrderSuccess = signal<boolean>(false);
   public readonly lastOrderCode = signal<string>('');
+  public readonly displayMode = signal<'grid' | 'list'>('grid');
+  public readonly searchQuery = signal<string>('');
+  public readonly currentPage = signal<number>(1);
+  public readonly itemsPerPage = 20;
 
   // Trạng thái chọn biến thể sản phẩm (Variant Selection Modal)
   public readonly selectedProductForVariant = signal<any>(null);
@@ -71,23 +85,68 @@ export class StoreComponent implements OnInit {
     }, 0);
   });
 
-  // Lấy các sản phẩm thuộc danh mục đang hoạt động
+  // Lấy các sản phẩm thuộc danh mục đang hoạt động và lọc theo tìm kiếm
   public readonly filteredProducts = computed(() => {
-    const productsList = this.products();
+    let list = this.products();
     const favs = this.favorites();
     
     // Nếu chỉ xem yêu thích
     if (this.showFavoritesOnly()) {
-      return productsList.filter(p => favs.includes(p.id));
+      list = list.filter(p => favs.includes(p.id));
+    } else {
+      const activeCatId = this.activeCategoryId();
+      if (activeCatId !== null) {
+        list = list.filter(product => {
+          return product.categories.some((cat: any) => cat.id === activeCatId);
+        });
+      }
     }
 
-    const activeCatId = this.activeCategoryId();
-    if (!activeCatId) return productsList;
+    // Lọc theo tìm kiếm
+    const search = this.searchQuery().trim().toLowerCase();
+    if (search) {
+      list = list.filter(p => 
+        p.name.toLowerCase().includes(search) || 
+        (p.short_description && p.short_description.toLowerCase().includes(search))
+      );
+    }
 
-    return productsList.filter(product => {
-      return product.categories.some((cat: any) => cat.id === activeCatId);
-    });
+    return list;
   });
+
+  // Phân trang sản phẩm hiển thị thực tế
+  public readonly paginatedProducts = computed(() => {
+    const list = this.filteredProducts();
+    const limit = this.itemsPerPage;
+    const page = this.currentPage();
+    const startIndex = (page - 1) * limit;
+    return list.slice(startIndex, startIndex + limit);
+  });
+
+  public readonly totalPages = computed(() => {
+    return Math.ceil(this.filteredProducts().length / this.itemsPerPage) || 1;
+  });
+
+  // Helper lấy mảng trang hiển thị
+  public getPagesArray(current: number, total: number): (number | string)[] {
+    const pages: (number | string)[] = [];
+    if (total <= 5) {
+      for (let i = 1; i <= total; i++) pages.push(i);
+    } else {
+      if (current <= 3) {
+        pages.push(1, 2, 3, '...', total);
+      } else if (current >= total - 2) {
+        pages.push(1, '...', total - 2, total - 1, total);
+      } else {
+        pages.push(1, '...', current - 1, current, current + 1, '...', total);
+      }
+    }
+    return pages;
+  }
+
+  public mathMin(a: number, b: number): number {
+    return Math.min(a, b);
+  }
 
   ngOnInit() {
     // Đọc slug từ route
@@ -126,10 +185,8 @@ export class StoreComponent implements OnInit {
           // Áp dụng màu sắc động từ settings của quán cho storefront
           this.applyDynamicColors(res.store.primary_color, res.store.secondary_color);
 
-          // Gán danh mục đầu tiên làm mặc định
-          if (res.categories && res.categories.length > 0) {
-            this.activeCategoryId.set(res.categories[0].id);
-          }
+          // Mặc định chọn Tất cả danh mục
+          this.activeCategoryId.set(null);
         } else {
           this.isError.set(true);
           this.errorMessage.set('Không tìm thấy thông tin cửa hàng!');
@@ -300,6 +357,10 @@ export class StoreComponent implements OnInit {
       alert('Vui lòng nhập Số điện thoại liên hệ!');
       return;
     }
+    if (!form.table_number.trim()) {
+      alert('Vui lòng nhập Địa chỉ giao hàng!');
+      return;
+    }
 
     this.isSubmittingOrder.set(true);
 
@@ -313,14 +374,14 @@ export class StoreComponent implements OnInit {
 
     // Gộp ghi chú chung của đơn hàng vào table_number hoặc truyền riêng
     let tableInfo = form.table_number.trim();
-    if (form.note.trim()) {
+    if (form.note && form.note.trim()) {
       tableInfo += ` (Ghi chú: ${form.note.trim()})`;
     }
 
     const payload = {
       customer_name: form.customer_name.trim(),
       customer_phone: form.customer_phone.trim(),
-      table_number: tableInfo || 'Mua mang đi',
+      table_number: tableInfo,
       payment_method: form.payment_method,
       items
     };

@@ -457,7 +457,7 @@ class SettingController extends Controller
         $validated = $request->validate([
             'customer_name' => 'required|string|max:255',
             'customer_phone' => 'required|string|max:50',
-            'table_number' => 'nullable|string|max:255', // Chứa số bàn hoặc địa chỉ giao hàng
+            'table_number' => 'required|string|max:255', // Chứa số bàn hoặc địa chỉ giao hàng
             'payment_method' => 'required|string|in:cash,bank_transfer',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',

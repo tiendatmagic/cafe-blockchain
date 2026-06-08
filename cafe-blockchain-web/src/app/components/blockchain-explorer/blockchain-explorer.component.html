@@ -502,7 +502,7 @@
               clip-rule="evenodd"
             />
           </svg>
-          <div>
+          <div class="[word-break:break-word]">
             <p class="font-bold">Lỗi đối soát onchain:</p>
             <p>{{ searchError() }}</p>
           </div>
@@ -1499,7 +1499,9 @@
                               class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-500"
                             >
                               <span>
-                                @if (order.tableNumber === 'Mang ve' || order.tableNumber === 'Mang về') {
+                                @if (
+                                  order.tableNumber === 'Mang ve' || order.tableNumber === 'Mang về'
+                                ) {
                                   {{ order.tableNumber }}
                                 } @else {
                                   Bàn {{ order.tableNumber }}

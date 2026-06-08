@@ -83,7 +83,7 @@ export class StateService {
   public readonly isOrderSubmitting = signal<boolean>(false);
 
   // Phân trang sản phẩm ở trang Bán hàng POS
-  public readonly posItemsPerPage = 9;
+  public readonly posItemsPerPage = 20;
   public readonly posCurrentPage = signal<number>(1);
   public readonly posProductsList = signal<any[]>([]);
   public readonly paginatedPosProducts = computed(() => this.posProductsList());
