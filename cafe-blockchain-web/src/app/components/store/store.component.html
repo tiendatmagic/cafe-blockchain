@@ -31,9 +31,22 @@
       class="min-h-screen flex flex-col items-center justify-center p-6 text-center max-w-md mx-auto space-y-6"
     >
       <div
-        class="w-20 h-20 bg-rose-500/10 rounded-full flex items-center justify-center text-4xl text-rose-500 animate-bounce"
+        class="w-20 h-20 bg-rose-500/10 rounded-full flex items-center justify-center text-rose-500 animate-bounce"
       >
-        ⚠️
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke="currentColor"
+          class="w-10 h-10"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+          />
+        </svg>
       </div>
       <div class="space-y-2">
         <h3 class="text-xl font-extrabold text-slate-800 dark:text-white uppercase tracking-tight">
@@ -58,12 +71,22 @@
     <header
       class="relative bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800/80 transition-colors duration-300"
     >
-      <!-- Ảnh bìa trang trí (Gradient phong cách) -->
+      <!-- Ảnh bìa trang trí (Cấu hình ảnh bìa hoặc Gradient phong cách) -->
       <div
-        class="h-28 sm:h-36 w-full bg-gradient-to-r from-[var(--dynamic-primary)]/80 to-[var(--dynamic-secondary)]/80 relative overflow-hidden"
+        class="h-48 sm:h-64 w-full relative overflow-hidden"
+        [class.bg-gradient-to-r]="!storeSettings().website_cover_image"
+        [class.from-[var(--dynamic-primary)]/80]="!storeSettings().website_cover_image"
+        [class.to-[var(--dynamic-secondary)]/80]="!storeSettings().website_cover_image"
       >
-        <div class="absolute inset-0 bg-black/10"></div>
-        <div class="absolute inset-0 backdrop-blur-[2px]"></div>
+        @if (storeSettings().website_cover_image) {
+          <img
+            [src]="storeSettings().website_cover_image"
+            alt="Ảnh bìa cửa hàng"
+            class="w-full h-full object-cover"
+          />
+        }
+        <div class="absolute inset-0 bg-black/20"></div>
+        <div class="absolute inset-0 backdrop-blur-[1px]"></div>
       </div>
 
       <!-- Thông tin quán -->
@@ -120,10 +143,24 @@
               'h-11 px-6 rounded-2xl text-sm sm:text-base font-black tracking-wide transition-all flex items-center gap-2 active:scale-95 border ' +
               (!showFavoritesOnly()
                 ? 'bg-[var(--dynamic-primary)] text-white border-transparent shadow-md shadow-[var(--dynamic-primary)]/15'
-                : 'bg-slate-50 dark:bg-slate-800 border-slate-200/60 dark:border-slate-700/60 text-slate-500 hover:text-slate-750 dark:hover:text-slate-350')
+                : 'bg-slate-50 dark:bg-slate-800 border-slate-200/60 dark:border-slate-700/60 text-slate-500 hover:text-slate-755 dark:hover:text-slate-350')
             "
           >
-            📝 Thực đơn
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2.5"
+              stroke="currentColor"
+              class="w-4 h-4 shrink-0"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+              />
+            </svg>
+            <span>Thực đơn</span>
           </button>
           <button
             type="button"
@@ -132,10 +169,20 @@
               'h-11 px-6 rounded-2xl text-sm sm:text-base font-black tracking-wide transition-all flex items-center gap-2 active:scale-95 border ' +
               (showFavoritesOnly()
                 ? 'bg-rose-500 text-white border-transparent shadow-md shadow-rose-500/15'
-                : 'bg-slate-50 dark:bg-slate-800 border-slate-200/60 dark:border-slate-700/60 text-slate-500 hover:text-slate-750 dark:hover:text-slate-350')
+                : 'bg-slate-50 dark:bg-slate-800 border-slate-200/60 dark:border-slate-700/60 text-slate-500 hover:text-slate-755 dark:hover:text-slate-350')
             "
           >
-            ❤️ Yêu thích ({{ favorites().length }})
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              class="w-4 h-4 shrink-0"
+            >
+              <path
+                d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"
+              />
+            </svg>
+            <span>Yêu thích ({{ favorites().length }})</span>
           </button>
 
           <!-- Pill Switch theme dark/light/auto -->
@@ -155,7 +202,9 @@
                     : 'bg-purple-650 dark:bg-purple-600'
               "
             >
-              <span class="absolute inset-0 flex items-center justify-around px-1 pointer-events-none">
+              <span
+                class="absolute inset-0 flex items-center justify-around px-1 pointer-events-none"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   class="h-3.5 w-3.5 transition-opacity duration-200 stroke-slate-800 dark:stroke-white"
@@ -265,7 +314,7 @@
               'flex items-center gap-2.5 px-6 py-3.5 rounded-2xl font-black text-sm sm:text-base tracking-wide transition-all shrink-0 md:w-full text-left active:scale-95 border md:border-none ' +
               (activeCategoryId() === null
                 ? 'bg-[var(--dynamic-primary)]/10 dark:bg-[var(--dynamic-primary)]/20 border-[var(--dynamic-primary)] text-[var(--dynamic-primary)] shadow-sm'
-                : 'bg-white dark:bg-slate-900 border-slate-200/60 dark:border-slate-800/60 text-slate-500 hover:text-slate-750 dark:hover:text-slate-350')
+                : 'bg-white dark:bg-slate-900 border-slate-200/60 dark:border-slate-800/60 text-slate-500 hover:text-slate-755 dark:hover:text-slate-350')
             "
           >
             <span
@@ -285,7 +334,7 @@
                 'flex items-center gap-2.5 px-6 py-3.5 rounded-2xl font-black text-sm sm:text-base tracking-wide transition-all shrink-0 md:w-full text-left active:scale-95 border md:border-none ' +
                 (activeCategoryId() === cat.id
                   ? 'bg-[var(--dynamic-primary)]/10 dark:bg-[var(--dynamic-primary)]/20 border-[var(--dynamic-primary)] text-[var(--dynamic-primary)] shadow-sm'
-                  : 'bg-white dark:bg-slate-900 border-slate-200/60 dark:border-slate-800/60 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300')
+                  : 'bg-white dark:bg-slate-900 border-slate-200/60 dark:border-slate-800/60 text-slate-500 hover:text-slate-755 dark:hover:text-slate-350')
               "
             >
               <span
@@ -303,7 +352,9 @@
       <!-- DANH SÁCH SẢN PHẨM -->
       <main class="flex-1 w-full space-y-4">
         <!-- Ô tìm kiếm và Bộ lọc thực đơn -->
-        <div class="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm transition-all duration-300">
+        <div
+          class="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm transition-all duration-300"
+        >
           <!-- Thanh tìm kiếm Storefront -->
           <div class="relative flex-1">
             <input
@@ -390,7 +441,11 @@
                   stroke="currentColor"
                   stroke-width="2.5"
                 >
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
                 </svg>
               </button>
             </div>
@@ -422,17 +477,35 @@
                   <button
                     type="button"
                     (click)="toggleFavorite(product.id)"
-                    class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 dark:bg-slate-800/90 shadow-md flex items-center justify-center text-xs transition-transform active:scale-90 hover:scale-105 z-10 cursor-pointer border border-slate-100 dark:border-slate-700"
+                    class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 dark:bg-slate-800/90 shadow-md flex items-center justify-center transition-transform active:scale-90 hover:scale-105 z-10 cursor-pointer border border-slate-100 dark:border-slate-700"
                   >
-                    <span
-                      [class]="
-                        isFavorite(product.id)
-                          ? 'text-rose-500'
-                          : 'text-slate-450 dark:text-slate-505'
-                      "
-                    >
-                      {{ isFavorite(product.id) ? '❤️' : '🤍' }}
-                    </span>
+                    @if (isFavorite(product.id)) {
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        class="w-4 h-4 text-rose-500"
+                      >
+                        <path
+                          d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"
+                        />
+                      </svg>
+                    } @else {
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="2.5"
+                        stroke="currentColor"
+                        class="w-4 h-4 text-slate-400 dark:text-slate-500 hover:text-rose-500"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
+                        />
+                      </svg>
+                    }
                   </button>
 
                   <!-- Ảnh sản phẩm -->
@@ -447,9 +520,22 @@
                       />
                     } @else {
                       <div
-                        class="text-4xl bg-slate-50 dark:bg-slate-950 w-full h-full flex items-center justify-center"
+                        class="bg-slate-50 dark:bg-slate-950 w-full h-full flex items-center justify-center text-slate-400 dark:text-slate-600"
                       >
-                        ☕
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke-width="1.5"
+                          stroke="currentColor"
+                          class="w-12 h-12"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m16.5 0a1.5 1.5 0 00-1.5-1.5H5.25A1.5 1.5 0 003.75 7.5m16.5 0v2.25a3.75 3.75 0 01-3.75 3.75h-9a3.75 3.75 0 01-3.75-3.75V7.5m10.5-3.75V3.75"
+                          />
+                        </svg>
                       </div>
                     }
                     <div
@@ -529,17 +615,35 @@
                   <button
                     type="button"
                     (click)="toggleFavorite(product.id)"
-                    class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/95 dark:bg-slate-800/95 shadow-sm flex items-center justify-center text-xs transition-transform active:scale-90 hover:scale-105 z-10 cursor-pointer border border-slate-100 dark:border-slate-700"
+                    class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/95 dark:bg-slate-800/95 shadow-sm flex items-center justify-center transition-transform active:scale-90 hover:scale-105 z-10 cursor-pointer border border-slate-100 dark:border-slate-700"
                   >
-                    <span
-                      [class]="
-                        isFavorite(product.id)
-                          ? 'text-rose-500'
-                          : 'text-slate-305 dark:text-slate-600'
-                      "
-                    >
-                      {{ isFavorite(product.id) ? '❤️' : '🤍' }}
-                    </span>
+                    @if (isFavorite(product.id)) {
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        class="w-4 h-4 text-rose-500"
+                      >
+                        <path
+                          d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"
+                        />
+                      </svg>
+                    } @else {
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="2.5"
+                        stroke="currentColor"
+                        class="w-4 h-4 text-slate-400 dark:text-slate-500 hover:text-rose-500"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
+                        />
+                      </svg>
+                    }
                   </button>
 
                   <!-- Ảnh sản phẩm -->
@@ -554,9 +658,22 @@
                       />
                     } @else {
                       <div
-                        class="text-4xl bg-slate-50 dark:bg-slate-950 w-full h-full flex items-center justify-center font-bold"
+                        class="bg-slate-50 dark:bg-slate-950 w-full h-full flex items-center justify-center text-slate-400 dark:text-slate-600 font-bold"
                       >
-                        ☕
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke-width="1.5"
+                          stroke="currentColor"
+                          class="w-10 h-10"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m16.5 0a1.5 1.5 0 00-1.5-1.5H5.25A1.5 1.5 0 003.75 7.5m16.5 0v2.25a3.75 3.75 0 01-3.75 3.75h-9a3.75 3.75 0 01-3.75-3.75V7.5m10.5-3.75V3.75"
+                          />
+                        </svg>
                       </div>
                     }
                   </div>
@@ -706,9 +823,22 @@
         <div class="flex items-center gap-3">
           <!-- Huy hiệu số lượng -->
           <div
-            class="w-10 h-10 rounded-xl bg-[var(--dynamic-primary)] text-white flex items-center justify-center font-black text-sm relative"
+            class="w-10 h-10 rounded-xl bg-[var(--dynamic-primary)] text-white flex items-center justify-center relative"
           >
-            🛒
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2.5"
+              stroke="currentColor"
+              class="w-5 h-5"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
+              />
+            </svg>
             <span
               class="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-slate-900 shadow-sm animate-pulse"
             >
@@ -728,7 +858,7 @@
         <button
           type="button"
           (click)="isCartOpen.set(true)"
-          class="px-6 py-3.5 bg-[var(--dynamic-primary)] hover:opacity-95 text-white font-black text-sm sm:text-base rounded-2xl shadow-lg active:scale-95 transition-all uppercase tracking-wider shrink-0"
+          class="px-6 py-3.5 h-12 bg-[var(--dynamic-primary)] hover:opacity-90 disabled:opacity-50 text-white font-extrabold text-sm rounded-2xl shadow-lg shadow-[var(--dynamic-primary)]/20 transition-all flex items-center justify-center gap-2 active:scale-[0.99] hover:scale-[1.01] tracking-wider"
         >
           Đặt hàng ngay
         </button>
@@ -752,8 +882,21 @@
           <div
             class="p-4.5 border-b border-slate-100 dark:border-slate-800/60 flex items-center justify-between shrink-0 bg-slate-50 dark:bg-slate-950/40"
           >
-            <div class="flex items-center gap-2">
-              <span class="text-lg">🛒</span>
+            <div class="flex items-center gap-2 text-[var(--dynamic-primary)]">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="2.5"
+                stroke="currentColor"
+                class="w-5 h-5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
+                />
+              </svg>
               <h3
                 class="text-md font-extrabold text-slate-800 dark:text-white uppercase tracking-tight"
               >
@@ -762,7 +905,7 @@
             </div>
             <button
               (click)="isCartOpen.set(false)"
-              class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/60"
+              class="text-slate-400 hover:text-slate-650 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/60"
             >
               ✕
             </button>
@@ -800,7 +943,20 @@
                           class="w-full h-full object-cover"
                         />
                       } @else {
-                        <span>☕</span>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke-width="1.5"
+                          stroke="currentColor"
+                          class="w-6 h-6 text-slate-400"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m16.5 0a1.5 1.5 0 00-1.5-1.5H5.25A1.5 1.5 0 003.75 7.5m16.5 0v2.25a3.75 3.75 0 01-3.75 3.75h-9a3.75 3.75 0 01-3.75-3.75V7.5m10.5-3.75V3.75"
+                          />
+                        </svg>
                       }
                     </div>
 
@@ -816,11 +972,16 @@
                             {{ item.variant.variant_name }}
                           </span>
                         }
-                        @if (item.note) {
-                          <p class="text-[10px] text-slate-400 italic mt-0.5 truncate">
-                            Ghi chú: {{ item.note }}
-                          </p>
-                        }
+                        <!-- Ô nhập ghi chú cho từng món tương tự POS thu ngân -->
+                        <div class="mt-1.5 relative">
+                          <input
+                            type="text"
+                            [(ngModel)]="item.note"
+                            (ngModelChange)="onCartItemNoteChange()"
+                            placeholder="Ghi chú (ít đá, ít ngọt...)"
+                            class="w-full px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 text-[10px] font-semibold text-slate-700 dark:text-slate-350 focus:outline-none focus:ring-1 focus:ring-[var(--dynamic-primary)] focus:border-transparent"
+                          />
+                        </div>
                       </div>
 
                       <div class="flex items-center justify-between mt-2 shrink-0">
@@ -948,8 +1109,21 @@
                         : 'border-slate-200 dark:border-slate-800 text-slate-500 font-extrabold')
                     "
                   >
-                    <span class="text-xl">💵</span>
-                    <span class="text-xs sm:text-sm uppercase mt-1">Tiền mặt (COD)</span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="2"
+                      stroke="currentColor"
+                      class="w-7 h-7"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5h16.5c.621 0 1.125.504 1.125 1.125v12.75c0 .621-.504 1.125-1.125 1.125H3.75A1.125 1.125 0 012.625 17.25V5.625C2.625 5.004 3.129 4.5 3.75 4.5zM12 11.25a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"
+                      />
+                    </svg>
+                    <span class="text-xs sm:text-sm uppercase mt-1.5">Tiền mặt (COD)</span>
                   </div>
 
                   <!-- Chuyển khoản -->
@@ -962,8 +1136,21 @@
                         : 'border-slate-200 dark:border-slate-800 text-slate-500 font-extrabold')
                     "
                   >
-                    <span class="text-xl">🏦</span>
-                    <span class="text-xs sm:text-sm uppercase mt-1">Chuyển khoản</span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="2"
+                      stroke="currentColor"
+                      class="w-7 h-7"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.5M4.5 21V10.5M3 21h18M12 9.75v-1.5"
+                      />
+                    </svg>
+                    <span class="text-xs sm:text-sm uppercase mt-1.5">Chuyển khoản</span>
                   </div>
                 </div>
               </div>
@@ -985,7 +1172,7 @@
               type="button"
               (click)="placeOrder()"
               [disabled]="isSubmittingOrder()"
-              class="w-full h-14 bg-[var(--dynamic-primary)] hover:opacity-90 disabled:opacity-50 text-white font-black text-base rounded-2xl shadow-xl shadow-[var(--dynamic-primary)]/25 transition-all flex items-center justify-center gap-2 active:scale-[0.99] hover:scale-[1.01] tracking-wider"
+              class="w-full h-12 bg-[var(--dynamic-primary)] hover:opacity-90 disabled:opacity-50 text-white font-extrabold text-sm rounded-2xl shadow-lg shadow-[var(--dynamic-primary)]/20 transition-all flex items-center justify-center gap-2 active:scale-[0.99] hover:scale-[1.01] tracking-wider"
             >
               @if (isSubmittingOrder()) {
                 <div
@@ -1066,7 +1253,8 @@
 
             <!-- Ghi chú cho cốc nước -->
             <div class="space-y-1.5">
-              <label class="text-xs sm:text-sm font-black text-slate-700 dark:text-slate-350 uppercase tracking-wide block"
+              <label
+                class="text-xs sm:text-sm font-black text-slate-700 dark:text-slate-350 uppercase tracking-wide block"
                 >Ghi chú riêng món này</label
               >
               <input

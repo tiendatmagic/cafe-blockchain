@@ -307,6 +307,10 @@ export class StoreComponent implements OnInit {
     }
   }
 
+  public onCartItemNoteChange() {
+    this.saveCartToStorage(this.cart());
+  }
+
   public clearCart() {
     this.cart.set([]);
     this.saveCartToStorage([]);

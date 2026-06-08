@@ -42,6 +42,7 @@ export class SettingsComponent implements OnInit {
     has_synced_menu: '0',
     website_slug: '',
     store_categories: '',
+    website_cover_image: '',
     has_relayer_private_key: false
   });
 
@@ -148,6 +149,7 @@ export class SettingsComponent implements OnInit {
           has_synced_menu: res.has_synced_menu || '0',
           website_slug: res.website_slug || '',
           store_categories: res.store_categories || '',
+          website_cover_image: res.website_cover_image || '',
           has_relayer_private_key: res.has_relayer_private_key || false,
           ...res
         };

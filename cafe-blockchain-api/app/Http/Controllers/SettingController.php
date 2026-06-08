@@ -39,6 +39,7 @@ class SettingController extends Controller
             'has_synced_menu' => '0',
             'website_slug' => '',
             'store_categories' => '',
+            'website_cover_image' => '',
         ];
 
         if (empty($settings)) {
@@ -111,6 +112,7 @@ class SettingController extends Controller
             'has_synced_menu' => 'nullable|string|in:0,1',
             'website_slug' => 'nullable|string|max:100',
             'store_categories' => 'nullable|string',
+            'website_cover_image' => 'nullable|string|max:1000',
         ]);
 
         // Lấy các cấu hình hiện tại trong Database để đối soát bảo mật
@@ -335,6 +337,7 @@ class SettingController extends Controller
             'show_crypto_payment' => $settings['show_crypto_payment'] ?? '0',
             'website_slug' => $settings['website_slug'] ?? '',
             'store_categories' => $settings['store_categories'] ?? '',
+            'website_cover_image' => $settings['website_cover_image'] ?? '',
             'temp_order' => $tempOrderData, // Trả về thông tin đơn hàng tạm thời/thực tế để client hiển thị
             'order_status' => $order ? $order->status : null,
             'blockchain_status' => $order ? $order->blockchain_status : null,
@@ -404,6 +407,7 @@ class SettingController extends Controller
             'show_crypto_payment' => $settings['show_crypto_payment'] ?? '0',
             'website_slug' => $settings['website_slug'] ?? '',
             'store_categories' => $settings['store_categories'] ?? '',
+            'website_cover_image' => $settings['website_cover_image'] ?? '',
         ];
 
         // Lấy các danh mục của quán
