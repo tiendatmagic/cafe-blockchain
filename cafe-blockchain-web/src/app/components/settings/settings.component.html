@@ -1920,7 +1920,8 @@
             />
           </div>
           <span class="text-xs text-slate-400 font-medium block leading-tight">
-            * Nhập slug duy nhất đại diện cho quán (Ví dụ: <code>cafe-web3</code>). Nếu bỏ trống và lưu, hệ thống sẽ tự sinh slug không dấu dựa trên tên quán kèm chữ cái ngẫu nhiên.
+            * Nhập slug duy nhất đại diện cho quán (Ví dụ: <code>cafe-web3</code>). Nếu bỏ trống và
+            lưu, hệ thống sẽ tự sinh slug không dấu dựa trên tên quán kèm chữ cái ngẫu nhiên.
           </span>
         </div>
 
@@ -1929,7 +1930,8 @@
           <div
             class="p-4 rounded-2xl bg-purple-500/5 dark:bg-purple-950/20 border border-purple-500/10 dark:border-purple-800/40 space-y-2"
           >
-            <span class="text-xs font-bold text-purple-600 dark:text-purple-400 block uppercase tracking-wide"
+            <span
+              class="text-xs font-bold text-purple-600 dark:text-purple-400 block uppercase tracking-wide"
               >Đường dẫn website của quán bạn:</span
             >
             <div class="flex items-center gap-2">
@@ -1973,10 +1975,11 @@
                 >Danh mục sản phẩm hiển thị trên Web Store</span
               >
               <span class="text-[11px] text-slate-400 font-semibold block leading-tight mt-0.5">
-                Chỉ những danh mục được chọn dưới đây mới được hiển thị cho khách mua hàng trực tuyến.
+                Chỉ những danh mục được chọn dưới đây mới được hiển thị cho khách mua hàng trực
+                tuyến.
               </span>
             </div>
-            
+
             <div class="flex items-center gap-2 shrink-0">
               <button
                 type="button"
@@ -2086,189 +2089,189 @@
       </div>
     </div>
   }
-                  d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
 
-
-<!-- Modal Confirm: Xóa Owner ví thu ngân -->
-@if (isDeleteOwnerConfirmOpen()) {
-  <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-    <div (click)="isDeleteOwnerConfirmOpen.set(false)" class="fixed inset-0 bg-black/40"></div>
-    <div
-      class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200"
-    >
-      <div class="text-center space-y-4">
-        <div
-          class="w-12 h-12 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center text-xl font-bold mx-auto"
-        >
-          ⚠️
-        </div>
-        <h4
-          class="text-md font-extrabold uppercase tracking-wide text-slate-800 dark:text-white text-base"
-        >
-          Gỡ quyền ví Thu ngân?
-        </h4>
-        <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
-          Bạn có chắc chắn muốn gỡ bỏ quyền của ví thu ngân này?<br />
-          <span
-            class="font-mono text-xs bg-slate-100 dark:bg-slate-950 p-1.5 rounded-lg text-slate-600 dark:text-slate-400 mt-2 block break-all font-bold"
-            >{{ deletingOwnerAddress() }}</span
+  <!-- Modal Confirm: Xóa Owner ví thu ngân -->
+  @if (isDeleteOwnerConfirmOpen()) {
+    <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div (click)="isDeleteOwnerConfirmOpen.set(false)" class="fixed inset-0 bg-black/40"></div>
+      <div
+        class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200"
+      >
+        <div class="text-center space-y-4">
+          <div
+            class="w-12 h-12 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center text-xl font-bold mx-auto"
           >
-        </p>
-        <div class="flex gap-3 pt-2">
-          <button
-            (click)="isDeleteOwnerConfirmOpen.set(false)"
-            class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-all"
+            ⚠️
+          </div>
+          <h4
+            class="text-md font-extrabold uppercase tracking-wide text-slate-800 dark:text-white text-base"
           >
-            Hủy
-          </button>
-          <button
-            (click)="confirmDeleteOwner()"
-            class="flex-1 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow-md shadow-rose-500/15 transition-all"
-          >
-            Gỡ quyền
-          </button>
+            Gỡ quyền ví Thu ngân?
+          </h4>
+          <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
+            Bạn có chắc chắn muốn gỡ bỏ quyền của ví thu ngân này?<br />
+            <span
+              class="font-mono text-xs bg-slate-100 dark:bg-slate-950 p-1.5 rounded-lg text-slate-600 dark:text-slate-400 mt-2 block break-all font-bold"
+              >{{ deletingOwnerAddress() }}</span
+            >
+          </p>
+          <div class="flex gap-3 pt-2">
+            <button
+              (click)="isDeleteOwnerConfirmOpen.set(false)"
+              class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-all"
+            >
+              Hủy
+            </button>
+            <button
+              (click)="confirmDeleteOwner()"
+              class="flex-1 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow-md shadow-rose-500/15 transition-all"
+            >
+              Gỡ quyền
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-}
+  }
 
-<!-- Modal Confirm: Xóa ví kế toán -->
-@if (isDeleteFinanceOwnerConfirmOpen()) {
-  <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-    <div
-      (click)="isDeleteFinanceOwnerConfirmOpen.set(false)"
-      class="fixed inset-0 bg-black/40"
-    ></div>
-    <div
-      class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200"
-    >
-      <div class="text-center space-y-4">
-        <div
-          class="w-12 h-12 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center text-xl font-bold mx-auto"
-        >
-          ⚠️
-        </div>
-        <h4
-          class="text-md font-extrabold uppercase tracking-wide text-slate-800 dark:text-white text-base"
-        >
-          Gỡ quyền ví Kế toán?
-        </h4>
-        <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
-          Bạn có chắc chắn muốn gỡ bỏ quyền của ví kế toán này?<br />
-          <span
-            class="font-mono text-xs bg-slate-100 dark:bg-slate-950 p-1.5 rounded-lg text-slate-600 dark:text-slate-400 mt-2 block break-all font-bold"
-            >{{ deletingFinanceOwnerAddress() }}</span
+  <!-- Modal Confirm: Xóa ví kế toán -->
+  @if (isDeleteFinanceOwnerConfirmOpen()) {
+    <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div
+        (click)="isDeleteFinanceOwnerConfirmOpen.set(false)"
+        class="fixed inset-0 bg-black/40"
+      ></div>
+      <div
+        class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200"
+      >
+        <div class="text-center space-y-4">
+          <div
+            class="w-12 h-12 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center text-xl font-bold mx-auto"
           >
-        </p>
-        <div class="flex gap-3 pt-2">
-          <button
-            (click)="isDeleteFinanceOwnerConfirmOpen.set(false)"
-            class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-all"
+            ⚠️
+          </div>
+          <h4
+            class="text-md font-extrabold uppercase tracking-wide text-slate-800 dark:text-white text-base"
           >
-            Hủy
-          </button>
-          <button
-            (click)="confirmDeleteFinanceOwner()"
-            class="flex-1 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow-md shadow-rose-500/15 transition-all"
-          >
-            Gỡ quyền
-          </button>
+            Gỡ quyền ví Kế toán?
+          </h4>
+          <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
+            Bạn có chắc chắn muốn gỡ bỏ quyền của ví kế toán này?<br />
+            <span
+              class="font-mono text-xs bg-slate-100 dark:bg-slate-950 p-1.5 rounded-lg text-slate-600 dark:text-slate-400 mt-2 block break-all font-bold"
+              >{{ deletingFinanceOwnerAddress() }}</span
+            >
+          </p>
+          <div class="flex gap-3 pt-2">
+            <button
+              (click)="isDeleteFinanceOwnerConfirmOpen.set(false)"
+              class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-all"
+            >
+              Hủy
+            </button>
+            <button
+              (click)="confirmDeleteFinanceOwner()"
+              class="flex-1 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow-md shadow-rose-500/15 transition-all"
+            >
+              Gỡ quyền
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-}
+  }
 
-<!-- Modal Confirm: Xóa Owner ví Voucher NFT -->
-@if (isDeleteVoucherOwnerConfirmOpen()) {
-  <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-    <div
-      (click)="isDeleteVoucherOwnerConfirmOpen.set(false)"
-      class="fixed inset-0 bg-black/40"
-    ></div>
-    <div
-      class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200"
-    >
-      <div class="text-center space-y-4">
-        <div
-          class="w-12 h-12 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center text-xl font-bold mx-auto"
-        >
-          ⚠️
-        </div>
-        <h4
-          class="text-md font-extrabold uppercase tracking-wide text-slate-800 dark:text-white text-base"
-        >
-          Gỡ quyền ví Quản trị Voucher?
-        </h4>
-        <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
-          Bạn có chắc chắn muốn gỡ bỏ quyền của ví quản trị Voucher này?<br />
-          <span
-            class="font-mono text-xs bg-slate-100 dark:bg-slate-950 p-1.5 rounded-lg text-slate-600 dark:text-slate-400 mt-2 block break-all font-bold"
-            >{{ deletingVoucherOwnerAddress() }}</span
+  <!-- Modal Confirm: Xóa Owner ví Voucher NFT -->
+  @if (isDeleteVoucherOwnerConfirmOpen()) {
+    <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div
+        (click)="isDeleteVoucherOwnerConfirmOpen.set(false)"
+        class="fixed inset-0 bg-black/40"
+      ></div>
+      <div
+        class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200"
+      >
+        <div class="text-center space-y-4">
+          <div
+            class="w-12 h-12 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center text-xl font-bold mx-auto"
           >
-        </p>
-        <div class="flex gap-3 pt-2">
-          <button
-            (click)="isDeleteVoucherOwnerConfirmOpen.set(false)"
-            class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-all"
+            ⚠️
+          </div>
+          <h4
+            class="text-md font-extrabold uppercase tracking-wide text-slate-800 dark:text-white text-base"
           >
-            Hủy
-          </button>
-          <button
-            (click)="confirmDeleteVoucherOwner()"
-            class="flex-1 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow-md shadow-rose-500/15 transition-all"
-          >
-            Gỡ quyền
-          </button>
+            Gỡ quyền ví Quản trị Voucher?
+          </h4>
+          <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
+            Bạn có chắc chắn muốn gỡ bỏ quyền của ví quản trị Voucher này?<br />
+            <span
+              class="font-mono text-xs bg-slate-100 dark:bg-slate-950 p-1.5 rounded-lg text-slate-600 dark:text-slate-400 mt-2 block break-all font-bold"
+              >{{ deletingVoucherOwnerAddress() }}</span
+            >
+          </p>
+          <div class="flex gap-3 pt-2">
+            <button
+              (click)="isDeleteVoucherOwnerConfirmOpen.set(false)"
+              class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-all"
+            >
+              Hủy
+            </button>
+            <button
+              (click)="confirmDeleteVoucherOwner()"
+              class="flex-1 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow-md shadow-rose-500/15 transition-all"
+            >
+              Gỡ quyền
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-}
+  }
 
-<!-- Modal Confirm: Xóa Owner ví Menu Registry -->
-@if (isDeleteMenuOwnerConfirmOpen()) {
-  <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-    <div (click)="isDeleteMenuOwnerConfirmOpen.set(false)" class="fixed inset-0 bg-black/40"></div>
-    <div
-      class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200"
-    >
-      <div class="text-center space-y-4">
-        <div
-          class="w-12 h-12 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center text-xl font-bold mx-auto"
-        >
-          ⚠️
-        </div>
-        <h4
-          class="text-md font-extrabold uppercase tracking-wide text-slate-800 dark:text-white text-base"
-        >
-          Gỡ quyền ví Quản trị Thực đơn?
-        </h4>
-        <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
-          Bạn có chắc chắn muốn gỡ bỏ quyền của ví quản trị Thực đơn này?<br />
-          <span
-            class="font-mono text-xs bg-slate-100 dark:bg-slate-950 p-1.5 rounded-lg text-slate-600 dark:text-slate-400 mt-2 block break-all font-bold"
-            >{{ deletingMenuOwnerAddress() }}</span
+  <!-- Modal Confirm: Xóa Owner ví Menu Registry -->
+  @if (isDeleteMenuOwnerConfirmOpen()) {
+    <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div
+        (click)="isDeleteMenuOwnerConfirmOpen.set(false)"
+        class="fixed inset-0 bg-black/40"
+      ></div>
+      <div
+        class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200"
+      >
+        <div class="text-center space-y-4">
+          <div
+            class="w-12 h-12 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center text-xl font-bold mx-auto"
           >
-        </p>
-        <div class="flex gap-3 pt-2">
-          <button
-            (click)="isDeleteMenuOwnerConfirmOpen.set(false)"
-            class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-all"
+            ⚠️
+          </div>
+          <h4
+            class="text-md font-extrabold uppercase tracking-wide text-slate-800 dark:text-white text-base"
           >
-            Hủy
-          </button>
-          <button
-            (click)="confirmDeleteMenuOwner()"
-            class="flex-1 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow-md shadow-rose-500/15 transition-all"
-          >
-            Gỡ quyền
-          </button>
+            Gỡ quyền ví Quản trị Thực đơn?
+          </h4>
+          <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
+            Bạn có chắc chắn muốn gỡ bỏ quyền của ví quản trị Thực đơn này?<br />
+            <span
+              class="font-mono text-xs bg-slate-100 dark:bg-slate-950 p-1.5 rounded-lg text-slate-600 dark:text-slate-400 mt-2 block break-all font-bold"
+              >{{ deletingMenuOwnerAddress() }}</span
+            >
+          </p>
+          <div class="flex gap-3 pt-2">
+            <button
+              (click)="isDeleteMenuOwnerConfirmOpen.set(false)"
+              class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-all"
+            >
+              Hủy
+            </button>
+            <button
+              (click)="confirmDeleteMenuOwner()"
+              class="flex-1 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow-md shadow-rose-500/15 transition-all"
+            >
+              Gỡ quyền
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-}
-
+  }
 </div>
