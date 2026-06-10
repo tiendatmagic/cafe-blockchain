@@ -1,3 +1,4 @@
+import { Web3ConnectPromptComponent } from '../web3-connect-prompt/web3-connect-prompt.component';
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -6,7 +7,7 @@ import { StateService } from '../../services/state.service';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, Web3ConnectPromptComponent],
   templateUrl: './dashboard.component.html'
 })
 export class DashboardComponent implements OnInit {

@@ -629,6 +629,7 @@ export class StateService {
                   if (typeof window !== 'undefined') {
                     localStorage.setItem('auth_address', address);
                   }
+                  this.web3Service.walletConnected.set(true);
                   this.showToast('Kết nối và xác thực ví thành công!', 'success');
                   this.isWalletModalOpen.set(false);
                   this.loadSettings();

@@ -1,3 +1,4 @@
+import { Web3ConnectPromptComponent } from '../web3-connect-prompt/web3-connect-prompt.component';
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -8,7 +9,7 @@ import { ApiService } from '../../services/api.service';
 @Component({
   selector: 'app-financials',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, Web3ConnectPromptComponent],
   templateUrl: './financials.component.html'
 })
 export class FinancialsComponent {

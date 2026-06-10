@@ -1,3 +1,4 @@
+@if (stateService.web3Service.walletConnected()) {
 <div class="space-y-6 p-4 sm:p-6">
   <!-- Header tiêu đề tab -->
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -474,7 +475,7 @@
                   @if (order.is_verified === false) {
                     <span
                       class="bg-rose-500/15 text-rose-600 text-xs font-extrabold px-2.5 py-1 rounded-xl border border-rose-500/20 shadow-sm animate-pulse"
-                      >⚠️ DB bị can thiệp!</span
+                      ><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-amber-500 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg> DB bị can thiệp!</span
                     >
                   } @else if (order.status === 'completed') {
                     <span
@@ -521,7 +522,7 @@
                         <span
                           class="px-2 py-0.5 rounded-lg bg-red-500/10 text-red-500 font-bold text-xs flex items-center gap-1 border border-red-500/15 shadow-sm animate-pulse"
                         >
-                          ⚠️ Dữ liệu bị thay đổi!
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-amber-500 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg> Dữ liệu bị thay đổi!
                         </span>
                         <button
                           [disabled]="true"
@@ -798,7 +799,7 @@
                     <div
                       class="flex items-center gap-1.5 text-red-500 font-extrabold text-xs animate-pulse"
                     >
-                      <span>⚠️ CẢNH BÁO: Dữ liệu DB bị can thiệp trái phép!</span>
+                      <span><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-amber-500 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg> CẢNH BÁO: Dữ liệu DB bị can thiệp trái phép!</span>
                     </div>
                     <p class="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
                       Số tiền hoặc thông tin đơn hàng hiện tại trong Database đã bị sửa đổi lệch so
@@ -1057,7 +1058,7 @@
                     <div
                       class="flex items-center gap-1.5 text-red-500 font-bold text-xs animate-pulse"
                     >
-                      <span>⚠️ CẢNH BÁO: Dữ liệu đơn bị sửa đổi trái phép!</span>
+                      <span><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-amber-500 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg> CẢNH BÁO: Dữ liệu đơn bị sửa đổi trái phép!</span>
                     </div>
                     <p class="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
                       Chữ ký số đối soát (HMAC-SHA256) không trùng khớp với dữ liệu hiện tại trong
@@ -1427,4 +1428,8 @@
       </div>
     </div>
   </div>
+}
+
+} @else {
+  <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý Đơn hàng'"></app-web3-connect-prompt>
 }

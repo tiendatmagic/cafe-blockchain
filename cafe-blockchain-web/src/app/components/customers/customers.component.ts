@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { StateService } from '../../services/state.service';
 import { ApiService } from '../../services/api.service';
+import { Web3ConnectPromptComponent } from '../web3-connect-prompt/web3-connect-prompt.component';
 
 @Component({
   selector: 'app-customers',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, Web3ConnectPromptComponent],
   templateUrl: './customers.component.html'
 })
 export class CustomersComponent {

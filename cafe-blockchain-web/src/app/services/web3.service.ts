@@ -230,6 +230,16 @@ export class Web3Service {
   }
 
   /**
+   * Kiểm tra xem token xác thực JWT có tồn tại và khớp với ví hiện tại không
+   */
+  private hasValidAuthToken(account: string): boolean {
+    if (typeof window === 'undefined') return false;
+    const token = localStorage.getItem('auth_token');
+    const savedAddress = localStorage.getItem('auth_address');
+    return !!token && !!savedAddress && savedAddress.toLowerCase() === account.toLowerCase();
+  }
+
+  /**
    * Kiểm tra xem ví đã được kết nối trước đó hay chưa
    */
   private async checkWalletConnection() {
@@ -240,7 +250,11 @@ export class Web3Service {
         if (accounts.length > 0) {
           const account = accounts[0].address;
           this.currentAccount.set(account);
-          this.walletConnected.set(true);
+          if (this.hasValidAuthToken(account)) {
+            this.walletConnected.set(true);
+          } else {
+            this.walletConnected.set(false);
+          }
           await this.updateBalanceAndStatus(account);
         }
       } catch (err) {
@@ -258,10 +272,15 @@ export class Web3Service {
       
       eth.on('accountsChanged', async (accounts: string[]) => {
         if (accounts.length > 0) {
-          this.currentAccount.set(accounts[0]);
-          this.walletConnected.set(true);
-          await this.updateBalanceAndStatus(accounts[0]);
-          this.accountsChanged$.next(accounts[0]);
+          const account = accounts[0];
+          this.currentAccount.set(account);
+          if (this.hasValidAuthToken(account)) {
+            this.walletConnected.set(true);
+          } else {
+            this.walletConnected.set(false);
+          }
+          await this.updateBalanceAndStatus(account);
+          this.accountsChanged$.next(account);
         } else {
           this.resetWalletState();
           this.accountsChanged$.next('');
@@ -329,7 +348,11 @@ export class Web3Service {
       if (accounts.length > 0) {
         const account = accounts[0];
         this.currentAccount.set(account);
-        this.walletConnected.set(true);
+        if (this.hasValidAuthToken(account)) {
+          this.walletConnected.set(true);
+        } else {
+          this.walletConnected.set(false);
+        }
         await this.updateBalanceAndStatus(account);
         return true;
       }

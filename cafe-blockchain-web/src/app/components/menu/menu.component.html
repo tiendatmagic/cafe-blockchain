@@ -1,3 +1,4 @@
+@if (stateService.web3Service.walletConnected()) {
 <div class="space-y-6 p-4 sm:p-6">
   <!-- Header tiêu đề tab có bộ chuyển đổi View Mode -->
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -1387,4 +1388,9 @@
       </div>
     </div>
   </div>
+}
+
+</div>
+} @else {
+  <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý Thực đơn món ăn'"></app-web3-connect-prompt>
 }

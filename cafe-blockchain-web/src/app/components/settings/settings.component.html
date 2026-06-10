@@ -1,3 +1,4 @@
+@if (stateService.web3Service.walletConnected()) {
 <div class="space-y-6 p-4 sm:p-6">
   <div>
     <h3 class="text-2xl font-extrabold text-slate-800 dark:text-white">
@@ -839,7 +840,7 @@
             />
           </div>
           <p class="text-xs font-bold text-slate-400/80 leading-normal mt-1 block">
-            ⚠️ Lưu ý: Khóa ví Relayer sẽ được **mã hóa đối xứng bảo mật (AES-256)** trên Backend.
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-amber-500 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg> Lưu ý: Khóa ví Relayer sẽ được **mã hóa đối xứng bảo mật (AES-256)** trên Backend.
             Chỉ dùng ví Relayer phụ chứa lượng nhỏ coin làm phí gas.
           </p>
         </div>
@@ -1481,7 +1482,7 @@
                   >
                 } @else if (ownersFromChain().length === 0) {
                   <span class="text-xs text-rose-500 italic block py-4 text-center font-semibold"
-                    >⚠️ Không tìm thấy ví nào hoặc hợp đồng không tương thích (Vui lòng deploy lại
+                    ><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-amber-500 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg> Không tìm thấy ví nào hoặc hợp đồng không tương thích (Vui lòng deploy lại
                     hợp đồng mới).</span
                   >
                 }
@@ -1600,7 +1601,7 @@
                   >
                 } @else if (financeOwnersFromChain().length === 0) {
                   <span class="text-xs text-rose-500 italic block py-4 text-center font-semibold"
-                    >⚠️ Không tìm thấy ví nào hoặc hợp đồng không tương thích (Vui lòng deploy lại
+                    ><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-amber-500 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg> Không tìm thấy ví nào hoặc hợp đồng không tương thích (Vui lòng deploy lại
                     hợp đồng mới).</span
                   >
                 }
@@ -1719,7 +1720,7 @@
                   >
                 } @else if (voucherOwnersFromChain().length === 0) {
                   <span class="text-xs text-rose-500 italic block py-4 text-center font-semibold"
-                    >⚠️ Không tìm thấy ví nào hoặc hợp đồng không tương thích (Vui lòng deploy lại
+                    ><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-amber-500 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg> Không tìm thấy ví nào hoặc hợp đồng không tương thích (Vui lòng deploy lại
                     hợp đồng mới).</span
                   >
                 }
@@ -1838,7 +1839,7 @@
                   >
                 } @else if (menuOwnersFromChain().length === 0) {
                   <span class="text-xs text-rose-500 italic block py-4 text-center font-semibold"
-                    >⚠️ Không tìm thấy ví nào hoặc hợp đồng không tương thích (Vui lòng deploy lại
+                    ><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-amber-500 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg> Không tìm thấy ví nào hoặc hợp đồng không tương thích (Vui lòng deploy lại
                     hợp đồng mới).</span
                   >
                 }
@@ -2126,7 +2127,7 @@
           <div
             class="w-12 h-12 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center text-xl font-bold mx-auto"
           >
-            ⚠️
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-amber-500 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
           </div>
           <h4
             class="text-md font-extrabold uppercase tracking-wide text-slate-800 dark:text-white text-base"
@@ -2173,7 +2174,7 @@
           <div
             class="w-12 h-12 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center text-xl font-bold mx-auto"
           >
-            ⚠️
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-amber-500 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
           </div>
           <h4
             class="text-md font-extrabold uppercase tracking-wide text-slate-800 dark:text-white text-base"
@@ -2220,7 +2221,7 @@
           <div
             class="w-12 h-12 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center text-xl font-bold mx-auto"
           >
-            ⚠️
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-amber-500 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
           </div>
           <h4
             class="text-md font-extrabold uppercase tracking-wide text-slate-800 dark:text-white text-base"
@@ -2267,7 +2268,7 @@
           <div
             class="w-12 h-12 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center text-xl font-bold mx-auto"
           >
-            ⚠️
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-amber-500 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
           </div>
           <h4
             class="text-md font-extrabold uppercase tracking-wide text-slate-800 dark:text-white text-base"
@@ -2300,3 +2301,7 @@
     </div>
   }
 </div>
+
+} @else {
+  <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý Cấu hình quán'"></app-web3-connect-prompt>
+}

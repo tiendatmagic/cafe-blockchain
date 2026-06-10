@@ -1,3 +1,4 @@
+import { Web3ConnectPromptComponent } from '../web3-connect-prompt/web3-connect-prompt.component';
 import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -11,11 +12,11 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 @Component({
   selector: 'app-pos',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, Web3ConnectPromptComponent],
   templateUrl: './pos.component.html'
 })
 export class PosComponent implements OnInit, OnDestroy {
-  private readonly stateService = inject(StateService);
+  public readonly stateService = inject(StateService);
   private readonly apiService = inject(ApiService);
   public readonly web3Service = inject(Web3Service);
 
