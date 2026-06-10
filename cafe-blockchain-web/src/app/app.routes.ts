@@ -11,6 +11,7 @@ import { TablesComponent } from './components/tables/tables.component';
 import { MobileSignComponent } from './components/mobile-sign/mobile-sign.component';
 import { BlockchainExplorerComponent } from './components/blockchain-explorer/blockchain-explorer.component';
 import { StoreComponent } from './components/store/store.component';
+import { ReportsComponent } from './components/reports/reports.component';
 
 export const routes: Routes = [
   { path: 'dashboard', component: DashboardComponent },
@@ -22,6 +23,7 @@ export const routes: Routes = [
   { path: 'financials', component: FinancialsComponent },
   { path: 'inventory', component: InventoryComponent },
   { path: 'tables', component: TablesComponent },
+  { path: 'reports', component: ReportsComponent },
   { path: 'mobile-sign', component: MobileSignComponent },
   { path: 'blockchain-explorer', component: BlockchainExplorerComponent },
   { path: 'store/:slug', component: StoreComponent },

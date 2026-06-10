@@ -625,7 +625,7 @@
                   (click)="ordersCurrentPage.set($any(pageNum))"
                   [class]="
                     pageNum === ordersCurrentPage()
-                      ? 'bg-purple-600 text-white font-extrabold shadow-md shadow-purple-500/20'
+                      ? 'bg-[var(--dynamic-primary)] text-white font-extrabold shadow-md shadow-[var(--dynamic-primary)]/20'
                       : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200/40 dark:border-slate-800/40 font-semibold'
                   "
                   class="w-8.5 h-8.5 rounded-xl text-xs transition-all"

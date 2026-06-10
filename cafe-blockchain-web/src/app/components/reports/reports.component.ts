@@ -26,6 +26,13 @@ export class ReportsComponent implements OnInit {
   // Tab báo cáo chi tiết
   public readonly activeTab = signal<'products' | 'customers'>('products');
 
+  // Sắp xếp cột báo cáo
+  public readonly productSortField = signal<string>('total_quantity');
+  public readonly productSortDesc = signal<boolean>(true);
+
+  public readonly customerSortField = signal<string>('total_spent');
+  public readonly customerSortDesc = signal<boolean>(true);
+
   // Dữ liệu báo cáo
   public readonly reportsData = signal<any>(null);
   public readonly isReportsLoading = signal<boolean>(false);
@@ -108,9 +115,13 @@ export class ReportsComponent implements OnInit {
     this.isReportsLoading.set(true);
     this.reportsError.set('');
     
-    // Reset phân trang
+    // Reset phân trang & sắp xếp
     this.productPage.set(1);
     this.customerPage.set(1);
+    this.productSortField.set('total_quantity');
+    this.productSortDesc.set(true);
+    this.customerSortField.set('total_spent');
+    this.customerSortDesc.set(true);
 
     this.apiService.getReports(this.reportsStartDate(), this.reportsEndDate()).subscribe({
       next: (data: any) => {
@@ -123,6 +134,40 @@ export class ReportsComponent implements OnInit {
         this.isReportsLoading.set(false);
       }
     });
+  }
+
+  // --- Tính Biên lợi nhuận % ---
+  public getGrossProfitMargin(): number {
+    const data = this.reportsData();
+    if (!data || !data.financials || !data.financials.revenue) return 0;
+    return (data.financials.gross_profit / data.financials.revenue) * 100;
+  }
+
+  public getNetProfitMargin(): number {
+    const data = this.reportsData();
+    if (!data || !data.financials || !data.financials.revenue) return 0;
+    return (data.financials.net_profit / data.financials.revenue) * 100;
+  }
+
+  // --- Logic Sắp xếp cột ---
+  public toggleProductSort(field: string) {
+    if (this.productSortField() === field) {
+      this.productSortDesc.set(!this.productSortDesc());
+    } else {
+      this.productSortField.set(field);
+      this.productSortDesc.set(true);
+    }
+    this.productPage.set(1); // Quay về trang 1 khi đổi cách sắp xếp
+  }
+
+  public toggleCustomerSort(field: string) {
+    if (this.customerSortField() === field) {
+      this.customerSortDesc.set(!this.customerSortDesc());
+    } else {
+      this.customerSortField.set(field);
+      this.customerSortDesc.set(true);
+    }
+    this.customerPage.set(1); // Quay về trang 1
   }
 
   // --- Hỗ trợ vẽ biểu đồ Conic Gradient (Cơ cấu thanh toán) ---
@@ -184,12 +229,29 @@ export class ReportsComponent implements OnInit {
     return maxVal > 0 ? maxVal : 100000;
   }
 
-  // --- Phân trang Báo cáo hàng hóa ---
+  // --- Phân trang & Sắp xếp Báo cáo hàng hóa ---
   public getProductsPaged(): any[] {
     const data = this.reportsData();
     if (!data?.products) return [];
+
+    // Copy để không mutate dữ liệu gốc
+    const list = [...data.products];
+    const field = this.productSortField();
+    const desc = this.productSortDesc();
+
+    list.sort((a, b) => {
+      let valA = a[field];
+      let valB = b[field];
+      
+      // Xử lý kiểu chuỗi/số
+      if (typeof valA === 'string') {
+        return desc ? valB.localeCompare(valA) : valA.localeCompare(valB);
+      }
+      return desc ? (valB - valA) : (valA - valB);
+    });
+
     const start = (this.productPage() - 1) * this.productLimit;
-    return data.products.slice(start, start + this.productLimit);
+    return list.slice(start, start + this.productLimit);
   }
 
   public getProductsTotalPages(): number {
@@ -198,12 +260,27 @@ export class ReportsComponent implements OnInit {
     return Math.ceil(data.products.length / this.productLimit);
   }
 
-  // --- Phân trang Báo cáo khách hàng ---
+  // --- Phân trang & Sắp xếp Báo cáo khách hàng ---
   public getCustomersPaged(): any[] {
     const data = this.reportsData();
     if (!data?.customers) return [];
+
+    const list = [...data.customers];
+    const field = this.customerSortField();
+    const desc = this.customerSortDesc();
+
+    list.sort((a, b) => {
+      let valA = a[field];
+      let valB = b[field];
+      
+      if (typeof valA === 'string') {
+        return desc ? valB.localeCompare(valA) : valA.localeCompare(valB);
+      }
+      return desc ? (valB - valA) : (valA - valB);
+    });
+
     const start = (this.customerPage() - 1) * this.customerLimit;
-    return data.customers.slice(start, start + this.customerLimit);
+    return list.slice(start, start + this.customerLimit);
   }
 
   public getCustomersTotalPages(): number {
@@ -229,5 +306,38 @@ export class ReportsComponent implements OnInit {
     if (currentPage < totalPages - 2) pages.push('...');
     pages.push(totalPages);
     return pages;
+  }
+
+  // --- Logic Xuất file CSV ---
+  public exportToCSV(type: 'products' | 'customers') {
+    const data = this.reportsData();
+    if (!data) return;
+
+    let csvContent = '\uFEFF'; // BOM to support Vietnamese Unicode in Excel
+    let fileName = '';
+
+    if (type === 'products') {
+      csvContent += 'Mã SKU,Tên sản phẩm,Biến thể,Số lượng bán,Doanh số (đ),Tổng giá vốn (đ),Lợi nhuận gộp (đ)\n';
+      data.products.forEach((p: any) => {
+        csvContent += `"${p.sku || ''}","${p.product_name || ''}","${p.variant_name || ''}",${p.total_quantity},${p.total_revenue},${p.total_cost},${p.gross_profit}\n`;
+      });
+      fileName = `bao_cao_ban_hang_theo_mon_${this.reportsStartDate()}_den_${this.reportsEndDate()}.csv`;
+    } else {
+      csvContent += 'Tên khách hàng,Số điện thoại,Địa chỉ ví,Số đơn mua,Tổng chi tiêu (đ),TB đơn hàng (đ)\n';
+      data.customers.forEach((c: any) => {
+        csvContent += `"${c.customer_name || ''}","${c.customer_phone || ''}","${c.wallet_address || ''}",${c.orders_count},${c.total_spent},${c.average_order_value}\n`;
+      });
+      fileName = `bao_cao_chi_tieu_khach_hang_${this.reportsStartDate()}_den_${this.reportsEndDate()}.csv`;
+    }
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', fileName);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 }
