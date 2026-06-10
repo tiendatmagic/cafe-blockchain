@@ -112,7 +112,6 @@ export class SettingsComponent implements OnInit {
 
   public ngOnInit() {
     this.loadSettings();
-    this.loadStoreCategories();
 
     // Đồng bộ tab hiện tại với Query Parameter 'tab' trên URL
     this.route.queryParams.subscribe(params => {
@@ -121,6 +120,9 @@ export class SettingsComponent implements OnInit {
         this.settingsSubTab.set(tab as any);
         if (tab === 'permissions' && this.web3Service.walletConnected()) {
           this.loadOwnersList();
+        }
+        if (tab === 'store') {
+          this.loadStoreCategories();
         }
       }
     });
@@ -189,6 +191,9 @@ export class SettingsComponent implements OnInit {
 
     if (subTab === 'permissions' && this.web3Service.walletConnected()) {
       this.loadOwnersList();
+    }
+    if (subTab === 'store') {
+      this.loadStoreCategories();
     }
   }
 
