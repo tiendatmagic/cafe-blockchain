@@ -13,11 +13,13 @@ class ProductVariant extends Model
         'product_id',
         'variant_name',
         'price',
+        'cost_price',
         'status',
     ];
 
     protected $casts = [
         'price' => 'float',
+        'cost_price' => 'float',
         'status' => 'boolean',
     ];
 

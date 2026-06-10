@@ -1,0 +1,563 @@
+<div class="space-y-6 p-4 sm:p-6 max-w-[1530px] mx-auto">
+  <!-- Header & Trạng thái ví Metamask -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div>
+      <h3 class="text-2xl font-black text-slate-800 dark:text-white">Báo cáo hoạt động kinh doanh</h3>
+      <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+        Theo dõi kết quả tài chính, mặt hàng bán chạy và hiệu suất khách hàng thân thiết.
+      </p>
+    </div>
+
+  </div>
+
+  @if (web3Service.walletConnected()) {
+    <!-- Bộ lọc mốc thời gian cao cấp -->
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm transition-colors">
+      <!-- Lọc nhanh presets -->
+      <div class="flex items-center gap-1.5 flex-wrap">
+        <button
+          (click)="setDatePreset('today')"
+          [class.bg-[var(--dynamic-primary)]]="activePreset() === 'today'"
+          [class.text-white]="activePreset() === 'today'"
+          [class.bg-slate-100]="activePreset() !== 'today'"
+          [class.dark:bg-slate-800]="activePreset() !== 'today'"
+          [class.text-slate-600]="activePreset() !== 'today'"
+          [class.dark:text-slate-400]="activePreset() !== 'today'"
+          class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all hover:scale-[1.02] active:scale-95"
+        >
+          Hôm nay
+        </button>
+        <button
+          (click)="setDatePreset('yesterday')"
+          [class.bg-[var(--dynamic-primary)]]="activePreset() === 'yesterday'"
+          [class.text-white]="activePreset() === 'yesterday'"
+          [class.bg-slate-100]="activePreset() !== 'yesterday'"
+          [class.dark:bg-slate-800]="activePreset() !== 'yesterday'"
+          [class.text-slate-600]="activePreset() !== 'yesterday'"
+          [class.dark:text-slate-400]="activePreset() !== 'yesterday'"
+          class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all hover:scale-[1.02] active:scale-95"
+        >
+          Hôm qua
+        </button>
+        <button
+          (click)="setDatePreset('7days')"
+          [class.bg-[var(--dynamic-primary)]]="activePreset() === '7days'"
+          [class.text-white]="activePreset() === '7days'"
+          [class.bg-slate-100]="activePreset() !== '7days'"
+          [class.dark:bg-slate-800]="activePreset() !== '7days'"
+          [class.text-slate-600]="activePreset() !== '7days'"
+          [class.dark:text-slate-400]="activePreset() !== '7days'"
+          class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all hover:scale-[1.02] active:scale-95"
+        >
+          7 ngày qua
+        </button>
+        <button
+          (click)="setDatePreset('thisMonth')"
+          [class.bg-[var(--dynamic-primary)]]="activePreset() === 'thisMonth'"
+          [class.text-white]="activePreset() === 'thisMonth'"
+          [class.bg-slate-100]="activePreset() !== 'thisMonth'"
+          [class.dark:bg-slate-800]="activePreset() !== 'thisMonth'"
+          [class.text-slate-600]="activePreset() !== 'thisMonth'"
+          [class.dark:text-slate-400]="activePreset() !== 'thisMonth'"
+          class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all hover:scale-[1.02] active:scale-95"
+        >
+          Tháng này
+        </button>
+        <button
+          (click)="setDatePreset('lastMonth')"
+          [class.bg-[var(--dynamic-primary)]]="activePreset() === 'lastMonth'"
+          [class.text-white]="activePreset() === 'lastMonth'"
+          [class.bg-slate-100]="activePreset() !== 'lastMonth'"
+          [class.dark:bg-slate-800]="activePreset() !== 'lastMonth'"
+          [class.text-slate-600]="activePreset() !== 'lastMonth'"
+          [class.dark:text-slate-400]="activePreset() !== 'lastMonth'"
+          class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all hover:scale-[1.02] active:scale-95"
+        >
+          Tháng trước
+        </button>
+        <button
+          (click)="setDatePreset('custom')"
+          [class.bg-[var(--dynamic-primary)]]="activePreset() === 'custom'"
+          [class.text-white]="activePreset() === 'custom'"
+          [class.bg-slate-100]="activePreset() !== 'custom'"
+          [class.dark:bg-slate-800]="activePreset() !== 'custom'"
+          [class.text-slate-600]="activePreset() !== 'custom'"
+          [class.dark:text-slate-400]="activePreset() !== 'custom'"
+          class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all hover:scale-[1.02] active:scale-95"
+        >
+          Tự chọn
+        </button>
+      </div>
+
+      <!-- Date Range Picker Đẹp Mắt -->
+      <div *ngIf="activePreset() === 'custom'" class="flex items-center gap-2 flex-wrap">
+        <div class="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3.5 py-2 rounded-xl transition-all focus-within:border-[var(--dynamic-primary)]">
+          <span class="text-[10px] font-black text-slate-400 uppercase">Từ</span>
+          <input
+            type="date"
+            [(ngModel)]="tempStartDate"
+            (change)="onCustomDatesChange()"
+            class="bg-transparent text-slate-800 dark:text-slate-200 text-xs font-bold focus:outline-none cursor-pointer [&::-webkit-calendar-picker-indicator]:dark:invert [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-70"
+          />
+        </div>
+        <div class="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3.5 py-2 rounded-xl transition-all focus-within:border-[var(--dynamic-primary)]">
+          <span class="text-[10px] font-black text-slate-400 uppercase">Đến</span>
+          <input
+            type="date"
+            [(ngModel)]="tempEndDate"
+            (change)="onCustomDatesChange()"
+            class="bg-transparent text-slate-800 dark:text-slate-200 text-xs font-bold focus:outline-none cursor-pointer [&::-webkit-calendar-picker-indicator]:dark:invert [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-70"
+          />
+        </div>
+      </div>
+    </div>
+
+    @if (isReportsLoading()) {
+      <!-- SKELETON LOADING -->
+      <div class="space-y-6 animate-pulse">
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+          @for (i of [1, 2, 3, 4]; track i) {
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200/50 dark:border-slate-800/50 h-28"></div>
+          }
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 bg-white dark:bg-slate-900 h-96 rounded-xl border border-slate-200/50"></div>
+          <div class="bg-white dark:bg-slate-900 h-96 rounded-xl border border-slate-200/50"></div>
+        </div>
+      </div>
+    } @else if (reportsError()) {
+      <!-- Lỗi hiển thị -->
+      <div class="flex items-center gap-3 p-4 bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 rounded-xl text-sm font-bold">
+        <span>⚠️ {{ reportsError() }}</span>
+      </div>
+    } @else {
+      <!-- BÁO CÁO DỮ LIỆU THẬT -->
+      <!-- Khối Thống kê Tài chính (Financial Summary Cards) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+        <!-- Doanh thu bán hàng -->
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex items-center justify-between group hover:scale-[1.01] transition-all">
+          <div class="space-y-1.5">
+            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Doanh thu bán hàng</span>
+            <h4 class="text-2xl font-black text-slate-800 dark:text-white leading-none">
+              {{ reportsData()?.financials?.revenue | number }}
+              <span class="text-xs font-bold text-slate-400">đ</span>
+            </h4>
+            <span class="text-[10px] text-slate-400 font-medium">Hoạt động bán hàng POS & Web Store</span>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Giá vốn hàng bán -->
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex items-center justify-between group hover:scale-[1.01] transition-all">
+          <div class="space-y-1.5">
+            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Giá vốn hàng bán (COGS)</span>
+            <h4 class="text-2xl font-black text-slate-800 dark:text-white leading-none">
+              {{ reportsData()?.financials?.cogs | number }}
+              <span class="text-xs font-bold text-slate-400">đ</span>
+            </h4>
+            <span class="text-[10px] text-slate-400 font-medium">Lợi nhuận gộp: <strong class="text-emerald-500 font-black">{{ reportsData()?.financials?.gross_profit | number }}đ</strong></span>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Chi phí vận hành & doanh thu khác -->
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex items-center justify-between group hover:scale-[1.01] transition-all">
+          <div class="space-y-1.5">
+            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Chi phí & Thu nhập khác</span>
+            <h4 class="text-2xl font-black text-slate-800 dark:text-white leading-none">
+              {{ reportsData()?.financials?.expenses | number }}đ
+            </h4>
+            <span class="text-[10px] text-slate-400 font-medium">Thu nhập khác: <strong class="text-purple-500 font-black">+{{ reportsData()?.financials?.other_income | number }}đ</strong></span>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Lợi nhuận ròng -->
+        <div
+          [class.bg-emerald-500/5]="reportsData()?.financials?.net_profit >= 0"
+          [class.dark:bg-emerald-950/20]="reportsData()?.financials?.net_profit >= 0"
+          [class.border-emerald-500/20]="reportsData()?.financials?.net_profit >= 0"
+          [class.bg-rose-500/5]="reportsData()?.financials?.net_profit < 0"
+          [class.dark:bg-rose-950/20]="reportsData()?.financials?.net_profit < 0"
+          [class.border-rose-500/20]="reportsData()?.financials?.net_profit < 0"
+          class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200/50 shadow-sm flex items-center justify-between group hover:scale-[1.01] transition-all"
+        >
+          <div class="space-y-1.5">
+            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Lợi nhuận ròng</span>
+            <h4
+              [class.text-emerald-500]="reportsData()?.financials?.net_profit >= 0"
+              [class.text-rose-500]="reportsData()?.financials?.net_profit < 0"
+              class="text-2xl font-black leading-none"
+            >
+              {{ reportsData()?.financials?.net_profit | number }}
+              <span class="text-xs font-bold">đ</span>
+            </h4>
+            <span class="text-[10px] text-slate-400 font-medium">Hiệu số doanh thu bán hàng & chi phí</span>
+          </div>
+          <div
+            [class.bg-emerald-500/10]="reportsData()?.financials?.net_profit >= 0"
+            [class.text-emerald-500]="reportsData()?.financials?.net_profit >= 0"
+            [class.bg-rose-500/10]="reportsData()?.financials?.net_profit < 0"
+            [class.text-rose-500]="reportsData()?.financials?.net_profit < 0"
+            class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Biểu đồ xu hướng (SVG Charts) -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Biểu đồ cột stacked: Doanh thu & Chi phí -->
+        <div class="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex flex-col justify-between space-y-4">
+          <div class="flex items-center justify-between shrink-0">
+            <h4 class="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              <span>Xu hướng thu chi</span>
+            </h4>
+            <div class="flex items-center gap-4 text-[10px] font-bold">
+              <div class="flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded bg-[var(--dynamic-primary)] block"></span>
+                <span class="text-slate-500">Doanh thu</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded bg-rose-500 block"></span>
+                <span class="text-slate-500">Chi phí</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lưới vẽ SVG Bar Chart -->
+          <div class="relative w-full flex-1 flex items-end justify-between pt-6 pb-2 px-1 sm:px-2 min-h-[220px]">
+            <!-- Trục Y mờ -->
+            <div class="absolute inset-y-6 left-0 right-16 flex flex-col justify-between pointer-events-none">
+              <div class="border-t border-slate-100 dark:border-slate-800/60 w-full pt-0.5"></div>
+              <div class="border-t border-slate-100 dark:border-slate-800/60 w-full pt-0.5"></div>
+              <div class="border-t border-slate-100 dark:border-slate-800/60 w-full pt-0.5"></div>
+              <div class="border-t border-slate-200 dark:border-slate-800 w-full pt-0.5"></div>
+            </div>
+
+            <!-- Nhãn trục Y bên phải -->
+            <div class="absolute inset-y-6 right-0 w-16 flex flex-col justify-between pointer-events-none text-left text-[9px] text-slate-400 font-semibold pl-2 pt-0.5">
+              <div class="truncate">{{ getMaxChartValue() | number }}đ</div>
+              <div class="truncate">{{ (getMaxChartValue() / 2) | number }}đ</div>
+              <div class="truncate">{{ (getMaxChartValue() / 4) | number }}đ</div>
+              <div>0đ</div>
+            </div>
+
+            <!-- Cột Bar vẽ chi tiết -->
+            <div class="w-[calc(100%-64px)] h-44 flex items-end justify-around gap-2 z-10 overflow-x-auto no-scrollbar">
+              @for (day of reportsData()?.trend_chart; track day.date) {
+                <div class="flex-1 flex flex-col items-center gap-2 group cursor-pointer min-w-[30px] max-w-[60px]">
+                  <div class="relative w-full flex items-end justify-center gap-1 h-32">
+                    <!-- Tooltip hover -->
+                    <div class="absolute -top-16 scale-0 group-hover:scale-100 bg-slate-950 text-white dark:bg-white dark:text-slate-900 text-[9px] font-black p-2 rounded-xl shadow-lg transition-all duration-200 leading-tight whitespace-nowrap z-30 flex flex-col gap-0.5">
+                      <span class="text-slate-400">Ngày: {{ day.date }}</span>
+                      <span class="text-purple-500">Doanh thu: {{ day.revenue | number }}đ</span>
+                      <span class="text-rose-500">Chi phí: {{ day.expense | number }}đ</span>
+                    </div>
+
+                    <!-- Cột Doanh thu -->
+                    <div
+                      [style.height.%]="day.revenue > 0 ? mathMin(100, (day.revenue / getMaxChartValue()) * 100) : 5"
+                      class="w-1/2 bg-gradient-to-t from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] rounded-t shadow-sm transition-all duration-300"
+                    ></div>
+                    <!-- Cột Chi phí -->
+                    <div
+                      [style.height.%]="day.expense > 0 ? mathMin(100, (day.expense / getMaxChartValue()) * 100) : 5"
+                      class="w-1/2 bg-gradient-to-t from-rose-600 to-rose-400 rounded-t shadow-sm transition-all duration-300"
+                    ></div>
+                  </div>
+                  <span class="text-[9px] font-bold text-slate-400 group-hover:text-[var(--dynamic-primary)] transition-all whitespace-nowrap">
+                    {{ day.day_name }}
+                  </span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Biểu đồ tròn Doughnut: Cơ cấu thanh toán -->
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex flex-col justify-between space-y-4">
+          <div class="space-y-1 shrink-0">
+            <h4 class="text-base font-extrabold text-slate-800 dark:text-white">Cơ cấu thanh toán</h4>
+            <p class="text-xs text-slate-400">Tỷ lệ giá trị thanh toán qua các phương thức.</p>
+          </div>
+
+          <!-- Doughnut Chart Conic Gradient -->
+          <div class="flex-1 flex items-center justify-center my-2 min-h-[160px]">
+            <div
+              class="w-32 h-32 rounded-full shadow-inner relative flex items-center justify-center transition-all duration-500 hover:scale-105"
+              [style.background]="getConicGradient()"
+            >
+              <div class="w-22 h-22 rounded-full bg-white dark:bg-slate-900 flex flex-col items-center justify-center shadow-md">
+                <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider">Tổng thu</span>
+                <span class="text-sm font-black text-slate-800 dark:text-white leading-none mt-0.5">
+                  {{ reportsData()?.financials?.revenue | number }}đ
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chú thích Legend -->
+          <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-slate-800 shrink-0 text-xs font-bold">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full shrink-0" style="background-color: #10b981"></span>
+              <span class="text-slate-500">Ngân hàng: {{ getPaymentPercentage('bank_transfer') }}%</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full shrink-0" style="background-color: #ec4899"></span>
+              <span class="text-slate-500">Ví điện tử: {{ getPaymentPercentage('e_wallet') }}%</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full shrink-0" style="background-color: #f59e0b"></span>
+              <span class="text-slate-500">Tiền mặt: {{ getPaymentPercentage('cash') }}%</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full shrink-0" style="background-color: #7c3aed"></span>
+              <span class="text-slate-500">Crypto: {{ getPaymentPercentage('crypto') }}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Khối Lưới chi tiết hàng hóa / khách hàng -->
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm overflow-hidden transition-colors">
+        <!-- Tabs đầu bảng -->
+        <div class="flex border-b border-slate-100 dark:border-slate-800">
+          <button
+            (click)="activeTab.set('products')"
+            [class.border-b-2]="activeTab() === 'products'"
+            [class.border-[var(--dynamic-primary)]]="activeTab() === 'products'"
+            [class.text-[var(--dynamic-primary)]]="activeTab() === 'products'"
+            [class.text-slate-500]="activeTab() !== 'products'"
+            class="px-6 py-4 text-xs font-extrabold uppercase tracking-wider hover:text-slate-700 focus:outline-none transition-all"
+          >
+            Báo cáo bán hàng theo món
+          </button>
+          <button
+            (click)="activeTab.set('customers')"
+            [class.border-b-2]="activeTab() === 'customers'"
+            [class.border-[var(--dynamic-primary)]]="activeTab() === 'customers'"
+            [class.text-[var(--dynamic-primary)]]="activeTab() === 'customers'"
+            [class.text-slate-500]="activeTab() !== 'customers'"
+            class="px-6 py-4 text-xs font-extrabold uppercase tracking-wider hover:text-slate-700 focus:outline-none transition-all"
+          >
+            Báo cáo chi tiêu khách hàng
+          </button>
+        </div>
+
+        <!-- Nội dung của Tab 1: Hàng hóa -->
+        <div *ngIf="activeTab() === 'products'" class="p-4 sm:p-6 space-y-4">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[750px]">
+              <thead>
+                <tr class="border-b border-slate-100 dark:border-slate-800 text-slate-400 font-bold text-xs">
+                  <th class="pb-3 font-black">MÃ SKU</th>
+                  <th class="pb-3 font-black">TÊN MÓN / SIZE</th>
+                  <th class="pb-3 text-right font-black">SỐ LƯỢNG BÁN</th>
+                  <th class="pb-3 text-right font-black">DOANH SỐ</th>
+                  <th class="pb-3 text-right font-black">TỔNG GIÁ VỐN</th>
+                  <th class="pb-3 text-right font-black">LỢI NHUẬN GỘP</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 dark:divide-slate-800/50 text-slate-700 dark:text-slate-300 text-xs font-semibold">
+                @if (reportsData()?.products?.length === 0) {
+                  <tr>
+                    <td colspan="6" class="py-10 text-center italic text-slate-400">Không có dữ liệu bán hàng.</td>
+                  </tr>
+                }
+                @for (prod of getProductsPaged(); track $index) {
+                  <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-950/20 transition-all">
+                    <td class="py-3 font-mono text-slate-500">{{ prod.sku || '—' }}</td>
+                    <td class="py-3 font-extrabold text-slate-800 dark:text-white">
+                      {{ prod.product_name }}
+                      @if (prod.variant_name) {
+                        <span class="text-slate-400 font-normal">({{ prod.variant_name }})</span>
+                      }
+                    </td>
+                    <td class="py-3 text-right font-bold text-slate-800 dark:text-white">{{ prod.total_quantity }}</td>
+                    <td class="py-3 text-right text-slate-800 dark:text-white">{{ prod.total_revenue | number }}đ</td>
+                    <td class="py-3 text-right text-slate-500">{{ prod.total_cost | number }}đ</td>
+                    <td class="py-3 text-right font-black text-emerald-500">{{ prod.gross_profit | number }}đ</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Phân trang Hàng hóa -->
+          @if (getProductsTotalPages() > 1) {
+            <div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800/60 mt-2 gap-2 text-xs font-bold">
+              <span class="text-slate-400 shrink-0">
+                Hiển thị {{ (productPage() - 1) * productLimit + 1 }}–{{ mathMin(productPage() * productLimit, reportsData().products.length) }} / {{ reportsData().products.length }}
+              </span>
+              <div class="flex items-center gap-1">
+                <button
+                  (click)="productPage.set(productPage() - 1)"
+                  [disabled]="productPage() === 1"
+                  class="w-8 h-8 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/40 dark:border-slate-800/40 text-slate-500 disabled:opacity-30 flex items-center justify-center transition-all"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                @for (item of getPagesArray(productPage(), getProductsTotalPages()); track $index) {
+                  @if (item === '...') {
+                    <span class="w-8 h-8 flex items-center justify-center text-slate-400">...</span>
+                  } @else {
+                    <button
+                      (click)="productPage.set(+item)"
+                      class="w-8 h-8 rounded-xl transition-all"
+                      [class.bg-[var(--dynamic-primary)]]="item === productPage()"
+                      [class.text-white]="item === productPage()"
+                      [class.bg-slate-50]="item !== productPage()"
+                      [class.dark:bg-slate-950]="item !== productPage()"
+                      [class.border]="item !== productPage()"
+                      [class.border-slate-200/40]="item !== productPage()"
+                      [class.dark:border-slate-800/40]="item !== productPage()"
+                    >{{ item }}</button>
+                  }
+                }
+                <button
+                  (click)="productPage.set(productPage() + 1)"
+                  [disabled]="productPage() === getProductsTotalPages()"
+                  class="w-8 h-8 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/40 dark:border-slate-800/40 text-slate-500 disabled:opacity-30 flex items-center justify-center transition-all"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Nội dung của Tab 2: Khách hàng -->
+        <div *ngIf="activeTab() === 'customers'" class="p-4 sm:p-6 space-y-4">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[750px]">
+              <thead>
+                <tr class="border-b border-slate-100 dark:border-slate-800 text-slate-400 font-bold text-xs">
+                  <th class="pb-3 font-black">TÊN KHÁCH HÀNG</th>
+                  <th class="pb-3 font-black">SỐ ĐIỆN THOẠI</th>
+                  <th class="pb-3 font-black">VÍ BLOCKCHAIN (RÚT GỌN)</th>
+                  <th class="pb-3 text-right font-black">SỐ ĐƠN MUA</th>
+                  <th class="pb-3 text-right font-black">TỔNG CHI TIÊU</th>
+                  <th class="pb-3 text-right font-black">TB ĐƠN HÀNG</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 dark:divide-slate-800/50 text-slate-700 dark:text-slate-300 text-xs font-semibold">
+                @if (reportsData()?.customers?.length === 0) {
+                  <tr>
+                    <td colspan="6" class="py-10 text-center italic text-slate-400">Không có dữ liệu khách hàng.</td>
+                  </tr>
+                }
+                @for (cust of getCustomersPaged(); track $index) {
+                  <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-950/20 transition-all">
+                    <td class="py-3 font-extrabold text-slate-800 dark:text-white">{{ cust.customer_name }}</td>
+                    <td class="py-3 text-slate-500">{{ cust.customer_phone || '—' }}</td>
+                    <td class="py-3 font-mono text-[11px] text-slate-500">
+                      @if (cust.wallet_address) {
+                        {{ cust.wallet_address.substring(0, 6) }}...{{ cust.wallet_address.substring(cust.wallet_address.length - 4) }}
+                      } @else {
+                        —
+                      }
+                    </td>
+                    <td class="py-3 text-right font-bold text-slate-800 dark:text-white">{{ cust.orders_count }}</td>
+                    <td class="py-3 text-right font-black text-slate-800 dark:text-white">{{ cust.total_spent | number }}đ</td>
+                    <td class="py-3 text-right font-bold text-purple-600 dark:text-purple-400">{{ cust.average_order_value | number: '1.0-0' }}đ</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Phân trang Khách hàng -->
+          @if (getCustomersTotalPages() > 1) {
+            <div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800/60 mt-2 gap-2 text-xs font-bold">
+              <span class="text-slate-400 shrink-0">
+                Hiển thị {{ (customerPage() - 1) * customerLimit + 1 }}–{{ mathMin(customerPage() * customerLimit, reportsData().customers.length) }} / {{ reportsData().customers.length }}
+              </span>
+              <div class="flex items-center gap-1">
+                <button
+                  (click)="customerPage.set(customerPage() - 1)"
+                  [disabled]="customerPage() === 1"
+                  class="w-8 h-8 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/40 dark:border-slate-800/40 text-slate-500 disabled:opacity-30 flex items-center justify-center transition-all"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                @for (item of getPagesArray(customerPage(), getCustomersTotalPages()); track $index) {
+                  @if (item === '...') {
+                    <span class="w-8 h-8 flex items-center justify-center text-slate-400">...</span>
+                  } @else {
+                    <button
+                      (click)="customerPage.set(+item)"
+                      class="w-8 h-8 rounded-xl transition-all"
+                      [class.bg-[var(--dynamic-primary)]]="item === customerPage()"
+                      [class.text-white]="item === customerPage()"
+                      [class.bg-slate-50]="item !== customerPage()"
+                      [class.dark:bg-slate-950]="item !== customerPage()"
+                      [class.border]="item !== customerPage()"
+                      [class.border-slate-200/40]="item !== customerPage()"
+                      [class.dark:border-slate-800/40]="item !== customerPage()"
+                    >{{ item }}</button>
+                  }
+                }
+                <button
+                  (click)="customerPage.set(customerPage() + 1)"
+                  [disabled]="customerPage() === getCustomersTotalPages()"
+                  class="w-8 h-8 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/40 dark:border-slate-800/40 text-slate-500 disabled:opacity-30 flex items-center justify-center transition-all"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  } @else {
+    <!-- BANNER YÊU CẦU KẾT NỐI VÍ WEB3 (Premium Glassmorphism) -->
+    <div class="flex flex-col items-center justify-center min-h-[450px] p-8 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/50 dark:border-slate-800/50 rounded-3xl shadow-lg text-center max-w-2xl mx-auto my-10 animate-in fade-in zoom-in-95 duration-300">
+      <div class="w-20 h-20 rounded-full bg-purple-100 dark:bg-purple-950/40 flex items-center justify-center text-purple-600 dark:text-purple-400 mb-6 shadow-inner animate-bounce-slow">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-[var(--dynamic-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+      </div>
+      <h4 class="text-xl font-extrabold text-slate-800 dark:text-white tracking-tight mb-3">Kết nối ví Web3 để xem báo cáo doanh thu</h4>
+      <p class="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-8 leading-relaxed">
+        Để theo dõi kết quả tài chính, mặt hàng bán chạy, tỷ lệ phương thức thanh toán và hiệu suất chi tiêu của khách hàng thân thiết, vui lòng kết nối ví Metamask để xác thực quyền truy cập.
+      </p>
+      <button
+        (click)="stateService.connectWalletAndSign()"
+        class="flex items-center gap-2.5 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] text-white font-extrabold text-sm shadow-lg shadow-[var(--dynamic-primary)]/25 hover:shadow-[var(--dynamic-primary)]/40 hover:scale-[1.03] active:scale-[0.98] transition-all cursor-pointer"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 5h10a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2z" />
+        </svg>
+        <span>KẾT NỐI VÍ METAMASK</span>
+      </button>
+    </div>
+  }
+</div>

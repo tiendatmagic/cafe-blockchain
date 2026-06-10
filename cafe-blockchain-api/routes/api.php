@@ -13,6 +13,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MenuSyncController;
+use App\Http\Controllers\ReportController;
 use App\Http\Middleware\RequireOwner;
 use Illuminate\Support\Facades\Route;
 
@@ -106,6 +107,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Owner-only routes (require both Sanctum token and Owner role)
     Route::middleware(RequireOwner::class)->group(function () {
+        Route::get('/reports', [ReportController::class, 'index']);
         Route::post('/products', [ProductController::class, 'store']);
         Route::put('/products/{id}', [ProductController::class, 'update']);
         Route::delete('/products/{id}', [ProductController::class, 'destroy']);

@@ -348,4 +348,12 @@ export class ApiService {
   public deleteDiningTable(id: number): Observable<any> {
     return this.http.delete(`${this.baseUrl}/dining-tables/${id}`, { headers: this.getHeaders() });
   }
+
+  // 12. Reports API (Báo cáo doanh thu, hàng hóa, khách hàng, lãi lỗ)
+  public getReports(startDate: string, endDate: string): Observable<any> {
+    let params = new HttpParams();
+    if (startDate) params = params.set('start_date', startDate);
+    if (endDate) params = params.set('end_date', endDate);
+    return this.http.get<any>(`${this.baseUrl}/reports`, { headers: this.getHeaders(), params });
+  }
 }

@@ -15,6 +15,7 @@ class OrderItem extends Model
         'product_variant_id',
         'quantity',
         'price',
+        'cost_price',
         'note',
     ];
 
@@ -22,6 +23,7 @@ class OrderItem extends Model
         'product_id' => 'integer',
         'product_variant_id' => 'integer',
         'price' => 'float',
+        'cost_price' => 'float',
         'quantity' => 'integer',
     ];
 

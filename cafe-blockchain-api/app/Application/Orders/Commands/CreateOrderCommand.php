@@ -29,12 +29,14 @@ class CreateOrderCommand
                 $product = Product::where('store_owner_address', $storeOwner)->findOrFail($item['product_id']);
                 
                 $price = $product->price;
+                $costPrice = $product->cost_price;
                 $variantId = $item['product_variant_id'] ?? null;
 
                 if ($variantId) {
                     $variant = $product->variants()->where('id', $variantId)->first();
                     if ($variant) {
                         $price = $variant->price;
+                        $costPrice = $variant->cost_price;
                     } else {
                         throw new \Exception("Biến thể sản phẩm không hợp lệ cho món: " . $product->name);
                     }
@@ -49,6 +51,7 @@ class CreateOrderCommand
                     'product_variant_id' => $variantId,
                     'quantity' => $quantity,
                     'price' => $price,
+                    'cost_price' => $costPrice,
                     'note' => $item['note'] ?? null,
                 ];
             }

@@ -256,6 +256,20 @@ When user's prompt is NOT in English:
 
 ---
 
+## TIER 2.1: PROJECT-SPECIFIC DESIGN RULES (Cafe Blockchain)
+
+> ⚠️ **IMPORTANT EXCEPTIONS & RULES for Cafe Blockchain:**
+> - **Primary Theme (Violet/Purple):** The "Purple Ban" in `frontend-specialist.md` is **explicitly LIFTED** for this project. The brand uses dynamic primary themes, defaulting to **Violet (`#7c3aed`)** as the primary accent and **Light Purple (`#c084fc`)** as the secondary accent.
+> - **Dynamic Accent Styling:** Use CSS variables `var(--color-primary)` (or `var(--dynamic-primary)`) and `var(--color-secondary)` (or `var(--dynamic-secondary)`) for key brand elements and interactive highlights.
+> - **Font Family:** Use **`Quicksand`** as the default system and display font family (defined as `--font-sans` and `--font-display`).
+> - **Border Radius Limit:** All card, container, and button corner radiuses must be capped at a maximum of **`15px`** (override `--radius-xl` to `--radius-4xl` to `15px`).
+> - **Clean SVG Overrides:** Do **NOT** use raw emojis (☕, 🛒, 💵, 🏦, etc.) in the UI. Always use responsive, clean inline **SVG icons**.
+> - **Theme Mode & Display Toggle:** Support Light/Dark/Auto modes natively, and support Grid/List layout options for menu items.
+> - **Responsive Layout:** The main container must have `max-width: 1530px` centered, matching the Web POS interface.
+
+
+---
+
 ## 📁 QUICK REFERENCE
 
 ### Agents & Skills

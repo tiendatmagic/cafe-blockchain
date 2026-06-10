@@ -49,6 +49,7 @@ class ProductController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
+            'cost_price' => 'nullable|numeric|min:0',
             'category_ids' => 'nullable|array',
             'category_ids.*' => [
                 'exists:categories,id',
@@ -61,12 +62,14 @@ class ProductController extends Controller
             'variants' => 'nullable|array',
             'variants.*.variant_name' => 'required|string|max:255',
             'variants.*.price' => 'required|numeric|min:0',
+            'variants.*.cost_price' => 'nullable|numeric|min:0',
             'variants.*.status' => 'nullable|boolean',
         ]);
 
         $product = Product::create([
             'name' => $validated['name'],
             'price' => $validated['price'],
+            'cost_price' => $validated['cost_price'] ?? null,
             'image' => $validated['image'] ?? null,
             'status' => $validated['status'] ?? true,
             'short_description' => $validated['short_description'] ?? null,
@@ -83,6 +86,7 @@ class ProductController extends Controller
                 $product->variants()->create([
                     'variant_name' => $var['variant_name'],
                     'price' => $var['price'],
+                    'cost_price' => $var['cost_price'] ?? null,
                     'status' => $var['status'] ?? true,
                 ]);
             }
@@ -107,6 +111,7 @@ class ProductController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
+            'cost_price' => 'nullable|numeric|min:0',
             'category_ids' => 'nullable|array',
             'category_ids.*' => [
                 'exists:categories,id',
@@ -120,12 +125,14 @@ class ProductController extends Controller
             'variants.*.id' => 'nullable|integer|exists:product_variants,id',
             'variants.*.variant_name' => 'required|string|max:255',
             'variants.*.price' => 'required|numeric|min:0',
+            'variants.*.cost_price' => 'nullable|numeric|min:0',
             'variants.*.status' => 'required|boolean',
         ]);
 
         $product->update([
             'name' => $validated['name'],
             'price' => $validated['price'],
+            'cost_price' => $validated['cost_price'] ?? null,
             'image' => $validated['image'] ?? null,
             'status' => $validated['status'],
             'short_description' => $validated['short_description'] ?? null,
@@ -148,12 +155,14 @@ class ProductController extends Controller
                     $product->variants()->where('id', $var['id'])->update([
                         'variant_name' => $var['variant_name'],
                         'price' => $var['price'],
+                        'cost_price' => $var['cost_price'] ?? null,
                         'status' => $var['status'],
                     ]);
                 } else {
                     $product->variants()->create([
                         'variant_name' => $var['variant_name'],
                         'price' => $var['price'],
+                        'cost_price' => $var['cost_price'] ?? null,
                         'status' => $var['status'] ?? true,
                     ]);
                 }

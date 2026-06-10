@@ -14,6 +14,7 @@ class Product extends Model
         'sku',
         'name',
         'price',
+        'cost_price',
         'image',
         'status',
         'short_description',
@@ -23,6 +24,7 @@ class Product extends Model
 
     protected $casts = [
         'price' => 'float',
+        'cost_price' => 'float',
         'status' => 'boolean',
     ];
 
