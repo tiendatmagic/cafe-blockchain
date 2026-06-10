@@ -118,7 +118,7 @@ export class App implements OnInit, OnDestroy {
                   this.web3Service.walletConnected.set(true);
                   this.stateService.showToast('Kết nối và xác thực ví thành công!', 'success');
                   this.stateService.isWalletModalOpen.set(false);
-                  this.stateService.loadAllData();
+                  this.stateService.loadSettings();
                 }
               },
               error: (err) => {

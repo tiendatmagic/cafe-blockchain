@@ -633,7 +633,6 @@ export class StateService {
                   this.showToast('Kết nối và xác thực ví thành công!', 'success');
                   this.isWalletModalOpen.set(false);
                   this.loadSettings();
-                  this.loadAllData();
                 }
               },
               error: (err) => {
