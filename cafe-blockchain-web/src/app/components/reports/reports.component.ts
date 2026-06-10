@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { StateService } from '../../services/state.service';
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-reports',
@@ -308,36 +309,43 @@ export class ReportsComponent implements OnInit {
     return pages;
   }
 
-  // --- Logic Xuất file CSV ---
-  public exportToCSV(type: 'products' | 'customers') {
+  // --- Logic Xuất file Excel (.xlsx) bằng SheetJS ---
+  public exportToExcel(type: 'products' | 'customers') {
     const data = this.reportsData();
     if (!data) return;
 
-    let csvContent = '\uFEFF'; // BOM to support Vietnamese Unicode in Excel
     let fileName = '';
+    let sheetName = '';
+    let rows: any[] = [];
 
     if (type === 'products') {
-      csvContent += 'Mã SKU,Tên sản phẩm,Biến thể,Số lượng bán,Doanh số (đ),Tổng giá vốn (đ),Lợi nhuận gộp (đ)\n';
-      data.products.forEach((p: any) => {
-        csvContent += `"${p.sku || ''}","${p.product_name || ''}","${p.variant_name || ''}",${p.total_quantity},${p.total_revenue},${p.total_cost},${p.gross_profit}\n`;
-      });
-      fileName = `bao_cao_ban_hang_theo_mon_${this.reportsStartDate()}_den_${this.reportsEndDate()}.csv`;
+      rows = data.products.map((p: any) => ({
+        'Mã SKU': p.sku || '',
+        'Tên món ăn': p.product_name || '',
+        'Biến thể': p.variant_name || '',
+        'Số lượng bán': p.total_quantity,
+        'Doanh số (đ)': p.total_revenue,
+        'Tổng giá vốn (đ)': p.total_cost,
+        'Lợi nhuận gộp (đ)': p.gross_profit
+      }));
+      fileName = `bao_cao_ban_hang_theo_mon_${this.reportsStartDate()}_den_${this.reportsEndDate()}.xlsx`;
+      sheetName = 'Báo cáo món ăn';
     } else {
-      csvContent += 'Tên khách hàng,Số điện thoại,Địa chỉ ví,Số đơn mua,Tổng chi tiêu (đ),TB đơn hàng (đ)\n';
-      data.customers.forEach((c: any) => {
-        csvContent += `"${c.customer_name || ''}","${c.customer_phone || ''}","${c.wallet_address || ''}",${c.orders_count},${c.total_spent},${c.average_order_value}\n`;
-      });
-      fileName = `bao_cao_chi_tieu_khach_hang_${this.reportsStartDate()}_den_${this.reportsEndDate()}.csv`;
+      rows = data.customers.map((c: any) => ({
+        'Tên khách hàng': c.customer_name || '',
+        'Số điện thoại': c.customer_phone || '',
+        'Địa chỉ ví': c.wallet_address || '',
+        'Số đơn mua': c.orders_count,
+        'Tổng chi tiêu (đ)': c.total_spent,
+        'TB đơn hàng (đ)': c.average_order_value
+      }));
+      fileName = `bao_cao_chi_tieu_khach_hang_${this.reportsStartDate()}_den_${this.reportsEndDate()}.xlsx`;
+      sheetName = 'Báo cáo khách hàng';
     }
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', fileName);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    XLSX.writeFile(wb, fileName);
   }
 }
