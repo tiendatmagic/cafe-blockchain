@@ -6,10 +6,12 @@ import { ApiService } from '../../services/api.service';
 import { StateService } from '../../services/state.service';
 import * as XLSX from 'xlsx';
 
+import { SkeletonLoaderComponent } from '../skeleton-loader/skeleton-loader.component';
+
 @Component({
   selector: 'app-reports',
   standalone: true,
-  imports: [CommonModule, FormsModule, Web3ConnectPromptComponent],
+  imports: [CommonModule, FormsModule, Web3ConnectPromptComponent, SkeletonLoaderComponent],
   templateUrl: './reports.component.html'
 })
 export class ReportsComponent implements OnInit {

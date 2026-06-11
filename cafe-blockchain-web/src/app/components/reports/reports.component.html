@@ -113,18 +113,7 @@
     </div>
 
     @if (isReportsLoading() || !reportsData()) {
-      <!-- SKELETON LOADING -->
-      <div class="space-y-6 animate-pulse">
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-          @for (i of [1, 2, 3, 4]; track i) {
-            <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200/50 dark:border-slate-800/50 h-28"></div>
-          }
-        </div>
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div class="lg:col-span-2 bg-white dark:bg-slate-900 h-96 rounded-xl border border-slate-200/50 dark:border-slate-800/50"></div>
-          <div class="bg-white dark:bg-slate-900 h-96 rounded-xl border border-slate-200/50 dark:border-slate-800/50"></div>
-        </div>
-      </div>
+      <app-skeleton-loader type="reports"></app-skeleton-loader>
     } @else if (reportsError()) {
       <!-- Lỗi hiển thị -->
       <div class="flex items-center gap-3 p-4 bg-[var(--dynamic-primary)]/10 border border-[var(--dynamic-primary)]/20 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] rounded-xl text-sm font-bold">
