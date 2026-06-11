@@ -79,7 +79,7 @@ export class App implements OnInit, OnDestroy {
     } else {
       // Chưa kết nối hoặc session hết hạn, yêu cầu kết nối ví
       if (!isPublic) {
-        this.stateService.isWalletModalOpen.set(true);
+        this.connectWalletAndSign();
       }
     }
 

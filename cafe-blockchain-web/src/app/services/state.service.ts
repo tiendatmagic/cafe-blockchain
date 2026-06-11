@@ -201,6 +201,7 @@ export class StateService {
 
   constructor() {
     this.initTheme();
+    this.loadSettings();
 
     if (typeof window !== 'undefined') {
       this.loadCoinPrices();
@@ -451,16 +452,28 @@ export class StateService {
 
   // Refresh cấu hình
   public loadSettings() {
-    this.apiService.getSettings().subscribe(res => {
-      const settings = {
-        default_print_size: '80mm',
-        show_crypto_payment: '0',
-        has_synced_menu: '0',
-        ...res
-      };
-      this.settings.set(settings);
-      this.applyAndCacheDynamicColors(settings.primary_color, settings.secondary_color);
-      this.web3Service.updateConfig(settings);
+    const hasToken = !!this.apiService.getToken();
+    const settingsObservable = hasToken 
+      ? this.apiService.getSettings() 
+      : this.apiService.getPublicSettings();
+
+    settingsObservable.subscribe({
+      next: (res) => {
+        const settings = {
+          default_print_size: '80mm',
+          show_crypto_payment: '0',
+          has_synced_menu: '0',
+          ...res
+        };
+        this.settings.set(settings);
+        this.applyAndCacheDynamicColors(settings.primary_color, settings.secondary_color);
+        this.web3Service.updateConfig(settings);
+      },
+      error: (err) => {
+        console.error('Lỗi tải cấu hình quán:', err);
+        // Fallback dùng màu mặc định nếu API lỗi hoặc chưa thiết lập màu
+        this.applyAndCacheDynamicColors('#7c3aed', '#c084fc');
+      }
     });
   }
 

@@ -345,7 +345,7 @@
 </div>
 
 <!-- MODAL KẾT NỐI VÍ WEB3 (Bóng bẩy, mờ ảo) -->
-@if (isWalletModalOpen()) {
+@if (isWalletModalOpen() && web3Service.walletConnected()) {
   <div class="fixed inset-0 z-[9990] flex items-center justify-center p-4">
     <!-- Backdrop mờ sương -->
     <div
@@ -384,7 +384,7 @@
                 Kết nối ví Web3
               </h3>
               <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
-                Chọn ví Blockchain của bạn
+                Thông tin tài khoản ví của bạn
               </p>
             </div>
           </div>
@@ -406,202 +406,157 @@
         </div>
 
         <!-- Trạng thái hiện tại -->
-        @if (web3Service.walletConnected()) {
-          <!-- Đã kết nối -->
-          <div
-            class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 mb-6 animate-in fade-in zoom-in-95 duration-200"
-          >
-            <!-- Phần chính ở trên: Icon bên trái, thông tin bên phải -->
-            <div class="flex items-center gap-4">
-              <!-- Icon Tích Xanh nằm bên trái -->
-              <div
-                class="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/20 shrink-0 animate-in zoom-in duration-300"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="3"
-                >
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-
-              <!-- Mục đã kết nối ví & Địa chỉ ví ở bên phải -->
-              <div class="flex-1 min-w-0 flex flex-col items-start">
-                <p
-                  class="text-xs text-emerald-600 dark:text-emerald-400 font-extrabold uppercase tracking-widest leading-none"
-                >
-                  Đã kết nối thành công
-                </p>
-
-                <!-- Địa chỉ ví (Dạng link kèm nút Copy gọn gàng) -->
-                <div class="flex items-center gap-2 mt-1.5 w-full">
-                  <a
-                    [href]="web3Service.addressExplorerLink()"
-                    target="_blank"
-                    class="text-base font-extrabold text-slate-800 hover:text-purple-600 dark:text-slate-100 dark:hover:text-purple-400 font-mono truncate hover:underline transition-colors flex items-center gap-1.5"
-                    title="Xem địa chỉ ví trên Block Explorer"
-                  >
-                    <span>{{ web3Service.shortAddress() }}</span>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="h-4 w-4 opacity-50 shrink-0"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      stroke-width="2.5"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                      />
-                    </svg>
-                  </a>
-                  <!-- Nút sao chép địa chỉ ví -->
-                  <button
-                    (click)="copyAddress()"
-                    class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors"
-                    title="Sao chép địa chỉ ví"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="h-4.5 w-4.5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      stroke-width="2.2"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Bảng thông tin Blockchain bên dưới -->
+        <div
+          class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 mb-6 animate-in fade-in zoom-in-95 duration-200"
+        >
+          <!-- Phần chính ở trên: Icon bên trái, thông tin bên phải -->
+          <div class="flex items-center gap-4">
+            <!-- Icon Tích Xanh nằm bên trái -->
             <div
-              class="mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800/60 flex flex-col gap-2 text-xs w-full font-semibold text-slate-500 dark:text-slate-400"
+              class="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/20 shrink-0 animate-in zoom-in duration-300"
             >
-              <div class="flex items-center justify-between">
-                <span>Mạng kết nối:</span>
-                <span
-                  class="dark:text-slate-200 font-extrabold leading-none px-2.5 py-0.5 rounded-lg text-slate-700"
-                  >{{ web3Service.networkName() }}</span
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="3"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+
+            <!-- Mục đã kết nối ví & Địa chỉ ví ở bên phải -->
+            <div class="flex-1 min-w-0 flex flex-col items-start">
+              <p
+                class="text-xs text-emerald-600 dark:text-emerald-400 font-extrabold uppercase tracking-widest leading-none"
+              >
+                Đã kết nối thành công
+              </p>
+
+              <!-- Địa chỉ ví (Dạng link kèm nút Copy gọn gàng) -->
+              <div class="flex items-center gap-2 mt-1.5 w-full">
+                <a
+                  [href]="web3Service.addressExplorerLink()"
+                  target="_blank"
+                  class="text-base font-extrabold text-slate-800 hover:text-purple-600 dark:text-slate-100 dark:hover:text-purple-400 font-mono truncate hover:underline transition-colors flex items-center gap-1.5"
+                  title="Xem địa chỉ ví trên Block Explorer"
                 >
-              </div>
-              <div class="flex items-center justify-between">
-                <span>ID mạng (Chain ID):</span>
-                <span
-                  class="font-mono font-black text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-200/30 dark:border-slate-700/30 leading-none"
-                  >{{ web3Service.chainId() }}</span
+                  <span>{{ web3Service.shortAddress() }}</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4 opacity-50 shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                    />
+                  </svg>
+                </a>
+                <!-- Nút sao chép địa chỉ ví -->
+                <button
+                  (click)="copyAddress()"
+                  class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors"
+                  title="Sao chép địa chỉ ví"
                 >
-              </div>
-              <div class="flex items-center justify-between">
-                <span>Số dư:</span>
-                <span
-                  class="font-mono font-black text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-200/30 dark:border-slate-700/30 leading-none"
-                  >{{ web3Service.walletBalance() }} {{ web3Service.nativeTokenSymbol() }}</span
-                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-4.5 w-4.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2.2"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+                    />
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
 
-          <div class="space-y-3">
-            <!-- Nút gửi Native Token -->
-            <button
-              (click)="isSendTokenModalOpen.set(true); isWalletModalOpen.set(false)"
-              class="w-full text-white font-bold py-2.5 px-4 rounded-xl transition-all duration-200 text-sm flex items-center justify-center gap-2 border border-transparent active:scale-[0.99] shadow-md shadow-[var(--dynamic-primary)]/10 bg-[var(--dynamic-primary)] hover:opacity-90"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-4.5 w-4.5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2.5"
+          <!-- Bảng thông tin Blockchain bên dưới -->
+          <div
+            class="mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800/60 flex flex-col gap-2 text-xs w-full font-semibold text-slate-500 dark:text-slate-400"
+          >
+            <div class="flex items-center justify-between">
+              <span>Mạng kết nối:</span>
+              <span
+                class="dark:text-slate-200 font-extrabold leading-none px-2.5 py-0.5 rounded-lg text-slate-700"
+                >{{ web3Service.networkName() }}</span
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                />
-              </svg>
-              Gửi native token
-            </button>
-
-            <!-- Nút ngắt kết nối -->
-            <button
-              (click)="web3Service.disconnectWallet(); isWalletModalOpen.set(false)"
-              class="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold py-2.5 px-4 rounded-xl transition-all duration-200 text-sm flex items-center justify-center gap-2 border border-transparent hover:scale-[1.01] active:scale-[0.99]"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-4.5 w-4.5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
+            </div>
+            <div class="flex items-center justify-between">
+              <span>ID mạng (Chain ID):</span>
+              <span
+                class="font-mono font-black text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-200/30 dark:border-slate-700/30 leading-none"
+                >{{ web3Service.chainId() }}</span
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                />
-              </svg>
-              Ngắt kết nối ví
-            </button>
+            </div>
+            <div class="flex items-center justify-between">
+              <span>Số dư:</span>
+              <span
+                class="font-mono font-black text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-200/30 dark:border-slate-700/30 leading-none"
+                >{{ web3Service.walletBalance() }} {{ web3Service.nativeTokenSymbol() }}</span
+              >
+            </div>
           </div>
-        } @else {
-          <!-- Chưa kết nối -->
-          <div class="space-y-3">
-            <!-- WalletConnect -->
-            <button
-              (click)="connectWalletAndSign()"
-              class="w-full bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/40 dark:hover:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/80 text-slate-700 dark:text-slate-200 font-bold py-3.5 px-4 rounded-2xl transition-all duration-200 text-sm flex items-center justify-between group active:scale-[0.99]"
-            >
-              <div class="flex items-center gap-3">
-                <div
-                  class="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-950/20 flex items-center justify-center shrink-0"
-                >
-                  <!-- Logo WalletConnect SVG -->
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-5.5 h-5.5" viewBox="0 0 300 185" fill="#3b82f6">
-                    <path d="M61.4385429,36.2562612 C110.349767,-11.6319051 189.65053,-11.6319051 238.561752,36.2562612 L244.448297,42.0196786 C246.893858,44.4140867 246.893858,48.2961898 244.448297,50.690599 L224.311602,70.406102 C223.088821,71.6033071 221.106302,71.6033071 219.883521,70.406102 L211.782937,62.4749541 C177.661245,29.0669724 122.339051,29.0669724 88.2173582,62.4749541 L79.542302,70.9685592 C78.3195204,72.1657633 76.337001,72.1657633 75.1142214,70.9685592 L54.9775265,51.2530561 C52.5319653,48.8586469 52.5319653,44.9765439 54.9775265,42.5821357 L61.4385429,36.2562612 Z M280.206339,77.0300061 L298.128036,94.5769031 C300.573585,96.9713 300.573599,100.85338 298.128067,103.247793 L217.317896,182.368927 C214.872352,184.763353 210.907314,184.76338 208.461736,182.368989 C208.461726,182.368979 208.461714,182.368967 208.461704,182.368957 L151.107561,126.214385 C150.496171,125.615783 149.504911,125.615783 148.893521,126.214385 C148.893517,126.214389 148.893514,126.214393 148.89351,126.214396 L91.5405888,182.368927 C89.095052,184.763359 85.1300133,184.763399 82.6844276,182.369014 C82.6844133,182.369 82.684398,182.368986 82.6843827,182.36897 L1.87196327,103.246785 C-0.573596939,100.852377 -0.573596939,96.9702735 1.87196327,94.5758653 L19.7936929,77.028998 C22.2392531,74.6345898 26.2042918,74.6345898 28.6498531,77.028998 L86.0048306,133.184355 C86.6162214,133.782957 87.6074796,133.782957 88.2188704,133.184355 C88.2188796,133.184346 88.2188878,133.184338 88.2188969,133.184331 L145.571,77.028998 Z" />
-                  </svg>
-                </div>
-                <span class="group-hover:translate-x-0.5 transition-transform">WalletConnect</span>
-              </div>
-              <div class="flex items-center gap-1">
-                <span
-                  class="text-xs bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider"
-                  >Auto</span
-                >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-4 w-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                >
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-            </button>
+        </div>
 
-            <p class="text-xs text-slate-400 dark:text-slate-500 text-center px-4 pt-2">
-              Bằng việc kết nối ví, bạn đồng ý với các điều khoản bảo mật của hệ thống POS
-              Blockchain.
-            </p>
-          </div>
-        }
+        <div class="space-y-3">
+          <!-- Nút gửi Native Token -->
+          <button
+            (click)="isSendTokenModalOpen.set(true); isWalletModalOpen.set(false)"
+            class="w-full text-white font-bold py-2.5 px-4 rounded-xl transition-all duration-200 text-sm flex items-center justify-center gap-2 border border-transparent active:scale-[0.99] shadow-md shadow-[var(--dynamic-primary)]/10 bg-[var(--dynamic-primary)] hover:opacity-90"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4.5 w-4.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+              />
+            </svg>
+            Gửi native token
+          </button>
+
+          <!-- Nút ngắt kết nối -->
+          <button
+            (click)="web3Service.disconnectWallet(); isWalletModalOpen.set(false)"
+            class="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold py-2.5 px-4 rounded-xl transition-all duration-200 text-sm flex items-center justify-center gap-2 border border-transparent hover:scale-[1.01] active:scale-[0.99]"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4.5 w-4.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+              />
+            </svg>
+            Ngắt kết nối ví
+          </button>
+        </div>
       </div>
     </div>
   </div>
