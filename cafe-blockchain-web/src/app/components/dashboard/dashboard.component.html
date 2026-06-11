@@ -634,7 +634,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Cột trái + giữa (lg:col-span-2): Sản phẩm bán chạy & Cảnh báo tồn kho -->
         <div class="lg:col-span-2 space-y-6">
-          
+
           <!-- Widget Top 5 Bán Chạy -->
           <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm space-y-4">
             <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
@@ -643,7 +643,7 @@
               </svg>
               <span>Sản phẩm bán chạy nhất trong kỳ</span>
             </h4>
-            
+
             <div class="overflow-hidden">
               @if (!dashboardData()?.best_sellers || dashboardData()?.best_sellers?.length === 0) {
                 <div class="flex flex-col items-center justify-center py-10 text-center gap-2">
@@ -691,7 +691,7 @@
                 </span>
               }
             </div>
-            
+
             <div class="overflow-x-auto">
               @if (!dashboardData()?.low_stock_alerts || dashboardData()?.low_stock_alerts?.length === 0) {
                 <div class="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-2xl text-xs font-bold">
@@ -796,7 +796,7 @@
 
         <!-- Cột phải (lg:col-span-1): Trạng thái bàn ăn & Thống kê Voucher NFT -->
         <div class="space-y-6">
-          
+
           <!-- Widget Trạng thái Bàn Ăn -->
           <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex flex-col justify-between h-[300px]">
             <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
@@ -805,7 +805,7 @@
               </svg>
               <span>Trạng thái bàn ăn</span>
             </h4>
-            
+
             <div class="flex-1 flex items-center justify-center gap-6">
               <!-- Ring Chart đại diện bàn đang dùng/trống -->
               <div class="relative w-28 h-28 flex items-center justify-center">
@@ -855,7 +855,7 @@
               </svg>
               <span>Hoạt động Voucher NFT</span>
             </h4>
-            
+
             <div class="grid grid-cols-3 gap-3">
               <!-- Minted -->
               <div class="p-3 bg-purple-500/5 border border-purple-500/10 rounded-2xl flex flex-col items-center justify-center text-center">
@@ -882,6 +882,6 @@
     </div>
   }
 } @else {
-  <app-web3-connect-prompt [title]="'Kết nối ví Web3 để xem Tổng quan Dashboard'"></app-web3-connect-prompt>
+  <app-web3-connect-prompt [title]="'Kết nối ví Web3 để xem Tổng quan'"></app-web3-connect-prompt>
 }
 </div>

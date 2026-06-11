@@ -15,29 +15,30 @@ export class ApiService {
   private readonly baseUrl = environment.apiBaseUrl;
 
   /**
-   * Cập nhật token vào localStorage
+   * Cập nhật token (Vô hiệu hóa vì đã dùng HttpOnly Cookie)
    */
   public setToken(token: string) {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('auth_token', token);
-    }
+    // Không còn lưu token ở localStorage để chống XSS
   }
 
   public getToken(): string | null {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('auth_token');
-    }
+    // Đọc token từ localStorage bị vô hiệu hóa
     return null;
   }
 
   public removeToken() {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('auth_token');
-    }
+    // Xóa token ở localStorage bị vô hiệu hóa
   }
 
   /**
-   * Tạo HttpHeaders chứa Bearer token để gửi lên Backend kiểm tra bảo mật
+   * Gọi API đăng xuất để xóa cookie phía backend
+   */
+  public logout(): Observable<any> {
+    return this.http.post(`${this.baseUrl}/auth/logout`, {}, { headers: this.getHeaders() });
+  }
+
+  /**
+   * Tạo HttpHeaders chứa Bearer token (được giữ lại cho Mobile App sau này, Web dùng Cookie)
    */
   private getHeaders(): HttpHeaders {
     let headers = new HttpHeaders();

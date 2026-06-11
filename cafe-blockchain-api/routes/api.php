@@ -36,6 +36,7 @@ Route::post('/store/{slug}/orders', [SettingController::class, 'createStoreOrder
 
 // Protected routes (require valid Sanctum token)
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/auth/logout', [AuthController::class, 'logout']);
 
     // Dashboard API (Read-only)
     Route::get('/dashboard', [DashboardController::class, 'index']);

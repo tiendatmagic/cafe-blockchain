@@ -10,28 +10,28 @@ use Illuminate\Support\Facades\DB;
 class DashboardController extends Controller
 {
     /**
-     * Lấy dữ liệu tổng quan Dashboard
+     * Lấy dữ liệu tổng quan
      */
     public function index(Request $request)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-        
+
         // Nhận bộ lọc thời gian từ query
         $startDate = $request->query('start_date');
         $endDate = $request->query('end_date');
-        
+
         if (empty($startDate) || empty($endDate)) {
             $startDate = Carbon::today()->subDays(6)->toDateString();
             $endDate = Carbon::today()->toDateString();
         }
 
         $today = Carbon::today();
-        
+
         // 1. Doanh thu hôm nay (các đơn completed hôm nay)
         $todayOrders = Order::where('store_owner_address', $storeOwner)
             ->where('status', 'completed')
             ->whereDate('created_at', $today);
-            
+
         $todayRevenue = $todayOrders->sum('total_amount');
         $todayOrdersCount = $todayOrders->count();
 
@@ -45,7 +45,7 @@ class DashboardController extends Controller
             ->where('status', 'completed')
             ->where('blockchain_status', 'success');
         $web3Revenue = $web3Orders->sum('total_amount');
-        
+
         // 4. Đơn chờ Web3 (các đơn completed nhưng blockchain_status = none hoặc pending)
         $pendingWeb3Count = Order::where('store_owner_address', $storeOwner)
             ->where('status', 'completed')
@@ -57,13 +57,13 @@ class DashboardController extends Controller
         $start = Carbon::parse($startDate);
         $end = Carbon::parse($endDate);
         $daysDiff = $start->diffInDays($end);
-        
+
         // Giới hạn tối đa 60 ngày để tránh quá tải CPU/RAM
         $limitDays = min($daysDiff, 60);
         for ($i = 0; $i <= $limitDays; $i++) {
             $date = $start->copy()->addDays($i);
             $dayName = $this->getVietnameseDayName($date->dayOfWeek);
-            
+
             $revenue = Order::where('store_owner_address', $storeOwner)
                 ->where('status', 'completed')
                 ->whereDate('created_at', $date)
@@ -152,7 +152,7 @@ class DashboardController extends Controller
         $products = \App\Domain\Entities\Product::where('store_owner_address', $storeOwner)->with('variants')->get();
         $inventoryRecords = \App\Domain\Entities\InventoryRecord::where('store_owner_address', $storeOwner)->with('items')->get();
         $completedOrders = Order::where('store_owner_address', $storeOwner)->where('status', 'completed')->with('items')->get();
-        
+
         $lowStockAlerts = [];
         foreach ($products as $p) {
             $variants = $p->variants;
@@ -184,7 +184,7 @@ class DashboardController extends Controller
         // 10. Trạng thái bàn ăn
         $totalTables = \App\Domain\Entities\DiningTable::where('store_owner_address', $storeOwner)->count();
         $occupiedTables = \App\Domain\Entities\DiningTable::where('store_owner_address', $storeOwner)->where('status', 'using')->count();
-        
+
         // 11. Thống kê Voucher NFT từ bảng orders
         $totalVouchers = Order::where('store_owner_address', $storeOwner)->whereNotNull('gift_voucher_nft_token_id')->count();
         $usedVouchers = Order::where('store_owner_address', $storeOwner)->where('status', 'completed')->whereNotNull('voucher_nft_token_id')->count();

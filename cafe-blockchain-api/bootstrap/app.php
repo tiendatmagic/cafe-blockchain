@@ -12,8 +12,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Loại bỏ CORS middleware mặc định của Laravel để tránh xung đột ghi đè headers
+        $middleware->remove([
+            \Illuminate\Http\Middleware\HandleCors::class,
+            \Fruitcake\Cors\HandleCors::class
+        ]);
+
         // Thêm custom CORS middleware toàn cục
         $middleware->append(\App\Http\Middleware\Cors::class);
+        $middleware->append(\App\Http\Middleware\AuthenticateWithCookie::class);
         // $middleware->append(\App\Http\Middleware\RequireWalletAddress::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

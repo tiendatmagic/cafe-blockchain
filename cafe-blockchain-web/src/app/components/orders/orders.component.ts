@@ -95,6 +95,7 @@ export class OrdersComponent implements OnInit {
 
   // Gọi API lấy toàn bộ danh sách đơn hàng từ máy chủ (lọc client-side tự động xử lý hiển thị)
   public refreshOrders() {
+    if (!this.web3Service.walletConnected()) return;
     this.stateService.isOrdersLoading.set(true);
     this.apiService.getOrders('all', 'all').subscribe({
       next: (res) => {

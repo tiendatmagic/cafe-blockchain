@@ -208,7 +208,7 @@ export class StateService {
       console.log('[StateService] Khởi tạo instance thứ:', (window as any)._stateServiceInstances);
     }
     this.initTheme();
-    this.loadSettings();
+    // Không tự động gọi loadSettings() khi khởi tạo để tránh gọi API dư thừa khi chưa kết nối ví
 
     if (typeof window !== 'undefined') {
       this.loadCoinPrices();
@@ -409,6 +409,7 @@ export class StateService {
 
   // Refresh danh sách thực đơn
   public refreshProducts() {
+    if (!this.web3Service.walletConnected()) return;
     this.isProductsLoading.set(true);
     forkJoin({
       products: this.apiService.getProducts(),
@@ -429,6 +430,7 @@ export class StateService {
 
   // Refresh danh sách đơn hàng
   public refreshOrders(statusFilter: string = 'all', blockchainFilter: string = 'all') {
+    if (!this.web3Service.walletConnected()) return;
     this.isOrdersLoading.set(true);
     this.apiService.getOrders(statusFilter, blockchainFilter).subscribe({
       next: (res) => {
@@ -444,6 +446,7 @@ export class StateService {
 
   // Refresh dữ liệu dashboard
   public refreshDashboard() {
+    if (!this.web3Service.walletConnected()) return;
     this.isDashboardLoading.set(true);
     this.apiService.getDashboard(this.dashboardStartDate(), this.dashboardEndDate()).subscribe({
       next: (res) => {
@@ -461,6 +464,11 @@ export class StateService {
   public loadSettings() {
     console.log('[StateService] loadSettings() được gọi. Cờ isSettingsFetching hiện tại:', this.isSettingsFetching, 'hasToken:', !!this.apiService.getToken(), 'Time:', Date.now());
     
+    if (!this.web3Service.walletConnected()) {
+      console.log('[StateService] loadSettings() bị chặn do ví chưa kết nối!');
+      return;
+    }
+
     // Nếu dữ liệu đã có và thời gian load trước đó chưa quá 5 phút (300000ms), thì sử dụng cache
     const now = Date.now();
     const hasCachedSettings = this.settings() && this.settings().store_name && this.settings().store_name !== 'Blockchain Cafe & Bistro';
@@ -475,7 +483,7 @@ export class StateService {
     }
     this.isSettingsFetching = true;
     this.isSettingsLoading.set(true);
-    const hasToken = !!this.apiService.getToken();
+    const hasToken = this.web3Service.walletConnected();
     const settingsObservable = hasToken 
       ? this.apiService.getSettings() 
       : this.apiService.getPublicSettings();
@@ -507,6 +515,7 @@ export class StateService {
 
   // Refresh danh sách khách hàng
   public refreshCustomers() {
+    if (!this.web3Service.walletConnected()) return;
     this.isCustomersLoading.set(true);
     forkJoin({
       customers: this.apiService.getCustomers(),
@@ -526,6 +535,7 @@ export class StateService {
 
   // Refresh danh sách giao dịch tài chính
   public refreshTransactions(typeFilter: string = 'all') {
+    if (!this.web3Service.walletConnected()) return;
     this.isTransactionsLoading.set(true);
     this.apiService.getTransactions(typeFilter).subscribe({
       next: (res) => {
@@ -541,6 +551,7 @@ export class StateService {
 
   // Refresh danh sách phiếu kho
   public refreshInventory(typeFilter: string = 'all') {
+    if (!this.web3Service.walletConnected()) return;
     this.isInventoryLoading.set(true);
     this.apiService.getInventoryRecords(typeFilter).subscribe({
       next: (res) => {
@@ -556,6 +567,7 @@ export class StateService {
 
   // Refresh sơ đồ bàn ăn và khu vực
   public refreshTablesAndAreas() {
+    if (!this.web3Service.walletConnected()) return;
     this.isTablesLoading.set(true);
     forkJoin({
       areas: this.apiService.getAreas(),
@@ -577,6 +589,13 @@ export class StateService {
   public disconnectWalletAndClose(message?: string, isError = false) {
     this.web3Service.disconnectWallet();
     this.apiService.removeToken();
+    
+    // Gọi API đăng xuất để xóa cookie HttpOnly phía backend
+    this.apiService.logout().subscribe({
+      next: () => console.log('[Auth] Đã xóa phiên làm việc và cookie HttpOnly từ backend.'),
+      error: (err) => console.warn('[Auth] Không thể xóa phiên làm việc phía backend:', err)
+    });
+
     if (typeof window !== 'undefined') {
       localStorage.removeItem('auth_address');
     }

@@ -71,11 +71,10 @@ export class App implements OnInit, OnDestroy {
 
 
 
-    // Nếu đã có token và ví được lưu trước đó, tải toàn bộ dữ liệu
-    const hasToken = this.apiService.getToken();
+    // Nếu đã có ví được lưu trước đó, hệ thống sẽ tự động đồng bộ trạng thái khi AppKit kết nối
     const hasAddress = typeof window !== 'undefined' ? localStorage.getItem('auth_address') : null;
 
-    if (hasToken && hasAddress) {
+    if (hasAddress) {
       // Dữ liệu của tab hiện tại sẽ tự động được tải thông qua setTabState khi router kích hoạt.
       // Không cần gọi loadAllData() tải trước tất cả các module ở đây để tránh dư thừa và trùng lặp API request.
     }
@@ -222,6 +221,13 @@ export class App implements OnInit, OnDestroy {
   private handleAccountSwitch(newAccount: string) {
     // Xóa token cũ và địa chỉ ví cũ để đảm bảo bảo mật
     this.apiService.removeToken();
+    
+    // Gọi API đăng xuất để xóa cookie HttpOnly phía backend
+    this.apiService.logout().subscribe({
+      next: () => console.log('[Auth] Đã xóa phiên và cookie backend khi chuyển đổi tài khoản.'),
+      error: (err) => console.warn('[Auth] Không thể xóa phiên làm việc khi chuyển đổi tài khoản:', err)
+    });
+
     if (typeof window !== 'undefined') {
       localStorage.removeItem('auth_address');
     }

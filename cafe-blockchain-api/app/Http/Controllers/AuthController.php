@@ -62,14 +62,57 @@ class AuthController extends Controller
             // Create Sanctum token
             $token = $user->createToken('pos-access-token')->plainTextToken;
 
+            $cookie = cookie(
+                'auth_token', 
+                $token, 
+                1440, // 24 tiếng = 1 ngày
+                '/', 
+                null, 
+                $request->secure(), 
+                true, // httpOnly
+                false, 
+                $request->secure() ? 'None' : 'Lax'
+            );
+
+            $loggedCookie = cookie(
+                'auth_logged_in', 
+                'true', 
+                1440, // 24 tiếng = 1 ngày
+                '/', 
+                null, 
+                $request->secure(), 
+                false, // httpOnly = false -> JS có thể đọc
+                false, 
+                $request->secure() ? 'None' : 'Lax'
+            );
+
             return response()->json([
                 'success' => true,
                 'token' => $token,
                 'address' => $address
-            ]);
+            ])->withCookie($cookie)->withCookie($loggedCookie);
         }
 
         return response()->json(['message' => 'Invalid signature.'], 401);
+    }
+
+    /**
+     * Đăng xuất, vô hiệu hóa token hiện tại và xóa cookie
+     */
+    public function logout(Request $request)
+    {
+        $user = $request->user();
+        if ($user) {
+            $user->currentAccessToken()->delete();
+        }
+
+        $cookie = cookie()->forget('auth_token');
+        $loggedCookie = cookie()->forget('auth_logged_in');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Logged out successfully.'
+        ])->withCookie($cookie)->withCookie($loggedCookie);
     }
 
     /**

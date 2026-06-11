@@ -355,13 +355,19 @@ export class Web3Service {
   }
 
   /**
-   * Kiểm tra xem token xác thực JWT có tồn tại và khớp với ví hiện tại không
+   * Kiểm tra xem session xác thực có tồn tại và khớp với ví hiện tại không (dựa vào auth_address và cookie auth_logged_in)
    */
   private hasValidAuthToken(account: string): boolean {
     if (typeof window === 'undefined') return false;
-    const token = localStorage.getItem('auth_token');
     const savedAddress = localStorage.getItem('auth_address');
-    return !!token && !!savedAddress && savedAddress.toLowerCase() === account.toLowerCase();
+    
+    // Kiểm tra thêm sự tồn tại của cookie auth_logged_in (được backend set khi đăng nhập thành công và không phải httpOnly)
+    let hasLoggedCookie = false;
+    if (typeof document !== 'undefined') {
+      hasLoggedCookie = document.cookie.split(';').some(c => c.trim().startsWith('auth_logged_in='));
+    }
+    
+    return !!savedAddress && savedAddress.toLowerCase() === account.toLowerCase() && hasLoggedCookie;
   }
 
   /**
@@ -606,7 +612,6 @@ export class Web3Service {
     this.walletConnected.set(false);
     this.isOwnerContract.set(false);
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('auth_token');
       localStorage.removeItem('auth_address');
     }
   }
