@@ -1,5 +1,4 @@
-@if (stateService.web3Service.walletConnected()) {
-<div class="space-y-6 p-4 sm:p-6">
+<div class="space-y-6 p-4 sm:p-6 max-w-[1530px] mx-auto">
   <!-- Header tiêu đề tab -->
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div>
@@ -10,7 +9,8 @@
       </p>
     </div>
 
-    <div class="flex items-center gap-3 shrink-0 flex-wrap">
+    @if (stateService.web3Service.walletConnected()) {
+      <div class="flex items-center gap-3 shrink-0 flex-wrap">
       <button
         (click)="openAddAreaModal()"
         class="px-4.5 py-2.5 bg-[var(--dynamic-secondary)]/10 hover:bg-[var(--dynamic-secondary)]/20 border border-[var(--dynamic-secondary)]/20 text-[var(--dynamic-secondary)] font-bold rounded-xl text-sm transition-all flex items-center gap-1.5"
@@ -38,10 +38,12 @@
         </svg>
         <span>Thêm Bàn ăn</span>
       </button>
-    </div>
+      </div>
+    }
   </div>
 
-  <!-- THANH BỘ LỌC SƠ ĐỒ BÀN (KHU VỰC VÀ TRẠNG THÁI) -->
+  @if (stateService.web3Service.walletConnected()) {
+    <!-- THANH BỘ LỌC SƠ ĐỒ BÀN (KHU VỰC VÀ TRẠNG THÁI) -->
   <div
     class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex flex-col sm:flex-row gap-5 justify-between items-start sm:items-center transition-colors"
   >
@@ -330,7 +332,6 @@
       </div>
     </div>
   </div>
-</div>
 
 <!-- ==================== MODALS PHÒNG BÀN ==================== -->
 
@@ -602,7 +603,7 @@
     </div>
   </div>
 }
-
 } @else {
   <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý Sơ đồ bàn'"></app-web3-connect-prompt>
 }
+</div>

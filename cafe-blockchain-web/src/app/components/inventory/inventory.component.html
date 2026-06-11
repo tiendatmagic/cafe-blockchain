@@ -1,5 +1,4 @@
-@if (stateService.web3Service.walletConnected()) {
-<div class="space-y-6 p-4 sm:p-6">
+<div class="space-y-6 p-4 sm:p-6 max-w-[1530px] mx-auto">
   <!-- Header tiêu đề tab -->
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div>
@@ -9,9 +8,10 @@
       </p>
     </div>
 
-    <div
-      class="relative inline-flex items-stretch inventory-dropdown-container self-start sm:self-center rounded-xl bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] shadow-md shadow-[var(--dynamic-primary)]/20 hover:scale-[1.01] active:scale-[0.99] transition-all"
-    >
+    @if (stateService.web3Service.walletConnected()) {
+      <div
+        class="relative inline-flex items-stretch inventory-dropdown-container self-start sm:self-center rounded-xl bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] shadow-md shadow-[var(--dynamic-primary)]/20 hover:scale-[1.01] active:scale-[0.99] transition-all"
+      >
       <!-- Nút chính (bên trái) - Nhập kho mặc định -->
       <button
         (click)="openAddInventoryModal('nhap')"
@@ -90,10 +90,12 @@
           </button>
         </div>
       }
-    </div>
+      </div>
+    }
   </div>
 
-  @if (isInventoryLoading()) {
+  @if (stateService.web3Service.walletConnected()) {
+    @if (isInventoryLoading()) {
     <!-- TABLE SKELETON FOR INVENTORY -->
     <div
       class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm p-6 space-y-5 animate-pulse"
@@ -569,7 +571,6 @@
       </div>
     </div>
   </div>
-</div>
 
 <!-- ==================== MODALS KHO HÀNG ==================== -->
 
@@ -990,7 +991,7 @@
     </div>
   </div>
 }
-
 } @else {
   <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý Kho hàng'"></app-web3-connect-prompt>
 }
+</div>

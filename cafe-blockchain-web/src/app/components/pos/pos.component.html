@@ -1,5 +1,4 @@
-@if (web3Service.walletConnected()) {
-<div class="space-y-6 p-4 sm:p-6">
+<div class="space-y-6 p-4 sm:p-6 max-w-[1530px] mx-auto">
   <!-- Header tiêu đề tab -->
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div>
@@ -8,8 +7,9 @@
         Chọn các món đồ uống và món ăn ngon miệng từ thực đơn và tạo hóa đơn bán hàng.
       </p>
     </div>
-    <!-- Search & Filter bar -->
-    <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto shrink-0">
+    @if (web3Service.walletConnected()) {
+      <!-- Search & Filter bar -->
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto shrink-0">
       <!-- Chuyển đổi chế độ đặt hàng POS bằng Icon và Tooltip -->
       <div
         class="flex items-center gap-1.5 bg-slate-100/80 dark:bg-slate-900 p-1 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 w-full sm:w-auto shadow-sm"
@@ -115,8 +115,11 @@
           />
         </svg>
       </div>
-    </div>
+      </div>
+    }
   </div>
+
+  @if (web3Service.walletConnected()) {
 
   <!-- BỐ CỤC 2 CỘT RESPONSIVE -->
   <div class="grid grid-cols-1 xl:grid-cols-6 gap-6">
@@ -1048,9 +1051,9 @@
           </button>
         </div>
       }
-    </div>
   </div>
 </div>
+
 
 <!-- ==================== MODAL CHỌN SIZE SẢN PHẨM ==================== -->
 @if (isVariantSelectModalOpen()) {
@@ -1571,7 +1574,7 @@
     </div>
   </div>
 }
-
 } @else {
   <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý Bán hàng POS'"></app-web3-connect-prompt>
 }
+</div>

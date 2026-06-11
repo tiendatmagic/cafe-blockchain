@@ -1,5 +1,4 @@
-@if (stateService.web3Service.walletConnected()) {
-<div class="space-y-6 p-4 sm:p-6">
+<div class="space-y-6 p-4 sm:p-6 max-w-[1530px] mx-auto">
   <!-- Header tiêu đề tab -->
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div>
@@ -9,29 +8,32 @@
         Blockchain EVM.
       </p>
     </div>
-    <button
-      (click)="refreshOrders()"
-      class="flex items-center gap-1.5 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-semibold hover:bg-[var(--dynamic-primary)]/[0.04] hover:text-[var(--dynamic-primary)] hover:border-[var(--dynamic-primary)]/30 active:scale-95 transition-all"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-4 w-4 shrink-0"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
+    @if (stateService.web3Service.walletConnected()) {
+      <button
+        (click)="refreshOrders()"
+        class="flex items-center gap-1.5 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-semibold hover:bg-[var(--dynamic-primary)]/[0.04] hover:text-[var(--dynamic-primary)] hover:border-[var(--dynamic-primary)]/30 active:scale-95 transition-all"
       >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.99m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
-        />
-      </svg>
-      <span>Làm mới</span>
-    </button>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-4 w-4 shrink-0"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 6h16M4 10h16M4 14h16M4 18h16"
+          />
+        </svg>
+        <span>Làm mới</span>
+      </button>
+    }
   </div>
 
-  @if (stateService.isOrdersLoading()) {
+  @if (stateService.web3Service.walletConnected()) {
+    @if (stateService.isOrdersLoading()) {
     <!-- TABLE SKELETON FOR ORDERS -->
     <div
       class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm p-6 space-y-5 animate-pulse"
@@ -656,7 +658,6 @@
       }
     </div>
   </div>
-</div>
 
 <!-- ==================== MODAL XEM CHI TIẾT HÓA ĐƠN ==================== -->
 @if (isOrderDetailModalOpen()) {
@@ -1428,8 +1429,8 @@
       </div>
     </div>
   </div>
-}
-
+  }
 } @else {
   <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý Đơn hàng'"></app-web3-connect-prompt>
 }
+</div>

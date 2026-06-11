@@ -1,5 +1,4 @@
-@if (stateService.web3Service.walletConnected()) {
-<div class="space-y-6 p-4 sm:p-6">
+<div class="space-y-6 p-4 sm:p-6 max-w-[1530px] mx-auto">
   <!-- Header tiêu đề tab -->
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div>
@@ -10,7 +9,8 @@
       </p>
     </div>
 
-    <div class="flex flex-col sm:flex-row items-center gap-3">
+    @if (stateService.web3Service.walletConnected()) {
+      <div class="flex flex-col sm:flex-row items-center gap-3">
       @if (unsyncedTransactions().length > 0) {
         <button
           [disabled]="blockchainSyncLoading()"
@@ -110,10 +110,11 @@
           </div>
         }
       </div>
-    </div>
+      </div>
+    }
   </div>
 
-  @if (isTransactionsLoading()) {
+  @if (stateService.web3Service.walletConnected()) {
     <!-- TABLE SKELETON FOR TRANSACTIONS -->
     <div class="space-y-6 animate-pulse">
       <!-- 3 card LED chỉ số Skeleton -->
@@ -574,7 +575,6 @@
       </div>
     </div>
   </div>
-</div>
 
 <!-- ==================== MODALS TÀI CHÍNH ==================== -->
 
@@ -1085,8 +1085,7 @@
       </div>
     </div>
   </div>
-}
-
-} @else {
-  <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý Thu chi tài chính'"></app-web3-connect-prompt>
-}
+  } @else {
+    <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý Thu chi tài chính'"></app-web3-connect-prompt>
+  }
+</div>

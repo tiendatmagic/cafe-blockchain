@@ -1,5 +1,4 @@
-@if (stateService.web3Service.walletConnected()) {
-<div class="space-y-6 p-4 sm:p-6">
+<div class="space-y-6 p-4 sm:p-6 max-w-[1530px] mx-auto">
   <!-- Header tiêu đề tab có bộ chuyển đổi View Mode -->
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div>
@@ -8,9 +7,9 @@
         Thêm, sửa, hoặc gỡ bỏ các món đồ uống và món ăn trong danh mục thực đơn của quán.
       </p>
     </div>
-
-    <!-- Nút chuyển đổi và Thêm mới -->
-    <div class="flex items-center gap-3 w-full sm:w-auto shrink-0 flex-wrap">
+    @if (stateService.web3Service.walletConnected()) {
+      <!-- Nút chuyển đổi và Thêm mới -->
+      <div class="flex items-center gap-3 w-full sm:w-auto shrink-0 flex-wrap">
       <!-- Bộ chuyển đổi Bảng / Thẻ -->
       <div
         class="flex items-center gap-1 bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200/40 dark:border-slate-800/40"
@@ -123,8 +122,11 @@
         </svg>
         <span>Thêm món mới</span>
       </button>
-    </div>
+      </div>
+    }
   </div>
+
+  @if (stateService.web3Service.walletConnected()) {
 
   <!-- Bộ tìm kiếm và lọc danh mục thực đơn (Search & Category filter) -->
   <div
@@ -1390,7 +1392,7 @@
   </div>
 }
 
+  } @else {
+    <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý Thực đơn món ăn'"></app-web3-connect-prompt>
+  }
 </div>
-} @else {
-  <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý Thực đơn món ăn'"></app-web3-connect-prompt>
-}

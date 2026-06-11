@@ -1,5 +1,4 @@
-@if (stateService.web3Service.walletConnected()) {
-<div class="space-y-6 p-4 sm:p-6">
+<div class="space-y-6 p-4 sm:p-6 max-w-[1530px] mx-auto">
   <!-- Header tiêu đề tab -->
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div>
@@ -12,7 +11,8 @@
       </p>
     </div>
 
-    <div class="flex items-center gap-3 shrink-0 flex-wrap">
+    @if (stateService.web3Service.walletConnected()) {
+      <div class="flex items-center gap-3 shrink-0 flex-wrap">
       <button
         (click)="openAddCustomerGroupModal()"
         class="px-4.5 py-2.5 bg-[var(--dynamic-secondary)]/10 hover:bg-[var(--dynamic-secondary)]/20 border border-[var(--dynamic-secondary)]/20 text-[var(--dynamic-secondary)] font-bold rounded-xl text-sm transition-all flex items-center gap-1.5"
@@ -92,10 +92,12 @@
           </div>
         }
       </div>
-    </div>
+      </div>
+    }
   </div>
 
-  @if (isCustomersLoading()) {
+  @if (stateService.web3Service.walletConnected()) {
+    @if (isCustomersLoading()) {
     <!-- TABLE SKELETON FOR CUSTOMERS -->
     <div
       class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm p-6 space-y-5 animate-pulse"
@@ -561,7 +563,6 @@
       </div>
     </div>
   </div>
-</div>
 
 <!-- ==================== MODALS KHÁCH HÀNG ==================== -->
 
@@ -1158,3 +1159,4 @@
 } @else {
   <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý Khách hàng'"></app-web3-connect-prompt>
 }
+</div>

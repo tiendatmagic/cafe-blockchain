@@ -1,5 +1,4 @@
-@if (stateService.web3Service.walletConnected()) {
-<div class="space-y-6 p-4 sm:p-6">
+<div class="space-y-6 p-4 sm:p-6 max-w-[1530px] mx-auto">
   <div>
     <h3 class="text-2xl font-extrabold text-slate-800 dark:text-white">
       Cấu hình quán & Blockchain
@@ -9,6 +8,8 @@
       thu ngân.
     </p>
   </div>
+
+  @if (stateService.web3Service.walletConnected()) {
 
   <!-- Banner Cảnh báo Phân quyền (Chuẩn POS / Sổ bán hàng thực tế) -->
   <div class="w-full shrink-0">
@@ -2300,8 +2301,7 @@
       </div>
     </div>
   }
+  } @else {
+    <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý Cấu hình quán'"></app-web3-connect-prompt>
+  }
 </div>
-
-} @else {
-  <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý Cấu hình quán'"></app-web3-connect-prompt>
-}
