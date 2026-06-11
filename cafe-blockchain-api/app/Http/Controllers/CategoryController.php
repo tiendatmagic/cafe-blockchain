@@ -14,7 +14,7 @@ class CategoryController extends Controller
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
         $categories = \Illuminate\Support\Facades\Cache::remember("store_categories_all:{$storeOwner}", 86400, function () use ($storeOwner) {
-            return Category::where('store_owner_address', $storeOwner)->orderBy('id', 'asc')->get();
+            return Category::where('store_owner_address', $storeOwner)->orderBy('id', 'asc')->get()->toArray();
         });
         return response()->json($categories);
     }

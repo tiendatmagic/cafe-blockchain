@@ -448,8 +448,8 @@ class SettingController extends Controller
 
             return [
                 'store' => $publicSettings,
-                'categories' => $categories,
-                'products' => $products
+                'categories' => $categories->toArray(),
+                'products' => $products->toArray()
             ];
         });
 

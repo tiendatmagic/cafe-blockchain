@@ -18,7 +18,8 @@ class ProductController extends Controller
             return Product::where('store_owner_address', $storeOwner)
                 ->with(['categories', 'variants'])
                 ->orderBy('id', 'desc')
-                ->get();
+                ->get()
+                ->toArray();
         });
 
         $collection = collect($products);
@@ -27,7 +28,9 @@ class ProductController extends Controller
         if ($request->has('search') && !empty($request->search)) {
             $search = strtolower($request->search);
             $collection = $collection->filter(function ($p) use ($search) {
-                return str_contains(strtolower($p->name), $search) || ($p->sku && str_contains(strtolower($p->sku), $search));
+                $name = strtolower($p['name'] ?? '');
+                $sku = strtolower($p['sku'] ?? '');
+                return str_contains($name, $search) || str_contains($sku, $search);
             });
         }
 
@@ -35,7 +38,7 @@ class ProductController extends Controller
         if ($request->has('category') && $request->category !== 'Tất cả') {
             $category = $request->category;
             $collection = $collection->filter(function ($p) use ($category) {
-                return $p->categories->contains('name', $category);
+                return collect($p['categories'] ?? [])->contains('name', $category);
             });
         }
 
@@ -43,7 +46,7 @@ class ProductController extends Controller
             $limit = (int)$request->input('limit', 9);
             $page = (int)$request->input('page', 1);
             $paginated = new \Illuminate\Pagination\LengthAwarePaginator(
-                $collection->forPage($page, $limit)->values(),
+                $collection->forPage($page, $limit)->values()->all(),
                 $collection->count(),
                 $limit,
                 $page,
@@ -52,7 +55,7 @@ class ProductController extends Controller
             return response()->json($paginated);
         }
 
-        return response()->json($collection->values());
+        return response()->json($collection->values()->all());
     }
 
     /**
