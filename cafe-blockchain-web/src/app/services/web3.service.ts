@@ -238,7 +238,15 @@ export class Web3Service {
         themeMode: 'dark',
         features: {
           analytics: false
-        }
+        },
+        enableCoinbase: false, // Tắt Coinbase Wallet Connector
+        featuredWalletIds: [
+          '4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0' // Ưu tiên hiển thị Trust Wallet
+        ],
+        excludeWalletIds: [
+          'fd20a4e69d7b889311311b93f773646548d7936a575a783783451e01869e54d8', // Coinbase Wallet ID 1
+          'ef333840daf915aafdc4a004525502d6d49d77bd9c65e0642dbaefb3c2893bef'  // Coinbase Wallet ID 2
+        ]
       });
 
       // Lắng nghe account thay đổi từ WalletConnect modal
