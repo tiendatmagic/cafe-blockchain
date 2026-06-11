@@ -1,4 +1,4 @@
-import { Injectable, inject, signal, computed, effect } from '@angular/core';
+import { Injectable, inject, signal, computed, effect, untracked } from '@angular/core';
 import { ApiService } from './api.service';
 import { Web3Service } from './web3.service';
 import { forkJoin, Subject, Subscription } from 'rxjs';
@@ -226,6 +226,17 @@ export class StateService {
       }
     }, { allowSignalWrites: true });
 
+    // Tự động nạp cấu hình và dữ liệu của tab hiện tại ngay khi ví kết nối & xác thực thành công
+    effect(() => {
+      if (this.web3Service.walletConnected()) {
+        untracked(() => {
+          console.log('[StateService] Phát hiện ví kết nối thành công! Đang tự động nạp cấu hình và dữ liệu cho tab:', this.activeTab());
+          this.loadSettings();
+          this.reloadCurrentTab();
+        });
+      }
+    }, { allowSignalWrites: true });
+
     // Lắng nghe sự kiện thay đổi từ khóa tìm kiếm có Debounce
     this.searchSubscription = this.searchSubject.pipe(
       debounceTime(300),
@@ -410,6 +421,7 @@ export class StateService {
   // Refresh danh sách thực đơn
   public refreshProducts() {
     if (!this.web3Service.walletConnected()) return;
+    if (this.isProductsLoading()) return;
     this.isProductsLoading.set(true);
     forkJoin({
       products: this.apiService.getProducts(),
@@ -431,6 +443,7 @@ export class StateService {
   // Refresh danh sách đơn hàng
   public refreshOrders(statusFilter: string = 'all', blockchainFilter: string = 'all') {
     if (!this.web3Service.walletConnected()) return;
+    if (this.isOrdersLoading()) return;
     this.isOrdersLoading.set(true);
     this.apiService.getOrders(statusFilter, blockchainFilter).subscribe({
       next: (res) => {
@@ -447,6 +460,7 @@ export class StateService {
   // Refresh dữ liệu dashboard
   public refreshDashboard() {
     if (!this.web3Service.walletConnected()) return;
+    if (this.isDashboardLoading()) return;
     this.isDashboardLoading.set(true);
     this.apiService.getDashboard(this.dashboardStartDate(), this.dashboardEndDate()).subscribe({
       next: (res) => {
@@ -516,6 +530,7 @@ export class StateService {
   // Refresh danh sách khách hàng
   public refreshCustomers() {
     if (!this.web3Service.walletConnected()) return;
+    if (this.isCustomersLoading()) return;
     this.isCustomersLoading.set(true);
     forkJoin({
       customers: this.apiService.getCustomers(),
@@ -536,6 +551,7 @@ export class StateService {
   // Refresh danh sách giao dịch tài chính
   public refreshTransactions(typeFilter: string = 'all') {
     if (!this.web3Service.walletConnected()) return;
+    if (this.isTransactionsLoading()) return;
     this.isTransactionsLoading.set(true);
     this.apiService.getTransactions(typeFilter).subscribe({
       next: (res) => {
@@ -552,6 +568,7 @@ export class StateService {
   // Refresh danh sách phiếu kho
   public refreshInventory(typeFilter: string = 'all') {
     if (!this.web3Service.walletConnected()) return;
+    if (this.isInventoryLoading()) return;
     this.isInventoryLoading.set(true);
     this.apiService.getInventoryRecords(typeFilter).subscribe({
       next: (res) => {
@@ -568,6 +585,7 @@ export class StateService {
   // Refresh sơ đồ bàn ăn và khu vực
   public refreshTablesAndAreas() {
     if (!this.web3Service.walletConnected()) return;
+    if (this.isTablesLoading()) return;
     this.isTablesLoading.set(true);
     forkJoin({
       areas: this.apiService.getAreas(),
@@ -689,9 +707,6 @@ export class StateService {
                   if (typeof window !== 'undefined') {
                     localStorage.setItem('auth_address', address);
                   }
-                  this.web3Service.walletConnected.set(true);
-                  this.showToast('Kết nối và xác thực ví thành công!', 'success');
-                  this.isWalletModalOpen.set(false);
                   
                   // Thiết lập ngày mặc định cho dashboard nếu chưa có
                   const today = new Date();
@@ -710,17 +725,14 @@ export class StateService {
                     this.dashboardEndDate.set(formatDateStr(today));
                   }
 
-                  this.loadSettings();
-
+                  // Đặt trạng thái ví kết nối. Việc này sẽ tự động kích hoạt effect tải settings và nạp dữ liệu tab hiện tại.
+                  this.web3Service.walletConnected.set(true);
+                  this.showToast('Kết nối và xác thực ví thành công!', 'success');
+                  this.isWalletModalOpen.set(false);
+                  
                   // Chỉ redirect về dashboard nếu đang ở POS
                   if (this.router.url.includes('/pos')) {
                     this.router.navigate(['/dashboard']);
-                  } else if (this.router.url.includes('/dashboard')) {
-                    // Chỉ gọi refresh dashboard khi đang ở dashboard sẵn
-                    this.refreshDashboard();
-                  } else if (!this.router.url.includes('/settings')) {
-                    // Chỉ reload tab nếu không phải trang settings (vì trang settings đã được nạp qua loadSettings() ở trên và có effect tự động đồng bộ)
-                    this.reloadCurrentTab();
                   }
                 }
               },

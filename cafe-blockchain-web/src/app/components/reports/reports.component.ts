@@ -1,5 +1,5 @@
 import { Web3ConnectPromptComponent } from '../web3-connect-prompt/web3-connect-prompt.component';
-import { Component, inject, signal, computed, OnInit, effect } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, effect, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
@@ -19,7 +19,9 @@ export class ReportsComponent implements OnInit {
   constructor() {
     effect(() => {
       if (this.web3Service.walletConnected()) {
-        this.loadReports();
+        untracked(() => {
+          this.loadReports();
+        });
       }
     });
   }
@@ -120,6 +122,7 @@ export class ReportsComponent implements OnInit {
   // Tải báo cáo từ Backend
   public loadReports() {
     if (!this.web3Service.walletConnected()) return;
+    if (this.isReportsLoading()) return;
 
     this.isReportsLoading.set(true);
     this.reportsError.set('');

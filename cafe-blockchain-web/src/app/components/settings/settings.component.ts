@@ -1,5 +1,5 @@
 import { Web3ConnectPromptComponent } from '../web3-connect-prompt/web3-connect-prompt.component';
-import { Component, inject, signal, OnInit, effect } from '@angular/core';
+import { Component, inject, signal, OnInit, effect, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
@@ -27,16 +27,18 @@ export class SettingsComponent implements OnInit {
     effect(() => {
       const settings = this.stateService.settings();
       if (settings) {
-        this.configForm.set({
-          ...settings,
-          relayer_private_key: ''
+        untracked(() => {
+          this.configForm.set({
+            ...settings,
+            relayer_private_key: ''
+          });
+          this.syncSelectedCategories();
+          
+          // Tải danh sách owners nếu ví đã kết nối và tab hiện tại là permissions
+          if (this.web3Service.walletConnected() && this.settingsSubTab() === 'permissions') {
+            this.loadOwnersList();
+          }
         });
-        this.syncSelectedCategories();
-        
-        // Tải danh sách owners nếu ví đã kết nối và tab hiện tại là permissions
-        if (this.web3Service.walletConnected() && this.settingsSubTab() === 'permissions') {
-          this.loadOwnersList();
-        }
       }
     });
   }

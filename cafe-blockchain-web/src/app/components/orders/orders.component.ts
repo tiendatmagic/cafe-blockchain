@@ -95,18 +95,7 @@ export class OrdersComponent implements OnInit {
 
   // Gọi API lấy toàn bộ danh sách đơn hàng từ máy chủ (lọc client-side tự động xử lý hiển thị)
   public refreshOrders() {
-    if (!this.web3Service.walletConnected()) return;
-    this.stateService.isOrdersLoading.set(true);
-    this.apiService.getOrders('all', 'all').subscribe({
-      next: (res) => {
-        this.stateService.orders.set(res);
-        this.stateService.isOrdersLoading.set(false);
-      },
-      error: (err) => {
-        console.error('Lỗi refresh đơn hàng:', err);
-        this.stateService.isOrdersLoading.set(false);
-      }
-    });
+    this.stateService.refreshOrders();
   }
 
   // Cập nhật đơn hàng cục bộ để tránh reload toàn bộ danh sách đơn hàng
