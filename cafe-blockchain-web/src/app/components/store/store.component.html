@@ -143,7 +143,7 @@
               'h-11 px-6 rounded-2xl text-sm sm:text-base font-black tracking-wide transition-all flex items-center gap-2 active:scale-95 border ' +
               (!showFavoritesOnly()
                 ? 'bg-[var(--dynamic-primary)] text-white border-transparent shadow-md shadow-[var(--dynamic-primary)]/15'
-                : 'bg-slate-50 dark:bg-slate-800 border-slate-200/60 dark:border-slate-700/60 text-slate-500 hover:text-slate-755 dark:hover:text-slate-350')
+                : 'bg-slate-50 dark:bg-slate-800 border-slate-200/60 dark:border-slate-700/60 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300')
             "
           >
             <svg
@@ -169,7 +169,7 @@
               'h-11 px-6 rounded-2xl text-sm sm:text-base font-black tracking-wide transition-all flex items-center gap-2 active:scale-95 border ' +
               (showFavoritesOnly()
                 ? 'bg-rose-500 text-white border-transparent shadow-md shadow-rose-500/15'
-                : 'bg-slate-50 dark:bg-slate-800 border-slate-200/60 dark:border-slate-700/60 text-slate-500 hover:text-slate-755 dark:hover:text-slate-350')
+                : 'bg-slate-50 dark:bg-slate-800 border-slate-200/60 dark:border-slate-700/60 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300')
             "
           >
             <svg
@@ -314,7 +314,7 @@
               'flex items-center gap-2.5 px-6 py-3.5 rounded-2xl font-black text-sm sm:text-base tracking-wide transition-all shrink-0 md:w-full text-left active:scale-95 border md:border-none ' +
               (activeCategoryId() === null
                 ? 'bg-[var(--dynamic-primary)]/10 dark:bg-[var(--dynamic-primary)]/20 border-[var(--dynamic-primary)] text-[var(--dynamic-primary)] shadow-sm'
-                : 'bg-white dark:bg-slate-900 border-slate-200/60 dark:border-slate-800/60 text-slate-500 hover:text-slate-755 dark:hover:text-slate-350')
+                : 'bg-white dark:bg-slate-900 border-slate-200/60 dark:border-slate-800/60 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300')
             "
           >
             <span
@@ -334,7 +334,7 @@
                 'flex items-center gap-2.5 px-6 py-3.5 rounded-2xl font-black text-sm sm:text-base tracking-wide transition-all shrink-0 md:w-full text-left active:scale-95 border md:border-none ' +
                 (activeCategoryId() === cat.id
                   ? 'bg-[var(--dynamic-primary)]/10 dark:bg-[var(--dynamic-primary)]/20 border-[var(--dynamic-primary)] text-[var(--dynamic-primary)] shadow-sm'
-                  : 'bg-white dark:bg-slate-900 border-slate-200/60 dark:border-slate-800/60 text-slate-500 hover:text-slate-755 dark:hover:text-slate-350')
+                  : 'bg-white dark:bg-slate-900 border-slate-200/60 dark:border-slate-800/60 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300')
               "
             >
               <span
@@ -402,7 +402,7 @@
                 [class]="
                   displayMode() === 'grid'
                     ? 'bg-white dark:bg-slate-800 text-[var(--dynamic-primary)] shadow-sm'
-                    : 'text-slate-400 hover:text-slate-650 dark:hover:text-slate-300'
+                    : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                 "
                 class="p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center"
                 title="Chế độ ô lưới (Grid)"
@@ -428,7 +428,7 @@
                 [class]="
                   displayMode() === 'list'
                     ? 'bg-white dark:bg-slate-800 text-[var(--dynamic-primary)] shadow-sm'
-                    : 'text-slate-400 hover:text-slate-650 dark:hover:text-slate-300'
+                    : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                 "
                 class="p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center"
                 title="Chế độ danh sách (List)"

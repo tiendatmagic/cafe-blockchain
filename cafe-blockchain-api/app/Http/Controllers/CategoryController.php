@@ -13,7 +13,10 @@ class CategoryController extends Controller
     public function index(Request $request)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-        return response()->json(Category::where('store_owner_address', $storeOwner)->orderBy('id', 'asc')->get());
+        $categories = \Illuminate\Support\Facades\Cache::remember("store_categories_all:{$storeOwner}", 86400, function () use ($storeOwner) {
+            return Category::where('store_owner_address', $storeOwner)->orderBy('id', 'asc')->get();
+        });
+        return response()->json($categories);
     }
  
     /**

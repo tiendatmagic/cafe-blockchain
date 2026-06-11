@@ -14,29 +14,45 @@ class ProductController extends Controller
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
         
-        $query = Product::where('store_owner_address', $storeOwner)
-            ->with(['categories', 'variants'])
-            ->orderBy('id', 'desc');
+        $products = \Illuminate\Support\Facades\Cache::remember("store_products_all:{$storeOwner}", 86400, function () use ($storeOwner) {
+            return Product::where('store_owner_address', $storeOwner)
+                ->with(['categories', 'variants'])
+                ->orderBy('id', 'desc')
+                ->get();
+        });
+
+        $collection = collect($products);
+
         // Lọc theo từ khóa tìm kiếm nếu có
         if ($request->has('search') && !empty($request->search)) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $search = strtolower($request->search);
+            $collection = $collection->filter(function ($p) use ($search) {
+                return str_contains(strtolower($p->name), $search) || ($p->sku && str_contains(strtolower($p->sku), $search));
+            });
         }
 
         // Lọc theo danh mục nếu có
         if ($request->has('category') && $request->category !== 'Tất cả') {
-            $query->whereHas('categories', function ($q) use ($request) {
-                $q->where('name', $request->category);
+            $category = $request->category;
+            $collection = $collection->filter(function ($p) use ($category) {
+                return $p->categories->contains('name', $category);
             });
         }
+
         if ($request->has('page') || $request->has('limit')) {
-            $limit = $request->input('limit', 9); // Mặc định 9 sản phẩm một trang
-            $products = $query->paginate($limit);
-        } else {
-            // Mặc định trả về toàn bộ mảng phẳng để tương thích ngược
-            $products = $query->get();
+            $limit = (int)$request->input('limit', 9);
+            $page = (int)$request->input('page', 1);
+            $paginated = new \Illuminate\Pagination\LengthAwarePaginator(
+                $collection->forPage($page, $limit)->values(),
+                $collection->count(),
+                $limit,
+                $page,
+                ['path' => $request->url(), 'query' => $request->query()]
+            );
+            return response()->json($paginated);
         }
 
-        return response()->json($products);
+        return response()->json($collection->values());
     }
 
     /**
