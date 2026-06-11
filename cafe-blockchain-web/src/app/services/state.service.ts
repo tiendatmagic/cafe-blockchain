@@ -96,6 +96,7 @@ export class StateService {
   private readonly cacheTTL = 5 * 60 * 1000; // 5 phút (ms)
   private isInitialSyncDone = false;
   private isSettingsFetching = false;
+  private lastSettingsLoadTimestamp = 0;
   private searchSubject = new Subject<string>();
   private searchSubscription?: Subscription;
   private routerSubscription?: Subscription;
@@ -459,6 +460,15 @@ export class StateService {
   // Refresh cấu hình
   public loadSettings() {
     console.log('[StateService] loadSettings() được gọi. Cờ isSettingsFetching hiện tại:', this.isSettingsFetching, 'hasToken:', !!this.apiService.getToken(), 'Time:', Date.now());
+    
+    // Nếu dữ liệu đã có và thời gian load trước đó chưa quá 5 phút (300000ms), thì sử dụng cache
+    const now = Date.now();
+    const hasCachedSettings = this.settings() && this.settings().store_name && this.settings().store_name !== 'Blockchain Cafe & Bistro';
+    if (hasCachedSettings && (now - this.lastSettingsLoadTimestamp < 5 * 60 * 1000)) {
+      console.log('[StateService] Sử dụng settings từ cache (chưa quá 5 phút):', this.settings());
+      return;
+    }
+
     if (this.isSettingsFetching) {
       console.warn('[StateService] loadSettings() BỊ CHẶN do cờ isSettingsFetching là true!');
       return;
@@ -479,6 +489,7 @@ export class StateService {
           ...res
         };
         this.settings.set(settings);
+        this.lastSettingsLoadTimestamp = Date.now(); // Lưu timestamp khi load thành công
         this.applyAndCacheDynamicColors(settings.primary_color, settings.secondary_color);
         this.web3Service.updateConfig(settings);
         this.isSettingsLoading.set(false);
