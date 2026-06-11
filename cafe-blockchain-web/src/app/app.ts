@@ -76,11 +76,6 @@ export class App implements OnInit, OnDestroy {
     if (hasToken && hasAddress) {
       // Dữ liệu của tab hiện tại sẽ tự động được tải thông qua setTabState khi router kích hoạt.
       // Không cần gọi loadAllData() tải trước tất cả các module ở đây để tránh dư thừa và trùng lặp API request.
-    } else {
-      // Chưa kết nối hoặc session hết hạn, yêu cầu kết nối ví
-      if (!isPublic) {
-        this.connectWalletAndSign();
-      }
     }
 
     // Lắng nghe sự kiện thay đổi ví từ Web3Service
