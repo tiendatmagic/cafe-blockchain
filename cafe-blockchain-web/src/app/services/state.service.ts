@@ -645,7 +645,31 @@ export class StateService {
                   this.web3Service.walletConnected.set(true);
                   this.showToast('Kết nối và xác thực ví thành công!', 'success');
                   this.isWalletModalOpen.set(false);
+                  
+                  // Thiết lập ngày mặc định cho dashboard nếu chưa có
+                  const today = new Date();
+                  const formatDateStr = (d: Date) => {
+                    const year = d.getFullYear();
+                    const month = String(d.getMonth() + 1).padStart(2, '0');
+                    const day = String(d.getDate()).padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                  };
+                  if (!this.dashboardStartDate()) {
+                    const check7 = new Date();
+                    check7.setDate(today.getDate() - 6);
+                    this.dashboardStartDate.set(formatDateStr(check7));
+                  }
+                  if (!this.dashboardEndDate()) {
+                    this.dashboardEndDate.set(formatDateStr(today));
+                  }
+
                   this.loadSettings();
+                  this.refreshDashboard();
+
+                  // Nếu đang ở trang POS, tự động chuyển hướng về Dashboard
+                  if (this.router.url.includes('/pos')) {
+                    this.router.navigate(['/dashboard']);
+                  }
                 }
               },
               error: (err) => {

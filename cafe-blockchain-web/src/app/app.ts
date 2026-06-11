@@ -113,7 +113,31 @@ export class App implements OnInit, OnDestroy {
                   this.web3Service.walletConnected.set(true);
                   this.stateService.showToast('Kết nối và xác thực ví thành công!', 'success');
                   this.stateService.isWalletModalOpen.set(false);
+
+                  // Thiết lập ngày mặc định cho dashboard nếu chưa có
+                  const today = new Date();
+                  const formatDateStr = (d: Date) => {
+                    const year = d.getFullYear();
+                    const month = String(d.getMonth() + 1).padStart(2, '0');
+                    const day = String(d.getDate()).padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                  };
+                  if (!this.stateService.dashboardStartDate()) {
+                    const check7 = new Date();
+                    check7.setDate(today.getDate() - 6);
+                    this.stateService.dashboardStartDate.set(formatDateStr(check7));
+                  }
+                  if (!this.stateService.dashboardEndDate()) {
+                    this.stateService.dashboardEndDate.set(formatDateStr(today));
+                  }
+
                   this.stateService.loadSettings();
+                  this.stateService.refreshDashboard();
+
+                  // Nếu đang ở trang POS, tự động chuyển hướng về Dashboard
+                  if (this.router.url.includes('/pos')) {
+                    this.router.navigate(['/dashboard']);
+                  }
                 }
               },
               error: (err) => {
