@@ -48,6 +48,7 @@ export class MenuComponent implements OnInit, OnDestroy {
     sku: '',
     name: '',
     price: 0,
+    cost_price: 0,
     category_ids: [],
     image: '',
     status: true,
@@ -109,7 +110,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   public updateMenuForm(field: string, value: any) {
     this.menuForm.update(form => ({
       ...form,
-      [field]: field === 'price' ? Number(value) : value
+      [field]: (field === 'price' || field === 'cost_price') ? Number(value) : value
     }));
   }
 
@@ -128,6 +129,7 @@ export class MenuComponent implements OnInit, OnDestroy {
       sku: '',
       name: '',
       price: 0,
+      cost_price: 0,
       category_ids: [],
       image: '',
       status: true,
@@ -146,6 +148,7 @@ export class MenuComponent implements OnInit, OnDestroy {
       sku: product.sku || '',
       name: product.name,
       price: product.price,
+      cost_price: product.cost_price || 0,
       category_ids: product.categories ? product.categories.map((c: any) => c.id) : [],
       image: product.image,
       status: product.status,
@@ -166,7 +169,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   public addVariantRow() {
     this.menuForm.update(form => ({
       ...form,
-      variants: [...(form.variants || []), { variant_name: '', price: 0, status: true }]
+      variants: [...(form.variants || []), { variant_name: '', price: 0, cost_price: 0, status: true }]
     }));
   }
 
@@ -184,7 +187,7 @@ export class MenuComponent implements OnInit, OnDestroy {
       if (list[index]) {
         list[index] = {
           ...list[index],
-          [field]: field === 'price' ? Number(value) : value
+          [field]: (field === 'price' || field === 'cost_price') ? Number(value) : value
         };
       }
       return { ...form, variants: list };

@@ -989,12 +989,25 @@
         <!-- Đơn giá -->
         <div class="space-y-1.5 relative focus-within:z-10">
           <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5"
-            >Đơn giá (VND)</label
+            >Đơn giá bán (VND)</label
           >
           <input
             type="number"
             [ngModel]="menuForm().price"
             (ngModelChange)="updateMenuForm('price', $event)"
+            class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all"
+          />
+        </div>
+
+        <!-- Giá vốn -->
+        <div class="space-y-1.5 relative focus-within:z-10">
+          <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5"
+            >Giá vốn nhập (VND)</label
+          >
+          <input
+            type="number"
+            [ngModel]="menuForm().cost_price"
+            (ngModelChange)="updateMenuForm('cost_price', $event)"
             class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all"
           />
         </div>
@@ -1113,7 +1126,14 @@
                     type="number"
                     [ngModel]="variant.price"
                     (ngModelChange)="updateVariantField($index, 'price', $event)"
-                    placeholder="Giá VND"
+                    placeholder="Giá bán"
+                    class="w-20 px-2.5 py-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white"
+                  />
+                  <input
+                    type="number"
+                    [ngModel]="variant.cost_price"
+                    (ngModelChange)="updateVariantField($index, 'cost_price', $event)"
+                    placeholder="Giá vốn"
                     class="w-20 px-2.5 py-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white"
                   />
                   <button
