@@ -17,10 +17,18 @@ export class MenuComponent implements OnInit, OnDestroy {
   private readonly apiService = inject(ApiService);
 
   constructor() {
-    // Re-check quyền khi settings (menuRegistryContractAddress) vừa được load xong sau đăng nhập
+    // Re-check quyền khi settings (menuRegistryContractAddress) vừa được load xong
     effect(() => {
       const addr = this.web3Service.menuRegistryContractAddress();
       if (addr) {
+        this.checkMenuRegistryOwnerPermission();
+      }
+    });
+
+    // Re-check quyền khi ví vừa đăng nhập/xác thực xong (walletConnected thay đổi sang true)
+    effect(() => {
+      const connected = this.web3Service.walletConnected();
+      if (connected) {
         this.checkMenuRegistryOwnerPermission();
       }
     });
