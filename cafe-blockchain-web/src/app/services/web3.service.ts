@@ -12,6 +12,7 @@ import { Subject } from 'rxjs';
 import { createAppKit, AppKit } from '@reown/appkit';
 import { EthersAdapter } from '@reown/appkit-adapter-ethers';
 import { mainnet, sepolia, bscTestnet, bsc, polygon, arbitrum, base, avalanche } from '@reown/appkit/networks';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -222,7 +223,7 @@ export class Web3Service {
     if (typeof window === 'undefined') return;
 
     try {
-      const projectId = 'b56e18d47c72ab683b10814fe9495694';
+      const projectId = environment.walletConnectProjectId;
 
       this.modal = createAppKit({
         adapters: [new EthersAdapter()],
