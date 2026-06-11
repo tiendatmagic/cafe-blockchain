@@ -243,7 +243,7 @@ export class Web3Service {
           onramp: false,
           swaps: false
         },
-        enableReconnect: false, // Tắt tự động reconnect để tránh AppKit hiển thị SIWE modal
+        enableReconnect: true,  // Cho phép tự động reconnect ví khi tải lại trang
         enableCoinbase: false,  // Tắt Coinbase Wallet Connector
         featuredWalletIds: [
           '4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0' // Ưu tiên hiển thị Trust Wallet
