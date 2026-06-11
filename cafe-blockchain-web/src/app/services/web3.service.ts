@@ -252,7 +252,12 @@ export class Web3Service {
       // Lắng nghe account thay đổi từ WalletConnect modal
       this.modal.subscribeAccount((state) => {
         const isConnected = state.isConnected;
-        const account = state.address || '';
+        let account = state.address || '';
+        
+        if (account.includes(':')) {
+          const parts = account.split(':');
+          account = parts[parts.length - 1];
+        }
         
         this.isConnectedAppKit = isConnected;
         this.addressAppKit = account;
@@ -353,7 +358,11 @@ export class Web3Service {
     if (this.modal) {
       try {
         const isConnected = this.isConnectedAppKit;
-        const account = this.addressAppKit;
+        let account = this.addressAppKit;
+        if (account && account.includes(':')) {
+          const parts = account.split(':');
+          account = parts[parts.length - 1];
+        }
         console.log('checkWalletConnection:', { isConnected, account });
         if (isConnected && account) {
           this.currentAccount.set(account);

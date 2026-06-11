@@ -659,8 +659,9 @@ export class StateService {
           }
         },
         error: (err) => {
+          console.error('Lỗi lấy nonce từ server:', err, 'địa chỉ ví:', address);
           this.web3Service.disconnectWallet();
-          this.showToast('Lỗi lấy mã xác thực từ server!', 'error');
+          this.showToast(`Lỗi lấy mã xác thực từ server! (Ví: ${address})`, 'error');
         }
       });
     }

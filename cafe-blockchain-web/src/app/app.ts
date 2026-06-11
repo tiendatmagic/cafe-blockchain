@@ -127,8 +127,9 @@ export class App implements OnInit, OnDestroy {
           }
         },
         error: (err) => {
+          console.error('Lỗi lấy nonce từ server:', err, 'địa chỉ ví:', address);
           this.web3Service.disconnectWallet();
-          this.stateService.showToast('Lỗi lấy mã xác thực từ server!', 'error');
+          this.stateService.showToast(`Lỗi lấy mã xác thực từ server! (Ví: ${address})`, 'error');
         }
       });
     }
