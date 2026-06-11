@@ -15,11 +15,11 @@
   <div class="w-full shrink-0">
     @if (!web3Service.walletConnected()) {
       <div
-        class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center gap-3 text-xs font-bold leading-relaxed shadow-sm"
+        class="p-4 rounded-2xl bg-[var(--dynamic-primary)]/10 border border-[var(--dynamic-primary)]/20 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] flex items-center gap-3 text-xs font-bold leading-relaxed shadow-sm"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5 shrink-0 text-amber-500"
+          class="h-5 w-5 shrink-0 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)]"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -38,11 +38,11 @@
       </div>
     } @else if (!web3Service.isOwnerContract()) {
       <div
-        class="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center gap-3 text-xs font-bold leading-relaxed shadow-sm"
+        class="p-4 rounded-2xl bg-[var(--dynamic-primary)]/10 border border-[var(--dynamic-primary)]/20 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] flex items-center gap-3 text-xs font-bold leading-relaxed shadow-sm"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5 shrink-0 text-rose-500"
+          class="h-5 w-5 shrink-0 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)]"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -943,12 +943,12 @@
 
       <!-- Alert cảnh báo khóa cứng chain_id và contract_address -->
       <div
-        class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 space-y-1 text-xs leading-relaxed shadow-sm font-semibold"
+        class="p-4 rounded-2xl bg-[var(--dynamic-primary)]/10 border border-[var(--dynamic-primary)]/20 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] space-y-1 text-xs leading-relaxed shadow-sm font-semibold"
       >
         <div class="flex items-center gap-2 font-black">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            class="h-4.5 w-4.5 text-amber-500"
+            class="h-4.5 w-4.5 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)]"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"

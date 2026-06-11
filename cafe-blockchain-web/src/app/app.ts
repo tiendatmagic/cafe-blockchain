@@ -177,7 +177,6 @@ export class App implements OnInit, OnDestroy {
   public async retrySign() {
     if (!this.pendingNonceMessage || !this.pendingAddress) return;
     try {
-      this.stateService.showToast('Đang hiển thị lại popup ký trên MetaMask...', 'success');
       const signature = await this.web3Service.signMessage(this.pendingNonceMessage);
       this.isWaitingForSignature.set(false);
 

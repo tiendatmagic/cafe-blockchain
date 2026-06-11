@@ -102,11 +102,11 @@
     <!-- Banner cảnh báo đối soát cạn/thiếu đồng bộ Blockchain khi chốt ca -->
     @if (unsyncedCompletedOrders().length > 0) {
       <div
-        class="p-4 rounded-2xl bg-amber-500/10 dark:bg-amber-950/20 border border-amber-500/25 dark:border-amber-800/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4.5 shadow-sm animate-in slide-in-from-top-4 duration-300"
+        class="p-4 rounded-2xl bg-[var(--dynamic-primary)]/10 dark:bg-[var(--dynamic-primary)]/15 border border-[var(--dynamic-primary)]/20 dark:border-[var(--dynamic-primary)]/35 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4.5 shadow-sm animate-in slide-in-from-top-4 duration-300"
       >
         <div class="flex items-start gap-3">
           <div
-            class="p-2 rounded-xl bg-amber-500/10 dark:bg-amber-500/20 text-amber-500 shrink-0 animate-pulse"
+            class="p-2 rounded-xl bg-[var(--dynamic-primary)]/10 dark:bg-[var(--dynamic-primary)]/20 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] shrink-0 animate-pulse"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -125,13 +125,13 @@
           </div>
           <div class="space-y-0.5">
             <h5
-              class="text-xs font-black uppercase tracking-wider text-amber-600 dark:text-amber-400"
+              class="text-xs font-black uppercase tracking-wider text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)]"
             >
               Cảnh báo đối soát ca trực
             </h5>
             <p class="text-xs text-slate-600 dark:text-slate-400 font-bold leading-normal">
               Phát hiện
-              <span class="text-amber-600 dark:text-amber-400 font-extrabold text-xs shrink-0"
+              <span class="text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] font-extrabold text-xs shrink-0"
                 >{{ unsyncedCompletedOrders().length }} đơn hàng</span
               >
               đã hoàn thành nhưng chưa được ghi nhận lên Blockchain. Vui lòng bấm đồng bộ để hoàn
