@@ -94,6 +94,9 @@ class ProductController extends Controller
 
         $product->load(['categories', 'variants']);
 
+        // Giải phóng cache storefront
+        \App\Domain\Entities\Setting::clearStorefrontCache($storeOwner);
+
         return response()->json([
             'message' => 'Product created successfully.',
             'data' => $product
@@ -171,6 +174,9 @@ class ProductController extends Controller
 
         $product->load(['categories', 'variants']);
 
+        // Giải phóng cache storefront
+        \App\Domain\Entities\Setting::clearStorefrontCache($storeOwner);
+
         return response()->json([
             'message' => 'Product updated successfully.',
             'data' => $product
@@ -194,6 +200,9 @@ class ProductController extends Controller
         try {
             // Thực hiện xóa sản phẩm
             $product->delete();
+
+            // Giải phóng cache storefront
+            \App\Domain\Entities\Setting::clearStorefrontCache($storeOwner);
 
             return response()->json([
                 'message' => 'Product deleted successfully.'

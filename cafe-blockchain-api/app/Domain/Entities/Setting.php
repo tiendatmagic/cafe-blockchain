@@ -65,4 +65,18 @@ class Setting extends Model
             ['value' => $value]
         );
     }
+
+    /**
+     * Xóa cache storefront của quán khi có thay đổi sản phẩm/danh mục/cấu hình
+     */
+    public static function clearStorefrontCache($storeOwnerAddress)
+    {
+        if (!$storeOwnerAddress) {
+            return;
+        }
+        $slug = self::getForStore('website_slug', $storeOwnerAddress);
+        if ($slug) {
+            \Illuminate\Support\Facades\Cache::forget("store_details:{$slug}");
+        }
+    }
 }

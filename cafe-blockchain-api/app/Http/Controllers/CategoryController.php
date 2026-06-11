@@ -38,6 +38,9 @@ class CategoryController extends Controller
             'name' => $validated['name'],
             'store_owner_address' => $storeOwner,
         ]);
+
+        // Giải phóng cache storefront
+        \App\Domain\Entities\Setting::clearStorefrontCache($storeOwner);
  
         return response()->json([
             'message' => 'Category created successfully.',
@@ -69,6 +72,9 @@ class CategoryController extends Controller
         $category->update([
             'name' => $validated['name']
         ]);
+
+        // Giải phóng cache storefront
+        \App\Domain\Entities\Setting::clearStorefrontCache($storeOwner);
  
         return response()->json([
             'message' => 'Category updated successfully.',
@@ -93,6 +99,9 @@ class CategoryController extends Controller
         try {
             $category->delete();
 
+            // Giải phóng cache storefront
+            \App\Domain\Entities\Setting::clearStorefrontCache($storeOwner);
+ 
             return response()->json([
                 'message' => 'Category deleted successfully.'
             ]);

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use App\Application\Orders\Commands\CreateOrderCommand;
+use Illuminate\Support\Facades\Cache;
 
 
 class SettingController extends Controller
@@ -250,6 +251,9 @@ class SettingController extends Controller
             Setting::setForStore($key, $value ?? '', $storeOwner);
         }
 
+        // Giải phóng cache storefront của quán khi đổi cài đặt
+        Setting::clearStorefrontCache($storeOwner);
+
         $updatedSettings = Setting::where('store_owner_address', $storeOwner)->pluck('value', 'key')->all();
         $updatedSettings['has_synced_orders'] = \App\Domain\Entities\Order::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
         $updatedSettings['has_synced_transactions'] = \App\Domain\Entities\Transaction::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
@@ -381,69 +385,79 @@ class SettingController extends Controller
      */
     public function getStoreDetailsBySlug(string $slug)
     {
-        $setting = Setting::where('key', 'website_slug')->where('value', $slug)->first();
-        if (!$setting) {
+        $cacheKey = "store_details:{$slug}";
+
+        $storeData = Cache::remember($cacheKey, 86400, function () use ($slug) {
+            $setting = Setting::where('key', 'website_slug')->where('value', $slug)->first();
+            if (!$setting) {
+                return null;
+            }
+
+            $storeOwner = strtolower($setting->store_owner_address);
+            
+            // Đảm bảo có settings đầy đủ
+            $settings = $this->ensureDefaultSettings($storeOwner);
+
+            // Chỉ trả về các cấu hình an toàn cho client
+            $publicSettings = [
+                'store_name' => $settings['store_name'] ?? 'Cafe Web3 POS',
+                'primary_color' => $settings['primary_color'] ?? '#7c3aed',
+                'secondary_color' => $settings['secondary_color'] ?? '#c084fc',
+                'contract_address' => $settings['contract_address'] ?? '',
+                'finance_contract_address' => $settings['finance_contract_address'] ?? '',
+                'voucher_contract_address' => $settings['voucher_contract_address'] ?? '',
+                'menu_registry_contract_address' => $settings['menu_registry_contract_address'] ?? '',
+                'has_synced_menu' => $settings['has_synced_menu'] ?? '0',
+                'rpc_url' => $settings['rpc_url'] ?? '',
+                'chain_id' => $settings['chain_id'] ?? '',
+                'explorer_url' => $settings['explorer_url'] ?? '',
+                'show_crypto_payment' => $settings['show_crypto_payment'] ?? '0',
+                'website_slug' => $settings['website_slug'] ?? '',
+                'store_categories' => $settings['store_categories'] ?? '',
+                'website_cover_image' => $settings['website_cover_image'] ?? '',
+            ];
+
+            // Lấy các danh mục của quán
+            $categoriesQuery = \App\Domain\Entities\Category::where('store_owner_address', $storeOwner);
+            $storeCategoriesCsv = $settings['store_categories'] ?? '';
+            
+            if (!empty($storeCategoriesCsv) && $storeCategoriesCsv !== 'all') {
+                $categoryIds = explode(',', $storeCategoriesCsv);
+                $categoriesQuery->whereIn('id', $categoryIds);
+            }
+            $categories = $categoriesQuery->get();
+
+            // Lấy sản phẩm thuộc các danh mục này
+            $categoryIdsToLoad = $categories->pluck('id')->all();
+            $products = \App\Domain\Entities\Product::where('store_owner_address', $storeOwner)
+                ->where('status', 1)
+                ->whereHas('categories', function($q) use ($categoryIdsToLoad) {
+                    $q->whereIn('categories.id', $categoryIdsToLoad);
+                })
+                ->with(['variants', 'categories' => function($q) use ($categoryIdsToLoad) {
+                    $q->whereIn('categories.id', $categoryIdsToLoad);
+                }])
+                ->get();
+
+            // Thêm đường dẫn ảnh đầy đủ cho sản phẩm nếu cần
+            foreach ($products as $product) {
+                if ($product->image && !str_starts_with($product->image, 'http')) {
+                    $product->image = url($product->image);
+                }
+            }
+
+            return [
+                'store' => $publicSettings,
+                'categories' => $categories,
+                'products' => $products
+            ];
+        });
+
+        if (!$storeData) {
             return response()->json(['message' => 'Cửa hàng không tồn tại!'], 404);
         }
 
-        $storeOwner = strtolower($setting->store_owner_address);
-        
-        // Đảm bảo có settings đầy đủ
-        $settings = $this->ensureDefaultSettings($storeOwner);
-
-        // Chỉ trả về các cấu hình an toàn cho client
-        $publicSettings = [
-            'store_name' => $settings['store_name'] ?? 'Cafe Web3 POS',
-            'primary_color' => $settings['primary_color'] ?? '#7c3aed',
-            'secondary_color' => $settings['secondary_color'] ?? '#c084fc',
-            'contract_address' => $settings['contract_address'] ?? '',
-            'finance_contract_address' => $settings['finance_contract_address'] ?? '',
-            'voucher_contract_address' => $settings['voucher_contract_address'] ?? '',
-            'menu_registry_contract_address' => $settings['menu_registry_contract_address'] ?? '',
-            'has_synced_menu' => $settings['has_synced_menu'] ?? '0',
-            'rpc_url' => $settings['rpc_url'] ?? '',
-            'chain_id' => $settings['chain_id'] ?? '',
-            'explorer_url' => $settings['explorer_url'] ?? '',
-            'show_crypto_payment' => $settings['show_crypto_payment'] ?? '0',
-            'website_slug' => $settings['website_slug'] ?? '',
-            'store_categories' => $settings['store_categories'] ?? '',
-            'website_cover_image' => $settings['website_cover_image'] ?? '',
-        ];
-
-        // Lấy các danh mục của quán
-        $categoriesQuery = \App\Domain\Entities\Category::where('store_owner_address', $storeOwner);
-        $storeCategoriesCsv = $settings['store_categories'] ?? '';
-        
-        if (!empty($storeCategoriesCsv) && $storeCategoriesCsv !== 'all') {
-            $categoryIds = explode(',', $storeCategoriesCsv);
-            $categoriesQuery->whereIn('id', $categoryIds);
-        }
-        $categories = $categoriesQuery->get();
-
-        // Lấy sản phẩm thuộc các danh mục này
-        $categoryIdsToLoad = $categories->pluck('id')->all();
-        $products = \App\Domain\Entities\Product::where('store_owner_address', $storeOwner)
-            ->where('status', 1)
-            ->whereHas('categories', function($q) use ($categoryIdsToLoad) {
-                $q->whereIn('categories.id', $categoryIdsToLoad);
-            })
-            ->with(['variants', 'categories' => function($q) use ($categoryIdsToLoad) {
-                $q->whereIn('categories.id', $categoryIdsToLoad);
-            }])
-            ->get();
-
-        // Thêm đường dẫn ảnh đầy đủ cho sản phẩm nếu cần
-        foreach ($products as $product) {
-            if ($product->image && !str_starts_with($product->image, 'http')) {
-                $product->image = url($product->image);
-            }
-        }
-
-        return response()->json([
-            'store' => $publicSettings,
-            'categories' => $categories,
-            'products' => $products
-        ]);
+        return response()->json($storeData);
     }
 
     /**
