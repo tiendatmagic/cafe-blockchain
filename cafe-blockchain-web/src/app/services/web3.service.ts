@@ -237,7 +237,9 @@ export class Web3Service {
         projectId: projectId,
         themeMode: 'dark',
         features: {
-          analytics: false
+          analytics: false,
+          email: false,
+          socials: false
         },
         enableCoinbase: false, // Tắt Coinbase Wallet Connector
         featuredWalletIds: [
