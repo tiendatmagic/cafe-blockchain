@@ -60,29 +60,37 @@ class DashboardController extends Controller
 
         // Giới hạn tối đa 60 ngày để tránh quá tải CPU/RAM
         $limitDays = min($daysDiff, 60);
+        $queryEndDate = $start->copy()->addDays($limitDays)->toDateString();
+
+        $dailyStats = DB::table('orders')
+            ->where('store_owner_address', $storeOwner)
+            ->where('status', 'completed')
+            ->whereBetween('created_at', [$startDate . ' 00:00:00', $queryEndDate . ' 23:59:59'])
+            ->selectRaw('
+                DATE(created_at) as date,
+                SUM(total_amount) as revenue,
+                SUM(CASE WHEN payment_method = "crypto" THEN total_amount ELSE 0 END) as crypto_revenue
+            ')
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->get()
+            ->keyBy('date');
+
         for ($i = 0; $i <= $limitDays; $i++) {
             $date = $start->copy()->addDays($i);
+            $dateStr = $date->format('Y-m-d');
             $dayName = $this->getVietnameseDayName($date->dayOfWeek);
 
-            $revenue = Order::where('store_owner_address', $storeOwner)
-                ->where('status', 'completed')
-                ->whereDate('created_at', $date)
-                ->sum('total_amount');
-
-            $cryptoRevenue = Order::where('store_owner_address', $storeOwner)
-                ->where('status', 'completed')
-                ->where('payment_method', 'crypto')
-                ->whereDate('created_at', $date)
-                ->sum('total_amount');
-
+            $dayData = $dailyStats->get($dateStr);
+            $revenue = (float)($dayData->revenue ?? 0);
+            $cryptoRevenue = (float)($dayData->crypto_revenue ?? 0);
             $fiatRevenue = $revenue - $cryptoRevenue;
 
             $weeklyChart[] = [
-                'date' => $date->format('Y-m-d'),
+                'date' => $dateStr,
                 'day_name' => $dayName,
-                'revenue' => (float)$revenue,
-                'crypto_revenue' => (float)$cryptoRevenue,
-                'fiat_revenue' => (float)$fiatRevenue
+                'revenue' => $revenue,
+                'crypto_revenue' => $cryptoRevenue,
+                'fiat_revenue' => $fiatRevenue
             ];
         }
 
@@ -153,12 +161,39 @@ class DashboardController extends Controller
         $inventoryRecords = \App\Domain\Entities\InventoryRecord::where('store_owner_address', $storeOwner)->with('items')->get();
         $completedOrders = Order::where('store_owner_address', $storeOwner)->where('status', 'completed')->with('items')->get();
 
+        // Tiền xử lý (Pre-index) nhóm dữ liệu theo product_id và variant_id để đạt độ phức tạp O(1) khi truy xuất
+        $recordsGrouped = [];
+        foreach ($inventoryRecords as $r) {
+            $rDate = Carbon::parse($r->record_date);
+            foreach ($r->items as $item) {
+                $key = $item->product_id . '-' . ($item->product_variant_id ?: '0');
+                $recordsGrouped[$key][] = [
+                    'type' => $r->type,
+                    'date' => $rDate,
+                    'quantity' => (int)$item->quantity
+                ];
+            }
+        }
+
+        $ordersGrouped = [];
+        foreach ($completedOrders as $o) {
+            $oDate = Carbon::parse($o->created_at);
+            foreach ($o->items as $item) {
+                $key = $item->product_id . '-' . ($item->product_variant_id ?: '0');
+                $ordersGrouped[$key][] = [
+                    'date' => $oDate,
+                    'quantity' => (int)$item->quantity
+                ];
+            }
+        }
+
         $lowStockAlerts = [];
         foreach ($products as $p) {
             $variants = $p->variants;
             if (count($variants) > 0) {
                 foreach ($variants as $v) {
-                    $stock = $this->calculateStock($p->id, $v->id, $inventoryRecords, $completedOrders);
+                    $key = $p->id . '-' . $v->id;
+                    $stock = $this->calculateStockGrouped($key, $recordsGrouped, $ordersGrouped);
                     if ($stock <= 10) {
                         $lowStockAlerts[] = [
                             'product_name' => $p->name,
@@ -169,7 +204,8 @@ class DashboardController extends Controller
                     }
                 }
             } else {
-                $stock = $this->calculateStock($p->id, null, $inventoryRecords, $completedOrders);
+                $key = $p->id . '-0';
+                $stock = $this->calculateStockGrouped($key, $recordsGrouped, $ordersGrouped);
                 if ($stock <= 10) {
                     $lowStockAlerts[] = [
                         'product_name' => $p->name,
@@ -216,29 +252,22 @@ class DashboardController extends Controller
     }
 
     /**
-     * Thuật toán tính toán tồn kho cho một sản phẩm/biến thể dựa trên Nhập - Xuất - Bán hàng
+     * Thuật toán tính toán tồn kho đã được tối ưu dựa trên nhóm dữ liệu đã tiền xử lý
      */
-    private function calculateStock($productId, $variantId, $records, $orders)
+    private function calculateStockGrouped($key, $recordsGrouped, $ordersGrouped)
     {
         $latestKiemDate = null;
         $latestKiemQty = 0;
 
-        // Tìm phiếu kiểm kho gần nhất
-        foreach ($records as $r) {
-            if ($r->type === 'kiem') {
-                $item = null;
-                foreach ($r->items as $i) {
-                    if ($i->product_id == $productId && $i->product_variant_id == $variantId) {
-                        $item = $i;
-                        break;
-                    }
-                }
-                if ($item) {
-                    $rDate = Carbon::parse($r->record_date);
-                    if ($latestKiemDate === null || $rDate->gt($latestKiemDate)) {
-                        $latestKiemDate = $rDate;
-                        $latestKiemQty = (int)$item->quantity;
-                    }
+        $pRecords = $recordsGrouped[$key] ?? [];
+        $pOrders = $ordersGrouped[$key] ?? [];
+
+        // Tìm phiếu kiểm kho gần nhất của riêng sản phẩm/biến thể này
+        foreach ($pRecords as $r) {
+            if ($r['type'] === 'kiem') {
+                if ($latestKiemDate === null || $r['date']->gt($latestKiemDate)) {
+                    $latestKiemDate = $r['date'];
+                    $latestKiemQty = $r['quantity'];
                 }
             }
         }
@@ -248,41 +277,20 @@ class DashboardController extends Controller
         $totalSold = 0;
 
         // Cộng các giao dịch nhập/xuất sau ngày kiểm kho
-        foreach ($records as $r) {
-            $rDate = Carbon::parse($r->record_date);
-            if ($latestKiemDate === null || $rDate->gt($latestKiemDate)) {
-                $item = null;
-                foreach ($r->items as $i) {
-                    if ($i->product_id == $productId && $i->product_variant_id == $variantId) {
-                        $item = $i;
-                        break;
-                    }
-                }
-                if ($item) {
-                    $qty = (int)$item->quantity;
-                    if ($r->type === 'nhap') {
-                        $totalIn += $qty;
-                    } elseif ($r->type === 'xuat') {
-                        $totalOut += $qty;
-                    }
+        foreach ($pRecords as $r) {
+            if ($latestKiemDate === null || $r['date']->gt($latestKiemDate)) {
+                if ($r['type'] === 'nhap') {
+                    $totalIn += $r['quantity'];
+                } elseif ($r['type'] === 'xuat') {
+                    $totalOut += $r['quantity'];
                 }
             }
         }
 
         // Trừ các sản phẩm bán ra từ đơn hàng hoàn thành sau ngày kiểm kho
-        foreach ($orders as $o) {
-            $oDate = Carbon::parse($o->created_at);
-            if ($latestKiemDate === null || $oDate->gt($latestKiemDate)) {
-                $item = null;
-                foreach ($o->items as $i) {
-                    if ($i->product_id == $productId && $i->product_variant_id == $variantId) {
-                        $item = $i;
-                        break;
-                    }
-                }
-                if ($item) {
-                    $totalSold += (int)$item->quantity;
-                }
+        foreach ($pOrders as $o) {
+            if ($latestKiemDate === null || $o['date']->gt($latestKiemDate)) {
+                $totalSold += $o['quantity'];
             }
         }
 
