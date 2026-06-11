@@ -54,6 +54,60 @@
   </div>
 }
 
+<!-- BANNER CHỜ KÝ XÁC THỰC - NHẮC NHỞ KHI METAMASK BỊ ẨN TRÊN TASKBAR -->
+@if (isWaitingForSignature() && !web3Service.walletConnected()) {
+  <div
+    class="fixed top-0 left-0 right-0 z-[9998] bg-gradient-to-r from-violet-600/95 via-purple-600/95 to-violet-700/95 backdrop-blur-md text-white px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg shadow-violet-900/30 border-b border-violet-400/20 transition-all duration-300"
+    [class.mt-[56px]]="isWrongChain"
+  >
+    <div class="flex items-center gap-3 flex-1 min-w-0">
+      <!-- Icon pulse nhấp nháy -->
+      <div class="relative shrink-0">
+        <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+          </svg>
+        </div>
+        <span class="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-yellow-400 animate-ping"></span>
+        <span class="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-yellow-400"></span>
+      </div>
+
+      <!-- Nội dung hướng dẫn -->
+      <div class="flex flex-col min-w-0">
+        <span class="text-sm font-extrabold text-white leading-tight">Đang chờ bạn ký xác thực!</span>
+        <span class="text-xs text-violet-200 font-medium leading-tight mt-0.5">
+          Popup MetaMask đang chờ · Nếu không thấy, kiểm tra thanh Taskbar Windows
+        </span>
+      </div>
+    </div>
+
+    <!-- Các nút hành động -->
+    <div class="flex items-center gap-2 shrink-0">
+      <!-- Nút Ký ngay - trigger lại MetaMask popup -->
+      <button
+        (click)="retrySign()"
+        class="flex items-center gap-1.5 bg-yellow-400 hover:bg-yellow-300 active:scale-95 text-violet-900 font-extrabold text-xs px-4 py-2 rounded-xl transition-all duration-200 shadow-md shadow-yellow-400/30"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+        </svg>
+        Ký ngay
+      </button>
+
+      <!-- Nút Hủy -->
+      <button
+        (click)="cancelSign()"
+        class="flex items-center gap-1 bg-white/10 hover:bg-white/20 active:scale-95 text-white/80 hover:text-white font-bold text-xs px-3 py-2 rounded-xl transition-all duration-200"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+        Hủy
+      </button>
+    </div>
+  </div>
+}
+
 <!-- TOAST NOTIFICATIONS (RICH AESTHETICS - PREMIUM WHITE BACKDROP WITH PROGRESS BAR) -->
 <div
   class="fixed bottom-5 right-5 z-[9999] flex flex-col gap-3 pointer-events-none max-w-sm w-full px-4 sm:px-0"

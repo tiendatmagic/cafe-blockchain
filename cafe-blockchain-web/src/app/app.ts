@@ -24,6 +24,11 @@ export class App implements OnInit, OnDestroy {
   public get usdtPriceVND() { return this.stateService.usdtPriceVND; }
   private readonly router = inject(Router);
 
+  // Trạng thái chờ ký xác thực - hiển thị banner nhắc nhở người dùng
+  public readonly isWaitingForSignature = signal<boolean>(false);
+  private pendingNonceMessage = '';
+  private pendingAddress = '';
+
   @HostListener('document:click', ['$event'])
   public onDocumentClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
@@ -94,11 +99,17 @@ export class App implements OnInit, OnDestroy {
       const address = this.web3Service.currentAccount();
       if (!address) return;
 
-      this.stateService.showToast('Vui lòng ký xác thực trên ví Metamask...', 'success');
       this.apiService.getNonce(address).subscribe({
         next: async (res) => {
+          // Lưu nonce để có thể ký lại nếu người dùng quên
+          this.pendingNonceMessage = res.message;
+          this.pendingAddress = address;
+          this.isWaitingForSignature.set(true);
+          this.stateService.showToast('Vui lòng ký xác thực trên ví MetaMask...', 'success');
+
           try {
             const signature = await this.web3Service.signMessage(res.message);
+            this.isWaitingForSignature.set(false);
 
             this.apiService.verifySignature(address, signature).subscribe({
               next: (verifyRes) => {
@@ -140,22 +151,72 @@ export class App implements OnInit, OnDestroy {
                 }
               },
               error: (err) => {
+                this.isWaitingForSignature.set(false);
                 this.web3Service.disconnectWallet();
                 this.stateService.showToast('Xác thực chữ ký thất bại!', 'error');
               }
             });
           } catch (e) {
+            // Người dùng từ chối - giữ banner để họ có thể ký lại
+            this.isWaitingForSignature.set(false);
             this.web3Service.disconnectWallet();
             this.stateService.showToast('Bạn đã từ chối ký xác thực!', 'error');
           }
         },
         error: (err) => {
+          this.isWaitingForSignature.set(false);
           console.error('Lỗi lấy nonce từ server:', err, 'địa chỉ ví:', address);
           this.web3Service.disconnectWallet();
           this.stateService.showToast(`Lỗi lấy mã xác thực từ server! (Ví: ${address})`, 'error');
         }
       });
     }
+  }
+
+  // Ký lại xác thực khi người dùng bấm nút "Ký ngay" trên banner
+  public async retrySign() {
+    if (!this.pendingNonceMessage || !this.pendingAddress) return;
+    try {
+      this.stateService.showToast('Đang hiển thị lại popup ký trên MetaMask...', 'success');
+      const signature = await this.web3Service.signMessage(this.pendingNonceMessage);
+      this.isWaitingForSignature.set(false);
+
+      this.apiService.verifySignature(this.pendingAddress, signature).subscribe({
+        next: (verifyRes) => {
+          if (verifyRes.token) {
+            this.apiService.setToken(verifyRes.token);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('auth_address', this.pendingAddress);
+            }
+            this.web3Service.walletConnected.set(true);
+            this.stateService.showToast('Kết nối và xác thực ví thành công!', 'success');
+            this.stateService.isWalletModalOpen.set(false);
+            this.stateService.loadSettings();
+            if (this.router.url.includes('/dashboard')) {
+              this.stateService.refreshDashboard();
+            } else {
+              this.router.navigate(['/dashboard']);
+            }
+          }
+        },
+        error: () => {
+          this.isWaitingForSignature.set(false);
+          this.web3Service.disconnectWallet();
+          this.stateService.showToast('Phiên ký đã hết hạn. Vui lòng kết nối ví lại!', 'error');
+        }
+      });
+    } catch (e) {
+      this.stateService.showToast('Bạn đã từ chối ký xác thực!', 'error');
+    }
+  }
+
+  // Hủy tiến trình ký
+  public cancelSign() {
+    this.isWaitingForSignature.set(false);
+    this.pendingNonceMessage = '';
+    this.pendingAddress = '';
+    this.web3Service.disconnectWallet();
+    this.stateService.showToast('Đã hủy xác thực ví.', 'error');
   }
 
   // Xử lý khi tài khoản ví Web3 thay đổi
