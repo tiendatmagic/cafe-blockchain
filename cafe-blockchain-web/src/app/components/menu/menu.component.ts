@@ -1,5 +1,5 @@
 import { Web3ConnectPromptComponent } from '../web3-connect-prompt/web3-connect-prompt.component';
-import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, signal, computed, effect, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -15,6 +15,16 @@ import { ApiService } from '../../services/api.service';
 export class MenuComponent implements OnInit, OnDestroy {
   public readonly stateService = inject(StateService);
   private readonly apiService = inject(ApiService);
+
+  constructor() {
+    // Re-check quyền khi settings (menuRegistryContractAddress) vừa được load xong sau đăng nhập
+    effect(() => {
+      const addr = this.web3Service.menuRegistryContractAddress();
+      if (addr) {
+        this.checkMenuRegistryOwnerPermission();
+      }
+    });
+  }
 
   // Cấu hình View Mode & Phân trang Thực đơn
   public readonly menuViewMode = signal<'table' | 'card'>('card');
@@ -527,6 +537,9 @@ export class MenuComponent implements OnInit, OnDestroy {
    */
 
   public async syncMenuToBlockchain() {
+    // Guard ngay lập tức: nếu đang syncing thì bỏ qua để chống spam click
+    if (this.isMenuSyncing()) return;
+
     if (!this.web3Service.walletConnected()) {
       this.stateService.showToast('Vui lòng kết nối ví Web3 trước!', 'error');
       return;
@@ -537,95 +550,121 @@ export class MenuComponent implements OnInit, OnDestroy {
       return;
     }
 
-    await this.checkMenuRegistryOwnerPermission();
-    if (!this.isOwnerMenuRegistry()) {
-      this.stateService.showToast('Ví của bạn không có quyền quản trị (Owner) hợp đồng Menu Registry này!', 'error');
-      return;
-    }
-
     const productList = this.products();
     if (productList.length === 0) {
       this.stateService.showToast('Thực đơn hiện tại của quán đang trống, không có gì để đồng bộ!', 'error');
       return;
     }
 
+    // Khóa nút ngay lập tức trước khi bất kỳ await nào
     this.isMenuSyncing.set(true);
-    this.stateService.showToast('Đang kiểm tra dữ liệu thực đơn so với Blockchain...', 'success');
 
     try {
-      const chainData = await this.web3Service.getAllMenuProductsFromChain();
-      const chainProducts = chainData?.products || [];
-      
-      let hasChanged = false;
-      if (productList.length !== chainProducts.length) {
-        hasChanged = true;
-      } else {
-        for (let i = 0; i < productList.length; i++) {
-          const local = productList[i];
-          const chain = chainProducts[i];
-          
-          const localStatus = local.status === undefined ? true : !!local.status;
-          const chainStatus = chain.status === undefined ? true : !!chain.status;
-          
-          if (
-            local.sku !== chain.sku ||
-            local.name !== chain.name ||
-            Number(local.price) !== Number(chain.price) ||
-            localStatus !== chainStatus
-          ) {
-            hasChanged = true;
-            break;
-          }
-        }
-      }
-
-      if (!hasChanged) {
-        this.stateService.showToast('Thực đơn trên Blockchain đã trùng khớp hoàn toàn với thực đơn hiện tại. Không cần đồng bộ!', 'success');
-        this.isMenuSyncing.set(false);
+      // Kiểm tra quyền owner (async - blockchain call)
+      await this.checkMenuRegistryOwnerPermission();
+      if (!this.isOwnerMenuRegistry()) {
+        this.stateService.showToast('Ví của bạn không có quyền quản trị (Owner) hợp đồng Menu Registry này!', 'error');
         return;
       }
-    } catch (err) {
-      console.warn('Không thể so sánh thực đơn onchain, bỏ qua và tiến hành đồng bộ:', err);
-    }
 
-    this.stateService.showToast('Vui lòng xác nhận giao dịch đồng bộ Thực đơn trên ví MetaMask của bạn...', 'success');
+      this.stateService.showToast('Đang kiểm tra dữ liệu thực đơn so với Blockchain...', 'success');
 
-    const res = await this.web3Service.updateMenuOnChain(productList);
+      try {
+        const chainData = await this.web3Service.getAllMenuProductsFromChain();
+        const chainProducts = chainData?.products || [];
 
-    if (res.success && res.txHash) {
-      this.stateService.showToast(`Đồng bộ thực đơn lên Blockchain thành công! Hash: ${res.txHash}`, 'success');
-      
-      // Ghi nhận lịch sử đồng bộ vào Backend (offchain log)
-      this.apiService.createMenuSyncLog({
-        synced_by: this.web3Service.currentAccount(),
-        tx_hash: res.txHash,
-        product_count: productList.length,
-        chain_id: this.web3Service.configuredChainId()
-      }).subscribe({
-        next: () => {
-          console.log('Đã ghi nhận lịch sử đồng bộ thực đơn.');
-          this.loadMenuSyncLogs();
-        },
-        error: (err) => console.error('Lỗi ghi nhận lịch sử đồng bộ:', err)
-      });
-      
-      // Cập nhật cấu hình đã đồng bộ menu vào Laravel Backend
-      this.apiService.updateSettings({
-        ...this.stateService.settings(),
-        has_synced_menu: '1'
-      }).subscribe({
-        next: (settingsRes) => {
-          this.stateService.settings.set(settingsRes.data);
-          console.log('Đã cập nhật trạng thái has_synced_menu lên backend.');
-        },
-        error: (err) => {
-          console.error('Lỗi cập nhật trạng thái has_synced_menu lên backend:', err);
+        // Tạo fingerprint cho sản phẩm local (bao gồm cả variants)
+        const getLocalFingerprint = (p: any): string => {
+          const basePrice = (p.variants && p.variants.length > 0)
+            ? Math.min(...p.variants.map((v: any) => Number(v.price) || 0))
+            : Number(p.price) || 0;
+          const variantStr = (p.variants && p.variants.length > 0)
+            ? p.variants.map((v: any) => `${v.name || ''}:${Number(v.price) || 0}`).sort().join('|')
+            : '';
+          const status = p.status === undefined ? true : !!p.status;
+          return `${p.sku}||${p.name}||${basePrice}||${status}||${variantStr}`;
+        };
+
+        // Tạo fingerprint cho sản phẩm chain
+        const getChainFingerprint = (p: any): string => {
+          const status = p.status === undefined ? true : !!p.status;
+          return `${p.sku}||${p.name}||${Number(p.price) || 0}||${status}||`;
+        };
+
+        let hasChanged = false;
+        if (productList.length !== chainProducts.length) {
+          hasChanged = true;
+        } else {
+          // So sánh theo sku (không phụ thuộc vị trí index)
+          const chainMap = new Map<string, any>();
+          for (const cp of chainProducts) {
+            chainMap.set(cp.sku, cp);
+          }
+
+          for (const local of productList) {
+            const chain = chainMap.get(local.sku);
+            if (!chain) {
+              hasChanged = true;
+              break;
+            }
+            const localFp = getLocalFingerprint(local);
+            const chainFp = getChainFingerprint(chain);
+            if (localFp !== chainFp) {
+              hasChanged = true;
+              break;
+            }
+          }
         }
-      });
-    } else {
-      this.stateService.showToast(res.error || 'Đồng bộ thực đơn thất bại!', 'error');
+
+        if (!hasChanged) {
+          this.stateService.showToast('Thực đơn trên Blockchain đã trùng khớp hoàn toàn với thực đơn hiện tại. Không cần đồng bộ!', 'success');
+          return;
+        }
+      } catch (err) {
+        console.warn('Không thể so sánh thực đơn onchain, bỏ qua và tiến hành đồng bộ:', err);
+      }
+
+      this.stateService.showToast('Vui lòng xác nhận giao dịch đồng bộ Thực đơn trên ví của bạn...', 'success');
+
+      const res = await this.web3Service.updateMenuOnChain(productList);
+
+      if (res.success && res.txHash) {
+        this.stateService.showToast(`Đồng bộ thực đơn lên Blockchain thành công! Hash: ${res.txHash}`, 'success');
+
+        // Ghi nhận lịch sử đồng bộ vào Backend (offchain log)
+        this.apiService.createMenuSyncLog({
+          synced_by: this.web3Service.currentAccount(),
+          tx_hash: res.txHash,
+          product_count: productList.length,
+          chain_id: this.web3Service.configuredChainId()
+        }).subscribe({
+          next: () => {
+            console.log('Đã ghi nhận lịch sử đồng bộ thực đơn.');
+            this.loadMenuSyncLogs();
+          },
+          error: (err) => console.error('Lỗi ghi nhận lịch sử đồng bộ:', err)
+        });
+
+        // Cập nhật cấu hình đã đồng bộ menu vào Laravel Backend
+        this.apiService.updateSettings({
+          ...this.stateService.settings(),
+          has_synced_menu: '1'
+        }).subscribe({
+          next: (settingsRes) => {
+            this.stateService.settings.set(settingsRes.data);
+            console.log('Đã cập nhật trạng thái has_synced_menu lên backend.');
+          },
+          error: (err) => {
+            console.error('Lỗi cập nhật trạng thái has_synced_menu lên backend:', err);
+          }
+        });
+      } else {
+        this.stateService.showToast(res.error || 'Đồng bộ thực đơn thất bại!', 'error');
+      }
+    } finally {
+      // Luôn reset trạng thái loading dù thành công hay lỗi
+      this.isMenuSyncing.set(false);
     }
-    this.isMenuSyncing.set(false);
   }
 
   /**
