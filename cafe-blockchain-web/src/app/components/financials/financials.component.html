@@ -115,8 +115,9 @@
   </div>
 
   @if (stateService.web3Service.walletConnected()) {
-    <!-- TABLE SKELETON FOR TRANSACTIONS -->
-    <div class="space-y-6 animate-pulse">
+    @if (isTransactionsLoading()) {
+      <!-- TABLE SKELETON FOR TRANSACTIONS -->
+      <div class="space-y-6 animate-pulse">
       <!-- 3 card LED chỉ số Skeleton -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
         @for (i of [1, 2, 3]; track i) {
@@ -192,10 +193,9 @@
         </div>
       </div>
     </div>
-  }
-
-  <div [class.hidden]="isTransactionsLoading()" class="space-y-6">
-    <!-- BẢNG LED CHỈ SỐ TÀI CHÍNH GLASSMORPHISM HOÀN TRÁNG -->
+    } @else {
+      <div class="space-y-6">
+        <!-- BẢNG LED CHỈ SỐ TÀI CHÍNH GLASSMORPHISM HOÀN TRÁNG -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
       <!-- Thẻ Tổng Thu -->
       <div
@@ -575,6 +575,7 @@
       </div>
     </div>
   </div>
+  }
 
 <!-- ==================== MODALS TÀI CHÍNH ==================== -->
 
@@ -1085,6 +1086,7 @@
       </div>
     </div>
   </div>
+  }
   } @else {
     <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý Thu chi tài chính'"></app-web3-connect-prompt>
   }
