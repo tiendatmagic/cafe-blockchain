@@ -1,5 +1,5 @@
 import { Web3ConnectPromptComponent } from '../web3-connect-prompt/web3-connect-prompt.component';
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
@@ -17,6 +17,29 @@ export class SettingsComponent implements OnInit {
   private readonly apiService = inject(ApiService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+
+  public get isSettingsLoading() {
+    return this.stateService.isSettingsLoading;
+  }
+
+  constructor() {
+    // Tự động đồng bộ form cấu hình khi dữ liệu settings của StateService thay đổi
+    effect(() => {
+      const settings = this.stateService.settings();
+      if (settings) {
+        this.configForm.set({
+          ...settings,
+          relayer_private_key: ''
+        });
+        this.syncSelectedCategories();
+        
+        // Tải danh sách owners nếu ví đã kết nối và tab hiện tại là permissions
+        if (this.web3Service.walletConnected() && this.settingsSubTab() === 'permissions') {
+          this.loadOwnersList();
+        }
+      }
+    });
+  }
 
   // Tab nhỏ trong Cấu hình: 'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher' | 'store'
   public readonly settingsSubTab = signal<'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher' | 'store'>('general');
@@ -111,8 +134,6 @@ export class SettingsComponent implements OnInit {
   public get settings() { return this.stateService.settings; }
 
   public ngOnInit() {
-    this.loadSettings();
-
     // Đồng bộ tab hiện tại với Query Parameter 'tab' trên URL
     this.route.queryParams.subscribe(params => {
       const tab = params['tab'];
@@ -128,56 +149,6 @@ export class SettingsComponent implements OnInit {
     });
   }
 
-  // Tải cấu hình
-  public loadSettings() {
-    this.apiService.getSettings().subscribe(res => {
-      if (res) {
-        const settings = {
-          store_name: res.store_name || '',
-          contract_address: res.contract_address || '',
-          finance_contract_address: res.finance_contract_address || '',
-          voucher_contract_address: res.voucher_contract_address || '',
-          relayer_private_key: '',
-          rpc_url: res.rpc_url || '',
-          chain_id: res.chain_id || '',
-          explorer_url: res.explorer_url || '',
-          explorer_api_key: res.explorer_api_key || '',
-          primary_color: res.primary_color || '#7c3aed',
-          secondary_color: res.secondary_color || '#c084fc',
-          default_print_size: res.default_print_size || '80mm',
-          voucher_gift_min_amount: res.voucher_gift_min_amount !== undefined ? Number(res.voucher_gift_min_amount) : 100000,
-          voucher_discount_amount: res.voucher_discount_amount !== undefined ? Number(res.voucher_discount_amount) : 5000,
-          voucher_use_min_amount: res.voucher_use_min_amount !== undefined ? Number(res.voucher_use_min_amount) : 100000,
-          show_crypto_payment: res.show_crypto_payment || '0',
-          has_synced_menu: res.has_synced_menu || '0',
-          website_slug: res.website_slug || '',
-          store_categories: res.store_categories || '',
-          website_cover_image: res.website_cover_image || '',
-          has_relayer_private_key: res.has_relayer_private_key || false,
-          ...res
-        };
-        this.configForm.set({ ...settings });
-        this.syncSelectedCategories();
-
-        // Đồng bộ cấu hình vào Web3Service và StateService để đảm bảo các cuộc gọi blockchain sử dụng đúng cấu hình mới nhất
-        this.stateService.settings.set(settings);
-        this.web3Service.updateConfig(settings);
-        
-        // Cập nhật tên mạng hiển thị
-        const match = this.POPULAR_CHAINS.find(c => c.chainId === settings.chain_id);
-        if (match) {
-          this.selectedChainName.set(`${match.name} (ID: ${match.chainId})`);
-        } else {
-          this.selectedChainName.set('Tùy chỉnh (Custom EVM)');
-        }
-
-        // Tải danh sách owners nếu ví đã kết nối
-        if (this.web3Service.walletConnected()) {
-          this.loadOwnersList();
-        }
-      }
-    });
-  }
 
   public setSettingsSubTab(subTab: 'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher' | 'store') {
     this.settingsSubTab.set(subTab);

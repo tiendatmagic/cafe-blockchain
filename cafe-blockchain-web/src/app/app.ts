@@ -64,10 +64,7 @@ export class App implements OnInit, OnDestroy {
     );
 
 
-    // Chỉ tải cấu hình quán của admin khi không ở trang public
-    if (!isPublic) {
-      this.stateService.loadSettings();
-    }
+
 
     // Nếu đã có token và ví được lưu trước đó, tải toàn bộ dữ liệu
     const hasToken = this.apiService.getToken();
@@ -132,11 +129,16 @@ export class App implements OnInit, OnDestroy {
                   }
 
                   this.stateService.loadSettings();
-                  this.stateService.refreshDashboard();
 
-                  // Nếu đang ở trang POS, tự động chuyển hướng về Dashboard
+                  // Chỉ redirect về dashboard nếu đang ở POS
                   if (this.router.url.includes('/pos')) {
                     this.router.navigate(['/dashboard']);
+                  } else if (this.router.url.includes('/dashboard')) {
+                    // Chỉ gọi refresh dashboard khi đang ở dashboard sẵn
+                    this.stateService.refreshDashboard();
+                  } else if (!this.router.url.includes('/settings')) {
+                    // Chỉ reload tab nếu không phải trang settings
+                    this.stateService.reloadCurrentTab();
                   }
                 }
               },

@@ -30,6 +30,7 @@ export class StateService {
   public readonly isTransactionsLoading = signal<boolean>(false);
   public readonly isInventoryLoading = signal<boolean>(false);
   public readonly isTablesLoading = signal<boolean>(false);
+  public readonly isSettingsLoading = signal<boolean>(false);
 
   // Thông điệp Toast
   public readonly successMessage = signal<string>('');
@@ -94,6 +95,7 @@ export class StateService {
   private posProductsCache = new Map<string, { data: any[], totalPages: number, totalItems: number, timestamp: number }>();
   private readonly cacheTTL = 5 * 60 * 1000; // 5 phút (ms)
   private isInitialSyncDone = false;
+  private isSettingsFetching = false;
   private searchSubject = new Subject<string>();
   private searchSubscription?: Subscription;
   private routerSubscription?: Subscription;
@@ -200,6 +202,10 @@ export class StateService {
 
 
   constructor() {
+    if (typeof window !== 'undefined') {
+      (window as any)._stateServiceInstances = ((window as any)._stateServiceInstances || 0) + 1;
+      console.log('[StateService] Khởi tạo instance thứ:', (window as any)._stateServiceInstances);
+    }
     this.initTheme();
     this.loadSettings();
 
@@ -452,6 +458,13 @@ export class StateService {
 
   // Refresh cấu hình
   public loadSettings() {
+    console.log('[StateService] loadSettings() được gọi. Cờ isSettingsFetching hiện tại:', this.isSettingsFetching, 'hasToken:', !!this.apiService.getToken(), 'Time:', Date.now());
+    if (this.isSettingsFetching) {
+      console.warn('[StateService] loadSettings() BỊ CHẶN do cờ isSettingsFetching là true!');
+      return;
+    }
+    this.isSettingsFetching = true;
+    this.isSettingsLoading.set(true);
     const hasToken = !!this.apiService.getToken();
     const settingsObservable = hasToken 
       ? this.apiService.getSettings() 
@@ -468,11 +481,15 @@ export class StateService {
         this.settings.set(settings);
         this.applyAndCacheDynamicColors(settings.primary_color, settings.secondary_color);
         this.web3Service.updateConfig(settings);
+        this.isSettingsLoading.set(false);
+        this.isSettingsFetching = false;
       },
       error: (err) => {
         console.error('Lỗi tải cấu hình quán:', err);
         // Fallback dùng màu mặc định nếu API lỗi hoặc chưa thiết lập màu
         this.applyAndCacheDynamicColors('#7c3aed', '#c084fc');
+        this.isSettingsLoading.set(false);
+        this.isSettingsFetching = false;
       }
     });
   }
@@ -664,11 +681,16 @@ export class StateService {
                   }
 
                   this.loadSettings();
-                  this.refreshDashboard();
 
-                  // Nếu đang ở trang POS, tự động chuyển hướng về Dashboard
+                  // Chỉ redirect về dashboard nếu đang ở POS
                   if (this.router.url.includes('/pos')) {
                     this.router.navigate(['/dashboard']);
+                  } else if (this.router.url.includes('/dashboard')) {
+                    // Chỉ gọi refresh dashboard khi đang ở dashboard sẵn
+                    this.refreshDashboard();
+                  } else if (!this.router.url.includes('/settings')) {
+                    // Chỉ reload tab nếu không phải trang settings (vì trang settings đã được nạp qua loadSettings() ở trên và có effect tự động đồng bộ)
+                    this.reloadCurrentTab();
                   }
                 }
               },
@@ -748,6 +770,10 @@ export class StateService {
     this.editingOrderId.set(null);
     this.router.navigate(['/orders']);
     this.showToast('Đã hủy chỉnh sửa đơn hàng', 'success');
+  }
+
+  public reloadCurrentTab() {
+    this.setTabState(this.activeTab());
   }
 
   private syncTabWithUrl(url: string) {

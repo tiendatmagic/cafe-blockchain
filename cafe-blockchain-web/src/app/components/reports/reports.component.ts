@@ -1,5 +1,5 @@
 import { Web3ConnectPromptComponent } from '../web3-connect-prompt/web3-connect-prompt.component';
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
@@ -15,6 +15,14 @@ import * as XLSX from 'xlsx';
 export class ReportsComponent implements OnInit {
   private readonly apiService = inject(ApiService);
   public readonly stateService = inject(StateService);
+
+  constructor() {
+    effect(() => {
+      if (this.web3Service.walletConnected()) {
+        this.loadReports();
+      }
+    });
+  }
 
   // Mốc lọc thời gian
   public readonly activePreset = signal<string>('7days'); // today, yesterday, 7days, thisMonth, lastMonth, custom

@@ -112,7 +112,7 @@
       </div>
     </div>
 
-    @if (isReportsLoading()) {
+    @if (isReportsLoading() || !reportsData()) {
       <!-- SKELETON LOADING -->
       <div class="space-y-6 animate-pulse">
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
