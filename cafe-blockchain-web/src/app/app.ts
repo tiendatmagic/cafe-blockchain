@@ -130,15 +130,12 @@ export class App implements OnInit, OnDestroy {
 
                   this.stateService.loadSettings();
 
-                  // Chỉ redirect về dashboard nếu đang ở POS
-                  if (this.router.url.includes('/pos')) {
-                    this.router.navigate(['/dashboard']);
-                  } else if (this.router.url.includes('/dashboard')) {
-                    // Chỉ gọi refresh dashboard khi đang ở dashboard sẵn
+                  // Sau khi đăng nhập thành công: luôn chuyển về dashboard để tải dữ liệu,
+                  // trừ khi người dùng đang ở dashboard thì chỉ refresh dữ liệu
+                  if (this.router.url.includes('/dashboard')) {
                     this.stateService.refreshDashboard();
-                  } else if (!this.router.url.includes('/settings')) {
-                    // Chỉ reload tab nếu không phải trang settings
-                    this.stateService.reloadCurrentTab();
+                  } else {
+                    this.router.navigate(['/dashboard']);
                   }
                 }
               },

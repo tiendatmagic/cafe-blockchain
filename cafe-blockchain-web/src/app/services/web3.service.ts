@@ -444,6 +444,9 @@ export class Web3Service {
         const unsubscribe = this.modal!.subscribeAccount((state) => {
           if (state.isConnected && state.address) {
             unsubscribe();
+            unsubscribeEvents();
+            // Đóng AppKit modal ngay sau khi ví kết nối để tránh xung đột với popup ký tùy chỉnh
+            try { this.modal?.close(); } catch (e) { /* ignore */ }
             resolve(true);
           }
         });
