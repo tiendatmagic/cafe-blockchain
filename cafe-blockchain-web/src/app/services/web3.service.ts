@@ -239,9 +239,12 @@ export class Web3Service {
         features: {
           analytics: false,
           email: false,
-          socials: false
+          socials: false,
+          onramp: false,
+          swaps: false
         },
-        enableCoinbase: false, // Tắt Coinbase Wallet Connector
+        enableReconnect: false, // Tắt tự động reconnect để tránh AppKit hiển thị SIWE modal
+        enableCoinbase: false,  // Tắt Coinbase Wallet Connector
         featuredWalletIds: [
           '4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0' // Ưu tiên hiển thị Trust Wallet
         ],
@@ -300,7 +303,15 @@ export class Web3Service {
           this.updateBalanceAndStatus(account);
         }
       });
-      
+      // Bắt sự kiện CONNECT_SUCCESS và đóng modal ngay để chặn SIWE One-Click Auth hiển thị
+      this.modal.subscribeEvents((event) => {
+        const evtName = event.data?.event;
+        if (evtName === 'CONNECT_SUCCESS') {
+          // Đóng ngay lập tức để chặn AppKit hiện SIWE "Sign In" modal
+          try { this.modal?.close(); } catch (e) { /* ignore */ }
+        }
+      });
+
       this.checkWalletConnection();
 
     } catch (err) {
