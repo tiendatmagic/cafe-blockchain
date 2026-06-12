@@ -196,21 +196,36 @@ body.dark .btn-danger-light:hover {
 /* ==================== HỆ THỐNG Ô NHẬP LIỆU DÙNG CHUNG (INPUT SYSTEM) ==================== */
 /* 1. Lớp cơ sở dùng chung cho mọi ô nhập liệu */
 .form-input {
-  @apply h-[42px] w-full px-4 text-sm font-semibold rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)]/20 transition-all duration-200;
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+  @apply h-[42px] w-full text-sm font-semibold rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)]/20 transition-all duration-200;
 }
+
+/* Sửa lỗi padding lồng nhau khi dùng form-input làm container bọc ngoài */
+div.form-input.p-0 {
+  padding-left: 0px !important;
+  padding-right: 0px !important;
+}
+
 
 /* 2. Các biến thể kích thước */
 .form-input-sm {
-  @apply h-[32px] px-3 text-xs rounded-lg;
+  padding-left: 0.75rem !important;
+  padding-right: 0.75rem !important;
+  @apply h-[32px] text-xs rounded-lg;
 }
 
 .form-input-lg {
-  @apply h-[48px] px-5 text-base rounded-[12px];
+  padding-left: 1.25rem !important;
+  padding-right: 1.25rem !important;
+  @apply h-[48px] text-base rounded-[12px];
 }
 
 /* 3. Ô tìm kiếm (Search Input) tự định nghĩa style để tránh lỗi compiler không nhận diện form-input */
 .search-input {
-  @apply h-[42px] w-full pl-9 pr-4 text-sm font-semibold rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)]/20 transition-all duration-200;
+  padding-left: 2.25rem !important;
+  padding-right: 1rem !important;
+  @apply h-[42px] w-full text-sm font-semibold rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)]/20 transition-all duration-200;
 }
 
 
