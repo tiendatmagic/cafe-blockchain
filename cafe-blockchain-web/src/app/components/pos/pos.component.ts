@@ -739,6 +739,9 @@ export class PosComponent implements OnInit, OnDestroy {
             this.stateService.clearCart();
             this.isOrderSubmitting.set(false);
             this.stateService.refreshOrders();
+            if (orderData.payment_method === 'debt') {
+              this.stateService.refreshCustomers(true);
+            }
             this.stateService.activeTab.set('orders');
           }
         },
@@ -806,6 +809,9 @@ export class PosComponent implements OnInit, OnDestroy {
           this.editingOrderId.set(null);
           this.isOrderSubmitting.set(false);
           this.stateService.refreshOrders();
+          if (orderData.payment_method === 'debt') {
+            this.stateService.refreshCustomers(true);
+          }
           this.stateService.activeTab.set('orders');
         },
         error: (err) => {
@@ -822,6 +828,9 @@ export class PosComponent implements OnInit, OnDestroy {
           this.stateService.clearCart();
           this.isOrderSubmitting.set(false);
           this.stateService.refreshOrders();
+          if (orderData.payment_method === 'debt') {
+            this.stateService.refreshCustomers(true);
+          }
           this.stateService.activeTab.set('orders');
         },
         error: (err) => {

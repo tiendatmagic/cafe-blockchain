@@ -99,6 +99,7 @@ export class StateService {
   private isInitialSyncDone = false;
   private isSettingsFetching = false;
   private lastSettingsLoadTimestamp = 0;
+  private lastCustomersLoadTimestamp = 0;
   private searchSubject = new Subject<string>();
   private searchSubscription?: Subscription;
   private routerSubscription?: Subscription;
@@ -533,9 +534,16 @@ export class StateService {
     });
   }
 
-  // Refresh danh sách khách hàng
-  public refreshCustomers() {
+  // Refresh danh sách khách hàng (có cache 5 phút)
+  public refreshCustomers(force: boolean = false) {
     if (!this.web3Service.walletConnected()) return;
+    
+    const now = Date.now();
+    // Nếu không force và đã có dữ liệu và chưa hết hạn 5 phút
+    if (!force && this.customers().length > 0 && (now - this.lastCustomersLoadTimestamp < 5 * 60 * 1000)) {
+      return;
+    }
+
     if (this.isCustomersLoading()) return;
     this.isCustomersLoading.set(true);
     forkJoin({
@@ -545,6 +553,7 @@ export class StateService {
       next: (res) => {
         this.customers.set(res.customers || []);
         this.customerGroups.set(res.groups || []);
+        this.lastCustomersLoadTimestamp = Date.now();
         this.isCustomersLoading.set(false);
       },
       error: (err) => {

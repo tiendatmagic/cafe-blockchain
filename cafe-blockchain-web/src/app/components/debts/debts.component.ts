@@ -282,6 +282,7 @@ export class DebtsComponent implements OnInit {
         this.stateService.showToast('Lập phiếu ghi nợ thành công!', 'success');
         this.closeManualDebtModal();
         this.refreshDebts();
+        this.stateService.refreshCustomers(true);
         this.isManualDebtSaving.set(false);
         this.stateService.isLoading.set(false);
       },
@@ -343,6 +344,7 @@ export class DebtsComponent implements OnInit {
         this.stateService.showToast('Lập phiếu thu nợ thành công! Đã cập nhật sổ quỹ.', 'success');
         this.closePaymentModal();
         this.refreshDebts();
+        this.stateService.refreshCustomers(true);
         this.isPaymentSaving.set(false);
         this.stateService.isLoading.set(false);
       },
@@ -422,6 +424,7 @@ export class DebtsComponent implements OnInit {
         this.selectedDebtLog.set(null);
         this.loadCustomerDebtLogs(); // Reload timeline
         this.refreshDebts(); // Reload bảng tổng
+        this.stateService.refreshCustomers(true);
         this.stateService.isLoading.set(false);
       },
       error: (err) => {

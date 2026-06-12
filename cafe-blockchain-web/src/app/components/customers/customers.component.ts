@@ -138,7 +138,7 @@ export class CustomersComponent {
 
   // Tải lại dữ liệu
   public refreshCustomers() {
-    this.stateService.refreshCustomers();
+    this.stateService.refreshCustomers(true);
   }
 
   // --- Tra cứu mã số thuế ---

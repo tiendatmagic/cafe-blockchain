@@ -633,9 +633,8 @@
 
   <!-- Drawer Content trượt từ phải sang -->
   <div 
-    [class.translate-x-full]="!isHistoryDrawerOpen()"
-    [class.translate-x-0]="isHistoryDrawerOpen()"
-    class="relative w-full max-w-lg bg-white dark:bg-slate-900 border-l border-slate-100 dark:border-slate-800 h-full flex flex-col shadow-2xl text-slate-800 dark:text-slate-200 transition-transform duration-300 ease-out"
+    [class.!translate-x-0]="isHistoryDrawerOpen()"
+    class="relative translate-x-full w-full max-w-lg bg-white dark:bg-slate-900 border-l border-slate-100 dark:border-slate-800 h-full flex flex-col shadow-2xl text-slate-800 dark:text-slate-200 transition-transform duration-300 ease-out"
   >
     
     <!-- Drawer Header -->
