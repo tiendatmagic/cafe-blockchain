@@ -1,14 +1,13 @@
 <div class="space-y-6 p-4 sm:p-6 max-w-[1530px] mx-auto">
-  <!-- Header & Trạng thái ví Metamask -->
-  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-    <div>
-      <h3 class="text-2xl font-black text-slate-800 dark:text-white">Báo cáo hoạt động kinh doanh</h3>
-      <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-        Theo dõi kết quả tài chính, mặt hàng bán chạy và hiệu suất khách hàng thân thiết.
-      </p>
-    </div>
-
-  </div>
+  <!-- Header tiêu đề tab dùng chung -->
+  <app-page-header
+    title="Báo cáo hoạt động kinh doanh"
+    description="Theo dõi kết quả tài chính, mặt hàng bán chạy và hiệu suất khách hàng thân thiết."
+  >
+    <svg icon class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
+    </svg>
+  </app-page-header>
 
   @if (web3Service.walletConnected()) {
     <!-- Bộ lọc mốc thời gian cao cấp -->
@@ -522,7 +521,7 @@
                     <td class="py-3 text-slate-500">{{ cust.customer_phone || '—' }}</td>
                     <td class="py-3 font-mono text-[11px] text-slate-500">
                       @if (cust.wallet_address) {
-                        {{ cust.wallet_address.substring(0, 6) }}...{{ cust.wallet_address.substring(cust.wallet_address.length - 4) }}
+                        {{ cust.wallet_address | appShortAddress }}
                       } @else {
                         —
                       }

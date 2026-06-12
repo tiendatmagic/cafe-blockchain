@@ -1,103 +1,100 @@
 <div class="space-y-6 p-4 sm:p-6 max-w-[1530px] mx-auto">
-  <!-- Header tiêu đề tab -->
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-    <div>
-      <h3 class="text-2xl font-extrabold text-slate-800 dark:text-white">
-        Quản lý Khách hàng & Nhóm
-      </h3>
-      <p class="text-sm text-slate-500 dark:text-slate-400">
-        Lưu trữ thông tin khách hàng thân thiết và phân nhóm khách hàng để áp dụng các chính sách ưu
-        đãi.
-      </p>
-    </div>
+  <!-- Header tiêu đề tab dùng chung -->
+  <app-page-header
+    title="Quản lý Khách hàng & Nhóm"
+    description="Lưu trữ thông tin khách hàng thân thiết và phân nhóm khách hàng để áp dụng các chính sách ưu đãi."
+  >
+    <svg icon xmlns="http://www.w3.org/2000/svg" class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+    </svg>
 
     @if (stateService.web3Service.walletConnected()) {
       <div class="flex items-center gap-3 shrink-0 flex-wrap">
-      <button
-        (click)="openAddCustomerGroupModal()"
-        class="px-4.5 py-2.5 bg-[var(--dynamic-secondary)]/10 hover:bg-[var(--dynamic-secondary)]/20 border border-[var(--dynamic-secondary)]/20 text-[var(--dynamic-secondary)] font-bold rounded-xl text-sm transition-all flex items-center gap-1.5"
-      >
-        <span>+ Tạo Nhóm mới</span>
-      </button>
-
-      <div
-        class="relative inline-flex items-stretch customer-dropdown-container rounded-xl bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] shadow-md shadow-[var(--dynamic-primary)]/20 hover:scale-[1.01] active:scale-[0.99] transition-all"
-        [class.z-20]="isCustomerDropdownOpen()"
-      >
-        <!-- Nút chính (bên trái) - Thêm khách hàng cá nhân mặc định -->
         <button
-          (click)="openAddCustomerModal('individual')"
-          class="px-4.5 py-2.5 bg-transparent hover:bg-white/10 text-white font-bold rounded-l-xl text-sm flex items-center gap-1.5 border-r border-white/20 transition-all"
+          (click)="openAddCustomerGroupModal()"
+          class="px-4.5 py-2.5 bg-[var(--dynamic-secondary)]/10 hover:bg-[var(--dynamic-secondary)]/20 border border-[var(--dynamic-secondary)]/20 text-[var(--dynamic-secondary)] font-bold rounded-xl text-sm transition-all flex items-center gap-1.5"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4 shrink-0"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2.5"
-              d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-            />
-          </svg>
-          <span>Thêm Khách hàng</span>
+          <span>+ Tạo Nhóm mới</span>
         </button>
 
-        <!-- Nút mũi tên dropdown (bên phải) -->
-        <button
-          (click)="isCustomerDropdownOpen.set(!isCustomerDropdownOpen())"
-          class="px-3 bg-transparent hover:bg-white/10 text-white rounded-r-xl flex items-center justify-center transition-all"
-          title="Lựa chọn loại khách hàng"
+        <div
+          class="relative inline-flex items-stretch customer-dropdown-container rounded-xl bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] shadow-md shadow-[var(--dynamic-primary)]/20 hover:scale-[1.01] active:scale-[0.99] transition-all"
+          [class.z-20]="isCustomerDropdownOpen()"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4 transition-transform duration-200"
-            [class.rotate-180]="isCustomerDropdownOpen()"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            stroke-width="3"
+          <!-- Nút chính (bên trái) - Thêm khách hàng cá nhân mặc định -->
+          <button
+            (click)="openAddCustomerModal('individual')"
+            class="px-4.5 py-2.5 bg-transparent hover:bg-white/10 text-white font-bold rounded-l-xl text-sm flex items-center gap-1.5 border-r border-white/20 transition-all"
           >
-            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4 shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+              />
+            </svg>
+            <span>Thêm Khách hàng</span>
+          </button>
 
-        <!-- Menu Dropdown -->
-        @if (isCustomerDropdownOpen()) {
-          <div
-            class="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-xl py-1.5 z-[100] animate-fade-in"
+          <!-- Nút mũi tên dropdown (bên phải) -->
+          <button
+            (click)="isCustomerDropdownOpen.set(!isCustomerDropdownOpen())"
+            class="px-3 bg-transparent hover:bg-white/10 text-white rounded-r-xl flex items-center justify-center transition-all"
+            title="Lựa chọn loại khách hàng"
           >
-            <button
-              (click)="openAddCustomerModal('individual')"
-              class="w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-200 transition-colors flex items-center gap-2"
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4 transition-transform duration-200"
+              [class.rotate-180]="isCustomerDropdownOpen()"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="3"
             >
-              <span class="text-base"><svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 text-slate-400 dark:text-slate-500 shrink-0 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg></span>
-              <div>
-                <div class="font-semibold text-slate-800 dark:text-slate-200">Khách cá nhân</div>
-                <div class="text-xs text-slate-400">Khách mua lẻ thông thường</div>
-              </div>
-            </button>
-            <button
-              (click)="openAddCustomerModal('business')"
-              class="w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-200 transition-colors flex items-center gap-2 border-t border-slate-100 dark:border-slate-700/50"
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          <!-- Menu Dropdown -->
+          @if (isCustomerDropdownOpen()) {
+            <div
+              class="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-xl py-1.5 z-[100] animate-fade-in"
             >
-              <span class="text-base"><svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 text-slate-400 dark:text-slate-500 shrink-0 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg></span>
-              <div>
-                <div class="font-semibold text-slate-800 dark:text-slate-200">
-                  Khách doanh nghiệp
+              <button
+                (click)="openAddCustomerModal('individual')"
+                class="w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-200 transition-colors flex items-center gap-2"
+              >
+                <span class="text-base"><svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 text-slate-400 dark:text-slate-500 shrink-0 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg></span>
+                <div>
+                  <div class="font-semibold text-slate-800 dark:text-slate-200">Khách cá nhân</div>
+                  <div class="text-xs text-slate-400">Khách mua lẻ thông thường</div>
                 </div>
-                <div class="text-xs text-slate-400">Có mã số thuế, tên công ty</div>
-              </div>
-            </button>
-          </div>
-        }
-      </div>
+              </button>
+              <button
+                (click)="openAddCustomerModal('business')"
+                class="w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-200 transition-colors flex items-center gap-2 border-t border-slate-100 dark:border-slate-700/50"
+              >
+                <span class="text-base"><svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 text-slate-400 dark:text-slate-500 shrink-0 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg></span>
+                <div>
+                  <div class="font-semibold text-slate-800 dark:text-slate-200">Khách doanh nghiệp</div>
+                  <div class="text-xs text-slate-400">Có mã số thuế, tên công ty</div>
+                </div>
+              </button>
+            </div>
+            
+            <div (click)="isCustomerDropdownOpen.set(false)" class="fixed inset-0 z-10"></div>
+          }
+        </div>
       </div>
     }
-  </div>
+  </app-page-header>
 
   @if (stateService.web3Service.walletConnected()) {
     @if (isCustomersLoading()) {
@@ -344,9 +341,7 @@
                           class="font-mono text-xs text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-950 px-1.5 py-0.5 rounded truncate max-w-[140px] font-bold"
                           [title]="cust.wallet_address"
                         >
-                          {{ cust.wallet_address.substring(0, 6) }}...{{
-                            cust.wallet_address.substring(cust.wallet_address.length - 4)
-                          }}
+                          {{ cust.wallet_address | appShortAddress }}
                         </span>
                       } @else {
                         <span class="text-xs text-slate-400 dark:text-slate-600 italic"
@@ -976,95 +971,28 @@
 }
 
 <!-- Modal Xác nhận Xóa Khách hàng -->
-@if (isDeleteCustomerConfirmOpen()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div (click)="isDeleteCustomerConfirmOpen.set(false)" class="fixed inset-0 bg-black/40"></div>
-    <div
-      class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 p-6 max-w-sm w-full shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200"
-    >
-      <div class="text-center space-y-4">
-        <div
-          class="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center mx-auto text-xl font-bold"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-amber-500 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-        </div>
-        <div class="space-y-1.5">
-          <h4 class="text-base font-extrabold text-slate-800 dark:text-white">
-            Xác nhận xóa khách hàng
-          </h4>
-          <p class="text-xs text-slate-400 dark:text-slate-500 font-semibold leading-relaxed">
-            Bạn có chắc chắn muốn xóa khách hàng
-            <strong class="text-slate-800 dark:text-white">{{ deletingCustomer()?.name }}</strong>
-            thuộc quán
-            <strong class="text-[var(--dynamic-primary)]">{{
-              stateService.settings().store_name
-            }}</strong>
-            khỏi hệ thống? Hành động này không thể hoàn tác.
-          </p>
-        </div>
-        <div class="flex gap-3 pt-2">
-          <button
-            (click)="isDeleteCustomerConfirmOpen.set(false)"
-            class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs rounded-xl transition-all"
-          >
-            Hủy bỏ
-          </button>
-          <button
-            (click)="confirmDeleteCustomer()"
-            class="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-rose-500/10"
-          >
-            Xác nhận xóa
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-}
+<app-confirm-modal
+  [isOpen]="isDeleteCustomerConfirmOpen()"
+  title="Xác nhận xóa khách hàng"
+  [description]="'Bạn có chắc chắn muốn xóa khách hàng ' + (deletingCustomer()?.name || '') + ' khỏi hệ thống? Hành động này không thể hoàn tác.'"
+  confirmText="Xác nhận xóa"
+  cancelText="Hủy bỏ"
+  [isSubmitting]="stateService.isLoading()"
+  (confirm)="confirmDeleteCustomer()"
+  (cancel)="isDeleteCustomerConfirmOpen.set(false)"
+></app-confirm-modal>
 
 <!-- Modal Xác nhận Xóa Nhóm khách hàng -->
-@if (isDeleteGroupConfirmOpen()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div (click)="isDeleteGroupConfirmOpen.set(false)" class="fixed inset-0 bg-black/40"></div>
-    <div
-      class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 p-6 max-w-sm w-full shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200"
-    >
-      <div class="text-center space-y-4">
-        <div
-          class="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center mx-auto text-xl font-bold"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-amber-500 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-        </div>
-        <div class="space-y-1.5">
-          <h4 class="text-base font-extrabold text-slate-800 dark:text-white">Xác nhận xóa nhóm</h4>
-          <p class="text-xs text-slate-400 dark:text-slate-500 font-semibold leading-relaxed">
-            Bạn có chắc chắn muốn xóa nhóm
-            <strong class="text-slate-800 dark:text-white">{{ deletingGroup()?.name }}</strong>
-            thuộc quán
-            <strong class="text-[var(--dynamic-primary)]">{{
-              stateService.settings().store_name
-            }}</strong
-            >? Các khách hàng trong nhóm sẽ không bị xóa mà chỉ bị gỡ khỏi nhóm này.
-          </p>
-        </div>
-        <div class="flex gap-3 pt-2">
-          <button
-            (click)="isDeleteGroupConfirmOpen.set(false)"
-            class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs rounded-xl transition-all"
-          >
-            Hủy bỏ
-          </button>
-          <button
-            (click)="confirmDeleteCustomerGroup()"
-            class="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-rose-500/10"
-          >
-            Xác nhận xóa
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-}
-
+<app-confirm-modal
+  [isOpen]="isDeleteGroupConfirmOpen()"
+  title="Xác nhận xóa nhóm"
+  [description]="'Bạn có chắc chắn muốn xóa nhóm ' + (deletingGroup()?.name || '') + '? Các khách hàng trong nhóm sẽ không bị xóa mà chỉ bị gỡ khỏi nhóm này.'"
+  confirmText="Xác nhận xóa"
+  cancelText="Hủy bỏ"
+  [isSubmitting]="stateService.isLoading()"
+  (confirm)="confirmDeleteCustomerGroup()"
+  (cancel)="isDeleteGroupConfirmOpen.set(false)"
+></app-confirm-modal>
 } @else {
   <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý Khách hàng'"></app-web3-connect-prompt>
 }

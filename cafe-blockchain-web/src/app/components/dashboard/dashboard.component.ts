@@ -3,11 +3,13 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StateService } from '../../services/state.service';
+import { ShortAddressPipe } from '../../pipes/short-address.pipe';
+import { PageHeaderComponent } from '../page-header/page-header.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, Web3ConnectPromptComponent],
+  imports: [CommonModule, FormsModule, Web3ConnectPromptComponent, ShortAddressPipe, PageHeaderComponent],
   templateUrl: './dashboard.component.html'
 })
 export class DashboardComponent implements OnInit {

@@ -1,13 +1,6 @@
 <div class="space-y-6 p-4 sm:p-6 max-w-[1530px] mx-auto">
   <!-- Header tiêu đề tab -->
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-    <div>
-      <h3 class="text-2xl font-extrabold text-slate-800 dark:text-white">Sổ đơn hàng</h3>
-      <p class="text-sm text-slate-500 dark:text-slate-400">
-        Quản lý lịch sử hóa đơn bán hàng POS, xác thực trạng thái và ghi bằng chứng hóa đơn lên
-        Blockchain EVM.
-      </p>
-    </div>
+  <app-page-header title="Sổ đơn hàng" description="Quản lý lịch sử hóa đơn bán hàng POS, xác thực trạng thái và ghi bằng chứng hóa đơn lên Blockchain EVM.">
     @if (stateService.web3Service.walletConnected()) {
       <button
         (click)="refreshOrders()"
@@ -30,7 +23,7 @@
         <span>Làm mới</span>
       </button>
     }
-  </div>
+  </app-page-header>
 
   @if (stateService.web3Service.walletConnected()) {
     @if (stateService.isOrdersLoading()) {

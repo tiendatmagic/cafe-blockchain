@@ -6,11 +6,21 @@ import { RouterModule } from '@angular/router';
 import { StateService } from '../../services/state.service';
 import { ApiService } from '../../services/api.service';
 import { PaginationComponent } from '../pagination/pagination.component';
+import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
+import { PageHeaderComponent } from '../page-header/page-header.component';
 
 @Component({
   selector: 'app-financials',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, Web3ConnectPromptComponent, PaginationComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    Web3ConnectPromptComponent,
+    PaginationComponent,
+    ConfirmModalComponent,
+    PageHeaderComponent
+  ],
   templateUrl: './financials.component.html'
 })
 export class FinancialsComponent {

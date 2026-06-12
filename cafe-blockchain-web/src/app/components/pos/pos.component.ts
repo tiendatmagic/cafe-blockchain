@@ -9,11 +9,19 @@ import { Web3Service } from '../../services/web3.service';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { PaginationComponent } from '../pagination/pagination.component';
+import { PageHeaderComponent } from '../page-header/page-header.component';
 
 @Component({
   selector: 'app-pos',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, Web3ConnectPromptComponent, PaginationComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    Web3ConnectPromptComponent,
+    PaginationComponent,
+    PageHeaderComponent
+  ],
   templateUrl: './pos.component.html'
 })
 export class PosComponent implements OnInit, OnDestroy {

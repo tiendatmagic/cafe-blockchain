@@ -11,10 +11,12 @@ import { ApiService } from '../../services/api.service';
 import { StateService } from '../../services/state.service';
 import { environment } from '../../../environments/environment';
 
+import { ShortAddressPipe } from '../../pipes/short-address.pipe';
+
 @Component({
   selector: 'app-blockchain-explorer',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, ShortAddressPipe],
   templateUrl: './blockchain-explorer.component.html'
 })
 export class BlockchainExplorerComponent implements OnInit {
@@ -778,12 +780,7 @@ export class BlockchainExplorerComponent implements OnInit {
     this.searchOnChain();
   }
 
-  // Helpers
-  public formatAddress(addr: string): string {
-    if (!addr) return '';
-    if (addr.length < 12) return addr;
-    return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
-  }
+
 
   public formatUuid(uint256Val: any): string {
     if (!uint256Val) return '';

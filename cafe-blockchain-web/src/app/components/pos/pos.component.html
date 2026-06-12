@@ -1,12 +1,6 @@
 <div class="space-y-6 p-4 sm:p-6 max-w-[1530px] mx-auto">
   <!-- Header tiêu đề tab -->
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-    <div>
-      <h3 class="text-2xl font-extrabold text-slate-800 dark:text-white">Bán hàng POS</h3>
-      <p class="text-sm text-slate-500 dark:text-slate-400">
-        Chọn các món đồ uống và món ăn ngon miệng từ thực đơn và tạo hóa đơn bán hàng.
-      </p>
-    </div>
+  <app-page-header title="Bán hàng POS" description="Chọn các món đồ uống và món ăn ngon miệng từ thực đơn và tạo hóa đơn bán hàng.">
     @if (web3Service.walletConnected()) {
       <!-- Search & Filter bar -->
       <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto shrink-0">
@@ -117,7 +111,7 @@
       </div>
       </div>
     }
-  </div>
+  </app-page-header>
 
   @if (web3Service.walletConnected()) {
 

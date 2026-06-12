@@ -6,11 +6,23 @@ import { StateService } from '../../services/state.service';
 import { ApiService } from '../../services/api.service';
 import { Web3ConnectPromptComponent } from '../web3-connect-prompt/web3-connect-prompt.component';
 import { PaginationComponent } from '../pagination/pagination.component';
+import { ShortAddressPipe } from '../../pipes/short-address.pipe';
+import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
+import { PageHeaderComponent } from '../page-header/page-header.component';
 
 @Component({
   selector: 'app-customers',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, Web3ConnectPromptComponent, PaginationComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    Web3ConnectPromptComponent,
+    PaginationComponent,
+    ShortAddressPipe,
+    ConfirmModalComponent,
+    PageHeaderComponent
+  ],
   templateUrl: './customers.component.html'
 })
 export class CustomersComponent {

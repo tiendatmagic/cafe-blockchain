@@ -1036,6 +1036,7 @@ export class Web3Service {
     if (!this.walletConnected() || !this.currentAccount()) {
       return { contractAddress: '', success: false, error: 'Chưa kết nối ví Web3!' };
     }
+    this.provider = this.getBrowserProvider();
     if (!this.provider) {
       return { contractAddress: '', success: false, error: 'Không tìm thấy provider ví Web3!' };
     }
@@ -1085,6 +1086,7 @@ export class Web3Service {
     if (!this.walletConnected() || !this.currentAccount()) {
       return { contractAddress: '', success: false, error: 'Chưa kết nối ví Web3!' };
     }
+    this.provider = this.getBrowserProvider();
     if (!this.provider) {
       return { contractAddress: '', success: false, error: 'Không tìm thấy provider ví Web3!' };
     }
@@ -1126,6 +1128,7 @@ export class Web3Service {
     if (!this.walletConnected() || !this.currentAccount()) {
       return { contractAddress: '', success: false, error: 'Chưa kết nối ví Web3!' };
     }
+    this.provider = this.getBrowserProvider();
     if (!this.provider) {
       return { contractAddress: '', success: false, error: 'Không tìm thấy provider ví Web3!' };
     }
@@ -1175,6 +1178,7 @@ export class Web3Service {
       return { txHash: '', success: false, error: 'Chưa kết nối ví Web3!' };
     }
 
+    this.provider = this.getBrowserProvider();
     if (!this.provider) {
       return { txHash: '', success: false, error: 'Không tìm thấy provider ví!' };
     }
@@ -1219,6 +1223,7 @@ export class Web3Service {
    * Truy vấn tx_hash gốc của giao dịch thu chi đã tồn tại trên Blockchain.
    */
   public async getOriginalTxHashForTransaction(txId: string | number): Promise<string | null> {
+    this.provider = this.getBrowserProvider();
     if (!this.provider || !this.financeContractAddress()) return null;
     try {
       const contract = new Contract(this.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, this.provider);
@@ -1322,6 +1327,7 @@ export class Web3Service {
    * Truy vấn danh sách ví Kế toán hiện tại trực tiếp từ Smart Contract Tài chính
    */
   public async getFinanceOwnersFromChain(): Promise<string[]> {
+    this.provider = this.getBrowserProvider();
     if (!this.provider || !this.financeContractAddress()) return [];
     try {
       const contract = new Contract(this.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, this.provider);
@@ -1336,6 +1342,7 @@ export class Web3Service {
    * Thêm các Owner ví kế toán khác trên Smart Contract Tài chính
    */
   public async addFinanceOwnersOnChain(newOwners: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
+    this.provider = this.getBrowserProvider();
     if (!this.provider || !this.financeContractAddress()) {
       return { txHash: '', success: false, error: 'Chưa kết nối ví hoặc chưa cấu hình hợp đồng Tài chính!' };
     }
@@ -1360,6 +1367,7 @@ export class Web3Service {
    * Xóa các Owner ví kế toán khác trên Smart Contract Tài chính
    */
   public async removeFinanceOwnersOnChain(ownersToRemove: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
+    this.provider = this.getBrowserProvider();
     if (!this.provider || !this.financeContractAddress()) {
       return { txHash: '', success: false, error: 'Chưa kết nối ví hoặc chưa cấu hình hợp đồng Tài chính!' };
     }
@@ -1642,6 +1650,7 @@ export class Web3Service {
     if (!this.walletConnected() || !this.currentAccount()) {
       return { contractAddress: '', success: false, error: 'Chưa kết nối ví Web3!' };
     }
+    this.provider = this.getBrowserProvider();
     if (!this.provider) {
       return { contractAddress: '', success: false, error: 'Không tìm thấy provider ví Web3!' };
     }
@@ -1680,6 +1689,7 @@ export class Web3Service {
    * Truy vấn danh sách Owners hiện tại trực tiếp từ Smart Contract Menu Registry
    */
   public async getMenuRegistryOwnersFromChain(): Promise<string[]> {
+    this.provider = this.getBrowserProvider();
     if (!this.provider || !this.menuRegistryContractAddress()) return [];
     try {
       const contract = new Contract(this.menuRegistryContractAddress(), CAFE_MENU_REGISTRY_ABI, this.provider);
@@ -1694,6 +1704,7 @@ export class Web3Service {
    * Thêm các Owner mới trên Smart Contract Menu Registry
    */
   public async addMenuRegistryOwnersOnChain(newOwners: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
+    this.provider = this.getBrowserProvider();
     if (!this.provider || !this.menuRegistryContractAddress()) {
       return { txHash: '', success: false, error: 'Chưa kết nối ví hoặc chưa cấu hình hợp đồng Menu Registry!' };
     }
@@ -1718,6 +1729,7 @@ export class Web3Service {
    * Xóa các Owner trên Smart Contract Menu Registry
    */
   public async removeMenuRegistryOwnersOnChain(ownersToRemove: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
+    this.provider = this.getBrowserProvider();
     if (!this.provider || !this.menuRegistryContractAddress()) {
       return { txHash: '', success: false, error: 'Chưa kết nối ví hoặc chưa cấu hình hợp đồng Menu Registry!' };
     }
@@ -1757,6 +1769,7 @@ export class Web3Service {
    * Đồng bộ toàn bộ thực đơn món ăn lên Blockchain (Menu Registry Contract)
    */
   public async updateMenuOnChain(products: any[]): Promise<{ txHash: string; success: boolean; error?: string }> {
+    this.provider = this.getBrowserProvider();
     if (!this.provider || !this.menuRegistryContractAddress()) {
       return { txHash: '', success: false, error: 'Chưa kết nối ví hoặc chưa cấu hình hợp đồng Menu Registry!' };
     }
@@ -1864,6 +1877,7 @@ export class Web3Service {
    * Truy vấn danh sách Owners hiện tại trực tiếp từ Smart Contract Voucher NFT
    */
   public async getVoucherOwnersFromChain(): Promise<string[]> {
+    this.provider = this.getBrowserProvider();
     if (!this.provider || !this.voucherContractAddress()) return [];
     try {
       const contract = new Contract(this.voucherContractAddress(), CAFE_VOUCHER_NFT_ABI, this.provider);
@@ -1878,6 +1892,7 @@ export class Web3Service {
    * Thêm các Owner mới trên Smart Contract Voucher NFT
    */
   public async addVoucherOwnersOnChain(newOwners: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
+    this.provider = this.getBrowserProvider();
     if (!this.provider || !this.voucherContractAddress()) {
       return { txHash: '', success: false, error: 'Chưa kết nối ví hoặc chưa cấu hình hợp đồng Voucher NFT!' };
     }
@@ -1902,6 +1917,7 @@ export class Web3Service {
    * Xóa các Owner trên Smart Contract Voucher NFT
    */
   public async removeVoucherOwnersOnChain(ownersToRemove: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
+    this.provider = this.getBrowserProvider();
     if (!this.provider || !this.voucherContractAddress()) {
       return { txHash: '', success: false, error: 'Chưa kết nối ví hoặc chưa cấu hình hợp đồng Voucher NFT!' };
     }

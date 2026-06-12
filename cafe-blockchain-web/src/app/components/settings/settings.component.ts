@@ -5,11 +5,20 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { StateService } from '../../services/state.service';
 import { ApiService } from '../../services/api.service';
+import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
+import { PageHeaderComponent } from '../page-header/page-header.component';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, Web3ConnectPromptComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    Web3ConnectPromptComponent,
+    ConfirmModalComponent,
+    PageHeaderComponent
+  ],
   templateUrl: './settings.component.html'
 })
 export class SettingsComponent implements OnInit {

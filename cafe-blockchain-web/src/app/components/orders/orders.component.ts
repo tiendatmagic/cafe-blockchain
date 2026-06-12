@@ -6,11 +6,19 @@ import { RouterModule } from '@angular/router';
 import { StateService } from '../../services/state.service';
 import { ApiService } from '../../services/api.service';
 import { PaginationComponent } from '../pagination/pagination.component';
+import { PageHeaderComponent } from '../page-header/page-header.component';
 
 @Component({
   selector: 'app-orders',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, Web3ConnectPromptComponent, PaginationComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    Web3ConnectPromptComponent,
+    PaginationComponent,
+    PageHeaderComponent
+  ],
   templateUrl: './orders.component.html'
 })
 export class OrdersComponent implements OnInit {

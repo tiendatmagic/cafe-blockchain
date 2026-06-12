@@ -7,12 +7,25 @@ import { ApiService } from '../../services/api.service';
 import { Web3ConnectPromptComponent } from '../web3-connect-prompt/web3-connect-prompt.component';
 import { SkeletonLoaderComponent } from '../skeleton-loader/skeleton-loader.component';
 import { PaginationComponent } from '../pagination/pagination.component';
+import { ShortAddressPipe } from '../../pipes/short-address.pipe';
+import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
+import { PageHeaderComponent } from '../page-header/page-header.component';
 import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-debts',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, Web3ConnectPromptComponent, SkeletonLoaderComponent, PaginationComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    Web3ConnectPromptComponent,
+    SkeletonLoaderComponent,
+    PaginationComponent,
+    ShortAddressPipe,
+    ConfirmModalComponent,
+    PageHeaderComponent
+  ],
   templateUrl: './debts.component.html'
 })
 export class DebtsComponent implements OnInit {

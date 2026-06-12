@@ -1,13 +1,13 @@
 <div class="space-y-6 p-4 sm:p-6 max-w-[1530px] mx-auto">
-  <!-- Header tiêu đề tab -->
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-    <div>
-      <h3 class="text-2xl font-extrabold text-slate-800 dark:text-white">Tổng quan cửa hàng</h3>
-      <p class="text-sm text-slate-500 dark:text-slate-400">
-        Chào mừng bạn đến với hệ thống Sổ bán hàng & POS tích hợp Blockchain của
-        {{ settings().store_name }}.
-      </p>
-    </div>
+  <!-- Header tiêu đề tab dùng chung -->
+  <app-page-header
+    title="Tổng quan cửa hàng"
+    [description]="'Chào mừng bạn đến với hệ thống Sổ bán hàng & POS tích hợp Blockchain của ' + settings().store_name + '.'"
+  >
+    <svg icon class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+    </svg>
+
     @if (web3Service.walletConnected()) {
       <button
         (click)="loadAllData()"
@@ -30,7 +30,7 @@
         <span>Làm mới</span>
       </button>
     }
-  </div>
+  </app-page-header>
 
   @if (web3Service.walletConnected()) {
   <!-- Bộ lọc thời gian Dashboard -->
@@ -606,10 +606,7 @@
                       target="_blank"
                       class="text-blue-500 hover:underline font-semibold font-mono truncate max-w-[120px]"
                     >
-                      tx: {{ tx.tx_hash.substring(0, 6) }}...{{
-                        tx.tx_hash.substring(tx.tx_hash.length - 6)
-                      }}
-                      ↗
+                      tx: {{ tx.tx_hash | appShortAddress: 6: 6 }} ↗
                     </a>
                     @if (tx.blockchain_status === 'success') {
                       <span

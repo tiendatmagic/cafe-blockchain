@@ -6,11 +6,23 @@ import { RouterModule } from '@angular/router';
 import { StateService } from '../../services/state.service';
 import { ApiService } from '../../services/api.service';
 import { PaginationComponent } from '../pagination/pagination.component';
+import { ShortAddressPipe } from '../../pipes/short-address.pipe';
+import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
+import { PageHeaderComponent } from '../page-header/page-header.component';
 
 @Component({
   selector: 'app-menu',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, Web3ConnectPromptComponent, PaginationComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    Web3ConnectPromptComponent,
+    PaginationComponent,
+    ShortAddressPipe,
+    ConfirmModalComponent,
+    PageHeaderComponent
+  ],
   templateUrl: './menu.component.html'
 })
 export class MenuComponent implements OnInit, OnDestroy {
@@ -664,13 +676,7 @@ export class MenuComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Rút gọn địa chỉ ví để hiển thị
-   */
-  public shortAddress(addr: string): string {
-    if (!addr) return '';
-    return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
-  }
+
 
   /**
    * Định dạng ngày giờ hiển thị

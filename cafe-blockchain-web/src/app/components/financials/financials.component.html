@@ -1,14 +1,6 @@
 <div class="space-y-6 p-4 sm:p-6 max-w-[1530px] mx-auto">
   <!-- Header tiêu đề tab -->
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-    <div>
-      <h3 class="text-2xl font-extrabold text-slate-800 dark:text-white">Sổ thu chi tài chính</h3>
-      <p class="text-sm text-slate-500 dark:text-slate-400">
-        Ghi chép và theo dõi toàn bộ các dòng tiền Thu / Chi ngoại chuỗi (tiền mặt, chuyển khoản...)
-        của quán.
-      </p>
-    </div>
-
+  <app-page-header title="Sổ thu chi tài chính" description="Ghi chép và theo dõi toàn bộ các dòng tiền Thu / Chi ngoại chuỗi (tiền mặt, chuyển khoản...) của quán.">
     @if (stateService.web3Service.walletConnected()) {
       <div class="flex flex-col sm:flex-row items-center gap-3">
       @if (unsyncedTransactions().length > 0) {
@@ -31,7 +23,7 @@
               d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"
             />
           </svg>
-          <span>Đồng bộ {{ unsyncedTransactions().length }} phiếu chưa lưu chain</span>
+          <span>Đồng bộ {{ unsyncedTransactions().length }} phiếu chưa lưu</span>
         </button>
       }
       <div
@@ -113,7 +105,8 @@
       </div>
       </div>
     }
-  </div>
+  </app-page-header>
+
 
   @if (stateService.web3Service.walletConnected()) {
     @if (isTransactionsLoading()) {
@@ -985,55 +978,26 @@
 }
 
 <!-- Modal Xác nhận Xóa Phiếu Thu Chi -->
-@if (isDeleteTransactionConfirmOpen()) {
-  <div class="fixed inset-0 z-[110] flex items-center justify-center p-4">
-    <div
-      (click)="isDeleteTransactionConfirmOpen.set(false)"
-      class="fixed inset-0 bg-black/40"
-    ></div>
-    <div
-      class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 p-6 max-w-sm w-full shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200"
-    >
-      <div class="text-center space-y-4">
-        <div
-          class="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center mx-auto text-xl font-bold"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-amber-500 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-        </div>
-        <div class="space-y-1.5">
-          <h4 class="text-base font-extrabold text-slate-800 dark:text-white">
-            Xác nhận xóa phiếu thu chi
-          </h4>
-          <p class="text-xs text-slate-400 dark:text-slate-500 font-semibold leading-relaxed">
-            Bạn có chắc chắn muốn xóa phiếu thu chi
-            <strong class="text-slate-800 dark:text-white">{{
-              deletingTransaction()?.transaction_code
-            }}</strong>
-            thuộc quán
-            <strong class="text-[var(--dynamic-primary)]">{{
-              stateService.settings().store_name
-            }}</strong>
-            khỏi hệ thống? Hành động này không thể hoàn tác.
-          </p>
-        </div>
-        <div class="flex gap-3 pt-2">
-          <button
-            (click)="isDeleteTransactionConfirmOpen.set(false)"
-            class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs rounded-xl transition-all"
-          >
-            Hủy bỏ
-          </button>
-          <button
-            (click)="confirmDeleteTransaction()"
-            class="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-rose-500/10"
-          >
-            Xác nhận xóa
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-  }
+<app-confirm-modal
+  [isOpen]="isDeleteTransactionConfirmOpen()"
+  title="Xác nhận xóa phiếu thu chi"
+  [confirmText]="'Xác nhận xóa'"
+  [isSubmitting]="stateService.isLoading()"
+  (confirm)="confirmDeleteTransaction()"
+  (cancel)="isDeleteTransactionConfirmOpen.set(false)"
+>
+  <p class="text-xs text-slate-400 dark:text-slate-500 font-semibold leading-relaxed">
+    Bạn có chắc chắn muốn xóa phiếu thu chi
+    <strong class="text-slate-800 dark:text-white">{{
+      deletingTransaction()?.transaction_code
+    }}</strong>
+    thuộc quán
+    <strong class="text-[var(--dynamic-primary)]">{{
+      stateService.settings().store_name
+    }}</strong>
+    khỏi hệ thống? Hành động này không thể hoàn tác.
+  </p>
+</app-confirm-modal>
   } @else {
     <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý Thu chi tài chính'"></app-web3-connect-prompt>
   }

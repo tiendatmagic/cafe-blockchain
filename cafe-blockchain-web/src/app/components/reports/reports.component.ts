@@ -8,11 +8,21 @@ import * as XLSX from 'xlsx';
 
 import { SkeletonLoaderComponent } from '../skeleton-loader/skeleton-loader.component';
 import { PaginationComponent } from '../pagination/pagination.component';
+import { ShortAddressPipe } from '../../pipes/short-address.pipe';
+import { PageHeaderComponent } from '../page-header/page-header.component';
 
 @Component({
   selector: 'app-reports',
   standalone: true,
-  imports: [CommonModule, FormsModule, Web3ConnectPromptComponent, SkeletonLoaderComponent, PaginationComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    Web3ConnectPromptComponent,
+    SkeletonLoaderComponent,
+    PaginationComponent,
+    ShortAddressPipe,
+    PageHeaderComponent
+  ],
   templateUrl: './reports.component.html'
 })
 export class ReportsComponent implements OnInit {

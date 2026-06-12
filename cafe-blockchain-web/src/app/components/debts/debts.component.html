@@ -1,35 +1,28 @@
 <!-- Container chính căn giữa, bo góc tối đa 15px theo design system -->
 <div class="space-y-6 p-4 sm:p-6 max-w-[1530px] mx-auto text-slate-800 dark:text-slate-200">
   
-  <!-- Header tiêu đề tab -->
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-    <div>
-      <h3 class="text-2xl font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
-        <svg class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-        </svg>
-        Sổ nợ khách hàng
-      </h3>
-      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-        Quản lý chi tiết dư nợ khách hàng, lịch sử ghi nợ, lập phiếu thu nợ và đối soát quỹ tiền mặt tự động.
-      </p>
-    </div>
+  <!-- Header tiêu đề tab dùng chung -->
+  <app-page-header
+    title="Sổ nợ khách hàng"
+    description="Quản lý chi tiết dư nợ khách hàng, lịch sử ghi nợ, lập phiếu thu nợ và đối soát quỹ tiền mặt tự động."
+  >
+    <svg icon class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+    </svg>
 
     <!-- Nút Lập phiếu nợ thủ công (Chỉ hiện khi ví đã kết nối) -->
     @if (web3Service.walletConnected()) {
-      <div class="flex items-center gap-3 shrink-0 flex-wrap">
-        <button
-          (click)="openManualDebtModal()"
-          class="px-4.5 py-2.5 rounded-xl bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] hover:scale-[1.01] active:scale-[0.99] text-white font-extrabold text-sm shadow-md shadow-[var(--dynamic-primary)]/15 flex items-center gap-1.5 transition-all"
-        >
-          <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
-          <span>Ghi nợ mới</span>
-        </button>
-      </div>
+      <button
+        (click)="openManualDebtModal()"
+        class="px-4.5 py-2.5 rounded-xl bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] hover:scale-[1.01] active:scale-[0.99] text-white font-extrabold text-sm shadow-md shadow-[var(--dynamic-primary)]/15 flex items-center gap-1.5 transition-all"
+      >
+        <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+        <span>Ghi nợ mới</span>
+      </button>
     }
-  </div>
+  </app-page-header>
 
   <!-- Banner Kết nối ví Web3 nếu chưa đăng nhập -->
   @if (!web3Service.walletConnected()) {
@@ -213,7 +206,7 @@
                     <td class="p-4 font-mono text-xs text-slate-600 dark:text-slate-400">
                       @if (item.wallet_address) {
                         <span class="bg-slate-100 dark:bg-slate-950 px-1.5 py-0.5 rounded font-bold" [title]="item.wallet_address">
-                          {{ item.wallet_address.substring(0, 6) }}...{{ item.wallet_address.substring(item.wallet_address.length - 4) }}
+                          {{ item.wallet_address | appShortAddress }}
                         </span>
                       } @else {
                         <span class="text-slate-400 dark:text-slate-600 italic">Chưa liên kết ví</span>
@@ -741,43 +734,13 @@
 
 
 <!-- ==================== MODAL XÁC NHẬN XÓA LOG NỢ ==================== -->
-@if (isDeleteConfirmOpen()) {
-  <div class="fixed inset-0 z-[60] flex items-center justify-center p-4">
-    <!-- Backdrop overlay -->
-    <div (click)="isDeleteConfirmOpen.set(false)" class="fixed inset-0 bg-black/40"></div>
-
-    <!-- Modal Content -->
-    <div class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 max-w-sm w-full shadow-2xl text-slate-800 dark:text-slate-200 text-center animate-in fade-in zoom-in duration-200">
-      
-      <!-- Warning Icon -->
-      <div class="w-12 h-12 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center mx-auto mb-4">
-        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-        </svg>
-      </div>
-
-      <h4 class="text-base font-extrabold text-slate-900 dark:text-white mb-2">
-        Xác nhận hủy bản ghi công nợ
-      </h4>
-      <p class="text-sm text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
-        Hành động này sẽ xóa bản ghi công nợ này, hoàn tác lại số dư nợ của khách hàng, và tự động xóa bỏ giao dịch liên quan trong sổ quỹ thu chi (nếu có). Bạn chắc chắn muốn tiếp tục?
-      </p>
-
-      <!-- Action Buttons -->
-      <div class="flex gap-3">
-        <button
-          (click)="isDeleteConfirmOpen.set(false)"
-          class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-sm rounded-xl transition-all"
-        >
-          Bỏ qua
-        </button>
-        <button
-          (click)="confirmDeleteDebtLog()"
-          class="flex-1 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-extrabold text-sm rounded-xl shadow-md shadow-rose-500/10 transition-all"
-        >
-          Hủy ghi nhận
-        </button>
-      </div>
-    </div>
-  </div>
-}
+<app-confirm-modal
+  [isOpen]="isDeleteConfirmOpen()"
+  title="Xác nhận hủy bản ghi công nợ"
+  description="Hành động này sẽ xóa bản ghi công nợ này, hoàn tác lại số dư nợ của khách hàng, và tự động xóa bỏ giao dịch liên quan trong sổ quỹ thu chi (nếu có). Bạn chắc chắn muốn tiếp tục?"
+  confirmText="Hủy ghi nhận"
+  cancelText="Bỏ qua"
+  [isSubmitting]="stateService.isLoading()"
+  (confirm)="confirmDeleteDebtLog()"
+  (cancel)="isDeleteConfirmOpen.set(false)"
+></app-confirm-modal>
