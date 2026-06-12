@@ -1738,11 +1738,13 @@ export class Web3Service {
    * Kiểm tra xem địa chỉ ví có phải là Owner của Menu Registry không
    */
   public async checkIsOwnerOfMenuRegistry(address: string): Promise<boolean> {
-    if (!this.provider || !this.menuRegistryContractAddress()) return false;
+    if (!this.menuRegistryContractAddress()) return false;
     try {
-      const contract = new Contract(this.menuRegistryContractAddress(), CAFE_MENU_REGISTRY_ABI, this.provider);
+      const activeProvider = new JsonRpcProvider(this.rpcUrl());
+      const contract = new Contract(this.menuRegistryContractAddress(), CAFE_MENU_REGISTRY_ABI, activeProvider);
       return await contract['isOwner'](address);
     } catch (e) {
+      console.error('Loi checkIsOwnerOfMenuRegistry:', e);
       return false;
     }
   }
@@ -1766,13 +1768,19 @@ export class Web3Service {
 
       // Chuyển format sang struct Product của contract
       // Tối ưu hóa: Không gửi URL hình ảnh dài lên blockchain để tránh lỗi Out of Gas (tiết kiệm ~45% gas)
-      const formattedProducts = products.map(p => ({
-        sku: p.sku || '',
-        name: p.name || '',
-        price: BigInt(p.price || 0),
-        image: '', 
-        status: p.status === undefined ? true : !!p.status
-      }));
+      // Sử dụng basePrice (giá nhỏ nhất của biến thể) gửi lên blockchain đồng bộ với logic so sánh
+      const formattedProducts = products.map(p => {
+        const basePrice = (p.variants && p.variants.length > 0)
+          ? Math.min(...p.variants.map((v: any) => Number(v.price) || 0))
+          : Number(p.price) || 0;
+        return {
+          sku: p.sku || '',
+          name: p.name || '',
+          price: BigInt(basePrice),
+          image: '', 
+          status: p.status === undefined ? true : !!p.status
+        };
+      });
 
       const tx = await contract['updateMenu'](formattedProducts);
       return { txHash: tx.hash, success: true };

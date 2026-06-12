@@ -572,6 +572,7 @@ export class MenuComponent implements OnInit, OnDestroy {
       await this.checkMenuRegistryOwnerPermission();
       if (!this.isOwnerMenuRegistry()) {
         this.stateService.showToast('Ví của bạn không có quyền quản trị (Owner) hợp đồng Menu Registry này!', 'error');
+        this.isMenuSyncing.set(false);
         return;
       }
 
@@ -581,16 +582,13 @@ export class MenuComponent implements OnInit, OnDestroy {
         const chainData = await this.web3Service.getAllMenuProductsFromChain();
         const chainProducts = chainData?.products || [];
 
-        // Tạo fingerprint cho sản phẩm local (bao gồm cả variants)
+        // Tạo fingerprint cho sản phẩm local (chỉ so sánh các thông tin có lưu trên Blockchain để tránh bug luôn báo lệch khi có variants)
         const getLocalFingerprint = (p: any): string => {
           const basePrice = (p.variants && p.variants.length > 0)
             ? Math.min(...p.variants.map((v: any) => Number(v.price) || 0))
             : Number(p.price) || 0;
-          const variantStr = (p.variants && p.variants.length > 0)
-            ? p.variants.map((v: any) => `${v.name || ''}:${Number(v.price) || 0}`).sort().join('|')
-            : '';
           const status = p.status === undefined ? true : !!p.status;
-          return `${p.sku}||${p.name}||${basePrice}||${status}||${variantStr}`;
+          return `${p.sku}||${p.name}||${basePrice}||${status}||`;
         };
 
         // Tạo fingerprint cho sản phẩm chain
@@ -626,6 +624,7 @@ export class MenuComponent implements OnInit, OnDestroy {
 
         if (!hasChanged) {
           this.stateService.showToast('Thực đơn trên Blockchain đã trùng khớp hoàn toàn với thực đơn hiện tại. Không cần đồng bộ!', 'success');
+          this.isMenuSyncing.set(false);
           return;
         }
       } catch (err) {
