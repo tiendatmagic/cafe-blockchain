@@ -262,39 +262,25 @@
       <div
         class="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex items-center justify-between flex-wrap gap-4"
       >
-        <div
-          class="flex items-center gap-1 bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200/40 dark:border-slate-800/40"
-        >
+        <div class="tab-group">
           <button
             (click)="transactionTypeFilter.set('all'); transactionCurrentPage.set(1)"
-            [class]="
-              transactionTypeFilter() === 'all'
-                ? 'bg-white dark:bg-slate-900 text-purple-600 shadow-sm font-bold'
-                : 'text-slate-500'
-            "
-            class="px-4 py-1.5 rounded-lg text-xs font-semibold"
+            [class.active]="transactionTypeFilter() === 'all'"
+            class="tab-item"
           >
             Tất cả
           </button>
           <button
             (click)="transactionTypeFilter.set('thu'); transactionCurrentPage.set(1)"
-            [class]="
-              transactionTypeFilter() === 'thu'
-                ? 'bg-white dark:bg-slate-900 text-purple-600 shadow-sm font-bold'
-                : 'text-slate-500'
-            "
-            class="px-4 py-1.5 rounded-lg text-xs font-semibold"
+            [class.active]="transactionTypeFilter() === 'thu'"
+            class="tab-item"
           >
             Phiếu Thu (+)
           </button>
           <button
             (click)="transactionTypeFilter.set('chi'); transactionCurrentPage.set(1)"
-            [class]="
-              transactionTypeFilter() === 'chi'
-                ? 'bg-white dark:bg-slate-900 text-purple-600 shadow-sm font-bold'
-                : 'text-slate-500'
-            "
-            class="px-4 py-1.5 rounded-lg text-xs font-semibold"
+            [class.active]="transactionTypeFilter() === 'chi'"
+            class="tab-item"
           >
             Phiếu Chi (-)
           </button>

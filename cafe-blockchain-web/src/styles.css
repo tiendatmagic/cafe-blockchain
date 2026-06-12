@@ -228,4 +228,17 @@ div.form-input.p-0 {
   @apply h-[42px] w-full text-sm font-semibold rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)]/20 transition-all duration-200;
 }
 
+/* ==================== HỆ THỐNG TAB GROUP / BỘ LỌC DÙNG CHUNG (TAB GROUP SYSTEM) ==================== */
+.tab-group {
+  @apply h-[42px] flex items-center gap-1 bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200/40 dark:border-slate-800/40;
+}
+
+.tab-item {
+  @apply h-8 px-4 rounded-lg text-xs font-semibold transition-all cursor-pointer inline-flex items-center justify-center gap-1.5 select-none text-slate-500 hover:text-slate-800 dark:hover:text-slate-200;
+}
+
+.tab-item.active {
+  @apply bg-white dark:bg-slate-900 text-[var(--color-primary)] dark:text-[var(--color-secondary)] shadow-sm font-bold;
+}
+
 

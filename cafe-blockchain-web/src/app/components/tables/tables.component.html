@@ -43,30 +43,22 @@
       <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block"
         >Chọn khu vực để xem</span
       >
-      <div
-        class="flex flex-wrap gap-1 bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200/40"
-      >
+      <div class="tab-group">
         <button
+          type="button"
           (click)="activeAreaFilter.set('all')"
-          [class]="
-            activeAreaFilter() === 'all'
-              ? 'bg-white dark:bg-slate-900 text-purple-600 shadow-sm font-bold'
-              : 'text-slate-500'
-          "
-          class="px-3.5 py-1.5 rounded-lg text-xs font-semibold"
+          [class.active]="activeAreaFilter() === 'all'"
+          class="tab-item"
         >
           Tất cả khu vực
         </button>
 
         @for (area of areas(); track area.id) {
           <button
+            type="button"
             (click)="activeAreaFilter.set(area.id.toString())"
-            [class]="
-              activeAreaFilter() === area.id.toString()
-                ? 'bg-white dark:bg-slate-900 text-purple-600 shadow-sm font-bold'
-                : 'text-slate-500'
-            "
-            class="px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5"
+            [class.active]="activeAreaFilter() === area.id.toString()"
+            class="tab-item"
           >
             <span>{{ area.name }}</span>
             <span
@@ -83,40 +75,29 @@
       <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block"
         >Trạng thái bàn</span
       >
-      <div
-        class="flex flex-wrap gap-1 bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200/40"
-      >
+      <div class="tab-group">
         <button
+          type="button"
           (click)="tableStatusFilter.set('all')"
-          [class]="
-            tableStatusFilter() === 'all'
-              ? 'bg-white dark:bg-slate-900 text-purple-600 shadow-sm font-bold'
-              : 'text-slate-500'
-          "
-          class="px-3.5 py-1.5 rounded-lg text-xs font-semibold"
+          [class.active]="tableStatusFilter() === 'all'"
+          class="tab-item"
         >
           Tất cả
         </button>
         <button
+          type="button"
           (click)="tableStatusFilter.set('empty')"
-          [class]="
-            tableStatusFilter() === 'empty'
-              ? 'bg-white dark:bg-slate-900 text-emerald-500 shadow-sm font-bold'
-              : 'text-slate-500'
-          "
-          class="px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1"
+          [class.active]="tableStatusFilter() === 'empty'"
+          class="tab-item"
         >
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
           <span>Bàn trống</span>
         </button>
         <button
+          type="button"
           (click)="tableStatusFilter.set('using')"
-          [class]="
-            tableStatusFilter() === 'using'
-              ? 'bg-white dark:bg-slate-900 text-amber-500 shadow-sm font-bold'
-              : 'text-slate-500'
-          "
-          class="px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1"
+          [class.active]="tableStatusFilter() === 'using'"
+          class="tab-item"
         >
           <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
           <span>Đang sử dụng</span>

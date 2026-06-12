@@ -174,37 +174,27 @@
             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider"
               >Trạng thái đơn hàng</span
             >
-            <div
-              class="flex flex-wrap gap-1 bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200/40 dark:border-slate-800/40"
-            >
+            <div class="tab-group">
               <button
                 type="button"
                 (click)="setOrderStatusFilter('all')"
-                [class]="
-                  orderStatusFilter() === 'all'
-                    ? 'bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm font-bold'
-                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-                "
-                class="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
+                [class.active]="orderStatusFilter() === 'all'"
+                class="tab-item"
               >
                 Tất cả
               </button>
               <button
                 type="button"
                 (click)="setOrderStatusFilter('pending')"
-                [class]="
-                  orderStatusFilter() === 'pending'
-                    ? 'bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm font-bold'
-                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-                "
-                class="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
+                [class.active]="orderStatusFilter() === 'pending'"
+                class="tab-item"
               >
                 <svg
-                  class="h-3.5 w-3.5 shrink-0 inline-block mr-1"
+                  class="h-3.5 w-3.5 shrink-0"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
-                  stroke-width="2"
+                  stroke-width="2.5"
                 >
                   <path
                     stroke-linecap="round"
@@ -212,24 +202,20 @@
                     d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                Chờ xác nhận
+                <span>Chờ xác nhận</span>
               </button>
               <button
                 type="button"
                 (click)="setOrderStatusFilter('preparing')"
-                [class]="
-                  orderStatusFilter() === 'preparing'
-                    ? 'bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm font-bold'
-                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-                "
-                class="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
+                [class.active]="orderStatusFilter() === 'preparing'"
+                class="tab-item"
               >
                 <svg
-                  class="h-3.5 w-3.5 shrink-0 inline-block mr-1"
+                  class="h-3.5 w-3.5 shrink-0"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
-                  stroke-width="2"
+                  stroke-width="2.5"
                 >
                   <path
                     stroke-linecap="round"
@@ -237,24 +223,20 @@
                     d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                Đang chuẩn bị
+                <span>Đang chuẩn bị</span>
               </button>
               <button
                 type="button"
                 (click)="setOrderStatusFilter('completed')"
-                [class]="
-                  orderStatusFilter() === 'completed'
-                    ? 'bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm font-bold'
-                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-                "
-                class="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
+                [class.active]="orderStatusFilter() === 'completed'"
+                class="tab-item"
               >
                 <svg
-                  class="h-3.5 w-3.5 shrink-0 inline-block mr-1"
+                  class="h-3.5 w-3.5 shrink-0"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
-                  stroke-width="2"
+                  stroke-width="2.5"
                 >
                   <path
                     stroke-linecap="round"
@@ -262,24 +244,20 @@
                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                Thành công
+                <span>Thành công</span>
               </button>
               <button
                 type="button"
                 (click)="setOrderStatusFilter('cancelled')"
-                [class]="
-                  orderStatusFilter() === 'cancelled'
-                    ? 'bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm font-bold'
-                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-                "
-                class="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
+                [class.active]="orderStatusFilter() === 'cancelled'"
+                class="tab-item"
               >
                 <svg
-                  class="h-3.5 w-3.5 shrink-0 inline-block mr-1"
+                  class="h-3.5 w-3.5 shrink-0"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
-                  stroke-width="2"
+                  stroke-width="2.5"
                 >
                   <path
                     stroke-linecap="round"
@@ -287,7 +265,7 @@
                     d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                Đã hủy
+                <span>Đã hủy</span>
               </button>
             </div>
           </div>
@@ -297,37 +275,27 @@
             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider"
               >Blockchain (Bằng chứng hóa đơn)</span
             >
-            <div
-              class="flex flex-wrap gap-1 bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200/40 dark:border-slate-800/40"
-            >
+            <div class="tab-group">
               <button
                 type="button"
                 (click)="setOrderBlockchainFilter('all')"
-                [class]="
-                  orderBlockchainFilter() === 'all'
-                    ? 'bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm font-bold'
-                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-                "
-                class="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
+                [class.active]="orderBlockchainFilter() === 'all'"
+                class="tab-item"
               >
                 Tất cả
               </button>
               <button
                 type="button"
                 (click)="setOrderBlockchainFilter('success')"
-                [class]="
-                  orderBlockchainFilter() === 'success'
-                    ? 'bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm font-bold'
-                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-                "
-                class="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
+                [class.active]="orderBlockchainFilter() === 'success'"
+                class="tab-item"
               >
                 <svg
-                  class="h-3.5 w-3.5 shrink-0 inline-block mr-1"
+                  class="h-3.5 w-3.5 shrink-0"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
-                  stroke-width="2"
+                  stroke-width="2.5"
                 >
                   <path
                     stroke-linecap="round"
@@ -335,24 +303,20 @@
                     d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
                   />
                 </svg>
-                Đã đồng bộ
+                <span>Đã đồng bộ</span>
               </button>
               <button
                 type="button"
                 (click)="setOrderBlockchainFilter('none')"
-                [class]="
-                  orderBlockchainFilter() === 'none'
-                    ? 'bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm font-bold'
-                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-                "
-                class="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
+                [class.active]="orderBlockchainFilter() === 'none'"
+                class="tab-item"
               >
                 <svg
-                  class="h-3.5 w-3.5 shrink-0 inline-block mr-1"
+                  class="h-3.5 w-3.5 shrink-0"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
-                  stroke-width="2"
+                  stroke-width="2.5"
                 >
                   <path
                     stroke-linecap="round"
@@ -360,7 +324,7 @@
                     d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"
                   />
                 </svg>
-                Chưa đồng bộ
+                <span>Chưa đồng bộ</span>
               </button>
             </div>
           </div>
