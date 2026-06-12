@@ -2,28 +2,12 @@
 <aside
   class="hidden lg:flex flex-col w-72 bg-white dark:bg-slate-900 border-r border-slate-200/60 dark:border-slate-800/60 shrink-0 sticky top-0 h-screen transition-colors duration-300"
 >
-  <!-- Logo & Title -->
   <div class="p-6 border-b border-slate-200/60 dark:border-slate-800/60 flex items-center gap-3">
-    <div
-      class="w-10 h-10 rounded-2xl bg-purple-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-purple-500/30"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-6 w-6 text-white"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
-        <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
-        <line x1="6" y1="2" x2="6" y2="4"></line>
-        <line x1="10" y1="2" x2="10" y2="4"></line>
-        <line x1="14" y1="2" x2="14" y2="4"></line>
-      </svg>
-    </div>
+    <img
+      src="/assets/logo.png"
+      class="h-10 object-contain shrink-0 w-10"
+      alt="Cafe Blockchain Logo"
+    />
     <div>
       <h1 class="text-lg font-bold tracking-tight text-slate-800 dark:text-white leading-none">
         Cafe Web3
@@ -446,6 +430,11 @@
           />
         </svg>
       </button>
+      <img
+        src="/assets/logo.png"
+        class="h-6.5 w-6.5 object-contain rounded-lg shrink-0 shadow-sm border border-purple-500/10"
+        alt="logo"
+      />
       <span class="font-bold text-slate-800 dark:text-white text-base">Cafe Web3 POS</span>
     </div>
 
@@ -511,22 +500,15 @@
         class="flex items-center justify-between pb-5 border-b border-slate-200/60 dark:border-slate-800/60 mb-5"
       >
         <span
-          class="font-extrabold text-purple-600 dark:text-purple-400 text-lg flex items-center gap-1.5"
-          ><svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5 inline-block text-purple-600 dark:text-purple-400 shrink-0"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M6 14a6 6 0 0012 0V8a2 2 0 00-2-2H8a2 2 0 00-2 2v6zM18 10h1a2 2 0 012 2v0a2 2 0 01-2 2h-1M6 18h12M10 2v2M14 2v2"
-            /></svg
-          ><span>Cafe Web3</span></span
+          class="font-extrabold text-purple-600 dark:text-purple-400 text-lg flex items-center gap-2"
         >
+          <img
+            src="/assets/logo.png"
+            class="h-7 w-7 object-contain rounded-lg shrink-0 shadow-sm border border-purple-500/10"
+            alt="logo"
+          />
+          <span>Cafe Web3</span>
+        </span>
         <button
           (click)="isMobileMenuOpen.set(false)"
           class="text-slate-500 dark:text-slate-400 p-1"
