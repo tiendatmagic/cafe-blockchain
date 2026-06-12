@@ -1,11 +1,11 @@
 <div class="space-y-6 p-4 sm:p-6 max-w-[1530px] mx-auto">
   <!-- Header tiêu đề tab -->
-  <app-page-header title="Sổ đơn hàng" description="Quản lý lịch sử hóa đơn bán hàng POS, xác thực trạng thái và ghi bằng chứng hóa đơn lên Blockchain EVM.">
+  <app-page-header
+    title="Sổ đơn hàng"
+    description="Quản lý lịch sử hóa đơn bán hàng POS, xác thực trạng thái và ghi bằng chứng hóa đơn lên Blockchain EVM."
+  >
     @if (stateService.web3Service.walletConnected()) {
-      <button
-        (click)="refreshOrders()"
-        class="btn-secondary btn-sm"
-      >
+      <button (click)="refreshOrders()" class="btn-secondary">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           class="h-4 w-4 shrink-0"
@@ -27,513 +27,455 @@
 
   @if (stateService.web3Service.walletConnected()) {
     @if (stateService.isOrdersLoading()) {
-    <!-- TABLE SKELETON FOR ORDERS -->
-    <div
-      class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm p-6 space-y-5 animate-pulse"
-    >
-      <div class="flex gap-4 items-center justify-between">
-        <div class="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/3"></div>
-        <div class="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/4"></div>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-          <thead>
-            <tr class="border-b border-slate-200/60 dark:border-slate-800/60">
-              <th class="p-4.5">
-                <div class="h-5 bg-slate-300 dark:bg-slate-700 rounded-md w-16"></div>
-              </th>
-              <th class="p-4.5">
-                <div class="h-5 bg-slate-300 dark:bg-slate-700 rounded-md w-24"></div>
-              </th>
-              <th class="p-4.5">
-                <div class="h-5 bg-slate-300 dark:bg-slate-700 rounded-md w-20"></div>
-              </th>
-              <th class="p-4.5">
-                <div class="h-5 bg-slate-300 dark:bg-slate-700 rounded-md w-28"></div>
-              </th>
-              <th class="p-4.5">
-                <div class="h-5 bg-slate-300 dark:bg-slate-700 rounded-md w-24"></div>
-              </th>
-              <th class="p-4.5 text-right">
-                <div class="h-5 bg-slate-300 dark:bg-slate-700 rounded-md w-16 ml-auto"></div>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (i of [1, 2, 3, 4, 5]; track i) {
-              <tr class="border-b border-slate-100 dark:border-slate-800/50">
-                <td class="p-4.5">
-                  <div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-12"></div>
-                </td>
-                <td class="p-4.5">
-                  <div class="space-y-1.5">
-                    <div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-32"></div>
-                    <div class="h-3.5 bg-slate-200 dark:bg-slate-800 rounded-md w-20"></div>
-                  </div>
-                </td>
-                <td class="p-4.5">
-                  <div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-16"></div>
-                </td>
-                <td class="p-4.5">
-                  <div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-20"></div>
-                </td>
-                <td class="p-4.5">
-                  <div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-24"></div>
-                </td>
-                <td class="p-4.5 text-right">
-                  <div class="h-7 bg-slate-200 dark:bg-slate-800 rounded-lg w-20 ml-auto"></div>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    </div>
-  }
-
-  <div [class.hidden]="stateService.isOrdersLoading()" class="space-y-6">
-    <!-- Banner cảnh báo đối soát cạn/thiếu đồng bộ Blockchain khi chốt ca -->
-    @if (unsyncedCompletedOrders().length > 0) {
+      <!-- TABLE SKELETON FOR ORDERS -->
       <div
-        class="p-4 rounded-2xl bg-[var(--dynamic-primary)]/10 dark:bg-[var(--dynamic-primary)]/15 border border-[var(--dynamic-primary)]/20 dark:border-[var(--dynamic-primary)]/35 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4.5 shadow-sm animate-in slide-in-from-top-4 duration-300"
+        class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm p-6 space-y-5 animate-pulse"
       >
-        <div class="flex items-start gap-3">
-          <div
-            class="p-2 rounded-xl bg-[var(--dynamic-primary)]/10 dark:bg-[var(--dynamic-primary)]/20 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] shrink-0 animate-pulse"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="2.5"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-              />
-            </svg>
-          </div>
-          <div class="space-y-0.5">
-            <h5
-              class="text-xs font-black uppercase tracking-wider text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)]"
-            >
-              Cảnh báo đối soát ca trực
-            </h5>
-            <p class="text-xs text-slate-600 dark:text-slate-400 font-bold leading-normal">
-              Phát hiện
-              <span class="text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] font-extrabold text-xs shrink-0"
-                >{{ unsyncedCompletedOrders().length }} đơn hàng</span
-              >
-              đã hoàn thành nhưng chưa được ghi nhận lên Blockchain. Vui lòng bấm đồng bộ để hoàn
-              tất đối soát trước khi giao ca ra về!
-            </p>
-          </div>
+        <div class="flex gap-4 items-center justify-between">
+          <div class="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/3"></div>
+          <div class="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/4"></div>
         </div>
-        <button
-          (click)="syncAllUnsyncedOrders()"
-          [disabled]="blockchainSyncLoading() || isOrderStatusUpdating()"
-          class="w-full sm:w-auto px-4.5 py-2.5 rounded-xl bg-[var(--dynamic-secondary)]/10 hover:bg-[var(--dynamic-secondary)]/20 border border-[var(--dynamic-secondary)]/20 text-[var(--dynamic-secondary)] text-xs font-black hover:scale-[1.02] active:scale-[0.95] transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0 flex items-center justify-center gap-1.5"
-        >
-          @if (blockchainSyncLoading()) {
-            <div
-              class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
-            ></div>
-          } @else {
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-3.5 w-3.5 shrink-0"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="2.5"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.99m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
-              />
-            </svg>
-          }
-          <span>Đồng bộ nhanh tất cả</span>
-        </button>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-slate-200/60 dark:border-slate-800/60">
+                <th class="p-4.5">
+                  <div class="h-5 bg-slate-300 dark:bg-slate-700 rounded-md w-16"></div>
+                </th>
+                <th class="p-4.5">
+                  <div class="h-5 bg-slate-300 dark:bg-slate-700 rounded-md w-24"></div>
+                </th>
+                <th class="p-4.5">
+                  <div class="h-5 bg-slate-300 dark:bg-slate-700 rounded-md w-20"></div>
+                </th>
+                <th class="p-4.5">
+                  <div class="h-5 bg-slate-300 dark:bg-slate-700 rounded-md w-28"></div>
+                </th>
+                <th class="p-4.5">
+                  <div class="h-5 bg-slate-300 dark:bg-slate-700 rounded-md w-24"></div>
+                </th>
+                <th class="p-4.5 text-right">
+                  <div class="h-5 bg-slate-300 dark:bg-slate-700 rounded-md w-16 ml-auto"></div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (i of [1, 2, 3, 4, 5]; track i) {
+                <tr class="border-b border-slate-100 dark:border-slate-800/50">
+                  <td class="p-4.5">
+                    <div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-12"></div>
+                  </td>
+                  <td class="p-4.5">
+                    <div class="space-y-1.5">
+                      <div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-32"></div>
+                      <div class="h-3.5 bg-slate-200 dark:bg-slate-800 rounded-md w-20"></div>
+                    </div>
+                  </td>
+                  <td class="p-4.5">
+                    <div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-16"></div>
+                  </td>
+                  <td class="p-4.5">
+                    <div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-20"></div>
+                  </td>
+                  <td class="p-4.5">
+                    <div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-24"></div>
+                  </td>
+                  <td class="p-4.5 text-right">
+                    <div class="h-7 bg-slate-200 dark:bg-slate-800 rounded-lg w-20 ml-auto"></div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       </div>
     }
 
-    <!-- THANH LỌC ĐƠN HÀNG -->
-    <div
-      class="bg-white dark:bg-slate-900 p-4.5 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex flex-col lg:flex-row gap-5 justify-between items-stretch lg:items-end transition-colors duration-300"
-    >
-      <!-- Nhóm bộ lọc (trạng thái + blockchain) -->
-      <div class="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-4.5">
-        <!-- Lọc trạng thái đơn hàng -->
-        <div class="flex flex-col gap-1.5">
-          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider"
-            >Trạng thái đơn hàng</span
-          >
-          <div
-            class="flex flex-wrap gap-1 bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200/40 dark:border-slate-800/40"
-          >
-            <button
-              type="button"
-              (click)="setOrderStatusFilter('all')"
-              [class]="
-                orderStatusFilter() === 'all'
-                  ? 'bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm font-bold'
-                  : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-              "
-              class="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
-            >
-              Tất cả
-            </button>
-            <button
-              type="button"
-              (click)="setOrderStatusFilter('pending')"
-              [class]="
-                orderStatusFilter() === 'pending'
-                  ? 'bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm font-bold'
-                  : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-              "
-              class="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
-            >
-              <svg
-                class="h-3.5 w-3.5 shrink-0 inline-block mr-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              Chờ xác nhận
-            </button>
-            <button
-              type="button"
-              (click)="setOrderStatusFilter('preparing')"
-              [class]="
-                orderStatusFilter() === 'preparing'
-                  ? 'bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm font-bold'
-                  : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-              "
-              class="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
-            >
-              <svg
-                class="h-3.5 w-3.5 shrink-0 inline-block mr-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              Đang chuẩn bị
-            </button>
-            <button
-              type="button"
-              (click)="setOrderStatusFilter('completed')"
-              [class]="
-                orderStatusFilter() === 'completed'
-                  ? 'bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm font-bold'
-                  : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-              "
-              class="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
-            >
-              <svg
-                class="h-3.5 w-3.5 shrink-0 inline-block mr-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              Thành công
-            </button>
-            <button
-              type="button"
-              (click)="setOrderStatusFilter('cancelled')"
-              [class]="
-                orderStatusFilter() === 'cancelled'
-                  ? 'bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm font-bold'
-                  : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-              "
-              class="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
-            >
-              <svg
-                class="h-3.5 w-3.5 shrink-0 inline-block mr-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              Đã hủy
-            </button>
-          </div>
-        </div>
-
-        <!-- Lọc trạng thái blockchain -->
-        <div class="flex flex-col gap-1.5">
-          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider"
-            >Blockchain (Bằng chứng hóa đơn)</span
-          >
-          <div
-            class="flex flex-wrap gap-1 bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200/40 dark:border-slate-800/40"
-          >
-            <button
-              type="button"
-              (click)="setOrderBlockchainFilter('all')"
-              [class]="
-                orderBlockchainFilter() === 'all'
-                  ? 'bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm font-bold'
-                  : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-              "
-              class="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
-            >
-              Tất cả
-            </button>
-            <button
-              type="button"
-              (click)="setOrderBlockchainFilter('success')"
-              [class]="
-                orderBlockchainFilter() === 'success'
-                  ? 'bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm font-bold'
-                  : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-              "
-              class="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
-            >
-              <svg
-                class="h-3.5 w-3.5 shrink-0 inline-block mr-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                />
-              </svg>
-              Đã đồng bộ
-            </button>
-            <button
-              type="button"
-              (click)="setOrderBlockchainFilter('none')"
-              [class]="
-                orderBlockchainFilter() === 'none'
-                  ? 'bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm font-bold'
-                  : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-              "
-              class="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
-            >
-              <svg
-                class="h-3.5 w-3.5 shrink-0 inline-block mr-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"
-                />
-              </svg>
-              Chưa đồng bộ
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tìm kiếm đơn hàng -->
-      <div class="flex flex-col gap-1.5 w-full lg:w-72 shrink-0">
-        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider"
-          >Tìm kiếm đơn hàng</span
+    <div [class.hidden]="stateService.isOrdersLoading()" class="space-y-6">
+      <!-- Banner cảnh báo đối soát cạn/thiếu đồng bộ Blockchain khi chốt ca -->
+      @if (unsyncedCompletedOrders().length > 0) {
+        <div
+          class="p-4 rounded-2xl bg-[var(--dynamic-primary)]/10 dark:bg-[var(--dynamic-primary)]/15 border border-[var(--dynamic-primary)]/20 dark:border-[var(--dynamic-primary)]/35 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4.5 shadow-sm animate-in slide-in-from-top-4 duration-300"
         >
-        <div class="relative w-full">
-          <input
-            type="text"
-            [ngModel]="orderSearchQuery()"
-            (ngModelChange)="orderSearchQuery.set($event); ordersCurrentPage.set(1)"
-            placeholder="Mã đơn, số bàn, khách..."
-            class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-xs focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all font-semibold"
-          />
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="absolute left-3 top-3 h-4 w-4 text-slate-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            stroke-width="2.5"
+          <div class="flex items-start gap-3">
+            <div
+              class="p-2 rounded-xl bg-[var(--dynamic-primary)]/10 dark:bg-[var(--dynamic-primary)]/20 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] shrink-0 animate-pulse"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2.5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+            </div>
+            <div class="space-y-0.5">
+              <h5
+                class="text-xs font-black uppercase tracking-wider text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)]"
+              >
+                Cảnh báo đối soát ca trực
+              </h5>
+              <p class="text-xs text-slate-600 dark:text-slate-400 font-bold leading-normal">
+                Phát hiện
+                <span
+                  class="text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] font-extrabold text-xs shrink-0"
+                  >{{ unsyncedCompletedOrders().length }} đơn hàng</span
+                >
+                đã hoàn thành nhưng chưa được ghi nhận lên Blockchain. Vui lòng bấm đồng bộ để hoàn
+                tất đối soát trước khi giao ca ra về!
+              </p>
+            </div>
+          </div>
+          <button
+            (click)="syncAllUnsyncedOrders()"
+            [disabled]="blockchainSyncLoading() || isOrderStatusUpdating()"
+            class="w-full sm:w-auto px-4.5 py-2.5 rounded-xl bg-[var(--dynamic-secondary)]/10 hover:bg-[var(--dynamic-secondary)]/20 border border-[var(--dynamic-secondary)]/20 text-[var(--dynamic-secondary)] text-xs font-black hover:scale-[1.02] active:scale-[0.95] transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0 flex items-center justify-center gap-1.5"
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            @if (blockchainSyncLoading()) {
+              <div
+                class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
+              ></div>
+            } @else {
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-3.5 w-3.5 shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2.5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.99m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
+                />
+              </svg>
+            }
+            <span>Đồng bộ nhanh tất cả</span>
+          </button>
+        </div>
+      }
+
+      <!-- THANH LỌC ĐƠN HÀNG -->
+      <div
+        class="bg-white dark:bg-slate-900 p-4.5 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex flex-col lg:flex-row gap-5 justify-between items-stretch lg:items-end transition-colors duration-300"
+      >
+        <!-- Nhóm bộ lọc (trạng thái + blockchain) -->
+        <div class="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-4.5">
+          <!-- Lọc trạng thái đơn hàng -->
+          <div class="flex flex-col gap-1.5">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider"
+              >Trạng thái đơn hàng</span
+            >
+            <div
+              class="flex flex-wrap gap-1 bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200/40 dark:border-slate-800/40"
+            >
+              <button
+                type="button"
+                (click)="setOrderStatusFilter('all')"
+                [class]="
+                  orderStatusFilter() === 'all'
+                    ? 'bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm font-bold'
+                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                "
+                class="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
+              >
+                Tất cả
+              </button>
+              <button
+                type="button"
+                (click)="setOrderStatusFilter('pending')"
+                [class]="
+                  orderStatusFilter() === 'pending'
+                    ? 'bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm font-bold'
+                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                "
+                class="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
+              >
+                <svg
+                  class="h-3.5 w-3.5 shrink-0 inline-block mr-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                Chờ xác nhận
+              </button>
+              <button
+                type="button"
+                (click)="setOrderStatusFilter('preparing')"
+                [class]="
+                  orderStatusFilter() === 'preparing'
+                    ? 'bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm font-bold'
+                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                "
+                class="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
+              >
+                <svg
+                  class="h-3.5 w-3.5 shrink-0 inline-block mr-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                Đang chuẩn bị
+              </button>
+              <button
+                type="button"
+                (click)="setOrderStatusFilter('completed')"
+                [class]="
+                  orderStatusFilter() === 'completed'
+                    ? 'bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm font-bold'
+                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                "
+                class="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
+              >
+                <svg
+                  class="h-3.5 w-3.5 shrink-0 inline-block mr-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                Thành công
+              </button>
+              <button
+                type="button"
+                (click)="setOrderStatusFilter('cancelled')"
+                [class]="
+                  orderStatusFilter() === 'cancelled'
+                    ? 'bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm font-bold'
+                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                "
+                class="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
+              >
+                <svg
+                  class="h-3.5 w-3.5 shrink-0 inline-block mr-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                Đã hủy
+              </button>
+            </div>
+          </div>
+
+          <!-- Lọc trạng thái blockchain -->
+          <div class="flex flex-col gap-1.5">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider"
+              >Blockchain (Bằng chứng hóa đơn)</span
+            >
+            <div
+              class="flex flex-wrap gap-1 bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200/40 dark:border-slate-800/40"
+            >
+              <button
+                type="button"
+                (click)="setOrderBlockchainFilter('all')"
+                [class]="
+                  orderBlockchainFilter() === 'all'
+                    ? 'bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm font-bold'
+                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                "
+                class="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
+              >
+                Tất cả
+              </button>
+              <button
+                type="button"
+                (click)="setOrderBlockchainFilter('success')"
+                [class]="
+                  orderBlockchainFilter() === 'success'
+                    ? 'bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm font-bold'
+                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                "
+                class="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
+              >
+                <svg
+                  class="h-3.5 w-3.5 shrink-0 inline-block mr-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                  />
+                </svg>
+                Đã đồng bộ
+              </button>
+              <button
+                type="button"
+                (click)="setOrderBlockchainFilter('none')"
+                [class]="
+                  orderBlockchainFilter() === 'none'
+                    ? 'bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm font-bold'
+                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                "
+                class="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
+              >
+                <svg
+                  class="h-3.5 w-3.5 shrink-0 inline-block mr-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"
+                  />
+                </svg>
+                Chưa đồng bộ
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tìm kiếm đơn hàng -->
+        <div class="flex flex-col gap-1.5 w-full lg:w-72 shrink-0">
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider"
+            >Tìm kiếm đơn hàng</span
+          >
+          <div class="relative w-full">
+            <input
+              type="text"
+              [ngModel]="orderSearchQuery()"
+              (ngModelChange)="orderSearchQuery.set($event); ordersCurrentPage.set(1)"
+              placeholder="Mã đơn, số bàn, khách..."
+              class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-xs focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all font-semibold"
             />
-          </svg>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="absolute left-3 top-3 h-4 w-4 text-slate-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- BẢNG LỊCH SỬ ĐƠN HÀNG -->
-    <div
-      class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm overflow-hidden transition-colors duration-300"
-    >
-      <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse min-w-[950px]">
-          <thead>
-            <tr
-              class="border-b border-slate-200/60 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-950/20"
-            >
-              <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider pl-6">
-                Mã đơn
-              </th>
-              <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                Số bàn
-              </th>
-              <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                Tổng tiền
-              </th>
-              <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                Hình thức
-              </th>
-              <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                Thời gian
-              </th>
-              <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                Trạng thái đơn
-              </th>
-              <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                Bằng chứng Blockchain
-              </th>
-              <th
-                class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider pr-6 text-right"
+      <!-- BẢNG LỊCH SỬ ĐƠN HÀNG -->
+      <div
+        class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm overflow-hidden transition-colors duration-300"
+      >
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse min-w-[950px]">
+            <thead>
+              <tr
+                class="border-b border-slate-200/60 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-950/20"
               >
-                Thao tác
-              </th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100 dark:divide-slate-800/50">
-            @for (order of paginatedOrders(); track order.id) {
-              <tr class="hover:bg-slate-50/40 dark:hover:bg-slate-800/10 transition-colors text-sm">
-                <td
-                  class="p-4.5 pl-6 font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap"
+                <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider pl-6">
+                  Mã đơn
+                </th>
+                <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  Số bàn
+                </th>
+                <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  Tổng tiền
+                </th>
+                <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  Hình thức
+                </th>
+                <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  Thời gian
+                </th>
+                <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  Trạng thái đơn
+                </th>
+                <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  Bằng chứng Blockchain
+                </th>
+                <th
+                  class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider pr-6 text-right"
                 >
-                  {{ order.order_code }}
-                </td>
-                <td
-                  class="p-4.5 font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap"
+                  Thao tác
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800/50">
+              @for (order of paginatedOrders(); track order.id) {
+                <tr
+                  class="hover:bg-slate-50/40 dark:hover:bg-slate-800/10 transition-colors text-sm"
                 >
-                  {{ order.table_number || 'Mang về' }}
-                </td>
-                <td class="p-4.5 font-black text-slate-800 dark:text-white whitespace-nowrap">
-                  {{ order.total_amount | vnd }}
-                </td>
-                <td class="p-4.5 text-xs font-bold whitespace-nowrap">
-                  <span
-                    [class]="
-                      order.payment_method === 'crypto'
-                        ? 'text-purple-600 bg-purple-50 dark:bg-purple-950/40 dark:text-purple-400 px-2 py-0.5 rounded-lg'
-                        : 'text-slate-600 bg-slate-100 dark:bg-slate-800 dark:text-slate-400 px-2 py-0.5 rounded-lg'
-                    "
+                  <td
+                    class="p-4.5 pl-6 font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap"
                   >
-                    {{ getPaymentMethodText(order.payment_method) }}
-                  </span>
-                </td>
-                <td
-                  class="p-4.5 text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap"
-                >
-                  {{ order.created_at | date: 'dd/MM/yyyy HH:mm' }}
-                </td>
-                <td class="p-4.5 whitespace-nowrap">
-                  @if (order.is_verified === false) {
+                    {{ order.order_code }}
+                  </td>
+                  <td
+                    class="p-4.5 font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap"
+                  >
+                    {{ order.table_number || 'Mang về' }}
+                  </td>
+                  <td class="p-4.5 font-black text-slate-800 dark:text-white whitespace-nowrap">
+                    {{ order.total_amount | vnd }}
+                  </td>
+                  <td class="p-4.5 text-xs font-bold whitespace-nowrap">
                     <span
-                      class="bg-rose-500/15 text-rose-600 text-xs font-extrabold px-2.5 py-1 rounded-xl border border-rose-500/20 shadow-sm animate-pulse"
-                      ><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-amber-500 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg> DB bị can thiệp!</span
+                      [class]="
+                        order.payment_method === 'crypto'
+                          ? 'text-purple-600 bg-purple-50 dark:bg-purple-950/40 dark:text-purple-400 px-2 py-0.5 rounded-lg'
+                          : 'text-slate-600 bg-slate-100 dark:bg-slate-800 dark:text-slate-400 px-2 py-0.5 rounded-lg'
+                      "
                     >
-                  } @else if (order.status === 'completed') {
-                    <span
-                      class="bg-emerald-500/10 text-emerald-500 text-xs font-extrabold px-2.5 py-1 rounded-xl"
-                      >Thành công</span
-                    >
-                  } @else if (order.status === 'cancelled') {
-                    <span
-                      class="bg-rose-500/10 text-rose-500 text-xs font-extrabold px-2.5 py-1 rounded-xl"
-                      >Đã hủy</span
-                    >
-                  } @else if (order.status === 'preparing') {
-                    <span
-                      class="bg-blue-500/10 text-blue-500 text-xs font-extrabold px-2.5 py-1 rounded-xl animate-pulse"
-                      >Đang chuẩn bị</span
-                    >
-                  } @else {
-                    <span
-                      class="bg-amber-500/10 text-amber-500 text-xs font-extrabold px-2.5 py-1 rounded-xl animate-pulse"
-                      >Chờ xác nhận</span
-                    >
-                  }
-                </td>
-                <td class="p-4.5 whitespace-nowrap">
-                  @if (order.blockchain_status === 'success') {
-                    <div class="flex items-center gap-1.5">
-                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                      <a
-                        [href]="getTxExplorerLink(order.tx_hash, order.chain_id)"
-                        target="_blank"
-                        class="text-xs text-blue-500 font-mono hover:underline font-bold"
-                      >
-                        {{ order.tx_hash.substring(0, 5) }}...{{
-                          order.tx_hash.substring(order.tx_hash.length - 4)
-                        }}
-                        ↗
-                      </a>
-                    </div>
-                  } @else if (
-                    order.status === 'completed' && order.blockchain_status !== 'failed'
-                  ) {
+                      {{ getPaymentMethodText(order.payment_method) }}
+                    </span>
+                  </td>
+                  <td
+                    class="p-4.5 text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap"
+                  >
+                    {{ order.created_at | date: 'dd/MM/yyyy HH:mm' }}
+                  </td>
+                  <td class="p-4.5 whitespace-nowrap">
                     @if (order.is_verified === false) {
-                      <div class="flex flex-col gap-1 items-start">
-                        <span
-                          class="px-2 py-0.5 rounded-lg bg-red-500/10 text-red-500 font-bold text-xs flex items-center gap-1 border border-red-500/15 shadow-sm animate-pulse"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-amber-500 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg> Dữ liệu bị thay đổi!
-                        </span>
-                        <button
-                          [disabled]="true"
-                          class="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-200 text-slate-400 font-bold text-xs cursor-not-allowed"
-                        >
-                          <span>Bị khóa đồng bộ</span>
-                        </button>
-                      </div>
-                    } @else {
-                      <button
-                        [disabled]="blockchainSyncLoading() || !web3Service.walletConnected()"
-                        (click)="syncToBlockchain(order)"
-                        class="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-purple-600 text-white font-bold text-xs shadow-md shadow-purple-500/15 hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <svg
-                          class="h-3.5 w-3.5 shrink-0"
+                      <span
+                        class="bg-rose-500/15 text-rose-600 text-xs font-extrabold px-2.5 py-1 rounded-xl border border-rose-500/20 shadow-sm animate-pulse"
+                        ><svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          class="h-4 w-4 shrink-0 text-amber-500 inline-block"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -542,44 +484,133 @@
                           <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
-                            d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                           />
                         </svg>
-                        <span>Đồng bộ Blockchain</span>
-                      </button>
-                    }
-                  } @else {
-                    <span class="text-xs text-slate-400 font-semibold italic"
-                      >Đơn chưa hoàn thành</span
-                    >
-                  }
-                </td>
-                <td class="p-4.5 pr-6 text-right whitespace-nowrap">
-                  <div class="flex items-center justify-end gap-2.5">
-                    <button
-                      (click)="viewOrderDetail(order)"
-                      class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200/20 dark:border-slate-800/20 text-xs font-bold transition-all hover:scale-[1.03] active:scale-[0.97]"
-                    >
-                      Chi tiết
-                    </button>
-                    @if (order.status === 'pending' && order.blockchain_status === 'none') {
-                      <button
-                        (click)="editOrder(order)"
-                        class="px-2.5 py-1 rounded-lg bg-[var(--dynamic-primary)]/10 hover:bg-[var(--dynamic-primary)]/20 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] border border-[var(--dynamic-primary)]/15 dark:border-[var(--dynamic-secondary)]/15 text-xs font-bold transition-all hover:scale-[1.03] active:scale-[0.97]"
+                        DB bị can thiệp!</span
                       >
-                        Sửa
-                      </button>
+                    } @else if (order.status === 'completed') {
+                      <span
+                        class="bg-emerald-500/10 text-emerald-500 text-xs font-extrabold px-2.5 py-1 rounded-xl"
+                        >Thành công</span
+                      >
+                    } @else if (order.status === 'cancelled') {
+                      <span
+                        class="bg-rose-500/10 text-rose-500 text-xs font-extrabold px-2.5 py-1 rounded-xl"
+                        >Đã hủy</span
+                      >
+                    } @else if (order.status === 'preparing') {
+                      <span
+                        class="bg-blue-500/10 text-blue-500 text-xs font-extrabold px-2.5 py-1 rounded-xl animate-pulse"
+                        >Đang chuẩn bị</span
+                      >
+                    } @else {
+                      <span
+                        class="bg-amber-500/10 text-amber-500 text-xs font-extrabold px-2.5 py-1 rounded-xl animate-pulse"
+                        >Chờ xác nhận</span
+                      >
                     }
-                  </div>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+                  </td>
+                  <td class="p-4.5 whitespace-nowrap">
+                    @if (order.blockchain_status === 'success') {
+                      <div class="flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        <a
+                          [href]="getTxExplorerLink(order.tx_hash, order.chain_id)"
+                          target="_blank"
+                          class="text-xs text-blue-500 font-mono hover:underline font-bold"
+                        >
+                          {{ order.tx_hash.substring(0, 5) }}...{{
+                            order.tx_hash.substring(order.tx_hash.length - 4)
+                          }}
+                          ↗
+                        </a>
+                      </div>
+                    } @else if (
+                      order.status === 'completed' && order.blockchain_status !== 'failed'
+                    ) {
+                      @if (order.is_verified === false) {
+                        <div class="flex flex-col gap-1 items-start">
+                          <span
+                            class="px-2 py-0.5 rounded-lg bg-red-500/10 text-red-500 font-bold text-xs flex items-center gap-1 border border-red-500/15 shadow-sm animate-pulse"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              class="h-4 w-4 shrink-0 text-amber-500 inline-block"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              stroke-width="2"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                              />
+                            </svg>
+                            Dữ liệu bị thay đổi!
+                          </span>
+                          <button
+                            [disabled]="true"
+                            class="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-200 text-slate-400 font-bold text-xs cursor-not-allowed"
+                          >
+                            <span>Bị khóa đồng bộ</span>
+                          </button>
+                        </div>
+                      } @else {
+                        <button
+                          [disabled]="blockchainSyncLoading() || !web3Service.walletConnected()"
+                          (click)="syncToBlockchain(order)"
+                          class="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-purple-600 text-white font-bold text-xs shadow-md shadow-purple-500/15 hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <svg
+                            class="h-3.5 w-3.5 shrink-0"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"
+                            />
+                          </svg>
+                          <span>Đồng bộ Blockchain</span>
+                        </button>
+                      }
+                    } @else {
+                      <span class="text-xs text-slate-400 font-semibold italic"
+                        >Đơn chưa hoàn thành</span
+                      >
+                    }
+                  </td>
+                  <td class="p-4.5 pr-6 text-right whitespace-nowrap">
+                    <div class="flex items-center justify-end gap-2.5">
+                      <button
+                        (click)="viewOrderDetail(order)"
+                        class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200/20 dark:border-slate-800/20 text-xs font-bold transition-all hover:scale-[1.03] active:scale-[0.97]"
+                      >
+                        Chi tiết
+                      </button>
+                      @if (order.status === 'pending' && order.blockchain_status === 'none') {
+                        <button
+                          (click)="editOrder(order)"
+                          class="px-2.5 py-1 rounded-lg bg-[var(--dynamic-primary)]/10 hover:bg-[var(--dynamic-primary)]/20 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] border border-[var(--dynamic-primary)]/15 dark:border-[var(--dynamic-secondary)]/15 text-xs font-bold transition-all hover:scale-[1.03] active:scale-[0.97]"
+                        >
+                          Sửa
+                        </button>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
 
-      <!-- Phân trang Sổ đơn hàng -->
-      @if (filteredOrders().length > ordersItemsPerPage) {
+        <!-- Phân trang Sổ đơn hàng -->
+        @if (filteredOrders().length > ordersItemsPerPage) {
           <!-- Khối Phân trang dùng chung -->
           <app-pagination
             [currentPage]="ordersCurrentPage()"
@@ -589,162 +620,221 @@
             itemName="hóa đơn"
             (pageChange)="ordersCurrentPage.set($event)"
           ></app-pagination>
-      }
-    </div>
-  </div>
-
-<!-- ==================== MODAL XEM CHI TIẾT HÓA ĐƠN ==================== -->
-@if (isOrderDetailModalOpen()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-    <!-- Backdrop overlay -->
-    <div (click)="closeOrderDetail()" class="fixed inset-0 bg-black/40"></div>
-
-    <!-- Modal Content -->
-    <div
-      class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 p-6 max-w-md md:max-w-5xl w-full max-h-[90vh] md:max-h-[85vh] shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] animate-in fade-in zoom-in duration-200 transition-colors text-slate-800 dark:text-slate-200 flex flex-col"
-    >
-      <!-- Header Modal -->
-      <div
-        class="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-800 shrink-0"
-      >
-        <h4 class="text-lg font-extrabold text-slate-800 dark:text-white">
-          Chi tiết hóa đơn {{ selectedOrderDetails()?.order_code }}
-        </h4>
-        <button
-          (click)="closeOrderDetail()"
-          class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2.5"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
+        }
       </div>
+    </div>
 
-      <!-- Layout 2 cột (Bọc trong container cuộn được trên mobile/màn hình nhỏ) -->
-      <div class="flex-1 overflow-y-auto pr-1 no-scrollbar">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-          <!-- CỘT BÊN TRÁI -->
-          <div class="space-y-4.5 flex flex-col justify-between">
-            <div class="space-y-4">
-              <!-- Thông tin chung -->
-              <div
-                class="grid grid-cols-2 gap-3 text-xs bg-slate-50/50 dark:bg-slate-950/20 p-4 rounded-2xl border border-slate-100 dark:border-slate-900/60"
+    <!-- ==================== MODAL XEM CHI TIẾT HÓA ĐƠN ==================== -->
+    @if (isOrderDetailModalOpen()) {
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <!-- Backdrop overlay -->
+        <div (click)="closeOrderDetail()" class="fixed inset-0 bg-black/40"></div>
+
+        <!-- Modal Content -->
+        <div
+          class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 p-6 max-w-md md:max-w-5xl w-full max-h-[90vh] md:max-h-[85vh] shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] animate-in fade-in zoom-in duration-200 transition-colors text-slate-800 dark:text-slate-200 flex flex-col"
+        >
+          <!-- Header Modal -->
+          <div
+            class="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-800 shrink-0"
+          >
+            <h4 class="text-lg font-extrabold text-slate-800 dark:text-white">
+              Chi tiết hóa đơn {{ selectedOrderDetails()?.order_code }}
+            </h4>
+            <button
+              (click)="closeOrderDetail()"
+              class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                <div>
-                  <span class="text-slate-400 font-bold block uppercase tracking-wider text-xs"
-                    >BÀN SỐ</span
-                  >
-                  <span class="font-extrabold text-slate-700 dark:text-slate-300 text-sm">{{
-                    selectedOrderDetails()?.table_number || 'Mang về'
-                  }}</span>
-                </div>
-                <div>
-                  <span class="text-slate-400 font-bold block uppercase tracking-wider text-xs"
-                    >THANH TOÁN</span
-                  >
-                  <span class="font-extrabold text-slate-700 dark:text-slate-300 text-sm">{{
-                    getPaymentMethodText(selectedOrderDetails()?.payment_method)
-                  }}</span>
-                </div>
-                <div class="col-span-2 pt-2 border-t border-slate-200/50 dark:border-slate-800">
-                  <span class="text-slate-400 font-bold block uppercase tracking-wider text-xs"
-                    >THỜI GIAN ĐẶT HÀNG</span
-                  >
-                  <span
-                    class="font-extrabold text-slate-700 dark:text-slate-300 text-xs font-mono"
-                    >{{ selectedOrderDetails()?.created_at | date: 'dd/MM/yyyy HH:mm:ss' }}</span
-                  >
-                </div>
-                @if (selectedOrderDetails()?.customer) {
-                  <div
-                    class="col-span-2 pt-2 border-t border-slate-200/50 dark:border-slate-800 flex items-center gap-2"
-                  >
-                    <div
-                      class="w-6 h-6 rounded-lg bg-purple-600 text-white flex items-center justify-center font-extrabold text-xs shrink-0 shadow-sm"
-                    >
-                      {{ selectedOrderDetails()?.customer.name.charAt(0).toUpperCase() }}
-                    </div>
-                    <div class="flex flex-col min-w-0">
-                      <span
-                        class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none"
-                        >KHÁCH HÀNG</span
-                      >
-                      <span
-                        class="font-extrabold text-slate-700 dark:text-slate-300 text-xs truncate mt-0.5"
-                      >
-                        {{ selectedOrderDetails()?.customer.name }} ({{
-                          selectedOrderDetails()?.customer.customer_code
-                        }})
-                      </span>
-                      @if (selectedOrderDetails()?.customer.wallet_address) {
-                        <span
-                          class="text-xs text-purple-600 dark:text-purple-400 font-bold leading-none mt-1 truncate max-w-full block"
-                          [title]="selectedOrderDetails()?.customer.wallet_address"
-                        >
-                          Ví: {{ selectedOrderDetails()?.customer.wallet_address }}
-                        </span>
-                      }
-                    </div>
-                  </div>
-                }
-                @if (selectedOrderDetails()?.gift_voucher_nft_token_id) {
-                  <div
-                    class="col-span-2 pt-2 border-t border-slate-200/50 dark:border-slate-800 flex items-center gap-2"
-                  >
-                    <div
-                      class="w-6 h-6 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 flex items-center justify-center shrink-0 shadow-sm"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5a2 2 0 10-2 2h2zm-2 4h4M3 8h18v3H3V8zm2 3h14v9a2 2 0 01-2 2H7a2 2 0 01-2-2v-9z" /></svg>
-                    </div>
-                    <div class="flex flex-col min-w-0">
-                      <span
-                        class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none"
-                        >Voucher tặng kèm (NFT)</span
-                      >
-                      <span
-                        class="font-extrabold text-emerald-600 dark:text-emerald-400 text-xs truncate mt-0.5"
-                      >
-                        Token ID: #{{ selectedOrderDetails()?.gift_voucher_nft_token_id }}
-                      </span>
-                    </div>
-                  </div>
-                }
-              </div>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2.5"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
 
-              <!-- Bằng chứng Blockchain -->
-              <div class="space-y-1 text-xs">
-                <span class="text-slate-400 font-bold block uppercase tracking-wider text-xs"
-                  >Bằng chứng Blockchain (Web3)</span
-                >
-                @if (selectedOrderDetails()?.is_verified === false) {
+          <!-- Layout 2 cột (Bọc trong container cuộn được trên mobile/màn hình nhỏ) -->
+          <div class="flex-1 overflow-y-auto pr-1 no-scrollbar">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+              <!-- CỘT BÊN TRÁI -->
+              <div class="space-y-4.5 flex flex-col justify-between">
+                <div class="space-y-4">
+                  <!-- Thông tin chung -->
                   <div
-                    class="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 space-y-1.5 shadow-sm"
+                    class="grid grid-cols-2 gap-3 text-xs bg-slate-50/50 dark:bg-slate-950/20 p-4 rounded-2xl border border-slate-100 dark:border-slate-900/60"
                   >
-                    <div
-                      class="flex items-center gap-1.5 text-red-500 font-extrabold text-xs animate-pulse"
-                    >
-                      <span><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-amber-500 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg> CẢNH BÁO: Dữ liệu DB bị can thiệp trái phép!</span>
+                    <div>
+                      <span class="text-slate-400 font-bold block uppercase tracking-wider text-xs"
+                        >BÀN SỐ</span
+                      >
+                      <span class="font-extrabold text-slate-700 dark:text-slate-300 text-sm">{{
+                        selectedOrderDetails()?.table_number || 'Mang về'
+                      }}</span>
                     </div>
-                    <p class="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
-                      Số tiền hoặc thông tin đơn hàng hiện tại trong Database đã bị sửa đổi lệch so
-                      với chữ ký số gốc (HMAC-SHA256).
-                    </p>
-                    @if (selectedOrderDetails()?.blockchain_status === 'success') {
-                      <div class="pt-1.5 border-t border-red-500/10 flex flex-col gap-1">
-                        <span class="text-[10px] text-slate-400 uppercase tracking-wider font-bold"
-                          >Mã giao dịch Blockchain gốc:</span
+                    <div>
+                      <span class="text-slate-400 font-bold block uppercase tracking-wider text-xs"
+                        >THANH TOÁN</span
+                      >
+                      <span class="font-extrabold text-slate-700 dark:text-slate-300 text-sm">{{
+                        getPaymentMethodText(selectedOrderDetails()?.payment_method)
+                      }}</span>
+                    </div>
+                    <div class="col-span-2 pt-2 border-t border-slate-200/50 dark:border-slate-800">
+                      <span class="text-slate-400 font-bold block uppercase tracking-wider text-xs"
+                        >THỜI GIAN ĐẶT HÀNG</span
+                      >
+                      <span
+                        class="font-extrabold text-slate-700 dark:text-slate-300 text-xs font-mono"
+                        >{{
+                          selectedOrderDetails()?.created_at | date: 'dd/MM/yyyy HH:mm:ss'
+                        }}</span
+                      >
+                    </div>
+                    @if (selectedOrderDetails()?.customer) {
+                      <div
+                        class="col-span-2 pt-2 border-t border-slate-200/50 dark:border-slate-800 flex items-center gap-2"
+                      >
+                        <div
+                          class="w-6 h-6 rounded-lg bg-purple-600 text-white flex items-center justify-center font-extrabold text-xs shrink-0 shadow-sm"
                         >
+                          {{ selectedOrderDetails()?.customer.name.charAt(0).toUpperCase() }}
+                        </div>
+                        <div class="flex flex-col min-w-0">
+                          <span
+                            class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none"
+                            >KHÁCH HÀNG</span
+                          >
+                          <span
+                            class="font-extrabold text-slate-700 dark:text-slate-300 text-xs truncate mt-0.5"
+                          >
+                            {{ selectedOrderDetails()?.customer.name }} ({{
+                              selectedOrderDetails()?.customer.customer_code
+                            }})
+                          </span>
+                          @if (selectedOrderDetails()?.customer.wallet_address) {
+                            <span
+                              class="text-xs text-purple-600 dark:text-purple-400 font-bold leading-none mt-1 truncate max-w-full block"
+                              [title]="selectedOrderDetails()?.customer.wallet_address"
+                            >
+                              Ví: {{ selectedOrderDetails()?.customer.wallet_address }}
+                            </span>
+                          }
+                        </div>
+                      </div>
+                    }
+                    @if (selectedOrderDetails()?.gift_voucher_nft_token_id) {
+                      <div
+                        class="col-span-2 pt-2 border-t border-slate-200/50 dark:border-slate-800 flex items-center gap-2"
+                      >
+                        <div
+                          class="w-6 h-6 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 flex items-center justify-center shrink-0 shadow-sm"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-3.5 w-3.5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5a2 2 0 10-2 2h2zm-2 4h4M3 8h18v3H3V8zm2 3h14v9a2 2 0 01-2 2H7a2 2 0 01-2-2v-9z"
+                            />
+                          </svg>
+                        </div>
+                        <div class="flex flex-col min-w-0">
+                          <span
+                            class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none"
+                            >Voucher tặng kèm (NFT)</span
+                          >
+                          <span
+                            class="font-extrabold text-emerald-600 dark:text-emerald-400 text-xs truncate mt-0.5"
+                          >
+                            Token ID: #{{ selectedOrderDetails()?.gift_voucher_nft_token_id }}
+                          </span>
+                        </div>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Bằng chứng Blockchain -->
+                  <div class="space-y-1 text-xs">
+                    <span class="text-slate-400 font-bold block uppercase tracking-wider text-xs"
+                      >Bằng chứng Blockchain (Web3)</span
+                    >
+                    @if (selectedOrderDetails()?.is_verified === false) {
+                      <div
+                        class="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 space-y-1.5 shadow-sm"
+                      >
+                        <div
+                          class="flex items-center gap-1.5 text-red-500 font-extrabold text-xs animate-pulse"
+                        >
+                          <span
+                            ><svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              class="h-4 w-4 shrink-0 text-amber-500 inline-block"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              stroke-width="2"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                              />
+                            </svg>
+                            CẢNH BÁO: Dữ liệu DB bị can thiệp trái phép!</span
+                          >
+                        </div>
+                        <p class="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
+                          Số tiền hoặc thông tin đơn hàng hiện tại trong Database đã bị sửa đổi lệch
+                          so với chữ ký số gốc (HMAC-SHA256).
+                        </p>
+                        @if (selectedOrderDetails()?.blockchain_status === 'success') {
+                          <div class="pt-1.5 border-t border-red-500/10 flex flex-col gap-1">
+                            <span
+                              class="text-[10px] text-slate-400 uppercase tracking-wider font-bold"
+                              >Mã giao dịch Blockchain gốc:</span
+                            >
+                            <a
+                              [href]="
+                                getTxExplorerLink(
+                                  selectedOrderDetails()?.tx_hash,
+                                  selectedOrderDetails()?.chain_id
+                                )
+                              "
+                              target="_blank"
+                              class="text-xs text-blue-500 font-mono hover:underline break-all block font-bold leading-tight"
+                            >
+                              tx: {{ selectedOrderDetails()?.tx_hash }} ↗
+                            </a>
+                          </div>
+                        }
+                      </div>
+                    } @else if (selectedOrderDetails()?.blockchain_status === 'success') {
+                      <div
+                        class="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-1.5 shadow-sm"
+                      >
+                        <div
+                          class="flex items-center gap-1.5 text-emerald-500 font-extrabold text-xs"
+                        >
+                          <span
+                            class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"
+                          ></span>
+                          <span>Đã ghi nhận thành công</span>
+                        </div>
                         <a
                           [href]="
                             getTxExplorerLink(
@@ -758,613 +848,618 @@
                           tx: {{ selectedOrderDetails()?.tx_hash }} ↗
                         </a>
                       </div>
-                    }
-                  </div>
-                } @else if (selectedOrderDetails()?.blockchain_status === 'success') {
-                  <div
-                    class="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-1.5 shadow-sm"
-                  >
-                    <div class="flex items-center gap-1.5 text-emerald-500 font-extrabold text-xs">
-                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                      <span>Đã ghi nhận thành công</span>
-                    </div>
-                    <a
-                      [href]="
-                        getTxExplorerLink(
-                          selectedOrderDetails()?.tx_hash,
-                          selectedOrderDetails()?.chain_id
-                        )
-                      "
-                      target="_blank"
-                      class="text-xs text-blue-500 font-mono hover:underline break-all block font-bold leading-tight"
-                    >
-                      tx: {{ selectedOrderDetails()?.tx_hash }} ↗
-                    </a>
-                  </div>
-                } @else {
-                  <div
-                    class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200/40 dark:border-slate-800/40 text-slate-500 font-bold flex items-center gap-2"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="h-4.5 w-4.5 shrink-0 text-slate-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      stroke-width="2.5"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
-                      />
-                    </svg>
-                    <span class="text-xs">Chưa được ghi nhận lên Blockchain.</span>
-                  </div>
-                }
-              </div>
-            </div>
-
-            <!-- Các nút hành động -->
-            <div
-              class="flex flex-col gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/60"
-            >
-              @if (
-                selectedOrderDetails()?.status === 'pending' ||
-                selectedOrderDetails()?.status === 'preparing'
-              ) {
-                <div
-                  class="flex items-center gap-2 pb-1 bg-slate-50/20 dark:bg-slate-950/10 p-2 rounded-xl border border-slate-100/50 dark:border-slate-800/30"
-                >
-                  <input
-                    type="checkbox"
-                    id="autoSyncOnComplete"
-                    [ngModel]="isAutoSyncOnCompleteChecked()"
-                    (ngModelChange)="isAutoSyncOnCompleteChecked.set($event)"
-                    [disabled]="isOrderStatusUpdating() || blockchainSyncLoading()"
-                    class="rounded border-slate-300 dark:border-slate-800 text-[var(--dynamic-primary)] focus:ring-[var(--dynamic-primary)]/30 h-4.5 w-4.5 transition-all active:scale-95 disabled:opacity-50"
-                  />
-                  <label
-                    for="autoSyncOnComplete"
-                    class="text-xs font-bold text-slate-500 dark:text-slate-400 select-none cursor-pointer flex items-center gap-1.5"
-                  >
-                    <span>Đồng bộ Blockchain lập tức</span>
-                    <span
-                      class="text-[10px] bg-purple-100 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 px-1.5 py-0.5 rounded border border-purple-200/50 dark:border-purple-800/30 uppercase tracking-wide font-black"
-                      >Web3</span
-                    >
-                  </label>
-                </div>
-              }
-
-              @if (selectedOrderDetails()?.status === 'pending') {
-                <div class="grid grid-cols-3 gap-2">
-                  <button
-                    (click)="updateStatus(selectedOrderDetails().id, 'cancelled')"
-                    [disabled]="isOrderStatusUpdating() || !web3Service.walletConnected()"
-                    class="py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow-md shadow-rose-500/10 transition-all flex items-center justify-center gap-1.5 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    @if (isOrderStatusUpdating()) {
-                      <div
-                        class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                      ></div>
                     } @else {
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-3.5 w-3.5 shrink-0"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        stroke-width="2.5"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M6 18L18 6M6 6l12 12"
-                        />
-                      </svg>
-                    }
-                    <span>HỦY ĐƠN</span>
-                  </button>
-                  <button
-                    (click)="updateStatus(selectedOrderDetails().id, 'preparing')"
-                    [disabled]="isOrderStatusUpdating() || !web3Service.walletConnected()"
-                    class="py-2.5 bg-blue-500 hover:bg-blue-600 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-500/10 transition-all flex items-center justify-center gap-1.5 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    @if (isOrderStatusUpdating()) {
                       <div
-                        class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                      ></div>
-                    } @else {
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-3.5 w-3.5 shrink-0"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        stroke-width="2.5"
+                        class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200/40 dark:border-slate-800/40 text-slate-500 font-bold flex items-center gap-2"
                       >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                    }
-                    <span>CHUẨN BỊ</span>
-                  </button>
-                  <button
-                    (click)="updateStatus(selectedOrderDetails().id, 'completed')"
-                    [disabled]="isOrderStatusUpdating() || !web3Service.walletConnected()"
-                    class="py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-500/10 transition-all flex items-center justify-center gap-1.5 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    @if (isOrderStatusUpdating()) {
-                      <div
-                        class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                      ></div>
-                    } @else {
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-3.5 w-3.5 shrink-0"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        stroke-width="2.5"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                    }
-                    <span>HOÀN THÀNH</span>
-                  </button>
-                </div>
-              }
-
-              @if (selectedOrderDetails()?.status === 'preparing') {
-                <div class="grid grid-cols-2 gap-2">
-                  <button
-                    (click)="updateStatus(selectedOrderDetails().id, 'cancelled')"
-                    [disabled]="isOrderStatusUpdating() || !web3Service.walletConnected()"
-                    class="py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow-md shadow-rose-500/10 transition-all flex items-center justify-center gap-1.5 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    @if (isOrderStatusUpdating()) {
-                      <div
-                        class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                      ></div>
-                    } @else {
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-3.5 w-3.5 shrink-0"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        stroke-width="2.5"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M6 18L18 6M6 6l12 12"
-                        />
-                      </svg>
-                    }
-                    <span>HỦY ĐƠN</span>
-                  </button>
-                  <button
-                    (click)="updateStatus(selectedOrderDetails().id, 'completed')"
-                    [disabled]="isOrderStatusUpdating() || !web3Service.walletConnected()"
-                    class="py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-500/10 transition-all flex items-center justify-center gap-1.5 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    @if (isOrderStatusUpdating()) {
-                      <div
-                        class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                      ></div>
-                    } @else {
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-3.5 w-3.5 shrink-0"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        stroke-width="2.5"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                    }
-                    <span>HOÀN THÀNH</span>
-                  </button>
-                </div>
-              }
-
-              @if (
-                selectedOrderDetails()?.status === 'completed' &&
-                selectedOrderDetails()?.blockchain_status !== 'success'
-              ) {
-                @if (selectedOrderDetails()?.is_verified === false) {
-                  <div
-                    class="w-full flex flex-col gap-2 p-3 bg-red-500/10 border border-red-500/20 rounded-xl mb-2"
-                  >
-                    <div
-                      class="flex items-center gap-1.5 text-red-500 font-bold text-xs animate-pulse"
-                    >
-                      <span><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-amber-500 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg> CẢNH BÁO: Dữ liệu đơn bị sửa đổi trái phép!</span>
-                    </div>
-                    <p class="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
-                      Chữ ký số đối soát (HMAC-SHA256) không trùng khớp với dữ liệu hiện tại trong
-                      DB. Giao dịch đồng bộ Blockchain bị khóa vĩnh viễn để bảo toàn tính minh bạch
-                      và chống gian lận.
-                    </p>
-                    <button
-                      [disabled]="true"
-                      class="w-full py-2 bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 font-bold text-xs rounded-xl cursor-not-allowed flex items-center justify-center gap-1.5"
-                    >
-                      <span>Không thể đồng bộ hóa đơn</span>
-                    </button>
-                  </div>
-                } @else {
-                  <button
-                    [disabled]="blockchainSyncLoading() || !web3Service.walletConnected()"
-                    (click)="syncToBlockchain(selectedOrderDetails())"
-                    class="w-full py-2.5 bg-[var(--dynamic-primary)] hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-md shadow-[var(--dynamic-primary)]/10 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="h-4 w-4 shrink-0 text-white"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      stroke-width="2.5"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.751A11.956 11.956 0 0112 2.714z"
-                      />
-                    </svg>
-                    <span>Ghi nhận bằng chứng lên Blockchain</span>
-                  </button>
-                }
-              }
-
-              @if (
-                (selectedOrderDetails()?.status === 'completed' &&
-                 selectedOrderDetails()?.blockchain_status === 'success' &&
-                 selectedOrderDetails()?.gift_voucher_nft_token_id === null &&
-                 selectedOrderDetails()?.customer?.wallet_address &&
-                 (selectedOrderDetails()?.total_amount || 0) +
-                   (selectedOrderDetails()?.discount_amount || 0) >=
-                   (settings()?.voucher_gift_min_amount || 100000))
-                ||
-                (selectedOrderDetails()?.status === 'cancelled' &&
-                 selectedOrderDetails()?.voucher_nft_token_id !== null &&
-                 selectedOrderDetails()?.gift_voucher_nft_token_id === null &&
-                 selectedOrderDetails()?.customer?.wallet_address)
-              ) {
-                <button
-                  (click)="mintVoucherManual(selectedOrderDetails())"
-                  [disabled]="isMintingVoucherManual()"
-                  class="w-full py-2.5 bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-md shadow-[var(--dynamic-primary)]/10 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
-                >
-                  @if (isMintingVoucherManual()) {
-                    <div
-                      class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                    ></div>
-                  } @else {
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="h-4 w-4 shrink-0 text-white"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      stroke-width="2.5"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M21 11.25v8.25a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 1 0 9.375 7.5H12m0-2.625A2.625 2.625 0 1 1 14.625 7.5H12m0 0V21m-8.25-9.75h16.5"
-                      />
-                    </svg>
-                  }
-                  <span>
-                    {{ selectedOrderDetails()?.status === 'cancelled' ? 'Hoàn trả Voucher NFT' : 'Tặng lại Voucher NFT' }}
-                  </span>
-                </button>
-              }
-
-              @if (selectedOrderDetails()?.status === 'completed') {
-                <button
-                  (click)="triggerCancelExplanation(selectedOrderDetails())"
-                  class="w-full py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 dark:bg-rose-950/20 dark:text-rose-400 font-bold text-xs rounded-xl border border-rose-200 dark:border-rose-900/30 transition-all flex items-center justify-center gap-1.5 hover:scale-[1.01] active:scale-[0.99]"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-3.5 w-3.5 shrink-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                    />
-                  </svg>
-                  <span>YÊU CẦU HỦY ĐƠN HÀNG</span>
-                </button>
-              }
-
-              <button
-                (click)="printOrder(selectedOrderDetails())"
-                [disabled]="isOrderStatusUpdating() || blockchainSyncLoading()"
-                class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-600/10 transition-all flex items-center justify-center gap-1.5 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-4 w-4 shrink-0"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
-                  />
-                </svg>
-                <span>IN HÓA ĐƠN</span>
-              </button>
-
-              <button
-                (click)="closeOrderDetail()"
-                [disabled]="isOrderStatusUpdating()"
-                class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs rounded-xl transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
-              >
-                Đóng cửa sổ
-              </button>
-            </div>
-          </div>
-
-          <!-- CỘT BÊN PHẢI -->
-          <div
-            class="flex flex-col justify-between bg-slate-50/60 dark:bg-slate-950/30 p-4.5 rounded-2xl border border-slate-200/40 dark:border-slate-800/40 min-h-[300px]"
-          >
-            <div class="space-y-3.5">
-              <span
-                class="text-xs font-bold text-slate-400 uppercase tracking-wider block border-b border-slate-200/60 dark:border-slate-800/60 pb-2"
-                >Danh sách món chọn</span
-              >
-
-              <div
-                class="space-y-2 max-h-60 overflow-y-auto pr-1 no-scrollbar animate-in duration-200"
-              >
-                @for (item of selectedOrderDetails()?.items; track item.id) {
-                  <div
-                    class="flex flex-col gap-1 py-2 border-b border-slate-100 dark:border-slate-800/30 hover:bg-slate-100/20 dark:hover:bg-slate-800/10 px-1 rounded-lg transition-all animate-in fade-in"
-                  >
-                    <div class="flex items-center justify-between text-[13px] w-full">
-                      <div class="flex items-center gap-1.5 flex-wrap">
-                        <span class="font-extrabold text-slate-700 dark:text-slate-300"
-                          >{{ item.quantity }}x {{ item.product?.name }}</span
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          class="h-4.5 w-4.5 shrink-0 text-slate-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          stroke-width="2.5"
                         >
-                        @if (item.variant) {
-                          <span
-                            class="text-[10px] bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0"
-                            >{{ item.variant.variant_name }}</span
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
+                          />
+                        </svg>
+                        <span class="text-xs">Chưa được ghi nhận lên Blockchain.</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <!-- Các nút hành động -->
+                <div
+                  class="flex flex-col gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/60"
+                >
+                  @if (
+                    selectedOrderDetails()?.status === 'pending' ||
+                    selectedOrderDetails()?.status === 'preparing'
+                  ) {
+                    <div
+                      class="flex items-center gap-2 pb-1 bg-slate-50/20 dark:bg-slate-950/10 p-2 rounded-xl border border-slate-100/50 dark:border-slate-800/30"
+                    >
+                      <input
+                        type="checkbox"
+                        id="autoSyncOnComplete"
+                        [ngModel]="isAutoSyncOnCompleteChecked()"
+                        (ngModelChange)="isAutoSyncOnCompleteChecked.set($event)"
+                        [disabled]="isOrderStatusUpdating() || blockchainSyncLoading()"
+                        class="rounded border-slate-300 dark:border-slate-800 text-[var(--dynamic-primary)] focus:ring-[var(--dynamic-primary)]/30 h-4.5 w-4.5 transition-all active:scale-95 disabled:opacity-50"
+                      />
+                      <label
+                        for="autoSyncOnComplete"
+                        class="text-xs font-bold text-slate-500 dark:text-slate-400 select-none cursor-pointer flex items-center gap-1.5"
+                      >
+                        <span>Đồng bộ Blockchain lập tức</span>
+                        <span
+                          class="text-[10px] bg-purple-100 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 px-1.5 py-0.5 rounded border border-purple-200/50 dark:border-purple-800/30 uppercase tracking-wide font-black"
+                          >Web3</span
+                        >
+                      </label>
+                    </div>
+                  }
+
+                  @if (selectedOrderDetails()?.status === 'pending') {
+                    <div class="grid grid-cols-3 gap-2">
+                      <button
+                        (click)="updateStatus(selectedOrderDetails().id, 'cancelled')"
+                        [disabled]="isOrderStatusUpdating() || !web3Service.walletConnected()"
+                        class="py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow-md shadow-rose-500/10 transition-all flex items-center justify-center gap-1.5 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        @if (isOrderStatusUpdating()) {
+                          <div
+                            class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
+                          ></div>
+                        } @else {
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-3.5 w-3.5 shrink-0"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2.5"
                           >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        }
+                        <span>HỦY ĐƠN</span>
+                      </button>
+                      <button
+                        (click)="updateStatus(selectedOrderDetails().id, 'preparing')"
+                        [disabled]="isOrderStatusUpdating() || !web3Service.walletConnected()"
+                        class="py-2.5 bg-blue-500 hover:bg-blue-600 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-500/10 transition-all flex items-center justify-center gap-1.5 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        @if (isOrderStatusUpdating()) {
+                          <div
+                            class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
+                          ></div>
+                        } @else {
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-3.5 w-3.5 shrink-0"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                        }
+                        <span>CHUẨN BỊ</span>
+                      </button>
+                      <button
+                        (click)="updateStatus(selectedOrderDetails().id, 'completed')"
+                        [disabled]="isOrderStatusUpdating() || !web3Service.walletConnected()"
+                        class="py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-500/10 transition-all flex items-center justify-center gap-1.5 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        @if (isOrderStatusUpdating()) {
+                          <div
+                            class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
+                          ></div>
+                        } @else {
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-3.5 w-3.5 shrink-0"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                        }
+                        <span>HOÀN THÀNH</span>
+                      </button>
+                    </div>
+                  }
+
+                  @if (selectedOrderDetails()?.status === 'preparing') {
+                    <div class="grid grid-cols-2 gap-2">
+                      <button
+                        (click)="updateStatus(selectedOrderDetails().id, 'cancelled')"
+                        [disabled]="isOrderStatusUpdating() || !web3Service.walletConnected()"
+                        class="py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow-md shadow-rose-500/10 transition-all flex items-center justify-center gap-1.5 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        @if (isOrderStatusUpdating()) {
+                          <div
+                            class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
+                          ></div>
+                        } @else {
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-3.5 w-3.5 shrink-0"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        }
+                        <span>HỦY ĐƠN</span>
+                      </button>
+                      <button
+                        (click)="updateStatus(selectedOrderDetails().id, 'completed')"
+                        [disabled]="isOrderStatusUpdating() || !web3Service.walletConnected()"
+                        class="py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-500/10 transition-all flex items-center justify-center gap-1.5 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        @if (isOrderStatusUpdating()) {
+                          <div
+                            class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
+                          ></div>
+                        } @else {
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-3.5 w-3.5 shrink-0"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                        }
+                        <span>HOÀN THÀNH</span>
+                      </button>
+                    </div>
+                  }
+
+                  @if (
+                    selectedOrderDetails()?.status === 'completed' &&
+                    selectedOrderDetails()?.blockchain_status !== 'success'
+                  ) {
+                    @if (selectedOrderDetails()?.is_verified === false) {
+                      <div
+                        class="w-full flex flex-col gap-2 p-3 bg-red-500/10 border border-red-500/20 rounded-xl mb-2"
+                      >
+                        <div
+                          class="flex items-center gap-1.5 text-red-500 font-bold text-xs animate-pulse"
+                        >
+                          <span
+                            ><svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              class="h-4 w-4 shrink-0 text-amber-500 inline-block"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              stroke-width="2"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                              />
+                            </svg>
+                            CẢNH BÁO: Dữ liệu đơn bị sửa đổi trái phép!</span
+                          >
+                        </div>
+                        <p class="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
+                          Chữ ký số đối soát (HMAC-SHA256) không trùng khớp với dữ liệu hiện tại
+                          trong DB. Giao dịch đồng bộ Blockchain bị khóa vĩnh viễn để bảo toàn tính
+                          minh bạch và chống gian lận.
+                        </p>
+                        <button
+                          [disabled]="true"
+                          class="w-full py-2 bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 font-bold text-xs rounded-xl cursor-not-allowed flex items-center justify-center gap-1.5"
+                        >
+                          <span>Không thể đồng bộ hóa đơn</span>
+                        </button>
+                      </div>
+                    } @else {
+                      <button
+                        [disabled]="blockchainSyncLoading() || !web3Service.walletConnected()"
+                        (click)="syncToBlockchain(selectedOrderDetails())"
+                        class="w-full py-2.5 bg-[var(--dynamic-primary)] hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-md shadow-[var(--dynamic-primary)]/10 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          class="h-4 w-4 shrink-0 text-white"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          stroke-width="2.5"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.751A11.956 11.956 0 0112 2.714z"
+                          />
+                        </svg>
+                        <span>Ghi nhận bằng chứng lên Blockchain</span>
+                      </button>
+                    }
+                  }
+
+                  @if (
+                    (selectedOrderDetails()?.status === 'completed' &&
+                      selectedOrderDetails()?.blockchain_status === 'success' &&
+                      selectedOrderDetails()?.gift_voucher_nft_token_id === null &&
+                      selectedOrderDetails()?.customer?.wallet_address &&
+                      (selectedOrderDetails()?.total_amount || 0) +
+                        (selectedOrderDetails()?.discount_amount || 0) >=
+                        (settings()?.voucher_gift_min_amount || 100000)) ||
+                    (selectedOrderDetails()?.status === 'cancelled' &&
+                      selectedOrderDetails()?.voucher_nft_token_id !== null &&
+                      selectedOrderDetails()?.gift_voucher_nft_token_id === null &&
+                      selectedOrderDetails()?.customer?.wallet_address)
+                  ) {
+                    <button
+                      (click)="mintVoucherManual(selectedOrderDetails())"
+                      [disabled]="isMintingVoucherManual()"
+                      class="w-full py-2.5 bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-md shadow-[var(--dynamic-primary)]/10 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+                    >
+                      @if (isMintingVoucherManual()) {
+                        <div
+                          class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
+                        ></div>
+                      } @else {
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          class="h-4 w-4 shrink-0 text-white"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          stroke-width="2.5"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M21 11.25v8.25a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 1 0 9.375 7.5H12m0-2.625A2.625 2.625 0 1 1 14.625 7.5H12m0 0V21m-8.25-9.75h16.5"
+                          />
+                        </svg>
+                      }
+                      <span>
+                        {{
+                          selectedOrderDetails()?.status === 'cancelled'
+                            ? 'Hoàn trả Voucher NFT'
+                            : 'Tặng lại Voucher NFT'
+                        }}
+                      </span>
+                    </button>
+                  }
+
+                  @if (selectedOrderDetails()?.status === 'completed') {
+                    <button
+                      (click)="triggerCancelExplanation(selectedOrderDetails())"
+                      class="w-full py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 dark:bg-rose-950/20 dark:text-rose-400 font-bold text-xs rounded-xl border border-rose-200 dark:border-rose-900/30 transition-all flex items-center justify-center gap-1.5 hover:scale-[1.01] active:scale-[0.99]"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-3.5 w-3.5 shrink-0"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                      <span>YÊU CẦU HỦY ĐƠN HÀNG</span>
+                    </button>
+                  }
+
+                  <button
+                    (click)="printOrder(selectedOrderDetails())"
+                    [disabled]="isOrderStatusUpdating() || blockchainSyncLoading()"
+                    class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-600/10 transition-all flex items-center justify-center gap-1.5 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-4 w-4 shrink-0"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                      />
+                    </svg>
+                    <span>IN HÓA ĐƠN</span>
+                  </button>
+
+                  <button
+                    (click)="closeOrderDetail()"
+                    [disabled]="isOrderStatusUpdating()"
+                    class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs rounded-xl transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
+                  >
+                    Đóng cửa sổ
+                  </button>
+                </div>
+              </div>
+
+              <!-- CỘT BÊN PHẢI -->
+              <div
+                class="flex flex-col justify-between bg-slate-50/60 dark:bg-slate-950/30 p-4.5 rounded-2xl border border-slate-200/40 dark:border-slate-800/40 min-h-[300px]"
+              >
+                <div class="space-y-3.5">
+                  <span
+                    class="text-xs font-bold text-slate-400 uppercase tracking-wider block border-b border-slate-200/60 dark:border-slate-800/60 pb-2"
+                    >Danh sách món chọn</span
+                  >
+
+                  <div
+                    class="space-y-2 max-h-60 overflow-y-auto pr-1 no-scrollbar animate-in duration-200"
+                  >
+                    @for (item of selectedOrderDetails()?.items; track item.id) {
+                      <div
+                        class="flex flex-col gap-1 py-2 border-b border-slate-100 dark:border-slate-800/30 hover:bg-slate-100/20 dark:hover:bg-slate-800/10 px-1 rounded-lg transition-all animate-in fade-in"
+                      >
+                        <div class="flex items-center justify-between text-[13px] w-full">
+                          <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="font-extrabold text-slate-700 dark:text-slate-300"
+                              >{{ item.quantity }}x {{ item.product?.name }}</span
+                            >
+                            @if (item.variant) {
+                              <span
+                                class="text-[10px] bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0"
+                                >{{ item.variant.variant_name }}</span
+                              >
+                            }
+                          </div>
+                          <span class="font-black text-slate-800 dark:text-white font-mono">{{
+                            item.price * item.quantity | vnd
+                          }}</span>
+                        </div>
+                        @if (item.note) {
+                          <div
+                            class="flex items-center gap-1.5 text-xs text-purple-600 dark:text-purple-400 font-bold bg-purple-500/5 dark:bg-purple-500/10 px-2 py-0.5 rounded-lg w-fit mt-0.5 animate-in slide-in-from-left-1 duration-150"
+                          >
+                            <span>Ghi chú: {{ item.note }}</span>
+                          </div>
                         }
                       </div>
-                      <span class="font-black text-slate-800 dark:text-white font-mono"
-                        >{{ item.price * item.quantity | vnd }}</span
-                      >
-                    </div>
-                    @if (item.note) {
-                      <div
-                        class="flex items-center gap-1.5 text-xs text-purple-600 dark:text-purple-400 font-bold bg-purple-500/5 dark:bg-purple-500/10 px-2 py-0.5 rounded-lg w-fit mt-0.5 animate-in slide-in-from-left-1 duration-150"
-                      >
-                        <span>Ghi chú: {{ item.note }}</span>
-                      </div>
                     }
                   </div>
-                }
+                </div>
+
+                <div
+                  class="py-3 border-t border-slate-200/50 dark:border-slate-800/60 mt-4 shrink-0 space-y-1.5"
+                >
+                  @if ((selectedOrderDetails()?.discount_amount || 0) > 0) {
+                    <div
+                      class="flex items-center justify-between text-xs font-semibold text-slate-500 dark:text-slate-400"
+                    >
+                      <span>Tạm tính</span>
+                      <span class="font-mono"
+                        >{{
+                          (selectedOrderDetails()?.total_amount || 0) +
+                            (selectedOrderDetails()?.discount_amount || 0) | number
+                        }}đ</span
+                      >
+                    </div>
+                    <div
+                      class="flex items-center justify-between text-xs font-semibold text-rose-500"
+                    >
+                      <span class="flex items-center gap-1">
+                        <span>Giảm giá</span>
+                        @if (
+                          selectedOrderDetails()?.voucher_nft_token_id !== null &&
+                          selectedOrderDetails()?.voucher_nft_token_id !== undefined
+                        ) {
+                          <span
+                            class="text-[10px] bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider font-mono border border-purple-200/20"
+                          >
+                            NFT Voucher #{{ selectedOrderDetails()?.voucher_nft_token_id }}
+                          </span>
+                        }
+                      </span>
+                      <span class="font-mono"
+                        >-{{ selectedOrderDetails()?.discount_amount || 0 | vnd }}</span
+                      >
+                    </div>
+                  }
+                  <div
+                    class="flex items-center justify-between pt-1.5 border-t border-dashed border-slate-200 dark:border-slate-800"
+                  >
+                    <span class="text-xs font-black text-slate-400 uppercase tracking-wider"
+                      >TỔNG TIỀN THANH TOÁN</span
+                    >
+                    <span class="text-xl font-black text-[var(--dynamic-primary)] font-mono">
+                      {{ selectedOrderDetails()?.total_amount || 0 | vnd }}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ==================== MODAL CẢNH BÁO YÊU CẦU HỦY ĐƠN HÀNG ==================== -->
+    @if (isCancelExplanationOpen()) {
+      <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div (click)="isCancelExplanationOpen.set(false)" class="fixed inset-0 bg-black/40"></div>
+        <div
+          class="relative bg-white dark:bg-slate-900 rounded-3xl border-2 border-rose-500/20 p-6 max-w-md w-full shadow-[0_20px_50px_rgba(244,63,94,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)] animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200"
+        >
+          <!-- Header -->
+          <div
+            class="flex items-center gap-3 pb-4 border-b border-rose-100 dark:border-rose-900/40"
+          >
+            <div
+              class="w-10 h-10 rounded-full bg-rose-50 dark:bg-rose-950/50 flex items-center justify-center text-rose-500 shrink-0"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2.5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+            </div>
+            <div>
+              <h4
+                class="text-base font-black text-rose-600 dark:text-rose-400 uppercase tracking-wide"
+              >
+                Cảnh báo Nghiệp vụ
+              </h4>
+              <span class="text-xs text-slate-400 font-bold uppercase tracking-wider"
+                >Hóa đơn đã hoàn thành</span
+              >
+            </div>
+          </div>
+
+          <!-- Content -->
+          <div class="py-5 space-y-4 text-sm leading-relaxed">
+            <p class="font-semibold text-slate-600 dark:text-slate-300">
+              Hóa đơn đã ở trạng thái
+              <span class="text-emerald-500 font-bold">"Thành công"</span> không được phép hủy trực
+              tiếp trên hệ thống để bảo toàn tính minh bạch của sổ cái Blockchain và quản lý kho
+              hàng.
+            </p>
 
             <div
-              class="py-3 border-t border-slate-200/50 dark:border-slate-800/60 mt-4 shrink-0 space-y-1.5"
+              class="bg-slate-50 dark:bg-slate-950 p-4.5 rounded-2xl border border-slate-100 dark:border-slate-800/60 space-y-3 animate-in duration-200"
             >
-              @if ((selectedOrderDetails()?.discount_amount || 0) > 0) {
-                <div
-                  class="flex items-center justify-between text-xs font-semibold text-slate-500 dark:text-slate-400"
-                >
-                  <span>Tạm tính</span>
-                  <span class="font-mono"
-                    >{{
-                      (selectedOrderDetails()?.total_amount || 0) +
-                        (selectedOrderDetails()?.discount_amount || 0) | number
-                    }}đ</span
-                  >
-                </div>
-                <div class="flex items-center justify-between text-xs font-semibold text-rose-500">
-                  <span class="flex items-center gap-1">
-                    <span>Giảm giá</span>
-                    @if (
-                      selectedOrderDetails()?.voucher_nft_token_id !== null &&
-                      selectedOrderDetails()?.voucher_nft_token_id !== undefined
-                    ) {
-                      <span
-                        class="text-[10px] bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider font-mono border border-purple-200/20"
-                      >
-                        NFT Voucher #{{ selectedOrderDetails()?.voucher_nft_token_id }}
-                      </span>
-                    }
-                  </span>
-                  <span class="font-mono"
-                    >-{{ selectedOrderDetails()?.discount_amount || 0 | vnd }}</span
-                  >
-                </div>
-              }
-              <div
-                class="flex items-center justify-between pt-1.5 border-t border-dashed border-slate-200 dark:border-slate-800"
+              <span
+                class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block"
+                >Hướng dẫn xử lý chuẩn của quán:</span
               >
-                <span class="text-xs font-black text-slate-400 uppercase tracking-wider"
-                  >TỔNG TIỀN THANH TOÁN</span
+
+              <div class="flex items-start gap-2.5">
+                <span
+                  class="w-5 h-5 rounded-full bg-purple-100 dark:bg-purple-950/40 text-purple-600 text-xs font-black flex items-center justify-center shrink-0"
+                  >1</span
                 >
-                <span class="text-xl font-black text-[var(--dynamic-primary)] font-mono">
-                  {{ selectedOrderDetails()?.total_amount || 0 | vnd }}
-                </span>
+                <p class="text-xs text-slate-600 dark:text-slate-400 font-medium">
+                  Vui lòng truy cập vào mục
+                  <strong class="text-slate-700 dark:text-slate-200">"Tài chính" (Sổ quỹ)</strong>.
+                </p>
+              </div>
+
+              <div class="flex items-start gap-2.5">
+                <span
+                  class="w-5 h-5 rounded-full bg-purple-100 dark:bg-purple-950/40 text-purple-600 text-xs font-black flex items-center justify-center shrink-0"
+                  >2</span
+                >
+                <p class="text-xs text-slate-600 dark:text-slate-400 font-medium">
+                  Lập một <strong class="text-rose-500">PHIẾU CHI</strong> đối ứng với số tiền:
+                  <strong class="text-base text-rose-500 font-black"
+                    >{{ explanationOrderDetails()?.total_amount | number: '1.0-0' }}đ</strong
+                  >
+                  để hoàn tiền/bù trừ két tiền mặt của quán.
+                </p>
+              </div>
+
+              <div
+                (click)="
+                  copyToClipboard(
+                    'Hoàn tiền do thu ngân thao tác nhầm đơn hàng #' + explanationOrderDetails()?.id
+                  )
+                "
+                class="flex items-start gap-2.5 group/copy cursor-pointer"
+                title="Bấm để tự động sao chép lý do chi"
+              >
+                <span
+                  class="w-5 h-5 rounded-full bg-purple-100 dark:bg-purple-950/40 text-purple-600 text-xs font-black flex items-center justify-center shrink-0"
+                  >3</span
+                >
+                <div class="text-xs text-slate-600 dark:text-slate-400 font-medium">
+                  Ghi rõ lý do chi:
+                  <span
+                    class="italic font-bold text-rose-500 bg-rose-50 dark:bg-rose-950/40 px-1 py-0.5 rounded border border-rose-100 dark:border-rose-900/30 break-word select-all group-hover/copy:text-rose-600 transition-colors"
+                    >"Hoàn tiền do thu ngân thao tác nhầm đơn hàng #{{
+                      explanationOrderDetails()?.id
+                    }}"</span
+                  >
+                  <span
+                    class="text-xs text-purple-600 font-bold mt-1.5 flex items-center gap-1.5 animate-pulse"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-3 w-3 shrink-0"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+                      />
+                    </svg>
+                    (Bấm vào để tự động copy)
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  </div>
-}
 
-<!-- ==================== MODAL CẢNH BÁO YÊU CẦU HỦY ĐƠN HÀNG ==================== -->
-@if (isCancelExplanationOpen()) {
-  <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-    <div (click)="isCancelExplanationOpen.set(false)" class="fixed inset-0 bg-black/40"></div>
-    <div
-      class="relative bg-white dark:bg-slate-900 rounded-3xl border-2 border-rose-500/20 p-6 max-w-md w-full shadow-[0_20px_50px_rgba(244,63,94,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)] animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200"
-    >
-      <!-- Header -->
-      <div class="flex items-center gap-3 pb-4 border-b border-rose-100 dark:border-rose-900/40">
-        <div
-          class="w-10 h-10 rounded-full bg-rose-50 dark:bg-rose-950/50 flex items-center justify-center text-rose-500 shrink-0"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            stroke-width="2.5"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-            />
-          </svg>
-        </div>
-        <div>
-          <h4 class="text-base font-black text-rose-600 dark:text-rose-400 uppercase tracking-wide">
-            Cảnh báo Nghiệp vụ
-          </h4>
-          <span class="text-xs text-slate-400 font-bold uppercase tracking-wider"
-            >Hóa đơn đã hoàn thành</span
-          >
-        </div>
-      </div>
-
-      <!-- Content -->
-      <div class="py-5 space-y-4 text-sm leading-relaxed">
-        <p class="font-semibold text-slate-600 dark:text-slate-300">
-          Hóa đơn đã ở trạng thái
-          <span class="text-emerald-500 font-bold">"Thành công"</span> không được phép hủy trực tiếp
-          trên hệ thống để bảo toàn tính minh bạch của sổ cái Blockchain và quản lý kho hàng.
-        </p>
-
-        <div
-          class="bg-slate-50 dark:bg-slate-950 p-4.5 rounded-2xl border border-slate-100 dark:border-slate-800/60 space-y-3 animate-in duration-200"
-        >
-          <span
-            class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block"
-            >Hướng dẫn xử lý chuẩn của quán:</span
-          >
-
-          <div class="flex items-start gap-2.5">
-            <span
-              class="w-5 h-5 rounded-full bg-purple-100 dark:bg-purple-950/40 text-purple-600 text-xs font-black flex items-center justify-center shrink-0"
-              >1</span
+          <!-- Action -->
+          <div class="flex gap-3">
+            <button
+              (click)="isCancelExplanationOpen.set(false)"
+              class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-all"
             >
-            <p class="text-xs text-slate-600 dark:text-slate-400 font-medium">
-              Vui lòng truy cập vào mục
-              <strong class="text-slate-700 dark:text-slate-200">"Tài chính" (Sổ quỹ)</strong>.
-            </p>
-          </div>
-
-          <div class="flex items-start gap-2.5">
-            <span
-              class="w-5 h-5 rounded-full bg-purple-100 dark:bg-purple-950/40 text-purple-600 text-xs font-black flex items-center justify-center shrink-0"
-              >2</span
-            >
-            <p class="text-xs text-slate-600 dark:text-slate-400 font-medium">
-              Lập một <strong class="text-rose-500">PHIẾU CHI</strong> đối ứng với số tiền:
-              <strong class="text-base text-rose-500 font-black"
-                >{{ explanationOrderDetails()?.total_amount | number: '1.0-0' }}đ</strong
-              >
-              để hoàn tiền/bù trừ két tiền mặt của quán.
-            </p>
-          </div>
-
-          <div
-            (click)="
-              copyToClipboard(
-                'Hoàn tiền do thu ngân thao tác nhầm đơn hàng #' + explanationOrderDetails()?.id
-              )
-            "
-            class="flex items-start gap-2.5 group/copy cursor-pointer"
-            title="Bấm để tự động sao chép lý do chi"
-          >
-            <span
-              class="w-5 h-5 rounded-full bg-purple-100 dark:bg-purple-950/40 text-purple-600 text-xs font-black flex items-center justify-center shrink-0"
-              >3</span
-            >
-            <div class="text-xs text-slate-600 dark:text-slate-400 font-medium">
-              Ghi rõ lý do chi:
-              <span
-                class="italic font-bold text-rose-500 bg-rose-50 dark:bg-rose-950/40 px-1 py-0.5 rounded border border-rose-100 dark:border-rose-900/30 break-word select-all group-hover/copy:text-rose-600 transition-colors"
-                >"Hoàn tiền do thu ngân thao tác nhầm đơn hàng #{{
-                  explanationOrderDetails()?.id
-                }}"</span
-              >
-              <span
-                class="text-xs text-purple-600 font-bold mt-1.5 flex items-center gap-1.5 animate-pulse"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-3 w-3 shrink-0"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
-                  />
-                </svg>
-                (Bấm vào để tự động copy)
-              </span>
-            </div>
+              Đóng cửa sổ
+            </button>
           </div>
         </div>
       </div>
-
-      <!-- Action -->
-      <div class="flex gap-3">
-        <button
-          (click)="isCancelExplanationOpen.set(false)"
-          class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-all"
-        >
-          Đóng cửa sổ
-        </button>
-      </div>
-    </div>
-  </div>
+    }
+  } @else {
+    <app-web3-connect-prompt
+      [title]="'Kết nối ví Web3 để quản lý Đơn hàng'"
+    ></app-web3-connect-prompt>
   }
-} @else {
-  <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý Đơn hàng'"></app-web3-connect-prompt>
-}
 </div>

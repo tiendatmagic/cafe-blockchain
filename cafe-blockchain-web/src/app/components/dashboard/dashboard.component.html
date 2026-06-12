@@ -2,17 +2,29 @@
   <!-- Header tiêu đề tab dùng chung -->
   <app-page-header
     title="Tổng quan cửa hàng"
-    [description]="'Chào mừng bạn đến với hệ thống Sổ bán hàng & POS tích hợp Blockchain của ' + settings().store_name + '.'"
+    [description]="
+      'Chào mừng bạn đến với hệ thống Sổ bán hàng & POS tích hợp Blockchain của ' +
+      settings().store_name +
+      '.'
+    "
   >
-    <svg icon class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+    <svg
+      icon
+      class="h-6.5 w-6.5 text-[var(--dynamic-primary)]"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      stroke-width="2.5"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+      />
     </svg>
 
     @if (web3Service.walletConnected()) {
-      <button
-        (click)="loadAllData()"
-        class="btn-secondary btn-sm self-start sm:self-center"
-      >
+      <button (click)="loadAllData()" class="btn-secondary self-start sm:self-center">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           class="h-4 w-4"
@@ -33,519 +45,201 @@
   </app-page-header>
 
   @if (web3Service.walletConnected()) {
-  <!-- Bộ lọc thời gian Dashboard -->
-  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 shadow-sm rounded-3xl">
-    <div class="flex flex-wrap items-center gap-2">
-      <button
-        (click)="setDatePreset('today')"
-        [class.bg-[var(--dynamic-primary)]]="activeDatePreset === 'today'"
-        [class.text-white]="activeDatePreset === 'today'"
-        [class.bg-slate-100]="activeDatePreset !== 'today'"
-        [class.dark:bg-slate-800]="activeDatePreset !== 'today'"
-        [class.text-slate-700]="activeDatePreset !== 'today'"
-        [class.dark:text-slate-300]="activeDatePreset !== 'today'"
-        class="px-4 py-2 rounded-xl text-xs font-bold transition-all hover:scale-[1.02] active:scale-95"
-      >
-        Hôm nay
-      </button>
-      <button
-        (click)="setDatePreset('7days')"
-        [class.bg-[var(--dynamic-primary)]]="activeDatePreset === '7days'"
-        [class.text-white]="activeDatePreset === '7days'"
-        [class.bg-slate-100]="activeDatePreset !== '7days'"
-        [class.dark:bg-slate-800]="activeDatePreset !== '7days'"
-        [class.text-slate-700]="activeDatePreset !== '7days'"
-        [class.dark:text-slate-300]="activeDatePreset !== '7days'"
-        class="px-4 py-2 rounded-xl text-xs font-bold transition-all hover:scale-[1.02] active:scale-95"
-      >
-        7 ngày qua
-      </button>
-      <button
-        (click)="setDatePreset('30days')"
-        [class.bg-[var(--dynamic-primary)]]="activeDatePreset === '30days'"
-        [class.text-white]="activeDatePreset === '30days'"
-        [class.bg-slate-100]="activeDatePreset !== '30days'"
-        [class.dark:bg-slate-800]="activeDatePreset !== '30days'"
-        [class.text-slate-700]="activeDatePreset !== '30days'"
-        [class.dark:text-slate-300]="activeDatePreset !== '30days'"
-        class="px-4 py-2 rounded-xl text-xs font-bold transition-all hover:scale-[1.02] active:scale-95"
-      >
-        30 ngày qua
-      </button>
-      <button
-        (click)="setDatePreset('thisMonth')"
-        [class.bg-[var(--dynamic-primary)]]="activeDatePreset === 'thisMonth'"
-        [class.text-white]="activeDatePreset === 'thisMonth'"
-        [class.bg-slate-100]="activeDatePreset !== 'thisMonth'"
-        [class.dark:bg-slate-800]="activeDatePreset !== 'thisMonth'"
-        [class.text-slate-700]="activeDatePreset !== 'thisMonth'"
-        [class.dark:text-slate-300]="activeDatePreset !== 'thisMonth'"
-        class="px-4 py-2 rounded-xl text-xs font-bold transition-all hover:scale-[1.02] active:scale-95"
-      >
-        Tháng này
-      </button>
-      <button
-        (click)="setDatePreset('custom')"
-        [class.bg-[var(--dynamic-primary)]]="activeDatePreset === 'custom'"
-        [class.text-white]="activeDatePreset === 'custom'"
-        [class.bg-slate-100]="activeDatePreset !== 'custom'"
-        [class.dark:bg-slate-800]="activeDatePreset !== 'custom'"
-        [class.text-slate-700]="activeDatePreset !== 'custom'"
-        [class.dark:text-slate-300]="activeDatePreset !== 'custom'"
-        class="px-4 py-2 rounded-xl text-xs font-bold transition-all hover:scale-[1.02] active:scale-95"
-      >
-        Tự chọn ngày
-      </button>
+    <!-- Bộ lọc thời gian Dashboard -->
+    <div
+      class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 shadow-sm rounded-3xl"
+    >
+      <div class="flex flex-wrap items-center gap-2">
+        <button
+          (click)="setDatePreset('today')"
+          [class.bg-[var(--dynamic-primary)]]="activeDatePreset === 'today'"
+          [class.text-white]="activeDatePreset === 'today'"
+          [class.bg-slate-100]="activeDatePreset !== 'today'"
+          [class.dark:bg-slate-800]="activeDatePreset !== 'today'"
+          [class.text-slate-700]="activeDatePreset !== 'today'"
+          [class.dark:text-slate-300]="activeDatePreset !== 'today'"
+          class="px-4 py-2 rounded-xl text-xs font-bold transition-all hover:scale-[1.02] active:scale-95"
+        >
+          Hôm nay
+        </button>
+        <button
+          (click)="setDatePreset('7days')"
+          [class.bg-[var(--dynamic-primary)]]="activeDatePreset === '7days'"
+          [class.text-white]="activeDatePreset === '7days'"
+          [class.bg-slate-100]="activeDatePreset !== '7days'"
+          [class.dark:bg-slate-800]="activeDatePreset !== '7days'"
+          [class.text-slate-700]="activeDatePreset !== '7days'"
+          [class.dark:text-slate-300]="activeDatePreset !== '7days'"
+          class="px-4 py-2 rounded-xl text-xs font-bold transition-all hover:scale-[1.02] active:scale-95"
+        >
+          7 ngày qua
+        </button>
+        <button
+          (click)="setDatePreset('30days')"
+          [class.bg-[var(--dynamic-primary)]]="activeDatePreset === '30days'"
+          [class.text-white]="activeDatePreset === '30days'"
+          [class.bg-slate-100]="activeDatePreset !== '30days'"
+          [class.dark:bg-slate-800]="activeDatePreset !== '30days'"
+          [class.text-slate-700]="activeDatePreset !== '30days'"
+          [class.dark:text-slate-300]="activeDatePreset !== '30days'"
+          class="px-4 py-2 rounded-xl text-xs font-bold transition-all hover:scale-[1.02] active:scale-95"
+        >
+          30 ngày qua
+        </button>
+        <button
+          (click)="setDatePreset('thisMonth')"
+          [class.bg-[var(--dynamic-primary)]]="activeDatePreset === 'thisMonth'"
+          [class.text-white]="activeDatePreset === 'thisMonth'"
+          [class.bg-slate-100]="activeDatePreset !== 'thisMonth'"
+          [class.dark:bg-slate-800]="activeDatePreset !== 'thisMonth'"
+          [class.text-slate-700]="activeDatePreset !== 'thisMonth'"
+          [class.dark:text-slate-300]="activeDatePreset !== 'thisMonth'"
+          class="px-4 py-2 rounded-xl text-xs font-bold transition-all hover:scale-[1.02] active:scale-95"
+        >
+          Tháng này
+        </button>
+        <button
+          (click)="setDatePreset('custom')"
+          [class.bg-[var(--dynamic-primary)]]="activeDatePreset === 'custom'"
+          [class.text-white]="activeDatePreset === 'custom'"
+          [class.bg-slate-100]="activeDatePreset !== 'custom'"
+          [class.dark:bg-slate-800]="activeDatePreset !== 'custom'"
+          [class.text-slate-700]="activeDatePreset !== 'custom'"
+          [class.dark:text-slate-300]="activeDatePreset !== 'custom'"
+          class="px-4 py-2 rounded-xl text-xs font-bold transition-all hover:scale-[1.02] active:scale-95"
+        >
+          Tự chọn ngày
+        </button>
+      </div>
+
+      <!-- Ô chọn ngày tùy chỉnh -->
+      <div *ngIf="activeDatePreset === 'custom'" class="flex items-center gap-2 flex-wrap">
+        <div
+          class="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-xl"
+        >
+          <span class="text-[10px] font-bold text-slate-400">Từ</span>
+          <input
+            type="date"
+            [(ngModel)]="tempStartDate"
+            (change)="onCustomDatesChange()"
+            class="bg-transparent text-slate-700 dark:text-slate-300 text-xs font-bold focus:outline-none"
+          />
+        </div>
+        <div
+          class="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-xl"
+        >
+          <span class="text-[10px] font-bold text-slate-400">Đến</span>
+          <input
+            type="date"
+            [(ngModel)]="tempEndDate"
+            (change)="onCustomDatesChange()"
+            class="bg-transparent text-slate-700 dark:text-slate-300 text-xs font-bold focus:outline-none"
+          />
+        </div>
+      </div>
     </div>
 
-    <!-- Ô chọn ngày tùy chỉnh -->
-    <div *ngIf="activeDatePreset === 'custom'" class="flex items-center gap-2 flex-wrap">
-      <div class="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-xl">
-        <span class="text-[10px] font-bold text-slate-400">Từ</span>
-        <input
-          type="date"
-          [(ngModel)]="tempStartDate"
-          (change)="onCustomDatesChange()"
-          class="bg-transparent text-slate-700 dark:text-slate-300 text-xs font-bold focus:outline-none"
-        />
-      </div>
-      <div class="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-xl">
-        <span class="text-[10px] font-bold text-slate-400">Đến</span>
-        <input
-          type="date"
-          [(ngModel)]="tempEndDate"
-          (change)="onCustomDatesChange()"
-          class="bg-transparent text-slate-700 dark:text-slate-300 text-xs font-bold focus:outline-none"
-        />
-      </div>
-    </div>
-  </div>
-
-  @if (isDashboardLoading()) {
-    <!-- SKELETON FOR DASHBOARD -->
-    <div class="space-y-6 animate-pulse">
-      <!-- Grid 4 thẻ thống kê Skeleton -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-        @for (i of [1, 2, 3, 4]; track i) {
-          <div
-            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex items-center justify-between"
-          >
-            <div class="space-y-3 w-2/3">
-              <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-3/4"></div>
-              <div class="h-8 bg-slate-200 dark:bg-slate-800 rounded-xl w-full"></div>
-            </div>
-            <div class="w-12 h-12 bg-slate-200 dark:bg-slate-800 rounded-2xl"></div>
-          </div>
-        }
-      </div>
-
-      <!-- Bố cục cột lớn Skeleton -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Biểu đồ Skeleton (Left) -->
-        <div
-          class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm h-[380px] flex flex-col justify-between"
-        >
-          <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-md w-1/4"></div>
-          <div
-            class="h-60 bg-slate-100 dark:bg-slate-800/40 rounded-2xl w-full flex items-end p-3 gap-1 sm:gap-2 justify-around"
-          >
-            @for (i of [40, 60, 35, 80, 50, 90, 75]; track i) {
-              <div
-                class="bg-slate-200 dark:bg-slate-800 rounded-t-lg w-2 sm:w-6"
-                [style.height.%]="i"
-              ></div>
-            }
-          </div>
-        </div>
-        <!-- Widget Biểu đồ tròn Skeleton (Center) -->
-        <div
-          class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm h-[380px] flex flex-col justify-between animate-pulse"
-        >
-          <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-md w-1/2"></div>
-          <div class="flex-1 flex flex-col items-center justify-center gap-6 pt-4">
-            <!-- Vòng tròn Doughnut -->
-            <div class="w-32 h-32 rounded-full border-8 border-slate-100 dark:border-slate-800 flex items-center justify-center">
-              <div class="w-16 h-16 bg-slate-200 dark:bg-slate-800/60 rounded-full"></div>
-            </div>
-            <!-- Chú thích legend skeleton -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full">
-              <div class="h-8 bg-slate-100 dark:bg-slate-800/50 rounded-xl"></div>
-              <div class="h-8 bg-slate-100 dark:bg-slate-800/50 rounded-xl"></div>
-              <div class="h-8 bg-slate-100 dark:bg-slate-800/50 rounded-xl"></div>
-              <div class="h-8 bg-slate-100 dark:bg-slate-800/50 rounded-xl"></div>
-            </div>
-          </div>
-        </div>
-        <!-- Widget Blockchain & Hoạt động Skeleton (Right) -->
-        <div
-          class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm space-y-5 flex flex-col justify-between h-[380px]"
-        >
-          <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-md w-1/2"></div>
-          <div class="space-y-4 flex-1 pt-4">
-            @for (i of [1, 2, 3]; track i) {
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-slate-200 dark:bg-slate-800 rounded-xl shrink-0"></div>
-                <div class="space-y-2 flex-1">
-                  <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-3/4"></div>
-                  <div class="h-3 bg-slate-200 dark:bg-slate-800 rounded-md w-1/2"></div>
-                </div>
+    @if (isDashboardLoading()) {
+      <!-- SKELETON FOR DASHBOARD -->
+      <div class="space-y-6 animate-pulse">
+        <!-- Grid 4 thẻ thống kê Skeleton -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+          @for (i of [1, 2, 3, 4]; track i) {
+            <div
+              class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex items-center justify-between"
+            >
+              <div class="space-y-3 w-2/3">
+                <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-3/4"></div>
+                <div class="h-8 bg-slate-200 dark:bg-slate-800 rounded-xl w-full"></div>
               </div>
-            }
-          </div>
-        </div>
-      </div>
-    </div>
-  } @else {
-    <div class="space-y-6">
-      <!-- Grid 4 thẻ thống kê số liệu thật -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-        <!-- Doanh thu hôm nay -->
-        <div
-          class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex items-center justify-between group hover:scale-[1.02] transition-all"
-        >
-          <div class="space-y-2">
-            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
-              >Doanh thu hôm nay</span
-            >
-            <h4 class="text-2xl font-black text-slate-800 dark:text-white">
-              {{ (dashboardData()?.today_revenue || 0) | vnd }}
-            </h4>
-            <span class="text-xs font-bold text-emerald-500 flex items-center gap-1">
-              ↗ {{ dashboardData()?.today_orders_count || 0 }} đơn mới
-            </span>
-          </div>
-          <div
-            class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-6 w-6 text-amber-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-          </div>
+              <div class="w-12 h-12 bg-slate-200 dark:bg-slate-800 rounded-2xl"></div>
+            </div>
+          }
         </div>
 
-        <!-- Tổng doanh thu -->
-        <div
-          class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex items-center justify-between group hover:scale-[1.02] transition-all"
-        >
-          <div class="space-y-2">
-            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
-              >Tổng doanh thu</span
-            >
-            <h4 class="text-2xl font-black text-slate-800 dark:text-white">
-              {{ (dashboardData()?.total_revenue || 0) | vnd }}
-            </h4>
-            <span class="text-xs font-bold text-slate-500"
-              >Từ {{ dashboardData()?.total_orders_count || 0 }} đơn đã bán</span
-            >
-          </div>
+        <!-- Bố cục cột lớn Skeleton -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Biểu đồ Skeleton (Left) -->
           <div
-            class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center"
+            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm h-[380px] flex flex-col justify-between"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-6 w-6 text-emerald-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+            <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-md w-1/4"></div>
+            <div
+              class="h-60 bg-slate-100 dark:bg-slate-800/40 rounded-2xl w-full flex items-end p-3 gap-1 sm:gap-2 justify-around"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-              />
-            </svg>
+              @for (i of [40, 60, 35, 80, 50, 90, 75]; track i) {
+                <div
+                  class="bg-slate-200 dark:bg-slate-800 rounded-t-lg w-2 sm:w-6"
+                  [style.height.%]="i"
+                ></div>
+              }
+            </div>
           </div>
-        </div>
-
-        <!-- Doanh thu Web3 (tích lũy blockchain) -->
-        <div
-          class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex items-center justify-between group hover:scale-[1.02] transition-all"
-        >
-          <div class="space-y-2">
-            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
-              >Doanh thu Web3</span
-            >
-            <h4 class="text-xl font-extrabold text-purple-600 dark:text-purple-400 leading-snug">
-              {{ ((dashboardData()?.web3_revenue || 0) / nativeTokenPriceVND()).toFixed(5) }}
-              <span class="text-xs">{{ web3Service.nativeTokenSymbol() }}</span>
-            </h4>
-            <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">
-              {{ (dashboardData()?.web3_revenue || 0) | vnd }} tương đương
-            </span>
-          </div>
+          <!-- Widget Biểu đồ tròn Skeleton (Center) -->
           <div
-            class="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-500 flex items-center justify-center"
+            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm h-[380px] flex flex-col justify-between animate-pulse"
           >
-            <svg
-              class="h-6 w-6 text-purple-500"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M12 2L4.5 12 12 22l7.5-10L12 2z"></path>
-              <path d="M12 2v20"></path>
-              <path d="M4.5 12H19.5"></path>
-            </svg>
-          </div>
-        </div>
-
-        <!-- Đơn chờ Web3 -->
-        <div
-          class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex items-center justify-between group hover:scale-[1.02] transition-all"
-        >
-          <div class="space-y-2">
-            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
-              >Đơn chờ Web3</span
-            >
-            <h4 class="text-2xl font-black text-rose-500">
-              {{ dashboardData()?.pending_web3_count || 0 }}
-              <span class="text-xs font-bold text-slate-400">đơn</span>
-            </h4>
-            <span class="text-xs font-medium text-slate-500 dark:text-slate-400"
-              >Đang đợi xác nhận trên chuỗi</span
-            >
-          </div>
-          <div
-            class="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-6 w-6 text-rose-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-          </div>
-        </div>
-      </div>
-
-      <!-- Biểu đồ & Giao dịch Blockchain mới nhất -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Cột trái: Biểu đồ doanh thu tuần này -->
-        <div
-          class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm h-[380px] flex flex-col justify-between space-y-4"
-        >
-          <div class="flex items-center justify-between shrink-0">
-            <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5 text-slate-500 shrink-0"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+            <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-md w-1/2"></div>
+            <div class="flex-1 flex flex-col items-center justify-center gap-6 pt-4">
+              <!-- Vòng tròn Doughnut -->
+              <div
+                class="w-32 h-32 rounded-full border-8 border-slate-100 dark:border-slate-800 flex items-center justify-center"
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                />
-              </svg>
-              <span>Xu hướng doanh thu</span>
-            </h4>
-            <span class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider"
-              >Crypto vs Fiat</span
-            >
+                <div class="w-16 h-16 bg-slate-200 dark:bg-slate-800/60 rounded-full"></div>
+              </div>
+              <!-- Chú thích legend skeleton -->
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full">
+                <div class="h-8 bg-slate-100 dark:bg-slate-800/50 rounded-xl"></div>
+                <div class="h-8 bg-slate-100 dark:bg-slate-800/50 rounded-xl"></div>
+                <div class="h-8 bg-slate-100 dark:bg-slate-800/50 rounded-xl"></div>
+                <div class="h-8 bg-slate-100 dark:bg-slate-800/50 rounded-xl"></div>
+              </div>
+            </div>
           </div>
-
-          <!-- Vẽ biểu đồ bằng các cột Stacked Bar -->
-          <div class="relative w-full flex-1 flex items-end justify-between pt-6 pb-2 px-1 sm:px-2 min-h-0">
-            <!-- Trục Y lưới mờ -->
-            <div
-              class="absolute inset-y-6 left-0 right-16 flex flex-col justify-between pointer-events-none"
-            >
-              <div class="border-t border-slate-100 dark:border-slate-800/60 w-full pt-0.5"></div>
-              <div class="border-t border-slate-100 dark:border-slate-800/60 w-full pt-0.5"></div>
-              <div class="border-t border-slate-100 dark:border-slate-800/60 w-full pt-0.5"></div>
-              <div class="border-t border-slate-200 dark:border-slate-800 w-full pt-0.5"></div>
-            </div>
-
-            <!-- Nhãn trục Y bên phải không bị che -->
-            <div
-              class="absolute inset-y-6 right-0 w-16 flex flex-col justify-between pointer-events-none text-left text-[9px] text-slate-400 font-semibold pl-2 pt-0.5"
-            >
-              <div class="truncate">{{ getMaxRevenue() | vnd }}</div>
-              <div class="truncate">{{ (getMaxRevenue() / 2) | vnd }}</div>
-              <div class="truncate">{{ (getMaxRevenue() / 4) | vnd }}</div>
-              <div>0đ</div>
-            </div>
-
-            <!-- Các Cột biểu đồ vẽ bằng stacked columns -->
-            <div class="w-[calc(100%-64px)] h-36 flex items-end justify-between gap-1 z-10">
-              @for (item of dashboardData()?.weekly_chart; track item.date) {
-                <div class="flex-1 flex flex-col items-center gap-2 group cursor-pointer min-w-0">
-                  <div class="relative w-full flex items-end justify-center h-24">
-                    <!-- Tooltip khi hover cột -->
-                    <div
-                      class="absolute -top-16 scale-0 group-hover:scale-100 bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-[9px] font-black p-2 rounded-xl shadow-lg transition-all duration-200 leading-tight whitespace-nowrap z-30 flex flex-col gap-0.5"
-                    >
-                      <span class="text-slate-400">Tổng: {{ item.revenue | vnd }}</span>
-                      <span class="text-purple-500">Crypto: {{ item.crypto_revenue | vnd }}</span>
-                      <span class="text-amber-500">Fiat: {{ item.fiat_revenue | vnd }}</span>
-                    </div>
-
-                    <!-- Cột bar stacked chia làm 2 phần Fiat và Crypto -->
-                    <div
-                      [style.height.%]="
-                        item.revenue > 0 ? mathMin(100, (item.revenue / getMaxRevenue()) * 100) : 5
-                      "
-                      class="w-full rounded-t-lg overflow-hidden flex flex-col justify-end shadow-md transition-all duration-300"
-                    >
-                      <!-- Phần Fiat (ở trên) -->
-                      <div
-                        *ngIf="item.revenue > 0"
-                        [style.height.%]="(item.fiat_revenue / item.revenue) * 100"
-                        class="w-full bg-gradient-to-t from-amber-500/80 to-amber-400/80 hover:from-amber-400 hover:to-amber-300 transition-colors"
-                      ></div>
-                      <!-- Phần Crypto (ở dưới) -->
-                      <div
-                        *ngIf="item.revenue > 0"
-                        [style.height.%]="(item.crypto_revenue / item.revenue) * 100"
-                        class="w-full bg-gradient-to-t from-purple-600/90 to-purple-500/90 hover:from-purple-500 hover:to-purple-400 transition-colors"
-                      ></div>
-                    </div>
+          <!-- Widget Blockchain & Hoạt động Skeleton (Right) -->
+          <div
+            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm space-y-5 flex flex-col justify-between h-[380px]"
+          >
+            <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-md w-1/2"></div>
+            <div class="space-y-4 flex-1 pt-4">
+              @for (i of [1, 2, 3]; track i) {
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-slate-200 dark:bg-slate-800 rounded-xl shrink-0"></div>
+                  <div class="space-y-2 flex-1">
+                    <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-3/4"></div>
+                    <div class="h-3 bg-slate-200 dark:bg-slate-800 rounded-md w-1/2"></div>
                   </div>
-                  <span
-                    class="text-[10px] font-bold text-slate-500 dark:text-slate-400 group-hover:text-purple-600 group-hover:font-extrabold transition-all"
-                    >{{ item.day_name }}</span
-                  >
                 </div>
               }
             </div>
           </div>
         </div>
-
-        <!-- Cột giữa (MỚI): Cơ cấu thanh toán (Doughnut Chart) -->
-        <div
-          class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm h-[380px] flex flex-col justify-between transition-colors duration-300 space-y-4"
-        >
-          <div class="space-y-1 shrink-0">
-            <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5 text-slate-500 shrink-0"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+      </div>
+    } @else {
+      <div class="space-y-6">
+        <!-- Grid 4 thẻ thống kê số liệu thật -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+          <!-- Doanh thu hôm nay -->
+          <div
+            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex items-center justify-between group hover:scale-[1.02] transition-all"
+          >
+            <div class="space-y-2">
+              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
+                >Doanh thu hôm nay</span
               >
-                <circle cx="12" cy="12" r="9" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0 M12 12L12 8 M12 12L15 15" />
-              </svg>
-              <span>Cơ cấu thanh toán</span>
-            </h4>
-            <p class="text-xs text-slate-500 dark:text-slate-400 leading-none">
-              Tỷ lệ doanh thu theo các kênh thanh toán.
-            </p>
-          </div>
-
-          <!-- Doughnut Chart Rendered with CSS conic-gradient -->
-          <div class="flex-1 flex items-center justify-center my-2 min-h-0">
+              <h4 class="text-2xl font-black text-slate-800 dark:text-white">
+                {{ dashboardData()?.today_revenue || 0 | vnd }}
+              </h4>
+              <span class="text-xs font-bold text-emerald-500 flex items-center gap-1">
+                ↗ {{ dashboardData()?.today_orders_count || 0 }} đơn mới
+              </span>
+            </div>
             <div
-              class="w-32 h-32 rounded-full shadow-inner relative flex items-center justify-center transition-all duration-500 hover:scale-105"
-              [style.background]="getConicGradient()"
+              class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center"
             >
-              <!-- Center circle to make it a Doughnut Chart -->
-              <div
-                class="w-22 h-22 rounded-full bg-white dark:bg-slate-900 flex flex-col items-center justify-center shadow-md transition-colors duration-300"
-              >
-                <span class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">Tổng Đơn</span>
-                <span class="text-base font-black text-slate-800 dark:text-white leading-none mt-0.5">{{ getTotalPaymentOrders() }}</span>
-                <span class="text-[9px] font-bold text-slate-500 dark:text-slate-400 mt-1">{{ getTotalRevenue() | vnd }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Chú thích Legend chi tiết bên dưới -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 shrink-0">
-            <!-- Bank Transfer -->
-            <div class="flex flex-col items-center text-center">
-              <div class="flex items-center gap-1">
-                <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background-color: #10b981"></span>
-                <span class="text-[9px] font-black text-slate-500 dark:text-slate-400">Ngân hàng</span>
-              </div>
-              <span class="text-xs font-black text-slate-800 dark:text-white leading-tight mt-0.5">
-                {{ getPaymentMethodPercentage('bank_transfer') }}%
-              </span>
-              <span class="text-[9px] font-semibold text-slate-400 dark:text-slate-500 leading-none">
-                {{ getPaymentMethodCount('bank_transfer') }} đơn
-              </span>
-            </div>
-
-            <!-- E-wallet -->
-            <div class="flex flex-col items-center text-center">
-              <div class="flex items-center gap-1">
-                <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background-color: #ec4899"></span>
-                <span class="text-[9px] font-black text-slate-500 dark:text-slate-400">Ví điện tử</span>
-              </div>
-              <span class="text-xs font-black text-slate-800 dark:text-white leading-tight mt-0.5">
-                {{ getPaymentMethodPercentage('e_wallet') }}%
-              </span>
-              <span class="text-[9px] font-semibold text-slate-400 dark:text-slate-500 leading-none">
-                {{ getPaymentMethodCount('e_wallet') }} đơn
-              </span>
-            </div>
-
-            <!-- Cash -->
-            <div class="flex flex-col items-center text-center">
-              <div class="flex items-center gap-1">
-                <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background-color: #f59e0b"></span>
-                <span class="text-[9px] font-black text-slate-500 dark:text-slate-400">Tiền mặt</span>
-              </div>
-              <span class="text-xs font-black text-slate-800 dark:text-white leading-tight mt-0.5">
-                {{ getPaymentMethodPercentage('cash') }}%
-              </span>
-              <span class="text-[9px] font-semibold text-slate-400 dark:text-slate-500 leading-none">
-                {{ getPaymentMethodCount('cash') }} đơn
-              </span>
-            </div>
-
-            <!-- Crypto -->
-            <div class="flex flex-col items-center text-center">
-              <div class="flex items-center gap-1">
-                <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background-color: #7c3aed"></span>
-                <span class="text-[9px] font-black text-slate-500 dark:text-slate-400">Crypto</span>
-              </div>
-              <span class="text-xs font-black text-slate-800 dark:text-white leading-tight mt-0.5">
-                {{ getPaymentMethodPercentage('crypto') }}%
-              </span>
-              <span class="text-[9px] font-semibold text-slate-400 dark:text-slate-500 leading-none">
-                {{ getPaymentMethodCount('crypto') }} đơn
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Cột phải: Giao dịch Blockchain mới nhất -->
-        <div
-          class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm h-[380px] flex flex-col justify-between space-y-4"
-        >
-          <div class="space-y-1 shrink-0">
-            <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5 text-slate-500 shrink-0"
+                class="h-6 w-6 text-amber-500"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -554,22 +248,130 @@
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   stroke-width="2"
-                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <span>Giao dịch Blockchain</span>
-            </h4>
-            <p class="text-xs text-slate-500 dark:text-slate-400 leading-none">
-              Các hóa đơn Web3 được sync lên EVM.
-            </p>
+            </div>
           </div>
 
-          <div class="flex-1 overflow-y-auto pr-1 space-y-3 min-h-0">
-            @if (dashboardData()?.latest_blockchain_transactions?.length === 0) {
-              <div class="flex flex-col items-center justify-center py-10 text-center gap-2 h-full">
+          <!-- Tổng doanh thu -->
+          <div
+            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex items-center justify-between group hover:scale-[1.02] transition-all"
+          >
+            <div class="space-y-2">
+              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
+                >Tổng doanh thu</span
+              >
+              <h4 class="text-2xl font-black text-slate-800 dark:text-white">
+                {{ dashboardData()?.total_revenue || 0 | vnd }}
+              </h4>
+              <span class="text-xs font-bold text-slate-500"
+                >Từ {{ dashboardData()?.total_orders_count || 0 }} đơn đã bán</span
+              >
+            </div>
+            <div
+              class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-6 w-6 text-emerald-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                />
+              </svg>
+            </div>
+          </div>
+
+          <!-- Doanh thu Web3 (tích lũy blockchain) -->
+          <div
+            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex items-center justify-between group hover:scale-[1.02] transition-all"
+          >
+            <div class="space-y-2">
+              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
+                >Doanh thu Web3</span
+              >
+              <h4 class="text-xl font-extrabold text-purple-600 dark:text-purple-400 leading-snug">
+                {{ ((dashboardData()?.web3_revenue || 0) / nativeTokenPriceVND()).toFixed(5) }}
+                <span class="text-xs">{{ web3Service.nativeTokenSymbol() }}</span>
+              </h4>
+              <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                {{ dashboardData()?.web3_revenue || 0 | vnd }} tương đương
+              </span>
+            </div>
+            <div
+              class="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-500 flex items-center justify-center"
+            >
+              <svg
+                class="h-6 w-6 text-purple-500"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 2L4.5 12 12 22l7.5-10L12 2z"></path>
+                <path d="M12 2v20"></path>
+                <path d="M4.5 12H19.5"></path>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Đơn chờ Web3 -->
+          <div
+            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex items-center justify-between group hover:scale-[1.02] transition-all"
+          >
+            <div class="space-y-2">
+              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
+                >Đơn chờ Web3</span
+              >
+              <h4 class="text-2xl font-black text-rose-500">
+                {{ dashboardData()?.pending_web3_count || 0 }}
+                <span class="text-xs font-bold text-slate-400">đơn</span>
+              </h4>
+              <span class="text-xs font-medium text-slate-500 dark:text-slate-400"
+                >Đang đợi xác nhận trên chuỗi</span
+              >
+            </div>
+            <div
+              class="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-6 w-6 text-rose-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Biểu đồ & Giao dịch Blockchain mới nhất -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Cột trái: Biểu đồ doanh thu tuần này -->
+          <div
+            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm h-[380px] flex flex-col justify-between space-y-4"
+          >
+            <div class="flex items-center justify-between shrink-0">
+              <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  class="h-8 w-8 text-slate-300 dark:text-slate-700"
+                  class="h-5 w-5 text-slate-500 shrink-0"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -578,210 +380,321 @@
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="2"
-                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                   />
                 </svg>
-                <span class="text-[10px] font-semibold text-slate-400"
-                  >Chưa có giao dịch blockchain nào.</span
-                >
+                <span>Xu hướng doanh thu</span>
+              </h4>
+              <span
+                class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider"
+                >Crypto vs Fiat</span
+              >
+            </div>
+
+            <!-- Vẽ biểu đồ bằng các cột Stacked Bar -->
+            <div
+              class="relative w-full flex-1 flex items-end justify-between pt-6 pb-2 px-1 sm:px-2 min-h-0"
+            >
+              <!-- Trục Y lưới mờ -->
+              <div
+                class="absolute inset-y-6 left-0 right-16 flex flex-col justify-between pointer-events-none"
+              >
+                <div class="border-t border-slate-100 dark:border-slate-800/60 w-full pt-0.5"></div>
+                <div class="border-t border-slate-100 dark:border-slate-800/60 w-full pt-0.5"></div>
+                <div class="border-t border-slate-100 dark:border-slate-800/60 w-full pt-0.5"></div>
+                <div class="border-t border-slate-200 dark:border-slate-800 w-full pt-0.5"></div>
               </div>
-            } @else {
-              @for (tx of dashboardData()?.latest_blockchain_transactions; track tx.id) {
-                <div
-                  class="p-3 rounded-2xl bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-900/60 flex flex-col gap-1.5"
-                >
-                  <div class="flex items-center justify-between text-[11px]">
-                    <span class="font-extrabold text-slate-700 dark:text-slate-300"
-                      >Đơn #{{ tx.id }}</span
-                    >
-                    <span class="font-black text-purple-600 dark:text-purple-400 leading-none">
-                      {{ tx.total_amount | vnd }}
-                    </span>
-                  </div>
-                  <div class="flex items-center justify-between text-[10px] gap-2">
-                    <a
-                      [href]="getTxExplorerLink(tx.tx_hash, tx.chain_id)"
-                      target="_blank"
-                      class="text-blue-500 hover:underline font-semibold font-mono truncate max-w-[120px]"
-                    >
-                      tx: {{ tx.tx_hash | appShortAddress: 6: 6 }} ↗
-                    </a>
-                    @if (tx.blockchain_status === 'success') {
-                      <span
-                        class="bg-emerald-500/10 text-emerald-500 text-[10px] font-extrabold px-2 py-0.5 rounded-full"
-                        >Thành công</span
+
+              <!-- Nhãn trục Y bên phải không bị che -->
+              <div
+                class="absolute inset-y-6 right-0 w-16 flex flex-col justify-between pointer-events-none text-left text-[9px] text-slate-400 font-semibold pl-2 pt-0.5"
+              >
+                <div class="truncate">{{ getMaxRevenue() | vnd }}</div>
+                <div class="truncate">{{ getMaxRevenue() / 2 | vnd }}</div>
+                <div class="truncate">{{ getMaxRevenue() / 4 | vnd }}</div>
+                <div>0đ</div>
+              </div>
+
+              <!-- Các Cột biểu đồ vẽ bằng stacked columns -->
+              <div class="w-[calc(100%-64px)] h-36 flex items-end justify-between gap-1 z-10">
+                @for (item of dashboardData()?.weekly_chart; track item.date) {
+                  <div class="flex-1 flex flex-col items-center gap-2 group cursor-pointer min-w-0">
+                    <div class="relative w-full flex items-end justify-center h-24">
+                      <!-- Tooltip khi hover cột -->
+                      <div
+                        class="absolute -top-16 scale-0 group-hover:scale-100 bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-[9px] font-black p-2 rounded-xl shadow-lg transition-all duration-200 leading-tight whitespace-nowrap z-30 flex flex-col gap-0.5"
                       >
-                    } @else {
-                      <span
-                        class="bg-amber-500/10 text-amber-500 text-[10px] font-extrabold px-2 py-0.5 rounded-full animate-pulse"
-                        >Chờ xác nhận</span
-                      >
-                    }
-                  </div>
-                </div>
-              }
-            }
-          </div>
-        </div>
-      </div>
-
-      <!-- Hàng mới: Top 5 Bán Chạy, Tồn Kho Thấp & Trạng Thái Bàn Ăn, Voucher NFT -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Cột trái + giữa (lg:col-span-2): Sản phẩm bán chạy & Cảnh báo tồn kho -->
-        <div class="lg:col-span-2 space-y-6">
-
-          <!-- Widget Top 5 Bán Chạy -->
-          <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm space-y-4">
-            <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-500" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
-              </svg>
-              <span>Sản phẩm bán chạy nhất trong kỳ</span>
-            </h4>
-
-            <div class="overflow-hidden">
-              @if (!dashboardData()?.best_sellers || dashboardData()?.best_sellers?.length === 0) {
-                <div class="flex flex-col items-center justify-center py-10 text-center gap-2">
-                  <span class="text-xs text-slate-400">Không có dữ liệu sản phẩm bán chạy trong khoảng thời gian này.</span>
-                </div>
-              } @else {
-                <div class="space-y-4">
-                  @for (prod of dashboardData()?.best_sellers; track $index) {
-                    <div class="space-y-1">
-                      <div class="flex items-center justify-between text-xs font-bold">
-                        <span class="text-slate-700 dark:text-slate-300">
-                          {{ prod.name }} @if(prod.variant_name) { <span class="text-slate-400 font-normal">({{ prod.variant_name }})</span> }
-                        </span>
-                        <div class="flex items-center gap-3 text-slate-500">
-                          <span>Đã bán: <strong class="text-slate-800 dark:text-white font-extrabold">{{ prod.total_quantity }}</strong> ly/phần</span>
-                          <span class="text-[var(--dynamic-primary)]">{{ prod.total_revenue | number }}đ</span>
-                        </div>
+                        <span class="text-slate-400">Tổng: {{ item.revenue | vnd }}</span>
+                        <span class="text-purple-500">Crypto: {{ item.crypto_revenue | vnd }}</span>
+                        <span class="text-amber-500">Fiat: {{ item.fiat_revenue | vnd }}</span>
                       </div>
-                      <!-- Progress bar thể hiện tương đối số lượng bán -->
-                      <div class="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+
+                      <!-- Cột bar stacked chia làm 2 phần Fiat và Crypto -->
+                      <div
+                        [style.height.%]="
+                          item.revenue > 0
+                            ? mathMin(100, (item.revenue / getMaxRevenue()) * 100)
+                            : 5
+                        "
+                        class="w-full rounded-t-lg overflow-hidden flex flex-col justify-end shadow-md transition-all duration-300"
+                      >
+                        <!-- Phần Fiat (ở trên) -->
                         <div
-                          class="h-full bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] rounded-full transition-all duration-500"
-                          [style.width.%]="mathMin(100, (prod.total_quantity / dashboardData().best_sellers[0].total_quantity) * 100)"
+                          *ngIf="item.revenue > 0"
+                          [style.height.%]="(item.fiat_revenue / item.revenue) * 100"
+                          class="w-full bg-gradient-to-t from-amber-500/80 to-amber-400/80 hover:from-amber-400 hover:to-amber-300 transition-colors"
+                        ></div>
+                        <!-- Phần Crypto (ở dưới) -->
+                        <div
+                          *ngIf="item.revenue > 0"
+                          [style.height.%]="(item.crypto_revenue / item.revenue) * 100"
+                          class="w-full bg-gradient-to-t from-purple-600/90 to-purple-500/90 hover:from-purple-500 hover:to-purple-400 transition-colors"
                         ></div>
                       </div>
                     </div>
-                  }
-                </div>
-              }
+                    <span
+                      class="text-[10px] font-bold text-slate-500 dark:text-slate-400 group-hover:text-purple-600 group-hover:font-extrabold transition-all"
+                      >{{ item.day_name }}</span
+                    >
+                  </div>
+                }
+              </div>
             </div>
           </div>
 
-          <!-- Widget Cảnh Báo Tồn Kho Thấp -->
-          <div class="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm space-y-4">
-            <div class="flex items-start justify-between gap-2">
-              <h4 class="text-base sm:text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2 flex-1 min-w-0">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-rose-500 animate-pulse shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+          <!-- Cột giữa (MỚI): Cơ cấu thanh toán (Doughnut Chart) -->
+          <div
+            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm h-[380px] flex flex-col justify-between transition-colors duration-300 space-y-4"
+          >
+            <div class="space-y-1 shrink-0">
+              <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5 text-slate-500 shrink-0"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <circle cx="12" cy="12" r="9" />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0 M12 12L12 8 M12 12L15 15"
+                  />
                 </svg>
-                <span class="leading-tight">Cảnh báo tồn kho thấp <span class="text-slate-400 font-semibold">(≤ 10)</span></span>
+                <span>Cơ cấu thanh toán</span>
               </h4>
-              @if (getLowStockTotalCount() > 0) {
-                <span class="text-[10px] font-black px-2.5 py-1 bg-rose-500/10 text-rose-500 rounded-full shrink-0">
-                  {{ getLowStockTotalCount() }} mục
-                </span>
-              }
+              <p class="text-xs text-slate-500 dark:text-slate-400 leading-none">
+                Tỷ lệ doanh thu theo các kênh thanh toán.
+              </p>
             </div>
 
-            <div class="overflow-x-auto">
-              @if (!dashboardData()?.low_stock_alerts || dashboardData()?.low_stock_alerts?.length === 0) {
-                <div class="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-2xl text-xs font-bold">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  <span>Tất cả sản phẩm đều đủ lượng tồn kho. Không có cảnh báo!</span>
+            <!-- Doughnut Chart Rendered with CSS conic-gradient -->
+            <div class="flex-1 flex items-center justify-center my-2 min-h-0">
+              <div
+                class="w-32 h-32 rounded-full shadow-inner relative flex items-center justify-center transition-all duration-500 hover:scale-105"
+                [style.background]="getConicGradient()"
+              >
+                <!-- Center circle to make it a Doughnut Chart -->
+                <div
+                  class="w-22 h-22 rounded-full bg-white dark:bg-slate-900 flex flex-col items-center justify-center shadow-md transition-colors duration-300"
+                >
+                  <span
+                    class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider"
+                    >Tổng Đơn</span
+                  >
+                  <span
+                    class="text-base font-black text-slate-800 dark:text-white leading-none mt-0.5"
+                    >{{ getTotalPaymentOrders() }}</span
+                  >
+                  <span class="text-[9px] font-bold text-slate-500 dark:text-slate-400 mt-1">{{
+                    getTotalRevenue() | vnd
+                  }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chú thích Legend chi tiết bên dưới -->
+            <div
+              class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 shrink-0"
+            >
+              <!-- Bank Transfer -->
+              <div class="flex flex-col items-center text-center">
+                <div class="flex items-center gap-1">
+                  <span
+                    class="w-1.5 h-1.5 rounded-full shrink-0"
+                    style="background-color: #10b981"
+                  ></span>
+                  <span class="text-[9px] font-black text-slate-500 dark:text-slate-400"
+                    >Ngân hàng</span
+                  >
+                </div>
+                <span
+                  class="text-xs font-black text-slate-800 dark:text-white leading-tight mt-0.5"
+                >
+                  {{ getPaymentMethodPercentage('bank_transfer') }}%
+                </span>
+                <span
+                  class="text-[9px] font-semibold text-slate-400 dark:text-slate-500 leading-none"
+                >
+                  {{ getPaymentMethodCount('bank_transfer') }} đơn
+                </span>
+              </div>
+
+              <!-- E-wallet -->
+              <div class="flex flex-col items-center text-center">
+                <div class="flex items-center gap-1">
+                  <span
+                    class="w-1.5 h-1.5 rounded-full shrink-0"
+                    style="background-color: #ec4899"
+                  ></span>
+                  <span class="text-[9px] font-black text-slate-500 dark:text-slate-400"
+                    >Ví điện tử</span
+                  >
+                </div>
+                <span
+                  class="text-xs font-black text-slate-800 dark:text-white leading-tight mt-0.5"
+                >
+                  {{ getPaymentMethodPercentage('e_wallet') }}%
+                </span>
+                <span
+                  class="text-[9px] font-semibold text-slate-400 dark:text-slate-500 leading-none"
+                >
+                  {{ getPaymentMethodCount('e_wallet') }} đơn
+                </span>
+              </div>
+
+              <!-- Cash -->
+              <div class="flex flex-col items-center text-center">
+                <div class="flex items-center gap-1">
+                  <span
+                    class="w-1.5 h-1.5 rounded-full shrink-0"
+                    style="background-color: #f59e0b"
+                  ></span>
+                  <span class="text-[9px] font-black text-slate-500 dark:text-slate-400"
+                    >Tiền mặt</span
+                  >
+                </div>
+                <span
+                  class="text-xs font-black text-slate-800 dark:text-white leading-tight mt-0.5"
+                >
+                  {{ getPaymentMethodPercentage('cash') }}%
+                </span>
+                <span
+                  class="text-[9px] font-semibold text-slate-400 dark:text-slate-500 leading-none"
+                >
+                  {{ getPaymentMethodCount('cash') }} đơn
+                </span>
+              </div>
+
+              <!-- Crypto -->
+              <div class="flex flex-col items-center text-center">
+                <div class="flex items-center gap-1">
+                  <span
+                    class="w-1.5 h-1.5 rounded-full shrink-0"
+                    style="background-color: #7c3aed"
+                  ></span>
+                  <span class="text-[9px] font-black text-slate-500 dark:text-slate-400"
+                    >Crypto</span
+                  >
+                </div>
+                <span
+                  class="text-xs font-black text-slate-800 dark:text-white leading-tight mt-0.5"
+                >
+                  {{ getPaymentMethodPercentage('crypto') }}%
+                </span>
+                <span
+                  class="text-[9px] font-semibold text-slate-400 dark:text-slate-500 leading-none"
+                >
+                  {{ getPaymentMethodCount('crypto') }} đơn
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cột phải: Giao dịch Blockchain mới nhất -->
+          <div
+            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm h-[380px] flex flex-col justify-between space-y-4"
+          >
+            <div class="space-y-1 shrink-0">
+              <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5 text-slate-500 shrink-0"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                  />
+                </svg>
+                <span>Giao dịch Blockchain</span>
+              </h4>
+              <p class="text-xs text-slate-500 dark:text-slate-400 leading-none">
+                Các hóa đơn Web3 được sync lên EVM.
+              </p>
+            </div>
+
+            <div class="flex-1 overflow-y-auto pr-1 space-y-3 min-h-0">
+              @if (dashboardData()?.latest_blockchain_transactions?.length === 0) {
+                <div
+                  class="flex flex-col items-center justify-center py-10 text-center gap-2 h-full"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-8 w-8 text-slate-300 dark:text-slate-700"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                    />
+                  </svg>
+                  <span class="text-[10px] font-semibold text-slate-400"
+                    >Chưa có giao dịch blockchain nào.</span
+                  >
                 </div>
               } @else {
-                <table class="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr class="border-b border-slate-100 dark:border-slate-800 text-slate-400 font-bold">
-                      <th class="pb-2 font-black w-24 sm:w-28">SKU</th>
-                      <th class="pb-2 font-black">TÊN SẢN PHẨM</th>
-                      <th class="pb-2 text-right font-black whitespace-nowrap">TỒN KHO</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (alert of getLowStockPaged(); track $index) {
-                      <tr class="border-b border-slate-100/50 dark:border-slate-800/50 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50/50 dark:hover:bg-slate-950/20">
-                        <td class="py-2.5 font-mono text-[10px] sm:text-xs text-slate-500 w-24 sm:w-28">{{ alert.sku || '—' }}</td>
-                        <td class="py-2.5 max-w-0">
-                          <div class="truncate">
-                            {{ alert.product_name }}
-                            @if(alert.variant_name) { <span class="text-slate-400 font-normal">({{ alert.variant_name }})</span> }
-                          </div>
-                        </td>
-                        <td class="py-2.5 text-right whitespace-nowrap">
-                          <span
-                            [class.bg-rose-500/10]="alert.stock <= 5"
-                            [class.text-rose-500]="alert.stock <= 5"
-                            [class.bg-amber-500/10]="alert.stock > 5"
-                            [class.text-amber-500]="alert.stock > 5"
-                            class="px-2 py-0.5 rounded-full font-black text-[10px]"
-                          >
-                            {{ alert.stock }}
-                          </span>
-                        </td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-
-                <!-- Footer phân trang -->
-                @if (getLowStockTotalPages() > 1) {
-                  <div class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800 mt-2 gap-2">
-                    <!-- Thông tin trang -->
-                    <span class="text-[10px] text-slate-400 font-semibold shrink-0">
-                      {{ (lowStockCurrentPage - 1) * lowStockPageSize + 1 }}–{{ mathMin(lowStockCurrentPage * lowStockPageSize, getLowStockTotalCount()) }}
-                      <span class="text-slate-300 dark:text-slate-600">/</span>
-                      {{ getLowStockTotalCount() }}
-                    </span>
-
-                    <!-- Điều hướng phân trang -->
-                    <div class="flex items-center gap-0.5">
-                      <!-- Prev -->
-                      <button
-                        (click)="goToLowStockPage(lowStockCurrentPage - 1)"
-                        [disabled]="lowStockCurrentPage === 1"
-                        class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-25 disabled:cursor-not-allowed transition-all"
-                        title="Trang trước"
+                @for (tx of dashboardData()?.latest_blockchain_transactions; track tx.id) {
+                  <div
+                    class="p-3 rounded-2xl bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-900/60 flex flex-col gap-1.5"
+                  >
+                    <div class="flex items-center justify-between text-[11px]">
+                      <span class="font-extrabold text-slate-700 dark:text-slate-300"
+                        >Đơn #{{ tx.id }}</span
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
-                        </svg>
-                      </button>
-
-                      <!-- Smart page numbers với ellipsis -->
-                      @for (item of getLowStockDisplayPages(); track $index) {
-                        @if (item === '...') {
-                          <span class="w-7 h-7 flex items-center justify-center text-[11px] text-slate-400 font-semibold select-none">…</span>
-                        } @else {
-                          <button
-                            (click)="goToLowStockPage(+item)"
-                            class="w-7 h-7 flex items-center justify-center rounded-lg text-[11px] font-black transition-all"
-                            [class.bg-[var(--dynamic-primary)]]="item === lowStockCurrentPage"
-                            [class.text-white]="item === lowStockCurrentPage"
-                            [class.shadow-sm]="item === lowStockCurrentPage"
-                            [class.text-slate-600]="item !== lowStockCurrentPage"
-                            [class.dark:text-slate-400]="item !== lowStockCurrentPage"
-                            [class.hover:bg-slate-100]="item !== lowStockCurrentPage"
-                            [class.dark:hover:bg-slate-800]="item !== lowStockCurrentPage"
-                          >{{ item }}</button>
-                        }
+                      <span class="font-black text-purple-600 dark:text-purple-400 leading-none">
+                        {{ tx.total_amount | vnd }}
+                      </span>
+                    </div>
+                    <div class="flex items-center justify-between text-[10px] gap-2">
+                      <a
+                        [href]="getTxExplorerLink(tx.tx_hash, tx.chain_id)"
+                        target="_blank"
+                        class="text-blue-500 hover:underline font-semibold font-mono truncate max-w-[120px]"
+                      >
+                        tx: {{ tx.tx_hash | appShortAddress: 6 : 6 }} ↗
+                      </a>
+                      @if (tx.blockchain_status === 'success') {
+                        <span
+                          class="bg-emerald-500/10 text-emerald-500 text-[10px] font-extrabold px-2 py-0.5 rounded-full"
+                          >Thành công</span
+                        >
+                      } @else {
+                        <span
+                          class="bg-amber-500/10 text-amber-500 text-[10px] font-extrabold px-2 py-0.5 rounded-full animate-pulse"
+                          >Chờ xác nhận</span
+                        >
                       }
-
-                      <!-- Next -->
-                      <button
-                        (click)="goToLowStockPage(lowStockCurrentPage + 1)"
-                        [disabled]="lowStockCurrentPage === getLowStockTotalPages()"
-                        class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-25 disabled:cursor-not-allowed transition-all"
-                        title="Trang sau"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
-                        </svg>
-                      </button>
                     </div>
                   </div>
                 }
@@ -790,94 +703,425 @@
           </div>
         </div>
 
-        <!-- Cột phải (lg:col-span-1): Trạng thái bàn ăn & Thống kê Voucher NFT -->
-        <div class="space-y-6">
-
-          <!-- Widget Trạng thái Bàn Ăn -->
-          <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex flex-col justify-between h-[300px]">
-            <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
-              </svg>
-              <span>Trạng thái bàn ăn</span>
-            </h4>
-
-            <div class="flex-1 flex items-center justify-center gap-6">
-              <!-- Ring Chart đại diện bàn đang dùng/trống -->
-              <div class="relative w-28 h-28 flex items-center justify-center">
-                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                  <!-- Vòng nền trống -->
-                  <circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="8" class="text-slate-100 dark:text-slate-800" fill="none" />
-                  <!-- Vòng phần trăm đang sử dụng -->
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="40"
-                    stroke="currentColor"
-                    stroke-width="8"
-                    class="text-[var(--dynamic-primary)]"
-                    fill="none"
-                    [attr.stroke-dasharray]="251.2"
-                    [attr.stroke-dashoffset]="dashboardData()?.tables_occupancy?.total > 0 ? 251.2 - (251.2 * dashboardData()?.tables_occupancy?.occupied / dashboardData()?.tables_occupancy?.total) : 251.2"
+        <!-- Hàng mới: Top 5 Bán Chạy, Tồn Kho Thấp & Trạng Thái Bàn Ăn, Voucher NFT -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Cột trái + giữa (lg:col-span-2): Sản phẩm bán chạy & Cảnh báo tồn kho -->
+          <div class="lg:col-span-2 space-y-6">
+            <!-- Widget Top 5 Bán Chạy -->
+            <div
+              class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm space-y-4"
+            >
+              <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5 text-amber-500"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"
+                    clip-rule="evenodd"
                   />
                 </svg>
-                <div class="absolute flex flex-col items-center justify-center">
-                  <span class="text-sm font-black text-slate-800 dark:text-white">
-                    {{ dashboardData()?.tables_occupancy?.occupied }}/{{ dashboardData()?.tables_occupancy?.total }}
+                <span>Sản phẩm bán chạy nhất trong kỳ</span>
+              </h4>
+
+              <div class="overflow-hidden">
+                @if (
+                  !dashboardData()?.best_sellers || dashboardData()?.best_sellers?.length === 0
+                ) {
+                  <div class="flex flex-col items-center justify-center py-10 text-center gap-2">
+                    <span class="text-xs text-slate-400"
+                      >Không có dữ liệu sản phẩm bán chạy trong khoảng thời gian này.</span
+                    >
+                  </div>
+                } @else {
+                  <div class="space-y-4">
+                    @for (prod of dashboardData()?.best_sellers; track $index) {
+                      <div class="space-y-1">
+                        <div class="flex items-center justify-between text-xs font-bold">
+                          <span class="text-slate-700 dark:text-slate-300">
+                            {{ prod.name }}
+                            @if (prod.variant_name) {
+                              <span class="text-slate-400 font-normal"
+                                >({{ prod.variant_name }})</span
+                              >
+                            }
+                          </span>
+                          <div class="flex items-center gap-3 text-slate-500">
+                            <span
+                              >Đã bán:
+                              <strong class="text-slate-800 dark:text-white font-extrabold">{{
+                                prod.total_quantity
+                              }}</strong>
+                              ly/phần</span
+                            >
+                            <span class="text-[var(--dynamic-primary)]"
+                              >{{ prod.total_revenue | number }}đ</span
+                            >
+                          </div>
+                        </div>
+                        <!-- Progress bar thể hiện tương đối số lượng bán -->
+                        <div
+                          class="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden"
+                        >
+                          <div
+                            class="h-full bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] rounded-full transition-all duration-500"
+                            [style.width.%]="
+                              mathMin(
+                                100,
+                                (prod.total_quantity /
+                                  dashboardData().best_sellers[0].total_quantity) *
+                                  100
+                              )
+                            "
+                          ></div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Widget Cảnh Báo Tồn Kho Thấp -->
+            <div
+              class="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm space-y-4"
+            >
+              <div class="flex items-start justify-between gap-2">
+                <h4
+                  class="text-base sm:text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2 flex-1 min-w-0"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5 text-rose-500 animate-pulse shrink-0"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                  <span class="leading-tight"
+                    >Cảnh báo tồn kho thấp
+                    <span class="text-slate-400 font-semibold">(≤ 10)</span></span
+                  >
+                </h4>
+                @if (getLowStockTotalCount() > 0) {
+                  <span
+                    class="text-[10px] font-black px-2.5 py-1 bg-rose-500/10 text-rose-500 rounded-full shrink-0"
+                  >
+                    {{ getLowStockTotalCount() }} mục
                   </span>
-                  <span class="text-[9px] font-bold text-slate-400 uppercase">Bàn dùng</span>
-                </div>
+                }
               </div>
 
-              <!-- Chú thích chi tiết -->
-              <div class="space-y-2 text-xs font-bold">
-                <div class="flex items-center gap-2">
-                  <span class="w-2.5 h-2.5 rounded-full bg-[var(--dynamic-primary)]"></span>
-                  <span class="text-slate-700 dark:text-slate-300">Đang có khách: {{ dashboardData()?.tables_occupancy?.occupied }}</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <span class="w-2.5 h-2.5 rounded-full bg-slate-200 dark:bg-slate-800"></span>
-                  <span class="text-slate-500">Bàn trống: {{ dashboardData()?.tables_occupancy?.vacant }}</span>
-                </div>
+              <div class="overflow-x-auto">
+                @if (
+                  !dashboardData()?.low_stock_alerts ||
+                  dashboardData()?.low_stock_alerts?.length === 0
+                ) {
+                  <div
+                    class="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-2xl text-xs font-bold"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-4.5 w-4.5 text-emerald-500 shrink-0"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <span>Tất cả sản phẩm đều đủ lượng tồn kho. Không có cảnh báo!</span>
+                  </div>
+                } @else {
+                  <table class="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr
+                        class="border-b border-slate-100 dark:border-slate-800 text-slate-400 font-bold"
+                      >
+                        <th class="pb-2 font-black w-24 sm:w-28">SKU</th>
+                        <th class="pb-2 font-black">TÊN SẢN PHẨM</th>
+                        <th class="pb-2 text-right font-black whitespace-nowrap">TỒN KHO</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (alert of getLowStockPaged(); track $index) {
+                        <tr
+                          class="border-b border-slate-100/50 dark:border-slate-800/50 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50/50 dark:hover:bg-slate-950/20"
+                        >
+                          <td
+                            class="py-2.5 font-mono text-[10px] sm:text-xs text-slate-500 w-24 sm:w-28"
+                          >
+                            {{ alert.sku || '—' }}
+                          </td>
+                          <td class="py-2.5 max-w-0">
+                            <div class="truncate">
+                              {{ alert.product_name }}
+                              @if (alert.variant_name) {
+                                <span class="text-slate-400 font-normal"
+                                  >({{ alert.variant_name }})</span
+                                >
+                              }
+                            </div>
+                          </td>
+                          <td class="py-2.5 text-right whitespace-nowrap">
+                            <span
+                              [class.bg-rose-500/10]="alert.stock <= 5"
+                              [class.text-rose-500]="alert.stock <= 5"
+                              [class.bg-amber-500/10]="alert.stock > 5"
+                              [class.text-amber-500]="alert.stock > 5"
+                              class="px-2 py-0.5 rounded-full font-black text-[10px]"
+                            >
+                              {{ alert.stock }}
+                            </span>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+
+                  <!-- Footer phân trang -->
+                  @if (getLowStockTotalPages() > 1) {
+                    <div
+                      class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800 mt-2 gap-2"
+                    >
+                      <!-- Thông tin trang -->
+                      <span class="text-[10px] text-slate-400 font-semibold shrink-0">
+                        {{ (lowStockCurrentPage - 1) * lowStockPageSize + 1 }}–{{
+                          mathMin(lowStockCurrentPage * lowStockPageSize, getLowStockTotalCount())
+                        }}
+                        <span class="text-slate-300 dark:text-slate-600">/</span>
+                        {{ getLowStockTotalCount() }}
+                      </span>
+
+                      <!-- Điều hướng phân trang -->
+                      <div class="flex items-center gap-0.5">
+                        <!-- Prev -->
+                        <button
+                          (click)="goToLowStockPage(lowStockCurrentPage - 1)"
+                          [disabled]="lowStockCurrentPage === 1"
+                          class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-25 disabled:cursor-not-allowed transition-all"
+                          title="Trang trước"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-3.5 w-3.5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2.5"
+                              d="M15 19l-7-7 7-7"
+                            />
+                          </svg>
+                        </button>
+
+                        <!-- Smart page numbers với ellipsis -->
+                        @for (item of getLowStockDisplayPages(); track $index) {
+                          @if (item === '...') {
+                            <span
+                              class="w-7 h-7 flex items-center justify-center text-[11px] text-slate-400 font-semibold select-none"
+                              >…</span
+                            >
+                          } @else {
+                            <button
+                              (click)="goToLowStockPage(+item)"
+                              class="w-7 h-7 flex items-center justify-center rounded-lg text-[11px] font-black transition-all"
+                              [class.bg-[var(--dynamic-primary)]]="item === lowStockCurrentPage"
+                              [class.text-white]="item === lowStockCurrentPage"
+                              [class.shadow-sm]="item === lowStockCurrentPage"
+                              [class.text-slate-600]="item !== lowStockCurrentPage"
+                              [class.dark:text-slate-400]="item !== lowStockCurrentPage"
+                              [class.hover:bg-slate-100]="item !== lowStockCurrentPage"
+                              [class.dark:hover:bg-slate-800]="item !== lowStockCurrentPage"
+                            >
+                              {{ item }}
+                            </button>
+                          }
+                        }
+
+                        <!-- Next -->
+                        <button
+                          (click)="goToLowStockPage(lowStockCurrentPage + 1)"
+                          [disabled]="lowStockCurrentPage === getLowStockTotalPages()"
+                          class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-25 disabled:cursor-not-allowed transition-all"
+                          title="Trang sau"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-3.5 w-3.5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2.5"
+                              d="M9 5l7 7-7 7"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  }
+                }
               </div>
             </div>
           </div>
 
-          <!-- Widget Thống kê Voucher NFT -->
-          <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm space-y-4">
-            <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-500" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M5 2a2 2 0 00-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V4a2 2 0 00-2-2H5zm4.707 3.707a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L8.414 9H10a3 3 0 013 3v1a1 1 0 102 0v-1a5 5 0 00-5-5H8.414l1.293-1.293z" clip-rule="evenodd" />
-              </svg>
-              <span>Hoạt động Voucher NFT</span>
-            </h4>
+          <!-- Cột phải (lg:col-span-1): Trạng thái bàn ăn & Thống kê Voucher NFT -->
+          <div class="space-y-6">
+            <!-- Widget Trạng thái Bàn Ăn -->
+            <div
+              class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex flex-col justify-between h-[300px]"
+            >
+              <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5 text-indigo-500"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"
+                  />
+                </svg>
+                <span>Trạng thái bàn ăn</span>
+              </h4>
 
-            <div class="grid grid-cols-3 gap-3">
-              <!-- Minted -->
-              <div class="p-3 bg-purple-500/5 border border-purple-500/10 rounded-2xl flex flex-col items-center justify-center text-center">
-                <span class="text-[9px] font-black text-slate-400 uppercase">Đã Mint</span>
-                <span class="text-lg font-black text-purple-600 dark:text-purple-400 mt-1">{{ dashboardData()?.voucher_activity?.total_minted }}</span>
+              <div class="flex-1 flex items-center justify-center gap-6">
+                <!-- Ring Chart đại diện bàn đang dùng/trống -->
+                <div class="relative w-28 h-28 flex items-center justify-center">
+                  <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                    <!-- Vòng nền trống -->
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="40"
+                      stroke="currentColor"
+                      stroke-width="8"
+                      class="text-slate-100 dark:text-slate-800"
+                      fill="none"
+                    />
+                    <!-- Vòng phần trăm đang sử dụng -->
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="40"
+                      stroke="currentColor"
+                      stroke-width="8"
+                      class="text-[var(--dynamic-primary)]"
+                      fill="none"
+                      [attr.stroke-dasharray]="251.2"
+                      [attr.stroke-dashoffset]="
+                        dashboardData()?.tables_occupancy?.total > 0
+                          ? 251.2 -
+                            (251.2 * dashboardData()?.tables_occupancy?.occupied) /
+                              dashboardData()?.tables_occupancy?.total
+                          : 251.2
+                      "
+                    />
+                  </svg>
+                  <div class="absolute flex flex-col items-center justify-center">
+                    <span class="text-sm font-black text-slate-800 dark:text-white">
+                      {{ dashboardData()?.tables_occupancy?.occupied }}/{{
+                        dashboardData()?.tables_occupancy?.total
+                      }}
+                    </span>
+                    <span class="text-[9px] font-bold text-slate-400 uppercase">Bàn dùng</span>
+                  </div>
+                </div>
+
+                <!-- Chú thích chi tiết -->
+                <div class="space-y-2 text-xs font-bold">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-[var(--dynamic-primary)]"></span>
+                    <span class="text-slate-700 dark:text-slate-300"
+                      >Đang có khách: {{ dashboardData()?.tables_occupancy?.occupied }}</span
+                    >
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-slate-200 dark:bg-slate-800"></span>
+                    <span class="text-slate-500"
+                      >Bàn trống: {{ dashboardData()?.tables_occupancy?.vacant }}</span
+                    >
+                  </div>
+                </div>
               </div>
-              <!-- Used -->
-              <div class="p-3 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl flex flex-col items-center justify-center text-center">
-                <span class="text-[9px] font-black text-slate-400 uppercase">Sử dụng</span>
-                <span class="text-lg font-black text-emerald-500 mt-1">{{ dashboardData()?.voucher_activity?.used }}</span>
-              </div>
-              <!-- Saved Money -->
-              <div class="p-3 bg-blue-500/5 border border-blue-500/10 rounded-2xl flex flex-col items-center justify-center text-center">
-                <span class="text-[9px] font-black text-slate-400 uppercase">Giảm giá</span>
-                <span class="text-xs font-black text-blue-500 mt-2 truncate w-full" title="{{ dashboardData()?.voucher_activity?.total_discount | number }}đ">
-                  {{ dashboardData()?.voucher_activity?.total_discount | number }}đ
-                </span>
+            </div>
+
+            <!-- Widget Thống kê Voucher NFT -->
+            <div
+              class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm space-y-4"
+            >
+              <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5 text-purple-500"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M5 2a2 2 0 00-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V4a2 2 0 00-2-2H5zm4.707 3.707a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L8.414 9H10a3 3 0 013 3v1a1 1 0 102 0v-1a5 5 0 00-5-5H8.414l1.293-1.293z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                <span>Hoạt động Voucher NFT</span>
+              </h4>
+
+              <div class="grid grid-cols-3 gap-3">
+                <!-- Minted -->
+                <div
+                  class="p-3 bg-purple-500/5 border border-purple-500/10 rounded-2xl flex flex-col items-center justify-center text-center"
+                >
+                  <span class="text-[9px] font-black text-slate-400 uppercase">Đã Mint</span>
+                  <span class="text-lg font-black text-purple-600 dark:text-purple-400 mt-1">{{
+                    dashboardData()?.voucher_activity?.total_minted
+                  }}</span>
+                </div>
+                <!-- Used -->
+                <div
+                  class="p-3 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl flex flex-col items-center justify-center text-center"
+                >
+                  <span class="text-[9px] font-black text-slate-400 uppercase">Sử dụng</span>
+                  <span class="text-lg font-black text-emerald-500 mt-1">{{
+                    dashboardData()?.voucher_activity?.used
+                  }}</span>
+                </div>
+                <!-- Saved Money -->
+                <div
+                  class="p-3 bg-blue-500/5 border border-blue-500/10 rounded-2xl flex flex-col items-center justify-center text-center"
+                >
+                  <span class="text-[9px] font-black text-slate-400 uppercase">Giảm giá</span>
+                  <span
+                    class="text-xs font-black text-blue-500 mt-2 truncate w-full"
+                    title="{{ dashboardData()?.voucher_activity?.total_discount | number }}đ"
+                  >
+                    {{ dashboardData()?.voucher_activity?.total_discount | number }}đ
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-
         </div>
       </div>
-    </div>
+    }
+  } @else {
+    <app-web3-connect-prompt [title]="'Kết nối ví Web3 để xem Tổng quan'"></app-web3-connect-prompt>
   }
-} @else {
-  <app-web3-connect-prompt [title]="'Kết nối ví Web3 để xem Tổng quan'"></app-web3-connect-prompt>
-}
 </div>
