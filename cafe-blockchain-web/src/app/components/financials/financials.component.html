@@ -36,6 +36,7 @@
       }
       <div
         class="relative inline-flex items-stretch transaction-dropdown-container self-start sm:self-center rounded-xl bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] shadow-md shadow-[var(--dynamic-primary)]/20 hover:scale-[1.01] active:scale-[0.99] transition-all"
+        [class.z-20]="isTransactionDropdownOpen()"
       >
         <!-- Nút chính (bên trái) - Lập Phiếu Thu mặc định -->
         <button

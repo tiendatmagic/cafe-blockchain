@@ -20,7 +20,10 @@
         <span>+ Tạo Nhóm mới</span>
       </button>
 
-      <div class="relative inline-flex items-stretch customer-dropdown-container rounded-xl bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] shadow-md shadow-[var(--dynamic-primary)]/20 hover:scale-[1.01] active:scale-[0.99] transition-all">
+      <div
+        class="relative inline-flex items-stretch customer-dropdown-container rounded-xl bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] shadow-md shadow-[var(--dynamic-primary)]/20 hover:scale-[1.01] active:scale-[0.99] transition-all"
+        [class.z-20]="isCustomerDropdownOpen()"
+      >
         <!-- Nút chính (bên trái) - Thêm khách hàng cá nhân mặc định -->
         <button
           (click)="openAddCustomerModal('individual')"
