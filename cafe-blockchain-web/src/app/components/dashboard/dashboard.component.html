@@ -695,7 +695,8 @@
             <div class="overflow-x-auto">
               @if (!dashboardData()?.low_stock_alerts || dashboardData()?.low_stock_alerts?.length === 0) {
                 <div class="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-2xl text-xs font-bold">
-                  <span>🎉 Tất cả sản phẩm đều đủ lượng tồn kho. Không có cảnh báo!</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  <span>Tất cả sản phẩm đều đủ lượng tồn kho. Không có cảnh báo!</span>
                 </div>
               } @else {
                 <table class="w-full text-left text-xs border-collapse">

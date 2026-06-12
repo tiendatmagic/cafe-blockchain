@@ -13,3 +13,5 @@ Những gì tôi yêu cầu tại thư mục dự án, bạn hãy ghi nhớ nh�
 Nhưng nhớ là không cần phải copy 100% nội dung đoạn chat câu trả lời vào file đâu nhé, chỉ ghi nhớ những ý chính
 
 Mỗi khi thực hiện yêu cầu ở đoạn chat mới, luôn đọc D:\git\cafe-blockchain\.agent\AGENTS.md trước
+
+Còn về khi tôi yêu cầu phát triển tính năng mới liên quan đến giao diện, hãy đọc D:\git\cafe-blockchain\.agent\design.md trước để tuân theo quy tắc chung nhé

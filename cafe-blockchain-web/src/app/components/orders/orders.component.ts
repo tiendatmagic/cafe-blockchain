@@ -428,7 +428,7 @@ export class OrdersComponent implements OnInit {
 
     const isWrongChainAlert = order.is_verified === false ? `
       <div style="border: 2px dashed #ef4444; background: #fee2e2; color: #b91c1c; padding: 8px; border-radius: 8px; margin-top: 10px; font-size: 10px; font-weight: bold; text-align: center;">
-        ⚠️ HÓA ĐƠN BỊ KHÓA ĐỒNG BỘ!<br>Dữ liệu đã bị thay đổi trong Database.
+        [CẢNH BÁO] HÓA ĐƠN BỊ KHÓA ĐỒNG BỘ!<br>Dữ liệu đã bị thay đổi trong Database.
       </div>
     ` : '';
 
