@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, effect, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -19,6 +19,21 @@ export class DebtsComponent implements OnInit {
   private readonly apiService = inject(ApiService);
   public readonly Number = Number;
 
+  constructor() {
+    effect(() => {
+      if (this.web3Service.walletConnected()) {
+        untracked(() => {
+          if (this.customers().length === 0) {
+            this.stateService.refreshCustomers();
+          }
+          if (this.stateService.transactions().length === 0) {
+            this.stateService.refreshTransactions();
+          }
+        });
+      }
+    });
+  }
+
   // Bộ lọc, tìm kiếm khách hàng
   public readonly debtSearchQuery = signal<string>('');
   public readonly debtFilterMode = signal<'all' | 'only_debt' | 'no_debt'>('all'); // all, only_debt, no_debt
@@ -34,6 +49,8 @@ export class DebtsComponent implements OnInit {
   public readonly isPaymentModalOpen = signal<boolean>(false);
   public readonly isHistoryDrawerOpen = signal<boolean>(false);
   public readonly isDeleteConfirmOpen = signal<boolean>(false);
+  public readonly isManualDebtSaving = signal<boolean>(false);
+  public readonly isPaymentSaving = signal<boolean>(false);
 
   public readonly selectedCustomer = signal<any>(null);
   public readonly selectedDebtLog = signal<any>(null);
@@ -223,6 +240,9 @@ export class DebtsComponent implements OnInit {
 
   // --- Ghi nợ thủ công Modal ---
   public openManualDebtModal() {
+    if (this.customers().length === 0 && this.web3Service.walletConnected()) {
+      this.stateService.refreshCustomers();
+    }
     this.manualDebtForm.set({
       customer_id: null,
       amount: null,
@@ -239,6 +259,8 @@ export class DebtsComponent implements OnInit {
   }
 
   public saveManualDebt() {
+    if (this.isManualDebtSaving()) return;
+
     const form = this.manualDebtForm();
     if (!form.customer_id) {
       this.stateService.showToast('Vui lòng chọn khách hàng để ghi nợ!', 'error');
@@ -253,18 +275,21 @@ export class DebtsComponent implements OnInit {
       return;
     }
 
+    this.isManualDebtSaving.set(true);
     this.stateService.isLoading.set(true);
     this.apiService.createManualDebt(form).subscribe({
       next: () => {
         this.stateService.showToast('Lập phiếu ghi nợ thành công!', 'success');
         this.closeManualDebtModal();
         this.refreshDebts();
+        this.isManualDebtSaving.set(false);
         this.stateService.isLoading.set(false);
       },
       error: (err) => {
         console.error('Lỗi ghi nợ thủ công:', err);
         const errMsg = err.error?.message || 'Lập phiếu ghi nợ thất bại!';
         this.stateService.showToast(errMsg, 'error');
+        this.isManualDebtSaving.set(false);
         this.stateService.isLoading.set(false);
       }
     });
@@ -289,6 +314,8 @@ export class DebtsComponent implements OnInit {
   }
 
   public savePayment() {
+    if (this.isPaymentSaving()) return;
+
     const form = this.paymentForm();
     const customer = this.selectedCustomer();
     if (!customer) return;
@@ -309,18 +336,21 @@ export class DebtsComponent implements OnInit {
       return;
     }
 
+    this.isPaymentSaving.set(true);
     this.stateService.isLoading.set(true);
     this.apiService.createDebtPayment(form).subscribe({
       next: () => {
         this.stateService.showToast('Lập phiếu thu nợ thành công! Đã cập nhật sổ quỹ.', 'success');
         this.closePaymentModal();
         this.refreshDebts();
+        this.isPaymentSaving.set(false);
         this.stateService.isLoading.set(false);
       },
       error: (err) => {
         console.error('Lỗi thu nợ:', err);
         const errMsg = err.error?.message || 'Lập phiếu thu nợ thất bại!';
         this.stateService.showToast(errMsg, 'error');
+        this.isPaymentSaving.set(false);
         this.stateService.isLoading.set(false);
       }
     });

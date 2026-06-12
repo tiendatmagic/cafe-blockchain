@@ -141,6 +141,17 @@ Các biến dynamic này được biên dịch thành hệ màu chủ đạo c�
 
 ### 7.1. Trang quản trị POS Admin
 *   **Sidebar**: Cố định bên trái. Các biểu tượng SVG hiển thị sắc nét. Nút chọn ví hiển thị địa chỉ ví rút gọn (ví dụ: `0x12a3...4b5c`) kèm logo mạng lưới (Ethereum/Polygon/Sepolia).
+*   **Đồng bộ hóa giao diện các trang mục menu (Khách hàng, Sổ nợ, Báo cáo, Đơn hàng, v.v.)**:
+    *   **Tiêu đề & Container**: Bọc trong container `max-w-[1530px] mx-auto w-full p-4 sm:p-6 space-y-6`. Tiêu đề chính sử dụng thẻ `h3` cỡ `text-2xl font-extrabold text-slate-800 dark:text-white`, phụ đề cỡ `text-sm text-slate-500`. Không sử dụng tiêu đề cỡ nhỏ `text-xl` hoặc gạch dưới header làm mất cân đối.
+    *   **Thanh tìm kiếm (Search Input)**: Đồng bộ kích thước nhập liệu `py-2.5 px-4 rounded-xl text-sm bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 focus:border-[var(--dynamic-primary)] transition-all font-semibold`. Không sử dụng padding dọc nhỏ hơn `py-2.5` hay font size quá nhỏ. Định vị icon tìm kiếm SVG absolute ở `top-3 left-3`.
+    *   **Bảng dữ liệu (Tables)**:
+        *   Đầu bảng (thead): Cỡ chữ `text-xs font-bold text-slate-400 uppercase tracking-wider pl-6`.
+        *   Mã khách hàng/đối tượng: Định dạng `text-xs font-mono font-bold text-[var(--dynamic-primary)]`.
+        *   Tên khách hàng: Tích hợp hiển thị avatar tròn chứa chữ cái đầu tiên (ví dụ: `(item.name || '').substring(0, 1) | uppercase`) kết hợp chữ đậm `text-sm font-extrabold text-slate-800 dark:text-white` để tăng tính thẩm mỹ đồng bộ.
+        *   Các nút bấm thao tác trong bảng: Cỡ chữ `text-xs font-bold px-3 py-1.5 rounded-lg border` để đảm bảo vừa mắt và dễ click.
+    *   **Drawer chi tiết (Sider)**:
+        *   *Hiệu ứng chuyển động*: Không sử dụng `@if` bao bọc trực tiếp ở thẻ ngoài cùng vì sẽ hủy DOM ngay lập tức khi đóng, làm đứt hoạt ảnh transition. Thay vào đó, giữ Drawer luôn tồn tại trong DOM và ẩn/hiện bằng Tailwind transition kết hợp các class `translate-x-full` / `opacity-0` / `pointer-events-none` và `duration-300 ease-out`.
+        *   *Kích thước chữ & Nút*: Tiêu đề Drawer đạt `text-lg font-extrabold text-slate-900 dark:text-white`, phụ đề `text-sm`, nút bấm chính trong Drawer đạt `text-xs py-2.5 px-4 font-bold rounded-xl`.
 *   **Màn hình POS (Bán hàng)**:
     *   Cột trái: Phân trang danh sách sản phẩm (20 sản phẩm/trang), có bộ lọc danh mục ngang và thanh tìm kiếm real-time.
     *   Cột phải: Giỏ hàng dạng Drawer kèm input ghi chú riêng cho từng món. Nút "Xác nhận đặt đơn" cao `h-12` màu gradient tím nổi bật.
