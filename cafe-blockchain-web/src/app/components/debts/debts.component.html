@@ -316,7 +316,7 @@
 @if (isManualDebtModalOpen()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
     <!-- Backdrop overlay -->
-    <div (click)="closeManualDebtModal()" class="fixed inset-0 bg-black/45 backdrop-blur-xs"></div>
+    <div (click)="closeManualDebtModal()" class="fixed inset-0 bg-black/40"></div>
 
     <!-- Modal Content -->
     <div class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 max-w-md w-full shadow-2xl text-slate-800 dark:text-slate-200 flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200">
@@ -454,7 +454,7 @@
 @if (isPaymentModalOpen()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
     <!-- Backdrop overlay -->
-    <div (click)="closePaymentModal()" class="fixed inset-0 bg-black/45 backdrop-blur-xs"></div>
+    <div (click)="closePaymentModal()" class="fixed inset-0 bg-black/40"></div>
 
     <!-- Modal Content -->
     <div class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 max-w-md w-full shadow-2xl text-slate-800 dark:text-slate-200 flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200">
@@ -628,7 +628,7 @@
     [class.opacity-0]="!isHistoryDrawerOpen()"
     [class.opacity-100]="isHistoryDrawerOpen()"
     [class.pointer-events-none]="!isHistoryDrawerOpen()"
-    class="fixed inset-0 bg-black/45 backdrop-blur-xs transition-opacity duration-300 ease-out"
+    class="fixed inset-0 bg-black/40 transition-opacity duration-300 ease-out"
   ></div>
 
   <!-- Drawer Content trượt từ phải sang -->
@@ -704,7 +704,7 @@
               <!-- Điểm đánh dấu tròn trên trục timeline -->
               <div 
                 [class]="log.type === 'debt' ? 'bg-rose-500 text-white shadow-rose-500/20' : 'bg-emerald-500 text-white shadow-emerald-500/20'"
-                class="absolute -left-[36px] top-0.5 w-6.5 h-6.5 rounded-full flex items-center justify-center text-xs font-black shadow-md border-2 border-white dark:border-slate-900 transition-colors"
+                class="absolute -left-[41px] top-0.5 w-6.5 h-6.5 rounded-full flex items-center justify-center text-xs font-black shadow-md border-2 border-white dark:border-slate-900 transition-colors"
               >
                 {{ log.type === 'debt' ? '+' : '-' }}
               </div>
@@ -784,7 +784,7 @@
 @if (isDeleteConfirmOpen()) {
   <div class="fixed inset-0 z-[60] flex items-center justify-center p-4">
     <!-- Backdrop overlay -->
-    <div (click)="isDeleteConfirmOpen.set(false)" class="fixed inset-0 bg-black/45 backdrop-blur-xs"></div>
+    <div (click)="isDeleteConfirmOpen.set(false)" class="fixed inset-0 bg-black/40"></div>
 
     <!-- Modal Content -->
     <div class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 max-w-sm w-full shadow-2xl text-slate-800 dark:text-slate-200 text-center animate-in fade-in zoom-in duration-200">
