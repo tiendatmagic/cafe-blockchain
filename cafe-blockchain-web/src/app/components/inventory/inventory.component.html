@@ -307,68 +307,14 @@
 
         <!-- Phân trang Kho -->
         @if (filteredInventoryRecords().length > inventoryItemsPerPage) {
-          <div
-            class="px-6 py-4 border-t border-slate-200/60 dark:border-slate-800/60 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50/50 dark:bg-slate-950/20"
-          >
-            <span class="text-xs font-semibold text-slate-500">
-              Hiển thị
-              {{
-                mathMin(
-                  (inventoryCurrentPage() - 1) * inventoryItemsPerPage + 1,
-                  filteredInventoryRecords().length
-                )
-              }}
-              -
-              {{
-                mathMin(
-                  inventoryCurrentPage() * inventoryItemsPerPage,
-                  filteredInventoryRecords().length
-                )
-              }}
-              trên tổng {{ filteredInventoryRecords().length }} phiếu
-            </span>
-            <div class="flex items-center gap-1.5">
-              <button
-                (click)="inventoryCurrentPage.set(inventoryCurrentPage() - 1)"
-                [disabled]="inventoryCurrentPage() === 1"
-                class="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/40 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:hover:bg-white dark:disabled:hover:bg-slate-900 transition-all flex items-center justify-center"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
-              </button>
-
-              @for (
-                p of getPagesArray(inventoryCurrentPage(), inventoryTotalPages());
-                track $index
-              ) {
-                @if (p === '...') {
-                  <span
-                    class="w-8.5 h-8.5 flex items-center justify-center text-slate-400 dark:text-slate-600 font-semibold select-none text-xs"
-                    >...</span
-                  >
-                } @else {
-                  <button
-                    (click)="inventoryCurrentPage.set($any(p))"
-                    [class]="
-                      p === inventoryCurrentPage()
-                        ? 'bg-[var(--dynamic-primary)] text-white font-extrabold shadow-md shadow-[var(--dynamic-primary)]/20'
-                        : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200/40 dark:border-slate-800/40 font-semibold'
-                    "
-                    class="w-8.5 h-8.5 rounded-xl text-xs transition-all flex items-center justify-center"
-                  >
-                    {{ p }}
-                  </button>
-                }
-              }
-
-              <button
-                (click)="inventoryCurrentPage.set(inventoryCurrentPage() + 1)"
-                [disabled]="inventoryCurrentPage() === inventoryTotalPages()"
-                class="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/40 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:hover:bg-white dark:disabled:hover:bg-slate-900 transition-all flex items-center justify-center"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
-              </button>
-            </div>
-          </div>
+          <app-pagination
+            [currentPage]="inventoryCurrentPage()"
+            [totalPages]="inventoryTotalPages()"
+            [totalItems]="filteredInventoryRecords().length"
+            [itemsPerPage]="inventoryItemsPerPage"
+            itemName="phiếu"
+            (pageChange)="inventoryCurrentPage.set($event)"
+          ></app-pagination>
         }
       </div>
 
@@ -505,68 +451,14 @@
 
           <!-- Footer phân trang Bảng Tồn kho -->
           @if (filteredStockRows().length > stockReportItemsPerPage) {
-            <div
-              class="px-6 py-4 border-t border-slate-200/60 dark:border-slate-800/60 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50/50 dark:bg-slate-950/20"
-            >
-              <span class="text-xs font-semibold text-slate-500">
-                Hiển thị
-                {{
-                  mathMin(
-                    (stockReportCurrentPage() - 1) * stockReportItemsPerPage + 1,
-                    filteredStockRows().length
-                  )
-                }}
-                -
-                {{
-                  mathMin(
-                    stockReportCurrentPage() * stockReportItemsPerPage,
-                    filteredStockRows().length
-                  )
-                }}
-                trên tổng {{ filteredStockRows().length }} dòng
-              </span>
-              <div class="flex items-center gap-1.5">
-                <button
-                  (click)="stockReportCurrentPage.set(stockReportCurrentPage() - 1)"
-                  [disabled]="stockReportCurrentPage() === 1"
-                  class="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/40 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:hover:bg-white dark:disabled:hover:bg-slate-900 transition-all flex items-center justify-center"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
-                </button>
-
-                @for (
-                  p of getPagesArray(stockReportCurrentPage(), stockReportTotalPages());
-                  track $index
-                ) {
-                  @if (p === '...') {
-                    <span
-                      class="w-8.5 h-8.5 flex items-center justify-center text-slate-400 dark:text-slate-600 font-semibold select-none text-xs"
-                      >...</span
-                    >
-                  } @else {
-                    <button
-                      (click)="stockReportCurrentPage.set($any(p))"
-                      [class]="
-                        p === stockReportCurrentPage()
-                          ? 'bg-[var(--dynamic-primary)] text-white font-extrabold shadow-md shadow-[var(--dynamic-primary)]/20'
-                          : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200/40 dark:border-slate-800/40 font-semibold'
-                      "
-                      class="w-8.5 h-8.5 rounded-xl text-xs transition-all flex items-center justify-center"
-                    >
-                      {{ p }}
-                    </button>
-                  }
-                }
-
-                <button
-                  (click)="stockReportCurrentPage.set(stockReportCurrentPage() + 1)"
-                  [disabled]="stockReportCurrentPage() === stockReportTotalPages()"
-                  class="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/40 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:hover:bg-white dark:disabled:hover:bg-slate-900 transition-all flex items-center justify-center"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
-                </button>
-              </div>
-            </div>
+            <app-pagination
+              [currentPage]="stockReportCurrentPage()"
+              [totalPages]="stockReportTotalPages()"
+              [totalItems]="filteredStockRows().length"
+              [itemsPerPage]="stockReportItemsPerPage"
+              itemName="dòng"
+              (pageChange)="stockReportCurrentPage.set($event)"
+            ></app-pagination>
           }
         </div>
       </div>

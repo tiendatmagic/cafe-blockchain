@@ -8,11 +8,12 @@ import { ApiService } from '../../services/api.service';
 import { Web3Service } from '../../services/web3.service';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { PaginationComponent } from '../pagination/pagination.component';
 
 @Component({
   selector: 'app-pos',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, Web3ConnectPromptComponent],
+  imports: [CommonModule, FormsModule, RouterModule, Web3ConnectPromptComponent, PaginationComponent],
   templateUrl: './pos.component.html'
 })
 export class PosComponent implements OnInit, OnDestroy {
@@ -843,40 +844,6 @@ export class PosComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Helpers cho template HTML
-  public getPagesArray(currentPage: number, totalPages: number): (number | string)[] {
-    const pages: (number | string)[] = [];
-    if (totalPages <= 5) {
-      return Array.from({ length: totalPages }, (_, i) => i + 1);
-    }
-    
-    // Luôn thêm trang 1
-    pages.push(1);
-    
-    if (currentPage > 3) {
-      pages.push('...');
-    }
-    
-    const start = Math.max(2, currentPage - 1);
-    const end = Math.min(totalPages - 1, currentPage + 1);
-    
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-    
-    if (currentPage < totalPages - 2) {
-      pages.push('...');
-    }
-    
-    // Luôn thêm trang cuối
-    pages.push(totalPages);
-    
-    return pages;
-  }
-
-  public mathMin(a: number, b: number): number {
-    return Math.min(a, b);
-  }
 
   public getProductImage(imagePath: string): string {
     if (!imagePath || !imagePath.trim()) {

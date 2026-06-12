@@ -7,11 +7,12 @@ import { StateService } from '../../services/state.service';
 import * as XLSX from 'xlsx';
 
 import { SkeletonLoaderComponent } from '../skeleton-loader/skeleton-loader.component';
+import { PaginationComponent } from '../pagination/pagination.component';
 
 @Component({
   selector: 'app-reports',
   standalone: true,
-  imports: [CommonModule, FormsModule, Web3ConnectPromptComponent, SkeletonLoaderComponent],
+  imports: [CommonModule, FormsModule, Web3ConnectPromptComponent, SkeletonLoaderComponent, PaginationComponent],
   templateUrl: './reports.component.html'
 })
 export class ReportsComponent implements OnInit {
@@ -305,21 +306,6 @@ export class ReportsComponent implements OnInit {
 
   public mathMin(a: number, b: number): number {
     return Math.min(a, b);
-  }
-
-  public getPagesArray(currentPage: number, totalPages: number): (number | string)[] {
-    const pages: (number | string)[] = [];
-    if (totalPages <= 5) {
-      return Array.from({ length: totalPages }, (_, i) => i + 1);
-    }
-    pages.push(1);
-    if (currentPage > 3) pages.push('...');
-    const start = Math.max(2, currentPage - 1);
-    const end = Math.min(totalPages - 1, currentPage + 1);
-    for (let i = start; i <= end; i++) pages.push(i);
-    if (currentPage < totalPages - 2) pages.push('...');
-    pages.push(totalPages);
-    return pages;
   }
 
   // --- Logic Xuất file Excel (.xlsx) bằng SheetJS ---

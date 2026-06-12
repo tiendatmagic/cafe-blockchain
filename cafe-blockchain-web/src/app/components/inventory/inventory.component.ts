@@ -5,11 +5,12 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { StateService } from '../../services/state.service';
 import { ApiService } from '../../services/api.service';
+import { PaginationComponent } from '../pagination/pagination.component';
 
 @Component({
   selector: 'app-inventory',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, Web3ConnectPromptComponent],
+  imports: [CommonModule, FormsModule, RouterModule, Web3ConnectPromptComponent, PaginationComponent],
   templateUrl: './inventory.component.html'
 })
 export class InventoryComponent {
@@ -350,37 +351,6 @@ export class InventoryComponent {
   }
 
   // Helpers cho template
-  public getPagesArray(currentPage: number, totalPages: number): (number | string)[] {
-    const pages: (number | string)[] = [];
-    if (totalPages <= 5) {
-      return Array.from({ length: totalPages }, (_, i) => i + 1);
-    }
-    
-    pages.push(1);
-    
-    if (currentPage > 3) {
-      pages.push('...');
-    }
-    
-    const start = Math.max(2, currentPage - 1);
-    const end = Math.min(totalPages - 1, currentPage + 1);
-    
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-    
-    if (currentPage < totalPages - 2) {
-      pages.push('...');
-    }
-    
-    pages.push(totalPages);
-    
-    return pages;
-  }
-
-  public mathMin(a: number, b: number): number {
-    return Math.min(a, b);
-  }
 
   // Tiện ích lấy variants của một sản phẩm
   public getProductVariants(productId: number): any[] {

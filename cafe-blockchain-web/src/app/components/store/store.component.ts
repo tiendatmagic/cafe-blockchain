@@ -5,6 +5,7 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { Title } from '@angular/platform-browser';
 import { StateService } from '../../services/state.service';
+import { PaginationComponent } from '../pagination/pagination.component';
 
 interface CartItem {
   product: any;
@@ -16,7 +17,7 @@ interface CartItem {
 @Component({
   selector: 'app-store',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, PaginationComponent],
   templateUrl: './store.component.html',
   styleUrls: []
 })
@@ -126,27 +127,6 @@ export class StoreComponent implements OnInit {
   public readonly totalPages = computed(() => {
     return Math.ceil(this.filteredProducts().length / this.itemsPerPage) || 1;
   });
-
-  // Helper lấy mảng trang hiển thị
-  public getPagesArray(current: number, total: number): (number | string)[] {
-    const pages: (number | string)[] = [];
-    if (total <= 5) {
-      for (let i = 1; i <= total; i++) pages.push(i);
-    } else {
-      if (current <= 3) {
-        pages.push(1, 2, 3, '...', total);
-      } else if (current >= total - 2) {
-        pages.push(1, '...', total - 2, total - 1, total);
-      } else {
-        pages.push(1, '...', current - 1, current, current + 1, '...', total);
-      }
-    }
-    return pages;
-  }
-
-  public mathMin(a: number, b: number): number {
-    return Math.min(a, b);
-  }
 
   ngOnInit() {
     // Đọc slug từ route

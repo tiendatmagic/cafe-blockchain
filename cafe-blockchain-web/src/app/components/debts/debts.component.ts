@@ -6,12 +6,13 @@ import { StateService } from '../../services/state.service';
 import { ApiService } from '../../services/api.service';
 import { Web3ConnectPromptComponent } from '../web3-connect-prompt/web3-connect-prompt.component';
 import { SkeletonLoaderComponent } from '../skeleton-loader/skeleton-loader.component';
+import { PaginationComponent } from '../pagination/pagination.component';
 import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-debts',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, Web3ConnectPromptComponent, SkeletonLoaderComponent],
+  imports: [CommonModule, FormsModule, RouterModule, Web3ConnectPromptComponent, SkeletonLoaderComponent, PaginationComponent],
   templateUrl: './debts.component.html'
 })
 export class DebtsComponent implements OnInit {
@@ -477,34 +478,4 @@ export class DebtsComponent implements OnInit {
     this.stateService.showToast('Đã xuất file sao kê Excel thành công!', 'success');
   }
 
-  // --- Helpers cho phân trang UI ---
-  public getPagesArray(currentPage: number, totalPages: number): (number | string)[] {
-    const pages: (number | string)[] = [];
-    if (totalPages <= 5) {
-      return Array.from({ length: totalPages }, (_, i) => i + 1);
-    }
-    
-    pages.push(1);
-    if (currentPage > 3) {
-      pages.push('...');
-    }
-    
-    const start = Math.max(2, currentPage - 1);
-    const end = Math.min(totalPages - 1, currentPage + 1);
-    
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-    
-    if (currentPage < totalPages - 2) {
-      pages.push('...');
-    }
-    pages.push(totalPages);
-    
-    return pages;
-  }
-
-  public mathMin(a: number, b: number): number {
-    return Math.min(a, b);
-  }
 }
