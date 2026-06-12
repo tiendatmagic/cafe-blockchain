@@ -157,7 +157,7 @@
           [ngModel]="menuSearchQuery()"
           (ngModelChange)="menuSearchQuery.set($event); menuCurrentPage.set(1)"
           placeholder="Tìm món ăn, SKU..."
-          class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-xs focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all font-semibold"
+          class="w-full search-input"
         />
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -1000,7 +1000,7 @@
             [ngModel]="menuForm().name"
             (ngModelChange)="updateMenuForm('name', $event)"
             placeholder="Ví dụ: Bạc xỉu cốt dừa..."
-            class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all"
+            class="form-input"
           />
         </div>
 
@@ -1014,7 +1014,7 @@
             [ngModel]="menuForm().sku"
             (ngModelChange)="updateMenuForm('sku', $event)"
             placeholder="Ví dụ: CF-BACXIU (Bỏ trống sẽ tự sinh)"
-            class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all"
+            class="form-input"
           />
         </div>
 
@@ -1027,7 +1027,7 @@
             type="number"
             [ngModel]="menuForm().price"
             (ngModelChange)="updateMenuForm('price', $event)"
-            class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all"
+            class="form-input"
           />
         </div>
 
@@ -1040,7 +1040,7 @@
             type="number"
             [ngModel]="menuForm().cost_price"
             (ngModelChange)="updateMenuForm('cost_price', $event)"
-            class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all"
+            class="form-input"
           />
         </div>
 
@@ -1080,7 +1080,7 @@
             [ngModel]="menuForm().image"
             (ngModelChange)="updateMenuForm('image', $event)"
             placeholder="https://images.unsplash.com/..."
-            class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm font-mono focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all"
+            class="form-input font-mono"
           />
         </div>
 
@@ -1094,7 +1094,7 @@
             [ngModel]="menuForm().short_description"
             (ngModelChange)="updateMenuForm('short_description', $event)"
             placeholder="Ví dụ: Cà phê thơm ngon, vị đậm đà..."
-            class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all"
+            class="form-input"
           />
         </div>
 
@@ -1108,7 +1108,7 @@
             (ngModelChange)="updateMenuForm('description', $event)"
             placeholder="Ví dụ: Được chế biến từ hạt Robusta Đắk Lắk..."
             rows="3"
-            class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white resize-none transition-all"
+            class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-sm focus:outline-none focus:border-[var(--color-primary)] text-slate-800 dark:text-white resize-none transition-all duration-200"
           ></textarea>
         </div>
 
@@ -1136,19 +1136,19 @@
                     type="text"
                     [(ngModel)]="variant.variant_name"
                     placeholder="Tên (Ví dụ: Size L, Cốc to...)"
-                    class="flex-1 min-w-0 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold focus:outline-none"
+                    class="flex-1 min-w-0 form-input-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
                   />
                   <input
                     type="number"
                     [(ngModel)]="variant.price"
                     placeholder="Giá bán"
-                    class="w-20 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold focus:outline-none"
+                    class="w-20 form-input-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
                   />
                   <input
                     type="number"
                     [(ngModel)]="variant.cost_price"
                     placeholder="Giá vốn"
-                    class="w-20 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold focus:outline-none"
+                    class="w-20 form-input-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
                   />
                   <button
                     (click)="removeVariantRow($index)"
@@ -1237,7 +1237,7 @@
             type="text"
             [(ngModel)]="categoryForm().name"
             placeholder="Ví dụ: Cà phê máy, Sinh tố..."
-            class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all font-bold"
+            class="form-input font-bold"
           />
         </div>
 

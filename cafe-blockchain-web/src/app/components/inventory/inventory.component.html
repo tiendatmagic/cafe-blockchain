@@ -185,7 +185,7 @@
               [ngModel]="inventorySearchQuery()"
               (ngModelChange)="inventorySearchQuery.set($event); inventoryCurrentPage.set(1)"
               placeholder="Tìm ghi chú, mã phiếu, món..."
-              class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-xs focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all font-semibold"
+              class="w-full search-input"
             />
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -343,7 +343,7 @@
                   [ngModel]="stockReportSearch()"
                   (ngModelChange)="stockReportSearch.set($event); stockReportCurrentPage.set(1)"
                   placeholder="Tìm sản phẩm..."
-                  class="w-44 pl-9 pr-4 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800/40 text-xs font-semibold text-slate-700 dark:text-white focus:outline-none focus:border-[var(--dynamic-primary)] transition-all"
+                  class="w-44 form-input-sm pl-9"
                 />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -568,7 +568,7 @@
             type="text"
             [(ngModel)]="inventoryForm().note"
             placeholder="Nhập nội dung ghi chú (Ví dụ: Nhập trà nhãn, kiểm kê sữa tươi)..."
-            class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all"
+            class="form-input"
           />
         </div>
 
@@ -612,7 +612,7 @@
                   <select
                     [ngModel]="item.product_id"
                     (ngModelChange)="updateInventoryItemField($index, 'product_id', $event)"
-                    class="w-full px-2.5 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold focus:outline-none text-slate-800 dark:text-white cursor-pointer"
+                    class="w-full form-input-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 cursor-pointer font-semibold"
                   >
                     <option value="0">-- Chọn món --</option>
                     @for (p of products(); track p.id) {
@@ -627,7 +627,7 @@
                       (ngModelChange)="
                         updateInventoryItemField($index, 'product_variant_id', $event)
                       "
-                      class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-bold focus:outline-none text-purple-600 cursor-pointer"
+                      class="w-full form-input-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 cursor-pointer font-bold text-purple-600"
                     >
                       @for (v of getProductVariants(item.product_id); track v.id) {
                         <option [value]="v.id">
@@ -647,7 +647,7 @@
                     (ngModelChange)="updateInventoryItemField($index, 'quantity', $event)"
                     placeholder="0"
                     title="Số lượng"
-                    class="w-full px-2 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-center focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white"
+                    class="w-full form-input-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-center font-bold"
                   />
                 </div>
 
@@ -660,7 +660,7 @@
                     (ngModelChange)="updateInventoryItemField($index, 'price', $event)"
                     placeholder="0đ"
                     title="Đơn giá (VNĐ)"
-                    class="w-full px-2 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-extrabold text-center focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white"
+                    class="w-full form-input-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-center font-extrabold"
                   />
                 </div>
 

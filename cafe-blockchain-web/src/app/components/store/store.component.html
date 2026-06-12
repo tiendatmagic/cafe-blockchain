@@ -362,11 +362,11 @@
               [ngModel]="searchQuery()"
               (ngModelChange)="searchQuery.set($event); currentPage.set(1)"
               placeholder="Tìm món ngon của quán..."
-              class="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200/40 dark:border-slate-800/40 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all font-semibold"
+              class="w-full search-input"
             />
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="absolute left-3.5 top-3.5 h-4.5 w-4.5 text-slate-400 dark:text-slate-500"
+              class="absolute left-3 top-3 h-4 w-4 text-slate-400 dark:text-slate-500"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -922,7 +922,7 @@
                             [(ngModel)]="item.note"
                             (ngModelChange)="onCartItemNoteChange()"
                             placeholder="Ghi chú (ít đá, ít ngọt...)"
-                            class="w-full px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 text-[10px] font-semibold text-slate-700 dark:text-slate-350 focus:outline-none focus:ring-1 focus:ring-[var(--dynamic-primary)] focus:border-transparent"
+                            class="w-full form-input-sm bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80"
                           />
                         </div>
                       </div>
@@ -985,7 +985,7 @@
                   [ngModel]="orderForm().customer_name"
                   (ngModelChange)="orderForm.update((f) => ({ ...f, customer_name: $event }))"
                   placeholder="Nhập tên của bạn"
-                  class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm font-extrabold focus:outline-none focus:ring-2 focus:ring-[var(--dynamic-primary)] text-slate-800 dark:text-white"
+                  class="form-input"
                 />
               </div>
 
@@ -1000,7 +1000,7 @@
                   [ngModel]="orderForm().customer_phone"
                   (ngModelChange)="orderForm.update((f) => ({ ...f, customer_phone: $event }))"
                   placeholder="Nhập số điện thoại để quán liên hệ"
-                  class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm font-extrabold focus:outline-none focus:ring-2 focus:ring-[var(--dynamic-primary)] text-slate-800 dark:text-white"
+                  class="form-input"
                 />
               </div>
 
@@ -1015,7 +1015,7 @@
                   [ngModel]="orderForm().table_number"
                   (ngModelChange)="orderForm.update((f) => ({ ...f, table_number: $event }))"
                   placeholder="Nhập địa chỉ giao hàng của bạn (bắt buộc)"
-                  class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm font-extrabold focus:outline-none focus:ring-2 focus:ring-[var(--dynamic-primary)] text-slate-800 dark:text-white"
+                  class="form-input"
                   required
                 />
               </div>
@@ -1031,7 +1031,7 @@
                   [ngModel]="orderForm().note"
                   (ngModelChange)="orderForm.update((f) => ({ ...f, note: $event }))"
                   placeholder="Ghi chú thêm cho quán (Ví dụ: ít đường, nhiều đá...)"
-                  class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm font-extrabold focus:outline-none focus:ring-2 focus:ring-[var(--dynamic-primary)] text-slate-800 dark:text-white"
+                  class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-sm focus:outline-none focus:border-[var(--color-primary)] text-slate-800 dark:text-white resize-none transition-all duration-200"
                 ></textarea>
               </div>
 
@@ -1206,7 +1206,7 @@
                 [ngModel]="variantNote()"
                 (ngModelChange)="variantNote.set($event)"
                 placeholder="Ví dụ: Không đường, ít đá, nhiều kem..."
-                class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm font-extrabold focus:outline-none focus:ring-2 focus:ring-[var(--dynamic-primary)] text-slate-800 dark:text-white"
+                class="form-input"
               />
             </div>
 

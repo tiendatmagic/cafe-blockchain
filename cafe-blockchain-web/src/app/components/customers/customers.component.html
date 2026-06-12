@@ -172,7 +172,7 @@
               [ngModel]="customerSearchQuery()"
               (ngModelChange)="customerSearchQuery.set($event); customerCurrentPage.set(1)"
               placeholder="Tìm tên, SĐT, công ty..."
-              class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-xs focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all font-semibold"
+              class="w-full search-input"
             />
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -557,7 +557,7 @@
                 [(ngModel)]="customerForm().tax_code"
                 (ngModelChange)="onTaxCodeChange($event)"
                 placeholder="Nhập 10 hoặc 13 số để tự tra cứu..."
-                class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all font-semibold font-mono"
+                class="form-input font-mono"
               />
               <div class="absolute right-3.5 top-3 flex items-center justify-center">
                 @if (isSearchingTax()) {
@@ -580,7 +580,7 @@
               type="text"
               [(ngModel)]="customerForm().company_name"
               placeholder="Tên công ty sẽ tự động tra cứu..."
-              class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all font-semibold"
+              class="form-input"
             />
 
             <!-- Dòng thông báo tình trạng hoạt động -->
@@ -630,7 +630,7 @@
               type="text"
               [(ngModel)]="customerForm().name"
               placeholder="Nhập tên người đại diện liên hệ..."
-              class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all font-semibold"
+              class="form-input"
             />
           </div>
 
@@ -644,7 +644,7 @@
                 type="text"
                 [(ngModel)]="customerForm().phone"
                 placeholder="0912345..."
-                class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all font-semibold font-mono"
+                class="form-input font-mono"
               />
             </div>
             <div class="space-y-1.5">
@@ -655,7 +655,7 @@
                 type="email"
                 [(ngModel)]="customerForm().email"
                 placeholder="email@company.com..."
-                class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all font-semibold"
+                class="form-input"
               />
             </div>
           </div>
@@ -669,7 +669,7 @@
               type="text"
               [(ngModel)]="customerForm().website"
               placeholder="https://company.com..."
-              class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all font-mono font-semibold"
+              class="form-input font-mono"
             />
           </div>
         } @else {
@@ -683,7 +683,7 @@
               type="text"
               [(ngModel)]="customerForm().name"
               placeholder="Nhập tên khách hàng..."
-              class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all font-semibold"
+              class="form-input"
             />
           </div>
 
@@ -696,7 +696,7 @@
               type="text"
               [(ngModel)]="customerForm().phone"
               placeholder="Ví dụ: 0912345678..."
-              class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all font-semibold font-mono"
+              class="form-input font-mono"
             />
           </div>
 
@@ -709,7 +709,7 @@
               type="email"
               [(ngModel)]="customerForm().email"
               placeholder="email@example.com..."
-              class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all font-semibold"
+              class="form-input"
             />
           </div>
 
@@ -722,7 +722,7 @@
               <input
                 type="date"
                 [(ngModel)]="customerForm().dob"
-                class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all font-semibold"
+                class="form-input"
               />
             </div>
 
@@ -793,9 +793,9 @@
                 : customerForm().wallet_address &&
                     customerForm().wallet_address.trim().length === 42
                   ? 'border-emerald-400 dark:border-emerald-600 focus:border-emerald-500'
-                  : 'border-slate-200 dark:border-slate-800 focus:border-purple-500'
+                  : 'border-slate-200 dark:border-slate-800 focus:border-[var(--color-primary)]'
             "
-            class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border text-sm focus:outline-none text-slate-800 dark:text-white font-mono transition-all font-semibold"
+            class="form-input font-mono transition-all"
           />
           <!-- Progress bar nhập ví -->
           @if (
@@ -833,7 +833,7 @@
             type="text"
             [(ngModel)]="customerForm().address"
             placeholder="Nhập địa chỉ của khách..."
-            class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all font-semibold"
+            class="form-input"
           />
         </div>
 
@@ -939,7 +939,7 @@
             type="text"
             [(ngModel)]="customerGroupForm().name"
             placeholder="Ví dụ: Khách VIP, Khách Quen..."
-            class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all font-semibold"
+            class="form-input"
           />
         </div>
       </div>
