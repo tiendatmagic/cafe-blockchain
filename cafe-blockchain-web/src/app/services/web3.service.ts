@@ -271,6 +271,7 @@ export class Web3Service {
         
         if (isConnected && account) {
           const oldAccount = this.currentAccount();
+          const wasConnected = this.walletConnected();
           this.currentAccount.set(account);
           
           if (this.hasValidAuthToken(account)) {
@@ -282,7 +283,9 @@ export class Web3Service {
           this.updateBalanceAndStatus(account);
 
           if (oldAccount && oldAccount.toLowerCase() !== account.toLowerCase()) {
-            this.accountsChanged$.next(account);
+            if (wasConnected) {
+              this.accountsChanged$.next(account);
+            }
           }
         } else {
           if (this.currentAccount()) {
@@ -355,11 +358,12 @@ export class Web3Service {
   }
 
   /**
-   * Kiểm tra xem session xác thực có tồn tại và khớp với ví hiện tại không (dựa vào auth_address và cookie auth_logged_in)
+   * Kiểm tra xem session xác thực có tồn tại và khớp với ví hiện tại không (dựa vào auth_address, localStorage và cookie auth_logged_in)
    */
   private hasValidAuthToken(account: string): boolean {
     if (typeof window === 'undefined') return false;
     const savedAddress = localStorage.getItem('auth_address');
+    const isLoggedIn = localStorage.getItem('auth_logged_in') === 'true';
     
     // Kiểm tra thêm sự tồn tại của cookie auth_logged_in (được backend set khi đăng nhập thành công và không phải httpOnly)
     let hasLoggedCookie = false;
@@ -367,7 +371,7 @@ export class Web3Service {
       hasLoggedCookie = document.cookie.split(';').some(c => c.trim().startsWith('auth_logged_in='));
     }
     
-    return !!savedAddress && savedAddress.toLowerCase() === account.toLowerCase() && hasLoggedCookie;
+    return !!savedAddress && savedAddress.toLowerCase() === account.toLowerCase() && (isLoggedIn || hasLoggedCookie);
   }
 
   /**

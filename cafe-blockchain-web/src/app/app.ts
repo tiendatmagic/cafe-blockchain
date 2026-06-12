@@ -116,6 +116,7 @@ export class App implements OnInit, OnDestroy {
                   this.apiService.setToken(verifyRes.token);
                   if (typeof window !== 'undefined') {
                     localStorage.setItem('auth_address', address);
+                    localStorage.setItem('auth_logged_in', 'true');
                   }
                   this.web3Service.walletConnected.set(true);
                   this.stateService.showToast('Kết nối và xác thực ví thành công!', 'success');
@@ -185,6 +186,7 @@ export class App implements OnInit, OnDestroy {
             this.apiService.setToken(verifyRes.token);
             if (typeof window !== 'undefined') {
               localStorage.setItem('auth_address', this.pendingAddress);
+              localStorage.setItem('auth_logged_in', 'true');
             }
             this.web3Service.walletConnected.set(true);
             this.stateService.showToast('Kết nối và xác thực ví thành công!', 'success');
@@ -214,6 +216,9 @@ export class App implements OnInit, OnDestroy {
     this.pendingNonceMessage = '';
     this.pendingAddress = '';
     this.web3Service.disconnectWallet();
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_logged_in');
+    }
     this.stateService.showToast('Đã hủy xác thực ví.', 'error');
   }
 
@@ -230,6 +235,7 @@ export class App implements OnInit, OnDestroy {
 
     if (typeof window !== 'undefined') {
       localStorage.removeItem('auth_address');
+      localStorage.removeItem('auth_logged_in');
     }
 
     // Làm sạch dữ liệu hiện tại trong StateService để tránh lộ thông tin ví cũ

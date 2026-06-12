@@ -616,6 +616,7 @@ export class StateService {
 
     if (typeof window !== 'undefined') {
       localStorage.removeItem('auth_address');
+      localStorage.removeItem('auth_logged_in');
     }
     this.isWalletModalOpen.set(false);
     if (message) {
@@ -706,6 +707,7 @@ export class StateService {
                   this.apiService.setToken(verifyRes.token);
                   if (typeof window !== 'undefined') {
                     localStorage.setItem('auth_address', address);
+                    localStorage.setItem('auth_logged_in', 'true');
                   }
                   
                   // Thiết lập ngày mặc định cho dashboard nếu chưa có
