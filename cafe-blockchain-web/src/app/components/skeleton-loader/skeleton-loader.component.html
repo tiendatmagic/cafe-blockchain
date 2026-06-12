@@ -4,7 +4,7 @@
     <!-- Grid 4 thẻ thống kê -->
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
       @for (i of getArray(4); track i) {
-        <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex items-center justify-between">
+        <div class="app-card p-6 flex items-center justify-between">
           <div class="space-y-3 w-2/3">
             <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-3/4"></div>
             <div class="h-8 bg-slate-200 dark:bg-slate-800 rounded-xl w-full"></div>
@@ -17,7 +17,7 @@
     <!-- Bố cục cột lớn -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Biểu đồ cột -->
-      <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm h-[380px] flex flex-col justify-between">
+      <div class="app-card p-6 h-[380px] flex flex-col justify-between">
         <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-md w-1/4"></div>
         <div class="h-60 bg-slate-100 dark:bg-slate-800/40 rounded-2xl w-full flex items-end p-3 gap-1 sm:gap-2 justify-around">
           @for (h of [40, 60, 35, 80, 50, 90, 75]; track h) {
@@ -27,7 +27,7 @@
       </div>
 
       <!-- Biểu đồ tròn -->
-      <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm h-[380px] flex flex-col justify-between">
+      <div class="app-card p-6 h-[380px] flex flex-col justify-between">
         <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-md w-1/2"></div>
         <div class="flex-1 flex flex-col items-center justify-center gap-6 pt-4">
           <div class="w-32 h-32 rounded-full border-8 border-slate-100 dark:border-slate-800 flex items-center justify-center">
@@ -42,7 +42,7 @@
       </div>
 
       <!-- Hoạt động Web3 -->
-      <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm space-y-5 flex flex-col justify-between h-[380px]">
+      <div class="app-card p-6 space-y-5 flex flex-col justify-between h-[380px]">
         <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-md w-1/2"></div>
         <div class="space-y-4 flex-1 pt-4">
           @for (i of getArray(3); track i) {
@@ -64,7 +64,7 @@
     <!-- Grid 4 thẻ thống kê tài chính -->
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
       @for (i of getArray(4); track i) {
-        <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex items-center justify-between">
+        <div class="app-card p-6 flex items-center justify-between">
           <div class="space-y-3 w-2/3">
             <div class="h-3 bg-slate-200 dark:bg-slate-800 rounded-md w-3/4"></div>
             <div class="h-7 bg-slate-200 dark:bg-slate-800 rounded-xl w-full"></div>
@@ -78,7 +78,7 @@
     <!-- Bố cục cột biểu đồ chi tiết giống Dashboard -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Biểu đồ Doanh thu & Chi phí (Cột đôi) -->
-      <div class="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm h-[420px] flex flex-col justify-between">
+      <div class="lg:col-span-2 app-card p-6 h-[420px] flex flex-col justify-between">
         <div class="flex items-center justify-between">
           <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-md w-1/4"></div>
           <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-md w-1/3"></div>
@@ -96,7 +96,7 @@
       </div>
 
       <!-- Biểu đồ Cơ cấu doanh thu -->
-      <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm h-[420px] flex flex-col justify-between">
+      <div class="app-card p-6 h-[420px] flex flex-col justify-between">
         <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-md w-1/2"></div>
         <div class="flex-1 flex flex-col items-center justify-center gap-6 pt-4">
           <div class="w-36 h-36 rounded-full border-8 border-slate-100 dark:border-slate-800 flex items-center justify-center">
@@ -117,7 +117,7 @@
 
   <!-- 3. TABLE LAYOUT -->
   @if (type === 'table') {
-    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm overflow-hidden">
+    <div class="app-card overflow-hidden">
       <!-- Table Filter/Search skeleton -->
       <div class="p-5 border-b border-slate-100 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div class="h-10 bg-slate-100 dark:bg-slate-800 rounded-xl w-full sm:w-64"></div>
@@ -158,7 +158,7 @@
   @if (type === 'card-grid') {
     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
       @for (i of getArray(cards); track i) {
-        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm overflow-hidden flex flex-col h-full">
+        <div class="app-card overflow-hidden flex flex-col h-full">
           <!-- Card Image Placeholder -->
           <div class="aspect-square w-full bg-slate-100 dark:bg-slate-800/60"></div>
           <!-- Card Details Placeholder -->
@@ -179,7 +179,7 @@
 
   <!-- 5. FORM LAYOUT -->
   @if (type === 'form') {
-    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm p-6 space-y-6">
+    <div class="app-card p-6 space-y-6">
       <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-md w-1/4"></div>
       <div class="border-b border-slate-100 dark:border-slate-800 pb-4 flex items-center gap-3">
         <div class="h-8 bg-slate-100 dark:bg-slate-800 rounded-lg w-20"></div>

@@ -304,7 +304,7 @@
       <!-- CỘT DANH MỤC (DESKTOP: Sidebar bên trái, MOBILE: Trượt ngang phía trên) -->
       @if (!showFavoritesOnly()) {
         <aside
-          class="w-full md:w-56 shrink-0 bg-white dark:bg-slate-900 md:p-3 rounded-2xl md:border md:border-slate-200/50 md:dark:border-slate-800/50 md:shadow-sm overflow-x-auto no-scrollbar md:overflow-visible flex md:flex-col gap-2 p-1 mb-2 sticky top-0 md:top-6 z-20 transition-all duration-300"
+          class="w-full md:w-56 shrink-0 app-card md:p-3 overflow-x-auto no-scrollbar md:overflow-visible flex md:flex-col gap-2 p-1 mb-2 sticky top-0 md:top-6 z-20"
         >
           <!-- Nút Tất cả danh mục -->
           <button
@@ -353,7 +353,7 @@
       <main class="flex-1 w-full space-y-4">
         <!-- Ô tìm kiếm và Bộ lọc thực đơn -->
         <div
-          class="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm transition-all duration-300"
+          class="app-card p-4 flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between"
         >
           <!-- Thanh tìm kiếm Storefront -->
           <div class="relative flex-1">
@@ -454,7 +454,7 @@
 
         @if (filteredProducts().length === 0) {
           <div
-            class="bg-white dark:bg-slate-900 p-12 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm text-center"
+            class="app-card p-12 text-center"
           >
             <p class="text-slate-400 font-semibold text-sm">
               {{
@@ -471,7 +471,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               @for (product of paginatedProducts(); track product.id) {
                 <div
-                  class="group bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 overflow-hidden shadow-sm hover:shadow-md hover:scale-[1.01] hover:border-[var(--dynamic-primary)]/40 transition-all duration-300 flex flex-col h-full relative"
+                  class="group app-card-interactive overflow-hidden flex flex-col h-full relative"
                 >
                   <!-- Nút yêu thích dạng Tim -->
                   <button
@@ -609,7 +609,7 @@
             <div class="flex flex-col gap-3.5">
               @for (product of paginatedProducts(); track product.id) {
                 <div
-                  class="group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 overflow-hidden shadow-sm hover:shadow-md hover:border-[var(--dynamic-primary)]/40 transition-all duration-300 flex flex-row p-3.5 gap-4 relative"
+                  class="group app-card-interactive overflow-hidden flex flex-row p-3.5 gap-4 relative"
                 >
                   <!-- Nút yêu thích dạng Tim -->
                   <button
@@ -1137,7 +1137,7 @@
         <div (click)="selectedProductForVariant.set(null)" class="fixed inset-0 bg-black/40"></div>
 
         <div
-          class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200"
+          class="relative app-card p-6 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200"
         >
           <div class="space-y-5">
             <!-- Tên sản phẩm -->
@@ -1258,7 +1258,7 @@
 
         <!-- Nội dung modal thành công -->
         <div
-          class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/50 dark:border-slate-800/80 p-6 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200 text-slate-800 dark:text-slate-200 text-center space-y-6"
+          class="relative app-card p-6 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200 text-slate-800 dark:text-slate-200 text-center space-y-6"
         >
           <!-- Icon thành công -->
           <div

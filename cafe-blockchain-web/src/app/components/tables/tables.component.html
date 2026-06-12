@@ -37,7 +37,7 @@
   @if (stateService.web3Service.walletConnected()) {
     <!-- THANH BỘ LỌC SƠ ĐỒ BÀN (KHU VỰC VÀ TRẠNG THÁI) -->
   <div
-    class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex flex-col sm:flex-row gap-5 justify-between items-start sm:items-center transition-colors"
+    class="app-card p-5 flex flex-col sm:flex-row gap-5 justify-between items-start sm:items-center"
   >
     <div class="flex flex-col gap-1.5">
       <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block"
@@ -113,7 +113,7 @@
     >
       @for (i of [1, 2, 3, 4, 5, 6]; track i) {
         <div
-          class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm h-32 flex flex-col justify-between items-center text-center"
+          class="app-card p-5 h-32 flex flex-col justify-between items-center text-center"
         >
           <div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-2/3"></div>
           <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-1/2"></div>
@@ -130,7 +130,7 @@
     >
       @if (filteredDiningTables().length === 0) {
         <div
-          class="col-span-full py-16 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 flex flex-col items-center justify-center gap-3"
+          class="col-span-full py-16 text-center app-card flex flex-col items-center justify-center gap-3"
         >
           <svg
             class="h-10 w-10 text-slate-300 dark:text-slate-700"
@@ -150,7 +150,7 @@
       }
       @for (table of filteredDiningTables(); track table.id) {
         <div
-          class="relative group bg-white dark:bg-slate-900 rounded-3xl border-2 overflow-hidden shadow-sm transition-all duration-300 flex flex-col justify-between p-4.5 hover:scale-[1.03] hover:shadow-md"
+          class="relative group app-card border-2 overflow-hidden flex flex-col justify-between p-4.5 hover:scale-[1.03] hover:shadow-md"
           [class]="
             table.status === 'using'
               ? 'border-amber-400 dark:border-amber-900/60 bg-amber-500/[0.02]'
@@ -241,7 +241,7 @@
     <!-- WIDGET QUẢN LÝ KHU VỰC ĐỘNG DÀNH CHO ADMIN (FULL WIDTH) -->
     <div class="mt-8 pt-6 border-t border-slate-200/60 dark:border-slate-800/60">
       <div
-        class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm transition-colors space-y-4"
+        class="app-card p-6 space-y-4"
       >
         <div
           class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-4 flex-wrap gap-3"

@@ -47,7 +47,7 @@
   @if (web3Service.walletConnected()) {
     <!-- Bộ lọc thời gian Dashboard -->
     <div
-      class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 shadow-sm rounded-3xl"
+      class="app-card flex flex-col md:flex-row md:items-center justify-between gap-4 p-4"
     >
       <div class="flex flex-wrap items-center gap-2">
         <button
@@ -146,7 +146,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
           @for (i of [1, 2, 3, 4]; track i) {
             <div
-              class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex items-center justify-between"
+              class="app-card p-6 flex items-center justify-between"
             >
               <div class="space-y-3 w-2/3">
                 <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-3/4"></div>
@@ -161,7 +161,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <!-- Biểu đồ Skeleton (Left) -->
           <div
-            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm h-[380px] flex flex-col justify-between"
+            class="app-card p-6 h-[380px] flex flex-col justify-between"
           >
             <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-md w-1/4"></div>
             <div
@@ -177,7 +177,7 @@
           </div>
           <!-- Widget Biểu đồ tròn Skeleton (Center) -->
           <div
-            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm h-[380px] flex flex-col justify-between animate-pulse"
+            class="app-card p-6 h-[380px] flex flex-col justify-between animate-pulse"
           >
             <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-md w-1/2"></div>
             <div class="flex-1 flex flex-col items-center justify-center gap-6 pt-4">
@@ -198,7 +198,7 @@
           </div>
           <!-- Widget Blockchain & Hoạt động Skeleton (Right) -->
           <div
-            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm space-y-5 flex flex-col justify-between h-[380px]"
+            class="app-card p-6 space-y-5 flex flex-col justify-between h-[380px]"
           >
             <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-md w-1/2"></div>
             <div class="space-y-4 flex-1 pt-4">
@@ -221,7 +221,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
           <!-- Doanh thu hôm nay -->
           <div
-            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex items-center justify-between group hover:scale-[1.02] transition-all"
+            class="app-card-interactive p-6 flex items-center justify-between group"
           >
             <div class="space-y-2">
               <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
@@ -256,7 +256,7 @@
 
           <!-- Tổng doanh thu -->
           <div
-            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex items-center justify-between group hover:scale-[1.02] transition-all"
+            class="app-card-interactive p-6 flex items-center justify-between group"
           >
             <div class="space-y-2">
               <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
@@ -291,7 +291,7 @@
 
           <!-- Doanh thu Web3 (tích lũy blockchain) -->
           <div
-            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex items-center justify-between group hover:scale-[1.02] transition-all"
+            class="app-card-interactive p-6 flex items-center justify-between group"
           >
             <div class="space-y-2">
               <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
@@ -326,7 +326,7 @@
 
           <!-- Đơn chờ Web3 -->
           <div
-            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex items-center justify-between group hover:scale-[1.02] transition-all"
+            class="app-card-interactive p-6 flex items-center justify-between group"
           >
             <div class="space-y-2">
               <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
@@ -365,7 +365,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <!-- Cột trái: Biểu đồ doanh thu tuần này -->
           <div
-            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm h-[380px] flex flex-col justify-between space-y-4"
+            class="app-card p-6 h-[380px] flex flex-col justify-between space-y-4"
           >
             <div class="flex items-center justify-between shrink-0">
               <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
@@ -464,7 +464,7 @@
 
           <!-- Cột giữa (MỚI): Cơ cấu thanh toán (Doughnut Chart) -->
           <div
-            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm h-[380px] flex flex-col justify-between transition-colors duration-300 space-y-4"
+            class="app-card p-6 h-[380px] flex flex-col justify-between space-y-4"
           >
             <div class="space-y-1 shrink-0">
               <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
@@ -615,7 +615,7 @@
 
           <!-- Cột phải: Giao dịch Blockchain mới nhất -->
           <div
-            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm h-[380px] flex flex-col justify-between space-y-4"
+            class="app-card p-6 h-[380px] flex flex-col justify-between space-y-4"
           >
             <div class="space-y-1 shrink-0">
               <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
@@ -709,7 +709,7 @@
           <div class="lg:col-span-2 space-y-6">
             <!-- Widget Top 5 Bán Chạy -->
             <div
-              class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm space-y-4"
+              class="app-card p-6 space-y-4"
             >
               <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
                 <svg
@@ -787,7 +787,7 @@
 
             <!-- Widget Cảnh Báo Tồn Kho Thấp -->
             <div
-              class="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm space-y-4"
+              class="app-card p-5 sm:p-6 space-y-4"
             >
               <div class="flex items-start justify-between gap-2">
                 <h4
@@ -987,7 +987,7 @@
           <div class="space-y-6">
             <!-- Widget Trạng thái Bàn Ăn -->
             <div
-              class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm flex flex-col justify-between h-[300px]"
+              class="app-card p-6 flex flex-col justify-between h-[300px]"
             >
               <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
                 <svg
@@ -1066,7 +1066,7 @@
 
             <!-- Widget Thống kê Voucher NFT -->
             <div
-              class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm space-y-4"
+              class="app-card p-6 space-y-4"
             >
               <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
                 <svg

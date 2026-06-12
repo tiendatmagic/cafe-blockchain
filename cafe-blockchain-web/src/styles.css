@@ -241,4 +241,15 @@ div.form-input.p-0 {
   @apply bg-white dark:bg-slate-900 text-[var(--color-primary)] dark:text-[var(--color-secondary)] shadow-sm font-bold;
 }
 
+/* ==================== HỆ THỐNG CARD DÙNG CHUNG (CARD SYSTEM) ==================== */
+/* 1. Card cơ bản (tĩnh) */
+.app-card {
+  @apply bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 shadow-sm rounded-3xl transition-all duration-300;
+}
+
+/* 2. Card tương tác (bấm được, hover được) */
+.app-card-interactive {
+  @apply bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 shadow-sm rounded-3xl transition-all duration-300 cursor-pointer hover:shadow-md hover:scale-[1.01] hover:border-[var(--color-primary)]/40 dark:hover:border-[var(--color-secondary)]/40;
+}
+
 
