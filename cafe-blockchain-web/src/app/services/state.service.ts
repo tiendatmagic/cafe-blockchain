@@ -359,13 +359,17 @@ export class StateService {
   private applyCachedDynamicColors() {
     if (typeof window === 'undefined') return;
     const cachedColors = localStorage.getItem(this.colorStorageKey);
-    if (!cachedColors) return;
+    if (!cachedColors) {
+      this.applyDynamicColors('#7c3aed', '#c084fc');
+      return;
+    }
 
     try {
       const colors = JSON.parse(cachedColors);
       this.applyDynamicColors(colors.primary_color, colors.secondary_color);
     } catch {
       localStorage.removeItem(this.colorStorageKey);
+      this.applyDynamicColors('#7c3aed', '#c084fc');
     }
   }
 
