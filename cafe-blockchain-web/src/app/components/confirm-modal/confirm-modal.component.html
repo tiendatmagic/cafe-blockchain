@@ -29,7 +29,7 @@
           type="button"
           (click)="onCancel()"
           [disabled]="isSubmitting"
-          class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-sm rounded-[12px] transition-all disabled:opacity-50"
+          class="btn-cancel flex-1"
         >
           {{ cancelText }}
         </button>
@@ -37,7 +37,7 @@
           type="button"
           (click)="onConfirm()"
           [disabled]="isSubmitting"
-          class="flex-1 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-extrabold text-sm rounded-[12px] shadow-md shadow-rose-500/10 transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
+          [class]="confirmButtonClass + ' flex-1 shadow-md'"
         >
           @if (isSubmitting) {
             <div class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"></div>

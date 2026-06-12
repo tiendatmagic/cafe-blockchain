@@ -13,6 +13,7 @@ export class ConfirmModalComponent {
   @Input() description = 'Bạn có chắc chắn muốn thực hiện hành động này không?';
   @Input() confirmText = 'Xác nhận';
   @Input() cancelText = 'Hủy bỏ';
+  @Input() confirmButtonClass = 'btn-danger';
   @Input() isSubmitting = false;
 
   @Output() confirm = new EventEmitter<void>();
