@@ -577,7 +577,7 @@
                           >Giá bán</span
                         >
                         <span class="text-base font-black text-[var(--dynamic-primary)] mt-0.5">
-                          {{ product.price | number }}đ
+                          {{ product.price | vnd }}
                         </span>
                       </div>
 
@@ -714,7 +714,7 @@
                           >Giá bán</span
                         >
                         <span class="text-base font-black text-[var(--dynamic-primary)] mt-0.5">
-                          {{ product.price | number }}đ
+                          {{ product.price | vnd }}
                         </span>
                       </div>
 
@@ -792,7 +792,7 @@
               >Tổng giỏ hàng</span
             >
             <span class="text-sm font-black text-emerald-400 mt-0.5">
-              {{ cartTotal() | number }}đ
+              {{ cartTotal() | vnd }}
             </span>
           </div>
         </div>
@@ -1107,7 +1107,7 @@
             <div class="flex items-center justify-between text-slate-800 dark:text-white">
               <span class="text-xs sm:text-sm font-extrabold uppercase">Thành tiền:</span>
               <span class="text-base font-black text-rose-500 font-mono">
-                {{ cartTotal() | number }}đ
+                {{ cartTotal() | vnd }}
               </span>
             </div>
 
@@ -1189,7 +1189,7 @@
                     <span class="text-sm font-extrabold">{{ variant.variant_name }}</span>
                   </div>
                   <span class="text-sm font-black text-[var(--dynamic-primary)] font-mono">
-                    {{ variant.price | number }}đ
+                    {{ variant.price | vnd }}
                   </span>
                 </div>
               }

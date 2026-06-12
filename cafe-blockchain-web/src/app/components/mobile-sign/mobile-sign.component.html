@@ -409,10 +409,10 @@
                   >Trị giá Voucher</span
                 >
                 <span class="text-xl font-black text-slate-800 dark:text-white leading-tight"
-                  >{{ voucherInfo()?.discount | number }}đ</span
+                  >{{ voucherInfo()?.discount | vnd }}</span>
                 >
                 <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-0.5"
-                  >Đơn tối thiểu: {{ voucherInfo()?.minOrder | number }}đ</span
+                  >Đơn tối thiểu: {{ voucherInfo()?.minOrder | vnd }}</span
                 >
               </div>
             </div>
@@ -488,7 +488,7 @@
                   >Khấu trừ hóa đơn</span
                 >
                 <span class="text-xl font-black text-slate-800 dark:text-white leading-tight"
-                  >-{{ voucherInfo()?.discount | number }}đ</span
+                  >-{{ voucherInfo()?.discount | vnd }}</span
                 >
                 <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-0.5"
                   >Áp dụng cho đơn: {{ orderCode() }}</span
@@ -600,7 +600,7 @@
               </div>
               <div class="flex flex-col items-end shrink-0">
                 <span class="font-black text-slate-700 dark:text-slate-300"
-                  >{{ item.price | number }}đ</span
+                  >{{ item.price | vnd }}</span
                 >
                 <span class="text-xs font-bold text-slate-400">x{{ item.quantity }}</span>
               </div>
@@ -613,7 +613,7 @@
           <div class="flex justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
             <span>Tổng tiền món:</span>
             <span class="text-slate-800 dark:text-slate-200"
-              >{{ tempOrder().total_amount | number }}đ</span
+              >{{ tempOrder().total_amount | vnd }}</span
             >
           </div>
           @if (tempOrder().discount_amount > 0) {
@@ -621,7 +621,7 @@
               class="flex justify-between text-xs font-bold text-emerald-600 dark:text-emerald-400"
             >
               <span>Voucher giảm giá:</span>
-              <span>-{{ tempOrder().discount_amount | number }}đ</span>
+              <span>-{{ tempOrder().discount_amount | vnd }}</span>
             </div>
           }
           <div
@@ -629,7 +629,7 @@
           >
             <span>Cần thanh toán:</span>
             <span class="text-purple-600 dark:text-purple-400 text-base"
-              >{{ tempOrder().final_amount | number }}đ</span
+              >{{ tempOrder().final_amount | vnd }}</span
             >
           </div>
         </div>

@@ -10,6 +10,7 @@ import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { PageHeaderComponent } from '../page-header/page-header.component';
+import { VNDCurrencyPipe } from '../../pipes/vnd.pipe';
 
 @Component({
   selector: 'app-pos',
@@ -20,7 +21,8 @@ import { PageHeaderComponent } from '../page-header/page-header.component';
     RouterModule,
     Web3ConnectPromptComponent,
     PaginationComponent,
-    PageHeaderComponent
+    PageHeaderComponent,
+    VNDCurrencyPipe
   ],
   templateUrl: './pos.component.html'
 })

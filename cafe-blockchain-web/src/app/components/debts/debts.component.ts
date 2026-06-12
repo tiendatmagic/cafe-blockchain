@@ -10,6 +10,8 @@ import { PaginationComponent } from '../pagination/pagination.component';
 import { ShortAddressPipe } from '../../pipes/short-address.pipe';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 import { PageHeaderComponent } from '../page-header/page-header.component';
+import { VNDCurrencyPipe } from '../../pipes/vnd.pipe';
+import { DrawerComponent } from '../drawer/drawer.component';
 import * as XLSX from 'xlsx';
 
 @Component({
@@ -24,7 +26,9 @@ import * as XLSX from 'xlsx';
     PaginationComponent,
     ShortAddressPipe,
     ConfirmModalComponent,
-    PageHeaderComponent
+    PageHeaderComponent,
+    VNDCurrencyPipe,
+    DrawerComponent
   ],
   templateUrl: './debts.component.html'
 })

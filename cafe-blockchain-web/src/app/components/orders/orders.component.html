@@ -448,7 +448,7 @@
                   {{ order.table_number || 'Mang về' }}
                 </td>
                 <td class="p-4.5 font-black text-slate-800 dark:text-white whitespace-nowrap">
-                  {{ order.total_amount | number }}đ
+                  {{ order.total_amount | vnd }}
                 </td>
                 <td class="p-4.5 text-xs font-bold whitespace-nowrap">
                   <span
@@ -1162,7 +1162,7 @@
                         }
                       </div>
                       <span class="font-black text-slate-800 dark:text-white font-mono"
-                        >{{ item.price * item.quantity | number }}đ</span
+                        >{{ item.price * item.quantity | vnd }}</span
                       >
                     </div>
                     @if (item.note) {
@@ -1207,7 +1207,7 @@
                     }
                   </span>
                   <span class="font-mono"
-                    >-{{ selectedOrderDetails()?.discount_amount || 0 | number }}đ</span
+                    >-{{ selectedOrderDetails()?.discount_amount || 0 | vnd }}</span
                   >
                 </div>
               }
@@ -1218,7 +1218,7 @@
                   >TỔNG TIỀN THANH TOÁN</span
                 >
                 <span class="text-xl font-black text-[var(--dynamic-primary)] font-mono">
-                  {{ selectedOrderDetails()?.total_amount || 0 | number }}đ
+                  {{ selectedOrderDetails()?.total_amount || 0 | vnd }}
                 </span>
               </div>
             </div>

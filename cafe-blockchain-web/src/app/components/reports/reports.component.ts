@@ -10,6 +10,7 @@ import { SkeletonLoaderComponent } from '../skeleton-loader/skeleton-loader.comp
 import { PaginationComponent } from '../pagination/pagination.component';
 import { ShortAddressPipe } from '../../pipes/short-address.pipe';
 import { PageHeaderComponent } from '../page-header/page-header.component';
+import { VNDCurrencyPipe } from '../../pipes/vnd.pipe';
 
 @Component({
   selector: 'app-reports',
@@ -21,7 +22,8 @@ import { PageHeaderComponent } from '../page-header/page-header.component';
     SkeletonLoaderComponent,
     PaginationComponent,
     ShortAddressPipe,
-    PageHeaderComponent
+    PageHeaderComponent,
+    VNDCurrencyPipe
   ],
   templateUrl: './reports.component.html'
 })

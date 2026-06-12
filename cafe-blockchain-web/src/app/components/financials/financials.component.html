@@ -412,7 +412,7 @@
                     [class.text-emerald-500]="tx.type === 'thu'"
                     [class.text-rose-500]="tx.type === 'chi'"
                   >
-                    {{ tx.type === 'thu' ? '+' : '-' }}{{ tx.amount | number }}đ
+                    {{ tx.type === 'thu' ? '+' : '-' }}{{ tx.amount | vnd }}
                   </td>
                   <td
                     class="p-4.5 max-w-[250px] truncate text-slate-500 dark:text-slate-400 font-medium"
@@ -817,7 +817,7 @@
                 [class.text-rose-500]="selectedTransactionDetails().type === 'chi'"
               >
                 {{ selectedTransactionDetails().type === 'thu' ? '+' : '-'
-                }}{{ selectedTransactionDetails().amount | number }}đ
+                }}{{ selectedTransactionDetails().amount | vnd }}
               </p>
             </div>
             <div class="space-y-1">

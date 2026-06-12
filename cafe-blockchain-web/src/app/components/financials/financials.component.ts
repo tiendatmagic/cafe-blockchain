@@ -8,6 +8,7 @@ import { ApiService } from '../../services/api.service';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 import { PageHeaderComponent } from '../page-header/page-header.component';
+import { VNDCurrencyPipe } from '../../pipes/vnd.pipe';
 
 @Component({
   selector: 'app-financials',
@@ -19,7 +20,8 @@ import { PageHeaderComponent } from '../page-header/page-header.component';
     Web3ConnectPromptComponent,
     PaginationComponent,
     ConfirmModalComponent,
-    PageHeaderComponent
+    PageHeaderComponent,
+    VNDCurrencyPipe
   ],
   templateUrl: './financials.component.html'
 })

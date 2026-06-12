@@ -7,6 +7,7 @@ import { StateService } from '../../services/state.service';
 import { ApiService } from '../../services/api.service';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { PageHeaderComponent } from '../page-header/page-header.component';
+import { VNDCurrencyPipe } from '../../pipes/vnd.pipe';
 
 @Component({
   selector: 'app-orders',
@@ -17,7 +18,8 @@ import { PageHeaderComponent } from '../page-header/page-header.component';
     RouterModule,
     Web3ConnectPromptComponent,
     PaginationComponent,
-    PageHeaderComponent
+    PageHeaderComponent,
+    VNDCurrencyPipe
   ],
   templateUrl: './orders.component.html'
 })

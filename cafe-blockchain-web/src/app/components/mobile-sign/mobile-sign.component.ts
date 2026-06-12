@@ -7,10 +7,12 @@ import { StateService } from '../../services/state.service';
 import { JsonRpcProvider, Contract } from 'ethers';
 import { CAFE_VOUCHER_NFT_ABI } from '../../services/voucher-contract-abi';
 
+import { VNDCurrencyPipe } from '../../pipes/vnd.pipe';
+
 @Component({
   selector: 'app-mobile-sign',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, VNDCurrencyPipe],
   templateUrl: './mobile-sign.component.html'
 })
 export class MobileSignComponent implements OnInit {

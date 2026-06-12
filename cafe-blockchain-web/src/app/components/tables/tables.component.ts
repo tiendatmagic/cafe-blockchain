@@ -7,6 +7,7 @@ import { StateService } from '../../services/state.service';
 import { ApiService } from '../../services/api.service';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 import { PageHeaderComponent } from '../page-header/page-header.component';
+import { ModalComponent } from '../modal/modal.component';
 
 @Component({
   selector: 'app-tables',
@@ -17,7 +18,8 @@ import { PageHeaderComponent } from '../page-header/page-header.component';
     RouterModule,
     Web3ConnectPromptComponent,
     ConfirmModalComponent,
-    PageHeaderComponent
+    PageHeaderComponent,
+    ModalComponent
   ],
   templateUrl: './tables.component.html'
 })

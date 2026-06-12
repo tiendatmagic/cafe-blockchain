@@ -213,7 +213,7 @@
                       }
                     </td>
                     <td class="p-4 text-right font-black text-sm" [class]="Number(item.debt_balance || 0) > 0 ? 'text-rose-500 dark:text-rose-400' : 'text-slate-400'">
-                      {{ item.debt_balance | number }}đ
+                      {{ item.debt_balance | vnd }}
                     </td>
                     <td class="p-4 pr-6">
                       <div class="flex items-center justify-center gap-2">
@@ -445,7 +445,7 @@
         <div class="space-y-1.5">
           <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5">Dư nợ hiện tại</label>
           <div class="w-full px-4 py-2.5 rounded-xl bg-rose-500/5 border border-rose-500/10 font-black text-rose-500 text-sm">
-            {{ selectedCustomer()?.debt_balance | number }}đ
+            {{ selectedCustomer()?.debt_balance | vnd }}
           </div>
         </div>
 
@@ -571,166 +571,110 @@
 }
 
 
-<!-- ==================== DRAWER CHI TIẾT LỊCH SỬ CÔNG NỢ ==================== -->
-<div 
-  [class.pointer-events-none]="!isHistoryDrawerOpen()"
-  class="fixed inset-0 z-45 flex justify-end"
->
-  <!-- Backdrop overlay -->
-  <div 
-    (click)="closeHistoryDrawer()" 
-    [class.opacity-0]="!isHistoryDrawerOpen()"
-    [class.opacity-100]="isHistoryDrawerOpen()"
-    [class.pointer-events-none]="!isHistoryDrawerOpen()"
-    class="fixed inset-0 bg-black/40 transition-opacity duration-300 ease-out"
-  ></div>
-
-  <!-- Drawer Content trượt từ phải sang -->
-  <div 
-    [class.!translate-x-0]="isHistoryDrawerOpen()"
-    class="relative translate-x-full w-full max-w-lg bg-white dark:bg-slate-900 border-l border-slate-100 dark:border-slate-800 h-full flex flex-col shadow-2xl text-slate-800 dark:text-slate-200 transition-transform duration-300 ease-out"
-  >
-    
-    <!-- Drawer Header -->
-    <div class="p-5 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between shrink-0">
-      <div>
-        <h4 class="text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
-          <svg class="h-5.5 w-5.5 text-[var(--dynamic-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-          </svg>
-          Lịch sử biến động công nợ
-        </h4>
-        <span class="text-sm text-slate-500 dark:text-slate-400 font-bold block mt-1">Khách hàng: {{ selectedCustomer()?.name }}</span>
-      </div>
-      
-      <button
-        (click)="closeHistoryDrawer()"
-        class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
-      >
-        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
+<!-- ==================== DRAWER LỊCH SỬ CÔNG NỢ ==================== -->
+<app-drawer [isOpen]="isHistoryDrawerOpen()" (close)="closeHistoryDrawer()" title="Lịch sử biến động công nợ">
+  <span class="text-xs text-slate-500 dark:text-slate-400 font-bold block mb-4 mt-[-8px]">Khách hàng: {{ selectedCustomer()?.name }}</span>
+  
+  <!-- Khung tổng quan dư nợ -->
+  <div class="bg-slate-50 dark:bg-slate-950 p-4.5 rounded-2xl border border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-4 transition-colors mb-5">
+    <div>
+      <span class="text-xs font-bold text-slate-400 uppercase tracking-wide block">Dư nợ hiện tại</span>
+      <span class="text-2xl font-black text-rose-500 dark:text-rose-400">
+        {{ selectedCustomer()?.debt_balance | vnd }}
+      </span>
     </div>
 
-    <!-- Drawer Body -->
-    <div class="flex-1 overflow-y-auto p-5 no-scrollbar space-y-5">
-      
-      <!-- Khung tổng quan dư nợ -->
-      <div class="bg-slate-50 dark:bg-slate-950 p-4.5 rounded-2xl border border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-4 transition-colors">
-        <div>
-          <span class="text-xs font-bold text-slate-400 uppercase tracking-wide block">Dư nợ hiện tại</span>
-          <span class="text-2xl font-black text-rose-500 dark:text-rose-400">
-            {{ selectedCustomer()?.debt_balance | number }}đ
-          </span>
-        </div>
+    <!-- Nút In sao kê Excel -->
+    <button
+      (click)="exportStatementToExcel()"
+      [disabled]="customerLogs().length === 0"
+      class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs transition-all flex items-center gap-1.5 shadow-sm hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed"
+    >
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+      </svg>
+      Xuất sao kê Excel
+    </button>
+  </div>
 
-        <!-- Nút In sao kê Excel -->
-        <button
-          (click)="exportStatementToExcel()"
-          [disabled]="customerLogs().length === 0"
-          class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs transition-all flex items-center gap-1.5 shadow-sm hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed"
-        >
-          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-          </svg>
-          Xuất sao kê Excel
-        </button>
-      </div>
+  <!-- Khung loading lịch sử -->
+  @if (isLogsLoading()) {
+    <div class="space-y-4 py-10 flex flex-col items-center justify-center">
+      <div class="w-8 h-8 rounded-full border-3 border-[var(--dynamic-primary)]/20 border-t-[var(--dynamic-primary)] animate-spin"></div>
+      <span class="text-xs text-slate-400 font-bold">Đang tải lịch sử công nợ...</span>
+    </div>
+  } @else if (customerLogs().length === 0) {
+    <div class="py-20 text-center text-slate-400 dark:text-slate-500 font-bold text-xs">
+      Chưa có bất kỳ biến động công nợ nào được ghi nhận cho khách hàng này.
+    </div>
+  } @else {
+    <!-- Timeline lịch sử -->
+    <div class="relative pl-7 border-l-2 border-slate-100 dark:border-slate-800 space-y-6">
+      @for (log of customerLogs(); track log.id) {
+        <div class="relative group">
+          
+          <!-- Điểm đánh dấu tròn trên trục timeline -->
+          <div 
+            [class]="log.type === 'debt' ? 'bg-rose-500 text-white shadow-rose-500/20' : 'bg-emerald-500 text-white shadow-emerald-500/20'"
+            class="absolute -left-[41px] top-0.5 w-6.5 h-6.5 rounded-full flex items-center justify-center text-xs font-black shadow-md border-2 border-white dark:border-slate-900 transition-colors"
+          >
+            {{ log.type === 'debt' ? '+' : '-' }}
+          </div>
 
-      <!-- Khung loading lịch sử -->
-      @if (isLogsLoading()) {
-        <div class="space-y-4 py-10 flex flex-col items-center justify-center">
-          <div class="w-8 h-8 rounded-full border-3 border-[var(--dynamic-primary)]/20 border-t-[var(--dynamic-primary)] animate-spin"></div>
-          <span class="text-xs text-slate-400 font-bold">Đang tải lịch sử công nợ...</span>
-        </div>
-      } @else if (customerLogs().length === 0) {
-        <div class="py-20 text-center text-slate-400 dark:text-slate-500 font-bold text-xs">
-          Chưa có bất kỳ biến động công nợ nào được ghi nhận cho khách hàng này.
-        </div>
-      } @else {
-        <!-- Timeline lịch sử -->
-        <div class="relative pl-7 border-l-2 border-slate-100 dark:border-slate-800 space-y-6">
-          @for (log of customerLogs(); track log.id) {
-            <div class="relative group">
-              
-              <!-- Điểm đánh dấu tròn trên trục timeline -->
-              <div 
-                [class]="log.type === 'debt' ? 'bg-rose-500 text-white shadow-rose-500/20' : 'bg-emerald-500 text-white shadow-emerald-500/20'"
-                class="absolute -left-[41px] top-0.5 w-6.5 h-6.5 rounded-full flex items-center justify-center text-xs font-black shadow-md border-2 border-white dark:border-slate-900 transition-colors"
+          <!-- Thẻ Nội dung giao dịch -->
+          <div class="p-4 rounded-xl bg-slate-50/50 dark:bg-slate-950/30 border border-slate-100 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-950/60 transition-colors">
+            <div class="flex items-center justify-between gap-3 flex-wrap">
+              <span class="text-xs font-bold text-slate-400">
+                {{ log.recorded_at ? (log.recorded_at | date: 'dd/MM/yyyy HH:mm') : '' }}
+              </span>
+              <span 
+                [class]="log.type === 'debt' ? 'text-rose-500 dark:text-rose-400' : 'text-emerald-500 dark:text-emerald-400'"
+                class="text-sm font-black text-right"
               >
-                {{ log.type === 'debt' ? '+' : '-' }}
-              </div>
-
-              <!-- Thẻ Nội dung giao dịch -->
-              <div class="p-4 rounded-xl bg-slate-50/50 dark:bg-slate-950/30 border border-slate-100 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-950/60 transition-colors">
-                <div class="flex items-center justify-between gap-3 flex-wrap">
-                  <span class="text-xs font-bold text-slate-400">
-                    {{ log.recorded_at ? (log.recorded_at | date: 'dd/MM/yyyy HH:mm') : '' }}
-                  </span>
-                  <span 
-                    [class]="log.type === 'debt' ? 'text-rose-500 dark:text-rose-400' : 'text-emerald-500 dark:text-emerald-400'"
-                    class="text-sm font-black text-right"
-                  >
-                    {{ log.type === 'debt' ? '+' : '-' }}{{ log.amount | number }}đ
-                  </span>
-                </div>
-
-                <!-- Thông tin chứng từ chi tiết -->
-                <div class="text-sm font-extrabold text-slate-800 dark:text-white mt-2">
-                  @if (log.order_id) {
-                    <div class="flex items-center gap-1.5 text-[var(--dynamic-primary)]">
-                      <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                      </svg>
-                      <span>Mua hàng POS: {{ log.order?.order_code || ('#' + log.order_id) }}</span>
-                    </div>
-                  } @else if (log.transaction_id) {
-                    <div class="flex items-center gap-1.5 text-emerald-500">
-                      <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span>Phiếu thu nợ: #{{ log.transaction_id.substring(0, 8) }}...</span>
-                    </div>
-                  } @else {
-                    <div class="flex items-center gap-1.5 text-slate-500">
-                      <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      <span>Ghi nợ thủ công</span>
-                    </div>
-                  }
-                </div>
-
-                <!-- Ghi chú / Mô tả -->
-                @if (log.note) {
-                  <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1.5 pl-5">
-                    {{ log.note }}
-                  </p>
-                }
-
-                <!-- Nút Hủy công nợ thủ công (Chỉ hiện nếu không có order_id và không đồng bộ blockchain) -->
-                @if (!log.order_id && !(log.type === 'payment' && log.transaction?.blockchain_status === 'success')) {
-                  <div class="flex justify-end mt-2.5">
-                    <button
-                      (click)="deleteDebtLog(log)"
-                      class="px-2.5 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 rounded-lg font-bold text-xs transition-colors flex items-center gap-0.5"
-                    >
-                      <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                      Hủy bỏ
-                    </button>
-                  </div>
-                }
-              </div>
+                {{ log.type === 'debt' ? '+' : '-' }}{{ log.amount | vnd }}
+              </span>
             </div>
-          }
+
+            <!-- Thông tin chứng từ chi tiết -->
+            <div class="text-sm font-extrabold text-slate-800 dark:text-white mt-2">
+              @if (log.order_id) {
+                <div class="flex items-center gap-1.5 text-[var(--dynamic-primary)]">
+                  <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                  </svg>
+                  Ghi nợ từ Đơn hàng:
+                  <a [routerLink]="['/orders']" [queryParams]="{search: log.order?.code}" class="underline hover:opacity-85 font-black uppercase font-mono">{{ log.order?.code }}</a>
+                </div>
+              } @else {
+                <div class="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
+                  <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  {{ log.description || 'Thu hồi công nợ thủ công' }}
+                </div>
+              }
+            </div>
+
+            <!-- Hành động xóa phiếu nợ -->
+            @if (!log.order_id && web3Service.walletConnected()) {
+              <div class="flex justify-end mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/40">
+                <button
+                  (click)="deleteDebtLog(log)"
+                  class="text-[10px] text-rose-500 hover:text-rose-600 font-extrabold flex items-center gap-1 bg-rose-500/5 hover:bg-rose-500/10 px-2.5 py-1.5 rounded-lg transition-all"
+                >
+                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  Hủy bỏ
+                </button>
+              </div>
+            }
+          </div>
         </div>
       }
     </div>
-  </div>
-</div>
+  }
+</app-drawer>
 
 
 <!-- ==================== MODAL XÁC NHẬN XÓA LOG NỢ ==================== -->

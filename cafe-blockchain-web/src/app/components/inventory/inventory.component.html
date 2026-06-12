@@ -425,7 +425,7 @@
                       }
                     </td>
                     <td class="p-4.5 font-semibold text-slate-600 dark:text-slate-400">
-                      {{ (row.variant ? row.variant.price : row.product.price) | number }}đ
+                      {{ (row.variant ? row.variant.price : row.product.price) | vnd }}
                     </td>
                     <td
                       class="p-4.5 font-black text-base"
@@ -631,7 +631,7 @@
                     >
                       @for (v of getProductVariants(item.product_id); track v.id) {
                         <option [value]="v.id">
-                          {{ v.variant_name }} ({{ v.price | number }}đ)
+                          {{ v.variant_name }} ({{ v.price | vnd }})
                         </option>
                       }
                     </select>
@@ -815,7 +815,7 @@
                 <div class="flex items-center gap-6 text-right shrink-0">
                   <span class="font-bold text-slate-400 text-xs">x{{ item.quantity }}</span>
                   <span class="font-black text-slate-800 dark:text-white font-mono"
-                    >{{ item.price * item.quantity | number }}đ</span
+                    >{{ item.price * item.quantity | vnd }}</span
                   >
                 </div>
               </div>

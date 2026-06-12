@@ -6,6 +6,7 @@ import { ApiService } from '../../services/api.service';
 import { Title } from '@angular/platform-browser';
 import { StateService } from '../../services/state.service';
 import { PaginationComponent } from '../pagination/pagination.component';
+import { VNDCurrencyPipe } from '../../pipes/vnd.pipe';
 
 interface CartItem {
   product: any;
@@ -17,7 +18,7 @@ interface CartItem {
 @Component({
   selector: 'app-store',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, PaginationComponent],
+  imports: [CommonModule, FormsModule, RouterModule, PaginationComponent, VNDCurrencyPipe],
   templateUrl: './store.component.html',
   styleUrls: []
 })

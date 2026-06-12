@@ -208,8 +208,7 @@
               >Doanh thu hôm nay</span
             >
             <h4 class="text-2xl font-black text-slate-800 dark:text-white">
-              {{ (dashboardData()?.today_revenue || 0) | number }}
-              <span class="text-xs font-bold text-slate-400">đ</span>
+              {{ (dashboardData()?.today_revenue || 0) | vnd }}
             </h4>
             <span class="text-xs font-bold text-emerald-500 flex items-center gap-1">
               ↗ {{ dashboardData()?.today_orders_count || 0 }} đơn mới
@@ -244,8 +243,7 @@
               >Tổng doanh thu</span
             >
             <h4 class="text-2xl font-black text-slate-800 dark:text-white">
-              {{ (dashboardData()?.total_revenue || 0) | number }}
-              <span class="text-xs font-bold text-slate-400">đ</span>
+              {{ (dashboardData()?.total_revenue || 0) | vnd }}
             </h4>
             <span class="text-xs font-bold text-slate-500"
               >Từ {{ dashboardData()?.total_orders_count || 0 }} đơn đã bán</span
@@ -284,7 +282,7 @@
               <span class="text-xs">{{ web3Service.nativeTokenSymbol() }}</span>
             </h4>
             <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">
-              {{ (dashboardData()?.web3_revenue || 0) | number }}đ tương đương
+              {{ (dashboardData()?.web3_revenue || 0) | vnd }} tương đương
             </span>
           </div>
           <div
@@ -388,9 +386,9 @@
             <div
               class="absolute inset-y-6 right-0 w-16 flex flex-col justify-between pointer-events-none text-left text-[9px] text-slate-400 font-semibold pl-2 pt-0.5"
             >
-              <div class="truncate">{{ getMaxRevenue() | number }}đ</div>
-              <div class="truncate">{{ (getMaxRevenue() / 2) | number }}đ</div>
-              <div class="truncate">{{ (getMaxRevenue() / 4) | number }}đ</div>
+              <div class="truncate">{{ getMaxRevenue() | vnd }}</div>
+              <div class="truncate">{{ (getMaxRevenue() / 2) | vnd }}</div>
+              <div class="truncate">{{ (getMaxRevenue() / 4) | vnd }}</div>
               <div>0đ</div>
             </div>
 
@@ -403,9 +401,9 @@
                     <div
                       class="absolute -top-16 scale-0 group-hover:scale-100 bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-[9px] font-black p-2 rounded-xl shadow-lg transition-all duration-200 leading-tight whitespace-nowrap z-30 flex flex-col gap-0.5"
                     >
-                      <span class="text-slate-400">Tổng: {{ item.revenue | number }}đ</span>
-                      <span class="text-purple-500">Crypto: {{ item.crypto_revenue | number }}đ</span>
-                      <span class="text-amber-500">Fiat: {{ item.fiat_revenue | number }}đ</span>
+                      <span class="text-slate-400">Tổng: {{ item.revenue | vnd }}</span>
+                      <span class="text-purple-500">Crypto: {{ item.crypto_revenue | vnd }}</span>
+                      <span class="text-amber-500">Fiat: {{ item.fiat_revenue | vnd }}</span>
                     </div>
 
                     <!-- Cột bar stacked chia làm 2 phần Fiat và Crypto -->
@@ -474,7 +472,7 @@
               >
                 <span class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">Tổng Đơn</span>
                 <span class="text-base font-black text-slate-800 dark:text-white leading-none mt-0.5">{{ getTotalPaymentOrders() }}</span>
-                <span class="text-[9px] font-bold text-slate-500 dark:text-slate-400 mt-1">{{ getTotalRevenue() | number }}đ</span>
+                <span class="text-[9px] font-bold text-slate-500 dark:text-slate-400 mt-1">{{ getTotalRevenue() | vnd }}</span>
               </div>
             </div>
           </div>
@@ -597,7 +595,7 @@
                       >Đơn #{{ tx.id }}</span
                     >
                     <span class="font-black text-purple-600 dark:text-purple-400 leading-none">
-                      {{ tx.total_amount | number }}đ
+                      {{ tx.total_amount | vnd }}
                     </span>
                   </div>
                   <div class="flex items-center justify-between text-[10px] gap-2">

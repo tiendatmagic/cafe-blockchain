@@ -716,15 +716,35 @@ export class Web3Service {
   }
 
   /**
-   * Ghi nhận đơn hàng lên Smart Contract Blockchain
+   * Dịch lỗi từ blockchain sang tiếng Việt thân thiện
    */
-  public async recordOrderOnChain(
-    orderId: string | number,
-    orderCode: string,
-    tableNumber: string,
-    totalAmount: number,
-    paymentMethod: string,
-    itemsSummary: string
+  private translateBlockchainError(err: any): string {
+    const errMsg = (err.reason || err.message || '').toString();
+    const errCode = err.code;
+    
+    if (errCode === 4001 || errMsg.toLowerCase().includes('user rejected') || errMsg.toLowerCase().includes('rejected')) {
+      return 'Giao dịch bị hủy bởi người dùng (User rejected).';
+    }
+    
+    if (errMsg.toLowerCase().includes('out of gas') || errMsg.toLowerCase().includes('exceeds')) {
+      return 'Lỗi vượt giới hạn Gas (Out of Gas) khi ghi dữ liệu. Vui lòng liên hệ quản trị viên.';
+    }
+
+    if (errMsg.toLowerCase().includes('ownable') || errMsg.toLowerCase().includes('not an owner') || errMsg.toLowerCase().includes('not owner') || errMsg.toLowerCase().includes('caller is not')) {
+      return 'Tài khoản ví của bạn không có quyền thực hiện giao dịch này (Yêu cầu quyền Owner).';
+    }
+
+    return err.reason || err.message || 'Giao dịch bị từ chối hoặc lỗi chuỗi.';
+  }
+
+  /**
+   * Helper chạy giao dịch ghi (write) contract, xử lý kết nối, mạng lưới và bắt lỗi tập trung
+   */
+  private async runContractWriteTx(
+    contractAddress: string,
+    abi: any,
+    methodName: string,
+    args: any[]
   ): Promise<{ txHash: string; success: boolean; error?: string }> {
     if (!this.walletConnected() || !this.currentAccount()) {
       return { txHash: '', success: false, error: 'Chưa kết nối ví Web3!' };
@@ -735,89 +755,78 @@ export class Web3Service {
       return { txHash: '', success: false, error: 'Không tìm thấy provider ví!' };
     }
 
-    // Đảm bảo đúng mạng trước khi tương tác contract
     const hasCorrectNetwork = await this.ensureCorrectNetwork();
     if (!hasCorrectNetwork) {
-      return { txHash: '', success: false, error: this.walletError() || 'Vui lòng chuyển sang đúng mạng được cấu hình!' };
+      return { txHash: '', success: false, error: this.walletError() || 'Vui lòng chuyển mạng!' };
     }
 
     try {
       const signer = await this.provider.getSigner();
-      const contract = new Contract(this.contractAddress(), CAFE_WEB3_POS_ABI, signer);
-
-      const finalOrderId = typeof orderId === 'string' ? this.convertUuidToUint256(orderId) : orderId;
-
-      // Kích hoạt giao dịch ghi đơn hàng
-      const tx = await contract['recordOrder'](
-        finalOrderId,
-        orderCode || '',
-        tableNumber || 'Mang về',
-        Math.round(totalAmount), // Lưu trữ dạng số nguyên lớn (VND)
-        paymentMethod,
-        itemsSummary
-      );
-
+      const contract = new Contract(contractAddress, abi, signer);
+      const tx = await contract[methodName](...args);
       return {
         txHash: tx.hash,
         success: true
       };
-
     } catch (err: any) {
-      console.error('Loi ky giao dich blockchain:', err);
+      console.error(`Loi thuc thi giao dich [${methodName}]:`, err);
       return {
         txHash: '',
         success: false,
-        error: err.reason || err.message || 'Giao dịch bị từ chối hoặc lỗi chuỗi.'
+        error: this.translateBlockchainError(err)
       };
     }
+  }
+
+  /**
+   * Ghi nhận đơn hàng lên Smart Contract Blockchain
+   */
+  public async recordOrderOnChain(
+    orderId: string | number,
+    orderCode: string,
+    tableNumber: string,
+    totalAmount: number,
+    paymentMethod: string,
+    itemsSummary: string
+  ): Promise<{ txHash: string; success: boolean; error?: string }> {
+    const finalOrderId = typeof orderId === 'string' ? this.convertUuidToUint256(orderId) : orderId;
+    return this.runContractWriteTx(
+      this.contractAddress(),
+      CAFE_WEB3_POS_ABI,
+      'recordOrder',
+      [
+        finalOrderId,
+        orderCode || '',
+        tableNumber || 'Mang về',
+        Math.round(totalAmount),
+        paymentMethod,
+        itemsSummary
+      ]
+    );
   }
 
   /**
    * Thêm các Owner ví thu ngân khác trên Smart Contract
    */
   public async addOwnersOnChain(newOwners: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
-    this.provider = this.getBrowserProvider();
-    if (!this.provider) return { txHash: '', success: false, error: 'Chưa kết nối ví!' };
-
-    // Đảm bảo đúng mạng trước khi tương tác contract
-    const hasCorrectNetwork = await this.ensureCorrectNetwork();
-    if (!hasCorrectNetwork) {
-      return { txHash: '', success: false, error: this.walletError() || 'Vui lòng chuyển mạng!' };
-    }
-
-    try {
-      const signer = await this.provider.getSigner();
-      const contract = new Contract(this.contractAddress(), CAFE_WEB3_POS_ABI, signer);
-
-      const tx = await contract['addOwners'](newOwners);
-      return { txHash: tx.hash, success: true };
-    } catch (err: any) {
-      return { txHash: '', success: false, error: err.reason || err.message };
-    }
+    return this.runContractWriteTx(
+      this.contractAddress(),
+      CAFE_WEB3_POS_ABI,
+      'addOwners',
+      [newOwners]
+    );
   }
 
   /**
    * Xóa các Owner ví thu ngân khác trên Smart Contract
    */
   public async removeOwnersOnChain(ownersToRemove: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
-    this.provider = this.getBrowserProvider();
-    if (!this.provider) return { txHash: '', success: false, error: 'Chưa kết nối ví!' };
-
-    // Đảm bảo đúng mạng trước khi tương tác contract
-    const hasCorrectNetwork = await this.ensureCorrectNetwork();
-    if (!hasCorrectNetwork) {
-      return { txHash: '', success: false, error: this.walletError() || 'Vui lòng chuyển mạng!' };
-    }
-
-    try {
-      const signer = await this.provider.getSigner();
-      const contract = new Contract(this.contractAddress(), CAFE_WEB3_POS_ABI, signer);
-
-      const tx = await contract['removeOwners'](ownersToRemove);
-      return { txHash: tx.hash, success: true };
-    } catch (err: any) {
-      return { txHash: '', success: false, error: err.reason || err.message };
-    }
+    return this.runContractWriteTx(
+      this.contractAddress(),
+      CAFE_WEB3_POS_ABI,
+      'removeOwners',
+      [ownersToRemove]
+    );
   }
 
   /**
@@ -1174,49 +1183,24 @@ export class Web3Service {
     category: string,
     description: string
   ): Promise<{ txHash: string; success: boolean; error?: string }> {
-    if (!this.walletConnected() || !this.currentAccount()) {
-      return { txHash: '', success: false, error: 'Chưa kết nối ví Web3!' };
+    if (!this.financeContractAddress()) {
+      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng Tài chính!' };
     }
-
-    this.provider = this.getBrowserProvider();
-    if (!this.provider) {
-      return { txHash: '', success: false, error: 'Không tìm thấy provider ví!' };
-    }
-
-    const hasCorrectNetwork = await this.ensureCorrectNetwork();
-    if (!hasCorrectNetwork) {
-      return { txHash: '', success: false, error: this.walletError() || 'Vui lòng chuyển sang đúng mạng được cấu hình!' };
-    }
-
-    try {
-      const signer = await this.provider.getSigner();
-      const contract = new Contract(this.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, signer);
-
-      const finalTxId = typeof txId === 'string' ? this.convertUuidToUint256(txId) : txId;
-      const txType = type === 'thu' ? 1 : 0;
-
-      const tx = await contract['recordTransaction'](
+    const finalTxId = typeof txId === 'string' ? this.convertUuidToUint256(txId) : txId;
+    const txType = type === 'thu' ? 1 : 0;
+    return this.runContractWriteTx(
+      this.financeContractAddress(),
+      CAFE_WEB3_FINANCE_ABI,
+      'recordTransaction',
+      [
         finalTxId,
         transactionCode || '',
         txType,
         Math.round(amount),
         category,
         description || ''
-      );
-
-      return {
-        txHash: tx.hash,
-        success: true
-      };
-
-    } catch (err: any) {
-      console.error('Loi ky giao dich blockchain thu chi:', err);
-      return {
-        txHash: '',
-        success: false,
-        error: err.reason || err.message || 'Giao dịch bị từ chối hoặc lỗi chuỗi.'
-      };
-    }
+      ]
+    );
   }
 
   /**
@@ -1342,50 +1326,30 @@ export class Web3Service {
    * Thêm các Owner ví kế toán khác trên Smart Contract Tài chính
    */
   public async addFinanceOwnersOnChain(newOwners: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
-    this.provider = this.getBrowserProvider();
-    if (!this.provider || !this.financeContractAddress()) {
-      return { txHash: '', success: false, error: 'Chưa kết nối ví hoặc chưa cấu hình hợp đồng Tài chính!' };
+    if (!this.financeContractAddress()) {
+      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng Tài chính!' };
     }
-
-    const hasCorrectNetwork = await this.ensureCorrectNetwork();
-    if (!hasCorrectNetwork) {
-      return { txHash: '', success: false, error: this.walletError() || 'Vui lòng chuyển mạng!' };
-    }
-
-    try {
-      const signer = await this.provider.getSigner();
-      const contract = new Contract(this.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, signer);
-
-      const tx = await contract['addOwners'](newOwners);
-      return { txHash: tx.hash, success: true };
-    } catch (err: any) {
-      return { txHash: '', success: false, error: err.reason || err.message };
-    }
+    return this.runContractWriteTx(
+      this.financeContractAddress(),
+      CAFE_WEB3_FINANCE_ABI,
+      'addOwners',
+      [newOwners]
+    );
   }
 
   /**
    * Xóa các Owner ví kế toán khác trên Smart Contract Tài chính
    */
   public async removeFinanceOwnersOnChain(ownersToRemove: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
-    this.provider = this.getBrowserProvider();
-    if (!this.provider || !this.financeContractAddress()) {
-      return { txHash: '', success: false, error: 'Chưa kết nối ví hoặc chưa cấu hình hợp đồng Tài chính!' };
+    if (!this.financeContractAddress()) {
+      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng Tài chính!' };
     }
-
-    const hasCorrectNetwork = await this.ensureCorrectNetwork();
-    if (!hasCorrectNetwork) {
-      return { txHash: '', success: false, error: this.walletError() || 'Vui lòng chuyển mạng!' };
-    }
-
-    try {
-      const signer = await this.provider.getSigner();
-      const contract = new Contract(this.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, signer);
-
-      const tx = await contract['removeOwners'](ownersToRemove);
-      return { txHash: tx.hash, success: true };
-    } catch (err: any) {
-      return { txHash: '', success: false, error: err.reason || err.message };
-    }
+    return this.runContractWriteTx(
+      this.financeContractAddress(),
+      CAFE_WEB3_FINANCE_ABI,
+      'removeOwners',
+      [ownersToRemove]
+    );
   }
 
   /**
@@ -1704,50 +1668,30 @@ export class Web3Service {
    * Thêm các Owner mới trên Smart Contract Menu Registry
    */
   public async addMenuRegistryOwnersOnChain(newOwners: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
-    this.provider = this.getBrowserProvider();
-    if (!this.provider || !this.menuRegistryContractAddress()) {
-      return { txHash: '', success: false, error: 'Chưa kết nối ví hoặc chưa cấu hình hợp đồng Menu Registry!' };
+    if (!this.menuRegistryContractAddress()) {
+      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng Menu Registry!' };
     }
-
-    const hasCorrectNetwork = await this.ensureCorrectNetwork();
-    if (!hasCorrectNetwork) {
-      return { txHash: '', success: false, error: this.walletError() || 'Vui lòng chuyển mạng!' };
-    }
-
-    try {
-      const signer = await this.provider.getSigner();
-      const contract = new Contract(this.menuRegistryContractAddress(), CAFE_MENU_REGISTRY_ABI, signer);
-
-      const tx = await contract['addOwners'](newOwners);
-      return { txHash: tx.hash, success: true };
-    } catch (err: any) {
-      return { txHash: '', success: false, error: err.reason || err.message };
-    }
+    return this.runContractWriteTx(
+      this.menuRegistryContractAddress(),
+      CAFE_MENU_REGISTRY_ABI,
+      'addOwners',
+      [newOwners]
+    );
   }
 
   /**
    * Xóa các Owner trên Smart Contract Menu Registry
    */
   public async removeMenuRegistryOwnersOnChain(ownersToRemove: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
-    this.provider = this.getBrowserProvider();
-    if (!this.provider || !this.menuRegistryContractAddress()) {
-      return { txHash: '', success: false, error: 'Chưa kết nối ví hoặc chưa cấu hình hợp đồng Menu Registry!' };
+    if (!this.menuRegistryContractAddress()) {
+      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng Menu Registry!' };
     }
-
-    const hasCorrectNetwork = await this.ensureCorrectNetwork();
-    if (!hasCorrectNetwork) {
-      return { txHash: '', success: false, error: this.walletError() || 'Vui lòng chuyển mạng!' };
-    }
-
-    try {
-      const signer = await this.provider.getSigner();
-      const contract = new Contract(this.menuRegistryContractAddress(), CAFE_MENU_REGISTRY_ABI, signer);
-
-      const tx = await contract['removeOwners'](ownersToRemove);
-      return { txHash: tx.hash, success: true };
-    } catch (err: any) {
-      return { txHash: '', success: false, error: err.reason || err.message };
-    }
+    return this.runContractWriteTx(
+      this.menuRegistryContractAddress(),
+      CAFE_MENU_REGISTRY_ABI,
+      'removeOwners',
+      [ownersToRemove]
+    );
   }
 
   /**
@@ -1769,46 +1713,32 @@ export class Web3Service {
    * Đồng bộ toàn bộ thực đơn món ăn lên Blockchain (Menu Registry Contract)
    */
   public async updateMenuOnChain(products: any[]): Promise<{ txHash: string; success: boolean; error?: string }> {
-    this.provider = this.getBrowserProvider();
-    if (!this.provider || !this.menuRegistryContractAddress()) {
-      return { txHash: '', success: false, error: 'Chưa kết nối ví hoặc chưa cấu hình hợp đồng Menu Registry!' };
+    if (!this.menuRegistryContractAddress()) {
+      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng Menu Registry!' };
     }
 
-    const hasCorrectNetwork = await this.ensureCorrectNetwork();
-    if (!hasCorrectNetwork) {
-      return { txHash: '', success: false, error: this.walletError() || 'Vui lòng chuyển mạng!' };
-    }
+    // Chuyển format sang struct Product của contract
+    // Tối ưu hóa: Không gửi URL hình ảnh dài lên blockchain để tránh lỗi Out of Gas (tiết kiệm ~45% gas)
+    // Sử dụng basePrice (giá nhỏ nhất của biến thể) gửi lên blockchain đồng bộ với logic so sánh
+    const formattedProducts = products.map(p => {
+      const basePrice = (p.variants && p.variants.length > 0)
+        ? Math.min(...p.variants.map((v: any) => Number(v.price) || 0))
+        : Number(p.price) || 0;
+      return {
+        sku: p.sku || '',
+        name: p.name || '',
+        price: BigInt(basePrice),
+        image: '', 
+        status: p.status === undefined ? true : !!p.status
+      };
+    });
 
-    try {
-      const signer = await this.provider.getSigner();
-      const contract = new Contract(this.menuRegistryContractAddress(), CAFE_MENU_REGISTRY_ABI, signer);
-
-      // Chuyển format sang struct Product của contract
-      // Tối ưu hóa: Không gửi URL hình ảnh dài lên blockchain để tránh lỗi Out of Gas (tiết kiệm ~45% gas)
-      // Sử dụng basePrice (giá nhỏ nhất của biến thể) gửi lên blockchain đồng bộ với logic so sánh
-      const formattedProducts = products.map(p => {
-        const basePrice = (p.variants && p.variants.length > 0)
-          ? Math.min(...p.variants.map((v: any) => Number(v.price) || 0))
-          : Number(p.price) || 0;
-        return {
-          sku: p.sku || '',
-          name: p.name || '',
-          price: BigInt(basePrice),
-          image: '', 
-          status: p.status === undefined ? true : !!p.status
-        };
-      });
-
-      const tx = await contract['updateMenu'](formattedProducts);
-      return { txHash: tx.hash, success: true };
-    } catch (err: any) {
-      console.error('Loi dong bo thuc don len Blockchain:', err);
-      let errorMsg = err.reason || err.message;
-      if (errorMsg && (errorMsg.toLowerCase().includes('out of gas') || errorMsg.toLowerCase().includes('exceeds'))) {
-        errorMsg = 'Lỗi vượt giới hạn Gas (Out of Gas) khi ghi dữ liệu. Vui lòng liên hệ quản trị viên.';
-      }
-      return { txHash: '', success: false, error: errorMsg };
-    }
+    return this.runContractWriteTx(
+      this.menuRegistryContractAddress(),
+      CAFE_MENU_REGISTRY_ABI,
+      'updateMenu',
+      [formattedProducts]
+    );
   }
 
   /**
@@ -1892,50 +1822,30 @@ export class Web3Service {
    * Thêm các Owner mới trên Smart Contract Voucher NFT
    */
   public async addVoucherOwnersOnChain(newOwners: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
-    this.provider = this.getBrowserProvider();
-    if (!this.provider || !this.voucherContractAddress()) {
-      return { txHash: '', success: false, error: 'Chưa kết nối ví hoặc chưa cấu hình hợp đồng Voucher NFT!' };
+    if (!this.voucherContractAddress()) {
+      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng Voucher NFT!' };
     }
-
-    const hasCorrectNetwork = await this.ensureCorrectNetwork();
-    if (!hasCorrectNetwork) {
-      return { txHash: '', success: false, error: this.walletError() || 'Vui lòng chuyển mạng!' };
-    }
-
-    try {
-      const signer = await this.provider.getSigner();
-      const contract = new Contract(this.voucherContractAddress(), CAFE_VOUCHER_NFT_ABI, signer);
-
-      const tx = await contract['addOwners'](newOwners);
-      return { txHash: tx.hash, success: true };
-    } catch (err: any) {
-      return { txHash: '', success: false, error: err.reason || err.message };
-    }
+    return this.runContractWriteTx(
+      this.voucherContractAddress(),
+      CAFE_VOUCHER_NFT_ABI,
+      'addOwners',
+      [newOwners]
+    );
   }
 
   /**
    * Xóa các Owner trên Smart Contract Voucher NFT
    */
   public async removeVoucherOwnersOnChain(ownersToRemove: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
-    this.provider = this.getBrowserProvider();
-    if (!this.provider || !this.voucherContractAddress()) {
-      return { txHash: '', success: false, error: 'Chưa kết nối ví hoặc chưa cấu hình hợp đồng Voucher NFT!' };
+    if (!this.voucherContractAddress()) {
+      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng Voucher NFT!' };
     }
-
-    const hasCorrectNetwork = await this.ensureCorrectNetwork();
-    if (!hasCorrectNetwork) {
-      return { txHash: '', success: false, error: this.walletError() || 'Vui lòng chuyển mạng!' };
-    }
-
-    try {
-      const signer = await this.provider.getSigner();
-      const contract = new Contract(this.voucherContractAddress(), CAFE_VOUCHER_NFT_ABI, signer);
-
-      const tx = await contract['removeOwners'](ownersToRemove);
-      return { txHash: tx.hash, success: true };
-    } catch (err: any) {
-      return { txHash: '', success: false, error: err.reason || err.message };
-    }
+    return this.runContractWriteTx(
+      this.voucherContractAddress(),
+      CAFE_VOUCHER_NFT_ABI,
+      'removeOwners',
+      [ownersToRemove]
+    );
   }
 }
 

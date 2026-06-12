@@ -5,11 +5,12 @@ import { FormsModule } from '@angular/forms';
 import { StateService } from '../../services/state.service';
 import { ShortAddressPipe } from '../../pipes/short-address.pipe';
 import { PageHeaderComponent } from '../page-header/page-header.component';
+import { VNDCurrencyPipe } from '../../pipes/vnd.pipe';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, Web3ConnectPromptComponent, ShortAddressPipe, PageHeaderComponent],
+  imports: [CommonModule, FormsModule, Web3ConnectPromptComponent, ShortAddressPipe, PageHeaderComponent, VNDCurrencyPipe],
   templateUrl: './dashboard.component.html'
 })
 export class DashboardComponent implements OnInit {
