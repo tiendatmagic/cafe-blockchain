@@ -175,4 +175,9 @@ class Order extends Model
     {
         return $this->belongsTo(Customer::class);
     }
+
+    public function debtLogs()
+    {
+        return $this->hasMany(DebtLog::class);
+    }
 }

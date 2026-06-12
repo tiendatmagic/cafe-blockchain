@@ -357,4 +357,32 @@ export class ApiService {
     if (endDate) params = params.set('end_date', endDate);
     return this.http.get<any>(`${this.baseUrl}/reports`, { headers: this.getHeaders(), params });
   }
+
+  // --- Debts (Sổ nợ) API ---
+  public getDebts(search?: string, filter: string = 'all'): Observable<any[]> {
+    let params = new HttpParams();
+    if (search) {
+      params = params.set('search', search);
+    }
+    if (filter !== 'all') {
+      params = params.set('filter', filter);
+    }
+    return this.http.get<any[]>(`${this.baseUrl}/debts`, { headers: this.getHeaders(), params });
+  }
+
+  public getCustomerDebtLogs(customerId: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/debts/customer/${customerId}`, { headers: this.getHeaders() });
+  }
+
+  public createManualDebt(data: { customer_id: number; amount: number; note?: string; recorded_at: string }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/debts`, data, { headers: this.getHeaders() });
+  }
+
+  public createDebtPayment(data: { customer_id: number; amount: number; payment_method: string; note?: string; recorded_at: string }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/debts/payment`, data, { headers: this.getHeaders() });
+  }
+
+  public deleteDebtLog(id: number): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/debts/${id}`, { headers: this.getHeaders() });
+  }
 }

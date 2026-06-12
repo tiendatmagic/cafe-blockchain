@@ -31,6 +31,7 @@ export class StateService {
   public readonly isInventoryLoading = signal<boolean>(false);
   public readonly isTablesLoading = signal<boolean>(false);
   public readonly isSettingsLoading = signal<boolean>(false);
+  public readonly isDebtsLoading = signal<boolean>(false);
 
   // Thông điệp Toast
   public readonly successMessage = signal<string>('');
@@ -49,6 +50,7 @@ export class StateService {
   public readonly inventoryRecords = signal<any[]>([]);
   public readonly areas = signal<any[]>([]);
   public readonly diningTables = signal<any[]>([]);
+  public readonly debts = signal<any[]>([]);
 
   public readonly settings = signal<any>({
     store_name: 'Blockchain Cafe & Bistro',
@@ -844,6 +846,8 @@ export class StateService {
       this.setTabState('inventory');
     } else if (cleanUrl.includes('/tables')) {
       this.setTabState('tables');
+    } else if (cleanUrl.includes('/debts')) {
+      this.setTabState('debts');
     }
   }
 
@@ -879,6 +883,25 @@ export class StateService {
       this.refreshInventory();
     } else if (tab === 'tables') {
       this.refreshTablesAndAreas();
+    } else if (tab === 'debts') {
+      this.refreshDebts();
     }
+  }
+
+  // Refresh danh sách nợ khách hàng
+  public refreshDebts(searchFilter: string = '', statusFilter: string = 'all') {
+    if (!this.web3Service.walletConnected()) return;
+    if (this.isDebtsLoading()) return;
+    this.isDebtsLoading.set(true);
+    this.apiService.getDebts(searchFilter, statusFilter).subscribe({
+      next: (res) => {
+        this.debts.set(res || []);
+        this.isDebtsLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Lỗi tải danh sách nợ:', err);
+        this.isDebtsLoading.set(false);
+      }
+    });
   }
 }

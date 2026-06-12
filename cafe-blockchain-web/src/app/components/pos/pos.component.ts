@@ -40,7 +40,7 @@ export class PosComponent implements OnInit, OnDestroy {
   public readonly isPosConfirmModalOpen = signal<boolean>(false);
   public readonly customerCashGiven = signal<number>(0);
   public readonly isDebtPayment = signal<boolean>(false);
-  public readonly posPaymentMethod = signal<'cash' | 'bank_transfer' | 'crypto' | 'e_wallet'>('cash');
+  public readonly posPaymentMethod = signal<'cash' | 'bank_transfer' | 'crypto' | 'e_wallet' | 'debt'>('cash');
 
   // Trạng thái chọn kích thước/biến thể
   public readonly activeSelectingProduct = signal<any>(null);
@@ -347,8 +347,12 @@ export class PosComponent implements OnInit, OnDestroy {
     this.isDebtPayment.set(false);
     
     const currentMethod = this.paymentMethod();
-    if (currentMethod === 'cash' || currentMethod === 'bank_transfer' || currentMethod === 'crypto' || currentMethod === 'e_wallet') {
-      this.posPaymentMethod.set(currentMethod);
+    if (currentMethod === 'cash' || currentMethod === 'bank_transfer' || currentMethod === 'crypto' || currentMethod === 'e_wallet' || currentMethod === 'debt') {
+      this.posPaymentMethod.set(currentMethod as any);
+      if (currentMethod === 'debt') {
+        this.customerCashGiven.set(0);
+        this.isDebtPayment.set(true);
+      }
     } else {
       this.posPaymentMethod.set('cash');
     }
@@ -627,6 +631,11 @@ export class PosComponent implements OnInit, OnDestroy {
 
     if (this.cart().length === 0) {
       this.stateService.showToast('Vui lòng chọn ít nhất một món ăn!', 'error');
+      return;
+    }
+
+    if (this.paymentMethod() === 'debt' && !this.stateService.posSelectedCustomer()) {
+      this.stateService.showToast('Đơn hàng ghi nợ bắt buộc phải chọn khách hàng!', 'error');
       return;
     }
 

@@ -107,4 +107,9 @@ class Transaction extends Model
 
         return hash_hmac('sha256', $data, $secretKey);
     }
+
+    public function debtLogs()
+    {
+        return $this->hasMany(DebtLog::class);
+    }
 }

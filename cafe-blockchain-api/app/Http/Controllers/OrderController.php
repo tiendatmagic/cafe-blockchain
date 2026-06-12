@@ -49,7 +49,7 @@ class OrderController extends Controller
             'order_code' => 'nullable|string|max:50|unique:orders,order_code',
             'table_number' => 'nullable|string|max:50',
             'customer_id' => 'nullable|integer|exists:customers,id',
-            'payment_method' => 'required|string|in:cash,bank_transfer,crypto,e_wallet',
+            'payment_method' => 'required|string|in:cash,bank_transfer,crypto,e_wallet,debt',
             'voucher_nft_token_id' => 'nullable|integer',
             'voucher_nft_signature' => 'nullable|string',
             'items' => 'required|array|min:1',
@@ -83,7 +83,7 @@ class OrderController extends Controller
         $validated = $request->validate([
             'table_number' => 'nullable|string|max:50',
             'customer_id' => 'nullable|integer|exists:customers,id',
-            'payment_method' => 'required|string|in:cash,bank_transfer,crypto,e_wallet',
+            'payment_method' => 'required|string|in:cash,bank_transfer,crypto,e_wallet,debt',
             'voucher_nft_token_id' => 'nullable|integer',
             'voucher_nft_signature' => 'nullable|string',
             'items' => 'required|array|min:1',

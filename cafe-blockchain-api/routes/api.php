@@ -75,6 +75,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/customers/{id}', [CustomerController::class, 'update']);
     Route::delete('/customers/{id}', [CustomerController::class, 'destroy']);
 
+    // Debts (Sổ nợ) API
+    Route::get('/debts', [\App\Http\Controllers\DebtController::class, 'index']);
+    Route::get('/debts/customer/{id}', [\App\Http\Controllers\DebtController::class, 'show']);
+    Route::post('/debts', [\App\Http\Controllers\DebtController::class, 'store']);
+    Route::post('/debts/payment', [\App\Http\Controllers\DebtController::class, 'storePayment']);
+    Route::delete('/debts/{id}', [\App\Http\Controllers\DebtController::class, 'destroy']);
+
     // Customer Groups API
     Route::get('/customer-groups', [CustomerGroupController::class, 'index']);
     Route::post('/customer-groups', [CustomerGroupController::class, 'store']);

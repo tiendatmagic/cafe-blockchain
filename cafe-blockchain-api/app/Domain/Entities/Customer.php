@@ -18,6 +18,7 @@ class Customer extends Model
         'dob',
         'gender',
         'address',
+        'debt_balance',
         'store_owner_address',
         'type',
         'company_name',
@@ -52,5 +53,13 @@ class Customer extends Model
     public function groups()
     {
         return $this->belongsToMany(CustomerGroup::class, 'customer_customer_group', 'customer_id', 'customer_group_id');
+    }
+
+    /**
+     * Mối quan hệ với lịch sử công nợ DebtLog
+     */
+    public function debtLogs()
+    {
+        return $this->hasMany(DebtLog::class);
     }
 }

@@ -1,0 +1,773 @@
+<!-- Container chính căn giữa, bo góc tối đa 15px theo design system -->
+<div class="max-w-[1530px] mx-auto w-full px-4 sm:px-6 py-6 text-slate-800 dark:text-slate-200">
+  
+  <!-- Header Trang -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-slate-100 dark:border-slate-800/60">
+    <div>
+      <h1 class="text-xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+        <svg class="h-6 w-6 text-[var(--dynamic-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        </svg>
+        Sổ nợ khách hàng
+      </h1>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+        Quản lý chi tiết dư nợ khách hàng, lịch sử ghi nợ, lập phiếu thu nợ và đối soát quỹ tiền mặt tự động.
+      </p>
+    </div>
+
+    <!-- Nút Lập phiếu nợ thủ công (Chỉ hiện khi ví đã kết nối) -->
+    @if (web3Service.walletConnected()) {
+      <div class="flex items-center gap-2 shrink-0">
+        <button
+          (click)="openManualDebtModal()"
+          class="px-4 py-2.5 rounded-[12px] bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] hover:opacity-90 active:scale-[0.98] text-white font-extrabold text-xs shadow-md shadow-[var(--dynamic-primary)]/15 flex items-center gap-1.5 transition-all"
+        >
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          Ghi nợ mới
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- Banner Kết nối ví Web3 nếu chưa đăng nhập -->
+  @if (!web3Service.walletConnected()) {
+    <app-web3-connect-prompt 
+      title="Sổ nợ khách hàng" 
+      description="Vui lòng kết nối ví Web3 để truy cập dữ liệu công nợ, lịch sử giao dịch nợ/trả nợ của khách hàng và đồng bộ dòng tiền vào sổ quỹ."
+    ></app-web3-connect-prompt>
+  } @else {
+
+    <!-- Khối Loading Skeleton dùng chung -->
+    @if (isDebtsLoading()) {
+      <div class="mt-6">
+        <app-skeleton-loader type="table"></app-skeleton-loader>
+      </div>
+    } @else {
+
+      <!-- Thẻ Thống kê Tài chính (3 thẻ) -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mt-6">
+        <!-- Tổng nợ phải thu -->
+        <div class="bg-white dark:bg-slate-900 rounded-[15px] p-5 border border-slate-100 dark:border-slate-800/80 shadow-sm flex items-center justify-between transition-colors">
+          <div class="space-y-1">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Tổng nợ phải thu</span>
+            <span class="text-xl font-black text-rose-500 dark:text-rose-400">
+              {{ totalDebtOutstanding() | number }}<span class="text-xs font-bold ml-0.5">đ</span>
+            </span>
+            <span class="text-[10px] text-slate-400 block">Dư nợ hiện tại chưa thanh toán</span>
+          </div>
+          <div class="p-3.5 rounded-[12px] bg-rose-500/10 text-rose-500 shrink-0">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Số khách hàng đang nợ -->
+        <div class="bg-white dark:bg-slate-900 rounded-[15px] p-5 border border-slate-100 dark:border-slate-800/80 shadow-sm flex items-center justify-between transition-colors">
+          <div class="space-y-1">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Khách hàng đang nợ</span>
+            <span class="text-xl font-black text-[var(--dynamic-primary)]">
+              {{ totalDebtorsCount() | number }} <span class="text-xs font-bold text-slate-400">khách</span>
+            </span>
+            <span class="text-[10px] text-slate-400 block">Số lượng khách hàng có dư nợ > 0</span>
+          </div>
+          <div class="p-3.5 rounded-[12px] bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] shrink-0">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Đã thu hồi trong tháng -->
+        <div class="bg-white dark:bg-slate-900 rounded-[15px] p-5 border border-slate-100 dark:border-slate-800/80 shadow-sm flex items-center justify-between transition-colors">
+          <div class="space-y-1">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Thu hồi trong tháng</span>
+            <span class="text-xl font-black text-emerald-500 dark:text-emerald-400">
+              {{ recoveredThisMonth() | number }}<span class="text-xs font-bold ml-0.5">đ</span>
+            </span>
+            <span class="text-[10px] text-slate-400 block">Tổng số tiền đã thu nợ tháng này</span>
+          </div>
+          <div class="p-3.5 rounded-[12px] bg-emerald-500/10 text-emerald-500 shrink-0">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Khối Bảng Dữ Liệu và Bộ Lọc -->
+      <div class="bg-white dark:bg-slate-900 rounded-[15px] border border-slate-100 dark:border-slate-800/80 shadow-sm mt-6 overflow-hidden transition-colors">
+        
+        <!-- Thanh tìm kiếm & lọc nhanh -->
+        <div class="p-5 border-b border-slate-100 dark:border-slate-800/60 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <!-- Tìm kiếm -->
+          <div class="relative max-w-sm w-full">
+            <input
+              type="text"
+              [ngModel]="debtSearchQuery()"
+              (ngModelChange)="debtSearchQuery.set($event); debtPage.set(1)"
+              placeholder="Tìm theo tên, SĐT, mã khách..."
+              class="w-full pl-9 pr-4 py-2 text-xs rounded-[10px] border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 focus:outline-none focus:border-[var(--dynamic-primary)] transition-all"
+            />
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </span>
+          </div>
+
+          <!-- Bộ lọc tab -->
+          <div class="flex items-center gap-1.5 self-start md:self-auto bg-slate-50 dark:bg-slate-950 p-1 rounded-[12px] border border-slate-200/50 dark:border-slate-800/50 text-xs font-bold shrink-0">
+            <button
+              (click)="debtFilterMode.set('all'); debtPage.set(1)"
+              [class]="debtFilterMode() === 'all' ? 'bg-white dark:bg-slate-900 shadow-sm text-[var(--dynamic-primary)]' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'"
+              class="px-3 py-1.5 rounded-[10px] transition-all"
+            >
+              Tất cả
+            </button>
+            <button
+              (click)="debtFilterMode.set('only_debt'); debtPage.set(1)"
+              [class]="debtFilterMode() === 'only_debt' ? 'bg-white dark:bg-slate-900 shadow-sm text-[var(--dynamic-primary)]' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'"
+              class="px-3 py-1.5 rounded-[10px] transition-all"
+            >
+              Đang nợ
+            </button>
+            <button
+              (click)="debtFilterMode.set('no_debt'); debtPage.set(1)"
+              [class]="debtFilterMode() === 'no_debt' ? 'bg-white dark:bg-slate-900 shadow-sm text-[var(--dynamic-primary)]' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'"
+              class="px-3 py-1.5 rounded-[10px] transition-all"
+            >
+              Đã trả hết
+            </button>
+          </div>
+        </div>
+
+        <!-- Bảng hiển thị -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50/50 dark:bg-slate-950/20 text-slate-400 text-[10px] font-black uppercase tracking-wider border-b border-slate-100 dark:border-slate-800">
+                <th class="py-3 px-5">Mã khách</th>
+                <th class="py-3 px-5">Khách hàng</th>
+                <th class="py-3 px-5">Số điện thoại</th>
+                <th class="py-3 px-5">Địa chỉ ví</th>
+                <th class="py-3 px-5 text-right cursor-pointer select-none" (click)="toggleSort('debt_balance')">
+                  <div class="flex items-center justify-end gap-1">
+                    <span>Dư nợ hiện tại</span>
+                    <span class="text-slate-400">
+                      @if (sortField() === 'debt_balance') {
+                        {{ sortDesc() ? '▼' : '▲' }}
+                      } @else {
+                        ⇅
+                      }
+                    </span>
+                  </div>
+                </th>
+                <th class="py-3 px-5 text-center">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs font-semibold">
+              @if (paginatedDebts().length === 0) {
+                <tr>
+                  <td colspan="6" class="py-10 text-center text-slate-400 dark:text-slate-500 font-bold">
+                    Không tìm thấy khách hàng nào khớp với điều kiện lọc.
+                  </td>
+                </tr>
+              } @else {
+                @for (item of paginatedDebts(); track item.id) {
+                  <tr class="hover:bg-slate-50/40 dark:hover:bg-slate-950/10 transition-colors">
+                    <td class="py-3.5 px-5 font-bold text-slate-500">
+                      {{ item.customer_code || ('KH' + item.id) }}
+                    </td>
+                    <td class="py-3.5 px-5 font-black text-slate-900 dark:text-white">
+                      {{ item.name }}
+                    </td>
+                    <td class="py-3.5 px-5 text-slate-500">
+                      {{ item.phone || '-' }}
+                    </td>
+                    <td class="py-3.5 px-5 font-mono text-[10px] text-slate-400">
+                      @if (item.wallet_address) {
+                        {{ item.wallet_address.substring(0, 6) }}...{{ item.wallet_address.substring(38) }}
+                      } @else {
+                        -
+                      }
+                    </td>
+                    <td class="py-3.5 px-5 text-right font-black text-sm" [class]="Number(item.debt_balance || 0) > 0 ? 'text-rose-500 dark:text-rose-400' : 'text-slate-400'">
+                      {{ item.debt_balance | number }}đ
+                    </td>
+                    <td class="py-3.5 px-5">
+                      <div class="flex items-center justify-center gap-2">
+                        <!-- Nút Lịch sử -->
+                        <button
+                          (click)="openHistoryDrawer(item)"
+                          class="px-2.5 py-1.5 rounded-[8px] bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold text-[10px] transition-all flex items-center gap-1"
+                        >
+                          <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          Lịch sử
+                        </button>
+
+                        <!-- Nút Thu nợ -->
+                        <button
+                          (click)="openPaymentModal(item)"
+                          [disabled]="Number(item.debt_balance || 0) <= 0"
+                          [class]="Number(item.debt_balance || 0) > 0 
+                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20' 
+                            : 'bg-slate-100 text-slate-400 cursor-not-allowed dark:bg-slate-800/40'"
+                          class="px-2.5 py-1.5 rounded-[8px] font-bold text-[10px] transition-all flex items-center gap-1 disabled:opacity-50"
+                        >
+                          <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          Thu nợ
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Khối Phân trang (Đồng bộ theo template của Orders) -->
+        @if (debtTotalPages() > 1) {
+          <div class="px-5 py-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-4">
+            <span class="text-[10px] font-bold text-slate-400">
+              Hiển thị {{ mathMin(filteredDebts().length, (debtPage() - 1) * debtLimit + 1) }}-{{ mathMin(filteredDebts().length, debtPage() * debtLimit) }} trên tổng số {{ filteredDebts().length }} khách hàng
+            </span>
+            <div class="flex items-center gap-1">
+              <!-- Nút Previous -->
+              <button
+                (click)="debtPage.set(debtPage() - 1)"
+                [disabled]="debtPage() === 1"
+                class="w-8.5 h-8.5 rounded-lg border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-colors"
+              >
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+
+              <!-- Các số trang -->
+              @for (p of getPagesArray(debtPage(), debtTotalPages()); track $index) {
+                @if (p === '...') {
+                  <span class="w-8.5 h-8.5 flex items-center justify-center text-slate-400 text-xs font-bold">...</span>
+                } @else {
+                  <button
+                    (click)="debtPage.set(Number(p))"
+                    [class]="debtPage() === p 
+                      ? 'bg-[var(--dynamic-primary)] text-white border-transparent' 
+                      : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300'"
+                    class="w-8.5 h-8.5 rounded-lg border text-xs font-bold transition-all"
+                  >
+                    {{ p }}
+                  </button>
+                }
+              }
+
+              <!-- Nút Next -->
+              <button
+                (click)="debtPage.set(debtPage() + 1)"
+                [disabled]="debtPage() === debtTotalPages()"
+                class="w-8.5 h-8.5 rounded-lg border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-colors"
+              >
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>
+
+
+<!-- ==================== MODAL GHI NỢ THỦ CÔNG ==================== -->
+@if (isManualDebtModalOpen()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <!-- Backdrop overlay -->
+    <div (click)="closeManualDebtModal()" class="fixed inset-0 bg-black/45 backdrop-blur-xs"></div>
+
+    <!-- Modal Content -->
+    <div class="relative bg-white dark:bg-slate-900 rounded-[15px] border border-slate-200 dark:border-slate-800 p-6 max-w-md w-full shadow-2xl text-slate-800 dark:text-slate-200 flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200">
+      
+      <!-- Header -->
+      <div class="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-800 shrink-0">
+        <h4 class="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5">
+          <svg class="h-4.5 w-4.5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          Lập phiếu ghi nợ mới
+        </h4>
+        <button
+          (click)="closeManualDebtModal()"
+          class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+        >
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Body Form -->
+      <div class="flex-1 overflow-y-auto py-4 space-y-4 no-scrollbar">
+        <!-- Khách hàng (Dropdown search) -->
+        <div class="space-y-1.5 relative">
+          <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Khách hàng ghi nợ</label>
+          <div class="relative">
+            <input
+              type="text"
+              [ngModel]="modalCustomerSearch()"
+              (ngModelChange)="modalCustomerSearch.set($event); isModalCustomerDropdownOpen.set(true)"
+              (click)="isModalCustomerDropdownOpen.set(true)"
+              placeholder="Gõ tên/SĐT để tìm khách hàng..."
+              class="w-full px-4 py-2.5 text-xs rounded-[10px] border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 focus:outline-none focus:border-[var(--dynamic-primary)] transition-all font-semibold"
+            />
+            @if (manualDebtForm().customer_id) {
+              <button
+                (click)="manualDebtForm.update(f => ({ ...f, customer_id: null })); modalCustomerSearch.set('')"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              >
+                ✕
+              </button>
+            }
+          </div>
+
+          <!-- Dropdown danh sách kết quả tìm khách hàng -->
+          @if (isModalCustomerDropdownOpen() && modalFilteredCustomers().length > 0) {
+            <div class="absolute top-full left-0 right-0 z-30 mt-1.5 max-h-48 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1">
+              @for (cust of modalFilteredCustomers(); track cust.id) {
+                <button
+                  type="button"
+                  (click)="selectModalCustomer(cust)"
+                  class="w-full px-4 py-2 text-left text-xs hover:bg-slate-50 dark:hover:bg-slate-800/60 font-semibold text-slate-700 dark:text-slate-200 flex justify-between items-center transition-colors"
+                >
+                  <span>{{ cust.name }}</span>
+                  <span class="text-[10px] text-slate-400">{{ cust.phone || '-' }}</span>
+                </button>
+              }
+            </div>
+            <!-- Click-outside handler -->
+            <div (click)="isModalCustomerDropdownOpen.set(false)" class="fixed inset-0 z-20"></div>
+          }
+        </div>
+
+        <!-- Số tiền nợ -->
+        <div class="space-y-1.5">
+          <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Số tiền ghi nợ (đ)</label>
+          <input
+            type="number"
+            [(ngModel)]="manualDebtForm().amount"
+            placeholder="Nhập số tiền..."
+            class="w-full px-4 py-2.5 text-xs rounded-[10px] border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 focus:outline-none focus:border-[var(--dynamic-primary)] transition-all font-bold text-slate-900 dark:text-white"
+          />
+        </div>
+
+        <!-- Ngày ghi nhận -->
+        <div class="space-y-1.5">
+          <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Ngày ghi nhận</label>
+          <div class="relative">
+            <input
+              type="date"
+              [(ngModel)]="manualDebtForm().recorded_at"
+              class="w-full pl-10 pr-4 py-2.5 text-xs rounded-[10px] border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 focus:outline-none focus:border-[var(--dynamic-primary)] transition-all font-bold"
+            />
+            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </span>
+          </div>
+        </div>
+
+        <!-- Ghi chú -->
+        <div class="space-y-1.5">
+          <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Ghi chú công nợ</label>
+          <textarea
+            [(ngModel)]="manualDebtForm().note"
+            rows="3"
+            placeholder="Lý do nợ, thông tin tham chiếu..."
+            class="w-full px-4 py-2.5 text-xs rounded-[10px] border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 focus:outline-none focus:border-[var(--dynamic-primary)] transition-all font-semibold"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex gap-3 shrink-0">
+        <button
+          (click)="closeManualDebtModal()"
+          class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-all active:scale-[0.99]"
+        >
+          Hủy bỏ
+        </button>
+        <button
+          (click)="saveManualDebt()"
+          class="flex-1 py-3 bg-[var(--dynamic-primary)] hover:opacity-90 text-white font-extrabold text-xs rounded-xl shadow-md shadow-[var(--dynamic-primary)]/10 transition-all flex items-center justify-center gap-1.5 active:scale-[0.99]"
+        >
+          <span>Ghi nhận nợ</span>
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+
+<!-- ==================== MODAL THU NỢ KHÁCH HÀNG ==================== -->
+@if (isPaymentModalOpen()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <!-- Backdrop overlay -->
+    <div (click)="closePaymentModal()" class="fixed inset-0 bg-black/45 backdrop-blur-xs"></div>
+
+    <!-- Modal Content -->
+    <div class="relative bg-white dark:bg-slate-900 rounded-[15px] border border-slate-200 dark:border-slate-800 p-6 max-w-md w-full shadow-2xl text-slate-800 dark:text-slate-200 flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200">
+      
+      <!-- Header -->
+      <div class="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-800 shrink-0">
+        <h4 class="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5">
+          <svg class="h-4.5 w-4.5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Thu hồi công nợ khách hàng
+        </h4>
+        <button
+          (click)="closePaymentModal()"
+          class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+        >
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Body Form -->
+      <div class="flex-1 overflow-y-auto py-4 space-y-4 no-scrollbar">
+        <!-- Khách hàng -->
+        <div class="space-y-1.5">
+          <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Khách hàng</label>
+          <div class="w-full px-4 py-2.5 rounded-[10px] bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800/80 font-black text-slate-900 dark:text-white text-xs">
+            {{ selectedCustomer()?.name }} @if (selectedCustomer()?.phone) { ({{ selectedCustomer()?.phone }}) }
+          </div>
+        </div>
+
+        <!-- Dư nợ hiện tại -->
+        <div class="space-y-1.5">
+          <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Dư nợ hiện tại</label>
+          <div class="w-full px-4 py-2.5 rounded-[10px] bg-rose-500/5 border border-rose-500/10 font-black text-rose-500 text-sm">
+            {{ selectedCustomer()?.debt_balance | number }}đ
+          </div>
+        </div>
+
+        <!-- Số tiền thu hồi -->
+        <div class="space-y-1.5">
+          <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Số tiền thu hồi (đ)</label>
+          <div class="relative">
+            <input
+              type="number"
+              [(ngModel)]="paymentForm().amount"
+              placeholder="Nhập số tiền đã thu..."
+              class="w-full pl-4 pr-16 py-2.5 text-xs rounded-[10px] border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 focus:outline-none focus:border-[var(--dynamic-primary)] transition-all font-bold text-slate-900 dark:text-white"
+            />
+            <button
+              type="button"
+              (click)="paymentForm().amount = Number(selectedCustomer()?.debt_balance || 0)"
+              class="absolute right-3.5 top-1/2 -translate-y-1/2 text-[10px] font-black text-[var(--dynamic-primary)] hover:opacity-80"
+            >
+              Thu hết nợ
+            </button>
+          </div>
+        </div>
+
+        <!-- Phương thức thanh toán -->
+        <div class="space-y-1.5">
+          <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Phương thức thanh toán</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              (click)="paymentForm().payment_method = 'cash'"
+              [class]="paymentForm().payment_method === 'cash' 
+                ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] font-extrabold'
+                : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'"
+              class="py-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all"
+            >
+              Tiền mặt
+            </button>
+            <button
+              type="button"
+              (click)="paymentForm().payment_method = 'bank_transfer'"
+              [class]="paymentForm().payment_method === 'bank_transfer'
+                ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] font-extrabold'
+                : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'"
+              class="py-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all"
+            >
+              Chuyển khoản
+            </button>
+            <button
+              type="button"
+              (click)="paymentForm().payment_method = 'e_wallet'"
+              [class]="paymentForm().payment_method === 'e_wallet'
+                ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] font-extrabold'
+                : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'"
+              class="py-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all"
+            >
+              Ví điện tử
+            </button>
+            <button
+              type="button"
+              (click)="paymentForm().payment_method = 'crypto'"
+              [class]="paymentForm().payment_method === 'crypto'
+                ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] font-extrabold'
+                : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'"
+              class="py-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all"
+            >
+              Tiền mã hóa
+            </button>
+          </div>
+        </div>
+
+        <!-- Ngày ghi nhận -->
+        <div class="space-y-1.5">
+          <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Ngày ghi nhận</label>
+          <div class="relative">
+            <input
+              type="date"
+              [(ngModel)]="paymentForm().recorded_at"
+              class="w-full pl-10 pr-4 py-2.5 text-xs rounded-[10px] border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 focus:outline-none focus:border-[var(--dynamic-primary)] transition-all font-bold"
+            />
+            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </span>
+          </div>
+        </div>
+
+        <!-- Ghi chú -->
+        <div class="space-y-1.5">
+          <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Ghi chú thu nợ</label>
+          <textarea
+            [(ngModel)]="paymentForm().note"
+            rows="2"
+            placeholder="Mô tả hoặc ghi nhận số chứng từ..."
+            class="w-full px-4 py-2.5 text-xs rounded-[10px] border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 focus:outline-none focus:border-[var(--dynamic-primary)] transition-all font-semibold"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex gap-3 shrink-0">
+        <button
+          (click)="closePaymentModal()"
+          class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-all active:scale-[0.99]"
+        >
+          Hủy bỏ
+        </button>
+        <button
+          (click)="savePayment()"
+          class="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs rounded-xl shadow-md shadow-emerald-500/10 transition-all flex items-center justify-center gap-1.5 active:scale-[0.99]"
+        >
+          <span>Ghi nhận phiếu thu</span>
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+
+<!-- ==================== DRAWER CHI TIẾT LỊCH SỬ CÔNG NỢ ==================== -->
+@if (isHistoryDrawerOpen()) {
+  <div class="fixed inset-0 z-45 flex justify-end">
+    <!-- Backdrop overlay -->
+    <div (click)="closeHistoryDrawer()" class="fixed inset-0 bg-black/40 animate-in fade-in duration-200"></div>
+
+    <!-- Drawer Content trượt từ phải sang -->
+    <div class="relative w-full max-w-lg bg-white dark:bg-slate-900 border-l border-slate-100 dark:border-slate-800 h-full flex flex-col shadow-2xl text-slate-800 dark:text-slate-200 animate-in slide-in-from-right duration-250 transition-colors">
+      
+      <!-- Drawer Header -->
+      <div class="p-5 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between shrink-0">
+        <div>
+          <h4 class="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5">
+            <svg class="h-4.5 w-4.5 text-[var(--dynamic-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+            </svg>
+            Lịch sử biến động công nợ
+          </h4>
+          <span class="text-[10px] text-slate-400 font-bold block mt-0.5">Khách hàng: {{ selectedCustomer()?.name }}</span>
+        </div>
+        
+        <button
+          (click)="closeHistoryDrawer()"
+          class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+        >
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Drawer Body -->
+      <div class="flex-1 overflow-y-auto p-5 no-scrollbar space-y-5">
+        
+        <!-- Khung tổng quan dư nợ -->
+        <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-[12px] border border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-4 transition-colors">
+          <div>
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">Dư nợ hiện tại</span>
+            <span class="text-xl font-black" [class]="Number(selectedCustomer()?.debt_balance || 0) > 0 ? 'text-rose-500' : 'text-slate-500'">
+              {{ selectedCustomer()?.debt_balance | number }}đ
+            </span>
+          </div>
+
+          <!-- Nút In sao kê Excel -->
+          <button
+            (click)="exportStatementToExcel()"
+            [disabled]="customerLogs().length === 0"
+            class="px-3.5 py-2 rounded-[10px] bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-[10px] transition-all flex items-center gap-1.5 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Xuất sao kê Excel
+          </button>
+        </div>
+
+        <!-- Khung loading lịch sử -->
+        @if (isLogsLoading()) {
+          <div class="space-y-4 py-10 flex flex-col items-center justify-center">
+            <div class="w-8 h-8 rounded-full border-3 border-[var(--dynamic-primary)]/20 border-t-[var(--dynamic-primary)] animate-spin"></div>
+            <span class="text-xs text-slate-400 font-bold">Đang tải lịch sử công nợ...</span>
+          </div>
+        } @else if (customerLogs().length === 0) {
+          <div class="py-20 text-center text-slate-400 dark:text-slate-500 font-bold text-xs">
+            Chưa có bất kỳ biến động công nợ nào được ghi nhận cho khách hàng này.
+          </div>
+        } @else {
+          <!-- Timeline lịch sử -->
+          <div class="relative pl-6 border-l-2 border-slate-100 dark:border-slate-800 space-y-6">
+            @for (log of customerLogs(); track log.id) {
+              <div class="relative group">
+                
+                <!-- Điểm đánh dấu tròn trên trục timeline -->
+                <div 
+                  [class]="log.type === 'debt' ? 'bg-rose-500 text-white shadow-rose-500/20' : 'bg-emerald-500 text-white shadow-emerald-500/20'"
+                  class="absolute -left-[32px] top-0.5 w-5.5 h-5.5 rounded-full flex items-center justify-center text-[10px] font-black shadow-md border-2 border-white dark:border-slate-900 transition-colors"
+                >
+                  {{ log.type === 'debt' ? '+' : '-' }}
+                </div>
+
+                <!-- Thẻ Nội dung giao dịch -->
+                <div class="p-3.5 rounded-[12px] bg-slate-50/50 dark:bg-slate-950/30 border border-slate-100 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-950/60 transition-colors">
+                  <div class="flex items-center justify-between gap-3 flex-wrap">
+                    <span class="text-[10px] font-bold text-slate-400">
+                      {{ log.recorded_at ? (log.recorded_at | date: 'dd/MM/yyyy HH:mm') : '' }}
+                    </span>
+                    <span 
+                      [class]="log.type === 'debt' ? 'text-rose-500 dark:text-rose-400' : 'text-emerald-500 dark:text-emerald-400'"
+                      class="text-xs font-black text-right"
+                    >
+                      {{ log.type === 'debt' ? '+' : '-' }}{{ log.amount | number }}đ
+                    </span>
+                  </div>
+
+                  <!-- Thông tin chứng từ chi tiết -->
+                  <div class="text-xs font-black text-slate-800 dark:text-white mt-1.5">
+                    @if (log.order_id) {
+                      <div class="flex items-center gap-1 text-[var(--dynamic-primary)]">
+                        <svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                        </svg>
+                        <span>Mua hàng POS: {{ log.order?.order_code || ('#' + log.order_id) }}</span>
+                      </div>
+                    } @else if (log.transaction_id) {
+                      <div class="flex items-center gap-1 text-emerald-500">
+                        <svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>Phiếu thu nợ: #{{ log.transaction_id.substring(0, 8) }}...</span>
+                      </div>
+                    } @else {
+                      <div class="flex items-center gap-1 text-slate-500">
+                        <svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span>Ghi nợ thủ công</span>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Ghi chú / Mô tả -->
+                  @if (log.note) {
+                    <p class="text-[10px] font-medium text-slate-500 dark:text-slate-400 mt-1 pl-4.5">
+                      {{ log.note }}
+                    </p>
+                  }
+
+                  <!-- Nút Hủy công nợ thủ công (Chỉ hiện nếu không có order_id và không đồng bộ blockchain) -->
+                  @if (!log.order_id && !(log.type === 'payment' && log.transaction?.blockchain_status === 'success')) {
+                    <div class="flex justify-end mt-2">
+                      <button
+                        (click)="deleteDebtLog(log)"
+                        class="px-2 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 rounded-md font-bold text-[9px] transition-colors flex items-center gap-0.5"
+                      >
+                        <svg class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Hủy bỏ
+                      </button>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+
+<!-- ==================== MODAL XÁC NHẬN XÓA LOG NỢ ==================== -->
+@if (isDeleteConfirmOpen()) {
+  <div class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+    <!-- Backdrop overlay -->
+    <div (click)="isDeleteConfirmOpen.set(false)" class="fixed inset-0 bg-black/45 backdrop-blur-xs"></div>
+
+    <!-- Modal Content -->
+    <div class="relative bg-white dark:bg-slate-900 rounded-[15px] border border-slate-200 dark:border-slate-800 p-6 max-w-sm w-full shadow-2xl text-slate-800 dark:text-slate-200 text-center animate-in fade-in zoom-in duration-200">
+      
+      <!-- Warning Icon -->
+      <div class="w-12 h-12 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center mx-auto mb-4">
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      </div>
+
+      <h4 class="text-sm font-black text-slate-900 dark:text-white mb-2">
+        Xác nhận hủy bản ghi công nợ
+      </h4>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
+        Hành động này sẽ xóa bản ghi công nợ này, hoàn tác lại số dư nợ của khách hàng, và tự động xóa bỏ giao dịch liên quan trong sổ quỹ thu chi (nếu có). Bạn chắc chắn muốn tiếp tục?
+      </p>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-3">
+        <button
+          (click)="isDeleteConfirmOpen.set(false)"
+          class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-all"
+        >
+          Bỏ qua
+        </button>
+        <button
+          (click)="confirmDeleteDebtLog()"
+          class="flex-1 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-extrabold text-xs rounded-xl shadow-md shadow-rose-500/10 transition-all"
+        >
+          Hủy ghi nhận
+        </button>
+      </div>
+    </div>
+  </div>
+}

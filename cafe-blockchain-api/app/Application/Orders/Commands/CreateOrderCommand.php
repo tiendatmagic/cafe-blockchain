@@ -117,6 +117,12 @@ class CreateOrderCommand
 
             $finalTotalAmount = max(0, $totalAmount - $discountAmount);
 
+            if ($data['payment_method'] === 'debt') {
+                if (empty($data['customer_id'])) {
+                    throw new \Exception("Đơn hàng ghi nợ bắt buộc phải chọn khách hàng!");
+                }
+            }
+
             // Tạo đơn hàng
             $order = Order::create([
                 'order_code' => $data['order_code'] ?? null,
@@ -136,6 +142,22 @@ class CreateOrderCommand
             foreach ($itemsData as $itemData) {
                 $itemData['order_id'] = $order->id;
                 OrderItem::create($itemData);
+            }
+
+            // Ghi nhận công nợ nếu phương thức thanh toán là Ghi nợ
+            if ($order->payment_method === 'debt') {
+                $customer = Customer::findOrFail($order->customer_id);
+                $customer->increment('debt_balance', $order->total_amount);
+
+                \App\Domain\Entities\DebtLog::create([
+                    'store_owner_address' => $storeOwner,
+                    'customer_id' => $order->customer_id,
+                    'order_id' => $order->id,
+                    'type' => 'debt',
+                    'amount' => $order->total_amount,
+                    'note' => "Nợ đơn hàng " . ($order->order_code ?? $order->id),
+                    'recorded_at' => now()->toDateString(),
+                ]);
             }
 
             return $order;
