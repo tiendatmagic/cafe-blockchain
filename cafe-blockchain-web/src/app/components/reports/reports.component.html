@@ -13,80 +13,11 @@
     <!-- Bộ lọc mốc thời gian cao cấp -->
     <div class="app-card flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4">
       <!-- Lọc nhanh presets -->
-      <div class="flex items-center gap-1.5 flex-wrap">
-        <button
-          (click)="setDatePreset('today')"
-          [class.bg-[var(--dynamic-primary)]]="activePreset() === 'today'"
-          [class.text-white]="activePreset() === 'today'"
-          [class.bg-slate-100]="activePreset() !== 'today'"
-          [class.dark:bg-slate-800]="activePreset() !== 'today'"
-          [class.text-slate-600]="activePreset() !== 'today'"
-          [class.dark:text-slate-400]="activePreset() !== 'today'"
-          class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all hover:scale-[1.02] active:scale-95"
-        >
-          Hôm nay
-        </button>
-        <button
-          (click)="setDatePreset('yesterday')"
-          [class.bg-[var(--dynamic-primary)]]="activePreset() === 'yesterday'"
-          [class.text-white]="activePreset() === 'yesterday'"
-          [class.bg-slate-100]="activePreset() !== 'yesterday'"
-          [class.dark:bg-slate-800]="activePreset() !== 'yesterday'"
-          [class.text-slate-600]="activePreset() !== 'yesterday'"
-          [class.dark:text-slate-400]="activePreset() !== 'yesterday'"
-          class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all hover:scale-[1.02] active:scale-95"
-        >
-          Hôm qua
-        </button>
-        <button
-          (click)="setDatePreset('7days')"
-          [class.bg-[var(--dynamic-primary)]]="activePreset() === '7days'"
-          [class.text-white]="activePreset() === '7days'"
-          [class.bg-slate-100]="activePreset() !== '7days'"
-          [class.dark:bg-slate-800]="activePreset() !== '7days'"
-          [class.text-slate-600]="activePreset() !== '7days'"
-          [class.dark:text-slate-400]="activePreset() !== '7days'"
-          class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all hover:scale-[1.02] active:scale-95"
-        >
-          7 ngày qua
-        </button>
-        <button
-          (click)="setDatePreset('thisMonth')"
-          [class.bg-[var(--dynamic-primary)]]="activePreset() === 'thisMonth'"
-          [class.text-white]="activePreset() === 'thisMonth'"
-          [class.bg-slate-100]="activePreset() !== 'thisMonth'"
-          [class.dark:bg-slate-800]="activePreset() !== 'thisMonth'"
-          [class.text-slate-600]="activePreset() !== 'thisMonth'"
-          [class.dark:text-slate-400]="activePreset() !== 'thisMonth'"
-          class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all hover:scale-[1.02] active:scale-95"
-        >
-          Tháng này
-        </button>
-        <button
-          (click)="setDatePreset('lastMonth')"
-          [class.bg-[var(--dynamic-primary)]]="activePreset() === 'lastMonth'"
-          [class.text-white]="activePreset() === 'lastMonth'"
-          [class.bg-slate-100]="activePreset() !== 'lastMonth'"
-          [class.dark:bg-slate-800]="activePreset() !== 'lastMonth'"
-          [class.text-slate-600]="activePreset() !== 'lastMonth'"
-          [class.dark:text-slate-400]="activePreset() !== 'lastMonth'"
-          class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all hover:scale-[1.02] active:scale-95"
-        >
-          Tháng trước
-        </button>
-        <button
-          (click)="setDatePreset('custom')"
-          [class.bg-[var(--dynamic-primary)]]="activePreset() === 'custom'"
-          [class.text-white]="activePreset() === 'custom'"
-          [class.bg-slate-100]="activePreset() !== 'custom'"
-          [class.dark:bg-slate-800]="activePreset() !== 'custom'"
-          [class.text-slate-600]="activePreset() !== 'custom'"
-          [class.dark:text-slate-400]="activePreset() !== 'custom'"
-          class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all hover:scale-[1.02] active:scale-95"
-        >
-          Tự chọn
-        </button>
-      </div>
+      <app-date-filter-buttons
+        [presets]="datePresets"
+        [activePreset]="activePreset()"
+        (presetChange)="setDatePreset($event)"
+      ></app-date-filter-buttons>
 
       <!-- Date Range Picker Đẹp Mắt -->
       <div *ngIf="activePreset() === 'custom'" class="flex items-center gap-4 flex-wrap w-full sm:w-auto">
