@@ -261,19 +261,18 @@ export class ReportsComponent implements OnInit {
     return maxVal > 0 ? maxVal : 100000;
   }
 
-  // --- Phân trang & Sắp xếp Báo cáo hàng hóa ---
-  public getProductsPaged(): any[] {
+  // --- Phân trang & Sắp xếp Báo cáo hàng hóa (computed signals) ---
+  public readonly sortedProducts = computed(() => {
     const data = this.reportsData();
     if (!data?.products) return [];
 
-    // Copy để không mutate dữ liệu gốc
     const list = [...data.products];
     const field = this.productSortField();
     const desc = this.productSortDesc();
 
     list.sort((a, b) => {
-      let valA = a[field];
-      let valB = b[field];
+      const valA = a[field];
+      const valB = b[field];
       
       // Xử lý kiểu chuỗi/số
       if (typeof valA === 'string') {
@@ -281,19 +280,22 @@ export class ReportsComponent implements OnInit {
       }
       return desc ? (valB - valA) : (valA - valB);
     });
+    return list;
+  });
 
+  public readonly productsPaged = computed(() => {
+    const list = this.sortedProducts();
     const start = (this.productPage() - 1) * this.productLimit;
     return list.slice(start, start + this.productLimit);
-  }
+  });
 
-  public getProductsTotalPages(): number {
-    const data = this.reportsData();
-    if (!data?.products) return 0;
-    return Math.ceil(data.products.length / this.productLimit);
-  }
+  public readonly productsTotalPages = computed(() => {
+    const list = this.sortedProducts();
+    return Math.ceil(list.length / this.productLimit);
+  });
 
-  // --- Phân trang & Sắp xếp Báo cáo khách hàng ---
-  public getCustomersPaged(): any[] {
+  // --- Phân trang & Sắp xếp Báo cáo khách hàng (computed signals) ---
+  public readonly sortedCustomers = computed(() => {
     const data = this.reportsData();
     if (!data?.customers) return [];
 
@@ -302,24 +304,28 @@ export class ReportsComponent implements OnInit {
     const desc = this.customerSortDesc();
 
     list.sort((a, b) => {
-      let valA = a[field];
-      let valB = b[field];
+      const valA = a[field];
+      const valB = b[field];
       
       if (typeof valA === 'string') {
         return desc ? valB.localeCompare(valA) : valA.localeCompare(valB);
       }
       return desc ? (valB - valA) : (valA - valB);
     });
+    return list;
+  });
 
+  public readonly customersPaged = computed(() => {
+    const list = this.sortedCustomers();
     const start = (this.customerPage() - 1) * this.customerLimit;
     return list.slice(start, start + this.customerLimit);
-  }
+  });
 
-  public getCustomersTotalPages(): number {
-    const data = this.reportsData();
-    if (!data?.customers) return 0;
-    return Math.ceil(data.customers.length / this.customerLimit);
-  }
+  public readonly customersTotalPages = computed(() => {
+    const list = this.sortedCustomers();
+    return Math.ceil(list.length / this.customerLimit);
+  });
+
 
   public mathMin(a: number, b: number): number {
     return Math.min(a, b);

@@ -41,10 +41,9 @@ export class MobileSignComponent implements OnInit {
   public errorMessage = signal<string>('');
 
   get isWrongChain(): boolean {
-    return this.web3Service.walletConnected() && 
-           this.web3Service.chainId() !== '' &&
-           this.web3Service.chainId() !== this.web3Service.configuredChainId();
+    return this.web3Service.isWrongChain();
   }
+
 
   @HostListener('document:click', ['$event'])
   public onDocumentClick(event: MouseEvent) {

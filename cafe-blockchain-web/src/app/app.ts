@@ -54,14 +54,10 @@ export class App implements OnInit, OnDestroy {
   public get settings() { return this.stateService.settings; }
   public get nativeTokenPriceVND() { return this.stateService.nativeTokenPriceVND; }
 
-  // Tính trạng thái sai chain trực tiếp hoặc lấy từ StateService/Web3Service
   public get isWrongChain() {
-    const connected = this.web3Service.walletConnected();
-    const contract = this.web3Service.contractAddress();
-    const activeChain = this.web3Service.chainId();
-    const configChain = this.web3Service.configuredChainId();
-    return connected && !!contract && contract.trim() !== '' && activeChain !== configChain;
+    return this.web3Service.isWrongChain();
   }
+
 
   private accountsChangedSub?: any;
 

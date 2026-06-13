@@ -56,6 +56,16 @@ export class Web3Service {
     return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
   });
 
+  // Kiểm tra ví đang kết nối có sai chain so với cấu hình không
+  public readonly isWrongChain = computed(() => {
+    const connected = this.walletConnected();
+    const contract = this.contractAddress();
+    const activeChain = this.chainId();
+    const configChain = this.configuredChainId();
+    return connected && !!contract && contract.trim() !== '' && activeChain.toString().trim() !== configChain.toString().trim();
+  });
+
+
   // Kiểm tra số dư ví thu ngân có ở mức báo động cạn gas hay không
   public readonly isGasLow = computed(() => {
     if (!this.walletConnected()) return false;
