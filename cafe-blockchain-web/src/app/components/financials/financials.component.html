@@ -323,37 +323,33 @@
         class="app-card overflow-hidden"
       >
         <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse min-w-[850px]">
+          <table class="app-table min-w-[850px]">
             <thead>
-              <tr
-                class="border-b border-slate-200/60 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-950/20"
-              >
-                <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider pl-6">
+              <tr>
+                <th>
                   Mã phiếu
                 </th>
-                <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <th>
                   Ngày giao dịch
                 </th>
-                <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <th>
                   Hạng mục / Phân loại
                 </th>
-                <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <th>
                   Số tiền
                 </th>
-                <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <th>
                   Mô tả / Ghi chú
                 </th>
-                <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <th>
                   Bằng chứng Blockchain
                 </th>
-                <th
-                  class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider pr-6 text-right"
-                >
+                <th class="text-right">
                   Thao tác
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100 dark:divide-slate-800/50">
+            <tbody>
               @if (filteredTransactions().length === 0) {
                 <tr>
                   <td colspan="7" class="p-8 text-center text-xs text-slate-400 italic">
@@ -362,20 +358,18 @@
                 </tr>
               }
               @for (tx of paginatedTransactions(); track tx.id) {
-                <tr
-                  class="hover:bg-slate-50/40 dark:hover:bg-slate-800/10 transition-colors text-sm"
-                >
+                <tr>
                   <td
-                    class="p-4.5 pl-6 font-mono font-black text-xs text-[var(--dynamic-primary)] whitespace-nowrap"
+                    class="font-mono font-black text-xs text-[var(--dynamic-primary)] whitespace-nowrap"
                   >
                     {{ tx.transaction_code }}
                   </td>
                   <td
-                    class="p-4.5 font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap"
+                    class="font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap"
                   >
                     {{ tx.transaction_date | date: 'dd/MM/yyyy' }}
                   </td>
-                  <td class="p-4.5 whitespace-nowrap">
+                  <td class="whitespace-nowrap">
                     <div class="flex items-center gap-2">
                       @if (tx.type === 'thu') {
                         <span
@@ -394,18 +388,18 @@
                     </div>
                   </td>
                   <td
-                    class="p-4.5 font-black text-[15px] whitespace-nowrap"
+                    class="font-black text-[15px] whitespace-nowrap"
                     [class.text-emerald-500]="tx.type === 'thu'"
                     [class.text-rose-500]="tx.type === 'chi'"
                   >
                     {{ tx.type === 'thu' ? '+' : '-' }}{{ tx.amount | vnd }}
                   </td>
                   <td
-                    class="p-4.5 max-w-[250px] truncate text-slate-500 dark:text-slate-400 font-medium"
+                    class="max-w-[250px] truncate text-slate-500 dark:text-slate-400 font-medium"
                   >
                     {{ tx.description || '--' }}
                   </td>
-                  <td class="p-4.5 whitespace-nowrap">
+                  <td class="whitespace-nowrap">
                     @if (tx.is_verified === false) {
                       <span
                         class="bg-rose-500/15 text-rose-600 text-xs font-extrabold px-2.5 py-1 rounded-xl border border-rose-500/20 shadow-sm animate-pulse"
@@ -457,7 +451,7 @@
                       }
                     }
                   </td>
-                  <td class="p-4.5 pr-6 text-right whitespace-nowrap">
+                  <td class="text-right whitespace-nowrap">
                     <div class="flex items-center justify-end gap-2">
                       <button
                         (click)="viewTransactionDetails(tx)"

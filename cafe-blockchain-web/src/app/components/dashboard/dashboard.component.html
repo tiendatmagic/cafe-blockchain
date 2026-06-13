@@ -844,27 +844,23 @@
                     <span>Tất cả sản phẩm đều đủ lượng tồn kho. Không có cảnh báo!</span>
                   </div>
                 } @else {
-                  <table class="w-full text-left text-xs border-collapse">
+                  <table class="app-table-sm">
                     <thead>
-                      <tr
-                        class="border-b border-slate-100 dark:border-slate-800 text-slate-400 font-bold"
-                      >
-                        <th class="pb-2 font-black w-24 sm:w-28">SKU</th>
-                        <th class="pb-2 font-black">TÊN SẢN PHẨM</th>
-                        <th class="pb-2 text-right font-black whitespace-nowrap">TỒN KHO</th>
+                      <tr>
+                        <th class="w-24 sm:w-28">SKU</th>
+                        <th>TÊN SẢN PHẨM</th>
+                        <th class="text-right whitespace-nowrap">TỒN KHO</th>
                       </tr>
                     </thead>
                     <tbody>
                       @for (alert of getLowStockPaged(); track $index) {
-                        <tr
-                          class="border-b border-slate-100/50 dark:border-slate-800/50 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50/50 dark:hover:bg-slate-950/20"
-                        >
+                        <tr>
                           <td
-                            class="py-2.5 font-mono text-[10px] sm:text-xs text-slate-500 w-24 sm:w-28"
+                            class="font-mono text-[10px] sm:text-xs text-slate-500 w-24 sm:w-28"
                           >
                             {{ alert.sku || '—' }}
                           </td>
-                          <td class="py-2.5 max-w-0">
+                          <td class="max-w-0">
                             <div class="truncate">
                               {{ alert.product_name }}
                               @if (alert.variant_name) {
@@ -874,7 +870,7 @@
                               }
                             </div>
                           </td>
-                          <td class="py-2.5 text-right whitespace-nowrap">
+                          <td class="text-right whitespace-nowrap">
                             <span
                               [class.bg-rose-500/10]="alert.stock <= 5"
                               [class.text-rose-500]="alert.stock <= 5"

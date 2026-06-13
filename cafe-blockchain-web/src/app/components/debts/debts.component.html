@@ -146,14 +146,14 @@
 
         <!-- Bảng hiển thị -->
         <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse min-w-[650px]">
+          <table class="app-table min-w-[650px]">
             <thead>
-              <tr class="border-b border-slate-200/60 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-950/20">
-                <th class="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider pl-6">Mã khách</th>
-                <th class="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Khách hàng</th>
-                <th class="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Số điện thoại</th>
-                <th class="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Địa chỉ ví</th>
-                <th class="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right cursor-pointer select-none" (click)="toggleSort('debt_balance')">
+              <tr>
+                <th>Mã khách</th>
+                <th>Khách hàng</th>
+                <th>Số điện thoại</th>
+                <th>Địa chỉ ví</th>
+                <th class="text-right cursor-pointer select-none" (click)="toggleSort('debt_balance')">
                   <div class="flex items-center justify-end gap-1">
                     <span>Dư nợ hiện tại</span>
                     <span class="text-slate-400">
@@ -175,10 +175,10 @@
                     </span>
                   </div>
                 </th>
-                <th class="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider pr-6 text-center">Thao tác</th>
+                <th class="text-center">Thao tác</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100 dark:divide-slate-800/50">
+            <tbody>
               @if (paginatedDebts().length === 0) {
                 <tr>
                   <td colspan="6" class="p-8 text-center text-xs text-slate-400 font-bold italic">
@@ -187,11 +187,11 @@
                 </tr>
               } @else {
                 @for (item of paginatedDebts(); track item.id) {
-                  <tr class="hover:bg-slate-50/40 dark:hover:bg-slate-800/10 transition-colors text-sm">
-                    <td class="p-4 pl-6 font-mono font-bold text-xs text-[var(--dynamic-primary)] whitespace-nowrap">
+                  <tr>
+                    <td class="font-mono font-bold text-xs text-[var(--dynamic-primary)] whitespace-nowrap">
                       {{ item.customer_code || ('KH-' + item.id) }}
                     </td>
-                    <td class="p-4">
+                    <td>
                       <div class="flex items-center gap-3">
                         <div class="w-9 h-9 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold text-sm shrink-0">
                           {{ (item.name || '').substring(0, 1) | uppercase }}
@@ -203,10 +203,10 @@
                         </div>
                       </div>
                     </td>
-                    <td class="p-4 font-semibold text-slate-700 dark:text-slate-300">
+                    <td class="font-semibold text-slate-700 dark:text-slate-300">
                       {{ item.phone || '--' }}
                     </td>
-                    <td class="p-4 font-mono text-xs text-slate-600 dark:text-slate-400">
+                    <td class="font-mono text-xs text-slate-600 dark:text-slate-400">
                       @if (item.wallet_address) {
                         <span class="bg-slate-100 dark:bg-slate-950 px-1.5 py-0.5 rounded font-bold" [title]="item.wallet_address">
                           {{ item.wallet_address | appShortAddress }}
@@ -215,10 +215,10 @@
                         <span class="text-slate-400 dark:text-slate-600 italic">Chưa liên kết ví</span>
                       }
                     </td>
-                    <td class="p-4 text-right font-black text-sm" [class]="Number(item.debt_balance || 0) > 0 ? 'text-rose-500 dark:text-rose-400' : 'text-slate-400'">
+                    <td class="text-right font-black text-sm" [class]="Number(item.debt_balance || 0) > 0 ? 'text-rose-500 dark:text-rose-400' : 'text-slate-400'">
                       {{ item.debt_balance | vnd }}
                     </td>
-                    <td class="p-4 pr-6">
+                    <td>
                       <div class="flex items-center justify-center gap-2">
                         <!-- Nút Lịch sử -->
                         <button

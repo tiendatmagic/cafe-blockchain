@@ -369,40 +369,40 @@
           </div>
 
           <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse min-w-[750px]">
+            <table class="app-table min-w-[750px]">
               <thead>
-                <tr class="border-b border-slate-100 dark:border-slate-800 text-slate-400 font-bold text-xs select-none">
-                  <th (click)="toggleProductSort('sku')" class="pb-3 font-black cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                <tr class="select-none">
+                  <th (click)="toggleProductSort('sku')" class="cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
                     <div class="flex items-center gap-1">
                       <span>MÃ SKU</span>
                       <span class="text-[10px]">{{ productSortField() === 'sku' ? (productSortDesc() ? '▼' : '▲') : '' }}</span>
                     </div>
                   </th>
-                  <th (click)="toggleProductSort('product_name')" class="pb-3 font-black cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                  <th (click)="toggleProductSort('product_name')" class="cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
                     <div class="flex items-center gap-1">
                       <span>TÊN MÓN / SIZE</span>
                       <span class="text-[10px]">{{ productSortField() === 'product_name' ? (productSortDesc() ? '▼' : '▲') : '' }}</span>
                     </div>
                   </th>
-                  <th (click)="toggleProductSort('total_quantity')" class="pb-3 text-right font-black cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                  <th (click)="toggleProductSort('total_quantity')" class="text-right cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
                     <div class="flex items-center justify-end gap-1">
                       <span>SỐ LƯỢNG BÁN</span>
                       <span class="text-[10px]">{{ productSortField() === 'total_quantity' ? (productSortDesc() ? '▼' : '▲') : '' }}</span>
                     </div>
                   </th>
-                  <th (click)="toggleProductSort('total_revenue')" class="pb-3 text-right font-black cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                  <th (click)="toggleProductSort('total_revenue')" class="text-right cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
                     <div class="flex items-center justify-end gap-1">
                       <span>DOANH SỐ</span>
                       <span class="text-[10px]">{{ productSortField() === 'total_revenue' ? (productSortDesc() ? '▼' : '▲') : '' }}</span>
                     </div>
                   </th>
-                  <th (click)="toggleProductSort('total_cost')" class="pb-3 text-right font-black cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                  <th (click)="toggleProductSort('total_cost')" class="text-right cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
                     <div class="flex items-center justify-end gap-1">
                       <span>TỔNG GIÁ VỐN</span>
                       <span class="text-[10px]">{{ productSortField() === 'total_cost' ? (productSortDesc() ? '▼' : '▲') : '' }}</span>
                     </div>
                   </th>
-                  <th (click)="toggleProductSort('gross_profit')" class="pb-3 text-right font-black cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                  <th (click)="toggleProductSort('gross_profit')" class="text-right cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
                     <div class="flex items-center justify-end gap-1">
                       <span>LỢI NHUẬN GỘP</span>
                       <span class="text-[10px]">{{ productSortField() === 'gross_profit' ? (productSortDesc() ? '▼' : '▲') : '' }}</span>
@@ -410,25 +410,25 @@
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-100 dark:divide-slate-800/50 text-slate-700 dark:text-slate-300 text-xs font-semibold">
+              <tbody>
                 @if (reportsData()?.products?.length === 0) {
                   <tr>
                     <td colspan="6" class="py-10 text-center italic text-slate-400">Không có dữ liệu bán hàng.</td>
                   </tr>
                 }
                 @for (prod of getProductsPaged(); track $index) {
-                  <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-950/20 transition-all">
-                    <td class="py-3 font-mono text-slate-500">{{ prod.sku || '—' }}</td>
-                    <td class="py-3 font-extrabold text-slate-800 dark:text-white">
+                  <tr>
+                    <td class="font-mono text-slate-500">{{ prod.sku || '—' }}</td>
+                    <td class="font-extrabold text-slate-800 dark:text-white">
                       {{ prod.product_name }}
                       @if (prod.variant_name) {
                         <span class="text-slate-400 font-normal">({{ prod.variant_name }})</span>
                       }
                     </td>
-                    <td class="py-3 text-right font-bold text-slate-800 dark:text-white">{{ prod.total_quantity }}</td>
-                    <td class="py-3 text-right text-slate-800 dark:text-white">{{ prod.total_revenue | vnd }}</td>
-                    <td class="py-3 text-right text-slate-500">{{ prod.total_cost | vnd }}</td>
-                    <td class="py-3 text-right font-black text-emerald-500">{{ prod.gross_profit | vnd }}</td>
+                    <td class="text-right font-bold text-slate-800 dark:text-white">{{ prod.total_quantity }}</td>
+                    <td class="text-right text-slate-800 dark:text-white">{{ prod.total_revenue | vnd }}</td>
+                    <td class="text-right text-slate-500">{{ prod.total_cost | vnd }}</td>
+                    <td class="text-right font-black text-emerald-500">{{ prod.gross_profit | vnd }}</td>
                   </tr>
                 }
               </tbody>
@@ -467,40 +467,40 @@
           </div>
 
           <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse min-w-[750px]">
+            <table class="app-table min-w-[750px]">
               <thead>
-                <tr class="border-b border-slate-100 dark:border-slate-800 text-slate-400 font-bold text-xs select-none">
-                  <th (click)="toggleCustomerSort('customer_name')" class="pb-3 font-black cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                <tr class="select-none">
+                  <th (click)="toggleCustomerSort('customer_name')" class="cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
                     <div class="flex items-center gap-1">
                       <span>TÊN KHÁCH HÀNG</span>
                       <span class="text-[10px]">{{ customerSortField() === 'customer_name' ? (customerSortDesc() ? '▼' : '▲') : '' }}</span>
                     </div>
                   </th>
-                  <th (click)="toggleCustomerSort('customer_phone')" class="pb-3 font-black cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                  <th (click)="toggleCustomerSort('customer_phone')" class="cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
                     <div class="flex items-center gap-1">
                       <span>SỐ ĐIỆN THOẠI</span>
                       <span class="text-[10px]">{{ customerSortField() === 'customer_phone' ? (customerSortDesc() ? '▼' : '▲') : '' }}</span>
                     </div>
                   </th>
-                  <th (click)="toggleCustomerSort('wallet_address')" class="pb-3 font-black cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                  <th (click)="toggleCustomerSort('wallet_address')" class="cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
                     <div class="flex items-center gap-1">
                       <span>VÍ BLOCKCHAIN (RÚT GỌN)</span>
                       <span class="text-[10px]">{{ customerSortField() === 'wallet_address' ? (customerSortDesc() ? '▼' : '▲') : '' }}</span>
                     </div>
                   </th>
-                  <th (click)="toggleCustomerSort('orders_count')" class="pb-3 text-right font-black cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                  <th (click)="toggleCustomerSort('orders_count')" class="text-right cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
                     <div class="flex items-center justify-end gap-1">
                       <span>SỐ ĐƠN MUA</span>
                       <span class="text-[10px]">{{ customerSortField() === 'orders_count' ? (customerSortDesc() ? '▼' : '▲') : '' }}</span>
                     </div>
                   </th>
-                  <th (click)="toggleCustomerSort('total_spent')" class="pb-3 text-right font-black cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                  <th (click)="toggleCustomerSort('total_spent')" class="text-right cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
                     <div class="flex items-center justify-end gap-1">
                       <span>TỔNG CHI TIÊU</span>
                       <span class="text-[10px]">{{ customerSortField() === 'total_spent' ? (customerSortDesc() ? '▼' : '▲') : '' }}</span>
                     </div>
                   </th>
-                  <th (click)="toggleCustomerSort('average_order_value')" class="pb-3 text-right font-black cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                  <th (click)="toggleCustomerSort('average_order_value')" class="text-right cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
                     <div class="flex items-center justify-end gap-1">
                       <span>TB ĐƠN HÀNG</span>
                       <span class="text-[10px]">{{ customerSortField() === 'average_order_value' ? (customerSortDesc() ? '▼' : '▲') : '' }}</span>
@@ -508,26 +508,26 @@
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-100 dark:divide-slate-800/50 text-slate-700 dark:text-slate-300 text-xs font-semibold">
+              <tbody>
                 @if (reportsData()?.customers?.length === 0) {
                   <tr>
                     <td colspan="6" class="py-10 text-center italic text-slate-400">Không có dữ liệu khách hàng.</td>
                   </tr>
                 }
                 @for (cust of getCustomersPaged(); track $index) {
-                  <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-950/20 transition-all">
-                    <td class="py-3 font-extrabold text-slate-800 dark:text-white">{{ cust.customer_name }}</td>
-                    <td class="py-3 text-slate-500">{{ cust.customer_phone || '—' }}</td>
-                    <td class="py-3 font-mono text-[11px] text-slate-500">
+                  <tr>
+                    <td class="font-extrabold text-slate-800 dark:text-white">{{ cust.customer_name }}</td>
+                    <td class="text-slate-500">{{ cust.customer_phone || '—' }}</td>
+                    <td class="font-mono text-[11px] text-slate-500">
                       @if (cust.wallet_address) {
                         {{ cust.wallet_address | appShortAddress }}
                       } @else {
                         —
                       }
                     </td>
-                    <td class="py-3 text-right font-bold text-slate-800 dark:text-white">{{ cust.orders_count }}</td>
-                    <td class="py-3 text-right font-black text-slate-800 dark:text-white">{{ cust.total_spent | vnd }}</td>
-                    <td class="py-3 text-right font-bold text-purple-600 dark:text-purple-400">{{ cust.average_order_value | vnd }}</td>
+                    <td class="text-right font-bold text-slate-800 dark:text-white">{{ cust.orders_count }}</td>
+                    <td class="text-right font-black text-slate-800 dark:text-white">{{ cust.total_spent | vnd }}</td>
+                    <td class="text-right font-bold text-purple-600 dark:text-purple-400">{{ cust.average_order_value | vnd }}</td>
                   </tr>
                 }
               </tbody>

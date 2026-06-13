@@ -200,31 +200,27 @@
         class="app-card overflow-hidden"
       >
         <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse min-w-[850px]">
+          <table class="app-table min-w-[850px]">
             <thead>
-              <tr
-                class="border-b border-slate-200/60 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-950/20"
-              >
-                <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider pl-6">
+              <tr>
+                <th>
                   Mã phiếu
                 </th>
-                <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <th>
                   Phân loại phiếu
                 </th>
-                <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <th>
                   Ngày lập
                 </th>
-                <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <th>
                   Ghi chú
                 </th>
-                <th
-                  class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider pr-6 text-right"
-                >
+                <th class="text-right">
                   Thao tác
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100 dark:divide-slate-800/50">
+            <tbody>
               @if (filteredInventoryRecords().length === 0) {
                 <tr>
                   <td colspan="5" class="p-8 text-center text-xs text-slate-400 italic">
@@ -233,15 +229,13 @@
                 </tr>
               }
               @for (record of paginatedInventoryRecords(); track record.id) {
-                <tr
-                  class="hover:bg-slate-50/40 dark:hover:bg-slate-800/10 transition-colors text-sm"
-                >
+                <tr>
                   <td
-                    class="p-4.5 pl-6 font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap"
+                    class="font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap"
                   >
                     {{ record.record_code }}
                   </td>
-                  <td class="p-4.5 whitespace-nowrap">
+                  <td class="whitespace-nowrap">
                     @if (record.type === 'nhap') {
                       <span
                         class="bg-emerald-500/10 text-emerald-500 text-xs font-extrabold px-2.5 py-1 rounded-xl"
@@ -260,16 +254,16 @@
                     }
                   </td>
                   <td
-                    class="p-4.5 font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap"
+                    class="font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap"
                   >
                     {{ record.record_date | date: 'dd/MM/yyyy' }}
                   </td>
                   <td
-                    class="p-4.5 max-w-[200px] truncate text-slate-500 dark:text-slate-400 font-medium"
+                    class="max-w-[200px] truncate text-slate-500 dark:text-slate-400 font-medium"
                   >
                     {{ record.note || '--' }}
                   </td>
-                  <td class="p-4.5 pr-6 text-right whitespace-nowrap">
+                  <td class="text-right whitespace-nowrap">
                     <div class="flex items-center justify-end gap-2.5">
                       <button
                         (click)="viewInventoryRecordDetails(record)"
@@ -329,11 +323,11 @@
                   [ngModel]="stockReportSearch()"
                   (ngModelChange)="stockReportSearch.set($event); stockReportCurrentPage.set(1)"
                   placeholder="Tìm sản phẩm..."
-                  class="w-44 form-input-sm pl-9"
+                  class="w-48 sm:w-64 search-input"
                 />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  class="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400"
+                  class="absolute left-3 top-3 h-4 w-4 text-slate-400"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -353,31 +347,27 @@
           </div>
 
           <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse min-w-[750px]">
+            <table class="app-table min-w-[750px]">
               <thead>
-                <tr
-                  class="border-b border-slate-200/60 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-950/20"
-                >
-                  <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider pl-6">
+                <tr>
+                  <th>
                     Sản phẩm / Nguyên liệu
                   </th>
-                  <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  <th>
                     Loại / Biến thể (Size)
                   </th>
-                  <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  <th>
                     Đơn giá bán hiện tại
                   </th>
-                  <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  <th>
                     Tồn kho hiện tại
                   </th>
-                  <th
-                    class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider pr-6 text-right"
-                  >
+                  <th class="text-right">
                     Trạng thái kho
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-100 dark:divide-slate-800/50">
+              <tbody>
                 @if (filteredStockRows().length === 0) {
                   <tr>
                     <td colspan="5" class="p-8 text-center text-xs text-slate-400 italic">
@@ -390,8 +380,8 @@
                   </tr>
                 }
                 @for (row of paginatedStockRows(); track $index) {
-                  <tr class="hover:bg-slate-50/40 dark:hover:bg-slate-800/10 transition-colors text-sm">
-                    <td class="p-4.5 pl-6">
+                  <tr>
+                    <td>
                       <div class="flex items-center gap-3">
                         <div
                           class="w-8 h-8 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 flex items-center justify-center font-extrabold text-xs shrink-0"
@@ -401,7 +391,7 @@
                         <span class="font-extrabold text-slate-800 dark:text-white">{{ row.product.name }}</span>
                       </div>
                     </td>
-                    <td class="p-4.5">
+                    <td>
                       @if (row.variant) {
                         <span
                           class="text-xs font-bold text-purple-600 bg-purple-50 dark:bg-purple-950/40 dark:text-purple-400 px-2 py-0.5 rounded-lg border border-purple-200/10"
@@ -410,17 +400,17 @@
                         <span class="text-xs text-slate-400 italic">Sản phẩm thường</span>
                       }
                     </td>
-                    <td class="p-4.5 font-semibold text-slate-600 dark:text-slate-400">
+                    <td class="font-semibold text-slate-600 dark:text-slate-400">
                       {{ (row.variant ? row.variant.price : row.product.price) | vnd }}
                     </td>
                     <td
-                      class="p-4.5 font-black text-base"
+                      class="font-black text-base"
                       [class.text-rose-500]="getProductStock(row.product.id, row.variant?.id ?? null) <= 5"
                       [class.text-emerald-500]="getProductStock(row.product.id, row.variant?.id ?? null) > 5"
                     >
                       {{ getProductStock(row.product.id, row.variant?.id ?? null) | number }}
                     </td>
-                    <td class="p-4.5 pr-6 text-right whitespace-nowrap">
+                    <td class="text-right whitespace-nowrap">
                       @if (getProductStock(row.product.id, row.variant?.id ?? null) <= 0) {
                         <span class="bg-rose-500/10 text-rose-500 text-xs font-black px-2.5 py-1 rounded-full uppercase tracking-wider animate-pulse">Hết hàng</span>
                       } @else if (getProductStock(row.product.id, row.variant?.id ?? null) <= 5) {

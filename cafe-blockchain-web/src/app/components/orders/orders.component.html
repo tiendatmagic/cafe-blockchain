@@ -366,58 +366,52 @@
         class="app-card overflow-hidden"
       >
         <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse min-w-[950px]">
+          <table class="app-table min-w-[950px]">
             <thead>
-              <tr
-                class="border-b border-slate-200/60 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-950/20"
-              >
-                <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider pl-6">
+              <tr>
+                <th>
                   Mã đơn
                 </th>
-                <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <th>
                   Số bàn
                 </th>
-                <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <th>
                   Tổng tiền
                 </th>
-                <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <th>
                   Hình thức
                 </th>
-                <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <th>
                   Thời gian
                 </th>
-                <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <th>
                   Trạng thái đơn
                 </th>
-                <th class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <th>
                   Bằng chứng Blockchain
                 </th>
-                <th
-                  class="p-4.5 text-xs font-bold text-slate-400 uppercase tracking-wider pr-6 text-right"
-                >
+                <th class="text-right">
                   Thao tác
                 </th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800/50">
               @for (order of paginatedOrders(); track order.id) {
-                <tr
-                  class="hover:bg-slate-50/40 dark:hover:bg-slate-800/10 transition-colors text-sm"
-                >
+                <tr>
                   <td
-                    class="p-4.5 pl-6 font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap"
+                    class="font-bold whitespace-nowrap"
                   >
                     {{ order.order_code }}
                   </td>
                   <td
-                    class="p-4.5 font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap"
+                    class="font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap"
                   >
                     {{ order.table_number || 'Mang về' }}
                   </td>
-                  <td class="p-4.5 font-black text-slate-800 dark:text-white whitespace-nowrap">
+                  <td class="font-black text-slate-800 dark:text-white whitespace-nowrap">
                     {{ order.total_amount | vnd }}
                   </td>
-                  <td class="p-4.5 text-xs font-bold whitespace-nowrap">
+                  <td class="text-xs font-bold whitespace-nowrap">
                     <span
                       [class]="
                         order.payment_method === 'crypto'
@@ -429,11 +423,11 @@
                     </span>
                   </td>
                   <td
-                    class="p-4.5 text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap"
+                    class="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap"
                   >
                     {{ order.created_at | date: 'dd/MM/yyyy HH:mm' }}
                   </td>
-                  <td class="p-4.5 whitespace-nowrap">
+                  <td class="whitespace-nowrap">
                     @if (order.is_verified === false) {
                       <span
                         class="bg-rose-500/15 text-rose-600 text-xs font-extrabold px-2.5 py-1 rounded-xl border border-rose-500/20 shadow-sm animate-pulse"
@@ -475,7 +469,7 @@
                       >
                     }
                   </td>
-                  <td class="p-4.5 whitespace-nowrap">
+                  <td class="whitespace-nowrap">
                     @if (order.blockchain_status === 'success') {
                       <div class="flex items-center gap-1.5">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
@@ -549,7 +543,7 @@
                       >
                     }
                   </td>
-                  <td class="p-4.5 pr-6 text-right whitespace-nowrap">
+                  <td class="text-right whitespace-nowrap">
                     <div class="flex items-center justify-end gap-2.5">
                       <button
                         (click)="viewOrderDetail(order)"
