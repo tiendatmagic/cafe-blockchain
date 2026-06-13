@@ -18,7 +18,7 @@ class SettingController extends Controller
     private function ensureDefaultSettings($storeOwner)
     {
         $settings = Setting::where('store_owner_address', $storeOwner)->pluck('value', 'key')->all();
-        
+
         $defaultSettings = [
             'store_name' => 'Cafe Web3 POS',
             'primary_color' => '#7c3aed',
@@ -28,7 +28,7 @@ class SettingController extends Controller
             'voucher_contract_address' => '0xc6828e46E100B248173e28a33e8D92662Cd1A8c7',
             'menu_registry_contract_address' => '',
             'relayer_private_key' => '',
-            'rpc_url' => 'https://bnb-testnet.api.onfinality.io/public',
+            'rpc_url' => 'https://bsc-testnet.rpc.sentio.xyz',
             'chain_id' => '97',
             'explorer_url' => 'https://testnet.bscscan.com',
             'explorer_api_key' => '',
@@ -72,12 +72,12 @@ class SettingController extends Controller
     public function index(Request $request)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-        
+
         $settings = $this->ensureDefaultSettings($storeOwner);
-        
+
         $settings['has_synced_orders'] = \App\Domain\Entities\Order::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
         $settings['has_synced_transactions'] = \App\Domain\Entities\Transaction::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
-        
+
         // Ẩn Private Key thô trước khi gửi về client, chỉ trả về flag boolean trạng thái đã cấu hình
         $settings['has_relayer_private_key'] = !empty($settings['relayer_private_key'] ?? '');
         unset($settings['relayer_private_key']);
@@ -91,7 +91,7 @@ class SettingController extends Controller
     public function store(Request $request)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-        
+
         $settingsData = $request->validate([
             'store_name' => 'nullable|string|max:255',
             'contract_address' => 'nullable|string|max:255',
@@ -130,7 +130,7 @@ class SettingController extends Controller
         if (!empty($slugInput)) {
             // Làm sạch slug và chuyển sang không dấu
             $processedSlug = Str::slug($this->removeVietnameseAccents($slugInput), '-');
-            
+
             // Kiểm tra trùng lặp trên hệ thống
             $existing = Setting::where('key', 'website_slug')
                 ->where('value', $processedSlug)
@@ -151,7 +151,7 @@ class SettingController extends Controller
                 if (empty($baseSlug)) {
                     $baseSlug = 'cafe-web3';
                 }
-                
+
                 do {
                     $processedSlug = $baseSlug . '-' . strtolower(Str::random(4));
                     $exists = Setting::where('key', 'website_slug')
@@ -159,7 +159,7 @@ class SettingController extends Controller
                         ->where('store_owner_address', '!=', $storeOwner)
                         ->exists();
                 } while ($exists);
-                
+
                 $settingsData['website_slug'] = $processedSlug;
             }
         }
@@ -208,7 +208,7 @@ class SettingController extends Controller
                         'params' => [],
                         'id' => 1
                     ];
-                    
+
                     $response = Http::timeout(5)->post($settingsData['rpc_url'], $payload);
                     if ($response->successful()) {
                         $rpcChainIdHex = $response->json('result');
@@ -303,7 +303,7 @@ class SettingController extends Controller
                 }
             } else {
                 $storeOwner = strtolower($order->store_owner_address);
-                
+
                 // Nếu đơn hàng đã lưu thực tế, gom thông tin chi tiết hóa đơn
                 $orderItems = \Illuminate\Support\Facades\DB::table('order_items')
                     ->join('products', 'order_items.product_id', '=', 'products.id')
@@ -311,7 +311,7 @@ class SettingController extends Controller
                     ->where('order_items.order_id', $order->id)
                     ->select('products.name as product_name', 'product_variants.variant_name as variant_name', 'order_items.quantity', 'order_items.price')
                     ->get();
-                    
+
                 $tempOrderData = [
                     'table_number' => $order->table_number,
                     'payment_method' => $order->payment_method,
@@ -394,7 +394,7 @@ class SettingController extends Controller
             }
 
             $storeOwner = strtolower($setting->store_owner_address);
-            
+
             // Đảm bảo có settings đầy đủ
             $settings = $this->ensureDefaultSettings($storeOwner);
 
@@ -420,7 +420,7 @@ class SettingController extends Controller
             // Lấy các danh mục của quán
             $categoriesQuery = \App\Domain\Entities\Category::where('store_owner_address', $storeOwner);
             $storeCategoriesCsv = $settings['store_categories'] ?? '';
-            
+
             if (!empty($storeCategoriesCsv) && $storeCategoriesCsv !== 'all') {
                 $categoryIds = explode(',', $storeCategoriesCsv);
                 $categoriesQuery->whereIn('id', $categoryIds);
@@ -431,10 +431,10 @@ class SettingController extends Controller
             $categoryIdsToLoad = $categories->pluck('id')->all();
             $products = \App\Domain\Entities\Product::where('store_owner_address', $storeOwner)
                 ->where('status', 1)
-                ->whereHas('categories', function($q) use ($categoryIdsToLoad) {
+                ->whereHas('categories', function ($q) use ($categoryIdsToLoad) {
                     $q->whereIn('categories.id', $categoryIdsToLoad);
                 })
-                ->with(['variants', 'categories' => function($q) use ($categoryIdsToLoad) {
+                ->with(['variants', 'categories' => function ($q) use ($categoryIdsToLoad) {
                     $q->whereIn('categories.id', $categoryIdsToLoad);
                 }])
                 ->get();
@@ -518,7 +518,6 @@ class SettingController extends Controller
                 'message' => 'Đặt đơn hàng thành công!',
                 'data' => \App\Domain\Entities\Order::with(['customer', 'items.product', 'items.variant'])->find($order->id)
             ], 201);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Đặt đơn hàng thất bại: ' . $e->getMessage()
@@ -526,4 +525,3 @@ class SettingController extends Controller
         }
     }
 }
-

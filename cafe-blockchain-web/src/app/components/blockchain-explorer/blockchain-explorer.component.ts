@@ -30,12 +30,12 @@ export class BlockchainExplorerComponent implements OnInit {
 
   // Cấu hình kết nối hiện tại
   public readonly storeName = signal<string>('Cafe Web3 POS');
-  public readonly rpcUrl = signal<string>('https://bsc-testnet-rpc.publicnode.com');
-  public readonly posContractAddress = signal<string>('0xB35E2987932C7D6499f93d8CE5ac90CF43DD8c38');
-  public readonly financeContractAddress = signal<string>('0x7988500670EC631F7be36eD91E367760f380d6Af');
-  public readonly voucherContractAddress = signal<string>('0xc6828e46E100B248173e28a33e8D92662Cd1A8c7');
+  public readonly rpcUrl = signal<string>('');
+  public readonly posContractAddress = signal<string>('');
+  public readonly financeContractAddress = signal<string>('');
+  public readonly voucherContractAddress = signal<string>('');
   public readonly menuRegistryContractAddress = signal<string>('');
-  public readonly explorerUrl = signal<string>('https://testnet.bscscan.com');
+  public readonly explorerUrl = signal<string>('');
   public readonly chainId = signal<string>('97');
 
   // Trạng thái kết nối
@@ -63,13 +63,13 @@ export class BlockchainExplorerComponent implements OnInit {
   // Quản lý Tab & Phân trang luồng dữ liệu onchain
   public readonly activeTab = signal<'order' | 'transaction' | 'voucher' | 'menu'>('order');
   public readonly limit = 10;
-  
+
   public readonly orderPage = signal<number>(1);
   public readonly orderTotal = signal<number>(0);
-  
+
   public readonly transactionPage = signal<number>(1);
   public readonly transactionTotal = signal<number>(0);
-  
+
   public readonly voucherPage = signal<number>(1);
   public readonly voucherTotal = signal<number>(0);
 
@@ -146,7 +146,7 @@ export class BlockchainExplorerComponent implements OnInit {
         this.chainId.set(config.chainId);
         this.storeName.set(config.storeName || 'Cấu hình tùy chỉnh');
         this.connectionStatus.set('custom');
-        
+
         this.syncToCustomFields();
         this.loadDataForActiveTab();
         return;
@@ -259,7 +259,7 @@ export class BlockchainExplorerComponent implements OnInit {
     this.latestTransactions.set([]);
     this.latestVouchers.set([]);
     this.menuProducts.set([]);
-    
+
     this.loadDataForActiveTab();
   }
 
@@ -316,11 +316,11 @@ export class BlockchainExplorerComponent implements OnInit {
 
     try {
       const provider = new JsonRpcProvider(this.rpcUrl());
-      
+
       if (this.searchType === 'order') {
         const contract = new Contract(this.posContractAddress(), CAFE_WEB3_POS_ABI, provider);
         const orderData = await contract['getOrderByCode'](query);
-        
+
         if (!orderData || orderData.orderCode !== query) {
           this.searchError.set(`Không tìm thấy dữ liệu hóa đơn "${query}" trên blockchain.`);
         } else {
@@ -357,12 +357,12 @@ export class BlockchainExplorerComponent implements OnInit {
         }
       } else if (this.searchType === 'voucher') {
         const contract = new Contract(this.voucherContractAddress(), CAFE_VOUCHER_NFT_ABI, provider);
-        
+
         if (query.startsWith('0x') && query.length === 42) {
           // Tra cứu ví sở hữu
           const tokenIds = await contract['getTokensOfOwner'](query);
           const vouchersList: any[] = [];
-          
+
           for (let i = 0; i < tokenIds.length; i++) {
             const id = Number(tokenIds[i]);
             const info = await contract['vouchers'](id);
@@ -373,7 +373,7 @@ export class BlockchainExplorerComponent implements OnInit {
               isUsed: info.isUsed
             });
           }
-          
+
           this.searchResult.set({
             type: 'voucher_owner',
             address: query,
@@ -398,7 +398,7 @@ export class BlockchainExplorerComponent implements OnInit {
               console.warn(`Không tìm thấy owner cho voucher active ID ${tokenId}:`, e);
             }
           }
-          
+
           let tokenUri = '';
           try {
             tokenUri = await contract['tokenURI'](tokenId);
@@ -408,7 +408,7 @@ export class BlockchainExplorerComponent implements OnInit {
                 tokenUri = `${environment.apiBaseUrl}${match[0]}`;
               }
             }
-          } catch (e) {}
+          } catch (e) { }
 
           this.searchResult.set({
             type: 'voucher_detail',
@@ -613,7 +613,7 @@ export class BlockchainExplorerComponent implements OnInit {
         this.menuHistory.set([]);
         try {
           const menuRegistryContract = new Contract(this.menuRegistryContractAddress(), CAFE_MENU_REGISTRY_ABI, provider);
-          
+
           try {
             const lastUpdatedRaw = await menuRegistryContract['lastUpdated']();
             this.menuLastUpdated.set(Number(lastUpdatedRaw) * 1000);
@@ -630,7 +630,7 @@ export class BlockchainExplorerComponent implements OnInit {
             if (total > 0) {
               const currentPage = this.menuPage();
               const offset = (currentPage - 1) * this.limit;
-              
+
               const res = await menuRegistryContract['getMilestonesPaginated'](offset, this.limit);
               const milestonesList = res[0];
               const filter = menuRegistryContract.filters['MenuUpdated']();
@@ -660,10 +660,10 @@ export class BlockchainExplorerComponent implements OnInit {
           } catch (contractErr) {
             // 2. Fallback: Nếu contract chưa nâng cấp (không có hàm milestones) -> dùng cách quét event log cũ
             console.warn('[MenuRegistry] getMilestonesPaginated không khả dụng, fallback sang event query logs:', contractErr);
-            
+
             const filter = menuRegistryContract.filters['MenuUpdated']();
             const latestBlock = await provider.getBlockNumber();
-            
+
             let allEvents: any[] = [];
             const SAFE_RANGE = 200_000;
             const CHUNK_SIZE = 5_000;
