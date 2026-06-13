@@ -8,11 +8,12 @@ import { JsonRpcProvider, Contract } from 'ethers';
 import { CAFE_VOUCHER_NFT_ABI } from '../../services/voucher-contract-abi';
 
 import { VNDCurrencyPipe } from '../../pipes/vnd.pipe';
+import { ThemeToggleComponent } from '../theme-toggle/theme-toggle.component';
 
 @Component({
   selector: 'app-mobile-sign',
   standalone: true,
-  imports: [CommonModule, VNDCurrencyPipe],
+  imports: [CommonModule, VNDCurrencyPipe, ThemeToggleComponent],
   templateUrl: './mobile-sign.component.html'
 })
 export class MobileSignComponent implements OnInit {
@@ -52,14 +53,6 @@ export class MobileSignComponent implements OnInit {
     } catch (err: any) {
       this.errorMessage.set(err.message || 'Lỗi khi chuyển mạng.');
     }
-  }
-
-  public get themeMode() {
-    return this.stateService.themeMode;
-  }
-
-  public toggleTheme() {
-    this.stateService.toggleTheme();
   }
 
   ngOnInit() {

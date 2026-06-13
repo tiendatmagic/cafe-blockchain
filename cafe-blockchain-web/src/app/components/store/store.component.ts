@@ -7,6 +7,7 @@ import { Title } from '@angular/platform-browser';
 import { StateService } from '../../services/state.service';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { VNDCurrencyPipe } from '../../pipes/vnd.pipe';
+import { ThemeToggleComponent } from '../theme-toggle/theme-toggle.component';
 
 interface CartItem {
   product: any;
@@ -18,7 +19,7 @@ interface CartItem {
 @Component({
   selector: 'app-store',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, PaginationComponent, VNDCurrencyPipe],
+  imports: [CommonModule, FormsModule, RouterModule, PaginationComponent, VNDCurrencyPipe, ThemeToggleComponent],
   templateUrl: './store.component.html',
   styleUrls: []
 })
@@ -27,14 +28,6 @@ export class StoreComponent implements OnInit {
   private readonly apiService = inject(ApiService);
   private readonly titleService = inject(Title);
   private readonly stateService = inject(StateService);
-
-  public get themeMode() {
-    return this.stateService.themeMode;
-  }
-
-  public toggleTheme() {
-    this.stateService.toggleTheme();
-  }
 
   // Dữ liệu quán
   public readonly storeSettings = signal<any>(null);

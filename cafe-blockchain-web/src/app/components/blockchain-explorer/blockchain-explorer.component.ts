@@ -12,27 +12,20 @@ import { StateService } from '../../services/state.service';
 import { environment } from '../../../environments/environment';
 
 import { ShortAddressPipe } from '../../pipes/short-address.pipe';
+import { ThemeToggleComponent } from '../theme-toggle/theme-toggle.component';
 
 @Component({
   selector: 'app-blockchain-explorer',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ShortAddressPipe],
+  imports: [CommonModule, FormsModule, RouterModule, ShortAddressPipe, ThemeToggleComponent],
   templateUrl: './blockchain-explorer.component.html'
 })
 export class BlockchainExplorerComponent implements OnInit {
   private readonly apiService = inject(ApiService);
   public readonly stateService = inject(StateService);
 
-  public get themeMode() {
-    return this.stateService.themeMode;
-  }
-
   public get isDarkMode() {
     return this.stateService.isDarkMode;
-  }
-
-  public toggleTheme() {
-    this.stateService.toggleTheme();
   }
 
   // Cấu hình kết nối hiện tại
