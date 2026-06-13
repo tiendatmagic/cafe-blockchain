@@ -7,18 +7,18 @@ import { ShortAddressPipe } from '../../pipes/short-address.pipe';
 import { PageHeaderComponent } from '../page-header/page-header.component';
 import { VNDCurrencyPipe } from '../../pipes/vnd.pipe';
 import { CustomDatePickerComponent } from '../custom-date-picker/custom-date-picker.component';
-import { DateFilterButtonsComponent, DASHBOARD_DATE_PRESETS } from '../date-filter-buttons/date-filter-buttons.component';
+import { MiniButtonsComponent, DASHBOARD_DATE_OPTIONS } from '../mini-buttons/mini-buttons.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, Web3ConnectPromptComponent, ShortAddressPipe, PageHeaderComponent, VNDCurrencyPipe, CustomDatePickerComponent, DateFilterButtonsComponent],
+  imports: [CommonModule, FormsModule, Web3ConnectPromptComponent, ShortAddressPipe, PageHeaderComponent, VNDCurrencyPipe, CustomDatePickerComponent, MiniButtonsComponent],
   templateUrl: './dashboard.component.html'
 })
 export class DashboardComponent implements OnInit {
   public readonly stateService = inject(StateService);
 
-  public readonly datePresets = DASHBOARD_DATE_PRESETS;
+  public readonly datePresets = DASHBOARD_DATE_OPTIONS;
   public activeDatePreset = '7days'; // 'today' | '7days' | '30days' | 'thisMonth' | 'custom'
   public tempStartDate = '';
   public tempEndDate = '';

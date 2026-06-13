@@ -11,6 +11,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { PageHeaderComponent } from '../page-header/page-header.component';
 import { VNDCurrencyPipe } from '../../pipes/vnd.pipe';
+import { MiniButtonsComponent } from '../mini-buttons/mini-buttons.component';
 
 @Component({
   selector: 'app-pos',
@@ -22,7 +23,8 @@ import { VNDCurrencyPipe } from '../../pipes/vnd.pipe';
     Web3ConnectPromptComponent,
     PaginationComponent,
     PageHeaderComponent,
-    VNDCurrencyPipe
+    VNDCurrencyPipe,
+    MiniButtonsComponent
   ],
   templateUrl: './pos.component.html'
 })
@@ -226,6 +228,10 @@ export class PosComponent implements OnInit, OnDestroy {
   public readonly categories = computed(() => {
     const list = this.categoriesList().map(c => c.name);
     return ['Tất cả', ...list];
+  });
+
+  public readonly categoryOptions = computed(() => {
+    return this.categories().map(cat => ({ value: cat, label: cat }));
   });
 
   // Lọc sản phẩm cục bộ để hiển thị (phục vụ kiểm tra lỗi hoặc fallback client filter)

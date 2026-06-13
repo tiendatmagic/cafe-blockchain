@@ -12,7 +12,7 @@ import { ShortAddressPipe } from '../../pipes/short-address.pipe';
 import { PageHeaderComponent } from '../page-header/page-header.component';
 import { VNDCurrencyPipe } from '../../pipes/vnd.pipe';
 import { CustomDatePickerComponent } from '../custom-date-picker/custom-date-picker.component';
-import { DateFilterButtonsComponent, DEFAULT_DATE_PRESETS } from '../date-filter-buttons/date-filter-buttons.component';
+import { MiniButtonsComponent, DATE_FILTER_OPTIONS } from '../mini-buttons/mini-buttons.component';
 
 @Component({
   selector: 'app-reports',
@@ -27,12 +27,12 @@ import { DateFilterButtonsComponent, DEFAULT_DATE_PRESETS } from '../date-filter
     PageHeaderComponent,
     VNDCurrencyPipe,
     CustomDatePickerComponent,
-    DateFilterButtonsComponent
+    MiniButtonsComponent
   ],
   templateUrl: './reports.component.html'
 })
 export class ReportsComponent implements OnInit {
-  public readonly datePresets = DEFAULT_DATE_PRESETS;
+  public readonly datePresets = DATE_FILTER_OPTIONS;
   private readonly apiService = inject(ApiService);
   public readonly stateService = inject(StateService);
 

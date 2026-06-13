@@ -49,11 +49,11 @@
     <div
       class="app-card flex flex-col md:flex-row md:items-center justify-between gap-4 p-4"
     >
-      <app-date-filter-buttons
-        [presets]="datePresets"
-        [activePreset]="activeDatePreset"
-        (presetChange)="setDatePreset($event)"
-      ></app-date-filter-buttons>
+      <app-mini-buttons
+        [options]="datePresets"
+        [activeValue]="activeDatePreset"
+        (valueChange)="setDatePreset($event)"
+      ></app-mini-buttons>
 
       <!-- Ô chọn ngày tùy chỉnh -->
       <div *ngIf="activeDatePreset === 'custom'" class="flex items-center gap-4 flex-wrap w-full sm:w-auto">

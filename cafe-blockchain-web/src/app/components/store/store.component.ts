@@ -8,6 +8,7 @@ import { StateService } from '../../services/state.service';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { VNDCurrencyPipe } from '../../pipes/vnd.pipe';
 import { ThemeToggleComponent } from '../theme-toggle/theme-toggle.component';
+import { MiniButtonsComponent } from '../mini-buttons/mini-buttons.component';
 
 interface CartItem {
   product: any;
@@ -19,7 +20,7 @@ interface CartItem {
 @Component({
   selector: 'app-store',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, PaginationComponent, VNDCurrencyPipe, ThemeToggleComponent],
+  imports: [CommonModule, FormsModule, RouterModule, PaginationComponent, VNDCurrencyPipe, ThemeToggleComponent, MiniButtonsComponent],
   templateUrl: './store.component.html',
   styleUrls: []
 })
@@ -69,6 +70,11 @@ export class StoreComponent implements OnInit {
   public readonly isSubmittingOrder = signal<boolean>(false);
 
   // Computed values
+  public readonly categoryOptions = computed(() => {
+    const list = this.categories().map(cat => ({ value: cat.id, label: cat.name }));
+    return [{ value: null, label: 'Tất cả' }, ...list];
+  });
+
   public readonly cartCount = computed(() => {
     return this.cart().reduce((sum, item) => sum + item.quantity, 0);
   });

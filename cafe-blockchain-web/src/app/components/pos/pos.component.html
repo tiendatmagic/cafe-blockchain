@@ -134,21 +134,15 @@
     <!-- CỘT 1 & 2: THỰC ĐƠN (LEFT) -->
     <div class="xl:col-span-4 space-y-6">
       <!-- Danh mục trượt mượt mà (Horizontal scrolling) -->
-      <div class="flex gap-2 overflow-x-auto pb-2 pr-1 no-scrollbar">
-        @for (cat of categories(); track cat) {
-          <button
-            (click)="posCategoryFilter.set(cat); posCurrentPage.set(1)"
-            [class]="
-              posCategoryFilter() === cat
-                ? 'bg-[var(--color-primary)] text-white shadow-lg shadow-[var(--color-primary)]/25'
-                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800/50'
-            "
-            class="px-5 py-2 rounded-2xl text-xs font-bold tracking-wide whitespace-nowrap transition-all duration-200"
-          >
-            {{ cat }}
-          </button>
-        }
-      </div>
+      <app-mini-buttons
+        [options]="categoryOptions()"
+        [activeValue]="posCategoryFilter()"
+        [scrollable]="true"
+        buttonClass="px-5 py-2 rounded-2xl text-xs font-bold tracking-wide whitespace-nowrap transition-all duration-200"
+        activeClass="bg-[var(--color-primary)] text-white shadow-lg shadow-[var(--color-primary)]/25"
+        inactiveClass="bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800/50"
+        (valueChange)="posCategoryFilter.set($event); posCurrentPage.set(1)"
+      ></app-mini-buttons>
 
       @if (isProductsLoading()) {
         <!-- SKELETON FOR POS PRODUCTS -->

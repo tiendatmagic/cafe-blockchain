@@ -13,11 +13,11 @@
     <!-- Bộ lọc mốc thời gian cao cấp -->
     <div class="app-card flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4">
       <!-- Lọc nhanh presets -->
-      <app-date-filter-buttons
-        [presets]="datePresets"
-        [activePreset]="activePreset()"
-        (presetChange)="setDatePreset($event)"
-      ></app-date-filter-buttons>
+      <app-mini-buttons
+        [options]="datePresets"
+        [activeValue]="activePreset()"
+        (valueChange)="setDatePreset($event)"
+      ></app-mini-buttons>
 
       <!-- Date Range Picker Đẹp Mắt -->
       <div *ngIf="activePreset() === 'custom'" class="flex items-center gap-4 flex-wrap w-full sm:w-auto">
