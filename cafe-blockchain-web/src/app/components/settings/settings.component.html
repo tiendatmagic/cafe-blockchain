@@ -234,30 +234,14 @@
         </div>
 
         <!-- Cho phép thanh toán Crypto -->
-        <div
-          class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-950/60 rounded-2xl border border-slate-200/50 dark:border-slate-800/80"
-        >
-          <div class="space-y-0.5 pr-4">
-            <span class="text-xs font-bold text-slate-800 dark:text-white block"
-              >Cho phép thanh toán Crypto</span
-            >
-            <span class="text-xs text-slate-400 font-semibold block leading-tight">
-              Bật/tắt việc chấp nhận thanh toán bằng Crypto tại màn hình bán hàng POS.
-            </span>
-          </div>
-          <label class="relative inline-flex items-center cursor-pointer shrink-0">
-            <input
-              type="checkbox"
-              [ngModel]="configForm().show_crypto_payment === '1'"
-              (ngModelChange)="updateConfigForm('show_crypto_payment', $event ? '1' : '0')"
-              [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
-              class="sr-only peer"
-            />
-            <div
-              class="w-11 h-6 bg-slate-200 dark:bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-[var(--dynamic-primary)] disabled:opacity-50"
-            ></div>
-          </label>
-        </div>
+        <app-custom-switch
+          type="full"
+          label="Cho phép thanh toán Crypto"
+          description="Bật/tắt việc chấp nhận thanh toán bằng Crypto tại màn hình bán hàng POS."
+          [checked]="configForm().show_crypto_payment === '1'"
+          (checkedChange)="updateConfigForm('show_crypto_payment', $event ? '1' : '0')"
+          [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+        ></app-custom-switch>
 
         <!-- Cấu hình màu sắc giao diện đông -->
         <div class="border-t border-slate-100 dark:border-slate-800/60 pt-4 space-y-3.5">

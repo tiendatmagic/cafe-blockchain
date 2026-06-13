@@ -1127,21 +1127,16 @@
 
         <!-- Trạng thái bán -->
         <div
-          class="flex items-center justify-between py-1 bg-slate-50 dark:bg-slate-950 px-4 py-3 rounded-2xl border border-slate-200/40 dark:border-slate-800/40"
+          class="flex items-center justify-between py-1 bg-slate-50 dark:bg-slate-950 px-4 py-3 rounded-[15px] border border-slate-200/40 dark:border-slate-800/40"
         >
           <span class="text-sm font-extrabold text-slate-600 dark:text-slate-300"
             >Đang phục vụ / bán</span
           >
-          <button
-            (click)="toggleMenuFormStatus()"
-            [class]="menuForm().status ? 'bg-emerald-500' : 'bg-rose-500'"
-            class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
-          >
-            <span
-              [class]="menuForm().status ? 'translate-x-5 bg-white' : 'translate-x-0 bg-white'"
-              class="pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out"
-            ></span>
-          </button>
+          <app-custom-switch
+            type="compact"
+            [checked]="menuForm().status"
+            (checkedChange)="updateMenuForm('status', $event)"
+          ></app-custom-switch>
         </div>
       </div>
 

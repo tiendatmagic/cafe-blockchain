@@ -10,6 +10,7 @@ import { ShortAddressPipe } from '../../pipes/short-address.pipe';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 import { PageHeaderComponent } from '../page-header/page-header.component';
 import { ModalComponent } from '../modal/modal.component';
+import { CustomSwitchComponent } from '../custom-switch/custom-switch.component';
 
 @Component({
   selector: 'app-menu',
@@ -23,7 +24,8 @@ import { ModalComponent } from '../modal/modal.component';
     ShortAddressPipe,
     ConfirmModalComponent,
     PageHeaderComponent,
-    ModalComponent
+    ModalComponent,
+    CustomSwitchComponent
   ],
   templateUrl: './menu.component.html'
 })

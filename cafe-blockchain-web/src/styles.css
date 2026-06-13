@@ -249,6 +249,16 @@ div.form-input.p-0 {
   @apply bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 shadow-sm rounded-3xl transition-all duration-300 cursor-pointer hover:shadow-md hover:scale-[1.01] hover:border-[var(--color-primary)]/40 dark:hover:border-[var(--color-secondary)]/40 p-6;
 }
 
+/* 3. Ghi đè padding cho card khi dùng kèm class tiện ích của Tailwind */
+.app-card.p-0, .app-card-interactive.p-0 { padding: 0px !important; }
+.app-card.p-3, .app-card-interactive.p-3 { padding: 0.75rem !important; }
+.app-card.p-3.5, .app-card-interactive.p-3.5 { padding: 0.875rem !important; }
+.app-card.p-4, .app-card-interactive.p-4 { padding: 1rem !important; }
+.app-card.p-4.5, .app-card-interactive.p-4.5 { padding: 1.125rem !important; }
+.app-card.p-5, .app-card-interactive.p-5 { padding: 1.25rem !important; }
+.app-card.p-6, .app-card-interactive.p-6 { padding: 1.5rem !important; }
+.app-card.p-8, .app-card-interactive.p-8 { padding: 2rem !important; }
+
 
 
 /* ==================== HỆ THỐNG BẢNG DÙNG CHUNG (TABLE SYSTEM) ==================== */

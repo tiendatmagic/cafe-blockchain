@@ -8,6 +8,7 @@ import { ApiService } from '../../services/api.service';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 import { PageHeaderComponent } from '../page-header/page-header.component';
 import { CustomSelectComponent } from '../custom-select/custom-select.component';
+import { CustomSwitchComponent } from '../custom-switch/custom-switch.component';
 
 @Component({
   selector: 'app-settings',
@@ -19,7 +20,8 @@ import { CustomSelectComponent } from '../custom-select/custom-select.component'
     Web3ConnectPromptComponent,
     ConfirmModalComponent,
     PageHeaderComponent,
-    CustomSelectComponent
+    CustomSelectComponent,
+    CustomSwitchComponent
   ],
   templateUrl: './settings.component.html'
 })
