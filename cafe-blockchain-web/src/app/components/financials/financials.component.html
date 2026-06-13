@@ -670,7 +670,8 @@
             >Ngày giao dịch <span class="text-rose-500">*</span></label
           >
           <app-custom-date-picker
-            [(selectedDate)]="transactionForm().transaction_date"
+            [selectedDate]="transactionForm().transaction_date"
+            (selectedDateChange)="transactionForm.update(f => ({ ...f, transaction_date: $event }))"
             placeholder="Chọn ngày giao dịch"
           ></app-custom-date-picker>
         </div>

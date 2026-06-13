@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ElementRef, HostListener, inject, signal, computed, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ElementRef, HostListener, inject, signal, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class CustomDatePickerComponent implements OnInit, OnChanges, OnDestroy {
   private readonly elementRef = inject(ElementRef);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   @Input() selectedDate: string = ''; // Format: YYYY-MM-DD
   @Output() selectedDateChange = new EventEmitter<string>();
@@ -36,8 +37,8 @@ export class CustomDatePickerComponent implements OnInit, OnChanges, OnDestroy {
     return `Tháng ${m < 10 ? '0' + m : m}, ${this.currentYear()}`;
   }
 
-  // Định dạng ngày hiển thị DD/MM/YYYY
-  public readonly displayValue = computed(() => {
+  // Định dạng ngày hiển thị DD/MM/YYYY dưới dạng hàm thông thường để luôn cập nhật chính xác
+  public displayValue(): string {
     const val = this.selectedDate;
     if (!val) return '';
     const parts = val.split('-');
@@ -45,7 +46,7 @@ export class CustomDatePickerComponent implements OnInit, OnChanges, OnDestroy {
       return `${parts[2]}/${parts[1]}/${parts[0]}`;
     }
     return val;
-  });
+  }
 
   public ngOnInit(): void {
     this.initCalendarFromValue();
@@ -244,8 +245,10 @@ export class CustomDatePickerComponent implements OnInit, OnChanges, OnDestroy {
     if (isDisabled || this.disabled) return;
     this.selectedDate = dateStr;
     this.selectedDateChange.emit(dateStr);
+    this.generateCalendar();
     this.isOpen.set(false);
     this.removeScrollListeners();
+    this.cdr.detectChanges(); // Ép chạy change detection ngay lập tức
   }
 
   // Toggle lịch
@@ -269,6 +272,7 @@ export class CustomDatePickerComponent implements OnInit, OnChanges, OnDestroy {
     if (!this.elementRef.nativeElement.contains(event.target)) {
       this.isOpen.set(false);
       this.removeScrollListeners();
+      this.cdr.detectChanges();
     }
   }
 

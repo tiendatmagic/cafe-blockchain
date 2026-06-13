@@ -524,7 +524,8 @@
             >Ngày ghi nhận</label
           >
           <app-custom-date-picker
-            [(selectedDate)]="manualDebtForm().recorded_at"
+            [selectedDate]="manualDebtForm().recorded_at"
+            (selectedDateChange)="manualDebtForm.update(f => ({ ...f, recorded_at: $event }))"
             placeholder="Chọn ngày ghi nhận"
           ></app-custom-date-picker>
         </div>
@@ -718,7 +719,8 @@
             >Ngày ghi nhận</label
           >
           <app-custom-date-picker
-            [(selectedDate)]="paymentForm().recorded_at"
+            [selectedDate]="paymentForm().recorded_at"
+            (selectedDateChange)="paymentForm.update(f => ({ ...f, recorded_at: $event }))"
             placeholder="Chọn ngày ghi nhận"
           ></app-custom-date-picker>
         </div>

@@ -714,7 +714,8 @@
                 >Ngày sinh</label
               >
               <app-custom-date-picker
-                [(selectedDate)]="customerForm().dob"
+                [selectedDate]="customerForm().dob"
+                (selectedDateChange)="customerForm.update(f => ({ ...f, dob: $event }))"
                 placeholder="Chọn ngày sinh"
               ></app-custom-date-picker>
             </div>

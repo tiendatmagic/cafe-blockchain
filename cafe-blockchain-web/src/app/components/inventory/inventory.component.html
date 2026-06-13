@@ -514,7 +514,8 @@
               >Ngày lập phiếu</label
             >
             <app-custom-date-picker
-              [(selectedDate)]="inventoryForm().record_date"
+              [selectedDate]="inventoryForm().record_date"
+              (selectedDateChange)="inventoryForm.update(f => ({ ...f, record_date: $event }))"
               placeholder="Chọn ngày lập phiếu"
             ></app-custom-date-picker>
           </div>
