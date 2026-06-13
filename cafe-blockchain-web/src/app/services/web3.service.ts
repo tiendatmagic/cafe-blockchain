@@ -438,13 +438,19 @@ export class Web3Service {
         try {
           const tokenSymbol = this.getNativeTokenSymbolByChainId(chainIdToUse);
           const netName = this.getNetworkNameByChainId(chainIdToUse);
+          
+          // Lấy RPC URL và Explorer URL từ danh sách mạng phổ biến (nếu có), ngược lại lấy từ cấu hình
+          const popularChain = this.POPULAR_CHAINS.find(c => c.chainId === chainIdToUse.toString().trim());
+          const rpcUrl = popularChain ? popularChain.rpcUrl : this.rpcUrl();
+          const explorerUrl = popularChain ? popularChain.explorerUrl : this.explorerUrl();
+
           await (window as any).ethereum.request({
             method: 'wallet_addEthereumChain',
             params: [{
               chainId: chainIdHex,
               chainName: netName || `Mạng EVM Custom (ID: ${chainIdToUse})`,
-              rpcUrls: [this.rpcUrl()],
-              blockExplorerUrls: [this.explorerUrl()],
+              rpcUrls: [rpcUrl],
+              blockExplorerUrls: explorerUrl ? [explorerUrl] : undefined,
               nativeCurrency: {
                 name: tokenSymbol,
                 symbol: tokenSymbol,
