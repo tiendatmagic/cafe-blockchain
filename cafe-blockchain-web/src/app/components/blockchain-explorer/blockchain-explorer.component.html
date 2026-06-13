@@ -1369,70 +1369,32 @@
           </div>
 
           <!-- Tabs header -->
-          <div
-            class="flex gap-1.5 p-1 bg-slate-100 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-900 mb-4 text-xs font-semibold transition-colors duration-300"
-          >
+          <div class="tab-group mb-4">
             <button
               (click)="selectTab('order')"
-              class="flex-1 text-center py-2 rounded-lg transition-all cursor-pointer border border-transparent"
-              [class.bg-purple-50]="activeTab() === 'order' && !isDarkMode()"
-              [class.bg-purple-950/40]="activeTab() === 'order' && isDarkMode()"
-              [class.border-purple-200]="activeTab() === 'order' && !isDarkMode()"
-              [class.border-purple-900/50]="activeTab() === 'order' && isDarkMode()"
-              [class.text-purple-600]="activeTab() === 'order' && !isDarkMode()"
-              [class.text-purple-400]="activeTab() === 'order' && isDarkMode()"
-              [class.text-slate-500]="activeTab() !== 'order' && !isDarkMode()"
-              [class.text-slate-400]="activeTab() !== 'order' && isDarkMode()"
-              [class.hover:text-slate-800]="activeTab() !== 'order' && !isDarkMode()"
-              [class.hover:text-slate-200]="activeTab() !== 'order' && isDarkMode()"
+              [class.active]="activeTab() === 'order'"
+              class="tab-item flex-1"
             >
               Hóa đơn ({{ orderTotal() }})
             </button>
             <button
               (click)="selectTab('transaction')"
-              class="flex-1 text-center py-2 rounded-lg transition-all cursor-pointer border border-transparent"
-              [class.bg-emerald-50]="activeTab() === 'transaction' && !isDarkMode()"
-              [class.bg-emerald-950/40]="activeTab() === 'transaction' && isDarkMode()"
-              [class.border-emerald-200]="activeTab() === 'transaction' && !isDarkMode()"
-              [class.border-emerald-900/50]="activeTab() === 'transaction' && isDarkMode()"
-              [class.text-emerald-600]="activeTab() === 'transaction' && !isDarkMode()"
-              [class.text-emerald-400]="activeTab() === 'transaction' && isDarkMode()"
-              [class.text-slate-500]="activeTab() !== 'transaction' && !isDarkMode()"
-              [class.text-slate-400]="activeTab() !== 'transaction' && isDarkMode()"
-              [class.hover:text-slate-800]="activeTab() !== 'transaction' && !isDarkMode()"
-              [class.hover:text-slate-200]="activeTab() !== 'transaction' && isDarkMode()"
+              [class.active]="activeTab() === 'transaction'"
+              class="tab-item flex-1"
             >
               Thu chi ({{ transactionTotal() }})
             </button>
             <button
               (click)="selectTab('voucher')"
-              class="flex-1 text-center py-2 rounded-lg transition-all cursor-pointer border border-transparent"
-              [class.bg-blue-50]="activeTab() === 'voucher' && !isDarkMode()"
-              [class.bg-blue-950/40]="activeTab() === 'voucher' && isDarkMode()"
-              [class.border-blue-200]="activeTab() === 'voucher' && !isDarkMode()"
-              [class.border-blue-900/50]="activeTab() === 'voucher' && isDarkMode()"
-              [class.text-blue-600]="activeTab() === 'voucher' && !isDarkMode()"
-              [class.text-blue-400]="activeTab() === 'voucher' && isDarkMode()"
-              [class.text-slate-500]="activeTab() !== 'voucher' && !isDarkMode()"
-              [class.text-slate-400]="activeTab() !== 'voucher' && isDarkMode()"
-              [class.hover:text-slate-800]="activeTab() !== 'voucher' && !isDarkMode()"
-              [class.hover:text-slate-200]="activeTab() !== 'voucher' && isDarkMode()"
+              [class.active]="activeTab() === 'voucher'"
+              class="tab-item flex-1"
             >
               Voucher NFT ({{ voucherTotal() }})
             </button>
             <button
               (click)="selectTab('menu')"
-              class="flex-1 text-center py-2 rounded-lg transition-all cursor-pointer whitespace-nowrap px-2 border border-transparent"
-              [class.bg-amber-50]="activeTab() === 'menu' && !isDarkMode()"
-              [class.bg-amber-950/40]="activeTab() === 'menu' && isDarkMode()"
-              [class.border-amber-200]="activeTab() === 'menu' && !isDarkMode()"
-              [class.border-amber-900/50]="activeTab() === 'menu' && isDarkMode()"
-              [class.text-amber-600]="activeTab() === 'menu' && !isDarkMode()"
-              [class.text-amber-400]="activeTab() === 'menu' && isDarkMode()"
-              [class.text-slate-500]="activeTab() !== 'menu' && !isDarkMode()"
-              [class.text-slate-400]="activeTab() !== 'menu' && isDarkMode()"
-              [class.hover:text-slate-800]="activeTab() !== 'menu' && !isDarkMode()"
-              [class.hover:text-slate-200]="activeTab() !== 'menu' && isDarkMode()"
+              [class.active]="activeTab() === 'menu'"
+              class="tab-item flex-1 whitespace-nowrap px-2"
             >
               Thực đơn ({{ menuTotal() }})
             </button>

@@ -321,27 +321,25 @@
       <!-- Khối Lưới chi tiết hàng hóa / khách hàng -->
       <div class="app-card overflow-hidden">
         <!-- Tabs đầu bảng -->
-        <div class="flex border-b border-slate-100 dark:border-slate-800">
-          <button
-            (click)="activeTab.set('products')"
-            [class.border-b-2]="activeTab() === 'products'"
-            [class.border-[var(--dynamic-primary)]]="activeTab() === 'products'"
-            [class.text-[var(--dynamic-primary)]]="activeTab() === 'products'"
-            [class.text-slate-500]="activeTab() !== 'products'"
-            class="px-6 py-4 text-xs font-extrabold uppercase tracking-wider hover:text-slate-700 focus:outline-none transition-all"
-          >
-            Báo cáo bán hàng theo món
-          </button>
-          <button
-            (click)="activeTab.set('customers')"
-            [class.border-b-2]="activeTab() === 'customers'"
-            [class.border-[var(--dynamic-primary)]]="activeTab() === 'customers'"
-            [class.text-[var(--dynamic-primary)]]="activeTab() === 'customers'"
-            [class.text-slate-500]="activeTab() !== 'customers'"
-            class="px-6 py-4 text-xs font-extrabold uppercase tracking-wider hover:text-slate-700 focus:outline-none transition-all"
-          >
-            Báo cáo chi tiêu khách hàng
-          </button>
+        <div class="p-4 border-b border-slate-100 dark:border-slate-800">
+          <div class="tab-group inline-flex">
+            <button
+              type="button"
+              (click)="activeTab.set('products')"
+              [class.active]="activeTab() === 'products'"
+              class="tab-item"
+            >
+              Báo cáo bán hàng theo món
+            </button>
+            <button
+              type="button"
+              (click)="activeTab.set('customers')"
+              [class.active]="activeTab() === 'customers'"
+              class="tab-item"
+            >
+              Báo cáo chi tiêu khách hàng
+            </button>
+          </div>
         </div>
 
         <!-- Nội dung của Tab 1: Hàng hóa -->

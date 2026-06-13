@@ -540,30 +540,20 @@
           <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
             >Loại phiếu thu chi</label
           >
-          <div
-            class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-200/60 dark:border-slate-800/60"
-          >
+          <div class="tab-group flex w-full">
             <button
               type="button"
               (click)="transactionForm().type = 'thu'"
-              [class]="
-                transactionForm().type === 'thu'
-                  ? 'bg-white dark:bg-slate-900 text-emerald-500 font-bold shadow-sm'
-                  : 'text-slate-500'
-              "
-              class="flex-1 py-2 text-xs rounded-xl font-semibold transition-all"
+              [class.active]="transactionForm().type === 'thu'"
+              class="tab-item flex-1"
             >
               Thu tiền (+)
             </button>
             <button
               type="button"
               (click)="transactionForm().type = 'chi'"
-              [class]="
-                transactionForm().type === 'chi'
-                  ? 'bg-white dark:bg-slate-900 text-rose-500 font-bold shadow-sm'
-                  : 'text-slate-500'
-              "
-              class="flex-1 py-2 text-xs rounded-xl font-semibold transition-all"
+              [class.active]="transactionForm().type === 'chi'"
+              class="tab-item flex-1"
             >
               Chi tiền (-)
             </button>
