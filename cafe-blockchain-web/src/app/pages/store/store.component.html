@@ -361,24 +361,14 @@
                         </span>
                       </div>
 
-                      <!-- Nút thêm vào giỏ hàng -->
-                      @if (product.variants && product.variants.length > 0) {
-                        <button
-                          type="button"
-                          (click)="addToCart(product)"
-                          class="btn btn-primary btn-sm h-9 px-4 shadow-sm shadow-[var(--dynamic-primary)]/15"
-                        >
-                          <span>Chọn size</span>
-                        </button>
-                      } @else {
-                        <button
-                          type="button"
-                          (click)="addToCart(product)"
-                          class="btn btn-primary w-9 h-9 !p-0 !rounded-full text-lg shadow-sm shadow-[var(--dynamic-primary)]/15"
-                        >
-                          +
-                        </button>
-                      }
+                      <!-- Nút thêm vào giỏ hàng (Đồng bộ kiểu dấu + của POS) -->
+                      <button
+                        type="button"
+                        (click)="addToCart(product)"
+                        class="btn-add-cart"
+                      >
+                        +
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -498,24 +488,14 @@
                         </span>
                       </div>
 
-                      <!-- Nút thêm vào giỏ hàng -->
-                      @if (product.variants && product.variants.length > 0) {
-                        <button
-                          type="button"
-                          (click)="addToCart(product)"
-                          class="btn btn-primary btn-sm h-9 px-4 shadow-sm shadow-[var(--dynamic-primary)]/15"
-                        >
-                          <span>Chọn size</span>
-                        </button>
-                      } @else {
-                        <button
-                          type="button"
-                          (click)="addToCart(product)"
-                          class="btn btn-primary w-9 h-9 !p-0 !rounded-full text-lg shadow-sm shadow-[var(--dynamic-primary)]/15"
-                        >
-                          +
-                        </button>
-                      }
+                      <!-- Nút thêm vào giỏ hàng (Đồng bộ kiểu dấu + của POS) -->
+                      <button
+                        type="button"
+                        (click)="addToCart(product)"
+                        class="btn-add-cart"
+                      >
+                        +
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -869,66 +849,76 @@
 
     <!-- POPUP/MODAL CHỌN BIẾN THỂ (VARIANT SELECTION DIALOG) -->
     @if (selectedProductForVariant()) {
-      <div class="fixed inset-0 z-[1000] flex items-center justify-center p-4">
-        <div (click)="selectedProductForVariant.set(null)" class="fixed inset-0 bg-black/40"></div>
+      <div class="app-modal-overlay !z-[1000]">
+        <!-- Backdrop overlay -->
+        <div (click)="selectedProductForVariant.set(null)" class="app-modal-backdrop"></div>
 
-        <div
-          class="relative app-card max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200"
-        >
-          <div class="space-y-5">
-            <!-- Tên sản phẩm -->
-            <div class="flex items-start justify-between gap-3">
-              <div>
-                <h4
-                  class="text-sm sm:text-base font-extrabold text-slate-800 dark:text-white uppercase tracking-tight"
-                >
-                  {{ selectedProductForVariant().name }}
-                </h4>
-                <p class="text-[10px] text-slate-400 font-semibold mt-0.5">
-                  Chọn kích cỡ hoặc biến thể sản phẩm
-                </p>
-              </div>
-              <button
-                (click)="selectedProductForVariant.set(null)"
-                class="text-slate-400 hover:text-[var(--dynamic-primary)] p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 flex items-center justify-center transition-colors"
-                title="Đóng chọn size"
+        <!-- Modal Content -->
+        <div class="app-modal-content animate-in fade-in zoom-in duration-200">
+          <!-- Header -->
+          <div class="app-modal-header">
+            <h4 class="app-modal-title">
+              Chọn size: {{ selectedProductForVariant().name }}
+            </h4>
+            <button
+              (click)="selectedProductForVariant.set(null)"
+              class="app-modal-close"
+              title="Đóng chọn size"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2.5"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-              </button>
-            </div>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
 
-            <!-- List biến thể -->
+          <!-- Content (Các biến thể) -->
+          <div class="app-modal-body">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-2"
+              >Kích thước khả dụng</span
+            >
             <div class="space-y-2">
               @for (variant of selectedProductForVariant().variants; track variant.id) {
-                <div
+                <button
                   (click)="selectedVariantId.set(variant.id)"
-                  class="flex items-center justify-between p-4.5 rounded-2xl border-2 transition-all cursor-pointer select-none"
-                  [ngClass]="selectedVariantId() === variant.id
-                    ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 text-slate-800 dark:text-white font-black'
-                    : 'border-slate-100 dark:border-slate-800/40 text-slate-500 font-extrabold'"
+                  [class]="
+                    selectedVariantId() === variant.id
+                      ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)]'
+                      : 'border-slate-200 dark:border-slate-800 hover:border-purple-300 dark:hover:border-purple-900 bg-slate-50/50 dark:bg-slate-950/20 text-slate-700 dark:text-slate-300'
+                  "
+                  class="w-full flex items-center justify-between p-4 rounded-2xl border-2 font-bold text-left transition-all active:scale-[0.98]"
                 >
-                  <div class="flex items-center gap-3.5">
+                  <div class="flex items-center gap-3">
+                    <!-- Custom Radio Circle -->
                     <div
-                      class="w-5 h-5 rounded-full border flex items-center justify-center shrink-0"
-                      [ngClass]="selectedVariantId() === variant.id
-                        ? 'border-[var(--dynamic-primary)] text-[var(--dynamic-primary)]'
-                        : 'border-slate-300 dark:border-slate-700'"
+                      [class]="
+                        selectedVariantId() === variant.id
+                          ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]'
+                          : 'border-slate-300 dark:border-slate-700'
+                      "
+                      class="w-4 h-4 rounded-full border border-2 flex items-center justify-center transition-all shrink-0"
                     >
                       @if (selectedVariantId() === variant.id) {
-                        <div class="w-3 h-3 rounded-full bg-[var(--dynamic-primary)]"></div>
+                        <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
                       }
                     </div>
-                    <span class="text-sm font-extrabold">{{ variant.variant_name }}</span>
+                    <span class="text-sm font-bold">{{ variant.variant_name }}</span>
                   </div>
-                  <span class="text-sm font-black text-[var(--dynamic-primary)] font-mono">
-                    {{ variant.price | vnd }}
-                  </span>
-                </div>
+                  <span class="text-sm font-extrabold text-[var(--dynamic-primary)]"
+                    >{{ variant.price | vnd }}</span
+                  >
+                </button>
               }
             </div>
 
             <!-- Ghi chú cho cốc nước -->
-            <div class="space-y-1.5">
+            <div class="space-y-1.5 pt-3">
               <label
                 class="text-xs sm:text-sm font-black text-slate-700 dark:text-slate-350 uppercase tracking-wide block"
                 >Ghi chú riêng món này</label
@@ -941,39 +931,39 @@
                 class="form-input"
               />
             </div>
+          </div>
 
-            <!-- Số lượng và Thêm -->
-            <div class="flex items-center justify-between pt-2">
-              <div
-                class="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-1 rounded-xl"
-              >
-                <button
-                  type="button"
-                  (click)="variantQuantity.set(variantQuantity() > 1 ? variantQuantity() - 1 : 1)"
-                  class="w-9 h-9 flex items-center justify-center text-sm font-bold text-slate-400 hover:text-[var(--dynamic-primary)] dark:hover:text-[var(--dynamic-primary)]"
-                >
-                  -
-                </button>
-                <span class="text-sm font-bold w-8 text-center text-slate-800 dark:text-white">
-                  {{ variantQuantity() }}
-                </span>
-                <button
-                  type="button"
-                  (click)="variantQuantity.set(variantQuantity() + 1)"
-                  class="w-9 h-9 flex items-center justify-center text-sm font-bold text-slate-400 hover:text-[var(--dynamic-primary)] dark:hover:text-[var(--dynamic-primary)]"
-                >
-                  +
-                </button>
-              </div>
-
+          <!-- Footer: Số lượng và Thêm -->
+          <div class="app-modal-footer justify-between">
+            <div
+              class="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-1 rounded-xl shrink-0"
+            >
               <button
                 type="button"
-                (click)="submitVariantSelection()"
-                class="btn btn-primary h-11 px-6 text-sm font-bold shadow-md shadow-[var(--dynamic-primary)]/20 hover:scale-[1.02]"
+                (click)="variantQuantity.set(variantQuantity() > 1 ? variantQuantity() - 1 : 1)"
+                class="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-sm font-bold text-slate-400 hover:text-[var(--dynamic-primary)] dark:hover:text-[var(--dynamic-primary)]"
               >
-                Thêm vào giỏ
+                -
+              </button>
+              <span class="text-sm font-bold w-8 text-center text-slate-800 dark:text-white">
+                {{ variantQuantity() }}
+              </span>
+              <button
+                type="button"
+                (click)="variantQuantity.set(variantQuantity() + 1)"
+                class="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-sm font-bold text-slate-400 hover:text-[var(--dynamic-primary)] dark:hover:text-[var(--dynamic-primary)]"
+              >
+                +
               </button>
             </div>
+
+            <button
+              type="button"
+              (click)="submitVariantSelection()"
+              class="btn btn-primary h-11 px-6 text-sm font-bold shadow-md shadow-[var(--dynamic-primary)]/20 hover:scale-[1.02] shrink-0"
+            >
+              Thêm vào giỏ
+            </button>
           </div>
         </div>
       </div>

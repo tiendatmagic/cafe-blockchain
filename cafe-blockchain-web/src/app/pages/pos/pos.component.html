@@ -266,9 +266,7 @@
                       {{ getProductPriceDisplay(p) }}
                       <span class="text-xs font-semibold text-slate-400">đ</span>
                     </span>
-                    <div
-                      class="min-w-11 w-11 h-11 rounded-full bg-[var(--dynamic-primary)] text-white flex items-center justify-center font-bold text-xl shadow-md shadow-[var(--dynamic-primary)]/20 transition-all duration-300 transform group-hover:scale-110 active:scale-95"
-                    >
+                    <div class="btn-add-cart">
                       +
                     </div>
                   </div>
@@ -1057,24 +1055,20 @@
 
 <!-- ==================== MODAL CHỌN SIZE SẢN PHẨM ==================== -->
 @if (isVariantSelectModalOpen()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="app-modal-overlay">
     <!-- Backdrop overlay -->
-    <div (click)="closeVariantSelectModal()" class="fixed inset-0 bg-black/40"></div>
+    <div (click)="closeVariantSelectModal()" class="app-modal-backdrop"></div>
 
     <!-- Modal Content -->
-    <div
-      class="relative app-card max-w-sm w-full shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200 flex flex-col"
-    >
+    <div class="app-modal-content animate-in fade-in zoom-in duration-200">
       <!-- Header -->
-      <div
-        class="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-800 shrink-0"
-      >
-        <h4 class="text-md font-extrabold text-slate-800 dark:text-white truncate pr-4">
+      <div class="app-modal-header">
+        <h4 class="app-modal-title">
           Chọn size: {{ activeSelectingProduct()?.name }}
         </h4>
         <button
           (click)="closeVariantSelectModal()"
-          class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all"
+          class="app-modal-close"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -1094,7 +1088,7 @@
       </div>
 
       <!-- Content (Các biến thể) -->
-      <div class="py-5 space-y-3 flex-1 overflow-y-auto">
+      <div class="app-modal-body">
         <span class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
           >Kích thước khả dụng</span
         >
@@ -1134,7 +1128,7 @@
       </div>
 
       <!-- Action Buttons -->
-      <div class="flex gap-3 pt-3 border-t border-slate-100 dark:border-slate-800 shrink-0">
+      <div class="app-modal-footer">
         <button
           (click)="closeVariantSelectModal()"
           class="btn-cancel flex-1"
