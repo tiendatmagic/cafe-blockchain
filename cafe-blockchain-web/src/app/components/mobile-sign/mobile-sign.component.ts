@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { Web3Service } from '../../services/web3.service';
@@ -21,6 +21,9 @@ export class MobileSignComponent implements OnInit {
   private readonly apiService = inject(ApiService);
   private readonly stateService = inject(StateService);
   private readonly route = inject(ActivatedRoute);
+  private readonly elementRef = inject(ElementRef);
+
+  public readonly isChainDropdownOpen = signal<boolean>(false);
 
   public orderCode = signal<string>('');
   public tokenId = signal<number | null>(null);
@@ -43,6 +46,14 @@ export class MobileSignComponent implements OnInit {
            this.web3Service.chainId() !== this.web3Service.configuredChainId();
   }
 
+  @HostListener('document:click', ['$event'])
+  public onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!this.elementRef.nativeElement.querySelector('#chain-dropdown-container')?.contains(target)) {
+      this.isChainDropdownOpen.set(false);
+    }
+  }
+
   public async switchNetwork() {
     this.errorMessage.set('');
     try {
@@ -52,6 +63,48 @@ export class MobileSignComponent implements OnInit {
       }
     } catch (err: any) {
       this.errorMessage.set(err.message || 'Lỗi khi chuyển mạng.');
+    }
+  }
+
+  public async switchChain(chainId: string) {
+    this.isChainDropdownOpen.set(false);
+
+    // Kiểm tra xem ví đã được kết nối hay chưa
+    if (!this.web3Service.walletConnected() || !this.web3Service.currentAccount()) {
+      this.errorMessage.set('Vui lòng kết nối ví Web3 trước khi chọn mạng lưới!');
+      return;
+    }
+
+    this.errorMessage.set('');
+    try {
+      const success = await this.web3Service.ensureCorrectNetwork(chainId);
+      if (!success) {
+        this.errorMessage.set('Không thể chuyển mạng tự động. Vui lòng tự chuyển mạng trong ví của bạn!');
+      }
+    } catch (err: any) {
+      this.errorMessage.set(err.message || 'Lỗi khi chuyển mạng.');
+    }
+  }
+
+  public getChainColorClass(chainId: string): string {
+    switch (chainId) {
+      case '1':
+      case '11155111':
+        return 'bg-blue-500';
+      case '56':
+      case '97':
+        return 'bg-yellow-500';
+      case '137':
+        return 'bg-purple-500';
+      case '42161':
+      case '8453':
+        return 'bg-sky-500';
+      case '10':
+      case '43114':
+      case '421614':
+        return 'bg-red-500';
+      default:
+        return 'bg-slate-400';
     }
   }
 
