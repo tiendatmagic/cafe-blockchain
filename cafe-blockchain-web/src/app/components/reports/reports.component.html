@@ -89,25 +89,19 @@
       </div>
 
       <!-- Date Range Picker Đẹp Mắt -->
-      <div *ngIf="activePreset() === 'custom'" class="flex items-center gap-2 flex-wrap">
-        <div class="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3.5 py-2 rounded-xl transition-all focus-within:border-[var(--dynamic-primary)]">
-          <span class="text-[10px] font-black text-slate-400 uppercase">Từ</span>
-          <input
-            type="date"
-            [(ngModel)]="tempStartDate"
-            (change)="onCustomDatesChange()"
-            class="bg-transparent text-slate-800 dark:text-slate-200 text-xs font-bold focus:outline-none cursor-pointer [&::-webkit-calendar-picker-indicator]:dark:invert [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-70"
-          />
-        </div>
-        <div class="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3.5 py-2 rounded-xl transition-all focus-within:border-[var(--dynamic-primary)]">
-          <span class="text-[10px] font-black text-slate-400 uppercase">Đến</span>
-          <input
-            type="date"
-            [(ngModel)]="tempEndDate"
-            (change)="onCustomDatesChange()"
-            class="bg-transparent text-slate-800 dark:text-slate-200 text-xs font-bold focus:outline-none cursor-pointer [&::-webkit-calendar-picker-indicator]:dark:invert [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-70"
-          />
-        </div>
+      <div *ngIf="activePreset() === 'custom'" class="flex items-center gap-4 flex-wrap w-full sm:w-auto">
+        <app-custom-date-picker
+          [(selectedDate)]="tempStartDate"
+          (selectedDateChange)="onCustomDatesChange()"
+          placeholder="Từ ngày"
+          class="w-full sm:w-44"
+        ></app-custom-date-picker>
+        <app-custom-date-picker
+          [(selectedDate)]="tempEndDate"
+          (selectedDateChange)="onCustomDatesChange()"
+          placeholder="Đến ngày"
+          class="w-full sm:w-44"
+        ></app-custom-date-picker>
       </div>
     </div>
 
@@ -317,7 +311,7 @@
               <span class="text-slate-500">Tiền mặt: {{ getPaymentPercentage('cash') }}%</span>
             </div>
             <div class="flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full shrink-0" style="background-color: #7c3aed"></span>
+              <span class="w-2 h-2 rounded-full shrink-0 bg-[var(--dynamic-primary)]"></span>
               <span class="text-slate-500">Crypto: {{ getPaymentPercentage('crypto') }}%</span>
             </div>
           </div>

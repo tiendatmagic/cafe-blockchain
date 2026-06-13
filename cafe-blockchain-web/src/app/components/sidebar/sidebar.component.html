@@ -327,7 +327,7 @@
             ? 'bg-slate-200 dark:bg-slate-700'
             : themeMode() === 'auto'
               ? 'bg-amber-400/70 dark:bg-amber-600/50'
-              : 'bg-purple-600'
+              : 'bg-[var(--color-primary)]'
         "
       >
         <span class="absolute inset-0 flex items-center justify-around px-1 pointer-events-none">
@@ -473,7 +473,7 @@
       } @else {
         <button
           (click)="connectWalletAndSign()"
-          class="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-purple-600 text-white text-xs font-bold shadow-md shadow-purple-500/25 active:scale-95 transition-all"
+          class="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[var(--color-primary)] text-white text-xs font-bold shadow-md shadow-[var(--color-primary)]/25 active:scale-95 transition-all"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -845,7 +845,7 @@
             </div>
             <button
               (click)="isWalletModalOpen.set(true); isMobileMenuOpen.set(false)"
-              class="w-full py-2.5 rounded-xl bg-purple-600 text-white text-xs font-bold shadow-md shadow-purple-500/15 active:scale-95 transition-all"
+              class="w-full py-2.5 rounded-xl bg-[var(--color-primary)] text-white text-xs font-bold shadow-md shadow-[var(--color-primary)]/15 active:scale-95 transition-all"
             >
               Quản lý ví
             </button>
@@ -853,7 +853,7 @@
         } @else {
           <button
             (click)="connectWalletAndSign(); isMobileMenuOpen.set(false)"
-            class="w-full py-2.5 rounded-xl bg-purple-600 text-white text-xs font-bold shadow-md shadow-purple-500/25 flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+            class="w-full py-2.5 rounded-xl bg-[var(--color-primary)] text-white text-xs font-bold shadow-md shadow-[var(--color-primary)]/25 flex items-center justify-center gap-1.5 active:scale-95 transition-all"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -938,7 +938,7 @@
                 ? 'bg-slate-200 dark:bg-slate-700'
                 : themeMode() === 'auto'
                   ? 'bg-amber-400/70 dark:bg-amber-600/50'
-                  : 'bg-purple-600'
+                  : 'bg-[var(--color-primary)]'
             "
           >
             <span

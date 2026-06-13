@@ -319,3 +319,26 @@ div.form-input.p-0 {
 .app-table-hover-none tbody tr {
   @apply hover:bg-transparent dark:hover:bg-transparent;
 }
+
+/* ==================== ĐỒNG BỘ BỘ CHỌN NGÀY TOÀN HỆ THỐNG (DATE PICKER SPECIFICATION) ==================== */
+input[type="date"] {
+  cursor: pointer;
+  position: relative;
+}
+
+/* Biến đổi biểu tượng lịch cho đồng bộ và đẹp mắt */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+  transition: all 0.2s ease-in-out;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 0.9;
+}
+
+/* Đảo ngược màu biểu tượng lịch trong Dark Mode để dễ nhìn */
+.dark input[type="date"]::-webkit-calendar-picker-indicator,
+body.dark input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}

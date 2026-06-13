@@ -423,7 +423,7 @@
                       @if (tx.is_verified === false) {
                         <button
                           [disabled]="true"
-                          class="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-200 text-slate-400 font-bold text-xs cursor-not-allowed"
+                          class="btn-cancel btn-sm"
                         >
                           <span>Bị khóa đồng bộ</span>
                         </button>
@@ -431,7 +431,7 @@
                         <button
                           [disabled]="blockchainSyncLoading() || !web3Service.walletConnected()"
                           (click)="syncTransactionToBlockchain(tx)"
-                          class="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-purple-600 text-white font-bold text-xs shadow-md shadow-purple-500/15 hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          class="btn-primary btn-sm"
                         >
                           <svg
                             class="h-3.5 w-3.5 shrink-0"
@@ -665,11 +665,10 @@
           <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
             >Ngày giao dịch <span class="text-rose-500">*</span></label
           >
-          <input
-            type="date"
-            [(ngModel)]="transactionForm().transaction_date"
-            class="form-input"
-          />
+          <app-custom-date-picker
+            [(selectedDate)]="transactionForm().transaction_date"
+            placeholder="Chọn ngày giao dịch"
+          ></app-custom-date-picker>
         </div>
 
         <!-- Mô tả ngắn -->

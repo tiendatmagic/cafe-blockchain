@@ -6,11 +6,12 @@ import { StateService } from '../../services/state.service';
 import { ShortAddressPipe } from '../../pipes/short-address.pipe';
 import { PageHeaderComponent } from '../page-header/page-header.component';
 import { VNDCurrencyPipe } from '../../pipes/vnd.pipe';
+import { CustomDatePickerComponent } from '../custom-date-picker/custom-date-picker.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, Web3ConnectPromptComponent, ShortAddressPipe, PageHeaderComponent, VNDCurrencyPipe],
+  imports: [CommonModule, FormsModule, Web3ConnectPromptComponent, ShortAddressPipe, PageHeaderComponent, VNDCurrencyPipe, CustomDatePickerComponent],
   templateUrl: './dashboard.component.html'
 })
 export class DashboardComponent implements OnInit {
@@ -80,12 +81,12 @@ export class DashboardComponent implements OnInit {
     const cryptoPct = (cryptoAmount / totalAmount) * 100;
     const eWalletPct = (eWalletAmount / totalAmount) * 100;
 
-    // Màu sắc: Crypto (#7c3aed), Bank Transfer (#10b981), E-wallet (#ec4899), Cash (#f59e0b)
+    // Màu sắc: Crypto (var(--color-primary)), Bank Transfer (#10b981), E-wallet (#ec4899), Cash (#f59e0b)
     const endCrypto = cryptoPct;
     const endBank = cryptoPct + bankPct;
     const endEWallet = cryptoPct + bankPct + eWalletPct;
 
-    return `conic-gradient(#7c3aed 0% ${endCrypto}%, #10b981 ${endCrypto}% ${endBank}%, #ec4899 ${endBank}% ${endEWallet}%, #f59e0b ${endEWallet}% 100%)`;
+    return `conic-gradient(var(--color-primary) 0% ${endCrypto}%, #10b981 ${endCrypto}% ${endBank}%, #ec4899 ${endBank}% ${endEWallet}%, #f59e0b ${endEWallet}% 100%)`;
   }
 
   public getPaymentMethodPercentage(method: string): number {

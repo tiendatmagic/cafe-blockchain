@@ -527,11 +527,10 @@
             <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
               >Ngày lập phiếu</label
             >
-            <input
-              type="date"
-              [(ngModel)]="inventoryForm().record_date"
-              class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white transition-all font-semibold"
-            />
+            <app-custom-date-picker
+              [(selectedDate)]="inventoryForm().record_date"
+              placeholder="Chọn ngày lập phiếu"
+            ></app-custom-date-picker>
           </div>
         </div>
 

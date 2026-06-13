@@ -713,11 +713,10 @@
               <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
                 >Ngày sinh</label
               >
-              <input
-                type="date"
-                [(ngModel)]="customerForm().dob"
-                class="form-input"
-              />
+              <app-custom-date-picker
+                [(selectedDate)]="customerForm().dob"
+                placeholder="Chọn ngày sinh"
+              ></app-custom-date-picker>
             </div>
 
             <div class="space-y-1.5">

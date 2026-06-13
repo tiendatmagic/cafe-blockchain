@@ -13,6 +13,7 @@ import { PageHeaderComponent } from '../page-header/page-header.component';
 import { VNDCurrencyPipe } from '../../pipes/vnd.pipe';
 import { DrawerComponent } from '../drawer/drawer.component';
 import * as XLSX from 'xlsx';
+import { CustomDatePickerComponent } from '../custom-date-picker/custom-date-picker.component';
 
 @Component({
   selector: 'app-debts',
@@ -28,7 +29,8 @@ import * as XLSX from 'xlsx';
     ConfirmModalComponent,
     PageHeaderComponent,
     VNDCurrencyPipe,
-    DrawerComponent
+    DrawerComponent,
+    CustomDatePickerComponent
   ],
   templateUrl: './debts.component.html'
 })

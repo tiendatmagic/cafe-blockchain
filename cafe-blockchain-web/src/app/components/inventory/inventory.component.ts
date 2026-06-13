@@ -9,6 +9,7 @@ import { PaginationComponent } from '../pagination/pagination.component';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 import { PageHeaderComponent } from '../page-header/page-header.component';
 import { VNDCurrencyPipe } from '../../pipes/vnd.pipe';
+import { CustomDatePickerComponent } from '../custom-date-picker/custom-date-picker.component';
 
 @Component({
   selector: 'app-inventory',
@@ -21,7 +22,8 @@ import { VNDCurrencyPipe } from '../../pipes/vnd.pipe';
     PaginationComponent,
     ConfirmModalComponent,
     PageHeaderComponent,
-    VNDCurrencyPipe
+    VNDCurrencyPipe,
+    CustomDatePickerComponent
   ],
   templateUrl: './inventory.component.html'
 })

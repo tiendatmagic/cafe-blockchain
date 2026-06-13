@@ -11,6 +11,7 @@ import { PaginationComponent } from '../pagination/pagination.component';
 import { ShortAddressPipe } from '../../pipes/short-address.pipe';
 import { PageHeaderComponent } from '../page-header/page-header.component';
 import { VNDCurrencyPipe } from '../../pipes/vnd.pipe';
+import { CustomDatePickerComponent } from '../custom-date-picker/custom-date-picker.component';
 
 @Component({
   selector: 'app-reports',
@@ -23,7 +24,8 @@ import { VNDCurrencyPipe } from '../../pipes/vnd.pipe';
     PaginationComponent,
     ShortAddressPipe,
     PageHeaderComponent,
-    VNDCurrencyPipe
+    VNDCurrencyPipe,
+    CustomDatePickerComponent
   ],
   templateUrl: './reports.component.html'
 })
@@ -222,7 +224,7 @@ export class ReportsComponent implements OnInit {
     const endBank = cryptoPct + bankPct;
     const endEWallet = cryptoPct + bankPct + eWalletPct;
 
-    return `conic-gradient(#7c3aed 0% ${endCrypto}%, #10b981 ${endCrypto}% ${endBank}%, #ec4899 ${endBank}% ${endEWallet}%, #f59e0b ${endEWallet}% 100%)`;
+    return `conic-gradient(var(--color-primary) 0% ${endCrypto}%, #10b981 ${endCrypto}% ${endBank}%, #ec4899 ${endBank}% ${endEWallet}%, #f59e0b ${endEWallet}% 100%)`;
   }
 
   public getPaymentPercentage(method: string): number {

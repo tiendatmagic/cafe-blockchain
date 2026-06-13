@@ -9,6 +9,7 @@ import { PaginationComponent } from '../pagination/pagination.component';
 import { ShortAddressPipe } from '../../pipes/short-address.pipe';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 import { PageHeaderComponent } from '../page-header/page-header.component';
+import { CustomDatePickerComponent } from '../custom-date-picker/custom-date-picker.component';
 
 @Component({
   selector: 'app-customers',
@@ -21,7 +22,8 @@ import { PageHeaderComponent } from '../page-header/page-header.component';
     PaginationComponent,
     ShortAddressPipe,
     ConfirmModalComponent,
-    PageHeaderComponent
+    PageHeaderComponent,
+    CustomDatePickerComponent
   ],
   templateUrl: './customers.component.html'
 })
