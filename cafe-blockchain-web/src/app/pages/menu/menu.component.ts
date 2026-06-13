@@ -1,16 +1,16 @@
-import { Web3ConnectPromptComponent } from '../../components/shared/web3-connect-prompt/web3-connect-prompt.component';
+import { Web3ConnectPromptComponent } from '@components/shared/web3-connect-prompt/web3-connect-prompt.component';
 import { Component, inject, signal, computed, effect, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { StateService } from '../../services/state.service';
-import { ApiService } from '../../services/api.service';
-import { PaginationComponent } from '../../components/shared/pagination/pagination.component';
-import { ShortAddressPipe } from '../../pipes/short-address.pipe';
-import { ConfirmModalComponent } from '../../components/shared/confirm-modal/confirm-modal.component';
-import { PageHeaderComponent } from '../../components/shared/page-header/page-header.component';
-import { ModalComponent } from '../../components/shared/modal/modal.component';
-import { CustomSwitchComponent } from '../../components/shared/custom-switch/custom-switch.component';
+import { StateService } from '@services/state.service';
+import { ApiService } from '@services/api.service';
+import { PaginationComponent } from '@components/shared/pagination/pagination.component';
+import { ShortAddressPipe } from '@pipes/short-address.pipe';
+import { ConfirmModalComponent } from '@components/shared/confirm-modal/confirm-modal.component';
+import { PageHeaderComponent } from '@components/shared/page-header/page-header.component';
+import { ModalComponent } from '@components/shared/modal/modal.component';
+import { CustomSwitchComponent } from '@components/shared/custom-switch/custom-switch.component';
 
 @Component({
   selector: 'app-menu',

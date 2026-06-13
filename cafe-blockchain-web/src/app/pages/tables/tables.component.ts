@@ -1,14 +1,14 @@
-import { Web3ConnectPromptComponent } from '../../components/shared/web3-connect-prompt/web3-connect-prompt.component';
+import { Web3ConnectPromptComponent } from '@components/shared/web3-connect-prompt/web3-connect-prompt.component';
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { StateService } from '../../services/state.service';
-import { ApiService } from '../../services/api.service';
-import { ConfirmModalComponent } from '../../components/shared/confirm-modal/confirm-modal.component';
-import { PageHeaderComponent } from '../../components/shared/page-header/page-header.component';
-import { ModalComponent } from '../../components/shared/modal/modal.component';
-import { CustomSelectComponent } from '../../components/shared/custom-select/custom-select.component';
+import { StateService } from '@services/state.service';
+import { ApiService } from '@services/api.service';
+import { ConfirmModalComponent } from '@components/shared/confirm-modal/confirm-modal.component';
+import { PageHeaderComponent } from '@components/shared/page-header/page-header.component';
+import { ModalComponent } from '@components/shared/modal/modal.component';
+import { CustomSelectComponent } from '@components/shared/custom-select/custom-select.component';
 
 @Component({
   selector: 'app-tables',

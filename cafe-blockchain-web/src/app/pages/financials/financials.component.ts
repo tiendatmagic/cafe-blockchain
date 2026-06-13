@@ -1,15 +1,15 @@
-import { Web3ConnectPromptComponent } from '../../components/shared/web3-connect-prompt/web3-connect-prompt.component';
+import { Web3ConnectPromptComponent } from '@components/shared/web3-connect-prompt/web3-connect-prompt.component';
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { StateService } from '../../services/state.service';
-import { ApiService } from '../../services/api.service';
-import { PaginationComponent } from '../../components/shared/pagination/pagination.component';
-import { ConfirmModalComponent } from '../../components/shared/confirm-modal/confirm-modal.component';
-import { PageHeaderComponent } from '../../components/shared/page-header/page-header.component';
-import { VNDCurrencyPipe } from '../../pipes/vnd.pipe';
-import { CustomDatePickerComponent } from '../../components/shared/custom-date-picker/custom-date-picker.component';
+import { StateService } from '@services/state.service';
+import { ApiService } from '@services/api.service';
+import { PaginationComponent } from '@components/shared/pagination/pagination.component';
+import { ConfirmModalComponent } from '@components/shared/confirm-modal/confirm-modal.component';
+import { PageHeaderComponent } from '@components/shared/page-header/page-header.component';
+import { VNDCurrencyPipe } from '@pipes/vnd.pipe';
+import { CustomDatePickerComponent } from '@components/shared/custom-date-picker/custom-date-picker.component';
 
 @Component({
   selector: 'app-financials',

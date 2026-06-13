@@ -3,17 +3,17 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { JsonRpcProvider, Contract, Interface } from 'ethers';
-import { CAFE_WEB3_POS_ABI } from '../../services/contract-abi';
-import { CAFE_WEB3_FINANCE_ABI } from '../../services/finance-contract-abi';
-import { CAFE_VOUCHER_NFT_ABI } from '../../services/voucher-contract-abi';
-import { CAFE_MENU_REGISTRY_ABI } from '../../services/menu-registry-contract-abi';
-import { ApiService } from '../../services/api.service';
-import { StateService } from '../../services/state.service';
+import { CAFE_WEB3_POS_ABI } from '@services/contract-abi';
+import { CAFE_WEB3_FINANCE_ABI } from '@services/finance-contract-abi';
+import { CAFE_VOUCHER_NFT_ABI } from '@services/voucher-contract-abi';
+import { CAFE_MENU_REGISTRY_ABI } from '@services/menu-registry-contract-abi';
+import { ApiService } from '@services/api.service';
+import { StateService } from '@services/state.service';
 import { environment } from '../../../environments/environment';
 
-import { ShortAddressPipe } from '../../pipes/short-address.pipe';
-import { ThemeToggleComponent } from '../../components/shared/theme-toggle/theme-toggle.component';
-import { CustomSelectComponent } from '../../components/shared/custom-select/custom-select.component';
+import { ShortAddressPipe } from '@pipes/short-address.pipe';
+import { ThemeToggleComponent } from '@components/shared/theme-toggle/theme-toggle.component';
+import { CustomSelectComponent } from '@components/shared/custom-select/custom-select.component';
 
 @Component({
   selector: 'app-blockchain-explorer',

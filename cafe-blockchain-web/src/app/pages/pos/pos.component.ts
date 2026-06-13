@@ -1,17 +1,17 @@
-import { Web3ConnectPromptComponent } from '../../components/shared/web3-connect-prompt/web3-connect-prompt.component';
+import { Web3ConnectPromptComponent } from '@components/shared/web3-connect-prompt/web3-connect-prompt.component';
 import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { StateService } from '../../services/state.service';
-import { ApiService } from '../../services/api.service';
-import { Web3Service } from '../../services/web3.service';
+import { StateService } from '@services/state.service';
+import { ApiService } from '@services/api.service';
+import { Web3Service } from '@services/web3.service';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { PaginationComponent } from '../../components/shared/pagination/pagination.component';
-import { PageHeaderComponent } from '../../components/shared/page-header/page-header.component';
-import { VNDCurrencyPipe } from '../../pipes/vnd.pipe';
-import { MiniButtonsComponent } from '../../components/shared/mini-buttons/mini-buttons.component';
+import { PaginationComponent } from '@components/shared/pagination/pagination.component';
+import { PageHeaderComponent } from '@components/shared/page-header/page-header.component';
+import { VNDCurrencyPipe } from '@pipes/vnd.pipe';
+import { MiniButtonsComponent } from '@components/shared/mini-buttons/mini-buttons.component';
 
 @Component({
   selector: 'app-pos',

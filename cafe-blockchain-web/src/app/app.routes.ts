@@ -1,35 +1,22 @@
 import { Routes } from '@angular/router';
-import { DashboardComponent } from './pages/dashboard/dashboard.component';
-import { PosComponent } from './pages/pos/pos.component';
-import { MenuComponent } from './pages/menu/menu.component';
-import { OrdersComponent } from './pages/orders/orders.component';
-import { SettingsComponent } from './pages/settings/settings.component';
-import { CustomersComponent } from './pages/customers/customers.component';
-import { FinancialsComponent } from './pages/financials/financials.component';
-import { InventoryComponent } from './pages/inventory/inventory.component';
-import { TablesComponent } from './pages/tables/tables.component';
-import { MobileSignComponent } from './pages/mobile-sign/mobile-sign.component';
-import { BlockchainExplorerComponent } from './pages/blockchain-explorer/blockchain-explorer.component';
-import { StoreComponent } from './pages/store/store.component';
-import { ReportsComponent } from './pages/reports/reports.component';
-import { DebtsComponent } from './pages/debts/debts.component';
 
 export const routes: Routes = [
-  { path: 'dashboard', component: DashboardComponent },
-  { path: 'pos', component: PosComponent },
-  { path: 'menu', component: MenuComponent },
-  { path: 'orders', component: OrdersComponent },
-  { path: 'settings', component: SettingsComponent },
-  { path: 'customers', component: CustomersComponent },
-  { path: 'financials', component: FinancialsComponent },
-  { path: 'inventory', component: InventoryComponent },
-  { path: 'tables', component: TablesComponent },
-  { path: 'reports', component: ReportsComponent },
-  { path: 'debts', component: DebtsComponent },
-  { path: 'mobile-sign', component: MobileSignComponent },
-  { path: 'blockchain-explorer', component: BlockchainExplorerComponent },
-  { path: 'store/:slug', component: StoreComponent },
+  { path: 'dashboard', loadComponent: () => import('@pages/dashboard/dashboard.component').then(m => m.DashboardComponent) },
+  { path: 'pos', loadComponent: () => import('@pages/pos/pos.component').then(m => m.PosComponent) },
+  { path: 'menu', loadComponent: () => import('@pages/menu/menu.component').then(m => m.MenuComponent) },
+  { path: 'orders', loadComponent: () => import('@pages/orders/orders.component').then(m => m.OrdersComponent) },
+  { path: 'settings', loadComponent: () => import('@pages/settings/settings.component').then(m => m.SettingsComponent) },
+  { path: 'customers', loadComponent: () => import('@pages/customers/customers.component').then(m => m.CustomersComponent) },
+  { path: 'financials', loadComponent: () => import('@pages/financials/financials.component').then(m => m.FinancialsComponent) },
+  { path: 'inventory', loadComponent: () => import('@pages/inventory/inventory.component').then(m => m.InventoryComponent) },
+  { path: 'tables', loadComponent: () => import('@pages/tables/tables.component').then(m => m.TablesComponent) },
+  { path: 'reports', loadComponent: () => import('@pages/reports/reports.component').then(m => m.ReportsComponent) },
+  { path: 'debts', loadComponent: () => import('@pages/debts/debts.component').then(m => m.DebtsComponent) },
+  { path: 'mobile-sign', loadComponent: () => import('@pages/mobile-sign/mobile-sign.component').then(m => m.MobileSignComponent) },
+  { path: 'blockchain-explorer', loadComponent: () => import('@pages/blockchain-explorer/blockchain-explorer.component').then(m => m.BlockchainExplorerComponent) },
+  { path: 'store/:slug', loadComponent: () => import('@pages/store/store.component').then(m => m.StoreComponent) },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   { path: '**', redirectTo: 'dashboard' }
 ];
+
 

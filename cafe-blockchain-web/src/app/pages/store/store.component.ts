@@ -2,13 +2,13 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { ApiService } from '../../services/api.service';
+import { ApiService } from '@services/api.service';
 import { Title } from '@angular/platform-browser';
-import { StateService } from '../../services/state.service';
-import { PaginationComponent } from '../../components/shared/pagination/pagination.component';
-import { VNDCurrencyPipe } from '../../pipes/vnd.pipe';
-import { ThemeToggleComponent } from '../../components/shared/theme-toggle/theme-toggle.component';
-import { MiniButtonsComponent } from '../../components/shared/mini-buttons/mini-buttons.component';
+import { StateService } from '@services/state.service';
+import { PaginationComponent } from '@components/shared/pagination/pagination.component';
+import { VNDCurrencyPipe } from '@pipes/vnd.pipe';
+import { ThemeToggleComponent } from '@components/shared/theme-toggle/theme-toggle.component';
+import { MiniButtonsComponent } from '@components/shared/mini-buttons/mini-buttons.component';
 
 interface CartItem {
   product: any;

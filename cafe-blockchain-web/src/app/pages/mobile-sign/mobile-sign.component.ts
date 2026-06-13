@@ -1,14 +1,14 @@
 import { Component, inject, signal, OnInit, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { Web3Service } from '../../services/web3.service';
-import { ApiService } from '../../services/api.service';
-import { StateService } from '../../services/state.service';
+import { Web3Service } from '@services/web3.service';
+import { ApiService } from '@services/api.service';
+import { StateService } from '@services/state.service';
 import { JsonRpcProvider, Contract } from 'ethers';
-import { CAFE_VOUCHER_NFT_ABI } from '../../services/voucher-contract-abi';
+import { CAFE_VOUCHER_NFT_ABI } from '@services/voucher-contract-abi';
 
-import { VNDCurrencyPipe } from '../../pipes/vnd.pipe';
-import { ThemeToggleComponent } from '../../components/shared/theme-toggle/theme-toggle.component';
+import { VNDCurrencyPipe } from '@pipes/vnd.pipe';
+import { ThemeToggleComponent } from '@components/shared/theme-toggle/theme-toggle.component';
 
 @Component({
   selector: 'app-mobile-sign',

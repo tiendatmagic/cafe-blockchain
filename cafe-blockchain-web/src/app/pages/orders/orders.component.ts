@@ -1,13 +1,13 @@
-import { Web3ConnectPromptComponent } from '../../components/shared/web3-connect-prompt/web3-connect-prompt.component';
+import { Web3ConnectPromptComponent } from '@components/shared/web3-connect-prompt/web3-connect-prompt.component';
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { StateService } from '../../services/state.service';
-import { ApiService } from '../../services/api.service';
-import { PaginationComponent } from '../../components/shared/pagination/pagination.component';
-import { PageHeaderComponent } from '../../components/shared/page-header/page-header.component';
-import { VNDCurrencyPipe } from '../../pipes/vnd.pipe';
+import { StateService } from '@services/state.service';
+import { ApiService } from '@services/api.service';
+import { PaginationComponent } from '@components/shared/pagination/pagination.component';
+import { PageHeaderComponent } from '@components/shared/page-header/page-header.component';
+import { VNDCurrencyPipe } from '@pipes/vnd.pipe';
 
 @Component({
   selector: 'app-orders',

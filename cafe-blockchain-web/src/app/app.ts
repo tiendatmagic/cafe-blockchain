@@ -2,10 +2,10 @@ import { Component, OnInit, OnDestroy, inject, signal, HostListener, ElementRef 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
-import { StateService } from './services/state.service';
-import { Web3Service } from './services/web3.service';
-import { ApiService } from './services/api.service';
-import { SidebarComponent } from './components/layout/sidebar/sidebar.component';
+import { StateService } from '@services/state.service';
+import { Web3Service } from '@services/web3.service';
+import { ApiService } from '@services/api.service';
+import { SidebarComponent } from '@components/layout/sidebar/sidebar.component';
 
 @Component({
   selector: 'app-root',

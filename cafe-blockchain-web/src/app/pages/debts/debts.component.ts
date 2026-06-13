@@ -2,18 +2,18 @@ import { Component, inject, signal, computed, OnInit, effect, untracked } from '
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { StateService } from '../../services/state.service';
-import { ApiService } from '../../services/api.service';
-import { Web3ConnectPromptComponent } from '../../components/shared/web3-connect-prompt/web3-connect-prompt.component';
-import { SkeletonLoaderComponent } from '../../components/shared/skeleton-loader/skeleton-loader.component';
-import { PaginationComponent } from '../../components/shared/pagination/pagination.component';
-import { ShortAddressPipe } from '../../pipes/short-address.pipe';
-import { ConfirmModalComponent } from '../../components/shared/confirm-modal/confirm-modal.component';
-import { PageHeaderComponent } from '../../components/shared/page-header/page-header.component';
-import { VNDCurrencyPipe } from '../../pipes/vnd.pipe';
-import { DrawerComponent } from '../../components/shared/drawer/drawer.component';
+import { StateService } from '@services/state.service';
+import { ApiService } from '@services/api.service';
+import { Web3ConnectPromptComponent } from '@components/shared/web3-connect-prompt/web3-connect-prompt.component';
+import { SkeletonLoaderComponent } from '@components/shared/skeleton-loader/skeleton-loader.component';
+import { PaginationComponent } from '@components/shared/pagination/pagination.component';
+import { ShortAddressPipe } from '@pipes/short-address.pipe';
+import { ConfirmModalComponent } from '@components/shared/confirm-modal/confirm-modal.component';
+import { PageHeaderComponent } from '@components/shared/page-header/page-header.component';
+import { VNDCurrencyPipe } from '@pipes/vnd.pipe';
+import { DrawerComponent } from '@components/shared/drawer/drawer.component';
 import * as XLSX from 'xlsx';
-import { CustomDatePickerComponent } from '../../components/shared/custom-date-picker/custom-date-picker.component';
+import { CustomDatePickerComponent } from '@components/shared/custom-date-picker/custom-date-picker.component';
 
 @Component({
   selector: 'app-debts',
