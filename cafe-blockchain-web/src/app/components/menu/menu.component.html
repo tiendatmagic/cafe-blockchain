@@ -142,7 +142,7 @@
       <!-- SKELETON LOADING CHO THỰC ĐƠN -->
       @if (menuViewMode() === 'table') {
         <div
-          class="app-card overflow-hidden animate-pulse p-6 space-y-4"
+          class="app-card overflow-hidden animate-pulse space-y-4"
         >
           <div class="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-full"></div>
           @for (i of [1, 2, 3, 4, 5]; track i) {
@@ -183,7 +183,7 @@
       <!-- CHẾ ĐỘ XEM 1: DẠNG BẢNG (TABLE VIEW) -->
       @if (menuViewMode() === 'table') {
         <div
-          class="app-card overflow-hidden"
+          class="app-card p-0 overflow-hidden"
         >
           <div class="overflow-x-auto">
             <table class="app-table min-w-[850px]">
@@ -342,7 +342,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
           @for (p of paginatedProducts(); track p.id) {
             <div
-              class="group app-card overflow-hidden hover:shadow-md flex flex-col h-full"
+              class="group app-card p-0 overflow-hidden hover:shadow-md flex flex-col h-full"
             >
               <!-- Ảnh sản phẩm -->
               <div
@@ -480,7 +480,7 @@
       <!-- WIDGET QUẢN LÝ DANH MỤC ĐỘNG DÀNH CHO ADMIN -->
       <div class="mt-8 pt-6 border-t border-slate-200/60 dark:border-slate-800/60">
         <div
-          class="app-card p-6 space-y-4"
+          class="app-card space-y-4"
         >
           <div
             class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4.5 flex-wrap gap-3"
@@ -566,7 +566,7 @@
         @if (web3Service.walletConnected() && web3Service.menuRegistryContractAddress()) {
           <div class="mt-8 pt-6 border-t border-slate-200/60 dark:border-slate-800/60">
             <div
-              class="app-card"
+              class="app-card p-0"
             >
               <!-- Header -->
               <div
