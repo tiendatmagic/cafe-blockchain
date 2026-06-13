@@ -5,7 +5,7 @@ import { RouterModule, Router } from '@angular/router';
 import { StateService } from './services/state.service';
 import { Web3Service } from './services/web3.service';
 import { ApiService } from './services/api.service';
-import { SidebarComponent } from './components/sidebar/sidebar.component';
+import { SidebarComponent } from './components/layout/sidebar/sidebar.component';
 
 @Component({
   selector: 'app-root',
