@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ElementRef, HostListener, inject, signal, computed } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ElementRef, HostListener, inject, signal, computed, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -8,7 +8,7 @@ import { FormsModule } from '@angular/forms';
   imports: [CommonModule, FormsModule],
   templateUrl: './custom-date-picker.component.html'
 })
-export class CustomDatePickerComponent implements OnInit, OnChanges {
+export class CustomDatePickerComponent implements OnInit, OnChanges, OnDestroy {
   private readonly elementRef = inject(ElementRef);
 
   @Input() selectedDate: string = ''; // Format: YYYY-MM-DD
@@ -24,8 +24,11 @@ export class CustomDatePickerComponent implements OnInit, OnChanges {
   public readonly currentYear = signal<number>(new Date().getFullYear());
   public readonly currentMonth = signal<number>(new Date().getMonth()); // 0-11
   public readonly daysArray = signal<any[]>([]);
+  public readonly dropdownStyle = signal<{[key: string]: string}>({});
 
   public readonly daysOfWeek = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+
+  private scrollListener: (() => void) | null = null;
 
   // Nhãn hiển thị tháng năm tiếng Việt
   public get monthLabel(): string {
@@ -76,7 +79,6 @@ export class CustomDatePickerComponent implements OnInit, OnChanges {
     const month = this.currentMonth();
 
     const firstDay = new Date(year, month, 1);
-    // getDay(): 0: CN, 1: T2, ..., 6: T7
     const firstDayOfWeek = firstDay.getDay();
 
     // Tính số ngày trống của tháng trước cần điền (tuần bắt đầu từ Thứ Hai)
@@ -177,6 +179,65 @@ export class CustomDatePickerComponent implements OnInit, OnChanges {
     this.generateCalendar();
   }
 
+  // Cập nhật vị trí fixed của popup lịch
+  public updateDropdownPosition(): void {
+    const trigger = this.elementRef.nativeElement.querySelector('.cursor-pointer');
+    if (!trigger) return;
+
+    const rect = trigger.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const spaceBelow = viewportHeight - rect.bottom;
+    const spaceAbove = rect.top;
+    
+    // Chiều cao popup lịch là khoảng 310px
+    const popupHeight = 310;
+    
+    let placement: 'top' | 'bottom' = 'bottom';
+    if (spaceBelow < popupHeight && spaceAbove > spaceBelow) {
+      placement = 'top';
+    } else {
+      placement = 'bottom';
+    }
+
+    const styles: {[key: string]: string} = {
+      position: 'fixed',
+      left: `${rect.left}px`,
+      width: '288px', // w-72
+      zIndex: '9999',
+    };
+
+    if (placement === 'bottom') {
+      styles['top'] = `${rect.bottom + 6}px`;
+    } else {
+      styles['bottom'] = `${viewportHeight - rect.top + 6}px`;
+    }
+
+    this.dropdownStyle.set(styles);
+  }
+
+  private addScrollListeners(): void {
+    this.removeScrollListeners();
+
+    const updatePos = () => {
+      if (this.isOpen()) {
+        this.updateDropdownPosition();
+      }
+    };
+
+    window.addEventListener('scroll', updatePos, true);
+    window.addEventListener('resize', updatePos, true);
+
+    this.scrollListener = updatePos;
+  }
+
+  private removeScrollListeners(): void {
+    if (this.scrollListener) {
+      window.removeEventListener('scroll', this.scrollListener, true);
+      window.removeEventListener('resize', this.scrollListener, true);
+      this.scrollListener = null;
+    }
+  }
+
   // Chọn ngày
   public selectDate(dateStr: string, isDisabled: boolean, event: MouseEvent): void {
     event.stopPropagation();
@@ -184,6 +245,7 @@ export class CustomDatePickerComponent implements OnInit, OnChanges {
     this.selectedDate = dateStr;
     this.selectedDateChange.emit(dateStr);
     this.isOpen.set(false);
+    this.removeScrollListeners();
   }
 
   // Toggle lịch
@@ -191,6 +253,14 @@ export class CustomDatePickerComponent implements OnInit, OnChanges {
     event.stopPropagation();
     if (this.disabled) return;
     this.isOpen.update(val => !val);
+    if (this.isOpen()) {
+      setTimeout(() => {
+        this.updateDropdownPosition();
+        this.addScrollListeners();
+      }, 0);
+    } else {
+      this.removeScrollListeners();
+    }
   }
 
   // Lắng nghe sự kiện click ra ngoài để đóng lịch
@@ -198,6 +268,11 @@ export class CustomDatePickerComponent implements OnInit, OnChanges {
   public onClickOutside(event: MouseEvent): void {
     if (!this.elementRef.nativeElement.contains(event.target)) {
       this.isOpen.set(false);
+      this.removeScrollListeners();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.removeScrollListeners();
   }
 }
