@@ -14,8 +14,7 @@
 
   <!-- Drawer Panel Content -->
   <div
-    [class.translate-x-0]="isOpen"
-    [class.translate-x-full]="!isOpen"
+    [style.transform]="isOpen ? 'translateX(0)' : 'translateX(100%)'"
     class="relative w-full max-w-md bg-white dark:bg-slate-900 border-l border-slate-200/80 dark:border-slate-800 shadow-2xl transition-transform duration-300 ease-out flex flex-col h-full z-10 pointer-events-auto text-slate-800 dark:text-slate-200"
   >
     <!-- Header -->
