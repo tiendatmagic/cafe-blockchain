@@ -7,6 +7,7 @@ import { StateService } from '../../services/state.service';
 import { ApiService } from '../../services/api.service';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 import { PageHeaderComponent } from '../page-header/page-header.component';
+import { CustomSelectComponent } from '../custom-select/custom-select.component';
 
 @Component({
   selector: 'app-settings',
@@ -17,7 +18,8 @@ import { PageHeaderComponent } from '../page-header/page-header.component';
     RouterModule,
     Web3ConnectPromptComponent,
     ConfirmModalComponent,
-    PageHeaderComponent
+    PageHeaderComponent,
+    CustomSelectComponent
   ],
   templateUrl: './settings.component.html'
 })
@@ -633,6 +635,15 @@ export class SettingsComponent implements OnInit {
     this.selectedChainName.set(`${chain.name} (ID: ${chain.chainId})`);
     this.stateService.showToast(`Đã tự động điền cấu hình mạng: ${chain.name}!`, 'success');
     this.isChainDropdownOpen.set(false);
+  }
+
+  // Khi chọn mạng EVM từ Custom Select
+  public onChainChange(chainId: string) {
+    if (!chainId) return;
+    const chain = this.POPULAR_CHAINS.find(c => c.chainId === chainId);
+    if (chain) {
+      this.selectPopularChainDirect(chain);
+    }
   }
 
   // Tải danh sách ví Menu Registry trực tiếp từ Smart Contract Blockchain
