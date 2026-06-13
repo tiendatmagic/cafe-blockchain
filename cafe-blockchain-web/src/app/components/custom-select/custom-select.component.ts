@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ElementRef, HostListener, inject, signal, computed } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ElementRef, HostListener, inject, signal, computed, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -8,7 +8,7 @@ import { FormsModule } from '@angular/forms';
   imports: [CommonModule, FormsModule],
   templateUrl: './custom-select.component.html'
 })
-export class CustomSelectComponent {
+export class CustomSelectComponent implements OnDestroy {
   private readonly elementRef = inject(ElementRef);
 
   @Input() value: any = null;
@@ -28,23 +28,25 @@ export class CustomSelectComponent {
   public readonly isOpen = signal<boolean>(false);
   public readonly searchQuery = signal<string>('');
   public readonly dynamicPlacement = signal<'bottom' | 'top'>('bottom');
+  public readonly dropdownStyle = signal<{[key: string]: string}>({});
+
+  private scrollListener: (() => void) | null = null;
 
   // Lắng nghe sự kiện click ngoài vùng component để đóng menu dropdown
   @HostListener('document:click', ['$event'])
   public onClickOutside(event: MouseEvent): void {
     if (!this.elementRef.nativeElement.contains(event.target)) {
       this.isOpen.set(false);
+      this.removeScrollListeners();
     }
   }
 
-  // Tính toán hướng mở thông minh tránh bị che khuất
-  private calculatePlacement(): void {
-    if (this.placement !== 'auto') {
-      this.dynamicPlacement.set(this.placement);
-      return;
-    }
+  // Tính toán hướng mở thông minh tránh bị che khuất và cập nhật vị trí fixed
+  public updateDropdownPosition(): void {
+    const trigger = this.elementRef.nativeElement.querySelector('button');
+    if (!trigger) return;
 
-    const rect = this.elementRef.nativeElement.getBoundingClientRect();
+    const rect = trigger.getBoundingClientRect();
     const viewportHeight = window.innerHeight;
     const spaceBelow = viewportHeight - rect.bottom;
     const spaceAbove = rect.top;
@@ -52,10 +54,57 @@ export class CustomSelectComponent {
     // Chiều cao ước lượng tối đa của dropdown menu là 280px
     const dropdownHeight = 280;
     
-    if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
-      this.dynamicPlacement.set('top');
+    let placement: 'top' | 'bottom' = 'bottom';
+    if (this.placement === 'auto') {
+      if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
+        placement = 'top';
+      } else {
+        placement = 'bottom';
+      }
     } else {
-      this.dynamicPlacement.set('bottom');
+      placement = this.placement as 'top' | 'bottom';
+    }
+
+    const styles: {[key: string]: string} = {
+      position: 'fixed',
+      left: `${rect.left}px`,
+      width: `${rect.width}px`,
+      zIndex: '9999',
+    };
+
+    if (placement === 'bottom') {
+      styles['top'] = `${rect.bottom + 6}px`;
+      styles['max-height'] = `${Math.min(dropdownHeight, spaceBelow - 16)}px`;
+    } else {
+      styles['bottom'] = `${viewportHeight - rect.top + 6}px`;
+      styles['max-height'] = `${Math.min(dropdownHeight, spaceAbove - 16)}px`;
+    }
+
+    this.dropdownStyle.set(styles);
+    this.dynamicPlacement.set(placement);
+  }
+
+  private addScrollListeners(): void {
+    this.removeScrollListeners(); // Tránh trùng lặp listeners
+
+    const updatePos = () => {
+      if (this.isOpen()) {
+        this.updateDropdownPosition();
+      }
+    };
+
+    // Lắng nghe ở capture mode (tham số thứ 3 là true) để bắt sự kiện scroll của mọi container con (như modal body)
+    window.addEventListener('scroll', updatePos, true);
+    window.addEventListener('resize', updatePos, true);
+
+    this.scrollListener = updatePos;
+  }
+
+  private removeScrollListeners(): void {
+    if (this.scrollListener) {
+      window.removeEventListener('scroll', this.scrollListener, true);
+      window.removeEventListener('resize', this.scrollListener, true);
+      this.scrollListener = null;
     }
   }
 
@@ -64,7 +113,13 @@ export class CustomSelectComponent {
     this.isOpen.update(val => !val);
     if (this.isOpen()) {
       this.searchQuery.set('');
-      this.calculatePlacement();
+      // Chờ Angular render dropdown vào DOM rồi đo tọa độ
+      setTimeout(() => {
+        this.updateDropdownPosition();
+        this.addScrollListeners();
+      }, 0);
+    } else {
+      this.removeScrollListeners();
     }
   }
 
@@ -73,13 +128,13 @@ export class CustomSelectComponent {
     this.value = val;
     this.valueChange.emit(val);
     this.isOpen.set(false);
+    this.removeScrollListeners();
   }
 
   // Lấy nhãn của tùy chọn hiện tại để hiển thị lên nút kích hoạt
   public get selectedLabel(): string {
     const selected = this.options.find(opt => {
       const optVal = this.getOptionValue(opt);
-      // Chuyển cả hai về dạng string để so sánh nếu cần thiết
       return String(optVal) === String(this.value);
     });
     if (selected !== undefined) {
@@ -123,4 +178,8 @@ export class CustomSelectComponent {
       return label.includes(query);
     });
   });
+
+  ngOnDestroy(): void {
+    this.removeScrollListeners();
+  }
 }

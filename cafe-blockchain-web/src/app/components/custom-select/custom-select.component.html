@@ -36,12 +36,8 @@
   <!-- Khối Dropdown Menu Danh sách Lựa chọn -->
   @if (isOpen()) {
     <div
-      class="absolute left-0 right-0 z-[60] overflow-hidden bg-white dark:bg-slate-900 border border-slate-200/85 dark:border-slate-800/85 rounded-xl shadow-xl animate-in fade-in slide-in-from-top-1 duration-150 flex flex-col"
-      [class.bottom-full]="dynamicPlacement() === 'top'"
-      [class.mb-1.5]="dynamicPlacement() === 'top'"
-      [class.top-full]="dynamicPlacement() === 'bottom'"
-      [class.mt-1.5]="dynamicPlacement() === 'bottom'"
-      style="max-height: 280px;"
+      class="bg-white dark:bg-slate-900 border border-slate-200/85 dark:border-slate-800/85 rounded-xl shadow-xl animate-in fade-in slide-in-from-top-1 duration-150 flex flex-col overflow-hidden"
+      [ngStyle]="dropdownStyle()"
     >
       <!-- Ô Tìm kiếm nhanh tích hợp trong dropdown (nếu showSearch = true) -->
       @if (showSearch) {
