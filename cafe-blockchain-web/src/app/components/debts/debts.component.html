@@ -761,7 +761,6 @@
 }
 
 <!-- ==================== DRAWER LỊCH SỬ CÔNG NỢ ==================== -->
-@if (isHistoryDrawerOpen()) {
 <app-drawer
   [isOpen]="isHistoryDrawerOpen()"
   (close)="closeHistoryDrawer()"
@@ -927,7 +926,6 @@
     </div>
   }
 </app-drawer>
-}
 
 <!-- ==================== MODAL XÁC NHẬN XÓA LOG NỢ ==================== -->
 <app-confirm-modal
