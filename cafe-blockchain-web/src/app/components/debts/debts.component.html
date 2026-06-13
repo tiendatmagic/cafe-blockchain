@@ -1,22 +1,35 @@
 <!-- Container chính căn giữa, bo góc tối đa 15px theo design system -->
 <div class="space-y-6 p-4 sm:p-6 max-w-[1530px] mx-auto text-slate-800 dark:text-slate-200">
-  
   <!-- Header tiêu đề tab dùng chung -->
   <app-page-header
     title="Sổ nợ khách hàng"
     description="Quản lý chi tiết dư nợ khách hàng, lịch sử ghi nợ, lập phiếu thu nợ và đối soát quỹ tiền mặt tự động."
   >
-    <svg icon class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+    <svg
+      icon
+      class="h-6.5 w-6.5 text-[var(--dynamic-primary)]"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      stroke-width="2.5"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+      />
     </svg>
 
     <!-- Nút Lập phiếu nợ thủ công (Chỉ hiện khi ví đã kết nối) -->
     @if (web3Service.walletConnected()) {
-      <button
-        (click)="openManualDebtModal()"
-        class="btn-primary"
-      >
-        <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+      <button (click)="openManualDebtModal()" class="btn-primary">
+        <svg
+          class="h-4.5 w-4.5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
         </svg>
         <span>Ghi nợ mới</span>
@@ -26,33 +39,45 @@
 
   <!-- Banner Kết nối ví Web3 nếu chưa đăng nhập -->
   @if (!web3Service.walletConnected()) {
-    <app-web3-connect-prompt 
-      title="Sổ nợ khách hàng" 
+    <app-web3-connect-prompt
+      title="Sổ nợ khách hàng"
       description="Vui lòng kết nối ví Web3 để truy cập dữ liệu công nợ, lịch sử giao dịch nợ/trả nợ của khách hàng và đồng bộ dòng tiền vào sổ quỹ."
     ></app-web3-connect-prompt>
   } @else {
-
     <!-- Khối Loading Skeleton dùng chung -->
     @if (isDebtsLoading()) {
       <div class="mt-6">
         <app-skeleton-loader type="table"></app-skeleton-loader>
       </div>
     } @else {
-
       <!-- Thẻ Thống kê Tài chính (3 thẻ) -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mt-6">
         <!-- Tổng nợ phải thu -->
         <div class="app-card-interactive p-5 flex items-center justify-between">
           <div class="space-y-1.5">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Tổng nợ phải thu</span>
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block"
+              >Tổng nợ phải thu</span
+            >
             <span class="text-2xl font-extrabold text-rose-500 dark:text-rose-400">
               {{ totalDebtOutstanding() | number }}<span class="text-sm font-bold ml-0.5">đ</span>
             </span>
-            <span class="text-xs text-slate-400 font-medium block">Dư nợ hiện tại chưa thanh toán</span>
+            <span class="text-xs text-slate-400 font-medium block"
+              >Dư nợ hiện tại chưa thanh toán</span
+            >
           </div>
           <div class="p-4 rounded-xl bg-rose-500/10 text-rose-500 shrink-0">
-            <svg class="h-6.5 w-6.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            <svg
+              class="h-6.5 w-6.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
             </svg>
           </div>
         </div>
@@ -60,15 +85,32 @@
         <!-- Số khách hàng đang nợ -->
         <div class="app-card-interactive p-5 flex items-center justify-between">
           <div class="space-y-1.5">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Khách hàng đang nợ</span>
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block"
+              >Khách hàng đang nợ</span
+            >
             <span class="text-2xl font-extrabold text-[var(--dynamic-primary)]">
-              {{ totalDebtorsCount() | number }} <span class="text-sm font-bold text-slate-400">khách</span>
+              {{ totalDebtorsCount() | number }}
+              <span class="text-sm font-bold text-slate-400">khách</span>
             </span>
-            <span class="text-xs text-slate-400 font-medium block">Số lượng khách hàng có dư nợ > 0</span>
+            <span class="text-xs text-slate-400 font-medium block"
+              >Số lượng khách hàng có dư nợ > 0</span
+            >
           </div>
-          <div class="p-4 rounded-xl bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] shrink-0">
-            <svg class="h-6.5 w-6.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          <div
+            class="p-4 rounded-xl bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] shrink-0"
+          >
+            <svg
+              class="h-6.5 w-6.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+              />
             </svg>
           </div>
         </div>
@@ -76,15 +118,29 @@
         <!-- Đã thu hồi trong tháng -->
         <div class="app-card-interactive p-5 flex items-center justify-between">
           <div class="space-y-1.5">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Thu hồi trong tháng</span>
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block"
+              >Thu hồi trong tháng</span
+            >
             <span class="text-2xl font-extrabold text-emerald-500 dark:text-emerald-400">
               {{ recoveredThisMonth() | number }}<span class="text-sm font-bold ml-0.5">đ</span>
             </span>
-            <span class="text-xs text-slate-400 font-medium block">Tổng số tiền đã thu nợ tháng này</span>
+            <span class="text-xs text-slate-400 font-medium block"
+              >Tổng số tiền đã thu nợ tháng này</span
+            >
           </div>
           <div class="p-4 rounded-xl bg-emerald-500/10 text-emerald-500 shrink-0">
-            <svg class="h-6.5 w-6.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              class="h-6.5 w-6.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
           </div>
         </div>
@@ -92,13 +148,14 @@
 
       <!-- Khối Bảng Dữ Liệu và Bộ Lọc -->
       <div class="app-card mt-6 overflow-hidden">
-        
         <!-- Thanh tìm kiếm & lọc nhanh -->
-        <div class="p-5 border-b border-slate-100 dark:border-slate-800/60 flex items-center justify-between flex-wrap gap-4">
+        <div
+          class="p-5 border-b border-slate-100 dark:border-slate-800/60 flex items-center justify-between flex-wrap gap-4"
+        >
           <h4 class="font-extrabold text-slate-800 dark:text-white text-base">
             Chi tiết công nợ khách hàng
           </h4>
-          
+
           <div class="flex items-center gap-4 flex-wrap w-full sm:w-auto">
             <!-- Tìm kiếm -->
             <div class="relative w-full sm:w-64">
@@ -109,8 +166,19 @@
                 placeholder="Tìm tên, SĐT, mã khách..."
                 class="w-full search-input"
               />
-              <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3 top-3 h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="absolute left-3 top-3 h-4 w-4 text-slate-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2.5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
               </svg>
             </div>
 
@@ -153,23 +221,56 @@
                 <th>Khách hàng</th>
                 <th>Số điện thoại</th>
                 <th>Địa chỉ ví</th>
-                <th class="text-right cursor-pointer select-none" (click)="toggleSort('debt_balance')">
+                <th
+                  class="text-right cursor-pointer select-none"
+                  (click)="toggleSort('debt_balance')"
+                >
                   <div class="flex items-center justify-end gap-1">
                     <span>Dư nợ hiện tại</span>
                     <span class="text-slate-400">
                       @if (sortField() === 'debt_balance') {
                         @if (sortDesc()) {
-                          <svg class="h-3.5 w-3.5 text-[var(--dynamic-primary)] inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                          <svg
+                            class="h-3.5 w-3.5 text-[var(--dynamic-primary)] inline"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="3"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                            />
                           </svg>
                         } @else {
-                          <svg class="h-3.5 w-3.5 text-[var(--dynamic-primary)] inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                          <svg
+                            class="h-3.5 w-3.5 text-[var(--dynamic-primary)] inline"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="3"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M4.5 15.75l7.5-7.5 7.5 7.5"
+                            />
                           </svg>
                         }
                       } @else {
-                        <svg class="h-3.5 w-3.5 text-slate-300 dark:text-slate-700 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />
+                        <svg
+                          class="h-3.5 w-3.5 text-slate-300 dark:text-slate-700 inline"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          stroke-width="2.5"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5"
+                          />
                         </svg>
                       }
                     </span>
@@ -188,16 +289,22 @@
               } @else {
                 @for (item of paginatedDebts(); track item.id) {
                   <tr>
-                    <td class="font-mono font-bold text-xs text-[var(--dynamic-primary)] whitespace-nowrap">
-                      {{ item.customer_code || ('KH-' + item.id) }}
+                    <td
+                      class="font-mono font-bold text-xs text-[var(--dynamic-primary)] whitespace-nowrap"
+                    >
+                      {{ item.customer_code || 'KH-' + item.id }}
                     </td>
                     <td>
                       <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold text-sm shrink-0">
+                        <div
+                          class="w-9 h-9 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold text-sm shrink-0"
+                        >
                           {{ (item.name || '').substring(0, 1) | uppercase }}
                         </div>
                         <div class="flex flex-col min-w-0">
-                          <span class="font-extrabold text-slate-800 dark:text-white truncate max-w-[200px]">
+                          <span
+                            class="font-extrabold text-slate-800 dark:text-white truncate max-w-[200px]"
+                          >
                             {{ item.name }}
                           </span>
                         </div>
@@ -208,14 +315,26 @@
                     </td>
                     <td class="font-mono text-xs text-slate-600 dark:text-slate-400">
                       @if (item.wallet_address) {
-                        <span class="bg-slate-100 dark:bg-slate-950 px-1.5 py-0.5 rounded font-bold" [title]="item.wallet_address">
+                        <span
+                          class="bg-slate-100 dark:bg-slate-950 px-1.5 py-0.5 rounded font-bold"
+                          [title]="item.wallet_address"
+                        >
                           {{ item.wallet_address | appShortAddress }}
                         </span>
                       } @else {
-                        <span class="text-slate-400 dark:text-slate-600 italic">Chưa liên kết ví</span>
+                        <span class="text-slate-400 dark:text-slate-600 italic"
+                          >Chưa liên kết ví</span
+                        >
                       }
                     </td>
-                    <td class="text-right font-black text-sm" [class]="Number(item.debt_balance || 0) > 0 ? 'text-rose-500 dark:text-rose-400' : 'text-slate-400'">
+                    <td
+                      class="text-right font-black text-sm"
+                      [class]="
+                        Number(item.debt_balance || 0) > 0
+                          ? 'text-rose-500 dark:text-rose-400'
+                          : 'text-slate-400'
+                      "
+                    >
                       {{ item.debt_balance | vnd }}
                     </td>
                     <td>
@@ -225,8 +344,18 @@
                           (click)="openHistoryDrawer(item)"
                           class="btn-cancel btn-sm flex items-center gap-1"
                         >
-                          <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          <svg
+                            class="h-3.5 w-3.5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
                           </svg>
                           <span>Lịch sử</span>
                         </button>
@@ -235,13 +364,25 @@
                         <button
                           (click)="openPaymentModal(item)"
                           [disabled]="Number(item.debt_balance || 0) <= 0"
-                          [class]="Number(item.debt_balance || 0) > 0 
-                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/15 hover:bg-emerald-500/20' 
-                            : 'bg-slate-100 text-slate-400 dark:bg-slate-800/40 border-transparent'"
+                          [class]="
+                            Number(item.debt_balance || 0) > 0
+                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/15 hover:bg-emerald-500/20'
+                              : 'bg-slate-100 text-slate-400 dark:bg-slate-800/40 border-transparent'
+                          "
                           class="btn-sm border flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          <svg
+                            class="h-3.5 w-3.5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
                           </svg>
                           <span>Thu nợ</span>
                         </button>
@@ -268,7 +409,6 @@
   }
 </div>
 
-
 <!-- ==================== MODAL GHI NỢ THỦ CÔNG ==================== -->
 @if (isManualDebtModalOpen()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -276,10 +416,13 @@
     <div (click)="closeManualDebtModal()" class="fixed inset-0 bg-black/40"></div>
 
     <!-- Modal Content -->
-    <div class="relative app-card p-6 max-w-md w-full shadow-2xl text-slate-800 dark:text-slate-200 flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200">
-      
+    <div
+      class="relative app-card p-6 max-w-md w-full shadow-2xl text-slate-800 dark:text-slate-200 flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200"
+    >
       <!-- Header -->
-      <div class="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-800 shrink-0">
+      <div
+        class="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-800 shrink-0"
+      >
         <h4 class="text-base font-extrabold text-slate-800 dark:text-white">
           Lập phiếu ghi nợ mới
         </h4>
@@ -287,7 +430,13 @@
           (click)="closeManualDebtModal()"
           class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
         >
-          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <svg
+            class="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
@@ -297,22 +446,36 @@
       <div class="flex-1 overflow-y-auto py-4 space-y-4 no-scrollbar">
         <!-- Khách hàng (Dropdown search) -->
         <div class="space-y-1.5 relative">
-          <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5">Khách hàng ghi nợ</label>
+          <label
+            class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5"
+            >Khách hàng ghi nợ</label
+          >
           <div class="relative">
             <input
               type="text"
               [ngModel]="modalCustomerSearch()"
-              (ngModelChange)="modalCustomerSearch.set($event); isModalCustomerDropdownOpen.set(true)"
+              (ngModelChange)="
+                modalCustomerSearch.set($event); isModalCustomerDropdownOpen.set(true)
+              "
               (click)="isModalCustomerDropdownOpen.set(true)"
               placeholder="Gõ tên/SĐT để tìm khách hàng..."
               class="form-input"
             />
             @if (manualDebtForm().customer_id) {
               <button
-                (click)="manualDebtForm.update(f => ({ ...f, customer_id: null })); modalCustomerSearch.set('')"
+                (click)="
+                  manualDebtForm.update((f) => ({ ...f, customer_id: null }));
+                  modalCustomerSearch.set('')
+                "
                 class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 flex items-center justify-center p-0.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
               >
-                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <svg
+                  class="h-3 w-3"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
                   <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -321,7 +484,9 @@
 
           <!-- Dropdown danh sách kết quả tìm khách hàng -->
           @if (isModalCustomerDropdownOpen() && modalFilteredCustomers().length > 0) {
-            <div class="absolute top-full left-0 right-0 z-30 mt-1.5 max-h-48 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1">
+            <div
+              class="absolute top-full left-0 right-0 z-30 mt-1.5 max-h-48 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1"
+            >
               @for (cust of modalFilteredCustomers(); track cust.id) {
                 <button
                   type="button"
@@ -340,7 +505,10 @@
 
         <!-- Số tiền nợ -->
         <div class="space-y-1.5">
-          <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5">Số tiền ghi nợ (đ)</label>
+          <label
+            class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5"
+            >Số tiền ghi nợ (đ)</label
+          >
           <input
             type="number"
             [(ngModel)]="manualDebtForm().amount"
@@ -351,7 +519,10 @@
 
         <!-- Ngày ghi nhận -->
         <div class="space-y-1.5">
-          <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5">Ngày ghi nhận</label>
+          <label
+            class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5"
+            >Ngày ghi nhận</label
+          >
           <app-custom-date-picker
             [(selectedDate)]="manualDebtForm().recorded_at"
             placeholder="Chọn ngày ghi nhận"
@@ -360,7 +531,10 @@
 
         <!-- Ghi chú -->
         <div class="space-y-1.5">
-          <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5">Ghi chú công nợ</label>
+          <label
+            class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5"
+            >Ghi chú công nợ</label
+          >
           <textarea
             [(ngModel)]="manualDebtForm().note"
             rows="3"
@@ -372,19 +546,16 @@
 
       <!-- Action Buttons -->
       <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex gap-3 shrink-0">
-        <button
-          (click)="closeManualDebtModal()"
-          class="btn-cancel flex-1"
-        >
-          Hủy bỏ
-        </button>
+        <button (click)="closeManualDebtModal()" class="btn-cancel flex-1">Hủy bỏ</button>
         <button
           (click)="saveManualDebt()"
           [disabled]="isManualDebtSaving() || stateService.isLoading()"
           class="btn-primary flex-1 shadow-md"
         >
           @if (isManualDebtSaving()) {
-            <div class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"></div>
+            <div
+              class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
+            ></div>
             <span>Đang xử lý...</span>
           } @else {
             <span>Ghi nhận nợ</span>
@@ -395,7 +566,6 @@
   </div>
 }
 
-
 <!-- ==================== MODAL THU NỢ KHÁCH HÀNG ==================== -->
 @if (isPaymentModalOpen()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -403,10 +573,13 @@
     <div (click)="closePaymentModal()" class="fixed inset-0 bg-black/40"></div>
 
     <!-- Modal Content -->
-    <div class="relative app-card p-6 max-w-md w-full shadow-2xl text-slate-800 dark:text-slate-200 flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200">
-      
+    <div
+      class="relative app-card p-6 max-w-md w-full shadow-2xl text-slate-800 dark:text-slate-200 flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200"
+    >
       <!-- Header -->
-      <div class="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-800 shrink-0">
+      <div
+        class="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-800 shrink-0"
+      >
         <h4 class="text-base font-extrabold text-slate-800 dark:text-white">
           Thu hồi công nợ khách hàng
         </h4>
@@ -414,7 +587,13 @@
           (click)="closePaymentModal()"
           class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
         >
-          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <svg
+            class="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
@@ -424,23 +603,39 @@
       <div class="flex-1 overflow-y-auto py-4 space-y-4 no-scrollbar">
         <!-- Khách hàng -->
         <div class="space-y-1.5">
-          <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5">Khách hàng</label>
-          <div class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-slate-800/80 font-extrabold text-slate-900 dark:text-white text-sm">
-            {{ selectedCustomer()?.name }} @if (selectedCustomer()?.phone) { ({{ selectedCustomer()?.phone }}) }
+          <label
+            class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5"
+            >Khách hàng</label
+          >
+          <div
+            class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-slate-800/80 font-extrabold text-slate-900 dark:text-white text-sm"
+          >
+            {{ selectedCustomer()?.name }}
+            @if (selectedCustomer()?.phone) {
+              ({{ selectedCustomer()?.phone }})
+            }
           </div>
         </div>
 
         <!-- Dư nợ hiện tại -->
         <div class="space-y-1.5">
-          <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5">Dư nợ hiện tại</label>
-          <div class="w-full px-4 py-2.5 rounded-xl bg-rose-500/5 border border-rose-500/10 font-black text-rose-500 text-sm">
+          <label
+            class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5"
+            >Dư nợ hiện tại</label
+          >
+          <div
+            class="w-full px-4 py-2.5 rounded-xl bg-rose-500/5 border border-rose-500/10 font-black text-rose-500 text-sm"
+          >
             {{ selectedCustomer()?.debt_balance | vnd }}
           </div>
         </div>
 
         <!-- Số tiền thu hồi -->
         <div class="space-y-1.5">
-          <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5">Số tiền thu hồi (đ)</label>
+          <label
+            class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5"
+            >Số tiền thu hồi (đ)</label
+          >
           <div class="relative">
             <input
               type="number"
@@ -460,14 +655,19 @@
 
         <!-- Phương thức thanh toán -->
         <div class="space-y-1.5">
-          <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5">Phương thức thanh toán</label>
+          <label
+            class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5"
+            >Phương thức thanh toán</label
+          >
           <div class="grid grid-cols-2 gap-2">
             <button
               type="button"
               (click)="paymentForm().payment_method = 'cash'"
-              [class]="paymentForm().payment_method === 'cash' 
-                ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] font-extrabold'
-                : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'"
+              [class]="
+                paymentForm().payment_method === 'cash'
+                  ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] font-extrabold'
+                  : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+              "
               class="py-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all"
             >
               Tiền mặt
@@ -475,9 +675,11 @@
             <button
               type="button"
               (click)="paymentForm().payment_method = 'bank_transfer'"
-              [class]="paymentForm().payment_method === 'bank_transfer'
-                ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] font-extrabold'
-                : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'"
+              [class]="
+                paymentForm().payment_method === 'bank_transfer'
+                  ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] font-extrabold'
+                  : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+              "
               class="py-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all"
             >
               Chuyển khoản
@@ -485,9 +687,11 @@
             <button
               type="button"
               (click)="paymentForm().payment_method = 'e_wallet'"
-              [class]="paymentForm().payment_method === 'e_wallet'
-                ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] font-extrabold'
-                : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'"
+              [class]="
+                paymentForm().payment_method === 'e_wallet'
+                  ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] font-extrabold'
+                  : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+              "
               class="py-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all"
             >
               Ví điện tử
@@ -495,9 +699,11 @@
             <button
               type="button"
               (click)="paymentForm().payment_method = 'crypto'"
-              [class]="paymentForm().payment_method === 'crypto'
-                ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] font-extrabold'
-                : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'"
+              [class]="
+                paymentForm().payment_method === 'crypto'
+                  ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] font-extrabold'
+                  : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+              "
               class="py-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all"
             >
               Tiền mã hóa
@@ -507,7 +713,10 @@
 
         <!-- Ngày ghi nhận -->
         <div class="space-y-1.5">
-          <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5">Ngày ghi nhận</label>
+          <label
+            class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5"
+            >Ngày ghi nhận</label
+          >
           <app-custom-date-picker
             [(selectedDate)]="paymentForm().recorded_at"
             placeholder="Chọn ngày ghi nhận"
@@ -516,7 +725,10 @@
 
         <!-- Ghi chú -->
         <div class="space-y-1.5">
-          <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5">Ghi chú thu nợ</label>
+          <label
+            class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5"
+            >Ghi chú thu nợ</label
+          >
           <textarea
             [(ngModel)]="paymentForm().note"
             rows="2"
@@ -528,19 +740,16 @@
 
       <!-- Action Buttons -->
       <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex gap-3 shrink-0">
-        <button
-          (click)="closePaymentModal()"
-          class="btn-cancel flex-1"
-        >
-          Hủy bỏ
-        </button>
+        <button (click)="closePaymentModal()" class="btn-cancel flex-1">Hủy bỏ</button>
         <button
           (click)="savePayment()"
           [disabled]="isPaymentSaving() || stateService.isLoading()"
-          class="btn btn-md bg-emerald-500 hover:bg-emerald-600 text-white shadow-md shadow-emerald-500/15 flex-1"
+          class="btn-primary flex-1 shadow-md"
         >
           @if (isPaymentSaving()) {
-            <div class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"></div>
+            <div
+              class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
+            ></div>
             <span>Đang xử lý...</span>
           } @else {
             <span>Ghi nhận phiếu thu</span>
@@ -551,15 +760,24 @@
   </div>
 }
 
-
 <!-- ==================== DRAWER LỊCH SỬ CÔNG NỢ ==================== -->
-<app-drawer [isOpen]="isHistoryDrawerOpen()" (close)="closeHistoryDrawer()" title="Lịch sử biến động công nợ">
-  <span class="text-xs text-slate-500 dark:text-slate-400 font-bold block mb-4 mt-[-8px]">Khách hàng: {{ selectedCustomer()?.name }}</span>
-  
+<app-drawer
+  [isOpen]="isHistoryDrawerOpen()"
+  (close)="closeHistoryDrawer()"
+  title="Lịch sử biến động công nợ"
+>
+  <span class="text-xs text-slate-500 dark:text-slate-400 font-bold block mb-4 mt-[-8px]"
+    >Khách hàng: {{ selectedCustomer()?.name }}</span
+  >
+
   <!-- Khung tổng quan dư nợ -->
-  <div class="bg-slate-50 dark:bg-slate-950 p-4.5 rounded-2xl border border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-4 transition-colors mb-5">
+  <div
+    class="bg-slate-50 dark:bg-slate-950 p-4.5 rounded-2xl border border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-4 transition-colors mb-5"
+  >
     <div>
-      <span class="text-xs font-bold text-slate-400 uppercase tracking-wide block">Dư nợ hiện tại</span>
+      <span class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+        >Dư nợ hiện tại</span
+      >
       <span class="text-2xl font-black text-rose-500 dark:text-rose-400">
         {{ selectedCustomer()?.debt_balance | vnd }}
       </span>
@@ -572,7 +790,11 @@
       class="btn btn-sm bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
     >
       <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+        />
       </svg>
       Xuất sao kê Excel
     </button>
@@ -581,7 +803,9 @@
   <!-- Khung loading lịch sử -->
   @if (isLogsLoading()) {
     <div class="space-y-4 py-10 flex flex-col items-center justify-center">
-      <div class="w-8 h-8 rounded-full border-3 border-[var(--dynamic-primary)]/20 border-t-[var(--dynamic-primary)] animate-spin"></div>
+      <div
+        class="w-8 h-8 rounded-full border-3 border-[var(--dynamic-primary)]/20 border-t-[var(--dynamic-primary)] animate-spin"
+      ></div>
       <span class="text-xs text-slate-400 font-bold">Đang tải lịch sử công nợ...</span>
     </div>
   } @else if (customerLogs().length === 0) {
@@ -593,23 +817,32 @@
     <div class="relative pl-7 border-l-2 border-slate-100 dark:border-slate-800 space-y-6">
       @for (log of customerLogs(); track log.id) {
         <div class="relative group">
-          
           <!-- Điểm đánh dấu tròn trên trục timeline -->
-          <div 
-            [class]="log.type === 'debt' ? 'bg-rose-500 text-white shadow-rose-500/20' : 'bg-emerald-500 text-white shadow-emerald-500/20'"
+          <div
+            [class]="
+              log.type === 'debt'
+                ? 'bg-rose-500 text-white shadow-rose-500/20'
+                : 'bg-emerald-500 text-white shadow-emerald-500/20'
+            "
             class="absolute -left-[41px] top-0.5 w-6.5 h-6.5 rounded-full flex items-center justify-center text-xs font-black shadow-md border-2 border-white dark:border-slate-900 transition-colors"
           >
             {{ log.type === 'debt' ? '+' : '-' }}
           </div>
 
           <!-- Thẻ Nội dung giao dịch -->
-          <div class="p-4 rounded-xl bg-slate-50/50 dark:bg-slate-950/30 border border-slate-100 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-950/60 transition-colors">
+          <div
+            class="p-4 rounded-xl bg-slate-50/50 dark:bg-slate-950/30 border border-slate-100 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-950/60 transition-colors"
+          >
             <div class="flex items-center justify-between gap-3 flex-wrap">
               <span class="text-xs font-bold text-slate-400">
                 {{ log.recorded_at ? (log.recorded_at | date: 'dd/MM/yyyy HH:mm') : '' }}
               </span>
-              <span 
-                [class]="log.type === 'debt' ? 'text-rose-500 dark:text-rose-400' : 'text-emerald-500 dark:text-emerald-400'"
+              <span
+                [class]="
+                  log.type === 'debt'
+                    ? 'text-rose-500 dark:text-rose-400'
+                    : 'text-emerald-500 dark:text-emerald-400'
+                "
                 class="text-sm font-black text-right"
               >
                 {{ log.type === 'debt' ? '+' : '-' }}{{ log.amount | vnd }}
@@ -620,16 +853,41 @@
             <div class="text-sm font-extrabold text-slate-800 dark:text-white mt-2">
               @if (log.order_id) {
                 <div class="flex items-center gap-1.5 text-[var(--dynamic-primary)]">
-                  <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                  <svg
+                    class="h-4 w-4 shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                    />
                   </svg>
                   Ghi nợ từ Đơn hàng:
-                  <a [routerLink]="['/orders']" [queryParams]="{search: log.order?.code}" class="underline hover:opacity-85 font-black uppercase font-mono">{{ log.order?.code }}</a>
+                  <a
+                    [routerLink]="['/orders']"
+                    [queryParams]="{ search: log.order?.code }"
+                    class="underline hover:opacity-85 font-black uppercase font-mono"
+                    >{{ log.order?.code }}</a
+                  >
                 </div>
               } @else {
                 <div class="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                  <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  <svg
+                    class="h-4 w-4 shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
                   </svg>
                   {{ log.description || 'Thu hồi công nợ thủ công' }}
                 </div>
@@ -638,13 +896,25 @@
 
             <!-- Hành động xóa phiếu nợ -->
             @if (!log.order_id && web3Service.walletConnected()) {
-              <div class="flex justify-end mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/40">
+              <div
+                class="flex justify-end mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/40"
+              >
                 <button
                   (click)="deleteDebtLog(log)"
                   class="btn-danger-light btn-sm flex items-center gap-1"
                 >
-                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  <svg
+                    class="h-3.5 w-3.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
                   </svg>
                   Hủy bỏ
                 </button>
@@ -656,7 +926,6 @@
     </div>
   }
 </app-drawer>
-
 
 <!-- ==================== MODAL XÁC NHẬN XÓA LOG NỢ ==================== -->
 <app-confirm-modal
