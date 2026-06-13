@@ -10,6 +10,7 @@ import { ShortAddressPipe } from '@pipes/short-address.pipe';
 import { ConfirmModalComponent } from '@components/shared/confirm-modal/confirm-modal.component';
 import { PageHeaderComponent } from '@components/shared/page-header/page-header.component';
 import { CustomDatePickerComponent } from '@components/shared/custom-date-picker/custom-date-picker.component';
+import { TableComponent, TableCellDirective, TableColumn } from '@components/shared/table/table.component';
 
 @Component({
   selector: 'app-customers',
@@ -23,11 +24,28 @@ import { CustomDatePickerComponent } from '@components/shared/custom-date-picker
     ShortAddressPipe,
     ConfirmModalComponent,
     PageHeaderComponent,
-    CustomDatePickerComponent
+    CustomDatePickerComponent,
+    TableComponent,
+    TableCellDirective
   ],
   templateUrl: './customers.component.html'
 })
 export class CustomersComponent {
+  public readonly customerColumns: TableColumn[] = [
+    { key: 'customer_code', header: 'Mã khách', sortable: false, class: 'font-bold whitespace-nowrap' },
+    { key: 'name', header: 'Tên khách hàng / Doanh nghiệp', sortable: false, class: 'font-extrabold text-slate-800 dark:text-white whitespace-nowrap' },
+    { key: 'type', header: 'Phân loại', sortable: false, class: 'whitespace-nowrap' },
+    { key: 'phone', header: 'Điện thoại', sortable: false, class: 'font-bold whitespace-nowrap' },
+    { key: 'dob', header: 'Ngày sinh / MST', sortable: false, class: 'whitespace-nowrap' },
+    { key: 'wallet_address', header: 'Địa chỉ ví Web3', sortable: false, class: 'whitespace-nowrap font-mono' },
+    { key: 'actions', header: 'Thao tác', sortable: false, class: 'text-right whitespace-nowrap', headerClass: 'text-right' }
+  ];
+
+  public readonly groupColumns: TableColumn[] = [
+    { key: 'id', header: 'Mã nhóm', sortable: false, class: 'font-bold whitespace-nowrap' },
+    { key: 'name', header: 'Tên nhóm khách hàng', sortable: false, class: 'font-extrabold text-slate-800 dark:text-white whitespace-nowrap' },
+    { key: 'actions', header: 'Thao tác', sortable: false, class: 'text-right whitespace-nowrap', headerClass: 'text-right' }
+  ];
   public readonly stateService = inject(StateService);
   private readonly apiService = inject(ApiService);
 

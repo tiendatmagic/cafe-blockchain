@@ -24,5 +24,19 @@ return Application::configure(basePath: dirname(__DIR__))
         // $middleware->append(\App\Http\Middleware\RequireWalletAddress::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (\Illuminate\Database\Eloquent\ModelNotFoundException $e, \Illuminate\Http\Request $request) {
+            if ($request->is('api/*') || $request->wantsJson()) {
+                return response()->json([
+                    'message' => 'Tài nguyên yêu cầu không tồn tại!'
+                ], 404);
+            }
+        });
+
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, \Illuminate\Http\Request $request) {
+            if ($request->is('api/*') || $request->wantsJson()) {
+                return response()->json([
+                    'message' => 'Đường dẫn API hoặc tài nguyên không tồn tại!'
+                ], 404);
+            }
+        });
     })->create();

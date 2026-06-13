@@ -7,12 +7,12 @@ import { StateService } from '@services/state.service';
 import * as XLSX from 'xlsx';
 
 import { SkeletonLoaderComponent } from '@components/shared/skeleton-loader/skeleton-loader.component';
-import { PaginationComponent } from '@components/shared/pagination/pagination.component';
 import { ShortAddressPipe } from '@pipes/short-address.pipe';
 import { PageHeaderComponent } from '@components/shared/page-header/page-header.component';
 import { VNDCurrencyPipe } from '@pipes/vnd.pipe';
 import { CustomDatePickerComponent } from '@components/shared/custom-date-picker/custom-date-picker.component';
 import { MiniButtonsComponent, DATE_FILTER_OPTIONS } from '@components/shared/mini-buttons/mini-buttons.component';
+import { TableComponent, TableCellDirective, TableColumn } from '@components/shared/table/table.component';
 
 @Component({
   selector: 'app-reports',
@@ -22,12 +22,13 @@ import { MiniButtonsComponent, DATE_FILTER_OPTIONS } from '@components/shared/mi
     FormsModule,
     Web3ConnectPromptComponent,
     SkeletonLoaderComponent,
-    PaginationComponent,
     ShortAddressPipe,
     PageHeaderComponent,
     VNDCurrencyPipe,
     CustomDatePickerComponent,
-    MiniButtonsComponent
+    MiniButtonsComponent,
+    TableComponent,
+    TableCellDirective
   ],
   templateUrl: './reports.component.html'
 })
@@ -35,6 +36,24 @@ export class ReportsComponent implements OnInit {
   public readonly datePresets = DATE_FILTER_OPTIONS;
   private readonly apiService = inject(ApiService);
   public readonly stateService = inject(StateService);
+
+  public readonly productColumns: TableColumn[] = [
+    { key: 'sku', header: 'MÃ SKU', sortable: true, class: 'font-mono text-slate-500' },
+    { key: 'product_name', header: 'TÊN MÓN / SIZE', sortable: true, class: 'font-extrabold text-slate-800 dark:text-white' },
+    { key: 'total_quantity', header: 'SỐ LƯỢNG BÁN', sortable: true, class: 'text-right font-bold text-slate-800 dark:text-white', headerClass: 'text-right' },
+    { key: 'total_revenue', header: 'DOANH SỐ', sortable: true, class: 'text-right text-slate-800 dark:text-white', headerClass: 'text-right' },
+    { key: 'total_cost', header: 'TỔNG GIÁ VỐN', sortable: true, class: 'text-right text-slate-500', headerClass: 'text-right' },
+    { key: 'gross_profit', header: 'LỢI NHUẬN GỘP', sortable: true, class: 'text-right font-black text-emerald-500', headerClass: 'text-right' },
+  ];
+
+  public readonly customerColumns: TableColumn[] = [
+    { key: 'customer_name', header: 'TÊN KHÁCH HÀNG', sortable: true, class: 'font-extrabold text-slate-800 dark:text-white' },
+    { key: 'customer_phone', header: 'SỐ ĐIỆN THOẠI', sortable: true, class: 'text-slate-500' },
+    { key: 'wallet_address', header: 'VÍ BLOCKCHAIN (RÚT GỌN)', sortable: true, class: 'font-mono text-[11px] text-slate-500' },
+    { key: 'orders_count', header: 'SỐ ĐƠN MUA', sortable: true, class: 'text-right font-bold text-slate-800 dark:text-white', headerClass: 'text-right' },
+    { key: 'total_spent', header: 'TỔNG CHI TIÊU', sortable: true, class: 'text-right font-black text-slate-800 dark:text-white', headerClass: 'text-right' },
+    { key: 'average_order_value', header: 'TB ĐƠN HÀNG', sortable: true, class: 'text-right font-bold text-purple-600 dark:text-purple-400', headerClass: 'text-right' },
+  ];
 
   constructor() {
     effect(() => {
@@ -200,6 +219,28 @@ export class ReportsComponent implements OnInit {
       this.customerSortDesc.set(true);
     }
     this.customerPage.set(1); // Quay về trang 1
+  }
+
+  public onProductSortChange(event: { key: string, direction: 'asc' | 'desc' | '' }) {
+    if (event.key) {
+      this.productSortField.set(event.key);
+      this.productSortDesc.set(event.direction === 'desc');
+    } else {
+      this.productSortField.set('total_quantity');
+      this.productSortDesc.set(true);
+    }
+    this.productPage.set(1);
+  }
+
+  public onCustomerSortChange(event: { key: string, direction: 'asc' | 'desc' | '' }) {
+    if (event.key) {
+      this.customerSortField.set(event.key);
+      this.customerSortDesc.set(event.direction === 'desc');
+    } else {
+      this.customerSortField.set('total_spent');
+      this.customerSortDesc.set(true);
+    }
+    this.customerPage.set(1);
   }
 
   // --- Hỗ trợ vẽ biểu đồ Conic Gradient (Cơ cấu thanh toán) ---

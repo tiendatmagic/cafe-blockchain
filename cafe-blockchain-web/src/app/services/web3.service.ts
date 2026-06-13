@@ -31,10 +31,10 @@ export class Web3Service {
   public readonly financeContractAddress = signal<string>('');
   public readonly voucherContractAddress = signal<string>('');
   public readonly menuRegistryContractAddress = signal<string>('');
-  public readonly rpcUrl = signal<string>('https://bnb-testnet.api.onfinality.io/public');
-  public readonly explorerUrl = signal<string>('https://testnet.bscscan.com');
+  public readonly rpcUrl = signal<string>(environment.defaultRpcUrl || 'https://bnb-testnet.api.onfinality.io/public');
+  public readonly explorerUrl = signal<string>(environment.defaultExplorerUrl || 'https://testnet.bscscan.com');
   public readonly explorerApiKey = signal<string>('');
-  public readonly configuredChainId = signal<string>('97');
+  public readonly configuredChainId = signal<string>(environment.defaultChainId || '97');
 
   public readonly POPULAR_CHAINS = [
     { name: 'Ethereum Mainnet', chainId: '1', rpcUrl: 'https://cloudflare-eth.com', explorerUrl: 'https://etherscan.io' },

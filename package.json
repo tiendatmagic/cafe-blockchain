@@ -5,7 +5,8 @@
   "scripts": {
     "start": "npx concurrently --kill-others \"npm run be\" \"npm run fe\"",
     "be": "cd cafe-blockchain-api && php artisan serve",
-    "fe": "cd cafe-blockchain-web && npm start"
+    "fe": "cd cafe-blockchain-web && npm start",
+    "build": "cd cafe-blockchain-web && npm run build"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

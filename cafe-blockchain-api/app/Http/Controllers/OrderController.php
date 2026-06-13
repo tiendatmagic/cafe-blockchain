@@ -33,8 +33,10 @@ class OrderController extends Controller
         try {
             $order = $query->execute($storeOwner, $id);
             return response()->json($order);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['message' => 'Không tìm thấy đơn hàng tương ứng!'], 404);
         } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 404);
+            return response()->json(['message' => 'Lỗi lấy chi tiết đơn hàng: ' . $e->getMessage()], 500);
         }
     }
 

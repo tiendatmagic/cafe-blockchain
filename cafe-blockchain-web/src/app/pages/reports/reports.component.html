@@ -291,84 +291,56 @@
             </button>
           </div>
 
-          <div class="overflow-x-auto">
-            <table class="app-table min-w-[750px]">
-              <thead>
-                <tr class="select-none">
-                  <th (click)="toggleProductSort('sku')" class="cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                    <div class="flex items-center gap-1">
-                      <span>MÃ SKU</span>
-                      <span class="text-[10px]">{{ productSortField() === 'sku' ? (productSortDesc() ? '▼' : '▲') : '' }}</span>
-                    </div>
-                  </th>
-                  <th (click)="toggleProductSort('product_name')" class="cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                    <div class="flex items-center gap-1">
-                      <span>TÊN MÓN / SIZE</span>
-                      <span class="text-[10px]">{{ productSortField() === 'product_name' ? (productSortDesc() ? '▼' : '▲') : '' }}</span>
-                    </div>
-                  </th>
-                  <th (click)="toggleProductSort('total_quantity')" class="text-right cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                    <div class="flex items-center justify-end gap-1">
-                      <span>SỐ LƯỢNG BÁN</span>
-                      <span class="text-[10px]">{{ productSortField() === 'total_quantity' ? (productSortDesc() ? '▼' : '▲') : '' }}</span>
-                    </div>
-                  </th>
-                  <th (click)="toggleProductSort('total_revenue')" class="text-right cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                    <div class="flex items-center justify-end gap-1">
-                      <span>DOANH SỐ</span>
-                      <span class="text-[10px]">{{ productSortField() === 'total_revenue' ? (productSortDesc() ? '▼' : '▲') : '' }}</span>
-                    </div>
-                  </th>
-                  <th (click)="toggleProductSort('total_cost')" class="text-right cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                    <div class="flex items-center justify-end gap-1">
-                      <span>TỔNG GIÁ VỐN</span>
-                      <span class="text-[10px]">{{ productSortField() === 'total_cost' ? (productSortDesc() ? '▼' : '▲') : '' }}</span>
-                    </div>
-                  </th>
-                  <th (click)="toggleProductSort('gross_profit')" class="text-right cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                    <div class="flex items-center justify-end gap-1">
-                      <span>LỢI NHUẬN GỘP</span>
-                      <span class="text-[10px]">{{ productSortField() === 'gross_profit' ? (productSortDesc() ? '▼' : '▲') : '' }}</span>
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                @if (reportsData()?.products?.length === 0) {
-                  <tr>
-                    <td colspan="6" class="py-10 text-center italic text-slate-400">Không có dữ liệu bán hàng.</td>
-                  </tr>
-                }
-                @for (prod of productsPaged(); track $index) {
-                  <tr>
-                    <td class="font-mono text-slate-500">{{ prod.sku || '—' }}</td>
-                    <td class="font-extrabold text-slate-800 dark:text-white">
-                      {{ prod.product_name }}
-                      @if (prod.variant_name) {
-                        <span class="text-slate-400 font-normal">({{ prod.variant_name }})</span>
-                      }
-                    </td>
-                    <td class="text-right font-bold text-slate-800 dark:text-white">{{ prod.total_quantity }}</td>
-                    <td class="text-right text-slate-800 dark:text-white">{{ prod.total_revenue | vnd }}</td>
-                    <td class="text-right text-slate-500">{{ prod.total_cost | vnd }}</td>
-                    <td class="text-right font-black text-emerald-500">{{ prod.gross_profit | vnd }}</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
+          <app-table
+            [data]="productsPaged()"
+            [columns]="productColumns"
+            [isLoading]="false"
+            [showPagination]="true"
+            [totalItems]="reportsData()?.products?.length || 0"
+            [itemsPerPage]="productLimit"
+            [currentPage]="productPage()"
+            [sortKey]="productSortField()"
+            [sortDirection]="productSortDesc() ? 'desc' : 'asc'"
+            itemName="món ăn"
+            (pageChange)="productPage.set($event)"
+            (sortChange)="onProductSortChange($event)"
+            noDataMessage="Không có dữ liệu bán hàng."
+          >
+            <!-- Custom Cell cho cột SKU -->
+            <ng-template appCell="sku" let-row>
+              <span class="font-mono text-slate-500">{{ row.sku || '—' }}</span>
+            </ng-template>
 
-          <!-- Phân trang Hàng hóa -->
-          @if (productsTotalPages() > 1) {
-            <app-pagination
-              [currentPage]="productPage()"
-              [totalPages]="productsTotalPages()"
-              [totalItems]="reportsData().products.length"
-              [itemsPerPage]="productLimit"
-              itemName="món ăn"
-              (pageChange)="productPage.set($event)"
-            ></app-pagination>
-          }
+            <!-- Custom Cell cho cột Tên món -->
+            <ng-template appCell="product_name" let-row>
+              <span class="font-extrabold text-slate-800 dark:text-white">
+                {{ row.product_name }}
+                @if (row.variant_name) {
+                  <span class="text-slate-400 font-normal">({{ row.variant_name }})</span>
+                }
+              </span>
+            </ng-template>
+
+            <!-- Custom Cell cho cột Số lượng bán -->
+            <ng-template appCell="total_quantity" let-row>
+              <span class="font-bold text-slate-800 dark:text-white">{{ row.total_quantity }}</span>
+            </ng-template>
+
+            <!-- Custom Cell cho cột Doanh số -->
+            <ng-template appCell="total_revenue" let-row>
+              <span>{{ row.total_revenue | vnd }}</span>
+            </ng-template>
+
+            <!-- Custom Cell cho cột Tổng giá vốn -->
+            <ng-template appCell="total_cost" let-row>
+              <span>{{ row.total_cost | vnd }}</span>
+            </ng-template>
+
+            <!-- Custom Cell cho cột Lợi nhuận gộp -->
+            <ng-template appCell="gross_profit" let-row>
+              <span class="font-black text-emerald-500">{{ row.gross_profit | vnd }}</span>
+            </ng-template>
+          </app-table>
         </div>
 
         <!-- Nội dung của Tab 2: Khách hàng -->
@@ -389,85 +361,57 @@
             </button>
           </div>
 
-          <div class="overflow-x-auto">
-            <table class="app-table min-w-[750px]">
-              <thead>
-                <tr class="select-none">
-                  <th (click)="toggleCustomerSort('customer_name')" class="cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                    <div class="flex items-center gap-1">
-                      <span>TÊN KHÁCH HÀNG</span>
-                      <span class="text-[10px]">{{ customerSortField() === 'customer_name' ? (customerSortDesc() ? '▼' : '▲') : '' }}</span>
-                    </div>
-                  </th>
-                  <th (click)="toggleCustomerSort('customer_phone')" class="cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                    <div class="flex items-center gap-1">
-                      <span>SỐ ĐIỆN THOẠI</span>
-                      <span class="text-[10px]">{{ customerSortField() === 'customer_phone' ? (customerSortDesc() ? '▼' : '▲') : '' }}</span>
-                    </div>
-                  </th>
-                  <th (click)="toggleCustomerSort('wallet_address')" class="cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                    <div class="flex items-center gap-1">
-                      <span>VÍ BLOCKCHAIN (RÚT GỌN)</span>
-                      <span class="text-[10px]">{{ customerSortField() === 'wallet_address' ? (customerSortDesc() ? '▼' : '▲') : '' }}</span>
-                    </div>
-                  </th>
-                  <th (click)="toggleCustomerSort('orders_count')" class="text-right cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                    <div class="flex items-center justify-end gap-1">
-                      <span>SỐ ĐƠN MUA</span>
-                      <span class="text-[10px]">{{ customerSortField() === 'orders_count' ? (customerSortDesc() ? '▼' : '▲') : '' }}</span>
-                    </div>
-                  </th>
-                  <th (click)="toggleCustomerSort('total_spent')" class="text-right cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                    <div class="flex items-center justify-end gap-1">
-                      <span>TỔNG CHI TIÊU</span>
-                      <span class="text-[10px]">{{ customerSortField() === 'total_spent' ? (customerSortDesc() ? '▼' : '▲') : '' }}</span>
-                    </div>
-                  </th>
-                  <th (click)="toggleCustomerSort('average_order_value')" class="text-right cursor-pointer hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                    <div class="flex items-center justify-end gap-1">
-                      <span>TB ĐƠN HÀNG</span>
-                      <span class="text-[10px]">{{ customerSortField() === 'average_order_value' ? (customerSortDesc() ? '▼' : '▲') : '' }}</span>
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                @if (reportsData()?.customers?.length === 0) {
-                  <tr>
-                    <td colspan="6" class="py-10 text-center italic text-slate-400">Không có dữ liệu khách hàng.</td>
-                  </tr>
-                }
-                @for (cust of customersPaged(); track $index) {
-                  <tr>
-                    <td class="font-extrabold text-slate-800 dark:text-white">{{ cust.customer_name }}</td>
-                    <td class="text-slate-500">{{ cust.customer_phone || '—' }}</td>
-                    <td class="font-mono text-[11px] text-slate-500">
-                      @if (cust.wallet_address) {
-                        {{ cust.wallet_address | appShortAddress }}
-                      } @else {
-                        —
-                      }
-                    </td>
-                    <td class="text-right font-bold text-slate-800 dark:text-white">{{ cust.orders_count }}</td>
-                    <td class="text-right font-black text-slate-800 dark:text-white">{{ cust.total_spent | vnd }}</td>
-                    <td class="text-right font-bold text-purple-600 dark:text-purple-400">{{ cust.average_order_value | vnd }}</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
+          <app-table
+            [data]="customersPaged()"
+            [columns]="customerColumns"
+            [isLoading]="false"
+            [showPagination]="true"
+            [totalItems]="reportsData()?.customers?.length || 0"
+            [itemsPerPage]="customerLimit"
+            [currentPage]="customerPage()"
+            [sortKey]="customerSortField()"
+            [sortDirection]="customerSortDesc() ? 'desc' : 'asc'"
+            itemName="khách hàng"
+            (pageChange)="customerPage.set($event)"
+            (sortChange)="onCustomerSortChange($event)"
+            noDataMessage="Không có dữ liệu khách hàng."
+          >
+            <!-- Custom Cell cho cột Tên khách hàng -->
+            <ng-template appCell="customer_name" let-row>
+              <span class="font-extrabold text-slate-800 dark:text-white">{{ row.customer_name }}</span>
+            </ng-template>
 
-          <!-- Phân trang Khách hàng -->
-          @if (customersTotalPages() > 1) {
-            <app-pagination
-              [currentPage]="customerPage()"
-              [totalPages]="customersTotalPages()"
-              [totalItems]="reportsData().customers.length"
-              [itemsPerPage]="customerLimit"
-              itemName="khách hàng"
-              (pageChange)="customerPage.set($event)"
-            ></app-pagination>
-          }
+            <!-- Custom Cell cho cột Số điện thoại -->
+            <ng-template appCell="customer_phone" let-row>
+              <span class="text-slate-500">{{ row.customer_phone || '—' }}</span>
+            </ng-template>
+
+            <!-- Custom Cell cho cột Địa chỉ ví -->
+            <ng-template appCell="wallet_address" let-row>
+              <span class="font-mono text-[11px] text-slate-500">
+                @if (row.wallet_address) {
+                  {{ row.wallet_address | appShortAddress }}
+                } @else {
+                  —
+                }
+              </span>
+            </ng-template>
+
+            <!-- Custom Cell cho cột Số đơn mua -->
+            <ng-template appCell="orders_count" let-row>
+              <span class="font-bold text-slate-800 dark:text-white">{{ row.orders_count }}</span>
+            </ng-template>
+
+            <!-- Custom Cell cho cột Tổng chi tiêu -->
+            <ng-template appCell="total_spent" let-row>
+              <span class="font-black text-slate-800 dark:text-white">{{ row.total_spent | vnd }}</span>
+            </ng-template>
+
+            <!-- Custom Cell cho cột Trung bình đơn -->
+            <ng-template appCell="average_order_value" let-row>
+              <span class="font-bold text-purple-600 dark:text-purple-400">{{ row.average_order_value | vnd }}</span>
+            </ng-template>
+          </app-table>
         </div>
       </div>
     }

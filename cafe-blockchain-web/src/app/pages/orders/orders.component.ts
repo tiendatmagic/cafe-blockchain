@@ -5,9 +5,9 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { StateService } from '@services/state.service';
 import { ApiService } from '@services/api.service';
-import { PaginationComponent } from '@components/shared/pagination/pagination.component';
 import { PageHeaderComponent } from '@components/shared/page-header/page-header.component';
 import { VNDCurrencyPipe } from '@pipes/vnd.pipe';
+import { TableComponent, TableCellDirective, TableColumn } from '@components/shared/table/table.component';
 
 @Component({
   selector: 'app-orders',
@@ -17,13 +17,24 @@ import { VNDCurrencyPipe } from '@pipes/vnd.pipe';
     FormsModule,
     RouterModule,
     Web3ConnectPromptComponent,
-    PaginationComponent,
     PageHeaderComponent,
-    VNDCurrencyPipe
+    VNDCurrencyPipe,
+    TableComponent,
+    TableCellDirective
   ],
   templateUrl: './orders.component.html'
 })
 export class OrdersComponent implements OnInit {
+  public readonly columns: TableColumn[] = [
+    { key: 'order_code', header: 'Mã đơn', sortable: false, class: 'font-bold whitespace-nowrap' },
+    { key: 'table_number', header: 'Số bàn', sortable: false, class: 'font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap' },
+    { key: 'total_amount', header: 'Tổng tiền', sortable: false, class: 'font-black text-slate-800 dark:text-white whitespace-nowrap' },
+    { key: 'payment_method', header: 'Hình thức', sortable: false, class: 'text-xs font-bold whitespace-nowrap' },
+    { key: 'created_at', header: 'Thời gian', sortable: false, class: 'text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap' },
+    { key: 'status', header: 'Trạng thái đơn', sortable: false, class: 'whitespace-nowrap' },
+    { key: 'blockchain_status', header: 'Bằng chứng Blockchain', sortable: false, class: 'whitespace-nowrap' },
+    { key: 'actions', header: 'Thao tác', sortable: false, class: 'text-right whitespace-nowrap', headerClass: 'text-right' }
+  ];
   public readonly stateService = inject(StateService);
   private readonly apiService = inject(ApiService);
 

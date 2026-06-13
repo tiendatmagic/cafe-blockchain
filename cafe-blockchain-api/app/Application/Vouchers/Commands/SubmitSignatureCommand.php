@@ -23,7 +23,7 @@ class SubmitSignatureCommand
             ->first();
 
         if (!$sigRecord) {
-            throw new \Exception("Không tìm thấy yêu cầu ký số cho hóa đơn này hoặc chữ ký không hợp lệ!", 404);
+            throw new \Exception("Không tìm thấy yêu cầu ký số cho hóa đơn này!", 404);
         }
 
         if ($sigRecord->status === 'signed') {

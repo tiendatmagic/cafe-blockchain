@@ -298,224 +298,134 @@
       </div>
 
       <!-- BẢNG LỊCH SỬ ĐƠN HÀNG -->
-      <div
-        class="app-card p-0 overflow-hidden"
+      <app-table
+        [data]="paginatedOrders()"
+        [columns]="columns"
+        [isLoading]="stateService.isOrdersLoading()"
+        skeletonType="table"
+        [totalItems]="filteredOrders().length"
+        [itemsPerPage]="ordersItemsPerPage"
+        [currentPage]="ordersCurrentPage()"
+        itemName="hóa đơn"
+        [showPagination]="true"
+        (pageChange)="ordersCurrentPage.set($event)"
       >
-        <div class="overflow-x-auto">
-          <table class="app-table min-w-[950px]">
-            <thead>
-              <tr>
-                <th>
-                  Mã đơn
-                </th>
-                <th>
-                  Số bàn
-                </th>
-                <th>
-                  Tổng tiền
-                </th>
-                <th>
-                  Hình thức
-                </th>
-                <th>
-                  Thời gian
-                </th>
-                <th>
-                  Trạng thái đơn
-                </th>
-                <th>
-                  Bằng chứng Blockchain
-                </th>
-                <th class="text-right">
-                  Thao tác
-                </th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100 dark:divide-slate-800/50">
-              @for (order of paginatedOrders(); track order.id) {
-                <tr>
-                  <td
-                    class="font-bold whitespace-nowrap"
-                  >
-                    {{ order.order_code }}
-                  </td>
-                  <td
-                    class="font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap"
-                  >
-                    {{ order.table_number || 'Mang về' }}
-                  </td>
-                  <td class="font-black text-slate-800 dark:text-white whitespace-nowrap">
-                    {{ order.total_amount | vnd }}
-                  </td>
-                  <td class="text-xs font-bold whitespace-nowrap">
-                    <span
-                      [class]="
-                        order.payment_method === 'crypto'
-                          ? 'text-purple-600 bg-purple-50 dark:bg-purple-950/40 dark:text-purple-400 px-2 py-0.5 rounded-lg'
-                          : 'text-slate-600 bg-slate-100 dark:bg-slate-800 dark:text-slate-400 px-2 py-0.5 rounded-lg'
-                      "
-                    >
-                      {{ getPaymentMethodText(order.payment_method) }}
-                    </span>
-                  </td>
-                  <td
-                    class="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap"
-                  >
-                    {{ order.created_at | date: 'dd/MM/yyyy HH:mm' }}
-                  </td>
-                  <td class="whitespace-nowrap">
-                    @if (order.is_verified === false) {
-                      <span
-                        class="bg-rose-500/15 text-rose-600 text-xs font-extrabold px-2.5 py-1 rounded-xl border border-rose-500/20 shadow-sm animate-pulse"
-                        ><svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="h-4 w-4 shrink-0 text-amber-500 inline-block"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          stroke-width="2"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                          />
-                        </svg>
-                        DB bị can thiệp!</span
-                      >
-                    } @else if (order.status === 'completed') {
-                      <span
-                        class="bg-emerald-500/10 text-emerald-500 text-xs font-extrabold px-2.5 py-1 rounded-xl"
-                        >Thành công</span
-                      >
-                    } @else if (order.status === 'cancelled') {
-                      <span
-                        class="bg-rose-500/10 text-rose-500 text-xs font-extrabold px-2.5 py-1 rounded-xl"
-                        >Đã hủy</span
-                      >
-                    } @else if (order.status === 'preparing') {
-                      <span
-                        class="bg-blue-500/10 text-blue-500 text-xs font-extrabold px-2.5 py-1 rounded-xl animate-pulse"
-                        >Đang chuẩn bị</span
-                      >
-                    } @else {
-                      <span
-                        class="bg-amber-500/10 text-amber-500 text-xs font-extrabold px-2.5 py-1 rounded-xl animate-pulse"
-                        >Chờ xác nhận</span
-                      >
-                    }
-                  </td>
-                  <td class="whitespace-nowrap">
-                    @if (order.blockchain_status === 'success') {
-                      <div class="flex items-center gap-1.5">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                        <a
-                          [href]="getTxExplorerLink(order.tx_hash, order.chain_id)"
-                          target="_blank"
-                          class="text-xs text-blue-500 font-mono hover:underline font-bold"
-                        >
-                          {{ order.tx_hash.substring(0, 5) }}...{{
-                            order.tx_hash.substring(order.tx_hash.length - 4)
-                          }}
-                          ↗
-                        </a>
-                      </div>
-                    } @else if (
-                      order.status === 'completed' && order.blockchain_status !== 'failed'
-                    ) {
-                      @if (order.is_verified === false) {
-                        <div class="flex flex-col gap-1 items-start">
-                          <span
-                            class="px-2 py-0.5 rounded-lg bg-red-500/10 text-red-500 font-bold text-xs flex items-center gap-1 border border-red-500/15 shadow-sm animate-pulse"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              class="h-4 w-4 shrink-0 text-amber-500 inline-block"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              stroke-width="2"
-                            >
-                              <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                              />
-                            </svg>
-                            Dữ liệu bị thay đổi!
-                          </span>
-                          <button
-                            [disabled]="true"
-                            class="btn-cancel btn-sm"
-                          >
-                            <span>Bị khóa đồng bộ</span>
-                          </button>
-                        </div>
-                      } @else {
-                        <button
-                          [disabled]="blockchainSyncLoading() || !web3Service.walletConnected()"
-                          (click)="syncToBlockchain(order)"
-                          class="btn-primary btn-sm"
-                        >
-                          <svg
-                            class="h-3.5 w-3.5 shrink-0"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            stroke-width="2"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"
-                            />
-                          </svg>
-                          <span>Đồng bộ Blockchain</span>
-                        </button>
-                      }
-                    } @else {
-                      <span class="text-xs text-slate-400 font-semibold italic"
-                        >Đơn chưa hoàn thành</span
-                      >
-                    }
-                  </td>
-                  <td class="text-right whitespace-nowrap">
-                    <div class="flex items-center justify-end gap-2.5">
-                      <button
-                        (click)="viewOrderDetail(order)"
-                        class="btn-cancel btn-sm"
-                      >
-                        Chi tiết
-                      </button>
-                      @if (order.status === 'pending' && order.blockchain_status === 'none') {
-                        <button
-                          (click)="editOrder(order)"
-                          class="btn-secondary btn-sm"
-                        >
-                          Sửa
-                        </button>
-                      }
-                    </div>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
+        <!-- Custom cell cho cột mã đơn -->
+        <ng-template appCell="order_code" let-row>
+          <span class="font-bold whitespace-nowrap">{{ row.order_code }}</span>
+        </ng-template>
 
-        <!-- Phân trang Sổ đơn hàng -->
-        @if (filteredOrders().length > ordersItemsPerPage) {
-          <!-- Khối Phân trang dùng chung -->
-          <app-pagination
-            [currentPage]="ordersCurrentPage()"
-            [totalPages]="ordersTotalPages()"
-            [totalItems]="filteredOrders().length"
-            [itemsPerPage]="ordersItemsPerPage"
-            itemName="hóa đơn"
-            (pageChange)="ordersCurrentPage.set($event)"
-          ></app-pagination>
-        }
-      </div>
+        <!-- Custom cell cho cột số bàn -->
+        <ng-template appCell="table_number" let-row>
+          <span class="font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">
+            {{ row.table_number || 'Mang về' }}
+          </span>
+        </ng-template>
+
+        <!-- Custom cell cho cột tổng tiền -->
+        <ng-template appCell="total_amount" let-row>
+          <span class="font-black text-slate-800 dark:text-white whitespace-nowrap">
+            {{ row.total_amount | vnd }}
+          </span>
+        </ng-template>
+
+        <!-- Custom cell cho cột hình thức -->
+        <ng-template appCell="payment_method" let-row>
+          <span
+            [class]="
+              row.payment_method === 'crypto'
+                ? 'text-purple-600 bg-purple-50 dark:bg-purple-950/40 dark:text-purple-400 px-2 py-0.5 rounded-lg'
+                : 'text-slate-600 bg-slate-100 dark:bg-slate-800 dark:text-slate-400 px-2 py-0.5 rounded-lg'
+            "
+          >
+            {{ getPaymentMethodText(row.payment_method) }}
+          </span>
+        </ng-template>
+
+        <!-- Custom cell cho cột thời gian -->
+        <ng-template appCell="created_at" let-row>
+          <span class="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">
+            {{ row.created_at | date: 'dd/MM/yyyy HH:mm' }}
+          </span>
+        </ng-template>
+
+        <!-- Custom cell cho cột trạng thái đơn -->
+        <ng-template appCell="status" let-row>
+          @if (row.is_verified === false) {
+            <span class="bg-rose-500/15 text-rose-600 text-xs font-extrabold px-2.5 py-1 rounded-xl border border-rose-500/20 shadow-sm animate-pulse flex items-center gap-1 w-max">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span>DB bị can thiệp!</span>
+            </span>
+          } @else if (row.status === 'completed') {
+            <span class="bg-emerald-500/10 text-emerald-500 text-xs font-extrabold px-2.5 py-1 rounded-xl">Thành công</span>
+          } @else if (row.status === 'cancelled') {
+            <span class="bg-rose-500/10 text-rose-500 text-xs font-extrabold px-2.5 py-1 rounded-xl">Đã hủy</span>
+          } @else if (row.status === 'preparing') {
+            <span class="bg-blue-500/10 text-blue-500 text-xs font-extrabold px-2.5 py-1 rounded-xl animate-pulse">Đang chuẩn bị</span>
+          } @else {
+            <span class="bg-amber-500/10 text-amber-500 text-xs font-extrabold px-2.5 py-1 rounded-xl animate-pulse">Chờ xác nhận</span>
+          }
+        </ng-template>
+
+        <!-- Custom cell cho cột bằng chứng blockchain -->
+        <ng-template appCell="blockchain_status" let-row>
+          @if (row.blockchain_status === 'success') {
+            <div class="flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <a
+                [href]="getTxExplorerLink(row.tx_hash, row.chain_id)"
+                target="_blank"
+                class="text-xs text-blue-500 font-mono hover:underline font-bold"
+              >
+                {{ row.tx_hash.substring(0, 5) }}...{{ row.tx_hash.substring(row.tx_hash.length - 4) }} ↗
+              </a>
+            </div>
+          } @else if (row.status === 'completed' && row.blockchain_status !== 'failed') {
+            @if (row.is_verified === false) {
+              <div class="flex flex-col gap-1 items-start">
+                <span class="px-2 py-0.5 rounded-lg bg-red-500/10 text-red-500 font-bold text-xs flex items-center gap-1 border border-red-500/15 shadow-sm animate-pulse">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span>Dữ liệu bị thay đổi!</span>
+                </span>
+                <button [disabled]="true" class="btn-cancel btn-sm">
+                  <span>Bị khóa đồng bộ</span>
+                </button>
+              </div>
+            } @else {
+              <button
+                [disabled]="blockchainSyncLoading() || !web3Service.walletConnected()"
+                (click)="syncToBlockchain(row)"
+                class="btn-primary btn-sm"
+              >
+                <svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+                </svg>
+                <span>Đồng bộ Blockchain</span>
+              </button>
+            }
+          } @else {
+            <span class="text-xs text-slate-400 font-semibold italic">Đơn chưa hoàn thành</span>
+          }
+        </ng-template>
+
+        <!-- Custom cell cho cột thao tác -->
+        <ng-template appCell="actions" let-row>
+          <div class="flex items-center justify-end gap-2.5">
+            <button (click)="viewOrderDetail(row)" class="btn-cancel btn-sm">
+              Chi tiết
+            </button>
+            @if (row.status === 'pending' && row.blockchain_status === 'none') {
+              <button (click)="editOrder(row)" class="btn-secondary btn-sm">
+                Sửa
+              </button>
+            }
+          </div>
+        </ng-template>
+      </app-table>
     </div>
 
     <!-- ==================== MODAL XEM CHI TIẾT HÓA ĐƠN ==================== -->
