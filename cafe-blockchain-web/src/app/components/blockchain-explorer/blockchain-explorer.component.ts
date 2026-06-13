@@ -13,11 +13,12 @@ import { environment } from '../../../environments/environment';
 
 import { ShortAddressPipe } from '../../pipes/short-address.pipe';
 import { ThemeToggleComponent } from '../theme-toggle/theme-toggle.component';
+import { CustomSelectComponent } from '../custom-select/custom-select.component';
 
 @Component({
   selector: 'app-blockchain-explorer',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ShortAddressPipe, ThemeToggleComponent],
+  imports: [CommonModule, FormsModule, RouterModule, ShortAddressPipe, ThemeToggleComponent, CustomSelectComponent],
   templateUrl: './blockchain-explorer.component.html'
 })
 export class BlockchainExplorerComponent implements OnInit {

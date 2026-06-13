@@ -572,7 +572,7 @@
             <div class="w-9 shrink-0"></div>
           </div>
 
-          <div class="space-y-3 max-h-60 overflow-y-auto pr-1 no-scrollbar">
+          <div class="space-y-3 pr-1">
             @if (inventoryForm().items.length === 0) {
               <div class="text-center py-6 text-xs text-slate-400 italic">
                 Chưa có sản phẩm nào được chọn. Nhấn + Thêm dòng ở trên để bắt đầu!
@@ -584,32 +584,28 @@
               >
                 <!-- Dropdown chọn sản phẩm -->
                 <div class="flex-1 min-w-0 space-y-1.5">
-                  <select
-                    [ngModel]="item.product_id"
-                    (ngModelChange)="updateInventoryItemField($index, 'product_id', $event)"
-                    class="w-full form-input-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 cursor-pointer font-semibold"
-                  >
-                    <option value="0">-- Chọn món --</option>
-                    @for (p of products(); track p.id) {
-                      <option [value]="p.id">{{ p.name }}</option>
-                    }
-                  </select>
+                  <app-custom-select
+                    [value]="item.product_id"
+                    (valueChange)="updateInventoryItemField($index, 'product_id', $event)"
+                    [options]="inventoryProductOptions()"
+                    valueKey="id"
+                    labelKey="name"
+                    placeholder="-- Chọn món --"
+                    [showSearch]="true"
+                    triggerClass="w-full form-input-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 cursor-pointer font-semibold"
+                  ></app-custom-select>
 
                   <!-- Chọn biến thể nếu sản phẩm đó có biến thể -->
                   @if (item.product_id > 0 && getProductVariants(item.product_id).length > 0) {
-                    <select
-                      [ngModel]="item.product_variant_id"
-                      (ngModelChange)="
-                        updateInventoryItemField($index, 'product_variant_id', $event)
-                      "
-                      class="w-full form-input-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 cursor-pointer font-bold text-purple-600"
-                    >
-                      @for (v of getProductVariants(item.product_id); track v.id) {
-                        <option [value]="v.id">
-                          {{ v.variant_name }} ({{ v.price | vnd }})
-                        </option>
-                      }
-                    </select>
+                    <app-custom-select
+                      [value]="item.product_variant_id"
+                      (valueChange)="updateInventoryItemField($index, 'product_variant_id', $event)"
+                      [options]="getProductVariantsOptions(item.product_id)"
+                      valueKey="id"
+                      labelKey="label"
+                      placeholder="Chọn size..."
+                      triggerClass="w-full form-input-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 cursor-pointer font-bold text-purple-600"
+                    ></app-custom-select>
                   }
                 </div>
 

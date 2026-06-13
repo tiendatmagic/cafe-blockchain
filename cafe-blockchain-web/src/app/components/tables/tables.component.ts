@@ -8,6 +8,7 @@ import { ApiService } from '../../services/api.service';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 import { PageHeaderComponent } from '../page-header/page-header.component';
 import { ModalComponent } from '../modal/modal.component';
+import { CustomSelectComponent } from '../custom-select/custom-select.component';
 
 @Component({
   selector: 'app-tables',
@@ -19,7 +20,8 @@ import { ModalComponent } from '../modal/modal.component';
     Web3ConnectPromptComponent,
     ConfirmModalComponent,
     PageHeaderComponent,
-    ModalComponent
+    ModalComponent,
+    CustomSelectComponent
   ],
   templateUrl: './tables.component.html'
 })
@@ -62,6 +64,12 @@ export class TablesComponent {
   public get areas() { return this.stateService.areas; }
   public get diningTables() { return this.stateService.diningTables; }
   public get isTablesLoading() { return this.stateService.isTablesLoading; }
+
+  // Danh sách khu vực bao gồm tùy chọn mặc định cho dropdown
+  public readonly tableAreaOptions = computed(() => [
+    { id: 0, name: '-- Chọn khu vực --' },
+    ...this.areas()
+  ]);
 
   // Computed Properties lọc phòng bàn
   public readonly filteredDiningTables = computed(() => {

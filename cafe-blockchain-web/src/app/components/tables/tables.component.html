@@ -395,15 +395,13 @@
       <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
         >Chọn khu vực trực thuộc <span class="text-rose-500">*</span></label
       >
-      <select
-        [(ngModel)]="tableForm().area_id"
-        class="form-input cursor-pointer"
-      >
-        <option value="0">-- Chọn khu vực --</option>
-        @for (area of areas(); track area.id) {
-          <option [value]="area.id">{{ area.name }}</option>
-        }
-      </select>
+      <app-custom-select
+        [(value)]="tableForm().area_id"
+        [options]="tableAreaOptions()"
+        valueKey="id"
+        labelKey="name"
+        placeholder="-- Chọn khu vực --"
+      ></app-custom-select>
     </div>
 
     <!-- Trạng thái mặc định -->
@@ -411,13 +409,15 @@
       <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
         >Trạng thái bàn</label
       >
-      <select
-        [(ngModel)]="tableForm().status"
-        class="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white cursor-pointer font-semibold"
-      >
-        <option value="empty">Bàn trống (Trống)</option>
-        <option value="using">Đang sử dụng (Bận)</option>
-      </select>
+      <app-custom-select
+        [(value)]="tableForm().status"
+        [options]="[
+          { value: 'empty', label: 'Bàn trống (Trống)' },
+          { value: 'using', label: 'Đang sử dụng (Bận)' }
+        ]"
+        valueKey="value"
+        labelKey="label"
+      ></app-custom-select>
     </div>
   </div>
 

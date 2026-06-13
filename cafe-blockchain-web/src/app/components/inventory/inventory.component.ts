@@ -10,6 +10,7 @@ import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component'
 import { PageHeaderComponent } from '../page-header/page-header.component';
 import { VNDCurrencyPipe } from '../../pipes/vnd.pipe';
 import { CustomDatePickerComponent } from '../custom-date-picker/custom-date-picker.component';
+import { CustomSelectComponent } from '../custom-select/custom-select.component';
 
 @Component({
   selector: 'app-inventory',
@@ -23,7 +24,8 @@ import { CustomDatePickerComponent } from '../custom-date-picker/custom-date-pic
     ConfirmModalComponent,
     PageHeaderComponent,
     VNDCurrencyPipe,
-    CustomDatePickerComponent
+    CustomDatePickerComponent,
+    CustomSelectComponent
   ],
   templateUrl: './inventory.component.html'
 })
@@ -60,6 +62,12 @@ export class InventoryComponent {
   public get orders() { return this.stateService.orders; }
   public get inventoryRecords() { return this.stateService.inventoryRecords; }
   public get isInventoryLoading() { return this.stateService.isInventoryLoading; }
+
+  // Danh sách sản phẩm bao gồm tùy chọn mặc định cho dropdown
+  public readonly inventoryProductOptions = computed(() => [
+    { id: 0, name: '-- Chọn món --' },
+    ...this.products()
+  ]);
 
   // --- Computed Properties Kho hàng ---
   public readonly filteredInventoryRecords = computed(() => {
@@ -370,5 +378,17 @@ export class InventoryComponent {
   public getProductVariants(productId: number): any[] {
     const prod = this.products().find(p => p.id === Number(productId));
     return prod && prod.variants ? prod.variants : [];
+  }
+
+  // Tiện ích lấy danh sách variant options đã được format nhãn kèm giá
+  public getProductVariantsOptions(productId: number): any[] {
+    const variants = this.getProductVariants(productId);
+    return variants.map((v: any) => {
+      const formattedPrice = new Intl.NumberFormat('en-US').format(v.price) + 'đ';
+      return {
+        id: v.id,
+        label: `${v.variant_name} (${formattedPrice})`
+      };
+    });
   }
 }
