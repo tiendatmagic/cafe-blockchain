@@ -9,6 +9,8 @@ import { PaginationComponent } from '@components/shared/pagination/pagination.co
 import { VNDCurrencyPipe } from '@pipes/vnd.pipe';
 import { ThemeToggleComponent } from '@components/shared/theme-toggle/theme-toggle.component';
 import { MiniButtonsComponent } from '@components/shared/mini-buttons/mini-buttons.component';
+import { DrawerComponent } from '@components/shared/drawer/drawer.component';
+
 
 interface CartItem {
   product: any;
@@ -20,7 +22,7 @@ interface CartItem {
 @Component({
   selector: 'app-store',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, PaginationComponent, VNDCurrencyPipe, ThemeToggleComponent, MiniButtonsComponent],
+  imports: [CommonModule, FormsModule, RouterModule, PaginationComponent, VNDCurrencyPipe, ThemeToggleComponent, MiniButtonsComponent, DrawerComponent],
   templateUrl: './store.component.html',
   styleUrls: []
 })
