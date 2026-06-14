@@ -66,7 +66,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/settings', [SettingController::class, 'index'])->middleware('permission:settings');
 
     // Menu Sync Logs API
-    Route::get('/menu-sync-logs', [MenuSyncController::class, 'index'])->middleware('permission:settings');
+    Route::get('/menu-sync-logs', [MenuSyncController::class, 'index'])->middleware('permission:settings|menu');
+    Route::post('/menu-sync-logs', [MenuSyncController::class, 'store'])->middleware('permission:settings|menu');
 
     // Customers API
     Route::get('/customers', [CustomerController::class, 'index'])->middleware('permission:pos|customers|reports');
@@ -136,6 +137,5 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/settings', [SettingController::class, 'store']);
         Route::post('/auth/register-cashier', [AuthController::class, 'registerCashier']);
         Route::post('/auth/remove-cashier', [AuthController::class, 'removeCashier']);
-        Route::post('/menu-sync-logs', [MenuSyncController::class, 'store']);
     });
 });
