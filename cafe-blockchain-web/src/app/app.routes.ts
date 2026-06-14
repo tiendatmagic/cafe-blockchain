@@ -12,6 +12,7 @@ export const routes: Routes = [
   { path: 'tables', loadComponent: () => import('@pages/tables/tables.component').then(m => m.TablesComponent) },
   { path: 'reports', loadComponent: () => import('@pages/reports/reports.component').then(m => m.ReportsComponent) },
   { path: 'debts', loadComponent: () => import('@pages/debts/debts.component').then(m => m.DebtsComponent) },
+  { path: 'staffs', loadComponent: () => import('@pages/staffs/staffs.component').then(m => m.StaffsComponent) },
   { path: 'mobile-sign', loadComponent: () => import('@pages/mobile-sign/mobile-sign.component').then(m => m.MobileSignComponent) },
   { path: 'blockchain-explorer', loadComponent: () => import('@pages/blockchain-explorer/blockchain-explorer.component').then(m => m.BlockchainExplorerComponent) },
   { path: 'store/:slug', loadComponent: () => import('@pages/store/store.component').then(m => m.StoreComponent) },

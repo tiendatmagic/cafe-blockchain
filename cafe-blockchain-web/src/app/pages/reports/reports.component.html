@@ -10,6 +10,7 @@
   </app-page-header>
 
   @if (web3Service.walletConnected()) {
+    @if (stateService.hasPermission('reports')) {
     <!-- Bộ lọc mốc thời gian cao cấp -->
     <div class="app-card flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4">
       <!-- Lọc nhanh presets -->
@@ -415,6 +416,9 @@
         </div>
       </div>
     }
-  } @else {
+    } @else {
+      <app-access-restricted></app-access-restricted>
+    }
+} @else {
   <app-web3-connect-prompt [title]="'Kết nối ví Web3 để xem Báo cáo chi tiết'"></app-web3-connect-prompt>
 }

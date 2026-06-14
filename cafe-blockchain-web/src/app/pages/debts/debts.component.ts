@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import { StateService } from '@services/state.service';
 import { ApiService } from '@services/api.service';
 import { Web3ConnectPromptComponent } from '@components/shared/web3-connect-prompt/web3-connect-prompt.component';
+import { AccessRestrictedComponent } from '@components/shared/access-restricted/access-restricted.component';
 import { SkeletonLoaderComponent } from '@components/shared/skeleton-loader/skeleton-loader.component';
 import { PaginationComponent } from '@components/shared/pagination/pagination.component';
 import { ShortAddressPipe } from '@pipes/short-address.pipe';
@@ -23,6 +24,7 @@ import { CustomDatePickerComponent } from '@components/shared/custom-date-picker
     FormsModule,
     RouterModule,
     Web3ConnectPromptComponent,
+    AccessRestrictedComponent,
     SkeletonLoaderComponent,
     PaginationComponent,
     ShortAddressPipe,

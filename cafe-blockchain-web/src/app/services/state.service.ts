@@ -21,6 +21,10 @@ export class StateService {
   public readonly isMobileMenuOpen = signal<boolean>(false);
   public readonly isWalletModalOpen = signal<boolean>(false);
 
+  // Vai trò và quyền truy cập của người dùng hiện tại
+  public readonly currentUserRole = signal<string>('Chủ cửa hàng');
+  public readonly currentUserPermissions = signal<any>(null); // null tức là Chủ cửa hàng (Full quyền)
+
   // Trạng thái Loading
   public readonly isLoading = signal<boolean>(false);
   public readonly isDashboardLoading = signal<boolean>(false);
@@ -207,6 +211,22 @@ export class StateService {
       (window as any)._stateServiceInstances = ((window as any)._stateServiceInstances || 0) + 1;
     }
     this.initTheme();
+    
+    // Khôi phục vai trò và quyền từ localStorage
+    if (typeof window !== 'undefined') {
+      const savedRole = localStorage.getItem('auth_role');
+      const savedPermissions = localStorage.getItem('auth_permissions');
+      if (savedRole) {
+        this.currentUserRole.set(savedRole);
+      }
+      if (savedPermissions) {
+        try {
+          this.currentUserPermissions.set(JSON.parse(savedPermissions));
+        } catch (e) {
+          this.currentUserPermissions.set(null);
+        }
+      }
+    }
     // Không tự động gọi loadSettings() khi khởi tạo để tránh gọi API dư thừa khi chưa kết nối ví
 
     if (typeof window !== 'undefined') {
@@ -622,7 +642,11 @@ export class StateService {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('auth_address');
       localStorage.removeItem('auth_logged_in');
+      localStorage.removeItem('auth_role');
+      localStorage.removeItem('auth_permissions');
     }
+    this.currentUserRole.set('Chủ cửa hàng');
+    this.currentUserPermissions.set(null);
     this.isWalletModalOpen.set(false);
     if (message) {
       this.showToast(message, isError ? 'error' : 'success');
@@ -713,6 +737,17 @@ export class StateService {
                   if (typeof window !== 'undefined') {
                     localStorage.setItem('auth_address', address);
                     localStorage.setItem('auth_logged_in', 'true');
+                    if (verifyRes.role) {
+                      localStorage.setItem('auth_role', verifyRes.role);
+                      this.currentUserRole.set(verifyRes.role);
+                    }
+                    if (verifyRes.permissions) {
+                      const permStr = JSON.stringify(verifyRes.permissions);
+                      localStorage.setItem('auth_permissions', permStr);
+                      this.currentUserPermissions.set(verifyRes.permissions);
+                    } else {
+                      this.currentUserPermissions.set(null);
+                    }
                   }
                   
                   // Thiết lập ngày mặc định cho dashboard nếu chưa có
@@ -884,6 +919,8 @@ export class StateService {
       this.refreshTablesAndAreas();
     } else if (tab === 'debts') {
       this.refreshDebts();
+    } else if (tab === 'staffs') {
+      this.refreshStaffsAndRoles();
     }
   }
 
@@ -902,5 +939,42 @@ export class StateService {
         this.isDebtsLoading.set(false);
       }
     });
+  }
+
+  // Trạng thái dữ liệu nhân viên và vai trò
+  public readonly staffs = signal<any[]>([]);
+  public readonly roles = signal<any[]>([]);
+  public readonly isStaffsLoading = signal<boolean>(false);
+
+  // Refresh danh sách nhân viên và vai trò
+  public refreshStaffsAndRoles() {
+    if (!this.web3Service.walletConnected()) return;
+    if (this.isStaffsLoading()) return;
+    this.isStaffsLoading.set(true);
+
+    forkJoin({
+      staffs: this.apiService.getStaffs(),
+      roles: this.apiService.getRoles()
+    }).subscribe({
+      next: (res) => {
+        this.staffs.set(res.staffs || []);
+        this.roles.set(res.roles || []);
+        this.isStaffsLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Lỗi tải nhân viên & vai trò:', err);
+        this.isStaffsLoading.set(false);
+      }
+    });
+  }
+
+  // Kiểm tra quyền truy cập module
+  public hasPermission(module: string): boolean {
+    const permissions = this.currentUserPermissions();
+    // Nếu permissions là null, đây là Chủ cửa hàng (Admin) -> full quyền
+    if (permissions === null) {
+      return true;
+    }
+    return !!permissions[module];
   }
 }

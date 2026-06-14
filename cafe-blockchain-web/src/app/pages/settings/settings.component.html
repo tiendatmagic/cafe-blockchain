@@ -22,6 +22,7 @@
   </app-page-header>
 
   @if (stateService.web3Service.walletConnected()) {
+    @if (stateService.hasPermission('settings')) {
 
   <!-- Banner Cảnh báo Phân quyền (Chuẩn POS / Sổ bán hàng thực tế) -->
   <div class="w-full shrink-0">
@@ -2053,6 +2054,9 @@
   </app-confirm-modal>
   }
   } @else {
-    <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý Cấu hình quán'"></app-web3-connect-prompt>
+    <app-access-restricted></app-access-restricted>
   }
+} @else {
+  <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý Cấu hình quán'"></app-web3-connect-prompt>
+}
 </div>

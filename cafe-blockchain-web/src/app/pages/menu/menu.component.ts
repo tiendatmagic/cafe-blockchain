@@ -1,4 +1,5 @@
 import { Web3ConnectPromptComponent } from '@components/shared/web3-connect-prompt/web3-connect-prompt.component';
+import { AccessRestrictedComponent } from '@components/shared/access-restricted/access-restricted.component';
 import { Component, inject, signal, computed, effect, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -20,6 +21,7 @@ import { CustomSwitchComponent } from '@components/shared/custom-switch/custom-s
     FormsModule,
     RouterModule,
     Web3ConnectPromptComponent,
+    AccessRestrictedComponent,
     PaginationComponent,
     ShortAddressPipe,
     ConfirmModalComponent,

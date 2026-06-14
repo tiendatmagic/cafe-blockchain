@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Entities\User;
+use App\Domain\Entities\Staff;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
@@ -56,8 +57,32 @@ class AuthController extends Controller
             // Valid signature, remove nonce
             Cache::forget('auth_nonce_' . $address);
 
+            // Tìm kiếm xem ví đăng nhập có phải là nhân viên hay không
+            $staff = Staff::where('wallet_address', $address)->with('role')->first();
+
             // Find or create user
             $user = User::firstOrCreate(['wallet_address' => $address]);
+
+            $roleName = 'Chủ cửa hàng';
+            $permissions = null;
+
+            if ($staff) {
+                // Nếu là nhân viên, đồng bộ store_owner_address của user với store_owner_address của quán
+                $user->store_owner_address = strtolower($staff->store_owner_address);
+                $user->save();
+
+                $roleName = $staff->role->name;
+                $permissions = $staff->role->permissions;
+                if (is_string($permissions)) {
+                    $permissions = json_decode($permissions, true);
+                }
+            } else {
+                // Nếu là chủ quán, đảm bảo store_owner_address là null
+                if ($user->store_owner_address !== null) {
+                    $user->store_owner_address = null;
+                    $user->save();
+                }
+            }
 
             // Create Sanctum token
             $token = $user->createToken('pos-access-token')->plainTextToken;
@@ -89,7 +114,9 @@ class AuthController extends Controller
             return response()->json([
                 'success' => true,
                 'token' => $token,
-                'address' => $address
+                'address' => $address,
+                'role' => $roleName,
+                'permissions' => $permissions
             ])->withCookie($cookie)->withCookie($loggedCookie);
         }
 

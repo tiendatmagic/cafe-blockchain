@@ -22,6 +22,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(\App\Http\Middleware\Cors::class);
         $middleware->append(\App\Http\Middleware\AuthenticateWithCookie::class);
         // $middleware->append(\App\Http\Middleware\RequireWalletAddress::class);
+
+        // Đăng ký middleware alias để kiểm tra quyền truy cập module
+        $middleware->alias([
+            'permission' => \App\Http\Middleware\CheckPermission::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (\Illuminate\Database\Eloquent\ModelNotFoundException $e, \Illuminate\Http\Request $request) {

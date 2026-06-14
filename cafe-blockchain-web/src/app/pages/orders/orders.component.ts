@@ -1,4 +1,5 @@
 import { Web3ConnectPromptComponent } from '@components/shared/web3-connect-prompt/web3-connect-prompt.component';
+import { AccessRestrictedComponent } from '@components/shared/access-restricted/access-restricted.component';
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -17,6 +18,7 @@ import { TableComponent, TableCellDirective, TableColumn } from '@components/sha
     FormsModule,
     RouterModule,
     Web3ConnectPromptComponent,
+    AccessRestrictedComponent,
     PageHeaderComponent,
     VNDCurrencyPipe,
     TableComponent,

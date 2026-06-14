@@ -1,4 +1,5 @@
 import { Web3ConnectPromptComponent } from '@components/shared/web3-connect-prompt/web3-connect-prompt.component';
+import { AccessRestrictedComponent } from '@components/shared/access-restricted/access-restricted.component';
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -12,7 +13,17 @@ import { MiniButtonsComponent, DASHBOARD_DATE_OPTIONS } from '@components/shared
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, Web3ConnectPromptComponent, ShortAddressPipe, PageHeaderComponent, VNDCurrencyPipe, CustomDatePickerComponent, MiniButtonsComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    Web3ConnectPromptComponent,
+    AccessRestrictedComponent,
+    ShortAddressPipe,
+    PageHeaderComponent,
+    VNDCurrencyPipe,
+    CustomDatePickerComponent,
+    MiniButtonsComponent
+  ],
   templateUrl: './dashboard.component.html'
 })
 export class DashboardComponent implements OnInit {

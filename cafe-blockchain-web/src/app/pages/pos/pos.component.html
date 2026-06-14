@@ -128,7 +128,7 @@
   </app-page-header>
 
   @if (web3Service.walletConnected()) {
-
+    @if (stateService.hasPermission('pos')) {
   <!-- BỐ CỤC 2 CỘT RESPONSIVE -->
   <div class="grid grid-cols-1 xl:grid-cols-6 gap-6">
     <!-- CỘT 1 & 2: THỰC ĐƠN (LEFT) -->
@@ -1594,7 +1594,10 @@
     </div>
   </div>
 }
-} @else {
-  <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý Bán hàng POS'"></app-web3-connect-prompt>
-}
+    } @else {
+      <app-access-restricted></app-access-restricted>
+    }
+  } @else {
+    <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý Bán hàng POS'"></app-web3-connect-prompt>
+  }
 </div>

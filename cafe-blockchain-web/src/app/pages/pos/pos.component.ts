@@ -1,4 +1,5 @@
 import { Web3ConnectPromptComponent } from '@components/shared/web3-connect-prompt/web3-connect-prompt.component';
+import { AccessRestrictedComponent } from '@components/shared/access-restricted/access-restricted.component';
 import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -21,6 +22,7 @@ import { MiniButtonsComponent } from '@components/shared/mini-buttons/mini-butto
     FormsModule,
     RouterModule,
     Web3ConnectPromptComponent,
+    AccessRestrictedComponent,
     PaginationComponent,
     PageHeaderComponent,
     VNDCurrencyPipe,

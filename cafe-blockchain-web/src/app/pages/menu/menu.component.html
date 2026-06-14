@@ -90,6 +90,7 @@
   </app-page-header>
 
   @if (stateService.web3Service.walletConnected()) {
+    @if (stateService.hasPermission('menu')) {
     <!-- Bộ tìm kiếm và lọc danh mục thực đơn (Search & Category filter) -->
     <div
       [class.hidden]="isProductsLoading()"
@@ -1227,6 +1228,9 @@
       (confirm)="confirmDeleteProduct()"
       (cancel)="isDeleteProductConfirmOpen.set(false)"
     ></app-confirm-modal>
+    } @else {
+      <app-access-restricted></app-access-restricted>
+    }
   } @else {
     <app-web3-connect-prompt
       [title]="'Kết nối ví Web3 để quản lý Thực đơn món ăn'"

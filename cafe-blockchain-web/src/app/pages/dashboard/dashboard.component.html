@@ -45,6 +45,7 @@
   </app-page-header>
 
   @if (web3Service.walletConnected()) {
+    @if (stateService.hasPermission('dashboard')) {
     <!-- Bộ lọc thời gian Dashboard -->
     <div
       class="app-card flex flex-col md:flex-row md:items-center justify-between gap-4 p-4"
@@ -1049,6 +1050,9 @@
           </div>
         </div>
       </div>
+    }
+    } @else {
+      <app-access-restricted></app-access-restricted>
     }
   } @else {
     <app-web3-connect-prompt [title]="'Kết nối ví Web3 để xem Tổng quan'"></app-web3-connect-prompt>

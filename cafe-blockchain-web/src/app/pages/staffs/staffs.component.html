@@ -1,0 +1,367 @@
+<div class="space-y-6 p-4 sm:p-6 max-w-[1530px] mx-auto animate-in fade-in duration-300">
+  
+  <!-- HEADER TRANG -->
+  <app-page-header
+    title="Quản lý Nhân viên"
+    description="Danh sách nhân viên, gán vai trò và thiết lập quyền truy cập hệ thống Web POS"
+  >
+    <div icon class="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-950/40 flex items-center justify-center text-purple-650 shadow-sm shrink-0">
+      <!-- SVG Icon User Circle -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    </div>
+
+    <!-- NÚT THAO TÁC NHANH (Chỉ hiện khi đã kết nối ví) -->
+    @if (stateService.web3Service.walletConnected() && stateService.hasPermission('staffs')) {
+      <div actions class="flex items-center gap-2 shrink-0">
+        @if (activeSubTab() === 'staffs') {
+          <button
+            (click)="openAddStaff()"
+            class="btn btn-primary flex items-center gap-2"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Thêm nhân viên</span>
+          </button>
+        } @else {
+          <button
+            (click)="openAddRole()"
+            class="btn btn-primary flex items-center gap-2"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Thêm vai trò</span>
+          </button>
+        }
+      </div>
+    }
+  </app-page-header>
+
+  @if (stateService.web3Service.walletConnected()) {
+    @if (stateService.hasPermission('staffs')) {
+    
+    <!-- SUB TABS NAVIGATION -->
+    <div class="tab-group inline-flex mb-6">
+      <button
+        (click)="setSubTab('staffs')"
+        [class.active]="activeSubTab() === 'staffs'"
+        class="tab-item"
+      >
+        Nhân viên
+      </button>
+      <button
+        (click)="setSubTab('roles')"
+        [class.active]="activeSubTab() === 'roles'"
+        class="tab-item"
+      >
+        Vai trò & Phân quyền
+      </button>
+    </div>
+
+    <!-- NỘI DUNG CHÍNH -->
+    <div class="space-y-6">
+      <!-- TAB NHÂN VIÊN -->
+      @if (activeSubTab() === 'staffs') {
+        <app-table
+          [data]="paginatedStaffs()"
+          [columns]="staffColumns"
+          [isLoading]="stateService.isStaffsLoading()"
+          noDataMessage="Chưa có nhân viên nào trong quán của bạn. Bấm 'Thêm nhân viên' để bắt đầu!"
+          [showPagination]="true"
+          [totalItems]="stateService.staffs().length"
+          [itemsPerPage]="staffsPerPage"
+          [currentPage]="staffCurrentPage()"
+          (pageChange)="staffCurrentPage.set($event)"
+        >
+          <ng-template appCell="name" let-row>
+            <div class="flex items-center gap-3.5">
+              <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] text-white flex items-center justify-center font-extrabold text-sm shadow-sm shrink-0">
+                {{ (row.name || '').substring(0, 1) | uppercase }}
+              </div>
+              <div>
+                <div class="text-sm font-extrabold text-slate-800 dark:text-white leading-tight">{{ row.name }}</div>
+                <div class="text-xs text-slate-400 font-mono font-bold mt-0.5">ID: #{{ row.id }}</div>
+              </div>
+            </div>
+          </ng-template>
+
+          <ng-template appCell="phone" let-row>
+            <span class="text-sm text-slate-600 dark:text-slate-300 font-medium">{{ row.phone }}</span>
+          </ng-template>
+
+          <ng-template appCell="wallet_address" let-row>
+            <span class="text-xs font-mono font-bold text-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 px-2.5 py-1.5 rounded-lg border border-[var(--dynamic-primary)]/15">
+              {{ shortAddress(row.wallet_address) }}
+            </span>
+          </ng-template>
+
+          <ng-template appCell="role" let-row>
+            <span class="inline-flex items-center text-xs font-bold px-2.5 py-1 rounded-full bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-200/20 dark:border-purple-800/30">
+              {{ row.role?.name }}
+            </span>
+          </ng-template>
+
+          <ng-template appCell="created_at" let-row>
+            <span class="text-xs text-slate-400 dark:text-slate-500 font-medium">
+              {{ row.created_at | date: 'dd/MM/yyyy HH:mm' }}
+            </span>
+          </ng-template>
+
+          <ng-template appCell="actions" let-row>
+            <div class="flex items-center justify-end gap-1.5 whitespace-nowrap">
+              <button
+                (click)="openEditStaff(row)"
+                class="btn btn-secondary btn-sm"
+              >
+                Sửa
+              </button>
+              <button
+                (click)="triggerDeleteStaff(row)"
+                class="btn btn-danger-light btn-sm"
+              >
+                Xóa
+              </button>
+            </div>
+          </ng-template>
+        </app-table>
+      }
+
+      <!-- TAB VAI TRÒ & PHÂN QUYỀN -->
+      @if (activeSubTab() === 'roles') {
+        <app-table
+          [data]="paginatedRoles()"
+          [columns]="roleColumns"
+          [isLoading]="stateService.isStaffsLoading()"
+          noDataMessage="Không có vai trò nào."
+          [showPagination]="true"
+          [totalItems]="stateService.roles().length"
+          [itemsPerPage]="rolesPerPage"
+          [currentPage]="roleCurrentPage()"
+          (pageChange)="roleCurrentPage.set($event)"
+        >
+          <ng-template appCell="name" let-row>
+            <div class="text-sm font-extrabold text-slate-800 dark:text-white">{{ row.name }}</div>
+          </ng-template>
+
+          <ng-template appCell="permissions" let-row>
+            <span class="text-xs text-slate-500 dark:text-slate-400 font-semibold max-w-lg truncate block">
+              {{ getRolePermissionsSummary(row) }}
+            </span>
+          </ng-template>
+
+          <ng-template appCell="created_at" let-row>
+            <span class="text-xs text-slate-400 dark:text-slate-500 font-medium">
+              {{ row.created_at | date: 'dd/MM/yyyy HH:mm' }}
+            </span>
+          </ng-template>
+
+          <ng-template appCell="actions" let-row>
+            <div class="flex items-center justify-end gap-1.5 whitespace-nowrap">
+              <button
+                (click)="openEditRole(row)"
+                class="btn btn-secondary btn-sm"
+              >
+                Phân quyền
+              </button>
+              <button
+                (click)="triggerDeleteRole(row)"
+                class="btn btn-danger-light btn-sm"
+              >
+                Xóa
+              </button>
+            </div>
+          </ng-template>
+        </app-table>
+      }
+    </div>
+
+    <!-- MODAL THÊM/SỬA NHÂN VIÊN -->
+    <app-modal
+      [isOpen]="isStaffFormOpen()"
+      (close)="isStaffFormOpen.set(false)"
+      [title]="editingStaff() ? 'Sửa thông tin nhân viên' : 'Thêm nhân viên mới'"
+      size="md"
+    >
+      <form [formGroup]="staffForm" class="space-y-4">
+        <!-- Tên nhân viên -->
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Tên nhân viên <span class="text-red-500">*</span></label>
+          <input
+            type="text"
+            formControlName="name"
+            class="form-input w-full"
+            placeholder="Ví dụ: Nguyễn Văn A"
+            [class.border-red-500]="staffForm.get('name')?.touched && staffForm.get('name')?.invalid"
+          />
+          @if (staffForm.get('name')?.touched && staffForm.get('name')?.hasError('required')) {
+            <p class="text-[11px] text-red-500 font-semibold">Vui lòng nhập tên nhân viên.</p>
+          }
+        </div>
+
+        <!-- Số điện thoại -->
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Số điện thoại <span class="text-red-500">*</span></label>
+          <input
+            type="text"
+            formControlName="phone"
+            class="form-input w-full"
+            placeholder="Ví dụ: 0987654321"
+            [class.border-red-500]="staffForm.get('phone')?.touched && staffForm.get('phone')?.invalid"
+          />
+          @if (staffForm.get('phone')?.touched && staffForm.get('phone')?.hasError('required')) {
+            <p class="text-[11px] text-red-500 font-semibold">Vui lòng nhập số điện thoại.</p>
+          }
+        </div>
+
+        <!-- Địa chỉ ví Web3 (Bắt buộc) -->
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-slate-400 uppercase tracking-wide flex items-center justify-between mb-1.5">
+            <span>Địa chỉ ví MetaMask nhân viên <span class="text-red-500">*</span></span>
+          </label>
+          <input
+            type="text"
+            formControlName="wallet_address"
+            class="form-input w-full font-mono text-xs"
+            placeholder="Ví dụ: 0x123...456"
+            [class.border-red-500]="staffForm.get('wallet_address')?.touched && staffForm.get('wallet_address')?.invalid"
+          />
+          <p class="text-[10px] text-slate-400 leading-normal">
+            Bắt buộc phải nhập chính xác địa chỉ ví (0x...) của nhân viên. Nhân viên sẽ dùng ví này để ký xác thực đăng nhập làm việc tại hệ thống.
+          </p>
+          @if (staffForm.get('wallet_address')?.touched && staffForm.get('wallet_address')?.hasError('required')) {
+            <p class="text-[11px] text-red-500 font-semibold">Vui lòng nhập địa chỉ ví.</p>
+          }
+          @if (staffForm.get('wallet_address')?.touched && staffForm.get('wallet_address')?.hasError('pattern')) {
+            <p class="text-[11px] text-red-500 font-semibold">Địa chỉ ví không đúng định dạng EVM (0x + 40 ký tự hexa).</p>
+          }
+        </div>
+
+        <!-- Chọn vai trò -->
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Vai trò / Chức vụ <span class="text-red-500">*</span></label>
+          <app-custom-select
+            formControlName="role_id"
+            [options]="roleOptions"
+            valueKey="value"
+            labelKey="label"
+            placeholder="-- Chọn vai trò cho nhân viên --"
+          ></app-custom-select>
+          @if (staffForm.get('role_id')?.touched && staffForm.get('role_id')?.hasError('required')) {
+            <p class="text-[11px] text-red-500 font-semibold">Vui lòng chọn vai trò cho nhân viên.</p>
+          }
+        </div>
+
+        <!-- Modal Footer Actions -->
+        <div class="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800/60 mt-5">
+          <button
+            type="button"
+            (click)="isStaffFormOpen.set(false)"
+            class="btn btn-cancel flex-1"
+          >
+            Hủy
+          </button>
+          <button
+            type="button"
+            (click)="saveStaff()"
+            class="btn btn-primary flex-1"
+          >
+            Lưu thông tin
+          </button>
+        </div>
+      </form>
+    </app-modal>
+
+    <!-- MODAL THÊM/SỬA VAI TRÒ & PHÂN QUYỀN -->
+    <app-modal
+      [isOpen]="isRoleFormOpen()"
+      (close)="isRoleFormOpen.set(false)"
+      [title]="editingRole() ? 'Thiết lập vai trò & phân quyền' : 'Tạo vai trò mới'"
+      size="xl"
+    >
+      <form [formGroup]="roleForm" class="space-y-6">
+        <!-- Tên vai trò -->
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Tên vai trò / Chức vụ <span class="text-red-500">*</span></label>
+          <input
+            type="text"
+            formControlName="name"
+            class="form-input w-full"
+            placeholder="Ví dụ: Thu ngân, Nhân viên phục vụ..."
+            [class.border-red-500]="roleForm.get('name')?.touched && roleForm.get('name')?.invalid"
+          />
+          @if (roleForm.get('name')?.touched && roleForm.get('name')?.hasError('required')) {
+            <p class="text-[11px] text-red-500 font-semibold">Vui lòng nhập tên vai trò.</p>
+          }
+        </div>
+
+        <!-- BẢNG PHÂN QUYỀN TRUY CẬP MODULE -->
+        <div class="space-y-3">
+          <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Chọn các module được phép truy cập:</label>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto pr-1 no-scrollbar" formGroupName="permissions">
+            @for (mod of modules; track mod.key) {
+              <label class="flex items-start gap-3.5 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/10 cursor-pointer transition-all active:scale-[0.995]">
+                <input
+                  type="checkbox"
+                  [formControlName]="mod.key"
+                  class="mt-1 h-4 w-4 rounded border-slate-300 text-[var(--dynamic-primary)] focus:ring-[var(--dynamic-primary)] transition-all cursor-pointer accent-[var(--dynamic-primary)]"
+                />
+                <div class="space-y-0.5">
+                  <div class="text-xs sm:text-sm font-extrabold text-slate-800 dark:text-white leading-tight">
+                    {{ mod.name }}
+                  </div>
+                  <div class="text-[11px] text-slate-400 leading-normal">
+                    {{ mod.desc }}
+                  </div>
+                </div>
+              </label>
+            }
+          </div>
+        </div>
+
+        <!-- Modal Footer Actions -->
+        <div class="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800/60 mt-5">
+          <button
+            type="button"
+            (click)="isRoleFormOpen.set(false)"
+            class="btn btn-cancel flex-1"
+          >
+            Hủy
+          </button>
+          <button
+            type="button"
+            (click)="saveRole()"
+            class="btn btn-primary flex-1"
+          >
+            Lưu vai trò
+          </button>
+        </div>
+      </form>
+    </app-modal>
+
+    <!-- MODAL XÁC NHẬN XÓA DÙNG CHUNG -->
+    @if (confirmDeleteData()) {
+      <app-confirm-modal
+        [isOpen]="true"
+        [title]="confirmDeleteData()!.title"
+        [description]="confirmDeleteData()!.desc"
+        (confirm)="onDeleteConfirm()"
+        (cancel)="confirmDeleteData.set(null)"
+      ></app-confirm-modal>
+    }
+
+    } @else {
+      <app-access-restricted></app-access-restricted>
+    }
+  } @else {
+    <div class="max-w-[1530px] mx-auto my-10 animate-in fade-in duration-300">
+      <app-web3-connect-prompt
+        title="Kết nối ví để quản lý"
+        description="Bạn cần kết nối ví Web3 để truy cập danh sách nhân viên và quản lý cấu hình phân quyền của quán."
+      ></app-web3-connect-prompt>
+    </div>
+  }
+</div>

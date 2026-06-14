@@ -40,6 +40,7 @@
   </app-page-header>
 
   @if (stateService.web3Service.walletConnected()) {
+    @if (stateService.hasPermission('orders')) {
     @if (stateService.isOrdersLoading()) {
       <!-- TABLE SKELETON FOR ORDERS -->
       <div
@@ -1248,6 +1249,9 @@
           </div>
         </div>
       </div>
+    }
+    } @else {
+      <app-access-restricted></app-access-restricted>
     }
   } @else {
     <app-web3-connect-prompt

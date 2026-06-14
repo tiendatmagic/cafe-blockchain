@@ -385,4 +385,37 @@ export class ApiService {
   public deleteDebtLog(id: number): Observable<any> {
     return this.http.delete(`${this.baseUrl}/debts/${id}`, { headers: this.getHeaders() });
   }
+
+  // --- Staffs & Roles API ---
+  public getStaffs(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/staffs`, { headers: this.getHeaders() });
+  }
+
+  public createStaff(staff: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/staffs`, staff, { headers: this.getHeaders() });
+  }
+
+  public updateStaff(id: number | string, staff: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/staffs/${id}`, staff, { headers: this.getHeaders() });
+  }
+
+  public deleteStaff(id: number | string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/staffs/${id}`, { headers: this.getHeaders() });
+  }
+
+  public getRoles(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/roles`, { headers: this.getHeaders() });
+  }
+
+  public createRole(role: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/roles`, role, { headers: this.getHeaders() });
+  }
+
+  public updateRole(id: number | string, role: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/roles/${id}`, role, { headers: this.getHeaders() });
+  }
+
+  public deleteRole(id: number | string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/roles/${id}`, { headers: this.getHeaders() });
+  }
 }

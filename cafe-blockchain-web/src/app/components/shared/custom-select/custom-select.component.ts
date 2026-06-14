@@ -1,14 +1,21 @@
-import { Component, Input, Output, EventEmitter, ElementRef, HostListener, inject, signal, computed, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ElementRef, HostListener, inject, signal, computed, OnDestroy, forwardRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
 
 @Component({
   selector: 'app-custom-select',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './custom-select.component.html'
+  templateUrl: './custom-select.component.html',
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => CustomSelectComponent),
+      multi: true
+    }
+  ]
 })
-export class CustomSelectComponent implements OnDestroy {
+export class CustomSelectComponent implements ControlValueAccessor, OnDestroy {
   private readonly elementRef = inject(ElementRef);
 
   @Input() value: any = null;
@@ -123,10 +130,32 @@ export class CustomSelectComponent implements OnDestroy {
     }
   }
 
+  // ControlValueAccessor implementation
+  private onChange: (value: any) => void = () => {};
+  private onTouched: () => void = () => {};
+
+  public writeValue(value: any): void {
+    this.value = value;
+  }
+
+  public registerOnChange(fn: any): void {
+    this.onChange = fn;
+  }
+
+  public registerOnTouched(fn: any): void {
+    this.onTouched = fn;
+  }
+
+  public setDisabledState?(isDisabled: boolean): void {
+    this.disabled = isDisabled;
+  }
+
   public selectOption(option: any): void {
     const val = this.getOptionValue(option);
     this.value = val;
     this.valueChange.emit(val);
+    this.onChange(val);
+    this.onTouched();
     this.isOpen.set(false);
     this.removeScrollListeners();
   }

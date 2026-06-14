@@ -14,4 +14,4 @@ Nhưng nhớ là không cần phải copy 100% nội dung đoạn chat câu tr�
 
 Mỗi khi thực hiện yêu cầu ở đoạn chat mới, luôn đọc D:\git\cafe-blockchain\.agent\AGENTS.md trước
 
-Còn về khi tôi yêu cầu phát triển tính năng mới liên quan đến giao diện, hãy đọc D:\git\cafe-blockchain\.agent\design.md trước để tuân theo quy tắc chung nhé
+Còn về khi tôi yêu cầu phát triển tính năng mới liên quan đến giao diện, hãy đọc D:\git\cafe-blockchain\.agent\design.md trước để tuân theo quy tắc chung nhé. Chú ý không được viết lại những thứ đã có sẵn, hãy tận dụng component, class có sẵn trong css để viết lại, kế thừa và tối ưu từ những thứ đã có
