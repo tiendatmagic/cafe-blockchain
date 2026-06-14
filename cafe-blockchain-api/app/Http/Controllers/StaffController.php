@@ -188,35 +188,35 @@ class StaffController extends Controller
         if ($roles->isEmpty()) {
             $defaultRoles = [
                 [
-                    'name' => 'Quản lý cửa hàng',
+                    'name' => 'Chủ quán',
                     'permissions' => [
                         'dashboard' => true, 'pos' => true, 'menu' => true, 'orders' => true,
-                        'financials' => true, 'customers' => true, 'inventory' => true, 'tables' => true,
-                        'reports' => true, 'settings' => true, 'staffs' => true
+                        'financials' => true, 'customers' => true, 'debts' => true, 'inventory' => true,
+                        'tables' => true, 'reports' => true, 'settings' => true, 'staffs' => true
                     ]
                 ],
                 [
-                    'name' => 'Nhân viên thu ngân',
+                    'name' => 'Quản lý',
+                    'permissions' => [
+                        'dashboard' => true, 'pos' => true, 'menu' => true, 'orders' => true,
+                        'financials' => false, 'customers' => true, 'debts' => true, 'inventory' => true,
+                        'tables' => true, 'reports' => true, 'settings' => false, 'staffs' => false
+                    ]
+                ],
+                [
+                    'name' => 'Thu ngân',
                     'permissions' => [
                         'dashboard' => false, 'pos' => true, 'menu' => false, 'orders' => true,
-                        'financials' => false, 'customers' => true, 'inventory' => false, 'tables' => true,
-                        'reports' => false, 'settings' => false, 'staffs' => false
+                        'financials' => false, 'customers' => true, 'debts' => true, 'inventory' => false,
+                        'tables' => true, 'reports' => false, 'settings' => false, 'staffs' => false
                     ]
                 ],
                 [
-                    'name' => 'Nhân viên kho',
+                    'name' => 'Kế toán',
                     'permissions' => [
-                        'dashboard' => false, 'pos' => false, 'menu' => true, 'orders' => false,
-                        'financials' => false, 'customers' => false, 'inventory' => true, 'tables' => false,
-                        'reports' => false, 'settings' => false, 'staffs' => false
-                    ]
-                ],
-                [
-                    'name' => 'Nhân viên thu chi',
-                    'permissions' => [
-                        'dashboard' => false, 'pos' => false, 'menu' => false, 'orders' => false,
-                        'financials' => true, 'customers' => false, 'inventory' => false, 'tables' => false,
-                        'reports' => false, 'settings' => false, 'staffs' => false
+                        'dashboard' => true, 'pos' => false, 'menu' => false, 'orders' => false,
+                        'financials' => true, 'customers' => true, 'debts' => true, 'inventory' => true,
+                        'tables' => false, 'reports' => true, 'settings' => false, 'staffs' => false
                     ]
                 ]
             ];

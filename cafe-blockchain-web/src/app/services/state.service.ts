@@ -889,6 +889,10 @@ export class StateService {
       this.setTabState('tables');
     } else if (cleanUrl.includes('/debts')) {
       this.setTabState('debts');
+    } else if (cleanUrl.includes('/staffs')) {
+      this.setTabState('staffs');
+    } else if (cleanUrl.includes('/reports')) {
+      this.setTabState('reports');
     }
   }
 
