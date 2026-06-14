@@ -599,14 +599,23 @@ export class Web3Service {
     const chainIdToUse = targetChainId || this.configuredChainId();
     const chainIdHex = `0x${BigInt(chainIdToUse).toString(16)}`;
 
-    if (typeof window === 'undefined' || !(window as any).ethereum) {
+    // Lấy provider tương ứng (AppKit wallet provider hoặc window.ethereum)
+    let provider: any = null;
+    if (this.modal && this.appKitIsConnected) {
+      provider = this.modal.getWalletProvider();
+    }
+    if (!provider && typeof window !== 'undefined' && (window as any).ethereum) {
+      provider = (window as any).ethereum;
+    }
+
+    if (!provider) {
       this.walletError.set('Không tìm thấy ví Web3!');
       return false;
     }
 
     try {
-      console.log('Attempting direct window.ethereum switch to chain ID:', chainIdHex);
-      await (window as any).ethereum.request({
+      console.log('Attempting switch to chain ID:', chainIdHex);
+      await provider.request({
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: chainIdHex }],
       });
@@ -617,7 +626,7 @@ export class Web3Service {
       }
       return true;
     } catch (directSwitchError: any) {
-      console.warn('Direct window.ethereum switch failed, attempting to add network:', directSwitchError);
+      console.warn('Switch network failed, attempting to add network:', directSwitchError);
       const isNetworkNotAdded = directSwitchError.code === 4902 ||
         directSwitchError.data?.originalError?.code === 4902 ||
         directSwitchError.message?.includes('4902');
@@ -631,7 +640,7 @@ export class Web3Service {
           const rpcUrl = popularChain ? popularChain.rpcUrl : this.rpcUrl();
           const explorerUrl = popularChain ? popularChain.explorerUrl : this.explorerUrl();
 
-          await (window as any).ethereum.request({
+          await provider.request({
             method: 'wallet_addEthereumChain',
             params: [{
               chainId: chainIdHex,
@@ -651,7 +660,7 @@ export class Web3Service {
           }
           return true;
         } catch (addError) {
-          console.error('Direct window.ethereum add failed:', addError);
+          console.error('Add network failed:', addError);
           this.walletError.set('Không thể tự động thêm mạng mới vào ví!');
           return false;
         }
