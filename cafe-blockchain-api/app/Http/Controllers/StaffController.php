@@ -310,4 +310,70 @@ class StaffController extends Controller
             'message' => 'Xóa vai trò thành công.'
         ]);
     }
+
+    /**
+     * Khôi phục/Cập nhật các vai trò mặc định về trạng thái ban đầu
+     */
+    public function resetDefaultRoles(Request $request)
+    {
+        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+
+        $defaultRoles = [
+            [
+                'name' => 'Chủ quán',
+                'permissions' => [
+                    'dashboard' => true, 'pos' => true, 'menu' => true, 'orders' => true,
+                    'financials' => true, 'customers' => true, 'debts' => true, 'inventory' => true,
+                    'tables' => true, 'reports' => true, 'settings' => true, 'staffs' => true
+                ]
+            ],
+            [
+                'name' => 'Quản lý',
+                'permissions' => [
+                    'dashboard' => true, 'pos' => true, 'menu' => true, 'orders' => true,
+                    'financials' => false, 'customers' => true, 'debts' => true, 'inventory' => true,
+                    'tables' => true, 'reports' => true, 'settings' => false, 'staffs' => false
+                ]
+            ],
+            [
+                'name' => 'Thu ngân',
+                'permissions' => [
+                    'dashboard' => false, 'pos' => true, 'menu' => false, 'orders' => true,
+                    'financials' => false, 'customers' => true, 'debts' => true, 'inventory' => false,
+                    'tables' => true, 'reports' => false, 'settings' => false, 'staffs' => false
+                ]
+            ],
+            [
+                'name' => 'Kế toán',
+                'permissions' => [
+                    'dashboard' => true, 'pos' => false, 'menu' => false, 'orders' => false,
+                    'financials' => true, 'customers' => true, 'debts' => true, 'inventory' => true,
+                    'tables' => false, 'reports' => true, 'settings' => false, 'staffs' => false
+                ]
+            ]
+        ];
+
+        foreach ($defaultRoles as $def) {
+            $role = Role::where('store_owner_address', $storeOwner)->where('name', $def['name'])->first();
+
+            if ($role) {
+                // Đã tồn tại -> Cập nhật quyền mặc định chuẩn
+                $role->update([
+                    'permissions' => $def['permissions']
+                ]);
+            } else {
+                // Chưa tồn tại -> Tạo mới
+                Role::create([
+                    'name' => $def['name'],
+                    'store_owner_address' => $storeOwner,
+                    'permissions' => $def['permissions']
+                ]);
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Khôi phục các vai trò mặc định thành công.'
+        ]);
+    }
 }

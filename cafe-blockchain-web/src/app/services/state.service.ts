@@ -981,6 +981,25 @@ export class StateService {
     });
   }
 
+  // Khôi phục vai trò mặc định của hệ thống
+  public resetDefaultRoles() {
+    if (this.isStaffsLoading()) return;
+    this.isStaffsLoading.set(true);
+
+    this.apiService.resetDefaultRoles().subscribe({
+      next: (res) => {
+        this.isStaffsLoading.set(false);
+        this.showToast('Khôi phục vai trò mặc định thành công', 'success');
+        this.refreshStaffsAndRoles();
+      },
+      error: (err) => {
+        console.error('Lỗi khôi phục vai trò mặc định:', err);
+        this.isStaffsLoading.set(false);
+        this.showToast(err.error?.message || 'Không thể khôi phục vai trò mặc định', 'error');
+      }
+    });
+  }
+
   // Kiểm tra quyền truy cập module
   public hasPermission(module: string): boolean {
     const permissions = this.currentUserPermissions();

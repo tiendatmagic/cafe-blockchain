@@ -418,4 +418,8 @@ export class ApiService {
   public deleteRole(id: number | string): Observable<any> {
     return this.http.delete(`${this.baseUrl}/roles/${id}`, { headers: this.getHeaders() });
   }
+
+  public resetDefaultRoles(): Observable<any> {
+    return this.http.post(`${this.baseUrl}/roles/reset-default`, {}, { headers: this.getHeaders() });
+  }
 }

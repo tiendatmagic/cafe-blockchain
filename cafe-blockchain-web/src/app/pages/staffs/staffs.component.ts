@@ -86,6 +86,8 @@ export class StaffsComponent implements OnInit {
 
   // Modal xác nhận xóa
   public readonly confirmDeleteData = signal<{ type: 'staff' | 'role'; id: number; title: string; desc: string } | null>(null);
+  public readonly confirmResetRolesOpen = signal<boolean>(false);
+  public readonly isDeleting = signal<boolean>(false);
 
   // Danh sách các module trong Web POS hỗ trợ phân quyền
   public readonly modules = [
@@ -295,8 +297,12 @@ export class StaffsComponent implements OnInit {
 
   // Xử lý xác nhận xóa từ ConfirmModal
   public onDeleteConfirm() {
+    if (this.isDeleting()) return;
+
     const data = this.confirmDeleteData();
     if (!data) return;
+
+    this.isDeleting.set(true);
 
     const request = data.type === 'staff'
       ? this.apiService.deleteStaff(data.id)
@@ -309,6 +315,7 @@ export class StaffsComponent implements OnInit {
           'success'
         );
         this.confirmDeleteData.set(null);
+        this.isDeleting.set(false);
         this.stateService.refreshStaffsAndRoles();
 
         // Điều chỉnh trang hiện tại nếu vượt quá số lượng trang tối đa sau khi xóa
@@ -332,8 +339,15 @@ export class StaffsComponent implements OnInit {
         const errorMsg = err.error?.message || 'Không thể xóa tài nguyên này.';
         this.stateService.showToast(errorMsg, 'error');
         this.confirmDeleteData.set(null);
+        this.isDeleting.set(false);
       }
     });
+  }
+
+  // Xử lý xác nhận khôi phục vai trò mặc định
+  public onResetRolesConfirm() {
+    this.confirmResetRolesOpen.set(false);
+    this.stateService.resetDefaultRoles();
   }
 
   // Trả về danh sách tên module được kích hoạt quyền để hiển thị tóm tắt

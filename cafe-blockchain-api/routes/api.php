@@ -120,6 +120,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/staffs/{id}', [StaffController::class, 'destroy'])->middleware('permission:staffs');
     Route::get('/roles', [StaffController::class, 'indexRoles'])->middleware('permission:staffs');
     Route::post('/roles', [StaffController::class, 'storeRole'])->middleware('permission:staffs');
+    Route::post('/roles/reset-default', [StaffController::class, 'resetDefaultRoles'])->middleware('permission:staffs');
     Route::put('/roles/{id}', [StaffController::class, 'updateRole'])->middleware('permission:staffs');
     Route::delete('/roles/{id}', [StaffController::class, 'destroyRole'])->middleware('permission:staffs');
 
