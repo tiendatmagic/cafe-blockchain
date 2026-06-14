@@ -263,7 +263,7 @@ export class Web3Service {
           name: 'Cafe Blockchain',
           description: 'Cafe Blockchain POS & Storefront DApp',
           url: window.location.origin,
-          icons: [window.location.origin + '/assets/icons/icon-128x128.png']
+          icons: [window.location.origin + '/assets/logo.png']
         },
         projectId,
         features: {
