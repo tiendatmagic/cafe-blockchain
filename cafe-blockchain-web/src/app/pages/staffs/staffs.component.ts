@@ -76,11 +76,13 @@ export class StaffsComponent implements OnInit {
   public staffForm!: FormGroup;
   public readonly isStaffFormOpen = signal<boolean>(false);
   public readonly editingStaff = signal<any | null>(null);
+  public readonly isSavingStaff = signal<boolean>(false);
 
   // Quản lý Vai trò
   public roleForm!: FormGroup;
   public readonly isRoleFormOpen = signal<boolean>(false);
   public readonly editingRole = signal<any | null>(null);
+  public readonly isSavingRole = signal<boolean>(false);
 
   // Modal xác nhận xóa
   public readonly confirmDeleteData = signal<{ type: 'staff' | 'role'; id: number; title: string; desc: string } | null>(null);
@@ -197,11 +199,14 @@ export class StaffsComponent implements OnInit {
 
   // Lưu thông tin nhân viên (Thêm hoặc Cập nhật)
   public saveStaff() {
+    if (this.isSavingStaff()) return;
+
     if (this.staffForm.invalid) {
       this.staffForm.markAllAsTouched();
       return;
     }
 
+    this.isSavingStaff.set(true);
     const data = this.staffForm.value;
     const staffId = this.editingStaff()?.id;
 
@@ -220,21 +225,26 @@ export class StaffsComponent implements OnInit {
           this.staffCurrentPage.set(1);
         }
         this.stateService.refreshStaffsAndRoles();
+        this.isSavingStaff.set(false);
       },
       error: (err) => {
         const errorMsg = err.error?.message || 'Có lỗi xảy ra, vui lòng thử lại.';
         this.stateService.showToast(errorMsg, 'error');
+        this.isSavingStaff.set(false);
       }
     });
   }
 
   // Lưu thông tin vai trò
   public saveRole() {
+    if (this.isSavingRole()) return;
+
     if (this.roleForm.invalid) {
       this.roleForm.markAllAsTouched();
       return;
     }
 
+    this.isSavingRole.set(true);
     const data = this.roleForm.value;
     const roleId = this.editingRole()?.id;
 
@@ -253,10 +263,12 @@ export class StaffsComponent implements OnInit {
           this.roleCurrentPage.set(1);
         }
         this.stateService.refreshStaffsAndRoles();
+        this.isSavingRole.set(false);
       },
       error: (err) => {
         const errorMsg = err.error?.message || 'Có lỗi xảy ra, vui lòng thử lại.';
         this.stateService.showToast(errorMsg, 'error');
+        this.isSavingRole.set(false);
       }
     });
   }

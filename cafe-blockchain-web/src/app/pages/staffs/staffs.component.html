@@ -260,6 +260,7 @@
             type="button"
             (click)="isStaffFormOpen.set(false)"
             class="btn btn-cancel flex-1"
+            [disabled]="isSavingStaff()"
           >
             Hủy
           </button>
@@ -267,8 +268,9 @@
             type="button"
             (click)="saveStaff()"
             class="btn btn-primary flex-1"
+            [disabled]="isSavingStaff()"
           >
-            Lưu thông tin
+            {{ isSavingStaff() ? 'Đang lưu...' : 'Lưu thông tin' }}
           </button>
         </div>
       </form>
@@ -328,6 +330,7 @@
             type="button"
             (click)="isRoleFormOpen.set(false)"
             class="btn btn-cancel flex-1"
+            [disabled]="isSavingRole()"
           >
             Hủy
           </button>
@@ -335,8 +338,9 @@
             type="button"
             (click)="saveRole()"
             class="btn btn-primary flex-1"
+            [disabled]="isSavingRole()"
           >
-            Lưu vai trò
+            {{ isSavingRole() ? 'Đang lưu...' : 'Lưu vai trò' }}
           </button>
         </div>
       </form>
