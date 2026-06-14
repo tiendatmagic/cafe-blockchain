@@ -223,11 +223,16 @@ export class Web3Service {
   private appKitAddress: string | null = null;
   private appKitIsConnected = false;
   private isAppKitInitializing = true;
+  private lastEmittedAccount = '';
 
   constructor() {
     this.initAppKit();
     this.setupEthereumListeners();
     this.restoreSessionFromStorage();
+
+    // Đồng bộ trạng thái ban đầu của ví đã kết nối để tránh phát ra sự kiện trùng lặp
+    const savedAddress = this.currentAccount();
+    this.lastEmittedAccount = savedAddress ? savedAddress.toLowerCase() : '';
 
     // Đánh dấu hoàn tất giai đoạn khởi tạo AppKit sau 2 giây để tránh race condition lúc F5
     setTimeout(() => {
@@ -296,13 +301,13 @@ export class Web3Service {
           await this.updateBalanceAndStatus(address);
 
           if (oldAccount && oldAccount.toLowerCase() !== address.toLowerCase()) {
-            this.accountsChanged$.next(address);
+            this.emitAccountChange(address);
           }
         } else {
           // Chỉ xử lý ngắt kết nối thực sự sau khi kết thúc giai đoạn khởi tạo
           if (!this.isAppKitInitializing && this.currentAccount()) {
             this.resetWalletState(true);
-            this.accountsChanged$.next('');
+            this.emitAccountChange('');
           } else {
             // Trong lúc khởi tạo (F5), chỉ tạm thời reset state ví của DApp, giữ nguyên localStorage
             this.resetWalletState(false);
@@ -351,13 +356,13 @@ export class Web3Service {
 
         if (oldAccount && oldAccount.toLowerCase() !== account.toLowerCase()) {
           if (wasConnected) {
-            this.accountsChanged$.next(account);
+            this.emitAccountChange(account);
           }
         }
       } else {
         if (!this.isAppKitInitializing && this.currentAccount()) {
           this.resetWalletState(true);
-          this.accountsChanged$.next('');
+          this.emitAccountChange('');
         } else {
           this.resetWalletState(false);
         }
@@ -683,7 +688,7 @@ export class Web3Service {
       }
     }
     this.resetWalletState(true);
-    this.accountsChanged$.next('');
+    this.emitAccountChange('');
   }
 
   private resetWalletState(forceLogout = false) {
@@ -695,6 +700,18 @@ export class Web3Service {
       localStorage.removeItem('auth_address');
       localStorage.removeItem('auth_logged_in');
     }
+  }
+
+  /**
+   * Phát sự kiện thay đổi tài khoản và bảo vệ chống trùng lặp do nhiều nguồn listener (AppKit & window.ethereum) phát ra đồng thời
+   */
+  private emitAccountChange(account: string) {
+    const normalizedAccount = account ? account.toLowerCase() : '';
+    if (normalizedAccount === this.lastEmittedAccount) {
+      return;
+    }
+    this.lastEmittedAccount = normalizedAccount;
+    this.accountsChanged$.next(account);
   }
 
   /**
