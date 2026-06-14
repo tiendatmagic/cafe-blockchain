@@ -12,6 +12,7 @@ import { ConfirmModalComponent } from '@components/shared/confirm-modal/confirm-
 import { PageHeaderComponent } from '@components/shared/page-header/page-header.component';
 import { ModalComponent } from '@components/shared/modal/modal.component';
 import { CustomSwitchComponent } from '@components/shared/custom-switch/custom-switch.component';
+import { CustomSelectComponent } from '@components/shared/custom-select/custom-select.component';
 import { Html5Qrcode } from 'html5-qrcode';
 
 @Component({
@@ -28,7 +29,8 @@ import { Html5Qrcode } from 'html5-qrcode';
     ConfirmModalComponent,
     PageHeaderComponent,
     ModalComponent,
-    CustomSwitchComponent
+    CustomSwitchComponent,
+    CustomSelectComponent
   ],
   templateUrl: './menu.component.html'
 })
@@ -53,6 +55,13 @@ export class MenuComponent implements OnInit, OnDestroy {
       }
     });
   }
+
+  // Cấu hình gợi ý đơn vị tính
+  public readonly unitSuggestions = [
+    { value: '', label: 'Trống' },
+    { value: 'Cái', label: 'Cái' },
+    { value: 'Hộp', label: 'Hộp' }
+  ];
 
   // Cấu hình View Mode & Phân trang Thực đơn
   public readonly menuViewMode = signal<'table' | 'card'>('card');
@@ -91,7 +100,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   public readonly menuForm = signal<any>({
     sku: '',
     barcode: '',
-    unit: 'Cái',
+    unit: '',
     name: '',
     price: 0,
     cost_price: 0,
@@ -174,7 +183,7 @@ export class MenuComponent implements OnInit, OnDestroy {
     this.menuForm.set({
       sku: '',
       barcode: '',
-      unit: 'Cái',
+      unit: '',
       name: '',
       price: 0,
       cost_price: 0,
@@ -195,7 +204,7 @@ export class MenuComponent implements OnInit, OnDestroy {
     this.menuForm.set({
       sku: product.sku || '',
       barcode: product.barcode || '',
-      unit: product.unit || 'Cái',
+      unit: product.unit || '',
       name: product.name,
       price: product.price,
       cost_price: product.cost_price || 0,
