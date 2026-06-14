@@ -266,6 +266,12 @@ When user's prompt is NOT in English:
 > - **Clean SVG Overrides:** Do **NOT** use raw emojis (☕, 🛒, 💵, 🏦, etc.) in the UI. Always use responsive, clean inline **SVG icons**.
 > - **Theme Mode & Display Toggle:** Support Light/Dark/Auto modes natively, and support Grid/List layout options for menu items.
 > - **Responsive Layout:** The main container must have `max-width: 1530px` centered, matching the Web POS interface.
+> - **New Module & Permission Rule (CRITICAL):** When implementing a new page, route, or module, you MUST:
+>   1. Register the permission key, name, and description in the `modules` list inside `staffs.component.ts`.
+>   2. Define its default state (true/false) for standard roles ("Chủ quán", "Quản lý", "Thu ngân", "Kế toán") in `StaffController.php` (both `indexRoles` and `resetDefaultRoles`).
+>   3. Apply the `permission:key_module` middleware to any associated backend Laravel API routes.
+>   4. Protect UI sidebar navigation items (Desktop & Mobile) and route access with `@if (stateService.hasPermission('key_module'))` and `<app-access-restricted>`.
+
 
 
 ---
