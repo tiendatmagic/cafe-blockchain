@@ -117,6 +117,21 @@ export class App implements OnInit, OnDestroy {
                   if (typeof window !== 'undefined') {
                     localStorage.setItem('auth_address', address);
                     localStorage.setItem('auth_logged_in', 'true');
+                    if (verifyRes.role) {
+                      localStorage.setItem('auth_role', verifyRes.role);
+                      this.stateService.currentUserRole.set(verifyRes.role);
+                    } else {
+                      localStorage.removeItem('auth_role');
+                      this.stateService.currentUserRole.set('Chủ cửa hàng');
+                    }
+                    if (verifyRes.permissions) {
+                      const permStr = JSON.stringify(verifyRes.permissions);
+                      localStorage.setItem('auth_permissions', permStr);
+                      this.stateService.currentUserPermissions.set(verifyRes.permissions);
+                    } else {
+                      localStorage.removeItem('auth_permissions');
+                      this.stateService.currentUserPermissions.set(null);
+                    }
                   }
                   this.web3Service.walletConnected.set(true);
                   this.stateService.showToast('Kết nối và xác thực ví thành công!', 'success');
@@ -187,6 +202,21 @@ export class App implements OnInit, OnDestroy {
             if (typeof window !== 'undefined') {
               localStorage.setItem('auth_address', this.pendingAddress);
               localStorage.setItem('auth_logged_in', 'true');
+              if (verifyRes.role) {
+                localStorage.setItem('auth_role', verifyRes.role);
+                this.stateService.currentUserRole.set(verifyRes.role);
+              } else {
+                localStorage.removeItem('auth_role');
+                this.stateService.currentUserRole.set('Chủ cửa hàng');
+              }
+              if (verifyRes.permissions) {
+                const permStr = JSON.stringify(verifyRes.permissions);
+                localStorage.setItem('auth_permissions', permStr);
+                this.stateService.currentUserPermissions.set(verifyRes.permissions);
+              } else {
+                localStorage.removeItem('auth_permissions');
+                this.stateService.currentUserPermissions.set(null);
+              }
             }
             this.web3Service.walletConnected.set(true);
             this.stateService.showToast('Kết nối và xác thực ví thành công!', 'success');

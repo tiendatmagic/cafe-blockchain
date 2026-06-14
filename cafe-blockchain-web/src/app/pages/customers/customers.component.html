@@ -914,7 +914,7 @@
   (cancel)="isDeleteGroupConfirmOpen.set(false)"
 ></app-confirm-modal>
     } @else {
-      <app-access-restricted></app-access-restricted>
+      <app-access-restricted pageName="Khách hàng"></app-access-restricted>
     }
   } @else {
     <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý Khách hàng'"></app-web3-connect-prompt>
