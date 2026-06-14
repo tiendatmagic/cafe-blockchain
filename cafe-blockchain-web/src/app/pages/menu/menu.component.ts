@@ -632,7 +632,6 @@ export class MenuComponent implements OnInit, OnDestroy {
           chain_id: this.web3Service.configuredChainId()
         }).subscribe({
           next: () => {
-            console.log('Đã ghi nhận lịch sử đồng bộ thực đơn.');
             this.loadMenuSyncLogs();
           },
           error: (err) => console.error('Lỗi ghi nhận lịch sử đồng bộ:', err)
@@ -645,7 +644,6 @@ export class MenuComponent implements OnInit, OnDestroy {
         }).subscribe({
           next: (settingsRes) => {
             this.stateService.settings.set(settingsRes.data);
-            console.log('Đã cập nhật trạng thái has_synced_menu lên backend.');
           },
           error: (err) => {
             console.error('Lỗi cập nhật trạng thái has_synced_menu lên backend:', err);

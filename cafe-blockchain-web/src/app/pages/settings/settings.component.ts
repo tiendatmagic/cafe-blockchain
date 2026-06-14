@@ -473,7 +473,7 @@ export class SettingsComponent implements OnInit {
 
       // Đồng bộ đăng ký ví thu ngân vào Laravel Backend
       this.apiService.registerCashier(address).subscribe({
-        next: () => console.log('Đã đồng bộ đăng ký thu ngân vào DB.'),
+        next: () => {},
         error: (err) => console.error('Lỗi đồng bộ đăng ký thu ngân:', err)
       });
 
@@ -524,7 +524,7 @@ export class SettingsComponent implements OnInit {
 
       // Đồng bộ đăng ký ví kế toán vào Laravel Backend
       this.apiService.registerCashier(address).subscribe({
-        next: () => console.log('Đã đồng bộ đăng ký kế toán vào DB.'),
+        next: () => {},
         error: (err) => console.error('Lỗi đồng bộ đăng ký kế toán:', err)
       });
 
@@ -566,7 +566,7 @@ export class SettingsComponent implements OnInit {
 
       // Đồng bộ gỡ ví kế toán khỏi Laravel Backend
       this.apiService.removeCashier(address).subscribe({
-        next: () => console.log('Đã đồng bộ gỡ kế toán khỏi DB.'),
+        next: () => {},
         error: (err) => console.error('Lỗi đồng bộ gỡ kế toán khỏi DB:', err)
       });
 
@@ -608,7 +608,7 @@ export class SettingsComponent implements OnInit {
 
       // Đồng bộ gỡ bỏ ví thu ngân khỏi Laravel Backend
       this.apiService.removeCashier(address).subscribe({
-        next: () => console.log('Đã đồng bộ gỡ thu ngân khỏi DB.'),
+        next: () => {},
         error: (err) => console.error('Lỗi đồng bộ gỡ thu ngân khỏi DB:', err)
       });
 
@@ -687,7 +687,7 @@ export class SettingsComponent implements OnInit {
 
       // Đồng bộ đăng ký ví vào Laravel Backend
       this.apiService.registerCashier(address).subscribe({
-        next: () => console.log('Đã đồng bộ đăng ký quản trị thực đơn vào DB.'),
+        next: () => {},
         error: (err) => console.error('Lỗi đồng bộ đăng ký quản trị thực đơn:', err)
       });
 
@@ -729,7 +729,7 @@ export class SettingsComponent implements OnInit {
 
       // Đồng bộ gỡ ví khỏi Laravel Backend
       this.apiService.removeCashier(address).subscribe({
-        next: () => console.log('Đã đồng bộ gỡ quản trị thực đơn khỏi DB.'),
+        next: () => {},
         error: (err) => console.error('Lỗi đồng bộ gỡ quản trị thực đơn khỏi DB:', err)
       });
 
@@ -780,7 +780,7 @@ export class SettingsComponent implements OnInit {
 
       // Đồng bộ đăng ký ví vào Laravel Backend
       this.apiService.registerCashier(address).subscribe({
-        next: () => console.log('Đã đồng bộ đăng ký quản trị voucher vào DB.'),
+        next: () => {},
         error: (err) => console.error('Lỗi đồng bộ đăng ký quản trị voucher:', err)
       });
 
@@ -822,7 +822,7 @@ export class SettingsComponent implements OnInit {
 
       // Đồng bộ gỡ ví khỏi Laravel Backend
       this.apiService.removeCashier(address).subscribe({
-        next: () => console.log('Đã đồng bộ gỡ quản trị voucher khỏi DB.'),
+        next: () => {},
         error: (err) => console.error('Lỗi đồng bộ gỡ quản trị voucher khỏi DB:', err)
       });
 

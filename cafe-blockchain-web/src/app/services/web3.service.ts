@@ -232,7 +232,6 @@ export class Web3Service {
     // Đánh dấu hoàn tất giai đoạn khởi tạo AppKit sau 2 giây để tránh race condition lúc F5
     setTimeout(() => {
       this.isAppKitInitializing = false;
-      console.log('[Web3] AppKit initialization phase completed.');
     }, 2000);
   }
 
@@ -279,7 +278,6 @@ export class Web3Service {
 
       // Lắng nghe account thay đổi từ WalletConnect modal để cập nhật state đồng bộ
       this.modal.subscribeAccount(async (accountState: any) => {
-        console.log('[AppKit] Account changed:', accountState);
         const address = accountState.address;
         const isConnected = accountState.isConnected;
         this.appKitAddress = address || null;
@@ -303,7 +301,6 @@ export class Web3Service {
         } else {
           // Chỉ xử lý ngắt kết nối thực sự sau khi kết thúc giai đoạn khởi tạo
           if (!this.isAppKitInitializing && this.currentAccount()) {
-            console.log('[AppKit] Phát hiện ngắt kết nối ví thực sự sau khởi tạo');
             this.resetWalletState(true);
             this.accountsChanged$.next('');
           } else {
@@ -315,7 +312,6 @@ export class Web3Service {
 
       // Lắng nghe network thay đổi từ WalletConnect modal
       this.modal.subscribeNetwork((networkState: any) => {
-        console.log('[AppKit] Network changed:', networkState);
         if (networkState.selectedNetworkId) {
           this.chainId.set(networkState.selectedNetworkId.toString());
           if (this.currentAccount()) {
@@ -339,7 +335,6 @@ export class Web3Service {
 
     // Lắng nghe thay đổi tài khoản
     eth.on('accountsChanged', (accounts: string[]) => {
-      console.log('Ethereum accountsChanged:', accounts);
       if (accounts && accounts.length > 0) {
         const account = accounts[0];
         const oldAccount = this.currentAccount();
@@ -371,7 +366,6 @@ export class Web3Service {
 
     // Lắng nghe thay đổi mạng lưới
     eth.on('chainChanged', (chainIdHex: string) => {
-      console.log('Ethereum chainChanged:', chainIdHex);
       const decimalChainId = BigInt(chainIdHex).toString();
       this.chainId.set(decimalChainId);
 
@@ -447,7 +441,6 @@ export class Web3Service {
     if (typeof window === 'undefined') return;
     const savedAddress = localStorage.getItem('auth_address');
     if (savedAddress && this.hasValidAuthToken(savedAddress)) {
-      console.log('[Web3] Khôi phục session tạm thời từ storage:', savedAddress);
       this.currentAccount.set(savedAddress);
       this.walletConnected.set(true);
       this.appKitAddress = savedAddress;
@@ -512,7 +505,6 @@ export class Web3Service {
         }
 
         await this.updateBalanceAndStatus(address);
-        console.log('[AppKit] Ví đã kết nối sẵn:', address);
         return true;
       }
 
@@ -525,7 +517,6 @@ export class Web3Service {
 
         // Lắng nghe tài khoản thay đổi để phát hiện kết nối thành công
         const unsubscribeAccount = this.modal.subscribeAccount(async (accountState: any) => {
-          console.log('[AppKit] subscribeAccount in connectWallet:', accountState);
           if (accountState.isConnected && accountState.address) {
             if (!resolved) {
               resolved = true;
@@ -551,7 +542,6 @@ export class Web3Service {
 
         // Lắng nghe sự kiện đóng modal
         const unsubscribeEvents = this.modal.subscribeEvents(async (event: any) => {
-          console.log('[AppKit] subscribeEvents in connectWallet:', event);
           if (event.data?.event === 'MODAL_CLOSE') {
             // Đợi một chút để check xem sau khi đóng modal trạng thái ví thế nào
             setTimeout(async () => {
@@ -614,7 +604,6 @@ export class Web3Service {
     }
 
     try {
-      console.log('Attempting switch to chain ID:', chainIdHex);
       await provider.request({
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: chainIdHex }],
@@ -956,7 +945,6 @@ export class Web3Service {
           return null;
         }
         orderTimestamp = Number(orderData[6]); // timestamp field
-        console.log('[Blockchain] Order', finalOrderId, 'xac minh OK. Timestamp:', new Date(orderTimestamp * 1000).toISOString());
       } catch {
         console.warn('[Blockchain] Khong the goi getOrder() - order co the khong ton tai.');
         return null;
@@ -969,7 +957,6 @@ export class Web3Service {
       const apiKey = this.explorerApiKey();
       if (explorerApiUrl && apiKey && apiKey.trim() !== '') {
         try {
-          console.log('[Blockchain] Thu truy van nhanh qua API Explorer:', explorerApiUrl);
           // Tạo topic1 bằng cách pad hex orderId sang 32 bytes (64 ký tự)
           const cleanHexId = typeof finalOrderId === 'string' ? finalOrderId.replace('0x', '') : finalOrderId.toString(16);
           const topic1 = '0x' + cleanHexId.padStart(64, '0');
@@ -983,17 +970,12 @@ export class Web3Service {
 
             if (data.status === '1' && data.result && data.result.length > 0) {
               const txHash = data.result[0].transactionHash;
-              console.log('[Blockchain] ✅ Tim thay tx_hash qua API Explorer:', txHash);
               return txHash;
-            } else {
-              console.warn('[Blockchain] API Explorer khong tra ve ket qua logic, thu sang RPC scan.');
             }
           }
         } catch (apiErr) {
-          console.error('[Blockchain] Loi goi API Block Explorer, dang fallback ve RPC scan:', apiErr);
         }
       } else {
-        console.log('[Blockchain] Khong co API Key Explorer hoặc khong ho tro chain. Chuyen sang RPC scan.');
       }
 
       // ===== BƯỚC 3: Quét block bằng backup RPC (Fallback có Auto-switch) =====
@@ -1005,7 +987,6 @@ export class Web3Service {
 
       for (const rpcUrl of rpcUrlsToTry) {
         try {
-          console.log('[Blockchain] Thu quet event bang RPC:', rpcUrl);
           const backupProvider = new JsonRpcProvider(rpcUrl);
           const backupContract = new Contract(this.contractAddress(), CAFE_WEB3_POS_ABI, backupProvider);
 
@@ -1053,7 +1034,6 @@ export class Web3Service {
       }
 
       if (eventsFound.length > 0) {
-        console.log('[Blockchain] ✅ Tim thay tx_hash cho order', orderId, ':', eventsFound[0].transactionHash, 'qua RPC:', successRpcUrl);
         return eventsFound[0].transactionHash;
       }
 

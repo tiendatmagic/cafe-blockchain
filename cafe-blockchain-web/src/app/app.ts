@@ -229,7 +229,7 @@ export class App implements OnInit, OnDestroy {
     
     // Gọi API đăng xuất để xóa cookie HttpOnly phía backend
     this.apiService.logout().subscribe({
-      next: () => console.log('[Auth] Đã xóa phiên và cookie backend khi chuyển đổi tài khoản.'),
+      next: () => {},
       error: (err) => console.warn('[Auth] Không thể xóa phiên làm việc khi chuyển đổi tài khoản:', err)
     });
 
@@ -246,11 +246,9 @@ export class App implements OnInit, OnDestroy {
     this.stateService.categoriesList.set([]);
 
     if (newAccount) {
-      console.log('Đã chuyển đổi tài khoản ví sang:', newAccount);
       this.stateService.showToast('Phát hiện tài khoản ví thay đổi. Đang yêu cầu ký xác thực lại...', 'success');
       this.connectWalletAndSign();
     } else {
-      console.log('Ví đã ngắt kết nối hoàn toàn');
       this.stateService.showToast('Ví đã ngắt kết nối. Vui lòng kết nối ví để tiếp tục!', 'error');
     }
   }

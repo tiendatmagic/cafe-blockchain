@@ -156,7 +156,6 @@ export class StateService {
           const parsed = JSON.parse(cached);
           if (parsed && parsed.timestamp && now - parsed.timestamp < cacheTTL) {
             this.coingeckoPrices.set(parsed.prices);
-            console.log('[Prices] Loaded from cache:', parsed.prices);
             return;
           }
         } catch (e) {
@@ -186,7 +185,6 @@ export class StateService {
               timestamp: now
             }));
           }
-          console.log('[Prices] Fetched and cached new prices:', newPrices);
         }
       })
       .catch(err => {
@@ -197,7 +195,6 @@ export class StateService {
             try {
               const parsed = JSON.parse(cached);
               this.coingeckoPrices.set(parsed.prices);
-              console.log('[Prices] Fallback to old cache prices:', parsed.prices);
             } catch (e) {}
           }
         }
@@ -208,7 +205,6 @@ export class StateService {
   constructor() {
     if (typeof window !== 'undefined') {
       (window as any)._stateServiceInstances = ((window as any)._stateServiceInstances || 0) + 1;
-      console.log('[StateService] Khởi tạo instance thứ:', (window as any)._stateServiceInstances);
     }
     this.initTheme();
     // Không tự động gọi loadSettings() khi khởi tạo để tránh gọi API dư thừa khi chưa kết nối ví
@@ -233,7 +229,6 @@ export class StateService {
     effect(() => {
       if (this.web3Service.walletConnected()) {
         untracked(() => {
-          console.log('[StateService] Phát hiện ví kết nối thành công! Đang tự động nạp cấu hình và dữ liệu cho tab:', this.activeTab());
           this.loadSettings();
           this.reloadCurrentTab();
         });
@@ -483,10 +478,7 @@ export class StateService {
 
   // Refresh cấu hình
   public loadSettings() {
-    console.log('[StateService] loadSettings() được gọi. Cờ isSettingsFetching hiện tại:', this.isSettingsFetching, 'hasToken:', !!this.apiService.getToken(), 'Time:', Date.now());
-    
     if (!this.web3Service.walletConnected()) {
-      console.log('[StateService] loadSettings() bị chặn do ví chưa kết nối!');
       return;
     }
 
@@ -494,12 +486,10 @@ export class StateService {
     const now = Date.now();
     const hasCachedSettings = this.settings() && this.settings().store_name && this.settings().store_name !== 'Blockchain Cafe & Bistro';
     if (hasCachedSettings && (now - this.lastSettingsLoadTimestamp < 5 * 60 * 1000)) {
-      console.log('[StateService] Sử dụng settings từ cache (chưa quá 5 phút):', this.settings());
       return;
     }
 
     if (this.isSettingsFetching) {
-      console.warn('[StateService] loadSettings() BỊ CHẶN do cờ isSettingsFetching là true!');
       return;
     }
     this.isSettingsFetching = true;
@@ -625,7 +615,7 @@ export class StateService {
     
     // Gọi API đăng xuất để xóa cookie HttpOnly phía backend
     this.apiService.logout().subscribe({
-      next: () => console.log('[Auth] Đã xóa phiên làm việc và cookie HttpOnly từ backend.'),
+      next: () => {},
       error: (err) => console.warn('[Auth] Không thể xóa phiên làm việc phía backend:', err)
     });
 
