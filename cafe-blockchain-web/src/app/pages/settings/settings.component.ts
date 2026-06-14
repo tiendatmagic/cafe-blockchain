@@ -46,7 +46,7 @@ export class SettingsComponent implements OnInit {
             relayer_private_key: ''
           });
           this.syncSelectedCategories();
-          
+
           // Tải danh sách owners nếu ví đã kết nối và tab hiện tại là permissions
           if (this.web3Service.walletConnected() && this.settingsSubTab() === 'permissions') {
             this.loadOwnersList();
@@ -138,7 +138,6 @@ export class SettingsComponent implements OnInit {
     { name: 'Arbitrum One Mainnet', chainId: '42161', rpcUrl: 'https://arb1.arbitrum.io/rpc', explorerUrl: 'https://arbiscan.io' },
     { name: 'Optimism Mainnet', chainId: '10', rpcUrl: 'https://mainnet.optimism.io', explorerUrl: 'https://optimistic.etherscan.io' },
     { name: 'Base Mainnet', chainId: '8453', rpcUrl: 'https://mainnet.base.org', explorerUrl: 'https://basescan.org' },
-    { name: 'Avalanche C-Chain', chainId: '43114', rpcUrl: 'https://api.avax.network/ext/bc/C/rpc', explorerUrl: 'https://snowtrace.io' },
     { name: 'Sepolia Testnet', chainId: '11155111', rpcUrl: 'https://ethereum-sepolia.publicnode.com', explorerUrl: 'https://sepolia.etherscan.io' },
     { name: 'BSC Testnet', chainId: '97', rpcUrl: 'https://bnb-testnet.api.onfinality.io/public', explorerUrl: 'https://testnet.bscscan.com' },
     { name: 'Arbitrum Sepolia', chainId: '421614', rpcUrl: 'https://sepolia-rollup.arbitrum.io/rpc', explorerUrl: 'https://sepolia.arbiscan.io/' },
@@ -167,7 +166,7 @@ export class SettingsComponent implements OnInit {
 
   public setSettingsSubTab(subTab: 'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher' | 'store') {
     this.settingsSubTab.set(subTab);
-    
+
     // Cập nhật query parameter tab trên URL
     this.router.navigate([], {
       relativeTo: this.route,
@@ -212,15 +211,15 @@ export class SettingsComponent implements OnInit {
     const idStr = categoryId.toString();
     const current = [...this.selectedCategories()];
     const index = current.indexOf(idStr);
-    
+
     if (index > -1) {
       current.splice(index, 1);
     } else {
       current.push(idStr);
     }
-    
+
     this.selectedCategories.set(current);
-    
+
     // Nếu chọn hết, lưu là 'all' để tiện đồng bộ sau này hoặc lưu chuỗi CSV
     if (current.length === this.categoriesList().length && current.length > 0) {
       this.updateConfigForm('store_categories', 'all');

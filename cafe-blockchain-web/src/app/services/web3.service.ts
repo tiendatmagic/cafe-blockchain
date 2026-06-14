@@ -22,7 +22,7 @@ export class Web3Service {
   public readonly isOwnerContract = signal<boolean>(false);
   public readonly walletError = signal<string>('');
   public readonly chainId = signal<string>('');
-  
+
   // Sự kiện thay đổi tài khoản hoặc ngắt kết nối ví
   public readonly accountsChanged$ = new Subject<string>();
 
@@ -43,7 +43,6 @@ export class Web3Service {
     { name: 'Arbitrum One Mainnet', chainId: '42161', rpcUrl: 'https://arb1.arbitrum.io/rpc', explorerUrl: 'https://arbiscan.io' },
     { name: 'Optimism Mainnet', chainId: '10', rpcUrl: 'https://mainnet.optimism.io', explorerUrl: 'https://optimistic.etherscan.io' },
     { name: 'Base Mainnet', chainId: '8453', rpcUrl: 'https://mainnet.base.org', explorerUrl: 'https://basescan.org' },
-    { name: 'Avalanche C-Chain', chainId: '43114', rpcUrl: 'https://api.avax.network/ext/bc/C/rpc', explorerUrl: 'https://snowtrace.io' },
     { name: 'Sepolia Testnet', chainId: '11155111', rpcUrl: 'https://ethereum-sepolia.publicnode.com', explorerUrl: 'https://sepolia.etherscan.io' },
     { name: 'BSC Testnet', chainId: '97', rpcUrl: 'https://bnb-testnet.api.onfinality.io/public', explorerUrl: 'https://testnet.bscscan.com' },
     { name: 'Arbitrum Sepolia', chainId: '421614', rpcUrl: 'https://sepolia-rollup.arbitrum.io/rpc', explorerUrl: 'https://sepolia.arbiscan.io/' },
@@ -306,13 +305,13 @@ export class Web3Service {
     if (typeof window === 'undefined') return false;
     const savedAddress = localStorage.getItem('auth_address');
     const isLoggedIn = localStorage.getItem('auth_logged_in') === 'true';
-    
+
     // Kiểm tra thêm sự tồn tại của cookie auth_logged_in (được backend set khi đăng nhập thành công và không phải httpOnly)
     let hasLoggedCookie = false;
     if (typeof document !== 'undefined') {
       hasLoggedCookie = document.cookie.split(';').some(c => c.trim().startsWith('auth_logged_in='));
     }
-    
+
     return !!savedAddress && savedAddress.toLowerCase() === account.toLowerCase() && (isLoggedIn || hasLoggedCookie);
   }
 
@@ -418,7 +417,7 @@ export class Web3Service {
    */
   public async ensureCorrectNetwork(targetChainId?: string): Promise<boolean> {
     this.walletError.set('');
-    
+
     const chainIdToUse = targetChainId || this.configuredChainId();
     const chainIdHex = `0x${BigInt(chainIdToUse).toString(16)}`;
 
@@ -433,7 +432,7 @@ export class Web3Service {
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: chainIdHex }],
       });
-      
+
       this.chainId.set(chainIdToUse);
       if (this.currentAccount()) {
         await this.updateBalanceAndStatus(this.currentAccount());
@@ -441,14 +440,14 @@ export class Web3Service {
       return true;
     } catch (directSwitchError: any) {
       console.warn('Direct window.ethereum switch failed, attempting to add network:', directSwitchError);
-      const isNetworkNotAdded = directSwitchError.code === 4902 || 
-                                directSwitchError.data?.originalError?.code === 4902 ||
-                                directSwitchError.message?.includes('4902');
+      const isNetworkNotAdded = directSwitchError.code === 4902 ||
+        directSwitchError.data?.originalError?.code === 4902 ||
+        directSwitchError.message?.includes('4902');
       if (isNetworkNotAdded) {
         try {
           const tokenSymbol = this.getNativeTokenSymbolByChainId(chainIdToUse);
           const netName = this.getNetworkNameByChainId(chainIdToUse);
-          
+
           // Lấy RPC URL và Explorer URL từ danh sách mạng phổ biến (nếu có), ngược lại lấy từ cấu hình
           const popularChain = this.POPULAR_CHAINS.find(c => c.chainId === chainIdToUse.toString().trim());
           const rpcUrl = popularChain ? popularChain.rpcUrl : this.rpcUrl();
@@ -615,11 +614,11 @@ export class Web3Service {
   private translateBlockchainError(err: any): string {
     const errMsg = (err.reason || err.message || '').toString();
     const errCode = err.code;
-    
+
     if (errCode === 4001 || errMsg.toLowerCase().includes('user rejected') || errMsg.toLowerCase().includes('rejected')) {
       return 'Giao dịch bị hủy bởi người dùng (User rejected).';
     }
-    
+
     if (errMsg.toLowerCase().includes('out of gas') || errMsg.toLowerCase().includes('exceeds')) {
       return 'Lỗi vượt giới hạn Gas (Out of Gas) khi ghi dữ liệu. Vui lòng liên hệ quản trị viên.';
     }
@@ -781,12 +780,12 @@ export class Web3Service {
           const topic1 = '0x' + cleanHexId.padStart(64, '0');
           // Lấy topic0 từ ABI sự kiện
           const topic0 = contract.interface.getEvent('OrderRecorded')?.topicHash;
-          
+
           if (topic0) {
             const url = `${explorerApiUrl}?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${this.contractAddress()}&topic0=${topic0}&topic1=${topic1}&apikey=${apiKey}`;
             const response = await fetch(url);
             const data = await response.json();
-            
+
             if (data.status === '1' && data.result && data.result.length > 0) {
               const txHash = data.result[0].transactionHash;
               console.log('[Blockchain] ✅ Tim thay tx_hash qua API Explorer:', txHash);
@@ -805,7 +804,7 @@ export class Web3Service {
       // ===== BƯỚC 3: Quét block bằng backup RPC (Fallback có Auto-switch) =====
       const backupRpcUrls = this.getBackupRpcUrls(chainId);
       const rpcUrlsToTry = [this.rpcUrl(), ...backupRpcUrls].filter(url => !!url);
-      
+
       let eventsFound: any[] = [];
       let successRpcUrl = '';
 
@@ -877,19 +876,19 @@ export class Web3Service {
   private getExplorerApiUrl(chainId: string): string | null {
     const id = chainId.toString().trim();
     switch (id) {
-      case '97':        return 'https://api-testnet.bscscan.com/api';
-      case '56':        return 'https://api.bscscan.com/api';
-      case '1':         return 'https://api.etherscan.io/api';
-      case '11155111':  return 'https://api-sepolia.etherscan.io/api';
-      case '137':       return 'https://api.polygonscan.com/api';
-      case '80002':     return 'https://api-amoy.polygonscan.com/api';
-      case '42161':     return 'https://api.arbiscan.io/api';
-      case '421614':    return 'https://api-sepolia.arbiscan.io/api';
-      case '8453':      return 'https://api.basescan.org/api';
-      case '84532':     return 'https://api-sepolia.basescan.org/api';
-      case '10':        return 'https://api-optimistic.etherscan.io/api';
-      case '11155420':  return 'https://api-sepolia-optimistic.etherscan.io/api';
-      default:          return null;
+      case '97': return 'https://api-testnet.bscscan.com/api';
+      case '56': return 'https://api.bscscan.com/api';
+      case '1': return 'https://api.etherscan.io/api';
+      case '11155111': return 'https://api-sepolia.etherscan.io/api';
+      case '137': return 'https://api.polygonscan.com/api';
+      case '80002': return 'https://api-amoy.polygonscan.com/api';
+      case '42161': return 'https://api.arbiscan.io/api';
+      case '421614': return 'https://api-sepolia.arbiscan.io/api';
+      case '8453': return 'https://api.basescan.org/api';
+      case '84532': return 'https://api-sepolia.basescan.org/api';
+      case '10': return 'https://api-optimistic.etherscan.io/api';
+      case '11155420': return 'https://api-sepolia-optimistic.etherscan.io/api';
+      default: return null;
     }
   }
 
@@ -899,19 +898,19 @@ export class Web3Service {
   private getBackupRpcUrls(chainId: string): string[] {
     const id = chainId.toString().trim();
     switch (id) {
-      case '97':        return ['https://bnb-testnet.api.onfinality.io/public', 'https://bsc-testnet-rpc.publicnode.com', 'https://bsc-testnet.blockpi.network/v1/rpc/public'];
-      case '56':        return ['https://bsc-rpc.publicnode.com', 'https://binance.llamarpc.com', 'https://rpc.ankr.com/bsc'];
-      case '1':         return ['https://ethereum-rpc.publicnode.com', 'https://eth.llamarpc.com', 'https://rpc.ankr.com/eth'];
-      case '11155111':  return ['https://ethereum-sepolia-rpc.publicnode.com', 'https://sepolia.gateway.tenderly.co', 'https://rpc.ankr.com/eth_sepolia'];
-      case '137':       return ['https://polygon-bor-rpc.publicnode.com', 'https://polygon.llamarpc.com', 'https://rpc.ankr.com/polygon'];
-      case '80002':     return ['https://polygon-amoy-bor-rpc.publicnode.com', 'https://polygon-amoy.blockpi.network/v1/rpc/public', 'https://rpc.ankr.com/polygon_amoy'];
-      case '42161':     return ['https://arbitrum-one-rpc.publicnode.com', 'https://arbitrum.llamarpc.com', 'https://rpc.ankr.com/arbitrum'];
-      case '421614':    return ['https://arbitrum-sepolia-rpc.publicnode.com', 'https://arbitrum-sepolia.blockpi.network/v1/rpc/public', 'https://rpc.ankr.com/arbitrum_sepolia'];
-      case '8453':      return ['https://base-rpc.publicnode.com', 'https://base.llamarpc.com', 'https://rpc.ankr.com/base'];
-      case '84532':     return ['https://base-sepolia-rpc.publicnode.com', 'https://base-sepolia.blockpi.network/v1/rpc/public', 'https://rpc.ankr.com/base_sepolia'];
-      case '10':        return ['https://optimism-rpc.publicnode.com', 'https://optimism.llamarpc.com', 'https://rpc.ankr.com/optimism'];
-      case '11155420':  return ['https://optimism-sepolia-rpc.publicnode.com', 'https://optimism-sepolia.blockpi.network/v1/rpc/public', 'https://rpc.ankr.com/optimism_sepolia'];
-      default:          return [];
+      case '97': return ['https://bnb-testnet.api.onfinality.io/public', 'https://bsc-testnet-rpc.publicnode.com', 'https://bsc-testnet.blockpi.network/v1/rpc/public'];
+      case '56': return ['https://bsc-rpc.publicnode.com', 'https://binance.llamarpc.com', 'https://rpc.ankr.com/bsc'];
+      case '1': return ['https://ethereum-rpc.publicnode.com', 'https://eth.llamarpc.com', 'https://rpc.ankr.com/eth'];
+      case '11155111': return ['https://ethereum-sepolia-rpc.publicnode.com', 'https://sepolia.gateway.tenderly.co', 'https://rpc.ankr.com/eth_sepolia'];
+      case '137': return ['https://polygon-bor-rpc.publicnode.com', 'https://polygon.llamarpc.com', 'https://rpc.ankr.com/polygon'];
+      case '80002': return ['https://polygon-amoy-bor-rpc.publicnode.com', 'https://polygon-amoy.blockpi.network/v1/rpc/public', 'https://rpc.ankr.com/polygon_amoy'];
+      case '42161': return ['https://arbitrum-one-rpc.publicnode.com', 'https://arbitrum.llamarpc.com', 'https://rpc.ankr.com/arbitrum'];
+      case '421614': return ['https://arbitrum-sepolia-rpc.publicnode.com', 'https://arbitrum-sepolia.blockpi.network/v1/rpc/public', 'https://rpc.ankr.com/arbitrum_sepolia'];
+      case '8453': return ['https://base-rpc.publicnode.com', 'https://base.llamarpc.com', 'https://rpc.ankr.com/base'];
+      case '84532': return ['https://base-sepolia-rpc.publicnode.com', 'https://base-sepolia.blockpi.network/v1/rpc/public', 'https://rpc.ankr.com/base_sepolia'];
+      case '10': return ['https://optimism-rpc.publicnode.com', 'https://optimism.llamarpc.com', 'https://rpc.ankr.com/optimism'];
+      case '11155420': return ['https://optimism-sepolia-rpc.publicnode.com', 'https://optimism-sepolia.blockpi.network/v1/rpc/public', 'https://rpc.ankr.com/optimism_sepolia'];
+      default: return [];
     }
   }
 
@@ -921,12 +920,12 @@ export class Web3Service {
   private getAvgBlockTime(chainId: string): number {
     switch (chainId) {
       case '56':
-      case '97':        return 3;   // BSC ~3s
+      case '97': return 3;   // BSC ~3s
       case '137':
-      case '80002':     return 2;   // Polygon ~2s
+      case '80002': return 2;   // Polygon ~2s
       case '1':
-      case '11155111':  return 12;  // Ethereum ~12s
-      default:          return 3;   // Default 3s
+      case '11155111': return 12;  // Ethereum ~12s
+      default: return 3;   // Default 3s
     }
   }
 
@@ -955,19 +954,19 @@ export class Web3Service {
       this.provider = new BrowserProvider((window as any).ethereum);
       const signer = await this.provider.getSigner();
       const factory = new ContractFactory(CAFE_WEB3_POS_ABI, CAFE_WEB3_POS_BYTECODE, signer);
-      
+
       // Deploy contract
       const contract = await factory.deploy();
-      
+
       // Đợi transaction được xác thực thành công trên Blockchain
       await contract.waitForDeployment();
-      
+
       const newAddress = await contract.getAddress();
-      
+
       // Cập nhật địa chỉ mới vào signal của Web3Service
       this.contractAddress.set(newAddress);
       this.isOwnerContract.set(true); // Người deploy mặc định là owner đầu tiên
-      
+
       return {
         contractAddress: newAddress,
         success: true
@@ -1003,13 +1002,13 @@ export class Web3Service {
       this.provider = new BrowserProvider((window as any).ethereum);
       const signer = await this.provider.getSigner();
       const factory = new ContractFactory(CAFE_WEB3_FINANCE_ABI, CAFE_WEB3_FINANCE_BYTECODE, signer);
-      
+
       const contract = await factory.deploy();
       await contract.waitForDeployment();
-      
+
       const newAddress = await contract.getAddress();
       this.financeContractAddress.set(newAddress);
-      
+
       return {
         contractAddress: newAddress,
         success: true
@@ -1045,13 +1044,13 @@ export class Web3Service {
       this.provider = new BrowserProvider((window as any).ethereum);
       const signer = await this.provider.getSigner();
       const factory = new ContractFactory(CAFE_VOUCHER_NFT_ABI, CAFE_VOUCHER_NFT_BYTECODE, signer);
-      
+
       const contract = await factory.deploy();
       await contract.waitForDeployment();
-      
+
       const newAddress = await contract.getAddress();
       this.voucherContractAddress.set(newAddress);
-      
+
       return {
         contractAddress: newAddress,
         success: true
@@ -1129,12 +1128,12 @@ export class Web3Service {
           const cleanHexId = typeof finalTxId === 'string' ? finalTxId.replace('0x', '') : finalTxId.toString(16);
           const topic1 = '0x' + cleanHexId.padStart(64, '0');
           const topic0 = contract.interface.getEvent('TransactionRecorded')?.topicHash;
-          
+
           if (topic0) {
             const url = `${explorerApiUrl}?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${this.financeContractAddress()}&topic0=${topic0}&topic1=${topic1}&apikey=${apiKey}`;
             const response = await fetch(url);
             const data = await response.json();
-            
+
             if (data.status === '1' && data.result && data.result.length > 0) {
               const txHash = data.result[0].transactionHash;
               return txHash;
@@ -1147,7 +1146,7 @@ export class Web3Service {
 
       const backupRpcUrls = this.getBackupRpcUrls(chainId);
       const rpcUrlsToTry = [this.rpcUrl(), ...backupRpcUrls].filter(url => !!url);
-      
+
       let eventsFound: any[] = [];
 
       for (const rpcUrl of rpcUrlsToTry) {
@@ -1271,7 +1270,7 @@ export class Web3Service {
         try {
           const tokenIdNum = Number(tokenId);
           const info = await contract['vouchers'](tokenIdNum);
-          
+
           if (info && !info.isUsed) {
             const tokenUri = await contract['tokenURI'](tokenIdNum);
             const parts = tokenUri.split('/');
@@ -1314,10 +1313,10 @@ export class Web3Service {
 
       // 1. Kiểm tra chủ sở hữu
       const owner = await contract['ownerOf'](tokenId);
-      
+
       // 2. Đọc thông tin chi tiết voucher
       const info = await contract['vouchers'](tokenId);
-      
+
       if (info) {
         const tokenUri = await contract['tokenURI'](tokenId);
         const parts = tokenUri.split('/');
@@ -1349,7 +1348,7 @@ export class Web3Service {
     try {
       const activeProvider = new JsonRpcProvider(this.rpcUrl());
       const contract = new Contract(this.contractAddress(), CAFE_WEB3_POS_ABI, activeProvider);
-      
+
       const res = await contract['getOrdersPaginated'](page, limit);
       const orders = res[0].map((o: any) => ({
         orderId: Number(o.orderId),
@@ -1376,7 +1375,7 @@ export class Web3Service {
     try {
       const activeProvider = new JsonRpcProvider(this.rpcUrl());
       const contract = new Contract(this.contractAddress(), CAFE_WEB3_POS_ABI, activeProvider);
-      
+
       const res = await contract['getUserOrdersPaginated'](user, page, limit);
       const orders = res[0].map((o: any) => ({
         orderId: Number(o.orderId),
@@ -1403,7 +1402,7 @@ export class Web3Service {
     try {
       const activeProvider = new JsonRpcProvider(this.rpcUrl());
       const contract = new Contract(this.contractAddress(), CAFE_WEB3_POS_ABI, activeProvider);
-      
+
       const o = await contract['getOrderByCode'](orderCode);
       return {
         orderId: Number(o.orderId),
@@ -1429,7 +1428,7 @@ export class Web3Service {
     try {
       const activeProvider = new JsonRpcProvider(this.rpcUrl());
       const contract = new Contract(this.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, activeProvider);
-      
+
       const res = await contract['getTransactionsPaginated'](page, limit);
       const transactions = res[0].map((t: any) => ({
         txId: Number(t.txId),
@@ -1456,7 +1455,7 @@ export class Web3Service {
     try {
       const activeProvider = new JsonRpcProvider(this.rpcUrl());
       const contract = new Contract(this.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, activeProvider);
-      
+
       const res = await contract['getUserTransactionsPaginated'](user, page, limit);
       const transactions = res[0].map((t: any) => ({
         txId: Number(t.txId),
@@ -1483,7 +1482,7 @@ export class Web3Service {
     try {
       const activeProvider = new JsonRpcProvider(this.rpcUrl());
       const contract = new Contract(this.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, activeProvider);
-      
+
       const t = await contract['getTransactionByCode'](txCode);
       return {
         txId: Number(t.txId),
@@ -1522,13 +1521,13 @@ export class Web3Service {
       this.provider = new BrowserProvider((window as any).ethereum);
       const signer = await this.provider.getSigner();
       const factory = new ContractFactory(CAFE_MENU_REGISTRY_ABI, CAFE_MENU_REGISTRY_BYTECODE, signer);
-      
+
       const contract = await factory.deploy();
       await contract.waitForDeployment();
-      
+
       const newAddress = await contract.getAddress();
       this.menuRegistryContractAddress.set(newAddress);
-      
+
       return {
         contractAddress: newAddress,
         success: true
@@ -1622,7 +1621,7 @@ export class Web3Service {
         sku: p.sku || '',
         name: p.name || '',
         price: BigInt(basePrice),
-        image: '', 
+        image: '',
         status: p.status === undefined ? true : !!p.status
       };
     });
