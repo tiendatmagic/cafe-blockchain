@@ -43,7 +43,7 @@ export class Web3Service {
 
   public readonly POPULAR_CHAINS = [
     { name: 'Ethereum Mainnet', chainId: '1', rpcUrl: 'https://cloudflare-eth.com', explorerUrl: 'https://etherscan.io' },
-    { name: 'BNB Smart Chain (BSC)', chainId: '56', rpcUrl: 'https://bsc-dataseed.binance.org', explorerUrl: 'https://bscscan.com' },
+    { name: 'BNB Smart Chain ', chainId: '56', rpcUrl: 'https://bsc-dataseed.binance.org', explorerUrl: 'https://bscscan.com' },
     { name: 'Polygon PoS Mainnet', chainId: '137', rpcUrl: 'https://polygon-rpc.com', explorerUrl: 'https://polygonscan.com' },
     { name: 'Arbitrum One Mainnet', chainId: '42161', rpcUrl: 'https://arb1.arbitrum.io/rpc', explorerUrl: 'https://arbiscan.io' },
     { name: 'Optimism Mainnet', chainId: '10', rpcUrl: 'https://mainnet.optimism.io', explorerUrl: 'https://optimistic.etherscan.io' },
@@ -95,7 +95,7 @@ export class Web3Service {
       case '5':
         return 'Goerli Testnet';
       case '56':
-        return 'BNB Smart Chain (BSC)';
+        return 'BNB Smart Chain';
       case '97':
         return 'BSC Testnet';
       case '137':
@@ -284,19 +284,19 @@ export class Web3Service {
         const isConnected = accountState.isConnected;
         this.appKitAddress = address || null;
         this.appKitIsConnected = isConnected || false;
-        
+
         if (isConnected && address) {
           const oldAccount = this.currentAccount();
           this.currentAccount.set(address);
-          
+
           if (this.hasValidAuthToken(address)) {
             this.walletConnected.set(true);
           } else {
             this.walletConnected.set(false);
           }
-          
+
           await this.updateBalanceAndStatus(address);
-          
+
           if (oldAccount && oldAccount.toLowerCase() !== address.toLowerCase()) {
             this.accountsChanged$.next(address);
           }
@@ -387,7 +387,7 @@ export class Web3Service {
    */
   private getBrowserProvider(): BrowserProvider | null {
     if (typeof window === 'undefined') return null;
-    
+
     // Nếu có AppKit modal và đã kết nối, lấy provider từ AppKit
     if (this.modal && this.appKitIsConnected) {
       const walletProvider = this.modal.getWalletProvider();
@@ -395,12 +395,12 @@ export class Web3Service {
         return new BrowserProvider(walletProvider);
       }
     }
-    
+
     // Fallback về window.ethereum
     if ((window as any).ethereum) {
       return new BrowserProvider((window as any).ethereum);
     }
-    
+
     return null;
   }
 
@@ -492,7 +492,7 @@ export class Web3Service {
 
   public async connectWallet(): Promise<boolean> {
     this.walletError.set('');
-    
+
     if (!this.modal) {
       this.walletError.set('WalletConnect AppKit chưa được khởi tạo!');
       return false;
@@ -504,13 +504,13 @@ export class Web3Service {
       const address = this.appKitAddress;
       if (isConnected && address) {
         this.currentAccount.set(address);
-        
+
         if (this.hasValidAuthToken(address)) {
           this.walletConnected.set(true);
         } else {
           this.walletConnected.set(false);
         }
-        
+
         await this.updateBalanceAndStatus(address);
         console.log('[AppKit] Ví đã kết nối sẵn:', address);
         return true;
@@ -518,7 +518,7 @@ export class Web3Service {
 
       // 2. Nếu chưa kết nối, mở modal chọn ví của AppKit
       await this.modal.open();
-      
+
       // Chờ cho đến khi ví kết nối thành công hoặc modal đóng
       return new Promise<boolean>((resolve) => {
         let resolved = false;
@@ -532,15 +532,15 @@ export class Web3Service {
               this.currentAccount.set(accountState.address);
               this.appKitAddress = accountState.address || null;
               this.appKitIsConnected = accountState.isConnected || false;
-              
+
               if (this.hasValidAuthToken(accountState.address)) {
                 this.walletConnected.set(true);
               } else {
                 this.walletConnected.set(false);
               }
-              
+
               await this.updateBalanceAndStatus(accountState.address);
-              
+
               unsubscribeAccount();
               unsubscribeEvents();
               this.modal.close();
@@ -548,7 +548,7 @@ export class Web3Service {
             }
           }
         });
-        
+
         // Lắng nghe sự kiện đóng modal
         const unsubscribeEvents = this.modal.subscribeEvents(async (event: any) => {
           console.log('[AppKit] subscribeEvents in connectWallet:', event);
@@ -561,13 +561,13 @@ export class Web3Service {
                 if (isConnected && address) {
                   resolved = true;
                   this.currentAccount.set(address);
-                  
+
                   if (this.hasValidAuthToken(address)) {
                     this.walletConnected.set(true);
                   } else {
                     this.walletConnected.set(false);
                   }
-                  
+
                   await this.updateBalanceAndStatus(address);
                   unsubscribeAccount();
                   unsubscribeEvents();
