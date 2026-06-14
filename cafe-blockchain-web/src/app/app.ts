@@ -104,7 +104,7 @@ export class App implements OnInit, OnDestroy {
           this.pendingNonceMessage = res.message;
           this.pendingAddress = address;
           this.isWaitingForSignature.set(true);
-          this.stateService.showToast('Vui lòng ký xác thực trên ví MetaMask...', 'success');
+          this.stateService.showToast('Vui lòng ký xác thực trên ví của bạn...', 'success');
 
           try {
             const signature = await this.web3Service.signMessage(res.message);

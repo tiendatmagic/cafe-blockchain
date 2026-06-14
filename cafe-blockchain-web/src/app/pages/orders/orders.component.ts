@@ -345,7 +345,7 @@ export class OrdersComponent implements OnInit {
 
     if (this.blockchainSyncLoading() || this.isOrderStatusUpdating()) return;
 
-    this.stateService.showToast(`Bắt đầu đồng bộ hàng loạt ${list.length} đơn hàng. Vui lòng ký MetaMask cho từng đơn...`, 'success');
+    this.stateService.showToast(`Bắt đầu đồng bộ hàng loạt ${list.length} đơn hàng. Vui lòng xác nhận trên ví cho từng đơn...`, 'success');
 
     for (const order of list) {
       this.selectedOrderDetails.set(order);

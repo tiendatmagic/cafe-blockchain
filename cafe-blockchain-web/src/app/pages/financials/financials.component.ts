@@ -236,7 +236,7 @@ export class FinancialsComponent {
       return;
     }
 
-    this.stateService.showToast('Bắt đầu đồng bộ Blockchain. Vui lòng xác nhận trên ví MetaMask...', 'success');
+    this.stateService.showToast('Bắt đầu đồng bộ Blockchain. Vui lòng xác nhận trên ví của bạn...', 'success');
 
     const result = await this.web3Service.recordTransactionOnChain(
       tx.id,
@@ -324,7 +324,7 @@ export class FinancialsComponent {
     }
 
     this.blockchainSyncLoading.set(true);
-    this.stateService.showToast('Vui lòng xác nhận giao dịch trên ví Metamask...', 'success');
+    this.stateService.showToast('Vui lòng xác nhận giao dịch trên ví của bạn...', 'success');
 
     const result = await this.web3Service.recordTransactionOnChain(
       tx.id,
@@ -391,7 +391,7 @@ export class FinancialsComponent {
 
     if (this.blockchainSyncLoading()) return;
 
-    this.stateService.showToast(`Bắt đầu đồng bộ hàng loạt ${list.length} phiếu thu chi. Vui lòng ký MetaMask cho từng phiếu...`, 'success');
+    this.stateService.showToast(`Bắt đầu đồng bộ hàng loạt ${list.length} phiếu thu chi. Vui lòng xác nhận trên ví cho từng phiếu...`, 'success');
 
     for (const tx of list) {
       await this.syncTransactionToBlockchain(tx);

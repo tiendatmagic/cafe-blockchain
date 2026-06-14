@@ -11,6 +11,11 @@ import { CAFE_MENU_REGISTRY_BYTECODE } from './menu-registry-contract-bytecode';
 import { Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
 
+// Tích hợp Reown AppKit cho WalletConnect
+import { createAppKit } from '@reown/appkit';
+import { EthersAdapter } from '@reown/appkit-adapter-ethers';
+import { mainnet, arbitrum, bsc, polygon, optimism, base, sepolia, bscTestnet, arbitrumSepolia } from '@reown/appkit/networks';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -214,10 +219,114 @@ export class Web3Service {
   }
 
   private provider: BrowserProvider | null = null;
+  private modal: any = null;
+  private appKitAddress: string | null = null;
+  private appKitIsConnected = false;
+  private isAppKitInitializing = true;
 
   constructor() {
+    this.initAppKit();
     this.setupEthereumListeners();
-    this.checkWalletConnection();
+    this.restoreSessionFromStorage();
+
+    // Đánh dấu hoàn tất giai đoạn khởi tạo AppKit sau 2 giây để tránh race condition lúc F5
+    setTimeout(() => {
+      this.isAppKitInitializing = false;
+      console.log('[Web3] AppKit initialization phase completed.');
+    }, 2000);
+  }
+
+  /**
+   * Khởi tạo Reown AppKit modal với cấu hình được yêu cầu
+   */
+  private initAppKit() {
+    if (typeof window === 'undefined') return;
+
+    try {
+      const projectId = environment.walletConnectProjectId;
+      if (!projectId) {
+        console.warn('[Web3] walletConnectProjectId is missing in environment configuration.');
+        return;
+      }
+
+      const ethersAdapter = new EthersAdapter();
+
+      this.modal = createAppKit({
+        adapters: [ethersAdapter],
+        networks: [arbitrum, mainnet, bsc, polygon, optimism, base, sepolia, bscTestnet, arbitrumSepolia],
+        defaultNetwork: arbitrum,
+        metadata: {
+          name: 'Cafe Blockchain',
+          description: 'Cafe Blockchain POS & Storefront DApp',
+          url: window.location.origin,
+          icons: [window.location.origin + '/assets/icons/icon-128x128.png']
+        },
+        projectId,
+        features: {
+          email: false,
+          socials: false,
+          analytics: false
+        },
+        enableCoinbase: false,
+        excludeWalletIds: [
+          'fd20a4e69d7b889311311b93f773646548d7936a575a783783451e01869e54d8',
+          'ef333840daf915aafdc4a004525502d6d49d77bd9c65e0642dbaefb3c2893bef'
+        ],
+        featuredWalletIds: [
+          '4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0' // Trust Wallet
+        ]
+      });
+
+      // Lắng nghe account thay đổi từ WalletConnect modal để cập nhật state đồng bộ
+      this.modal.subscribeAccount(async (accountState: any) => {
+        console.log('[AppKit] Account changed:', accountState);
+        const address = accountState.address;
+        const isConnected = accountState.isConnected;
+        this.appKitAddress = address || null;
+        this.appKitIsConnected = isConnected || false;
+        
+        if (isConnected && address) {
+          const oldAccount = this.currentAccount();
+          this.currentAccount.set(address);
+          
+          if (this.hasValidAuthToken(address)) {
+            this.walletConnected.set(true);
+          } else {
+            this.walletConnected.set(false);
+          }
+          
+          await this.updateBalanceAndStatus(address);
+          
+          if (oldAccount && oldAccount.toLowerCase() !== address.toLowerCase()) {
+            this.accountsChanged$.next(address);
+          }
+        } else {
+          // Chỉ xử lý ngắt kết nối thực sự sau khi kết thúc giai đoạn khởi tạo
+          if (!this.isAppKitInitializing && this.currentAccount()) {
+            console.log('[AppKit] Phát hiện ngắt kết nối ví thực sự sau khởi tạo');
+            this.resetWalletState(true);
+            this.accountsChanged$.next('');
+          } else {
+            // Trong lúc khởi tạo (F5), chỉ tạm thời reset state ví của DApp, giữ nguyên localStorage
+            this.resetWalletState(false);
+          }
+        }
+      });
+
+      // Lắng nghe network thay đổi từ WalletConnect modal
+      this.modal.subscribeNetwork((networkState: any) => {
+        console.log('[AppKit] Network changed:', networkState);
+        if (networkState.selectedNetworkId) {
+          this.chainId.set(networkState.selectedNetworkId.toString());
+          if (this.currentAccount()) {
+            this.updateBalanceAndStatus(this.currentAccount());
+          }
+        }
+      });
+
+    } catch (error) {
+      console.error('[Web3] Error initializing Reown AppKit:', error);
+    }
   }
 
   /**
@@ -251,9 +360,11 @@ export class Web3Service {
           }
         }
       } else {
-        if (this.currentAccount()) {
-          this.resetWalletState();
+        if (!this.isAppKitInitializing && this.currentAccount()) {
+          this.resetWalletState(true);
           this.accountsChanged$.next('');
+        } else {
+          this.resetWalletState(false);
         }
       }
     });
@@ -272,11 +383,25 @@ export class Web3Service {
   }
 
   /**
-   * Lấy BrowserProvider tương ứng từ window.ethereum
+   * Lấy BrowserProvider tương ứng từ ví đã kết nối (ưu tiên AppKit provider)
    */
   private getBrowserProvider(): BrowserProvider | null {
-    if (typeof window === 'undefined' || !(window as any).ethereum) return null;
-    return new BrowserProvider((window as any).ethereum);
+    if (typeof window === 'undefined') return null;
+    
+    // Nếu có AppKit modal và đã kết nối, lấy provider từ AppKit
+    if (this.modal && this.appKitIsConnected) {
+      const walletProvider = this.modal.getWalletProvider();
+      if (walletProvider) {
+        return new BrowserProvider(walletProvider);
+      }
+    }
+    
+    // Fallback về window.ethereum
+    if ((window as any).ethereum) {
+      return new BrowserProvider((window as any).ethereum);
+    }
+    
+    return null;
   }
 
   /**
@@ -316,25 +441,18 @@ export class Web3Service {
   }
 
   /**
-   * Kiểm tra xem ví đã được kết nối trước đó hay chưa
+   * Khôi phục phiên kết nối ví và đăng nhập tạm thời từ localStorage nếu hợp lệ
    */
-  private async checkWalletConnection() {
-    if (typeof window === 'undefined' || !(window as any).ethereum) return;
-    try {
-      const accounts = await (window as any).ethereum.request({ method: 'eth_accounts' });
-      console.log('checkWalletConnection accounts:', accounts);
-      if (accounts && accounts.length > 0) {
-        const account = accounts[0];
-        this.currentAccount.set(account);
-        if (this.hasValidAuthToken(account)) {
-          this.walletConnected.set(true);
-        } else {
-          this.walletConnected.set(false);
-        }
-        await this.updateBalanceAndStatus(account);
-      }
-    } catch (err) {
-      console.error('Loi checkWalletConnection:', err);
+  private restoreSessionFromStorage() {
+    if (typeof window === 'undefined') return;
+    const savedAddress = localStorage.getItem('auth_address');
+    if (savedAddress && this.hasValidAuthToken(savedAddress)) {
+      console.log('[Web3] Khôi phục session tạm thời từ storage:', savedAddress);
+      this.currentAccount.set(savedAddress);
+      this.walletConnected.set(true);
+      this.appKitAddress = savedAddress;
+      this.appKitIsConnected = true;
+      this.updateBalanceAndStatus(savedAddress);
     }
   }
 
@@ -372,42 +490,102 @@ export class Web3Service {
     }
   }
 
-  /**
-   * Kết nối ví Web3 trực tiếp qua window.ethereum
-   */
   public async connectWallet(): Promise<boolean> {
     this.walletError.set('');
-    if (typeof window === 'undefined' || !(window as any).ethereum) {
-      this.walletError.set('Không tìm thấy ví Web3 (ví dụ: MetaMask)! Vui lòng cài đặt extension ví.');
+    
+    if (!this.modal) {
+      this.walletError.set('WalletConnect AppKit chưa được khởi tạo!');
       return false;
     }
 
     try {
-      const accounts = await (window as any).ethereum.request({
-        method: 'eth_requestAccounts'
-      });
-
-      if (accounts && accounts.length > 0) {
-        const account = accounts[0];
-        this.currentAccount.set(account);
-
-        if (this.hasValidAuthToken(account)) {
+      // 1. Kiểm tra xem ví đã kết nối sẵn chưa. Nếu đã kết nối, trả về true ngay để chuyển sang bước ký.
+      const isConnected = this.appKitIsConnected;
+      const address = this.appKitAddress;
+      if (isConnected && address) {
+        this.currentAccount.set(address);
+        
+        if (this.hasValidAuthToken(address)) {
           this.walletConnected.set(true);
         } else {
           this.walletConnected.set(false);
         }
-
-        await this.updateBalanceAndStatus(account);
+        
+        await this.updateBalanceAndStatus(address);
+        console.log('[AppKit] Ví đã kết nối sẵn:', address);
         return true;
       }
-      return false;
+
+      // 2. Nếu chưa kết nối, mở modal chọn ví của AppKit
+      await this.modal.open();
+      
+      // Chờ cho đến khi ví kết nối thành công hoặc modal đóng
+      return new Promise<boolean>((resolve) => {
+        let resolved = false;
+
+        // Lắng nghe tài khoản thay đổi để phát hiện kết nối thành công
+        const unsubscribeAccount = this.modal.subscribeAccount(async (accountState: any) => {
+          console.log('[AppKit] subscribeAccount in connectWallet:', accountState);
+          if (accountState.isConnected && accountState.address) {
+            if (!resolved) {
+              resolved = true;
+              this.currentAccount.set(accountState.address);
+              this.appKitAddress = accountState.address || null;
+              this.appKitIsConnected = accountState.isConnected || false;
+              
+              if (this.hasValidAuthToken(accountState.address)) {
+                this.walletConnected.set(true);
+              } else {
+                this.walletConnected.set(false);
+              }
+              
+              await this.updateBalanceAndStatus(accountState.address);
+              
+              unsubscribeAccount();
+              unsubscribeEvents();
+              this.modal.close();
+              resolve(true);
+            }
+          }
+        });
+        
+        // Lắng nghe sự kiện đóng modal
+        const unsubscribeEvents = this.modal.subscribeEvents(async (event: any) => {
+          console.log('[AppKit] subscribeEvents in connectWallet:', event);
+          if (event.data?.event === 'MODAL_CLOSE') {
+            // Đợi một chút để check xem sau khi đóng modal trạng thái ví thế nào
+            setTimeout(async () => {
+              if (!resolved) {
+                const isConnected = this.appKitIsConnected;
+                const address = this.appKitAddress;
+                if (isConnected && address) {
+                  resolved = true;
+                  this.currentAccount.set(address);
+                  
+                  if (this.hasValidAuthToken(address)) {
+                    this.walletConnected.set(true);
+                  } else {
+                    this.walletConnected.set(false);
+                  }
+                  
+                  await this.updateBalanceAndStatus(address);
+                  unsubscribeAccount();
+                  unsubscribeEvents();
+                  resolve(true);
+                } else {
+                  resolved = true;
+                  unsubscribeAccount();
+                  unsubscribeEvents();
+                  resolve(false);
+                }
+              }
+            }, 100);
+          }
+        });
+      });
     } catch (err: any) {
-      console.error('Loi ket noi vi:', err);
-      if (err.code === 4001) {
-        this.walletError.set('Yêu cầu kết nối ví bị hủy bởi người dùng.');
-      } else {
-        this.walletError.set(err.message || 'Lỗi kết nối ví.');
-      }
+      console.error('Lỗi khi mở modal kết nối:', err);
+      this.walletError.set(err.message || 'Lỗi kết nối ví.');
       return false;
     }
   }
@@ -496,20 +674,28 @@ export class Web3Service {
   }
 
   /**
-   * Ngắt kết nối ví (Client-side reset)
+   * Ngắt kết nối ví (Client-side reset và ngắt kết nối AppKit)
    */
   public disconnectWallet() {
-    this.resetWalletState();
+    if (this.modal) {
+      try {
+        this.modal.disconnect();
+      } catch (err) {
+        console.warn('Lỗi ngắt kết nối AppKit:', err);
+      }
+    }
+    this.resetWalletState(true);
     this.accountsChanged$.next('');
   }
 
-  private resetWalletState() {
+  private resetWalletState(forceLogout = false) {
     this.currentAccount.set('');
     this.walletBalance.set('0.00');
     this.walletConnected.set(false);
     this.isOwnerContract.set(false);
-    if (typeof window !== 'undefined') {
+    if (forceLogout && typeof window !== 'undefined') {
       localStorage.removeItem('auth_address');
+      localStorage.removeItem('auth_logged_in');
     }
   }
 
