@@ -443,6 +443,7 @@ export class StateService {
   // Refresh danh sách thực đơn
   public refreshProducts() {
     if (!this.web3Service.walletConnected()) return;
+    if (!this.hasPermission('pos') && !this.hasPermission('menu') && !this.hasPermission('inventory')) return;
     if (this.isProductsLoading()) return;
     this.isProductsLoading.set(true);
     forkJoin({
@@ -465,6 +466,7 @@ export class StateService {
   // Refresh danh sách đơn hàng
   public refreshOrders(statusFilter: string = 'all', blockchainFilter: string = 'all') {
     if (!this.web3Service.walletConnected()) return;
+    if (!this.hasPermission('pos') && !this.hasPermission('orders')) return;
     if (this.isOrdersLoading()) return;
     this.isOrdersLoading.set(true);
     this.apiService.getOrders(statusFilter, blockchainFilter).subscribe({
@@ -482,6 +484,7 @@ export class StateService {
   // Refresh dữ liệu dashboard
   public refreshDashboard() {
     if (!this.web3Service.walletConnected()) return;
+    if (!this.hasPermission('dashboard')) return;
     if (this.isDashboardLoading()) return;
     this.isDashboardLoading.set(true);
     this.apiService.getDashboard(this.dashboardStartDate(), this.dashboardEndDate()).subscribe({
@@ -514,7 +517,7 @@ export class StateService {
     }
     this.isSettingsFetching = true;
     this.isSettingsLoading.set(true);
-    const hasToken = this.web3Service.walletConnected();
+    const hasToken = this.web3Service.walletConnected() && this.hasPermission('settings');
     const settingsObservable = hasToken 
       ? this.apiService.getSettings() 
       : this.apiService.getPublicSettings();
@@ -547,6 +550,7 @@ export class StateService {
   // Refresh danh sách khách hàng (có cache 5 phút)
   public refreshCustomers(force: boolean = false) {
     if (!this.web3Service.walletConnected()) return;
+    if (!this.hasPermission('pos') && !this.hasPermission('customers') && !this.hasPermission('reports')) return;
     
     const now = Date.now();
     // Nếu không force và đã có dữ liệu và chưa hết hạn 5 phút
@@ -576,6 +580,7 @@ export class StateService {
   // Refresh danh sách giao dịch tài chính
   public refreshTransactions(typeFilter: string = 'all') {
     if (!this.web3Service.walletConnected()) return;
+    if (!this.hasPermission('financials')) return;
     if (this.isTransactionsLoading()) return;
     this.isTransactionsLoading.set(true);
     this.apiService.getTransactions(typeFilter).subscribe({
@@ -593,6 +598,7 @@ export class StateService {
   // Refresh danh sách phiếu kho
   public refreshInventory(typeFilter: string = 'all') {
     if (!this.web3Service.walletConnected()) return;
+    if (!this.hasPermission('inventory')) return;
     if (this.isInventoryLoading()) return;
     this.isInventoryLoading.set(true);
     this.apiService.getInventoryRecords(typeFilter).subscribe({
@@ -610,6 +616,7 @@ export class StateService {
   // Refresh sơ đồ bàn ăn và khu vực
   public refreshTablesAndAreas() {
     if (!this.web3Service.walletConnected()) return;
+    if (!this.hasPermission('pos') && !this.hasPermission('tables')) return;
     if (this.isTablesLoading()) return;
     this.isTablesLoading.set(true);
     forkJoin({
@@ -927,6 +934,7 @@ export class StateService {
   // Refresh danh sách nợ khách hàng
   public refreshDebts(searchFilter: string = '', statusFilter: string = 'all') {
     if (!this.web3Service.walletConnected()) return;
+    if (!this.hasPermission('debts')) return;
     if (this.isDebtsLoading()) return;
     this.isDebtsLoading.set(true);
     this.apiService.getDebts(searchFilter, statusFilter).subscribe({
@@ -949,6 +957,7 @@ export class StateService {
   // Refresh danh sách nhân viên và vai trò
   public refreshStaffsAndRoles() {
     if (!this.web3Service.walletConnected()) return;
+    if (!this.hasPermission('staffs')) return;
     if (this.isStaffsLoading()) return;
     this.isStaffsLoading.set(true);
 

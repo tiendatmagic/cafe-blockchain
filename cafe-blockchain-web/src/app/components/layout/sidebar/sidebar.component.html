@@ -164,7 +164,9 @@
         </svg>
         <span>Khách hàng</span>
       </button>
+    }
 
+    @if (stateService.hasPermission('debts')) {
       <button
         routerLink="/debts"
         routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
@@ -678,7 +680,9 @@
             </svg>
             <span>Khách hàng</span>
           </button>
+        }
 
+        @if (stateService.hasPermission('debts')) {
           <button
             routerLink="/debts"
             routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-bold"

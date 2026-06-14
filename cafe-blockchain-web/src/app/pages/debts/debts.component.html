@@ -44,7 +44,7 @@
       description="Vui lòng kết nối ví Web3 để truy cập dữ liệu công nợ, lịch sử giao dịch nợ/trả nợ của khách hàng và đồng bộ dòng tiền vào sổ quỹ."
     ></app-web3-connect-prompt>
   } @else {
-    @if (stateService.hasPermission('customers')) {
+    @if (stateService.hasPermission('debts')) {
     <!-- Khối Loading Skeleton dùng chung -->
     @if (isDebtsLoading()) {
       <div class="mt-6">

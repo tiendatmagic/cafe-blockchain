@@ -75,11 +75,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/customers/{id}', [CustomerController::class, 'destroy'])->middleware('permission:customers');
 
     // Debts (Sổ nợ) API
-    Route::get('/debts', [\App\Http\Controllers\DebtController::class, 'index'])->middleware('permission:customers');
-    Route::get('/debts/customer/{id}', [\App\Http\Controllers\DebtController::class, 'show'])->middleware('permission:customers');
-    Route::post('/debts', [\App\Http\Controllers\DebtController::class, 'store'])->middleware('permission:customers');
-    Route::post('/debts/payment', [\App\Http\Controllers\DebtController::class, 'storePayment'])->middleware('permission:customers');
-    Route::delete('/debts/{id}', [\App\Http\Controllers\DebtController::class, 'destroy'])->middleware('permission:customers');
+    Route::get('/debts', [\App\Http\Controllers\DebtController::class, 'index'])->middleware('permission:debts');
+    Route::get('/debts/customer/{id}', [\App\Http\Controllers\DebtController::class, 'show'])->middleware('permission:debts');
+    Route::post('/debts', [\App\Http\Controllers\DebtController::class, 'store'])->middleware('permission:debts');
+    Route::post('/debts/payment', [\App\Http\Controllers\DebtController::class, 'storePayment'])->middleware('permission:debts');
+    Route::delete('/debts/{id}', [\App\Http\Controllers\DebtController::class, 'destroy'])->middleware('permission:debts');
 
     // Customer Groups API
     Route::get('/customer-groups', [CustomerGroupController::class, 'index'])->middleware('permission:customers');
