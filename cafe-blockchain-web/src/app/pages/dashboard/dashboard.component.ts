@@ -9,6 +9,7 @@ import { PageHeaderComponent } from '@components/shared/page-header/page-header.
 import { VNDCurrencyPipe } from '@pipes/vnd.pipe';
 import { CustomDatePickerComponent } from '@components/shared/custom-date-picker/custom-date-picker.component';
 import { MiniButtonsComponent, DASHBOARD_DATE_OPTIONS } from '@components/shared/mini-buttons/mini-buttons.component';
+import { PaginationComponent } from '@components/shared/pagination/pagination.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -22,7 +23,8 @@ import { MiniButtonsComponent, DASHBOARD_DATE_OPTIONS } from '@components/shared
     PageHeaderComponent,
     VNDCurrencyPipe,
     CustomDatePickerComponent,
-    MiniButtonsComponent
+    MiniButtonsComponent,
+    PaginationComponent
   ],
   templateUrl: './dashboard.component.html'
 })
@@ -254,28 +256,5 @@ export class DashboardComponent implements OnInit {
     if (page >= 1 && page <= total) {
       this.lowStockCurrentPage = page;
     }
-  }
-
-  // Smart pagination: trả về mảng số trang + 'ellipsis' để rút gọn
-  public getLowStockDisplayPages(): (number | '...')[] {
-    const total = this.getLowStockTotalPages();
-    const cur = this.lowStockCurrentPage;
-    if (total <= 7) {
-      return Array.from({ length: total }, (_, i) => i + 1);
-    }
-    const pages: (number | '...')[] = [];
-    // Luôn hiện trang 1
-    pages.push(1);
-    // Ellipsis trái nếu cur > 3
-    if (cur > 3) pages.push('...');
-    // Các trang xung quanh trang hiện tại
-    const start = Math.max(2, cur - 1);
-    const end = Math.min(total - 1, cur + 1);
-    for (let i = start; i <= end; i++) pages.push(i);
-    // Ellipsis phải nếu cur < total - 2
-    if (cur < total - 2) pages.push('...');
-    // Luôn hiện trang cuối
-    pages.push(total);
-    return pages;
   }
 }

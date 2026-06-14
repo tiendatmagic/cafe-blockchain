@@ -14,11 +14,20 @@ import { environment } from '../../../environments/environment';
 import { ShortAddressPipe } from '@pipes/short-address.pipe';
 import { ThemeToggleComponent } from '@components/shared/theme-toggle/theme-toggle.component';
 import { CustomSelectComponent } from '@components/shared/custom-select/custom-select.component';
+import { PaginationComponent } from '@components/shared/pagination/pagination.component';
 
 @Component({
   selector: 'app-blockchain-explorer',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ShortAddressPipe, ThemeToggleComponent, CustomSelectComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    ShortAddressPipe,
+    ThemeToggleComponent,
+    CustomSelectComponent,
+    PaginationComponent
+  ],
   templateUrl: './blockchain-explorer.component.html'
 })
 export class BlockchainExplorerComponent implements OnInit {
@@ -464,48 +473,18 @@ export class BlockchainExplorerComponent implements OnInit {
     }
   }
 
-  /**
-   * Thay đổi trang hiển thị dữ liệu
-   */
-  public changePage(direction: 'next' | 'prev') {
+  public handleFeedPageChange(page: number) {
     const tab = this.activeTab();
     if (tab === 'order') {
-      const cur = this.orderPage();
-      if (direction === 'next' && cur * this.limit < this.orderTotal()) {
-        this.orderPage.set(cur + 1);
-        this.loadDataForActiveTab();
-      } else if (direction === 'prev' && cur > 1) {
-        this.orderPage.set(cur - 1);
-        this.loadDataForActiveTab();
-      }
+      this.orderPage.set(page);
     } else if (tab === 'transaction') {
-      const cur = this.transactionPage();
-      if (direction === 'next' && cur * this.limit < this.transactionTotal()) {
-        this.transactionPage.set(cur + 1);
-        this.loadDataForActiveTab();
-      } else if (direction === 'prev' && cur > 1) {
-        this.transactionPage.set(cur - 1);
-        this.loadDataForActiveTab();
-      }
+      this.transactionPage.set(page);
     } else if (tab === 'voucher') {
-      const cur = this.voucherPage();
-      if (direction === 'next' && cur * this.limit < this.voucherTotal()) {
-        this.voucherPage.set(cur + 1);
-        this.loadDataForActiveTab();
-      } else if (direction === 'prev' && cur > 1) {
-        this.voucherPage.set(cur - 1);
-        this.loadDataForActiveTab();
-      }
+      this.voucherPage.set(page);
     } else if (tab === 'menu') {
-      const cur = this.menuPage();
-      if (direction === 'next' && cur * this.limit < this.menuTotal()) {
-        this.menuPage.set(cur + 1);
-        this.loadDataForActiveTab();
-      } else if (direction === 'prev' && cur > 1) {
-        this.menuPage.set(cur - 1);
-        this.loadDataForActiveTab();
-      }
+      this.menuPage.set(page);
     }
+    this.loadDataForActiveTab();
   }
 
   /**
@@ -840,20 +819,7 @@ export class BlockchainExplorerComponent implements OnInit {
     return Math.ceil(this.detailProductTotal() / this.detailProductLimit) || 1;
   }
 
-  /**
-   * Thay đổi trang cho danh sách chi tiết món ăn ở cột trái
-   */
-  public changeDetailProductPage(direction: 'next' | 'prev') {
-    const cur = this.detailProductPage();
-    const totalPages = this.totalDetailProductPages;
-    if (direction === 'next' && cur < totalPages) {
-      this.detailProductPage.set(cur + 1);
-      this.updateDetailProducts();
-    } else if (direction === 'prev' && cur > 1) {
-      this.detailProductPage.set(cur - 1);
-      this.updateDetailProducts();
-    }
-  }
+
 
   /**
    * Cập nhật danh sách món ăn hiển thị ở cột trái dựa trên trang hiện tại

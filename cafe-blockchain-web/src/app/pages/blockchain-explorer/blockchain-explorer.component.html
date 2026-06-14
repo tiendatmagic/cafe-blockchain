@@ -985,32 +985,18 @@
                   </div>
 
                   <!-- Bộ điều khiển phân trang cho danh sách món ăn chi tiết -->
-                  @if (totalDetailProductPages > 1) {
-                    <div
-                      class="flex items-center justify-between border-t border-slate-200 dark:border-slate-900 mt-4 pt-3 text-xs text-slate-500 dark:text-slate-400 font-mono transition-colors duration-300"
-                    >
-                      <span>Trang {{ detailProductPage() }} / {{ totalDetailProductPages }}</span>
-                      <div class="flex gap-2">
-                        <button
-                          (click)="changeDetailProductPage('prev')"
-                          [disabled]="detailProductPage() === 1"
-                          class="btn-secondary btn-sm"
-                        >
-                          Trang trước
-                        </button>
-                        <button
-                          (click)="changeDetailProductPage('next')"
-                          [disabled]="detailProductPage() === totalDetailProductPages"
-                          class="btn-secondary btn-sm"
-                        >
-                          Trang sau
-                        </button>
-                      </div>
-                    </div>
+                  @if (detailProductTotal() > detailProductLimit) {
+                    <app-pagination
+                      [currentPage]="detailProductPage()"
+                      [totalPages]="totalDetailProductPages"
+                      [totalItems]="detailProductTotal()"
+                      [itemsPerPage]="detailProductLimit"
+                      itemName="món"
+                      (pageChange)="detailProductPage.set($event); updateDetailProducts()"
+                    ></app-pagination>
                   }
                 </div>
               }
-
               <!-- Blockchain Block info -->
               <div
                 class="app-card p-4 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono border-slate-200/50 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-950/20"
@@ -1529,48 +1515,43 @@
             </div>
 
             <!-- Pagination Control UI -->
-            <div
-              class="flex items-center justify-between border-t border-slate-200 dark:border-slate-900 mt-4 pt-3.5 text-xs text-slate-500 dark:text-slate-400 font-mono transition-colors duration-300"
-            >
-              <div>
-                @if (activeTab() === 'order') {
-                  <span>Trang {{ orderPage() }} / {{ totalOrderPages }}</span>
-                } @else if (activeTab() === 'transaction') {
-                  <span>Trang {{ transactionPage() }} / {{ totalTransactionPages }}</span>
-                } @else if (activeTab() === 'voucher') {
-                  <span>Trang {{ voucherPage() }} / {{ totalVoucherPages }}</span>
-                } @else if (activeTab() === 'menu') {
-                  <span>Trang {{ menuPage() }} / {{ totalMenuPages }}</span>
-                }
-              </div>
-              <div class="flex gap-2">
-                <button
-                  (click)="changePage('prev')"
-                  [disabled]="
-                    (activeTab() === 'order' && orderPage() === 1) ||
-                    (activeTab() === 'transaction' && transactionPage() === 1) ||
-                    (activeTab() === 'voucher' && voucherPage() === 1) ||
-                    (activeTab() === 'menu' && menuPage() === 1)
-                  "
-                  class="btn-secondary btn-sm"
-                >
-                  Trang trước
-                </button>
-                <button
-                  (click)="changePage('next')"
-                  [disabled]="
-                    (activeTab() === 'order' && orderPage() * limit >= orderTotal()) ||
-                    (activeTab() === 'transaction' &&
-                      transactionPage() * limit >= transactionTotal()) ||
-                    (activeTab() === 'voucher' && voucherPage() * limit >= voucherTotal()) ||
-                    (activeTab() === 'menu' && menuPage() * limit >= menuTotal())
-                  "
-                  class="btn-secondary btn-sm"
-                >
-                  Trang sau
-                </button>
-              </div>
-            </div>
+            @if (activeTab() === 'order' && orderTotal() > limit) {
+              <app-pagination
+                [currentPage]="orderPage()"
+                [totalPages]="totalOrderPages"
+                [totalItems]="orderTotal()"
+                [itemsPerPage]="limit"
+                itemName="hóa đơn"
+                (pageChange)="handleFeedPageChange($event)"
+              ></app-pagination>
+            } @else if (activeTab() === 'transaction' && transactionTotal() > limit) {
+              <app-pagination
+                [currentPage]="transactionPage()"
+                [totalPages]="totalTransactionPages"
+                [totalItems]="transactionTotal()"
+                [itemsPerPage]="limit"
+                itemName="phiếu thu chi"
+                (pageChange)="handleFeedPageChange($event)"
+              ></app-pagination>
+            } @else if (activeTab() === 'voucher' && voucherTotal() > limit) {
+              <app-pagination
+                [currentPage]="voucherPage()"
+                [totalPages]="totalVoucherPages"
+                [totalItems]="voucherTotal()"
+                [itemsPerPage]="limit"
+                itemName="voucher"
+                (pageChange)="handleFeedPageChange($event)"
+              ></app-pagination>
+            } @else if (activeTab() === 'menu' && menuTotal() > limit) {
+              <app-pagination
+                [currentPage]="menuPage()"
+                [totalPages]="totalMenuPages"
+                [totalItems]="menuTotal()"
+                [itemsPerPage]="limit"
+                itemName="bản ghi"
+                (pageChange)="handleFeedPageChange($event)"
+              ></app-pagination>
+            }
           }
         </div>
       </section>

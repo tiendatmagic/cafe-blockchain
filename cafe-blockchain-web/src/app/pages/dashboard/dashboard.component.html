@@ -821,92 +821,15 @@
                   </table>
 
                   <!-- Footer phân trang -->
-                  @if (getLowStockTotalPages() > 1) {
-                    <div
-                      class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800 mt-2 gap-2"
-                    >
-                      <!-- Thông tin trang -->
-                      <span class="text-[10px] text-slate-400 font-semibold shrink-0">
-                        {{ (lowStockCurrentPage - 1) * lowStockPageSize + 1 }}–{{
-                          mathMin(lowStockCurrentPage * lowStockPageSize, getLowStockTotalCount())
-                        }}
-                        <span class="text-slate-300 dark:text-slate-600">/</span>
-                        {{ getLowStockTotalCount() }}
-                      </span>
-
-                      <!-- Điều hướng phân trang -->
-                      <div class="flex items-center gap-0.5">
-                        <!-- Prev -->
-                        <button
-                          (click)="goToLowStockPage(lowStockCurrentPage - 1)"
-                          [disabled]="lowStockCurrentPage === 1"
-                          class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-25 disabled:cursor-not-allowed transition-all"
-                          title="Trang trước"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-3.5 w-3.5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="2.5"
-                              d="M15 19l-7-7 7-7"
-                            />
-                          </svg>
-                        </button>
-
-                        <!-- Smart page numbers với ellipsis -->
-                        @for (item of getLowStockDisplayPages(); track $index) {
-                          @if (item === '...') {
-                            <span
-                              class="w-7 h-7 flex items-center justify-center text-[11px] text-slate-400 font-semibold select-none"
-                              >…</span
-                            >
-                          } @else {
-                            <button
-                              (click)="goToLowStockPage(+item)"
-                              class="w-7 h-7 flex items-center justify-center rounded-lg text-[11px] font-black transition-all"
-                              [class.bg-[var(--dynamic-primary)]]="item === lowStockCurrentPage"
-                              [class.text-white]="item === lowStockCurrentPage"
-                              [class.shadow-sm]="item === lowStockCurrentPage"
-                              [class.text-slate-600]="item !== lowStockCurrentPage"
-                              [class.dark:text-slate-400]="item !== lowStockCurrentPage"
-                              [class.hover:bg-slate-100]="item !== lowStockCurrentPage"
-                              [class.dark:hover:bg-slate-800]="item !== lowStockCurrentPage"
-                            >
-                              {{ item }}
-                            </button>
-                          }
-                        }
-
-                        <!-- Next -->
-                        <button
-                          (click)="goToLowStockPage(lowStockCurrentPage + 1)"
-                          [disabled]="lowStockCurrentPage === getLowStockTotalPages()"
-                          class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-25 disabled:cursor-not-allowed transition-all"
-                          title="Trang sau"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-3.5 w-3.5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="2.5"
-                              d="M9 5l7 7-7 7"
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
+                  @if (getLowStockTotalCount() > lowStockPageSize) {
+                    <app-pagination
+                      [currentPage]="lowStockCurrentPage"
+                      [totalPages]="getLowStockTotalPages()"
+                      [totalItems]="getLowStockTotalCount()"
+                      [itemsPerPage]="lowStockPageSize"
+                      itemName="mục"
+                      (pageChange)="goToLowStockPage($event)"
+                    ></app-pagination>
                   }
                 }
               </div>
