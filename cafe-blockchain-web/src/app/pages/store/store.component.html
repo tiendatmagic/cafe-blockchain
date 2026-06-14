@@ -358,6 +358,9 @@
                         >
                         <span class="text-base font-black text-[var(--dynamic-primary)] mt-0.5">
                           {{ product.price | vnd }}
+                          @if (product.unit) {
+                            <span class="text-xs text-slate-400 dark:text-slate-500 font-normal">/ {{ product.unit }}</span>
+                          }
                         </span>
                       </div>
 
@@ -485,6 +488,9 @@
                         >
                         <span class="text-base font-black text-[var(--dynamic-primary)] mt-0.5">
                           {{ product.price | vnd }}
+                          @if (product.unit) {
+                            <span class="text-xs text-slate-400 dark:text-slate-500 font-normal">/ {{ product.unit }}</span>
+                          }
                         </span>
                       </div>
 
@@ -653,6 +659,9 @@
                         (item.variant ? item.variant.price : item.product.price) * item.quantity
                           | number
                       }}đ
+                      @if (item.product.unit) {
+                        <span class="text-[10px] text-slate-450 dark:text-slate-500 font-normal"> / {{ item.product.unit }}</span>
+                      }
                     </span>
 
                     <!-- Bộ tăng giảm số lượng -->

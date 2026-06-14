@@ -13,6 +13,8 @@ import { PaginationComponent } from '@components/shared/pagination/pagination.co
 import { PageHeaderComponent } from '@components/shared/page-header/page-header.component';
 import { VNDCurrencyPipe } from '@pipes/vnd.pipe';
 import { MiniButtonsComponent } from '@components/shared/mini-buttons/mini-buttons.component';
+import { Html5Qrcode } from 'html5-qrcode';
+import { ModalComponent } from '@components/shared/modal/modal.component';
 
 @Component({
   selector: 'app-pos',
@@ -26,7 +28,8 @@ import { MiniButtonsComponent } from '@components/shared/mini-buttons/mini-butto
     PaginationComponent,
     PageHeaderComponent,
     VNDCurrencyPipe,
-    MiniButtonsComponent
+    MiniButtonsComponent,
+    ModalComponent
   ],
   templateUrl: './pos.component.html'
 })
@@ -34,6 +37,12 @@ export class PosComponent implements OnInit, OnDestroy {
   public readonly stateService = inject(StateService);
   private readonly apiService = inject(ApiService);
   public readonly web3Service = inject(Web3Service);
+
+  // Trạng thái quét barcode tại POS
+  public readonly isBarcodeScannerOpen = signal<boolean>(false);
+  public readonly isScannerLoading = signal<boolean>(false);
+  public readonly scannerError = signal<string>('');
+  private html5Qrcode: any = null;
 
   // Trạng thái quét QR ký số NFT Voucher
   public readonly showSignQrModal = signal<boolean>(false);
@@ -118,6 +127,9 @@ export class PosComponent implements OnInit, OnDestroy {
       this.customerSearchSubscription.unsubscribe();
     }
     this.stopSignaturePolling();
+    if (this.html5Qrcode && this.html5Qrcode.isScanning) {
+      this.html5Qrcode.stop().catch((err: any) => console.error(err));
+    }
   }
 
   public onCustomerSearchChange(query: string) {
@@ -886,5 +898,79 @@ export class PosComponent implements OnInit, OnDestroy {
       return `${minPrice.toLocaleString('vi-VN')} - ${maxPrice.toLocaleString('vi-VN')}`;
     }
     return `${(Number(product.price) || 0).toLocaleString('vi-VN')}`;
+  }
+
+  /**
+   * Quét mã vạch sản phẩm bằng camera tại POS bán hàng
+   */
+  public startPosBarcodeScan() {
+    this.isBarcodeScannerOpen.set(true);
+    this.isScannerLoading.set(true);
+    this.scannerError.set('');
+    
+    setTimeout(() => {
+      this.initPosScanner();
+    }, 300);
+  }
+
+  private initPosScanner() {
+    try {
+      this.html5Qrcode = new Html5Qrcode("pos-barcode-scanner-reader");
+      
+      const config = {
+        fps: 10,
+        qrbox: (width: number, height: number) => {
+          return { width: Math.min(width * 0.8, 250), height: Math.min(height * 0.4, 100) };
+        },
+        aspectRatio: 1.777778
+      };
+
+      this.html5Qrcode.start(
+        { facingMode: "environment" },
+        config,
+        (decodedText: string, decodedResult: any) => {
+          const barcode = decodedText.trim();
+          const foundProduct = this.products().find((p: any) => p.barcode && p.barcode.trim() === barcode);
+          if (foundProduct) {
+            this.addToCart(foundProduct);
+            this.stopPosBarcodeScan();
+          } else {
+            this.stateService.showToast(`Không tìm thấy sản phẩm có mã vạch: ${barcode}`, 'error');
+            this.stateService.onSearchQueryChange(barcode);
+            this.stopPosBarcodeScan();
+          }
+        },
+        (errorMessage: string) => {
+          // Bỏ qua lỗi quét
+        }
+      ).then(() => {
+        this.isScannerLoading.set(false);
+      }).catch((err: any) => {
+        console.error('Không khởi động được camera:', err);
+        this.scannerError.set('Không thể truy cập camera. Vui lòng cấp quyền camera cho trình duyệt.');
+        this.isScannerLoading.set(false);
+      });
+    } catch (e: any) {
+      console.error('Lỗi khởi tạo quét:', e);
+      this.scannerError.set('Có lỗi xảy ra: ' + e.message);
+      this.isScannerLoading.set(false);
+    }
+  }
+
+  public stopPosBarcodeScan() {
+    if (this.html5Qrcode && this.html5Qrcode.isScanning) {
+      this.html5Qrcode.stop().then(() => {
+        this.html5Qrcode.clear();
+        this.html5Qrcode = null;
+        this.isBarcodeScannerOpen.set(false);
+      }).catch((err: any) => {
+        console.error('Lỗi tắt camera:', err);
+        this.html5Qrcode = null;
+        this.isBarcodeScannerOpen.set(false);
+      });
+    } else {
+      this.html5Qrcode = null;
+      this.isBarcodeScannerOpen.set(false);
+    }
   }
 }

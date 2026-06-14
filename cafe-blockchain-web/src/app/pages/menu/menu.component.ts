@@ -12,6 +12,7 @@ import { ConfirmModalComponent } from '@components/shared/confirm-modal/confirm-
 import { PageHeaderComponent } from '@components/shared/page-header/page-header.component';
 import { ModalComponent } from '@components/shared/modal/modal.component';
 import { CustomSwitchComponent } from '@components/shared/custom-switch/custom-switch.component';
+import { Html5Qrcode } from 'html5-qrcode';
 
 @Component({
   selector: 'app-menu',
@@ -81,8 +82,16 @@ export class MenuComponent implements OnInit, OnDestroy {
   public readonly isMenuSyncLogsLoading = signal<boolean>(false);
   public readonly menuSyncLogsError = signal<string>('');
 
+  // Trạng thái quét barcode bằng camera
+  public readonly isBarcodeScannerOpen = signal<boolean>(false);
+  public readonly isScannerLoading = signal<boolean>(false);
+  public readonly scannerError = signal<string>('');
+  private html5Qrcode: any = null;
+
   public readonly menuForm = signal<any>({
     sku: '',
+    barcode: '',
+    unit: 'Cái',
     name: '',
     price: 0,
     cost_price: 0,
@@ -164,6 +173,8 @@ export class MenuComponent implements OnInit, OnDestroy {
     this.menuModalType.set('add');
     this.menuForm.set({
       sku: '',
+      barcode: '',
+      unit: 'Cái',
       name: '',
       price: 0,
       cost_price: 0,
@@ -183,6 +194,8 @@ export class MenuComponent implements OnInit, OnDestroy {
     this.editingProduct.set(product);
     this.menuForm.set({
       sku: product.sku || '',
+      barcode: product.barcode || '',
+      unit: product.unit || 'Cái',
       name: product.name,
       price: product.price,
       cost_price: product.cost_price || 0,
@@ -514,6 +527,9 @@ export class MenuComponent implements OnInit, OnDestroy {
     if (this.accountSubscription) {
       this.accountSubscription.unsubscribe();
     }
+    if (this.html5Qrcode && this.html5Qrcode.isScanning) {
+      this.html5Qrcode.stop().catch((err: any) => console.error(err));
+    }
   }
 
   /**
@@ -692,5 +708,72 @@ export class MenuComponent implements OnInit, OnDestroy {
       day: '2-digit', month: '2-digit', year: 'numeric',
       hour: '2-digit', minute: '2-digit', second: '2-digit'
     });
+  }
+
+  /**
+   * Các phương thức quét mã vạch (Barcode) qua Camera
+   */
+  public startBarcodeScan() {
+    this.isBarcodeScannerOpen.set(true);
+    this.isScannerLoading.set(true);
+    this.scannerError.set('');
+    
+    setTimeout(() => {
+      this.initScanner();
+    }, 300);
+  }
+
+  private initScanner() {
+    try {
+      this.html5Qrcode = new Html5Qrcode("barcode-scanner-reader");
+      
+      const config = {
+        fps: 10,
+        qrbox: (width: number, height: number) => {
+          return { width: Math.min(width * 0.8, 250), height: Math.min(height * 0.4, 100) };
+        },
+        aspectRatio: 1.777778
+      };
+
+      this.html5Qrcode.start(
+        { facingMode: "environment" },
+        config,
+        (decodedText: string, decodedResult: any) => {
+          this.updateMenuForm('barcode', decodedText);
+          this.stateService.showToast(`Đã quét mã vạch: ${decodedText}`, 'success');
+          this.stopBarcodeScan();
+        },
+        (errorMessage: string) => {
+          // Bỏ qua các lỗi quét định kỳ khi chưa nhận diện
+        }
+      ).then(() => {
+        this.isScannerLoading.set(false);
+      }).catch((err: any) => {
+        console.error('Không khởi động được camera:', err);
+        this.scannerError.set('Không thể truy cập camera. Vui lòng cấp quyền camera cho trình duyệt.');
+        this.isScannerLoading.set(false);
+      });
+    } catch (e: any) {
+      console.error('Lỗi khởi tạo quét:', e);
+      this.scannerError.set('Có lỗi xảy ra: ' + e.message);
+      this.isScannerLoading.set(false);
+    }
+  }
+
+  public stopBarcodeScan() {
+    if (this.html5Qrcode && this.html5Qrcode.isScanning) {
+      this.html5Qrcode.stop().then(() => {
+        this.html5Qrcode.clear();
+        this.html5Qrcode = null;
+        this.isBarcodeScannerOpen.set(false);
+      }).catch((err: any) => {
+        console.error('Lỗi tắt camera:', err);
+        this.html5Qrcode = null;
+        this.isBarcodeScannerOpen.set(false);
+      });
+    } else {
+      this.html5Qrcode = null;
+      this.isBarcodeScannerOpen.set(false);
+    }
   }
 }

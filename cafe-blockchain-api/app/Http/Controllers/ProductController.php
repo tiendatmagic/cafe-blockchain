@@ -67,6 +67,9 @@ class ProductController extends Controller
         
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'sku' => 'nullable|string|max:255',
+            'barcode' => 'nullable|string|max:255',
+            'unit' => 'nullable|string|max:255',
             'price' => 'required|numeric|min:0',
             'cost_price' => 'nullable|numeric|min:0',
             'category_ids' => 'nullable|array',
@@ -87,6 +90,9 @@ class ProductController extends Controller
 
         $product = Product::create([
             'name' => $validated['name'],
+            'sku' => $validated['sku'] ?? null,
+            'barcode' => $validated['barcode'] ?? null,
+            'unit' => $validated['unit'] ?? 'Cái',
             'price' => $validated['price'],
             'cost_price' => $validated['cost_price'] ?? null,
             'image' => $validated['image'] ?? null,
@@ -132,6 +138,9 @@ class ProductController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'sku' => 'nullable|string|max:255',
+            'barcode' => 'nullable|string|max:255',
+            'unit' => 'nullable|string|max:255',
             'price' => 'required|numeric|min:0',
             'cost_price' => 'nullable|numeric|min:0',
             'category_ids' => 'nullable|array',
@@ -153,6 +162,9 @@ class ProductController extends Controller
 
         $product->update([
             'name' => $validated['name'],
+            'sku' => $validated['sku'] ?? $product->sku,
+            'barcode' => $validated['barcode'] ?? null,
+            'unit' => $validated['unit'] ?? 'Cái',
             'price' => $validated['price'],
             'cost_price' => $validated['cost_price'] ?? null,
             'image' => $validated['image'] ?? null,

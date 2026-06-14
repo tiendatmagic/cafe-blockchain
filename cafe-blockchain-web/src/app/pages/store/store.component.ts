@@ -110,7 +110,8 @@ export class StoreComponent implements OnInit {
     if (search) {
       list = list.filter(p => 
         p.name.toLowerCase().includes(search) || 
-        (p.short_description && p.short_description.toLowerCase().includes(search))
+        (p.short_description && p.short_description.toLowerCase().includes(search)) ||
+        (p.barcode && p.barcode.toLowerCase() === search)
       );
     }
 

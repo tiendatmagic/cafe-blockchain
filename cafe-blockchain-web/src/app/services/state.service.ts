@@ -683,6 +683,7 @@ export class StateService {
       list = list.filter(p => 
         p.name.toLowerCase().includes(search) || 
         p.sku?.toLowerCase().includes(search) ||
+        p.barcode?.toLowerCase().includes(search) ||
         p.category?.category_name?.toLowerCase().includes(search)
       );
     }
