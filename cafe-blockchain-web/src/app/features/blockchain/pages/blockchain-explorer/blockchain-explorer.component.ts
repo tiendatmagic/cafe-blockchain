@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -16,6 +16,7 @@ import { ThemeToggleComponent } from '@shared/components/theme-toggle/theme-togg
 import { CustomSelectComponent } from '@shared/components/custom-select/custom-select.component';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
+import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 
 @Component({
   selector: 'app-blockchain-explorer',
@@ -28,7 +29,8 @@ import { IconComponent } from '@shared/components/icon/icon.component';
     ThemeToggleComponent,
     CustomSelectComponent,
     PaginationComponent,
-    IconComponent
+    IconComponent,
+    TabGroupComponent
   ],
   templateUrl: './blockchain-explorer.component.html'
 })
@@ -75,6 +77,13 @@ export class BlockchainExplorerComponent implements OnInit {
   // Quản lý Tab & Phân trang luồng dữ liệu onchain
   public readonly activeTab = signal<'order' | 'transaction' | 'voucher' | 'menu'>('order');
   public readonly limit = 10;
+
+  public readonly feedTabOptions = computed<TabOption[]>(() => [
+    { value: 'order', label: `Hóa đơn (${this.orderTotal()})` },
+    { value: 'transaction', label: `Thu chi (${this.transactionTotal()})` },
+    { value: 'voucher', label: `Voucher NFT (${this.voucherTotal()})` },
+    { value: 'menu', label: `Thực đơn (${this.menuTotal()})` }
+  ]);
 
   public readonly orderPage = signal<number>(1);
   public readonly orderTotal = signal<number>(0);

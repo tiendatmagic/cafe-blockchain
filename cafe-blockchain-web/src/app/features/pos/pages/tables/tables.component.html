@@ -41,31 +41,12 @@
       <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block"
         >Chọn khu vực để xem</span
       >
-      <div class="tab-group">
-        <button
-          type="button"
-          (click)="activeAreaFilter.set('all')"
-          [class.active]="activeAreaFilter() === 'all'"
-          class="tab-item"
-        >
-          Tất cả khu vực
-        </button>
-
-        @for (area of areas(); track area.id) {
-          <button
-            type="button"
-            (click)="activeAreaFilter.set(area.id.toString())"
-            [class.active]="activeAreaFilter() === area.id.toString()"
-            class="tab-item"
-          >
-            <span>{{ area.name }}</span>
-            <span
-              class="text-xs text-slate-400 bg-slate-100 dark:bg-slate-800 px-1 py-0.2 rounded font-black"
-              >{{ area.tables_count || 0 }}</span
-            >
-          </button>
-        }
-      </div>
+      <app-tab-group
+        [options]="areaFilterOptions()"
+        [activeValue]="activeAreaFilter()"
+        (valueChange)="activeAreaFilter.set($event)"
+        [flex]="false"
+      ></app-tab-group>
     </div>
 
     <!-- Lọc trạng thái bàn -->
@@ -73,34 +54,11 @@
       <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block"
         >Trạng thái bàn</span
       >
-      <div class="tab-group">
-        <button
-          type="button"
-          (click)="tableStatusFilter.set('all')"
-          [class.active]="tableStatusFilter() === 'all'"
-          class="tab-item"
-        >
-          Tất cả
-        </button>
-        <button
-          type="button"
-          (click)="tableStatusFilter.set('empty')"
-          [class.active]="tableStatusFilter() === 'empty'"
-          class="tab-item"
-        >
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-          <span>Bàn trống</span>
-        </button>
-        <button
-          type="button"
-          (click)="tableStatusFilter.set('using')"
-          [class.active]="tableStatusFilter() === 'using'"
-          class="tab-item"
-        >
-          <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-          <span>Đang sử dụng</span>
-        </button>
-      </div>
+      <app-tab-group
+        [options]="tableStatusFilterOptions"
+        [activeValue]="tableStatusFilter()"
+        (valueChange)="tableStatusFilter.set($event)"
+      ></app-tab-group>
     </div>
   </div>
 

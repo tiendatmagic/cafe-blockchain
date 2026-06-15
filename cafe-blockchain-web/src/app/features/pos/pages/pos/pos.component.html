@@ -14,31 +14,12 @@
         >
           Chế độ
         </span>
-        <div class="tab-group bg-slate-200/40 dark:bg-slate-950 border-none h-9">
-          <!-- Button Thanh toán nhanh -->
-          <button
-            type="button"
-            (click)="posCheckoutMode.set('quick')"
-            [class.active]="posCheckoutMode() === 'quick'"
-            class="tab-item h-7 px-3.5"
-            title="Thanh toán nhanh (Ghi nhận ngay)"
-          >
-            <app-icon name="bolt" class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block" strokeWidth="2.5" />
-            <span class="hidden md:inline-block">Nhanh</span>
-          </button>
-
-          <!-- Button Hiện xác nhận -->
-          <button
-            type="button"
-            (click)="posCheckoutMode.set('confirm')"
-            [class.active]="posCheckoutMode() === 'confirm'"
-            class="tab-item h-7 px-3.5"
-            title="Hiện xác nhận (Xem chi tiết đơn)"
-          >
-            <app-icon name="check-circle" class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block" strokeWidth="2.5" />
-            <span class="hidden md:inline-block">Xác nhận</span>
-          </button>
-        </div>
+        <app-tab-group
+          [options]="posCheckoutModeOptions"
+          [activeValue]="posCheckoutMode()"
+          (valueChange)="posCheckoutMode.set($event)"
+          containerClass="bg-slate-200/40 dark:bg-slate-950 border-none h-9 w-full sm:w-auto"
+        ></app-tab-group>
       </div>
 
       <div class="relative w-full sm:w-72">

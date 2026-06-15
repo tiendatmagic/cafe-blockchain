@@ -109,40 +109,11 @@
       <div
         class="app-card p-4 flex items-center justify-between flex-wrap gap-4"
       >
-        <div class="tab-group">
-          <button
-            type="button"
-            (click)="inventoryTypeFilter.set('all'); inventoryCurrentPage.set(1)"
-            [class.active]="inventoryTypeFilter() === 'all'"
-            class="tab-item"
-          >
-            Tất cả
-          </button>
-          <button
-            type="button"
-            (click)="inventoryTypeFilter.set('nhap'); inventoryCurrentPage.set(1)"
-            [class.active]="inventoryTypeFilter() === 'nhap'"
-            class="tab-item"
-          >
-            Nhập kho
-          </button>
-          <button
-            type="button"
-            (click)="inventoryTypeFilter.set('xuat'); inventoryCurrentPage.set(1)"
-            [class.active]="inventoryTypeFilter() === 'xuat'"
-            class="tab-item"
-          >
-            Xuất kho
-          </button>
-          <button
-            type="button"
-            (click)="inventoryTypeFilter.set('kiem'); inventoryCurrentPage.set(1)"
-            [class.active]="inventoryTypeFilter() === 'kiem'"
-            class="tab-item"
-          >
-            Kiểm kho
-          </button>
-        </div>
+        <app-tab-group
+          [options]="inventoryTypeFilterOptions"
+          [activeValue]="inventoryTypeFilter()"
+          (valueChange)="inventoryTypeFilter.set($event); inventoryCurrentPage.set(1)"
+        ></app-tab-group>
 
         <div class="flex items-center gap-4 w-full sm:w-auto shrink-0 flex-wrap sm:flex-nowrap">
           <!-- Search input -->
@@ -431,32 +402,11 @@
             <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
               >Phân loại phiếu</label
             >
-            <div class="tab-group w-full">
-              <button
-                type="button"
-                (click)="inventoryForm().type = 'nhap'"
-                [class.active]="inventoryForm().type === 'nhap'"
-                class="tab-item flex-1"
-              >
-                Nhập
-              </button>
-              <button
-                type="button"
-                (click)="inventoryForm().type = 'xuat'"
-                [class.active]="inventoryForm().type === 'xuat'"
-                class="tab-item flex-1"
-              >
-                Xuất
-              </button>
-              <button
-                type="button"
-                (click)="inventoryForm().type = 'kiem'"
-                [class.active]="inventoryForm().type === 'kiem'"
-                class="tab-item flex-1"
-              >
-                Kiểm
-              </button>
-            </div>
+            <app-tab-group
+              [options]="inventoryFormTypeOptions"
+              [activeValue]="inventoryForm().type"
+              (valueChange)="inventoryForm.update(f => ({ ...f, type: $event }))"
+            ></app-tab-group>
           </div>
 
           <div class="space-y-1.5">

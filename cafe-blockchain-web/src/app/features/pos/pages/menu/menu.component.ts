@@ -14,7 +14,7 @@ import { ModalComponent } from '@shared/components/modal/modal.component';
 import { CustomSwitchComponent } from '@shared/components/custom-switch/custom-switch.component';
 import { CustomSelectComponent } from '@shared/components/custom-select/custom-select.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
-import { MiniButtonsComponent, MiniButtonOption } from '@shared/components/mini-buttons/mini-buttons.component';
+import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 @Component({
@@ -34,7 +34,7 @@ import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
     CustomSwitchComponent,
     CustomSelectComponent,
     IconComponent,
-    MiniButtonsComponent
+    TabGroupComponent
   ],
   templateUrl: './menu.component.html'
 })
@@ -42,9 +42,14 @@ export class MenuComponent implements OnInit, OnDestroy {
   public readonly stateService = inject(StateService);
   private readonly apiService = inject(ApiService);
 
-  public readonly productTypeOptions: MiniButtonOption[] = [
+  public readonly productTypeOptions: TabOption[] = [
     { value: 'product', label: 'Món bán (Thành phẩm)' },
     { value: 'ingredient', label: 'Nguyên vật liệu (Kho thô)' }
+  ];
+
+  public readonly mainProductTypeOptions: TabOption[] = [
+    { value: 'product', label: 'Món bán (Thành phẩm)', icon: 'menu' },
+    { value: 'ingredient', label: 'Nguyên vật liệu (Kho thô)', icon: 'scale' }
   ];
 
   constructor() {

@@ -13,6 +13,7 @@ import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
 import { CustomDatePickerComponent } from '@shared/components/custom-date-picker/custom-date-picker.component';
 import { CustomSelectComponent } from '@shared/components/custom-select/custom-select.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
+import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 
 @Component({
   selector: 'app-inventory',
@@ -29,7 +30,8 @@ import { IconComponent } from '@shared/components/icon/icon.component';
     VNDCurrencyPipe,
     CustomDatePickerComponent,
     CustomSelectComponent,
-    IconComponent
+    IconComponent,
+    TabGroupComponent
   ],
   templateUrl: './inventory.component.html'
 })
@@ -41,6 +43,19 @@ export class InventoryComponent {
   public readonly inventoryTypeFilter = signal<string>('all');
   public readonly inventoryCurrentPage = signal<number>(1);
   public readonly inventoryItemsPerPage = 9;
+
+  public readonly inventoryTypeFilterOptions: TabOption[] = [
+    { value: 'all', label: 'Tất cả' },
+    { value: 'nhap', label: 'Nhập kho' },
+    { value: 'xuat', label: 'Xuất kho' },
+    { value: 'kiem', label: 'Kiểm kho' }
+  ];
+
+  public readonly inventoryFormTypeOptions: TabOption[] = [
+    { value: 'nhap', label: 'Nhập' },
+    { value: 'xuat', label: 'Xuất' },
+    { value: 'kiem', label: 'Kiểm' }
+  ];
 
   // Bộ tìm kiếm Kho hàng
   public readonly inventorySearchQuery = signal<string>('');

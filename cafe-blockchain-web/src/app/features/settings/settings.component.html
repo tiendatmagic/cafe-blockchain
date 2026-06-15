@@ -43,61 +43,14 @@
   </div>
 
   <!-- Sub-tabs Navigation -->
-  <div class="tab-group shrink-0 w-full overflow-x-auto no-scrollbar mb-6 flex-nowrap">
-    <button
-      type="button"
-      (click)="setSettingsSubTab('general')"
-      [class.active]="settingsSubTab() === 'general'"
-      class="tab-item shrink-0"
-    >
-      Cấu hình Quán
-    </button>
+  <app-tab-group
+    [options]="settingsSubTabOptions"
+    [activeValue]="settingsSubTab()"
+    (valueChange)="setSettingsSubTab($event)"
+    [flex]="false"
+    class="shrink-0 w-full mb-6"
+  ></app-tab-group>
 
-    <button
-      type="button"
-      (click)="setSettingsSubTab('invoice')"
-      [class.active]="settingsSubTab() === 'invoice'"
-      class="tab-item shrink-0"
-    >
-      Mẫu hoá đơn
-    </button>
-
-    <button
-      type="button"
-      (click)="setSettingsSubTab('voucher')"
-      [class.active]="settingsSubTab() === 'voucher'"
-      class="tab-item shrink-0"
-    >
-      Voucher NFT
-    </button>
-
-    <button
-      type="button"
-      (click)="setSettingsSubTab('blockchain')"
-      [class.active]="settingsSubTab() === 'blockchain'"
-      class="tab-item shrink-0"
-    >
-      Kết nối & Hợp đồng Web3
-    </button>
-
-    <button
-      type="button"
-      (click)="setSettingsSubTab('permissions')"
-      [class.active]="settingsSubTab() === 'permissions'"
-      class="tab-item shrink-0"
-    >
-      Ủy quyền nhân sự (Ví)
-    </button>
-
-    <button
-      type="button"
-      (click)="setSettingsSubTab('store')"
-      [class.active]="settingsSubTab() === 'store'"
-      class="tab-item shrink-0"
-    >
-      Website Cửa hàng
-    </button>
-  </div>
 
   @if (isSettingsLoading() || !configForm().store_name) {
     <!-- SKELETON LOADING CHO VÙNG NỘI DUNG -->

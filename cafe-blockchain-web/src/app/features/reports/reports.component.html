@@ -242,32 +242,12 @@
       <div class="app-card p-0 overflow-hidden">
         <!-- Tabs đầu bảng -->
         <div class="p-4 border-b border-slate-100 dark:border-slate-800">
-          <div class="tab-group inline-flex">
-            <button
-              type="button"
-              (click)="activeTab.set('products')"
-              [class.active]="activeTab() === 'products'"
-              class="tab-item"
-            >
-              Báo cáo bán hàng theo món
-            </button>
-            <button
-              type="button"
-              (click)="activeTab.set('customers')"
-              [class.active]="activeTab() === 'customers'"
-              class="tab-item"
-            >
-              Báo cáo chi tiêu khách hàng
-            </button>
-            <button
-              type="button"
-              (click)="activeTab.set('shifts')"
-              [class.active]="activeTab() === 'shifts'"
-              class="tab-item"
-            >
-              Lịch sử ca trực
-            </button>
-          </div>
+          <app-tab-group
+            [options]="reportTabOptions"
+            [activeValue]="activeTab()"
+            (valueChange)="activeTab.set($event)"
+            containerClass="w-full sm:max-w-2xl"
+          ></app-tab-group>
         </div>
 
         <!-- Nội dung của Tab 1: Hàng hóa -->

@@ -228,29 +228,12 @@
       <div
         class="app-card p-4 flex items-center justify-between flex-wrap gap-4"
       >
-        <div class="tab-group">
-          <button
-            (click)="transactionTypeFilter.set('all'); transactionCurrentPage.set(1)"
-            [class.active]="transactionTypeFilter() === 'all'"
-            class="tab-item"
-          >
-            Tất cả
-          </button>
-          <button
-            (click)="transactionTypeFilter.set('thu'); transactionCurrentPage.set(1)"
-            [class.active]="transactionTypeFilter() === 'thu'"
-            class="tab-item"
-          >
-            Phiếu Thu (+)
-          </button>
-          <button
-            (click)="transactionTypeFilter.set('chi'); transactionCurrentPage.set(1)"
-            [class.active]="transactionTypeFilter() === 'chi'"
-            class="tab-item"
-          >
-            Phiếu Chi (-)
-          </button>
-        </div>
+        <app-tab-group
+          [options]="transactionTypePresets"
+          [activeValue]="transactionTypeFilter()"
+          (valueChange)="transactionTypeFilter.set($event); transactionCurrentPage.set(1)"
+          containerClass="w-full sm:w-auto sm:max-w-md"
+        ></app-tab-group>
 
         <div class="flex items-center gap-4 w-full sm:w-auto shrink-0 flex-wrap sm:flex-nowrap">
           <!-- Search input -->
@@ -465,24 +448,11 @@
           <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
             >Loại phiếu thu chi</label
           >
-          <div class="tab-group flex w-full">
-            <button
-              type="button"
-              (click)="transactionForm().type = 'thu'"
-              [class.active]="transactionForm().type === 'thu'"
-              class="tab-item flex-1"
-            >
-              Thu tiền (+)
-            </button>
-            <button
-              type="button"
-              (click)="transactionForm().type = 'chi'"
-              [class.active]="transactionForm().type === 'chi'"
-              class="tab-item flex-1"
-            >
-              Chi tiền (-)
-            </button>
-          </div>
+          <app-tab-group
+            [options]="transactionModalTypeOptions"
+            [activeValue]="transactionForm().type"
+            (valueChange)="updateTransactionForm('type', $event)"
+          ></app-tab-group>
         </div>
 
         <!-- Số tiền -->

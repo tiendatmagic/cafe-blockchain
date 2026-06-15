@@ -69,28 +69,12 @@
     @if (stateService.hasPermission('menu')) {
     <!-- Tab phân loại: Món bán & Nguyên vật liệu -->
     <div class="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800/60 pb-3">
-      <button
-        type="button"
-        (click)="menuProductTypeFilter.set('product'); menuCurrentPage.set(1)"
-        [class]="menuProductTypeFilter() === 'product'
-          ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)] dark:text-[var(--color-secondary)] border border-[var(--color-primary)]/20 shadow-sm'
-          : 'bg-transparent text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900 border border-transparent'"
-        class="flex items-center gap-2 px-4 py-2 rounded-[12px] text-sm font-bold transition-all"
-      >
-        <app-icon name="menu" class="h-4 w-4 text-[var(--color-primary)]" strokeWidth="2.5" />
-        <span>Món bán (Thành phẩm)</span>
-      </button>
-      <button
-        type="button"
-        (click)="menuProductTypeFilter.set('ingredient'); menuCurrentPage.set(1)"
-        [class]="menuProductTypeFilter() === 'ingredient'
-          ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)] dark:text-[var(--color-secondary)] border border-[var(--color-primary)]/20 shadow-sm'
-          : 'bg-transparent text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900 border border-transparent'"
-        class="flex items-center gap-2 px-4 py-2 rounded-[12px] text-sm font-bold transition-all"
-      >
-        <app-icon name="scale" class="h-4 w-4" strokeWidth="2.5" />
-        <span>Nguyên vật liệu (Kho thô)</span>
-      </button>
+      <app-tab-group
+        [options]="mainProductTypeOptions"
+        [activeValue]="menuProductTypeFilter()"
+        (valueChange)="menuProductTypeFilter.set($event); menuCurrentPage.set(1)"
+        containerClass="w-full sm:max-w-md"
+      ></app-tab-group>
     </div>
 
     <!-- Bộ tìm kiếm và lọc danh mục thực đơn (Search & Category filter) -->
@@ -776,15 +760,11 @@
         <!-- Loại sản phẩm -->
         <div class="space-y-1.5 relative focus-within:z-10">
           <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Loại sản phẩm</label>
-          <app-mini-buttons
+          <app-tab-group
             [options]="productTypeOptions"
             [activeValue]="menuForm().type"
             (valueChange)="updateMenuForm('type', $event)"
-            containerClass="tab-group flex w-full"
-            buttonClass="tab-item flex-1"
-            activeClass="active"
-            inactiveClass=""
-          ></app-mini-buttons>
+          ></app-tab-group>
         </div>
 
         <!-- Tên món -->

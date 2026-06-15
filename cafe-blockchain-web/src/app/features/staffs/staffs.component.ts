@@ -11,6 +11,7 @@ import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prom
 import { TableComponent, TableColumn, TableCellDirective } from '@shared/components/table/table.component';
 import { ModalComponent } from '@shared/components/modal/modal.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
+import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 
 @Component({
   selector: 'app-staffs',
@@ -27,7 +28,8 @@ import { IconComponent } from '@shared/components/icon/icon.component';
     TableComponent,
     TableCellDirective,
     ModalComponent,
-    IconComponent
+    IconComponent,
+    TabGroupComponent
   ],
   templateUrl: './staffs.component.html'
 })
@@ -54,6 +56,11 @@ export class StaffsComponent implements OnInit {
 
   // Tab hoạt động: 'staffs' (Nhân viên) hoặc 'roles' (Vai trò)
   public readonly activeSubTab = signal<'staffs' | 'roles'>('staffs');
+
+  public readonly staffsSubTabOptions: TabOption[] = [
+    { value: 'staffs', label: 'Nhân viên' },
+    { value: 'roles', label: 'Vai trò & Phân quyền' }
+  ];
 
   // Phân trang cho Nhân viên và Vai trò
   public readonly staffCurrentPage = signal<number>(1);

@@ -16,6 +16,7 @@ import { DrawerComponent } from '@shared/components/drawer/drawer.component';
 import * as XLSX from 'xlsx';
 import { CustomDatePickerComponent } from '@shared/components/custom-date-picker/custom-date-picker.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
+import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 
 @Component({
   selector: 'app-debts',
@@ -34,7 +35,8 @@ import { IconComponent } from '@shared/components/icon/icon.component';
     VNDCurrencyPipe,
     DrawerComponent,
     CustomDatePickerComponent,
-    IconComponent
+    IconComponent,
+    TabGroupComponent
   ],
   templateUrl: './debts.component.html'
 })
@@ -63,6 +65,12 @@ export class DebtsComponent implements OnInit {
   public readonly debtFilterMode = signal<'all' | 'only_debt' | 'no_debt'>('all'); // all, only_debt, no_debt
   public readonly debtPage = signal<number>(1);
   public readonly debtLimit = 10;
+
+  public readonly debtFilterOptions: TabOption[] = [
+    { value: 'all', label: 'Tất cả' },
+    { value: 'only_debt', label: 'Đang nợ', dotClass: 'bg-rose-500' },
+    { value: 'no_debt', label: 'Đã trả hết', dotClass: 'bg-emerald-500' }
+  ];
 
   // Sắp xếp cột
   public readonly sortField = signal<string>('debt_balance');

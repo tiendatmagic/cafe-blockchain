@@ -15,6 +15,7 @@ import { CustomDatePickerComponent } from '@shared/components/custom-date-picker
 import { MiniButtonsComponent, DATE_FILTER_OPTIONS } from '@shared/components/mini-buttons/mini-buttons.component';
 import { TableComponent, TableCellDirective, TableColumn } from '@shared/components/table/table.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
+import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 
 @Component({
   selector: 'app-reports',
@@ -32,7 +33,8 @@ import { IconComponent } from '@shared/components/icon/icon.component';
     MiniButtonsComponent,
     TableComponent,
     TableCellDirective,
-    IconComponent
+    IconComponent,
+    TabGroupComponent
   ],
   templateUrl: './reports.component.html'
 })
@@ -40,6 +42,12 @@ export class ReportsComponent implements OnInit {
   public readonly datePresets = DATE_FILTER_OPTIONS;
   private readonly apiService = inject(ApiService);
   public readonly stateService = inject(StateService);
+
+  public readonly reportTabOptions: TabOption[] = [
+    { value: 'products', label: 'Báo cáo bán hàng theo món' },
+    { value: 'customers', label: 'Báo cáo chi tiêu khách hàng' },
+    { value: 'shifts', label: 'Lịch sử ca trực' }
+  ];
 
   public readonly productColumns: TableColumn[] = [
     { key: 'sku', header: 'MÃ SKU', sortable: true, class: 'font-mono text-slate-500' },

@@ -10,6 +10,7 @@ import { PageHeaderComponent } from '@shared/components/page-header/page-header.
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
 import { TableComponent, TableCellDirective, TableColumn } from '@shared/components/table/table.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
+import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 
 @Component({
   selector: 'app-orders',
@@ -24,7 +25,8 @@ import { IconComponent } from '@shared/components/icon/icon.component';
     VNDCurrencyPipe,
     TableComponent,
     TableCellDirective,
-    IconComponent
+    IconComponent,
+    TabGroupComponent
   ],
   templateUrl: './orders.component.html'
 })
@@ -45,6 +47,20 @@ export class OrdersComponent implements OnInit {
   // Lọc và Phân trang Sổ đơn hàng
   public readonly orderStatusFilter = signal<string>('all');
   public readonly orderBlockchainFilter = signal<string>('all');
+
+  public readonly statusFilterOptions: TabOption[] = [
+    { value: 'all', label: 'Tất cả' },
+    { value: 'pending', label: 'Chờ xác nhận' },
+    { value: 'preparing', label: 'Đang chuẩn bị' },
+    { value: 'completed', label: 'Thành công' },
+    { value: 'cancelled', label: 'Đã hủy' }
+  ];
+
+  public readonly blockchainFilterOptions: TabOption[] = [
+    { value: 'all', label: 'Tất cả' },
+    { value: 'success', label: 'Đã đồng bộ' },
+    { value: 'none', label: 'Chưa đồng bộ' }
+  ];
   public readonly ordersCurrentPage = signal<number>(1);
   public readonly ordersItemsPerPage = 9;
 

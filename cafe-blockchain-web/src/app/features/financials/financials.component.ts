@@ -12,6 +12,7 @@ import { PageHeaderComponent } from '@shared/components/page-header/page-header.
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
 import { CustomDatePickerComponent } from '@shared/components/custom-date-picker/custom-date-picker.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
+import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 
 @Component({
   selector: 'app-financials',
@@ -27,13 +28,25 @@ import { IconComponent } from '@shared/components/icon/icon.component';
     PageHeaderComponent,
     VNDCurrencyPipe,
     CustomDatePickerComponent,
-    IconComponent
+    IconComponent,
+    TabGroupComponent
   ],
   templateUrl: './financials.component.html'
 })
 export class FinancialsComponent {
   public readonly stateService = inject(StateService);
   private readonly apiService = inject(ApiService);
+
+  public readonly transactionTypePresets: TabOption[] = [
+    { value: 'all', label: 'Tất cả' },
+    { value: 'thu', label: 'Phiếu Thu (+)' },
+    { value: 'chi', label: 'Phiếu Chi (-)' }
+  ];
+
+  public readonly transactionModalTypeOptions: TabOption[] = [
+    { value: 'thu', label: 'Thu tiền (+)' },
+    { value: 'chi', label: 'Chi tiền (-)' }
+  ];
 
   // Bộ lọc & Phân trang tài chính
   public readonly transactionTypeFilter = signal<string>('all');

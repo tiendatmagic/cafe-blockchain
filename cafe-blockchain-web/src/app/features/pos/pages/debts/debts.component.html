@@ -108,32 +108,11 @@
             </div>
 
             <!-- Bộ lọc tab -->
-            <div class="tab-group text-xs font-bold shrink-0">
-              <button
-                type="button"
-                (click)="debtFilterMode.set('all'); debtPage.set(1)"
-                [class.active]="debtFilterMode() === 'all'"
-                class="tab-item"
-              >
-                Tất cả
-              </button>
-              <button
-                type="button"
-                (click)="debtFilterMode.set('only_debt'); debtPage.set(1)"
-                [class.active]="debtFilterMode() === 'only_debt'"
-                class="tab-item"
-              >
-                Đang nợ
-              </button>
-              <button
-                type="button"
-                (click)="debtFilterMode.set('no_debt'); debtPage.set(1)"
-                [class.active]="debtFilterMode() === 'no_debt'"
-                class="tab-item"
-              >
-                Đã trả hết
-              </button>
-            </div>
+            <app-tab-group
+              [options]="debtFilterOptions"
+              [activeValue]="debtFilterMode()"
+              (valueChange)="debtFilterMode.set($event); debtPage.set(1)"
+            ></app-tab-group>
           </div>
         </div>
 

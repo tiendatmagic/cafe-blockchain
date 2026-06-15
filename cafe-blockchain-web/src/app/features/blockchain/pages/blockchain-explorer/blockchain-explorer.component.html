@@ -1054,36 +1054,12 @@
           </div>
 
           <!-- Tabs header -->
-          <div class="tab-group mb-4">
-            <button
-              (click)="selectTab('order')"
-              [class.active]="activeTab() === 'order'"
-              class="tab-item flex-1"
-            >
-              Hóa đơn ({{ orderTotal() }})
-            </button>
-            <button
-              (click)="selectTab('transaction')"
-              [class.active]="activeTab() === 'transaction'"
-              class="tab-item flex-1"
-            >
-              Thu chi ({{ transactionTotal() }})
-            </button>
-            <button
-              (click)="selectTab('voucher')"
-              [class.active]="activeTab() === 'voucher'"
-              class="tab-item flex-1"
-            >
-              Voucher NFT ({{ voucherTotal() }})
-            </button>
-            <button
-              (click)="selectTab('menu')"
-              [class.active]="activeTab() === 'menu'"
-              class="tab-item flex-1 whitespace-nowrap px-2"
-            >
-              Thực đơn ({{ menuTotal() }})
-            </button>
-          </div>
+          <app-tab-group
+            [options]="feedTabOptions()"
+            [activeValue]="activeTab()"
+            (valueChange)="selectTab($event)"
+            class="mb-4"
+          ></app-tab-group>
 
           <!-- Loading state -->
           @if (isLatestDataLoading()) {

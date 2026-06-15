@@ -11,6 +11,7 @@ import { PageHeaderComponent } from '@shared/components/page-header/page-header.
 import { CustomSelectComponent } from '@shared/components/custom-select/custom-select.component';
 import { CustomSwitchComponent } from '@shared/components/custom-switch/custom-switch.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
+import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 
 @Component({
   selector: 'app-settings',
@@ -25,7 +26,8 @@ import { IconComponent } from '@shared/components/icon/icon.component';
     PageHeaderComponent,
     CustomSelectComponent,
     CustomSwitchComponent,
-    IconComponent
+    IconComponent,
+    TabGroupComponent
   ],
   templateUrl: './settings.component.html'
 })
@@ -62,6 +64,15 @@ export class SettingsComponent implements OnInit {
 
   // Tab nhỏ trong Cấu hình: 'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher' | 'store'
   public readonly settingsSubTab = signal<'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher' | 'store'>('general');
+
+  public readonly settingsSubTabOptions: TabOption[] = [
+    { value: 'general', label: 'Cấu hình Quán' },
+    { value: 'invoice', label: 'Mẫu hoá đơn' },
+    { value: 'voucher', label: 'Voucher NFT' },
+    { value: 'blockchain', label: 'Kết nối & Hợp đồng Web3' },
+    { value: 'permissions', label: 'Ủy quyền nhân sự (Ví)' },
+    { value: 'store', label: 'Website Cửa hàng' }
+  ];
 
   // Form Cấu hình hệ thống
   public readonly configForm = signal<any>({

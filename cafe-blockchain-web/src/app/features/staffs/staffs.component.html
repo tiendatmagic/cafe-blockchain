@@ -43,22 +43,12 @@
     @if (stateService.hasPermission('staffs')) {
     
     <!-- SUB TABS NAVIGATION -->
-    <div class="tab-group inline-flex mb-6">
-      <button
-        (click)="setSubTab('staffs')"
-        [class.active]="activeSubTab() === 'staffs'"
-        class="tab-item"
-      >
-        Nhân viên
-      </button>
-      <button
-        (click)="setSubTab('roles')"
-        [class.active]="activeSubTab() === 'roles'"
-        class="tab-item"
-      >
-        Vai trò & Phân quyền
-      </button>
-    </div>
+    <app-tab-group
+      [options]="staffsSubTabOptions"
+      [activeValue]="activeSubTab()"
+      (valueChange)="activeSubTab.set($event)"
+      class="mb-6"
+    ></app-tab-group>
 
     <!-- NỘI DUNG CHÍNH -->
     <div class="space-y-6">

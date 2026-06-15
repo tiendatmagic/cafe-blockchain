@@ -137,48 +137,12 @@
             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider"
               >Trạng thái đơn hàng</span
             >
-            <div class="tab-group w-full sm:w-auto">
-              <button
-                type="button"
-                (click)="setOrderStatusFilter('all')"
-                [class.active]="orderStatusFilter() === 'all'"
-                class="tab-item"
-              >
-                Tất cả
-              </button>
-              <button
-                type="button"
-                (click)="setOrderStatusFilter('pending')"
-                [class.active]="orderStatusFilter() === 'pending'"
-                class="tab-item"
-              >
-                Chờ xác nhận
-              </button>
-              <button
-                type="button"
-                (click)="setOrderStatusFilter('preparing')"
-                [class.active]="orderStatusFilter() === 'preparing'"
-                class="tab-item"
-              >
-                Đang chuẩn bị
-              </button>
-              <button
-                type="button"
-                (click)="setOrderStatusFilter('completed')"
-                [class.active]="orderStatusFilter() === 'completed'"
-                class="tab-item"
-              >
-                Thành công
-              </button>
-              <button
-                type="button"
-                (click)="setOrderStatusFilter('cancelled')"
-                [class.active]="orderStatusFilter() === 'cancelled'"
-                class="tab-item"
-              >
-                Đã hủy
-              </button>
-            </div>
+            <app-tab-group
+              [options]="statusFilterOptions"
+              [activeValue]="orderStatusFilter()"
+              (valueChange)="setOrderStatusFilter($event)"
+              containerClass="w-full sm:w-auto"
+            ></app-tab-group>
           </div>
 
           <!-- Lọc trạng thái blockchain -->
@@ -186,32 +150,12 @@
             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider"
               >Blockchain (Bằng chứng hóa đơn)</span
             >
-            <div class="tab-group w-full sm:w-auto">
-              <button
-                type="button"
-                (click)="setOrderBlockchainFilter('all')"
-                [class.active]="orderBlockchainFilter() === 'all'"
-                class="tab-item"
-              >
-                Tất cả
-              </button>
-              <button
-                type="button"
-                (click)="setOrderBlockchainFilter('success')"
-                [class.active]="orderBlockchainFilter() === 'success'"
-                class="tab-item"
-              >
-                Đã đồng bộ
-              </button>
-              <button
-                type="button"
-                (click)="setOrderBlockchainFilter('none')"
-                [class.active]="orderBlockchainFilter() === 'none'"
-                class="tab-item"
-              >
-                Chưa đồng bộ
-              </button>
-            </div>
+            <app-tab-group
+              [options]="blockchainFilterOptions"
+              [activeValue]="orderBlockchainFilter()"
+              (valueChange)="setOrderBlockchainFilter($event)"
+              containerClass="w-full sm:w-auto"
+            ></app-tab-group>
           </div>
         </div>
 

@@ -16,6 +16,7 @@ import { MiniButtonsComponent } from '@shared/components/mini-buttons/mini-butto
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { ModalComponent } from '@shared/components/modal/modal.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
+import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 
 @Component({
   selector: 'app-pos',
@@ -31,7 +32,8 @@ import { IconComponent } from '@shared/components/icon/icon.component';
     VNDCurrencyPipe,
     MiniButtonsComponent,
     ModalComponent,
-    IconComponent
+    IconComponent,
+    TabGroupComponent
   ],
   templateUrl: './pos.component.html'
 })
@@ -62,6 +64,10 @@ export class PosComponent implements OnInit, OnDestroy {
   // Trạng thái UI cục bộ của POS
   public readonly isPaymentDropdownOpen = signal<boolean>(false);
   public readonly posCheckoutMode = signal<'quick' | 'confirm'>('quick');
+  public readonly posCheckoutModeOptions: TabOption[] = [
+    { value: 'quick', label: 'Nhanh', icon: 'bolt' },
+    { value: 'confirm', label: 'Xác nhận', icon: 'check-circle' }
+  ];
   public readonly isTableDropdownOpen = signal<boolean>(false);
   public readonly isPosConfirmModalOpen = signal<boolean>(false);
   public readonly customerCashGiven = signal<number>(0);

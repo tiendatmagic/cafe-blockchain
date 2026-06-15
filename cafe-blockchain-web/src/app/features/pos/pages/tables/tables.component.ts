@@ -11,6 +11,7 @@ import { PageHeaderComponent } from '@shared/components/page-header/page-header.
 import { ModalComponent } from '@shared/components/modal/modal.component';
 import { CustomSelectComponent } from '@shared/components/custom-select/custom-select.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
+import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 
 @Component({
   selector: 'app-tables',
@@ -25,7 +26,8 @@ import { IconComponent } from '@shared/components/icon/icon.component';
     PageHeaderComponent,
     ModalComponent,
     CustomSelectComponent,
-    IconComponent
+    IconComponent,
+    TabGroupComponent
   ],
   templateUrl: './tables.component.html'
 })
@@ -36,6 +38,21 @@ export class TablesComponent {
   // Bộ lọc phòng bàn
   public readonly activeAreaFilter = signal<string>('all');
   public readonly tableStatusFilter = signal<string>('all');
+
+  public readonly areaFilterOptions = computed<TabOption[]>(() => [
+    { value: 'all', label: 'Tất cả khu vực' },
+    ...this.areas().map(area => ({
+      value: area.id.toString(),
+      label: area.name,
+      badge: area.tables_count
+    }))
+  ]);
+
+  public readonly tableStatusFilterOptions: TabOption[] = [
+    { value: 'all', label: 'Tất cả' },
+    { value: 'empty', label: 'Bàn trống', dotClass: 'bg-emerald-500' },
+    { value: 'using', label: 'Đang sử dụng', dotClass: 'bg-amber-500' }
+  ];
 
   // Modals & Form Khu vực
   public readonly isAreaModalOpen = signal<boolean>(false);
