@@ -4,7 +4,7 @@
     title="Sổ đơn hàng"
     description="Quản lý lịch sử hóa đơn bán hàng POS, xác thực trạng thái và ghi bằng chứng hóa đơn lên Blockchain EVM."
   >
-    <app-icon name="orders" class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" strokeWidth="2.5" />
+    <app-icon icon name="orders" class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" strokeWidth="2.5" />
     @if (stateService.web3Service.walletConnected()) {
       <button (click)="refreshOrders()" class="btn-secondary">
         <app-icon name="refresh" class="h-4 w-4 shrink-0" strokeWidth="2" />

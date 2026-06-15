@@ -5,7 +5,7 @@
     title="Sổ nợ khách hàng"
     description="Quản lý chi tiết dư nợ khách hàng, lịch sử ghi nợ, lập phiếu thu nợ và đối soát quỹ tiền mặt tự động."
   >
-    <app-icon name="menu" class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" [strokeWidth]="2.5"></app-icon>
+    <app-icon icon name="debts" class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" [strokeWidth]="2.5"></app-icon>
 
     <!-- Nút Lập phiếu nợ thủ công (Chỉ hiện khi ví đã kết nối) -->
     @if (web3Service.walletConnected()) {

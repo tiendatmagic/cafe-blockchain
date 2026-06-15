@@ -8,7 +8,7 @@
       '.'
     "
   >
-    <app-icon name="home" class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" [strokeWidth]="2.5"></app-icon>
+    <app-icon icon name="home" class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" [strokeWidth]="2.5"></app-icon>
 
     @if (web3Service.walletConnected()) {
       <button (click)="loadAllData()" class="btn-secondary self-start sm:self-center">
