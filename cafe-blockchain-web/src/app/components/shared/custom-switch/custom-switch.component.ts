@@ -6,7 +6,12 @@ import { FormsModule } from '@angular/forms';
   selector: 'app-custom-switch',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './custom-switch.component.html'
+  templateUrl: './custom-switch.component.html',
+  styles: [`
+    :host {
+      display: block;
+    }
+  `]
 })
 export class CustomSwitchComponent {
   @Input() checked: boolean = false;
