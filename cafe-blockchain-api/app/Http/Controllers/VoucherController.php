@@ -49,6 +49,14 @@ class VoucherController extends Controller
 
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
 
+        $voucherEnabled = \App\Domain\Entities\Setting::getForStore('voucher_enabled', $storeOwner, '0') === '1';
+        if (!$voucherEnabled) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Chương trình Voucher NFT của cửa hàng hiện đang tạm tắt!'
+            ], 400);
+        }
+
         $command->execute($storeOwner, $validated);
 
         return response()->json(['success' => true]);

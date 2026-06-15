@@ -80,6 +80,7 @@ export class SettingsComponent implements OnInit {
     voucher_discount_amount: 5000,
     voucher_use_min_amount: 100000,
     show_crypto_payment: '0',
+    voucher_enabled: '0',
     has_synced_menu: '0',
     website_slug: '',
     store_categories: '',

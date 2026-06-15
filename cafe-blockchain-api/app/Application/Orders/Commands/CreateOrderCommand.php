@@ -63,6 +63,11 @@ class CreateOrderCommand
             $relayerResult = null;
 
             if ($voucherNftTokenId !== null && !empty($voucherNftSignature)) {
+                $voucherEnabled = \App\Domain\Entities\Setting::getForStore('voucher_enabled', $storeOwner, '0') === '1';
+                if (!$voucherEnabled) {
+                    throw new \Exception("Chương trình Voucher NFT của cửa hàng hiện đang tạm tắt!");
+                }
+
                 $orderCode = $data['order_code'] ?? null;
                 if (empty($orderCode)) {
                     $orderCode = 'HD-' . strtoupper(bin2hex(random_bytes(3)));

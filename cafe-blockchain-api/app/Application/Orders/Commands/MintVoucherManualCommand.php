@@ -18,6 +18,11 @@ class MintVoucherManualCommand
 
     public function execute(string $storeOwner, int|string $id): Order
     {
+        $voucherEnabled = Setting::getForStore('voucher_enabled', $storeOwner, '0') === '1';
+        if (!$voucherEnabled) {
+            throw new \Exception("Chương trình Voucher NFT của cửa hàng hiện đang tạm tắt!");
+        }
+
         $order = Order::where('store_owner_address', $storeOwner)->with('customer')->findOrFail($id);
 
         if ($order->status !== 'completed' && $order->status !== 'cancelled') {

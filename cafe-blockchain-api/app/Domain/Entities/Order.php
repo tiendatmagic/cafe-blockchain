@@ -83,46 +83,49 @@ class Order extends Model
             }
 
             if ($order->status === 'completed') {
-                // Tự động tặng voucher nếu đủ điều kiện
+                // Tự động tặng voucher nếu đủ điều kiện và chương trình được bật
                 if ($isStatusChanged && $order->customer_id) {
                     $storeOwner = $order->store_owner_address;
-                    $minGiftAmount = (int)\App\Domain\Entities\Setting::getForStore('voucher_gift_min_amount', $storeOwner, 100000);
-                    $originalTotal = $order->total_amount + $order->discount_amount;
-                    
-                    if ($originalTotal >= $minGiftAmount) {
-                        $giftDiscount = (int)\App\Domain\Entities\Setting::getForStore('voucher_discount_amount', $storeOwner, 5000);
-                        $useMinAmount = (int)\App\Domain\Entities\Setting::getForStore('voucher_use_min_amount', $storeOwner, 100000);
+                    $voucherEnabled = \App\Domain\Entities\Setting::getForStore('voucher_enabled', $storeOwner, '0') === '1';
+                    if ($voucherEnabled) {
+                        $minGiftAmount = (int)\App\Domain\Entities\Setting::getForStore('voucher_gift_min_amount', $storeOwner, 100000);
+                        $originalTotal = $order->total_amount + $order->discount_amount;
                         
-                        $customer = \App\Domain\Entities\Customer::find($order->customer_id);
-                        $customerWallet = $customer ? $customer->wallet_address : null;
-                        $voucherContract = \App\Domain\Entities\Setting::getForStore('voucher_contract_address', $storeOwner);
+                        if ($originalTotal >= $minGiftAmount) {
+                            $giftDiscount = (int)\App\Domain\Entities\Setting::getForStore('voucher_discount_amount', $storeOwner, 5000);
+                            $useMinAmount = (int)\App\Domain\Entities\Setting::getForStore('voucher_use_min_amount', $storeOwner, 100000);
+                            
+                            $customer = \App\Domain\Entities\Customer::find($order->customer_id);
+                            $customerWallet = $customer ? $customer->wallet_address : null;
+                            $voucherContract = \App\Domain\Entities\Setting::getForStore('voucher_contract_address', $storeOwner);
 
-                        if (!empty($customerWallet) && !empty($voucherContract)) {
-                            // Tạo mã voucher gắn với mã đơn hàng thay vì ngẫu nhiên
-                            $voucherCode = 'NFT-' . $giftDiscount . '-' . $useMinAmount . '-' . $order->order_code;
-                            $tokenUri = url("/api/vouchers/metadata/{$voucherCode}");
+                            if (!empty($customerWallet) && !empty($voucherContract)) {
+                                // Tạo mã voucher gắn với mã đơn hàng thay vì ngẫu nhiên
+                                $voucherCode = 'NFT-' . $giftDiscount . '-' . $useMinAmount . '-' . $order->order_code;
+                                $tokenUri = url("/api/vouchers/metadata/{$voucherCode}");
 
-                            // Gọi Relayer thực hiện đúc (mint) NFT trên Blockchain
-                            $blockchainService = app(\App\Application\Common\Interfaces\BlockchainRelayerServiceInterface::class);
-                            $relayerResult = $blockchainService->mintVoucher(
-                                $storeOwner,
-                                $customerWallet,
-                                $tokenUri,
-                                $giftDiscount,
-                                $useMinAmount
-                            );
+                                // Gọi Relayer thực hiện đúc (mint) NFT trên Blockchain
+                                $blockchainService = app(\App\Application\Common\Interfaces\BlockchainRelayerServiceInterface::class);
+                                $relayerResult = $blockchainService->mintVoucher(
+                                    $storeOwner,
+                                    $customerWallet,
+                                    $tokenUri,
+                                    $giftDiscount,
+                                    $useMinAmount
+                                );
 
-                            if ($relayerResult['success']) {
-                                \Illuminate\Support\Facades\Log::info("Minted NFT Voucher successfully with code: {$voucherCode}, TxHash: " . ($relayerResult['txHash'] ?? ''));
-                                
-                                // Cập nhật token_id được tặng vào DB POS để hoàn tất liên kết
-                                if (!empty($relayerResult['tokenId'])) {
-                                    $order->gift_voucher_nft_token_id = (int)$relayerResult['tokenId'];
-                                    $order->verification_hash = $order->generateVerificationHash();
-                                    $order->saveQuietly();
+                                if ($relayerResult['success']) {
+                                    \Illuminate\Support\Facades\Log::info("Minted NFT Voucher successfully with code: {$voucherCode}, TxHash: " . ($relayerResult['txHash'] ?? ''));
+                                    
+                                    // Cập nhật token_id được tặng vào DB POS để hoàn tất liên kết
+                                    if (!empty($relayerResult['tokenId'])) {
+                                        $order->gift_voucher_nft_token_id = (int)$relayerResult['tokenId'];
+                                        $order->verification_hash = $order->generateVerificationHash();
+                                        $order->saveQuietly();
+                                    }
+                                } else {
+                                    \Illuminate\Support\Facades\Log::warning("Mint NFT Voucher that bai: " . ($relayerResult['error'] ?? 'Lỗi không xác định'));
                                 }
-                            } else {
-                                \Illuminate\Support\Facades\Log::warning("Mint NFT Voucher that bai: " . ($relayerResult['error'] ?? 'Lỗi không xác định'));
                             }
                         }
                     }
