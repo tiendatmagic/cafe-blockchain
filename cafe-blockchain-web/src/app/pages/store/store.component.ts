@@ -10,6 +10,7 @@ import { VNDCurrencyPipe } from '@pipes/vnd.pipe';
 import { ThemeToggleComponent } from '@components/shared/theme-toggle/theme-toggle.component';
 import { MiniButtonsComponent } from '@components/shared/mini-buttons/mini-buttons.component';
 import { DrawerComponent } from '@components/shared/drawer/drawer.component';
+import { Web3ConnectPromptComponent } from '@components/shared/web3-connect-prompt/web3-connect-prompt.component';
 
 
 interface CartItem {
@@ -22,7 +23,7 @@ interface CartItem {
 @Component({
   selector: 'app-store',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, PaginationComponent, VNDCurrencyPipe, ThemeToggleComponent, MiniButtonsComponent, DrawerComponent],
+  imports: [CommonModule, FormsModule, RouterModule, PaginationComponent, VNDCurrencyPipe, ThemeToggleComponent, MiniButtonsComponent, DrawerComponent, Web3ConnectPromptComponent],
   templateUrl: './store.component.html',
   styleUrls: []
 })

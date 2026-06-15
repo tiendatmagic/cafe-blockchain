@@ -13,4 +13,6 @@ export class Web3ConnectPromptComponent {
 
   @Input() title: string = 'Kết nối ví Web3';
   @Input() description: string = 'Để xem thông tin và thực hiện các thao tác quản lý của cửa hàng trên Blockchain, vui lòng kết nối ví Metamask để xác thực quyền truy cập.';
+  @Input() showButton: boolean = true;
+  @Input() buttonText: string = 'KẾT NỐI VÍ BLOCKCHAIN';
 }
