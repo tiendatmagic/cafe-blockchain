@@ -12,12 +12,12 @@
     [class.border-[var(--dynamic-primary)]]="isOpen()"
     [class.cursor-not-allowed]="disabled"
   >
-    <span class="font-semibold truncate" [class.text-slate-450]="value === null || value === undefined || value === '' || value === 0">
+    <span class="font-semibold truncate" [class.text-slate-400]="value === null || value === undefined || value === '' || value === 0">
       {{ selectedLabel || placeholder }}
     </span>
     <app-icon
       name="chevron-down"
-      class="h-4 w-4 text-slate-450 transition-transform duration-200 shrink-0 ml-2"
+      class="h-4 w-4 text-slate-400 transition-transform duration-200 shrink-0 ml-2"
       [class.rotate-180]="isOpen()"
       strokeWidth="2.5"
     />
@@ -54,7 +54,7 @@
           <button
             type="button"
             (click)="selectOption(opt)"
-            class="w-full flex items-center justify-between px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 text-xs font-semibold text-slate-700 dark:text-slate-350 text-left transition-colors"
+            class="w-full flex items-center justify-between px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 text-xs font-semibold text-slate-700 dark:text-slate-300 text-left transition-colors"
           >
             <span class="truncate">{{ getOptionLabel(opt) }}</span>
             

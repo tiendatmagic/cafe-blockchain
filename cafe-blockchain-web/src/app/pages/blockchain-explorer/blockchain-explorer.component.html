@@ -25,7 +25,7 @@
           <h1 class="font-bold text-lg to-indigo-650 tracking-tight">
             Blockchain Receipt Explorer
           </h1>
-          <p class="text-xs text-slate-500 dark:text-slate-450 font-mono">{{ storeName() }}</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 font-mono">{{ storeName() }}</p>
         </div>
       </div>
 
@@ -233,7 +233,7 @@
             <button
               type="button"
               (click)="searchQuery = ''; searchResult.set(null); searchError.set('')"
-              class="absolute right-3.5 inset-y-0 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350 transition-colors"
+              class="absolute right-3.5 inset-y-0 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors"
             >
               <app-icon name="close" class="h-4 w-4" [strokeWidth]="2.5"></app-icon>
             </button>
@@ -565,7 +565,7 @@
                             </p>
                             <p>
                               Đơn tối thiểu:
-                              <span class="text-slate-655 dark:text-slate-350 font-mono"
+                              <span class="text-slate-600 dark:text-slate-300 font-mono"
                                 >{{ v.minOrderAmount.toLocaleString('vi-VN') }}đ</span
                               >
                             </p>
@@ -639,7 +639,7 @@
                     Địa chỉ ví chủ sở hữu hiện tại
                   </p>
                   <p
-                    class="text-xs font-mono text-slate-655 dark:text-slate-350 break-all select-all"
+                    class="text-xs font-mono text-slate-600 dark:text-slate-300 break-all select-all"
                   >
                     {{ result.owner }}
                   </p>
@@ -835,7 +835,7 @@
                             >
                               {{ prod.name }}
                             </p>
-                            <p class="text-[10px] font-mono text-slate-450 dark:text-slate-500">
+                            <p class="text-[10px] font-mono text-slate-400 dark:text-slate-500">
                               SKU: {{ prod.sku || 'N/A' }}
                             </p>
                           </div>
@@ -882,13 +882,13 @@
               >
                 <div>
                   <span class="text-slate-500">Mạng Blockchain:</span>
-                  <span class="text-slate-655 dark:text-slate-350 ml-1"
+                  <span class="text-slate-600 dark:text-slate-300 ml-1"
                     >EVM Chain {{ chainId() }}</span
                   >
                 </div>
                 <div>
                   <span class="text-slate-500">Loại Smart Contract:</span>
-                  <span class="text-slate-655 dark:text-slate-350 ml-1">
+                  <span class="text-slate-600 dark:text-slate-300 ml-1">
                     @if (result.type === 'order') {
                       POS Registry
                     } @else if (result.type === 'transaction') {
