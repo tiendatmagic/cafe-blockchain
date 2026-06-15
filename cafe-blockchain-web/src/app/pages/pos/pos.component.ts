@@ -13,7 +13,7 @@ import { PaginationComponent } from '@components/shared/pagination/pagination.co
 import { PageHeaderComponent } from '@components/shared/page-header/page-header.component';
 import { VNDCurrencyPipe } from '@pipes/vnd.pipe';
 import { MiniButtonsComponent } from '@components/shared/mini-buttons/mini-buttons.component';
-import { Html5Qrcode } from 'html5-qrcode';
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { ModalComponent } from '@components/shared/modal/modal.component';
 
 @Component({
@@ -915,7 +915,18 @@ export class PosComponent implements OnInit, OnDestroy {
 
   private initPosScanner() {
     try {
-      this.html5Qrcode = new Html5Qrcode("pos-barcode-scanner-reader");
+      this.html5Qrcode = new Html5Qrcode("pos-barcode-scanner-reader", {
+        formatsToSupport: [
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.EAN_8,
+          Html5QrcodeSupportedFormats.CODE_128,
+          Html5QrcodeSupportedFormats.CODE_39,
+          Html5QrcodeSupportedFormats.UPC_A,
+          Html5QrcodeSupportedFormats.UPC_E,
+          Html5QrcodeSupportedFormats.QR_CODE
+        ],
+        verbose: false
+      });
       
       const config = {
         fps: 10,
@@ -955,6 +966,100 @@ export class PosComponent implements OnInit, OnDestroy {
       this.scannerError.set('Có lỗi xảy ra: ' + e.message);
       this.isScannerLoading.set(false);
     }
+  }
+
+  public onPosBarcodeFileSelected(event: any) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    this.isScannerLoading.set(true);
+    this.scannerError.set('');
+
+    const runFileScan = async (fileToScan: File) => {
+      try {
+        // Tắt camera nếu đang chạy
+        if (this.html5Qrcode && this.html5Qrcode.isScanning) {
+          await this.html5Qrcode.stop();
+        }
+        
+        // Tạo thực thể mới nếu chưa có
+        if (!this.html5Qrcode) {
+          this.html5Qrcode = new Html5Qrcode("pos-barcode-scanner-reader", {
+            formatsToSupport: [
+              Html5QrcodeSupportedFormats.EAN_13,
+              Html5QrcodeSupportedFormats.EAN_8,
+              Html5QrcodeSupportedFormats.CODE_128,
+              Html5QrcodeSupportedFormats.CODE_39,
+              Html5QrcodeSupportedFormats.UPC_A,
+              Html5QrcodeSupportedFormats.UPC_E,
+              Html5QrcodeSupportedFormats.QR_CODE
+            ],
+            verbose: false
+          });
+        }
+
+        const decodedText = await this.html5Qrcode.scanFile(fileToScan, false);
+        const barcode = decodedText.trim();
+        const foundProduct = this.products().find((p: any) => p.barcode && p.barcode.trim() === barcode);
+        if (foundProduct) {
+          this.addToCart(foundProduct);
+          this.stopPosBarcodeScan();
+        } else {
+          this.stateService.showToast(`Không tìm thấy sản phẩm có mã vạch: ${barcode}`, 'error');
+          this.stateService.onSearchQueryChange(barcode);
+          this.stopPosBarcodeScan();
+        }
+      } catch (err: any) {
+        console.error('Lỗi quét file ảnh POS:', err);
+        this.scannerError.set('Không tìm thấy mã vạch hợp lệ trong ảnh này. Vui lòng chụp rõ nét hơn!');
+        this.isScannerLoading.set(false);
+      }
+    };
+
+    // Tự động vẽ thêm viền trắng (Quiet Zone) xung quanh ảnh mã vạch trước khi giải mã
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          const padding = 40; // Quiet Zone 40px ở mỗi phía
+          canvas.width = img.width + padding * 2;
+          canvas.height = img.height + padding * 2;
+
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            throw new Error('Không thể khởi tạo Canvas 2D Context');
+          }
+
+          // Tô màu nền trắng
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          // Vẽ ảnh gốc vào chính giữa canvas
+          ctx.drawImage(img, padding, padding);
+
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const processedFile = new File([blob], file.name, {
+                type: file.type || 'image/jpeg',
+                lastModified: Date.now()
+              });
+              runFileScan(processedFile);
+            } else {
+              runFileScan(file); // Fallback quét file gốc nếu tạo blob lỗi
+            }
+          }, file.type || 'image/jpeg');
+        } catch (canvasErr) {
+          console.error('Lỗi xử lý canvas Quiet Zone ở POS:', canvasErr);
+          runFileScan(file); // Fallback
+        }
+      };
+      img.onerror = () => runFileScan(file);
+      img.src = e.target.result;
+    };
+    reader.onerror = () => runFileScan(file);
+    reader.readAsDataURL(file);
   }
 
   public stopPosBarcodeScan() {
