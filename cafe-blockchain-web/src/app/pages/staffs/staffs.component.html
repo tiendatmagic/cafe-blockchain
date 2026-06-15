@@ -5,9 +5,7 @@
     title="Quản lý Nhân viên"
     description="Danh sách nhân viên, gán vai trò và thiết lập quyền truy cập hệ thống Web POS"
   >
-    <div icon class="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-950/40 flex items-center justify-center text-purple-650 shadow-sm shrink-0">
-      <app-icon name="user-circle" class="h-6 w-6" strokeWidth="2" />
-    </div>
+    <app-icon icon name="staffs" class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" strokeWidth="2.5" />
 
     <!-- NÚT THAO TÁC NHANH (Chỉ hiện khi đã kết nối ví) -->
     @if (stateService.web3Service.walletConnected() && stateService.hasPermission('staffs')) {
