@@ -144,19 +144,54 @@
 
           <!-- Nút chuyển chế độ: Danh mục / Yêu thích -->
           <div class="flex items-center gap-2.5 self-start sm:self-end flex-wrap">
-            <app-mini-buttons
-              [options]="[
-                { value: false, label: 'Thực đơn' },
-                { value: true, label: 'Yêu thích (' + favorites().length + ')' },
-              ]"
-              [activeValue]="showFavoritesOnly()"
-              [showDot]="false"
-              containerClass="tab-group h-11"
-              buttonClass="tab-item h-9 px-5 text-sm sm:text-base font-black tracking-wide transition-all"
-              activeClass="active"
-              inactiveClass=""
-              (valueChange)="showFavoritesOnly.set($event)"
-            ></app-mini-buttons>
+            <div class="tab-group">
+              <button
+                type="button"
+                (click)="showFavoritesOnly.set(false)"
+                [class.active]="!showFavoritesOnly()"
+                class="tab-item"
+                title="Thực đơn"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2.5"
+                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                  />
+                </svg>
+                <span class="hidden md:inline-block">Thực đơn</span>
+              </button>
+              <button
+                type="button"
+                (click)="showFavoritesOnly.set(true)"
+                [class.active]="showFavoritesOnly()"
+                class="tab-item"
+                title="Yêu thích ({{ favorites().length }})"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2.5"
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                  />
+                </svg>
+                <span class="hidden md:inline-block">Yêu thích ({{ favorites().length }})</span>
+              </button>
+            </div>
 
             <!-- Standalone Theme Toggle Component -->
             <app-theme-toggle size="md"></app-theme-toggle>
@@ -232,19 +267,54 @@
               </div>
 
               <!-- Nút Toggle Grid / List -->
-              <app-mini-buttons
-                [options]="[
-                  { value: 'grid', label: 'Lưới' },
-                  { value: 'list', label: 'Danh sách' },
-                ]"
-                [activeValue]="displayMode()"
-                [showDot]="false"
-                containerClass="tab-group h-9"
-                buttonClass="tab-item h-7 px-3 text-xs font-bold transition-all"
-                activeClass="active"
-                inactiveClass=""
-                (valueChange)="displayMode.set($event)"
-              ></app-mini-buttons>
+              <div class="tab-group h-9">
+                <button
+                  type="button"
+                  (click)="displayMode.set('grid')"
+                  [class.active]="displayMode() === 'grid'"
+                  class="tab-item h-7 px-3"
+                  title="Lưới"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2.5"
+                      d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                    />
+                  </svg>
+                  <span class="hidden md:inline-block">Lưới</span>
+                </button>
+                <button
+                  type="button"
+                  (click)="displayMode.set('list')"
+                  [class.active]="displayMode() === 'list'"
+                  class="tab-item h-7 px-3"
+                  title="Danh sách"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2.5"
+                      d="M4 6h16M4 12h16M4 18h16"
+                    />
+                  </svg>
+                  <span class="hidden md:inline-block">Danh sách</span>
+                </button>
+              </div>
             </div>
           </div>
 
