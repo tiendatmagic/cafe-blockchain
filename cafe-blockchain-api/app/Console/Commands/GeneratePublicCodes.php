@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Domain\Entities\Order;
+use App\Infrastructure\Persistence\Eloquent\OrderModel;
 use App\Domain\Entities\Transaction;
 use App\Domain\Entities\Customer;
 use App\Domain\Entities\Product;
@@ -82,7 +82,7 @@ class GeneratePublicCodes extends Command
         }
 
         // 4. Cap nhat Orders (co kem ky lai HMAC)
-        $orders = Order::whereNull('order_code')->orWhere('order_code', '')->get();
+        $orders = \App\Infrastructure\Persistence\Eloquent\OrderModel::whereNull('order_code')->orWhere('order_code', '')->get();
         $totalOrders = $orders->count();
         $this->info("Tim thay {$totalOrders} don hang can cap nhat ma va chu ky HMAC.");
         if ($totalOrders > 0) {
@@ -91,7 +91,8 @@ class GeneratePublicCodes extends Command
             foreach ($orders as $order) {
                 $order->order_code = 'HD-' . str_pad($order->id, 6, '0', STR_PAD_LEFT);
                 if ($order->status === 'completed') {
-                    $order->verification_hash = $order->generateVerificationHash();
+                    $orderEntity = \App\Infrastructure\Persistence\Mappers\OrderMapper::toDomain($order);
+                    $order->verification_hash = $orderEntity->generateVerificationHash();
                 }
                 $order->saveQuietly();
                 $bar->advance();
@@ -100,13 +101,14 @@ class GeneratePublicCodes extends Command
             $this->info("\n=== Hoan tat cap nhat Orders ===");
         } else {
             // Neu da co order_code nhung muon ky lai HMAC voi order_code moi cho dong bo
-            $completedOrders = Order::where('status', 'completed')->get();
+            $completedOrders = \App\Infrastructure\Persistence\Eloquent\OrderModel::where('status', 'completed')->get();
             $this->info("Dang ky lai chu ky HMAC cho tat ca " . $completedOrders->count() . " don hang completed de dam bao dong bo...");
             foreach ($completedOrders as $order) {
                 if (empty($order->order_code)) {
                     $order->order_code = 'HD-' . str_pad($order->id, 6, '0', STR_PAD_LEFT);
                 }
-                $order->verification_hash = $order->generateVerificationHash();
+                $orderEntity = \App\Infrastructure\Persistence\Mappers\OrderMapper::toDomain($order);
+                $order->verification_hash = $orderEntity->generateVerificationHash();
                 $order->saveQuietly();
             }
             $this->info("Hoan tat ky lai HMAC cho Orders.");

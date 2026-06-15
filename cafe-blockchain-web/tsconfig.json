@@ -16,12 +16,15 @@
     "module": "preserve",
     "baseUrl": "./",
     "paths": {
-      "@pages/*": ["src/app/pages/*"],
-      "@components/*": ["src/app/components/*"],
-      "@services/*": ["src/app/services/*"],
-      "@pipes/*": ["src/app/pipes/*"]
+      "@core/*": ["src/app/core/*"],
+      "@shared/*": ["src/app/shared/*"],
+      "@features/*": ["src/app/features/*"],
+      "@pages/*": ["src/app/features/*"],
+      "@components/*": ["src/app/shared/*"],
+      "@services/*": ["src/app/core/services/*"],
+      "@pipes/*": ["src/app/shared/pipes/*"],
+      "@environments/*": ["src/environments/*"]
     }
-
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
@@ -36,6 +39,12 @@
     },
     {
       "path": "./tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/storefront/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/storefront/tsconfig.spec.json"
     }
   ]
 }

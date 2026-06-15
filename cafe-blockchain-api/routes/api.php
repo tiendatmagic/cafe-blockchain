@@ -62,6 +62,24 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/orders/{id}/sync', [OrderController::class, 'syncBlockchain'])->middleware(RequireOwner::class);
     Route::post('/orders/{id}/mint-voucher-manual', [OrderController::class, 'mintVoucherManual'])->middleware(RequireOwner::class);
 
+    // API Versioning V1 & V2 cho Orders
+    Route::prefix('v1')->group(function () {
+        Route::get('/orders', [OrderController::class, 'index'])->middleware('permission:pos|orders');
+        Route::get('/orders/{id}', [OrderController::class, 'show'])->middleware('permission:pos|orders');
+        Route::post('/orders', [OrderController::class, 'store'])->middleware('permission:pos');
+        Route::put('/orders/{id}', [OrderController::class, 'update'])->middleware('permission:pos|orders');
+        Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus'])->middleware(RequireOwner::class);
+        Route::put('/orders/{id}/sync', [OrderController::class, 'syncBlockchain'])->middleware(RequireOwner::class);
+        Route::post('/orders/{id}/mint-voucher-manual', [OrderController::class, 'mintVoucherManual'])->middleware(RequireOwner::class);
+    });
+
+    Route::prefix('v2')->group(function () {
+        // Cấu trúc API V2 sẵn sàng để mở rộng trong tương lai
+        Route::get('/orders', function() {
+            return response()->json(['message' => 'API Orders V2 is ready for development.']);
+        });
+    });
+
     // Settings API
     Route::get('/settings', [SettingController::class, 'index'])->middleware('permission:settings');
 

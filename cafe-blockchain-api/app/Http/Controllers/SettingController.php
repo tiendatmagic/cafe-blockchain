@@ -82,7 +82,7 @@ class SettingController extends Controller
 
         $settings = $this->ensureDefaultSettings($storeOwner);
 
-        $settings['has_synced_orders'] = \App\Domain\Entities\Order::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
+        $settings['has_synced_orders'] = \App\Infrastructure\Persistence\Eloquent\OrderModel::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
         $settings['has_synced_transactions'] = \App\Domain\Entities\Transaction::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
 
         // Ẩn Private Key thô trước khi gửi về client, chỉ trả về flag boolean trạng thái đã cấu hình
@@ -180,7 +180,7 @@ class SettingController extends Controller
 
 
         // Lấy số lượng đơn hàng và giao dịch tài chính đã đồng bộ thành công lên Blockchain
-        $hasSyncedOrders = \App\Domain\Entities\Order::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
+        $hasSyncedOrders = \App\Infrastructure\Persistence\Eloquent\OrderModel::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
         $hasSyncedTransactions = \App\Domain\Entities\Transaction::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
 
         // 1. Logic khóa cứng Mạng Blockchain (Chain ID)
@@ -269,7 +269,7 @@ class SettingController extends Controller
         Setting::clearStorefrontCache($storeOwner);
 
         $updatedSettings = Setting::where('store_owner_address', $storeOwner)->pluck('value', 'key')->all();
-        $updatedSettings['has_synced_orders'] = \App\Domain\Entities\Order::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
+        $updatedSettings['has_synced_orders'] = \App\Infrastructure\Persistence\Eloquent\OrderModel::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
         $updatedSettings['has_synced_transactions'] = \App\Domain\Entities\Transaction::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
 
         // Ẩn Private Key thô trước khi phản hồi
@@ -304,7 +304,7 @@ class SettingController extends Controller
             }
         } else {
             // Tìm đơn hàng để lấy store_owner_address của quán
-            $order = \App\Domain\Entities\Order::where('order_code', $orderCode)->first();
+            $order = \App\Infrastructure\Persistence\Eloquent\OrderModel::where('order_code', $orderCode)->first();
 
             if (!$order) {
                 // Thử tìm trong bảng voucher_signatures xem có thông tin tạm thời không
@@ -501,7 +501,7 @@ class SettingController extends Controller
     /**
      * Tạo đơn hàng mới từ website cửa hàng (công khai)
      */
-    public function createStoreOrderBySlug(Request $request, string $slug, CreateOrderCommand $command)
+    public function createStoreOrderBySlug(Request $request, string $slug, \App\Application\Common\Bus\CommandBus $bus)
     {
         $setting = Setting::where('key', 'website_slug')->where('value', $slug)->first();
         if (!$setting) {
@@ -582,12 +582,13 @@ class SettingController extends Controller
                 'shipping_fee' => $shippingFee,
             ];
 
-            // Thực thi tạo đơn hàng
-            $order = $command->execute($storeOwner, $orderData);
+            // Thực thi tạo đơn hàng thông qua CommandBus
+            $command = new CreateOrderCommand($storeOwner, $orderData);
+            $order = $bus->dispatch($command);
 
             return response()->json([
                 'message' => 'Đặt đơn hàng thành công!',
-                'data' => \App\Domain\Entities\Order::with(['customer', 'items.product', 'items.variant'])->find($order->id)
+                'data' => \App\Infrastructure\Persistence\Eloquent\OrderModel::with(['customer', 'items.product', 'items.variant'])->find($order->id)
             ], 201);
         } catch (\Exception $e) {
             return response()->json([

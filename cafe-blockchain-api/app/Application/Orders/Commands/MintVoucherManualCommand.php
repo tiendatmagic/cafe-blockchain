@@ -3,7 +3,8 @@
 namespace App\Application\Orders\Commands;
 
 use App\Application\Common\Interfaces\BlockchainRelayerServiceInterface;
-use App\Domain\Entities\Order;
+use App\Infrastructure\Persistence\Eloquent\OrderModel;
+use App\Infrastructure\Persistence\Mappers\OrderMapper;
 use App\Domain\Entities\Setting;
 use App\Domain\Entities\Customer;
 
@@ -16,14 +17,14 @@ class MintVoucherManualCommand
         $this->blockchainService = $blockchainService;
     }
 
-    public function execute(string $storeOwner, int|string $id): Order
+    public function execute(string $storeOwner, int|string $id): OrderModel
     {
         $voucherEnabled = Setting::getForStore('voucher_enabled', $storeOwner, '0') === '1';
         if (!$voucherEnabled) {
             throw new \Exception("Chương trình Voucher NFT của cửa hàng hiện đang tạm tắt!");
         }
 
-        $order = Order::where('store_owner_address', $storeOwner)->with('customer')->findOrFail($id);
+        $order = OrderModel::where('store_owner_address', $storeOwner)->with('customer')->findOrFail($id);
 
         if ($order->status !== 'completed' && $order->status !== 'cancelled') {
             throw new \Exception("Chỉ có thể tặng/hoàn trả voucher cho đơn hàng đã hoàn thành hoặc đã hủy!");
@@ -81,7 +82,8 @@ class MintVoucherManualCommand
 
         if ($checkResult['success'] && $checkResult['exists']) {
             $order->gift_voucher_nft_token_id = (int)$checkResult['tokenId'];
-            $order->verification_hash = $order->generateVerificationHash();
+            $orderEntity = OrderMapper::toDomain($order);
+            $order->verification_hash = $orderEntity->generateVerificationHash();
             $order->saveQuietly();
             return $order;
         }
@@ -105,7 +107,8 @@ class MintVoucherManualCommand
         $tokenId = isset($relayerResult['tokenId']) ? (int)$relayerResult['tokenId'] : null;
         if ($tokenId) {
             $order->gift_voucher_nft_token_id = $tokenId;
-            $order->verification_hash = $order->generateVerificationHash();
+            $orderEntity = OrderMapper::toDomain($order);
+            $order->verification_hash = $orderEntity->generateVerificationHash();
             $order->saveQuietly();
         }
 

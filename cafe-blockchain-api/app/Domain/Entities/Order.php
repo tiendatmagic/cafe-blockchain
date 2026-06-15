@@ -2,46 +2,86 @@
 
 namespace App\Domain\Entities;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-
-class Order extends Model
+class Order
 {
-    use HasFactory;
+    public ?string $id;
+    public ?string $order_code;
+    public ?string $table_number;
+    public ?int $customer_id;
+    public float $total_amount;
+    public int $discount_amount;
+    public ?int $voucher_nft_token_id;
+    public ?int $gift_voucher_nft_token_id;
+    public string $payment_method;
+    public string $status;
+    public ?string $tx_hash;
+    public string $blockchain_status;
+    public ?string $chain_id;
+    public string $store_owner_address;
+    public ?string $verification_hash;
+    public mixed $created_at;
+    public mixed $updated_at;
 
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    protected $fillable = [
-        'order_code',
-        'table_number',
-        'customer_id',
-        'total_amount',
-        'discount_amount',
-        'voucher_nft_token_id',
-        'gift_voucher_nft_token_id',
-        'payment_method',
-        'status',
-        'tx_hash',
-        'blockchain_status',
-        'chain_id',
-        'store_owner_address',
-        'verification_hash',
-    ];
-
-    protected $casts = [
-        'total_amount' => 'float',
-        'discount_amount' => 'integer',
-    ];
-
-    protected $appends = [
-        'is_verified',
-    ];
+    public function __construct(array $attributes = [])
+    {
+        $this->id = $attributes['id'] ?? null;
+        $this->order_code = $attributes['order_code'] ?? null;
+        $this->table_number = $attributes['table_number'] ?? null;
+        $this->customer_id = $attributes['customer_id'] ?? null;
+        $this->total_amount = (float)($attributes['total_amount'] ?? 0.0);
+        $this->discount_amount = (int)($attributes['discount_amount'] ?? 0);
+        $this->voucher_nft_token_id = isset($attributes['voucher_nft_token_id']) ? (int)$attributes['voucher_nft_token_id'] : null;
+        $this->gift_voucher_nft_token_id = isset($attributes['gift_voucher_nft_token_id']) ? (int)$attributes['gift_voucher_nft_token_id'] : null;
+        $this->payment_method = $attributes['payment_method'] ?? 'cash';
+        $this->status = $attributes['status'] ?? 'pending';
+        $this->tx_hash = $attributes['tx_hash'] ?? null;
+        $this->blockchain_status = $attributes['blockchain_status'] ?? 'none';
+        $this->chain_id = $attributes['chain_id'] ?? null;
+        $this->store_owner_address = $attributes['store_owner_address'] ?? '';
+        $this->verification_hash = $attributes['verification_hash'] ?? null;
+        $this->created_at = $attributes['created_at'] ?? null;
+        $this->updated_at = $attributes['updated_at'] ?? null;
+    }
 
     /**
-     * Thuộc tính ảo đối soát tính toàn vẹn của dữ liệu đơn hàng
+     * Sinh mã băm bảo mật HMAC-SHA256 chống sửa đổi dữ liệu đơn hàng trong cơ sở dữ liệu
      */
-    public function getIsVerifiedAttribute(): bool
+    public function generateVerificationHash(): string
+    {
+        $secretKey = env('ORDER_SECRET_KEY', 'default_secret_key_change_me');
+
+        // Định dạng tiền tệ với 2 chữ số thập phân để đảm bảo tính đồng nhất
+        $totalAmountFormatted = number_format($this->total_amount, 2, '.', '');
+
+        // Chuyển đổi created_at sang chuỗi ngày giờ
+        $createdAtStr = '';
+        if ($this->created_at) {
+            if ($this->created_at instanceof \Carbon\Carbon || $this->created_at instanceof \DateTime) {
+                $createdAtStr = $this->created_at->toDateTimeString();
+            } else {
+                $createdAtStr = (string)$this->created_at;
+            }
+        }
+
+        // Tạo dữ liệu nhạy cảm cần ký
+        $data = implode('|', [
+            strtolower($this->order_code ?? ''),
+            $totalAmountFormatted,
+            $this->discount_amount,
+            $this->voucher_nft_token_id ?? '',
+            strtolower($this->payment_method),
+            $this->table_number ?? '',
+            $createdAtStr,
+            strtolower($this->store_owner_address),
+        ]);
+
+        return hash_hmac('sha256', $data, $secretKey);
+    }
+
+    /**
+     * Kiểm tra tính toàn vẹn của dữ liệu đơn hàng
+     */
+    public function isVerified(): bool
     {
         if ($this->status !== 'completed') {
             return true;
@@ -54,133 +94,30 @@ class Order extends Model
         return $this->verification_hash === $this->generateVerificationHash();
     }
 
-    protected static function booted()
-    {
-        // Tự động sinh mã đơn hàng ngẫu nhiên 6 ký tự viết hoa/chữ số và UUIDv7 khi tạo mới
-        static::creating(function ($order) {
-            if (empty($order->id)) {
-                $order->id = (string) \Illuminate\Support\Str::uuid7();
-            }
-            if (empty($order->order_code)) {
-                $order->order_code = 'HD-' . strtoupper(bin2hex(random_bytes(3)));
-            }
-        });
-
-        // Khi cập nhật đơn hàng hoặc khi lưu nếu trạng thái là completed và đã có ID
-        static::saving(function ($order) {
-            if ($order->status === 'completed' && $order->id) {
-                $order->verification_hash = $order->generateVerificationHash();
-            }
-        });
-
-        // Đề phòng trường hợp tạo mới đơn hàng ở trạng thái completed ngay lập tức (chưa có ID ở sự kiện saving)
-        static::saved(function ($order) {
-            $isStatusChanged = $order->wasChanged('status') || $order->wasRecentlyCreated;
-
-            if ($order->status === 'completed' && empty($order->verification_hash)) {
-                $order->verification_hash = $order->generateVerificationHash();
-                $order->saveQuietly();
-            }
-
-            if ($order->status === 'completed') {
-                // Tự động tặng voucher nếu đủ điều kiện và chương trình được bật
-                if ($isStatusChanged && $order->customer_id) {
-                    $storeOwner = $order->store_owner_address;
-                    $voucherEnabled = \App\Domain\Entities\Setting::getForStore('voucher_enabled', $storeOwner, '0') === '1';
-                    if ($voucherEnabled) {
-                        $minGiftAmount = (int)\App\Domain\Entities\Setting::getForStore('voucher_gift_min_amount', $storeOwner, 100000);
-                        $originalTotal = $order->total_amount + $order->discount_amount;
-                        
-                        if ($originalTotal >= $minGiftAmount) {
-                            $giftDiscount = (int)\App\Domain\Entities\Setting::getForStore('voucher_discount_amount', $storeOwner, 5000);
-                            $useMinAmount = (int)\App\Domain\Entities\Setting::getForStore('voucher_use_min_amount', $storeOwner, 100000);
-                            
-                            $customer = \App\Domain\Entities\Customer::find($order->customer_id);
-                            $customerWallet = $customer ? $customer->wallet_address : null;
-                            $voucherContract = \App\Domain\Entities\Setting::getForStore('voucher_contract_address', $storeOwner);
-
-                            if (!empty($customerWallet) && !empty($voucherContract)) {
-                                // Tạo mã voucher gắn với mã đơn hàng thay vì ngẫu nhiên
-                                $voucherCode = 'NFT-' . $giftDiscount . '-' . $useMinAmount . '-' . $order->order_code;
-                                $tokenUri = url("/api/vouchers/metadata/{$voucherCode}");
-
-                                // Gọi Relayer thực hiện đúc (mint) NFT trên Blockchain
-                                $blockchainService = app(\App\Application\Common\Interfaces\BlockchainRelayerServiceInterface::class);
-                                $relayerResult = $blockchainService->mintVoucher(
-                                    $storeOwner,
-                                    $customerWallet,
-                                    $tokenUri,
-                                    $giftDiscount,
-                                    $useMinAmount
-                                );
-
-                                if ($relayerResult['success']) {
-                                    \Illuminate\Support\Facades\Log::info("Minted NFT Voucher successfully with code: {$voucherCode}, TxHash: " . ($relayerResult['txHash'] ?? ''));
-                                    
-                                    // Cập nhật token_id được tặng vào DB POS để hoàn tất liên kết
-                                    if (!empty($relayerResult['tokenId'])) {
-                                        $order->gift_voucher_nft_token_id = (int)$relayerResult['tokenId'];
-                                        $order->verification_hash = $order->generateVerificationHash();
-                                        $order->saveQuietly();
-                                    }
-                                } else {
-                                    \Illuminate\Support\Facades\Log::warning("Mint NFT Voucher that bai: " . ($relayerResult['error'] ?? 'Lỗi không xác định'));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    }
-
     /**
-     * Sinh mã băm bảo mật HMAC-SHA256 chống sửa đổi dữ liệu đơn hàng trong cơ sở dữ liệu
+     * Chuyển đổi Entity thành mảng
      */
-    public function generateVerificationHash(): string
+    public function toArray(): array
     {
-        $secretKey = env('ORDER_SECRET_KEY', 'default_secret_key_change_me');
-
-        // Định dạng tiền tệ với 2 chữ số thập phân để đảm bảo tính đồng nhất
-        $totalAmountFormatted = number_format((float)$this->total_amount, 2, '.', '');
-
-        // Chuyển đổi created_at sang chuỗi ngày giờ
-        $createdAtStr = '';
-        if ($this->created_at) {
-            if ($this->created_at instanceof \Carbon\Carbon || $this->created_at instanceof \DateTime) {
-                $createdAtStr = $this->created_at->toDateTimeString();
-            } else {
-                $createdAtStr = (string)$this->created_at;
-            }
-        }
-
-        // Tạo dữ liệu nhạy cảm cần ký (đã bao gồm phương thức thanh toán và thông tin giảm giá)
-        $data = implode('|', [
-            strtolower($this->order_code ?? ''),
-            $totalAmountFormatted,
-            (int)$this->discount_amount,
-            $this->voucher_nft_token_id ?? '',
-            strtolower($this->payment_method ?? ''),
-            $this->table_number ?? '',
-            $createdAtStr,
-            strtolower($this->store_owner_address ?? ''),
-        ]);
-
-        return hash_hmac('sha256', $data, $secretKey);
-    }
-
-    public function items()
-    {
-        return $this->hasMany(OrderItem::class);
-    }
-
-    public function customer()
-    {
-        return $this->belongsTo(Customer::class);
-    }
-
-    public function debtLogs()
-    {
-        return $this->hasMany(DebtLog::class);
+        return [
+            'id' => $this->id,
+            'order_code' => $this->order_code,
+            'table_number' => $this->table_number,
+            'customer_id' => $this->customer_id,
+            'total_amount' => $this->total_amount,
+            'discount_amount' => $this->discount_amount,
+            'voucher_nft_token_id' => $this->voucher_nft_token_id,
+            'gift_voucher_nft_token_id' => $this->gift_voucher_nft_token_id,
+            'payment_method' => $this->payment_method,
+            'status' => $this->status,
+            'tx_hash' => $this->tx_hash,
+            'blockchain_status' => $this->blockchain_status,
+            'chain_id' => $this->chain_id,
+            'store_owner_address' => $this->store_owner_address,
+            'verification_hash' => $this->verification_hash,
+            'is_verified' => $this->isVerified(),
+            'created_at' => $this->created_at ? (string)$this->created_at : null,
+            'updated_at' => $this->updated_at ? (string)$this->updated_at : null,
+        ];
     }
 }

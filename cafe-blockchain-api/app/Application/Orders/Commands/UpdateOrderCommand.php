@@ -3,7 +3,7 @@
 namespace App\Application\Orders\Commands;
 
 use App\Application\Common\Interfaces\BlockchainRelayerServiceInterface;
-use App\Domain\Entities\Order;
+use App\Infrastructure\Persistence\Eloquent\OrderModel;
 use App\Domain\Entities\OrderItem;
 use App\Domain\Entities\Product;
 use App\Domain\Entities\Customer;
@@ -18,9 +18,9 @@ class UpdateOrderCommand
         $this->blockchainService = $blockchainService;
     }
 
-    public function execute(string $storeOwner, int|string $id, array $data): Order
+    public function execute(string $storeOwner, int|string $id, array $data): OrderModel
     {
-        $order = Order::where('store_owner_address', $storeOwner)->findOrFail($id);
+        $order = OrderModel::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         if ($order->status !== 'pending') {
             throw new \Exception("Chỉ có thể chỉnh sửa đơn hàng đang ở trạng thái chờ (pending)!");

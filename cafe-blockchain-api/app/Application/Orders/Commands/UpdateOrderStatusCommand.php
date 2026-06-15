@@ -2,15 +2,15 @@
 
 namespace App\Application\Orders\Commands;
 
-use App\Domain\Entities\Order;
+use App\Infrastructure\Persistence\Eloquent\OrderModel;
 use App\Domain\Entities\Customer;
 use App\Domain\Entities\DebtLog;
 
 class UpdateOrderStatusCommand
 {
-    public function execute(string $storeOwner, int|string $id, string $status): Order
+    public function execute(string $storeOwner, int|string $id, string $status): OrderModel
     {
-        $order = Order::where('store_owner_address', $storeOwner)->findOrFail($id);
+        $order = OrderModel::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         $oldStatus = $order->status;
         $order->status = $status;

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Application\Common\Bus\CommandBus;
 use App\Application\Orders\Commands\CreateOrderCommand;
 use App\Application\Orders\Commands\UpdateOrderCommand;
 use App\Application\Orders\Commands\UpdateOrderStatusCommand;
@@ -9,29 +10,41 @@ use App\Application\Orders\Commands\SyncBlockchainCommand;
 use App\Application\Orders\Commands\MintVoucherManualCommand;
 use App\Application\Orders\Queries\GetOrdersQuery;
 use App\Application\Orders\Queries\GetOrderDetailQuery;
-use App\Domain\Entities\Order;
+use App\Infrastructure\Persistence\Eloquent\OrderModel;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
+    protected CommandBus $bus;
+
+    public function __construct(CommandBus $bus)
+    {
+        $this->bus = $bus;
+    }
+
     /**
-     * Lấy danh sách đơn hàng
+     * Lấy danh sách đơn hàng (Sử dụng CQRS Bus)
      */
-    public function index(Request $request, GetOrdersQuery $query)
+    public function index(Request $request)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-        $orders = $query->execute($storeOwner, $request->all());
+        
+        $query = new GetOrdersQuery($storeOwner, $request->all());
+        $orders = $this->bus->dispatch($query);
+        
         return response()->json($orders);
     }
 
     /**
-     * Lấy chi tiết đơn hàng
+     * Lấy chi tiết đơn hàng (Sử dụng CQRS Bus)
      */
-    public function show(Request $request, $id, GetOrderDetailQuery $query)
+    public function show(Request $request, $id)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
         try {
-            $order = $query->execute($storeOwner, $id);
+            $query = new GetOrderDetailQuery($storeOwner, $id);
+            $order = $this->bus->dispatch($query);
+            
             return response()->json($order);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json(['message' => 'Không tìm thấy đơn hàng tương ứng!'], 404);
@@ -41,9 +54,9 @@ class OrderController extends Controller
     }
 
     /**
-     * Tạo đơn hàng mới (POS)
+     * Tạo đơn hàng mới (POS) (Sử dụng CQRS Bus)
      */
-    public function store(Request $request, CreateOrderCommand $command)
+    public function store(Request $request)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
 
@@ -62,11 +75,12 @@ class OrderController extends Controller
         ]);
 
         try {
-            $order = $command->execute($storeOwner, $validated);
+            $command = new CreateOrderCommand($storeOwner, $validated);
+            $order = $this->bus->dispatch($command);
             
             return response()->json([
                 'message' => 'Order created successfully.',
-                'data' => Order::with(['customer', 'items.product', 'items.variant'])->find($order->id)
+                'data' => OrderModel::with(['customer', 'items.product', 'items.variant'])->find($order->id)
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
@@ -76,7 +90,7 @@ class OrderController extends Controller
     }
 
     /**
-     * Cập nhật đơn hàng
+     * Cập nhật đơn hàng (Inject trực tiếp cho tương thích ngược)
      */
     public function update(Request $request, $id, UpdateOrderCommand $command)
     {
@@ -100,7 +114,7 @@ class OrderController extends Controller
 
             return response()->json([
                 'message' => 'Cập nhật đơn hàng thành công.',
-                'data' => Order::with(['customer', 'items.product', 'items.variant'])->find($order->id)
+                'data' => OrderModel::with(['customer', 'items.product', 'items.variant'])->find($order->id)
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -110,7 +124,7 @@ class OrderController extends Controller
     }
 
     /**
-     * Cập nhật trạng thái đơn hàng
+     * Cập nhật trạng thái đơn hàng (Inject trực tiếp cho tương thích ngược)
      */
     public function updateStatus(Request $request, $id, UpdateOrderStatusCommand $command)
     {
@@ -125,7 +139,7 @@ class OrderController extends Controller
 
             return response()->json([
                 'message' => 'Order status updated successfully.',
-                'data' => Order::with(['customer', 'items.product', 'items.variant'])->find($order->id)
+                'data' => OrderModel::with(['customer', 'items.product', 'items.variant'])->find($order->id)
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -135,7 +149,7 @@ class OrderController extends Controller
     }
 
     /**
-     * Đồng bộ blockchain
+     * Đồng bộ blockchain (Inject trực tiếp cho tương thích ngược)
      */
     public function syncBlockchain(Request $request, $id, SyncBlockchainCommand $command)
     {
@@ -152,7 +166,7 @@ class OrderController extends Controller
 
             return response()->json([
                 'message' => 'Blockchain sync updated successfully.',
-                'data' => Order::with(['customer', 'items.product', 'items.variant'])->find($order->id)
+                'data' => OrderModel::with(['customer', 'items.product', 'items.variant'])->find($order->id)
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -162,7 +176,7 @@ class OrderController extends Controller
     }
 
     /**
-     * Tặng lại Voucher NFT thủ công
+     * Tặng lại Voucher NFT thủ công (Inject trực tiếp cho tương thích ngược)
      */
     public function mintVoucherManual(Request $request, $id, MintVoucherManualCommand $command)
     {
@@ -173,7 +187,7 @@ class OrderController extends Controller
 
             return response()->json([
                 'message' => 'Tặng và đúc thành công Voucher NFT cho khách hàng!',
-                'data' => Order::with(['customer', 'items.product', 'items.variant'])->find($order->id)
+                'data' => OrderModel::with(['customer', 'items.product', 'items.variant'])->find($order->id)
             ]);
         } catch (\Exception $e) {
             return response()->json([

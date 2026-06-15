@@ -2,7 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Domain\Entities\Order;
+use App\Infrastructure\Persistence\Eloquent\OrderModel;
+use App\Infrastructure\Persistence\Mappers\OrderMapper;
 use Illuminate\Console\Command;
 
 class ResignOrders extends Command
@@ -36,7 +37,7 @@ class ResignOrders extends Command
         }
 
         // Lay tat ca don hang da hoan thanh
-        $orders = Order::where('status', 'completed')->get();
+        $orders = OrderModel::where('status', 'completed')->get();
         $total = $orders->count();
 
         if ($total === 0) {
@@ -53,7 +54,8 @@ class ResignOrders extends Command
         foreach ($orders as $order) {
             try {
                 // Tinh toan lai ma bam voi khoa moi
-                $order->verification_hash = $order->generateVerificationHash();
+                $orderEntity = OrderMapper::toDomain($order);
+                $order->verification_hash = $orderEntity->generateVerificationHash();
                 // Luu khong kich hoat event Eloquent de tranh bi lap vo han
                 $order->saveQuietly();
                 $updatedCount++;

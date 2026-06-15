@@ -3,7 +3,7 @@
 namespace App\Application\Vouchers\Commands;
 
 use App\Application\Common\Interfaces\BlockchainRelayerServiceInterface;
-use App\Domain\Entities\Order;
+use App\Infrastructure\Persistence\Eloquent\OrderModel;
 use App\Domain\Entities\OrderItem;
 use Illuminate\Support\Facades\DB;
 
@@ -56,7 +56,7 @@ class SubmitSignatureCommand
             $finalTotalAmount = (float)($tempOrderData['final_amount'] ?? 0);
 
             // Tạo đơn hàng
-            $order = Order::create([
+            $order = OrderModel::create([
                 'order_code' => $orderCode,
                 'table_number' => $tempOrderData['table_number'] ?? null,
                 'customer_id' => $tempOrderData['customer_id'] ?? null,

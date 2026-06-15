@@ -15,6 +15,11 @@ class AppServiceProvider extends ServiceProvider
             \App\Application\Common\Interfaces\BlockchainRelayerServiceInterface::class,
             \App\Infrastructure\Services\BlockchainRelayerService::class
         );
+
+        $this->app->bind(
+            \App\Domain\Repositories\OrderRepositoryInterface::class,
+            \App\Infrastructure\Persistence\Repositories\EloquentOrderRepository::class
+        );
     }
 
     /**
@@ -22,6 +27,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        \Illuminate\Support\Facades\Event::listen(
+            \App\Domain\Events\OrderCompletedEvent::class,
+            \App\Domain\Listeners\MintVoucherGiftListener::class
+        );
     }
 }

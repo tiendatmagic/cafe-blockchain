@@ -2,18 +2,20 @@
 
 namespace App\Application\Orders\Commands;
 
-use App\Domain\Entities\Order;
+use App\Infrastructure\Persistence\Eloquent\OrderModel;
+use App\Infrastructure\Persistence\Mappers\OrderMapper;
 use App\Domain\Entities\Setting;
 use Illuminate\Support\Facades\Http;
 
 class SyncBlockchainCommand
 {
-    public function execute(string $storeOwner, int|string $id, array $data): Order
+    public function execute(string $storeOwner, int|string $id, array $data): OrderModel
     {
-        $order = Order::where('store_owner_address', $storeOwner)->findOrFail($id);
+        $order = OrderModel::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         if ($order->status === 'completed') {
-            $expectedHash = $order->generateVerificationHash();
+            $orderEntity = OrderMapper::toDomain($order);
+            $expectedHash = $orderEntity->generateVerificationHash();
             if (empty($order->verification_hash) || $order->verification_hash !== $expectedHash) {
                 throw new \Exception("Dữ liệu tài chính của đơn hàng đã bị can thiệp và sửa đổi trái phép! Từ chối đối soát và ghi chuỗi.");
             }
@@ -21,7 +23,7 @@ class SyncBlockchainCommand
 
         $txHash = $data['tx_hash'];
         
-        if (Order::where('tx_hash', $txHash)->where('id', '!=', $id)->exists()) {
+        if (OrderModel::where('tx_hash', $txHash)->where('id', '!=', $id)->exists()) {
             throw new \Exception("Transaction hash has already been used.");
         }
 
