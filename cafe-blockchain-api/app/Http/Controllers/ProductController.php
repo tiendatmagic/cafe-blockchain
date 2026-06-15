@@ -16,13 +16,21 @@ class ProductController extends Controller
         
         $products = \Illuminate\Support\Facades\Cache::remember("store_products_all:{$storeOwner}", 86400, function () use ($storeOwner) {
             return Product::where('store_owner_address', $storeOwner)
-                ->with(['categories', 'variants'])
+                ->with(['categories', 'variants', 'recipes.ingredient', 'recipes.variant'])
                 ->orderBy('id', 'desc')
                 ->get()
                 ->toArray();
         });
 
         $collection = collect($products);
+
+        // Lọc theo loại sản phẩm (product hoặc ingredient)
+        if ($request->has('type') && !empty($request->type)) {
+            $type = $request->type;
+            $collection = $collection->filter(function ($p) use ($type) {
+                return ($p['type'] ?? 'product') === $type;
+            });
+        }
 
         // Lọc theo từ khóa tìm kiếm nếu có
         if ($request->has('search') && !empty($request->search)) {
@@ -70,6 +78,7 @@ class ProductController extends Controller
             'sku' => 'nullable|string|max:255',
             'barcode' => 'nullable|string|max:255',
             'unit' => 'nullable|string|max:255',
+            'type' => 'nullable|string|in:product,ingredient',
             'price' => 'required|numeric|min:0',
             'cost_price' => 'nullable|numeric|min:0',
             'category_ids' => 'nullable|array',
@@ -86,6 +95,10 @@ class ProductController extends Controller
             'variants.*.price' => 'required|numeric|min:0',
             'variants.*.cost_price' => 'nullable|numeric|min:0',
             'variants.*.status' => 'nullable|boolean',
+            'recipes' => 'nullable|array',
+            'recipes.*.ingredient_id' => 'required|exists:products,id',
+            'recipes.*.product_variant_id' => 'nullable|exists:product_variants,id',
+            'recipes.*.quantity' => 'required|numeric|min:0.01',
         ]);
 
         $product = Product::create([
@@ -93,6 +106,7 @@ class ProductController extends Controller
             'sku' => $validated['sku'] ?? null,
             'barcode' => $validated['barcode'] ?? null,
             'unit' => $validated['unit'] ?? 'Cái',
+            'type' => $validated['type'] ?? 'product',
             'price' => $validated['price'],
             'cost_price' => $validated['cost_price'] ?? null,
             'image' => $validated['image'] ?? null,
@@ -117,7 +131,20 @@ class ProductController extends Controller
             }
         }
 
-        $product->load(['categories', 'variants']);
+        // Lưu định lượng nguyên vật liệu nếu có
+        if ($product->type === 'product' && $request->has('recipes') && is_array($request->recipes)) {
+            foreach ($request->recipes as $recipeData) {
+                \App\Domain\Entities\Recipe::create([
+                    'product_id' => $product->id,
+                    'product_variant_id' => $recipeData['product_variant_id'] ?? null,
+                    'ingredient_id' => $recipeData['ingredient_id'],
+                    'quantity' => $recipeData['quantity'],
+                    'store_owner_address' => $storeOwner,
+                ]);
+            }
+        }
+
+        $product->load(['categories', 'variants', 'recipes.ingredient', 'recipes.variant']);
 
         // Giải phóng cache storefront
         \App\Domain\Entities\Setting::clearStorefrontCache($storeOwner);
@@ -141,6 +168,7 @@ class ProductController extends Controller
             'sku' => 'nullable|string|max:255',
             'barcode' => 'nullable|string|max:255',
             'unit' => 'nullable|string|max:255',
+            'type' => 'nullable|string|in:product,ingredient',
             'price' => 'required|numeric|min:0',
             'cost_price' => 'nullable|numeric|min:0',
             'category_ids' => 'nullable|array',
@@ -158,6 +186,10 @@ class ProductController extends Controller
             'variants.*.price' => 'required|numeric|min:0',
             'variants.*.cost_price' => 'nullable|numeric|min:0',
             'variants.*.status' => 'required|boolean',
+            'recipes' => 'nullable|array',
+            'recipes.*.ingredient_id' => 'required|exists:products,id',
+            'recipes.*.product_variant_id' => 'nullable|exists:product_variants,id',
+            'recipes.*.quantity' => 'required|numeric|min:0.01',
         ]);
 
         $product->update([
@@ -165,6 +197,7 @@ class ProductController extends Controller
             'sku' => $validated['sku'] ?? $product->sku,
             'barcode' => $validated['barcode'] ?? null,
             'unit' => $validated['unit'] ?? 'Cái',
+            'type' => $validated['type'] ?? $product->type,
             'price' => $validated['price'],
             'cost_price' => $validated['cost_price'] ?? null,
             'image' => $validated['image'] ?? null,
@@ -203,7 +236,23 @@ class ProductController extends Controller
             }
         }
 
-        $product->load(['categories', 'variants']);
+        // Đồng bộ định lượng nguyên vật liệu
+        if ($request->has('recipes')) {
+            $product->recipes()->delete();
+            if (($validated['type'] ?? $product->type) === 'product' && is_array($request->recipes)) {
+                foreach ($request->recipes as $recipeData) {
+                    \App\Domain\Entities\Recipe::create([
+                        'product_id' => $product->id,
+                        'product_variant_id' => $recipeData['product_variant_id'] ?? null,
+                        'ingredient_id' => $recipeData['ingredient_id'],
+                        'quantity' => $recipeData['quantity'],
+                        'store_owner_address' => $storeOwner,
+                    ]);
+                }
+            }
+        }
+
+        $product->load(['categories', 'variants', 'recipes.ingredient', 'recipes.variant']);
 
         // Giải phóng cache storefront
         \App\Domain\Entities\Setting::clearStorefrontCache($storeOwner);

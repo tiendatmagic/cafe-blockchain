@@ -19,6 +19,7 @@ class Order
     public ?string $chain_id;
     public string $store_owner_address;
     public ?string $verification_hash;
+    public ?int $shift_id;
     public mixed $created_at;
     public mixed $updated_at;
 
@@ -39,6 +40,7 @@ class Order
         $this->chain_id = $attributes['chain_id'] ?? null;
         $this->store_owner_address = $attributes['store_owner_address'] ?? '';
         $this->verification_hash = $attributes['verification_hash'] ?? null;
+        $this->shift_id = isset($attributes['shift_id']) ? (int)$attributes['shift_id'] : null;
         $this->created_at = $attributes['created_at'] ?? null;
         $this->updated_at = $attributes['updated_at'] ?? null;
     }
@@ -115,6 +117,7 @@ class Order
             'chain_id' => $this->chain_id,
             'store_owner_address' => $this->store_owner_address,
             'verification_hash' => $this->verification_hash,
+            'shift_id' => $this->shift_id,
             'is_verified' => $this->isVerified(),
             'created_at' => $this->created_at ? (string)$this->created_at : null,
             'updated_at' => $this->updated_at ? (string)$this->updated_at : null,

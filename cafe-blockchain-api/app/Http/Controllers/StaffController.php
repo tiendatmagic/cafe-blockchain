@@ -192,7 +192,7 @@ class StaffController extends Controller
                     'permissions' => [
                         'dashboard' => true, 'pos' => true, 'menu' => true, 'orders' => true,
                         'financials' => true, 'customers' => true, 'debts' => true, 'inventory' => true,
-                        'tables' => true, 'reports' => true, 'settings' => true, 'staffs' => true
+                        'tables' => true, 'reports' => true, 'settings' => true, 'staffs' => true, 'shifts' => true
                     ]
                 ],
                 [
@@ -200,7 +200,7 @@ class StaffController extends Controller
                     'permissions' => [
                         'dashboard' => true, 'pos' => true, 'menu' => true, 'orders' => true,
                         'financials' => false, 'customers' => true, 'debts' => true, 'inventory' => true,
-                        'tables' => true, 'reports' => true, 'settings' => false, 'staffs' => false
+                        'tables' => true, 'reports' => true, 'settings' => false, 'staffs' => false, 'shifts' => true
                     ]
                 ],
                 [
@@ -208,7 +208,7 @@ class StaffController extends Controller
                     'permissions' => [
                         'dashboard' => false, 'pos' => true, 'menu' => false, 'orders' => true,
                         'financials' => false, 'customers' => true, 'debts' => true, 'inventory' => false,
-                        'tables' => true, 'reports' => false, 'settings' => false, 'staffs' => false
+                        'tables' => true, 'reports' => false, 'settings' => false, 'staffs' => false, 'shifts' => true
                     ]
                 ],
                 [
@@ -216,7 +216,7 @@ class StaffController extends Controller
                     'permissions' => [
                         'dashboard' => true, 'pos' => false, 'menu' => false, 'orders' => false,
                         'financials' => true, 'customers' => true, 'debts' => true, 'inventory' => true,
-                        'tables' => false, 'reports' => true, 'settings' => false, 'staffs' => false
+                        'tables' => false, 'reports' => true, 'settings' => false, 'staffs' => false, 'shifts' => true
                     ]
                 ]
             ];
@@ -324,7 +324,7 @@ class StaffController extends Controller
                 'permissions' => [
                     'dashboard' => true, 'pos' => true, 'menu' => true, 'orders' => true,
                     'financials' => true, 'customers' => true, 'debts' => true, 'inventory' => true,
-                    'tables' => true, 'reports' => true, 'settings' => true, 'staffs' => true
+                    'tables' => true, 'reports' => true, 'settings' => true, 'staffs' => true, 'shifts' => true
                 ]
             ],
             [
@@ -332,7 +332,7 @@ class StaffController extends Controller
                 'permissions' => [
                     'dashboard' => true, 'pos' => true, 'menu' => true, 'orders' => true,
                     'financials' => false, 'customers' => true, 'debts' => true, 'inventory' => true,
-                    'tables' => true, 'reports' => true, 'settings' => false, 'staffs' => false
+                    'tables' => true, 'reports' => true, 'settings' => false, 'staffs' => false, 'shifts' => true
                 ]
             ],
             [
@@ -340,7 +340,7 @@ class StaffController extends Controller
                 'permissions' => [
                     'dashboard' => false, 'pos' => true, 'menu' => false, 'orders' => true,
                     'financials' => false, 'customers' => true, 'debts' => true, 'inventory' => false,
-                    'tables' => true, 'reports' => false, 'settings' => false, 'staffs' => false
+                    'tables' => true, 'reports' => false, 'settings' => false, 'staffs' => false, 'shifts' => true
                 ]
             ],
             [
@@ -348,7 +348,7 @@ class StaffController extends Controller
                 'permissions' => [
                     'dashboard' => true, 'pos' => false, 'menu' => false, 'orders' => false,
                     'financials' => true, 'customers' => true, 'debts' => true, 'inventory' => true,
-                    'tables' => false, 'reports' => true, 'settings' => false, 'staffs' => false
+                    'tables' => false, 'reports' => true, 'settings' => false, 'staffs' => false, 'shifts' => true
                 ]
             ]
         ];

@@ -140,6 +140,18 @@ class CreateOrderCommandHandler
                 }
             }
 
+            // Tìm ca trực đang mở của nhân viên hiện tại
+            $shiftId = null;
+            $user = auth()->user();
+            if ($user) {
+                $activeShift = \App\Domain\Entities\Shift::where('user_id', $user->id)
+                    ->where('status', 'open')
+                    ->first();
+                if ($activeShift) {
+                    $shiftId = $activeShift->id;
+                }
+            }
+
             // Tạo đơn hàng thông qua Domain Entity & Repository
             $order = new Order([
                 'order_code' => $data['order_code'] ?? null,
@@ -153,6 +165,7 @@ class CreateOrderCommandHandler
                 'tx_hash' => $relayerResult['txHash'] ?? null,
                 'blockchain_status' => 'none',
                 'store_owner_address' => $storeOwner,
+                'shift_id' => $shiftId,
             ]);
 
             $savedOrder = $this->orderRepository->save($order);

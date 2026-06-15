@@ -40,6 +40,9 @@ export class StateService {
   public readonly isTablesLoading = signal<boolean>(false);
   public readonly isSettingsLoading = this.settingStore.isSettingsLoading;
   public readonly isDebtsLoading = signal<boolean>(false);
+  public readonly isShiftsLoading = signal<boolean>(false);
+  public readonly currentShift = signal<any>(null);
+  public readonly shifts = signal<any[]>([]);
 
   // Thông điệp Toast
   public readonly successMessage = signal<string>('');
@@ -239,6 +242,7 @@ export class StateService {
       if (this.web3Service.walletConnected()) {
         untracked(() => {
           this.loadSettings();
+          this.refreshCurrentShift();
           this.reloadCurrentTab();
         });
       }
@@ -824,6 +828,7 @@ export class StateService {
       }
       this.loadPosProducts();
       this.refreshTablesAndAreas(); // Tải sơ đồ bàn cho POS
+      this.refreshCurrentShift();
     } else if (tab === 'orders') {
       this.refreshOrders();
     } else if (tab === 'menu') {
@@ -844,6 +849,8 @@ export class StateService {
       this.refreshDebts();
     } else if (tab === 'staffs') {
       this.refreshStaffsAndRoles();
+    } else if (tab === 'reports') {
+      this.refreshShifts();
     }
   }
 
@@ -920,5 +927,74 @@ export class StateService {
       return true;
     }
     return !!permissions[module];
+  }
+
+  // --- Quản lý Ca trực ---
+  public refreshCurrentShift(onSuccess?: (shift: any) => void) {
+    if (!this.web3Service.walletConnected()) return;
+    if (!this.hasPermission('shifts')) return;
+    this.apiService.getCurrentShift().subscribe({
+      next: (res) => {
+        this.currentShift.set(res || null);
+        if (onSuccess) onSuccess(res || null);
+      },
+      error: (err) => {
+        console.error('Lỗi tải ca trực hiện tại:', err);
+      }
+    });
+  }
+
+  public refreshShifts() {
+    if (!this.web3Service.walletConnected()) return;
+    if (!this.hasPermission('shifts')) return;
+    if (this.isShiftsLoading()) return;
+    this.isShiftsLoading.set(true);
+    this.apiService.getShifts().subscribe({
+      next: (res) => {
+        this.shifts.set(res || []);
+        this.isShiftsLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Lỗi tải danh sách ca làm việc:', err);
+        this.isShiftsLoading.set(false);
+      }
+    });
+  }
+
+  public openShift(initialCash: number, onSuccess?: () => void) {
+    if (!this.web3Service.walletConnected()) return;
+    this.isLoading.set(true);
+    this.apiService.openShift(initialCash).subscribe({
+      next: (res) => {
+        this.isLoading.set(false);
+        this.currentShift.set(res.shift || res);
+        this.showToast('Vào ca làm việc thành công', 'success');
+        if (onSuccess) onSuccess();
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        console.error('Lỗi mở ca:', err);
+        this.showToast(err.error?.message || 'Không thể mở ca làm việc', 'error');
+      }
+    });
+  }
+
+  public closeShift(actualCash: number, note?: string, onSuccess?: () => void) {
+    if (!this.web3Service.walletConnected()) return;
+    this.isLoading.set(true);
+    this.apiService.closeShift(actualCash, note).subscribe({
+      next: (res) => {
+        this.isLoading.set(false);
+        this.currentShift.set(null);
+        this.showToast('Kết thúc ca trực thành công', 'success');
+        if (onSuccess) onSuccess();
+        this.refreshShifts();
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        console.error('Lỗi kết ca:', err);
+        this.showToast(err.error?.message || 'Không thể kết thúc ca làm việc', 'error');
+      }
+    });
   }
 }

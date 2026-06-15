@@ -32,6 +32,7 @@ class OrderModel extends Model
         'chain_id',
         'store_owner_address',
         'verification_hash',
+        'shift_id',
         'created_at',
         'updated_at'
     ];
@@ -54,5 +55,10 @@ class OrderModel extends Model
     public function debtLogs()
     {
         return $this->hasMany(DebtLog::class, 'order_id');
+    }
+
+    public function shift()
+    {
+        return $this->belongsTo(\App\Domain\Entities\Shift::class, 'shift_id');
     }
 }

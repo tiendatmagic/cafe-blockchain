@@ -83,6 +83,28 @@ export class PosComponent implements OnInit, OnDestroy {
   public readonly posActiveVouchers = signal<any[]>([]);
   public readonly posSelectedVoucher = signal<any | null>(null);
 
+  // Quản lý Ca làm việc (Mở ca)
+  public readonly initialCashInput = signal<number>(0);
+  public readonly initialCashFormatted = computed(() => {
+    const val = this.initialCashInput();
+    return val > 0 ? val.toLocaleString('en-US') : '';
+  });
+
+  public onInitialCashInput(event: any) {
+    const inputVal = event.target.value;
+    const cleanVal = inputVal.replace(/[^0-9]/g, '');
+    const numVal = Number(cleanVal) || 0;
+    this.initialCashInput.set(numVal);
+    event.target.value = numVal > 0 ? numVal.toLocaleString('en-US') : '';
+  }
+
+  public startShift() {
+    const cash = this.initialCashInput();
+    this.stateService.openShift(cash, () => {
+      this.initialCashInput.set(0);
+    });
+  }
+
   // Computed properties cho tổng tiền cuối cùng sau giảm giá
   public readonly posFinalTotal = computed(() => {
     const total = this.cartTotal();

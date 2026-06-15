@@ -469,6 +469,7 @@ class SettingController extends Controller
             $categoryIdsToLoad = $categories->pluck('id')->all();
             $products = \App\Domain\Entities\Product::where('store_owner_address', $storeOwner)
                 ->where('status', 1)
+                ->where('type', 'product')
                 ->whereHas('categories', function ($q) use ($categoryIdsToLoad) {
                     $q->whereIn('categories.id', $categoryIdsToLoad);
                 })

@@ -17,6 +17,7 @@ class Transaction extends Model
         'type',
         'amount',
         'category',
+        'payment_method',
         'description',
         'transaction_date',
         'store_owner_address',
@@ -24,6 +25,7 @@ class Transaction extends Model
         'blockchain_status',
         'chain_id',
         'verification_hash',
+        'shift_id',
     ];
 
     protected $casts = [
@@ -111,5 +113,10 @@ class Transaction extends Model
     public function debtLogs()
     {
         return $this->hasMany(DebtLog::class);
+    }
+
+    public function shift()
+    {
+        return $this->belongsTo(Shift::class, 'shift_id');
     }
 }

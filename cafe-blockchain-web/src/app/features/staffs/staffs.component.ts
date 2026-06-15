@@ -104,7 +104,8 @@ export class StaffsComponent implements OnInit {
     { key: 'tables', name: 'Sơ đồ bàn (Tables)', desc: 'Quản lý khu vực, bàn ăn và trạng thái sử dụng' },
     { key: 'reports', name: 'Báo cáo (Reports)', desc: 'Xem chi tiết báo cáo doanh thu, lãi lỗ, xuất file Excel' },
     { key: 'settings', name: 'Cấu hình quán (Settings)', desc: 'Thiết lập thông tin quán, màu sắc dynamic, địa chỉ ví hợp đồng' },
-    { key: 'staffs', name: 'Nhân viên (Staffs)', desc: 'Quản lý nhân viên, phân quyền truy cập hệ thống' }
+    { key: 'staffs', name: 'Nhân viên (Staffs)', desc: 'Quản lý nhân viên, phân quyền truy cập hệ thống' },
+    { key: 'shifts', name: 'Ca trực (Shifts)', desc: 'Mở ca, kết ca, khai báo két tiền mặt và đối soát chênh lệch' }
   ];
 
   // Map các tùy chọn vai trò cho CustomSelect

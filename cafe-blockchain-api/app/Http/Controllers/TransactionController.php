@@ -41,18 +41,30 @@ class TransactionController extends Controller
             'type' => 'required|string|in:thu,chi',
             'amount' => 'required|numeric|min:0.01',
             'category' => 'required|string|max:100',
+            'payment_method' => 'nullable|string|in:cash,bank_transfer',
             'description' => 'nullable|string|max:500',
             'transaction_date' => 'required|date',
         ]);
+
+        // Tự động tìm ca trực đang mở của nhân viên hiện tại
+        $shiftId = null;
+        $activeShift = \App\Domain\Entities\Shift::where('user_id', $request->user()->id)
+            ->where('status', 'open')
+            ->first();
+        if ($activeShift) {
+            $shiftId = $activeShift->id;
+        }
 
         $transaction = Transaction::create([
             'type' => $validated['type'],
             'amount' => $validated['amount'],
             'category' => $validated['category'],
+            'payment_method' => $validated['payment_method'] ?? 'cash',
             'description' => $validated['description'] ?? null,
             'transaction_date' => $validated['transaction_date'],
             'store_owner_address' => $storeOwner,
             'blockchain_status' => 'none',
+            'shift_id' => $shiftId,
         ]);
 
         return response()->json([
@@ -80,6 +92,7 @@ class TransactionController extends Controller
             'type' => 'required|string|in:thu,chi',
             'amount' => 'required|numeric|min:0.01',
             'category' => 'required|string|max:100',
+            'payment_method' => 'nullable|string|in:cash,bank_transfer',
             'description' => 'nullable|string|max:500',
             'transaction_date' => 'required|date',
         ]);
@@ -88,6 +101,7 @@ class TransactionController extends Controller
             'type' => $validated['type'],
             'amount' => $validated['amount'],
             'category' => $validated['category'],
+            'payment_method' => $validated['payment_method'] ?? $transaction->payment_method ?? 'cash',
             'description' => $validated['description'] ?? null,
             'transaction_date' => $validated['transaction_date'],
         ]);

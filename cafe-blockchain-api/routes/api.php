@@ -15,6 +15,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MenuSyncController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\StaffController;
+use App\Http\Controllers\ShiftController;
 use App\Http\Middleware\RequireOwner;
 use Illuminate\Support\Facades\Route;
 
@@ -130,6 +131,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/dining-tables/{id}', [DiningTableController::class, 'update'])->middleware('permission:tables');
     Route::put('/dining-tables/{id}/status', [DiningTableController::class, 'updateStatus'])->middleware('permission:pos|tables');
     Route::delete('/dining-tables/{id}', [DiningTableController::class, 'destroy'])->middleware('permission:tables');
+
+    // Shifts API (Ca làm việc & Két tiền)
+    Route::get('/shifts/current', [ShiftController::class, 'current']);
+    Route::post('/shifts/open', [ShiftController::class, 'open']);
+    Route::post('/shifts/close', [ShiftController::class, 'close']);
+    Route::get('/shifts', [ShiftController::class, 'index'])->middleware('permission:staffs|reports');
 
     // Staffs & Roles API (Chỉ truy cập khi có quyền staffs)
     Route::get('/staffs', [StaffController::class, 'index'])->middleware('permission:staffs');

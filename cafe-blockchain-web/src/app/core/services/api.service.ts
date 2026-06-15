@@ -386,6 +386,23 @@ export class ApiService {
     return this.http.delete(`${this.baseUrl}/debts/${id}`, { headers: this.getHeaders() });
   }
 
+  // --- Shifts (Ca làm việc) API ---
+  public getCurrentShift(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/shifts/current`, { headers: this.getHeaders() });
+  }
+
+  public openShift(initialCash: number): Observable<any> {
+    return this.http.post(`${this.baseUrl}/shifts/open`, { initial_cash: initialCash }, { headers: this.getHeaders() });
+  }
+
+  public closeShift(actualCash: number, note?: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/shifts/close`, { actual_cash: actualCash, note }, { headers: this.getHeaders() });
+  }
+
+  public getShifts(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/shifts`, { headers: this.getHeaders() });
+  }
+
   // --- Staffs & Roles API ---
   public getStaffs(): Observable<any[]> {
     return this.http.get<any[]>(`${this.baseUrl}/staffs`, { headers: this.getHeaders() });

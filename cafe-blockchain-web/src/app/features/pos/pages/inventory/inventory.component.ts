@@ -164,17 +164,39 @@ export class InventoryComponent {
           }
         });
 
-        ordersList.forEach(o => {
-          if (o.status === 'completed') {
-            const oDate = new Date(o.created_at);
-            if (!latestKiemDate || oDate > latestKiemDate) {
-              const item = o.items?.find((i: any) => i.product_id === p.id && i.product_variant_id === variantId);
-              if (item) {
-                totalSold += Number(item.quantity) || 0;
+        if (p.type === 'ingredient') {
+          ordersList.forEach(o => {
+            if (o.status === 'completed') {
+              const oDate = new Date(o.created_at);
+              if (!latestKiemDate || oDate > latestKiemDate) {
+                o.items?.forEach((oItem: any) => {
+                  const sellProduct = productsList.find(sp => sp.id === oItem.product_id);
+                  if (sellProduct && sellProduct.recipes && sellProduct.recipes.length > 0) {
+                    const recipe = sellProduct.recipes.find((r: any) => 
+                      r.ingredient_id === p.id &&
+                      (!r.product_variant_id || r.product_variant_id === oItem.product_variant_id)
+                    );
+                    if (recipe) {
+                      totalSold += (Number(oItem.quantity) || 0) * (Number(recipe.quantity) || 0);
+                    }
+                  }
+                });
               }
             }
-          }
-        });
+          });
+        } else {
+          ordersList.forEach(o => {
+            if (o.status === 'completed') {
+              const oDate = new Date(o.created_at);
+              if (!latestKiemDate || oDate > latestKiemDate) {
+                const item = o.items?.find((i: any) => i.product_id === p.id && i.product_variant_id === variantId);
+                if (item) {
+                  totalSold += Number(item.quantity) || 0;
+                }
+              }
+            }
+          });
+        }
 
         const baseQty = latestKiemDate ? latestKiemQty : 0;
         stocks[key] = baseQty + totalIn - totalOut - totalSold;

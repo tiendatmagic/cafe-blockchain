@@ -157,7 +157,7 @@ class DashboardController extends Controller
             ->get();
 
         // 9. Tính toán cảnh báo tồn kho thấp (các sản phẩm có tồn kho <= 10)
-        $products = \App\Domain\Entities\Product::where('store_owner_address', $storeOwner)->with('variants')->get();
+        $products = \App\Domain\Entities\Product::where('store_owner_address', $storeOwner)->with(['variants', 'recipes'])->get();
         $inventoryRecords = \App\Domain\Entities\InventoryRecord::where('store_owner_address', $storeOwner)->with('items')->get();
         $completedOrders = Order::where('store_owner_address', $storeOwner)->where('status', 'completed')->with('items')->get();
 
@@ -192,8 +192,7 @@ class DashboardController extends Controller
             $variants = $p->variants;
             if (count($variants) > 0) {
                 foreach ($variants as $v) {
-                    $key = $p->id . '-' . $v->id;
-                    $stock = $this->calculateStockGrouped($key, $recordsGrouped, $ordersGrouped);
+                    $stock = $this->calculateStockGrouped($p, $v->id, $recordsGrouped, $ordersGrouped, $completedOrders, $products);
                     if ($stock <= 10) {
                         $lowStockAlerts[] = [
                             'product_name' => $p->name,
@@ -204,8 +203,7 @@ class DashboardController extends Controller
                     }
                 }
             } else {
-                $key = $p->id . '-0';
-                $stock = $this->calculateStockGrouped($key, $recordsGrouped, $ordersGrouped);
+                $stock = $this->calculateStockGrouped($p, null, $recordsGrouped, $ordersGrouped, $completedOrders, $products);
                 if ($stock <= 10) {
                     $lowStockAlerts[] = [
                         'product_name' => $p->name,
@@ -254,13 +252,13 @@ class DashboardController extends Controller
     /**
      * Thuật toán tính toán tồn kho đã được tối ưu dựa trên nhóm dữ liệu đã tiền xử lý
      */
-    private function calculateStockGrouped($key, $recordsGrouped, $ordersGrouped)
+    private function calculateStockGrouped($p, $variantId, $recordsGrouped, $ordersGrouped, $completedOrders, $allProductsWithRecipes)
     {
+        $key = $p->id . '-' . ($variantId ?: '0');
         $latestKiemDate = null;
         $latestKiemQty = 0;
 
         $pRecords = $recordsGrouped[$key] ?? [];
-        $pOrders = $ordersGrouped[$key] ?? [];
 
         // Tìm phiếu kiểm kho gần nhất của riêng sản phẩm/biến thể này
         foreach ($pRecords as $r) {
@@ -287,10 +285,33 @@ class DashboardController extends Controller
             }
         }
 
-        // Trừ các sản phẩm bán ra từ đơn hàng hoàn thành sau ngày kiểm kho
-        foreach ($pOrders as $o) {
-            if ($latestKiemDate === null || $o['date']->gt($latestKiemDate)) {
-                $totalSold += $o['quantity'];
+        // Tính lượng tiêu thụ/bán ra
+        if ($p->type === 'ingredient') {
+            // Nếu là nguyên vật liệu: Tính hao hụt từ các sản phẩm bán ra
+            foreach ($completedOrders as $o) {
+                $oDate = Carbon::parse($o->created_at);
+                if ($latestKiemDate === null || $oDate->gt($latestKiemDate)) {
+                    foreach ($o->items as $oItem) {
+                        $sellProduct = $allProductsWithRecipes->firstWhere('id', $oItem->product_id);
+                        if ($sellProduct && count($sellProduct->recipes) > 0) {
+                            $recipe = $sellProduct->recipes->first(function ($r) use ($p, $oItem) {
+                                return $r->ingredient_id === $p->id && 
+                                       (empty($r->product_variant_id) || $r->product_variant_id == $oItem->product_variant_id);
+                            });
+                            if ($recipe) {
+                                $totalSold += $oItem->quantity * $recipe->quantity;
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            // Nếu là món bán thường: Tính trực tiếp từ đơn hàng
+            $pOrders = $ordersGrouped[$key] ?? [];
+            foreach ($pOrders as $o) {
+                if ($latestKiemDate === null || $o['date']->gt($latestKiemDate)) {
+                    $totalSold += $o['quantity'];
+                }
             }
         }
 

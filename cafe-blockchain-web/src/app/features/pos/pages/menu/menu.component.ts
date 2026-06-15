@@ -14,6 +14,7 @@ import { ModalComponent } from '@shared/components/modal/modal.component';
 import { CustomSwitchComponent } from '@shared/components/custom-switch/custom-switch.component';
 import { CustomSelectComponent } from '@shared/components/custom-select/custom-select.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
+import { MiniButtonsComponent, MiniButtonOption } from '@shared/components/mini-buttons/mini-buttons.component';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 @Component({
@@ -32,13 +33,19 @@ import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
     ModalComponent,
     CustomSwitchComponent,
     CustomSelectComponent,
-    IconComponent
+    IconComponent,
+    MiniButtonsComponent
   ],
   templateUrl: './menu.component.html'
 })
 export class MenuComponent implements OnInit, OnDestroy {
   public readonly stateService = inject(StateService);
   private readonly apiService = inject(ApiService);
+
+  public readonly productTypeOptions: MiniButtonOption[] = [
+    { value: 'product', label: 'Món bán (Thành phẩm)' },
+    { value: 'ingredient', label: 'Nguyên vật liệu (Kho thô)' }
+  ];
 
   constructor() {
     // Re-check quyền khi settings (menuRegistryContractAddress) vừa được load xong
@@ -73,6 +80,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   // Bộ lọc & Tìm kiếm Thực đơn cục bộ
   public readonly menuSearchQuery = signal<string>('');
   public readonly menuCategoryFilter = signal<string>('Tất cả');
+  public readonly menuProductTypeFilter = signal<'product' | 'ingredient'>('product');
 
   // Form Quản lý Thực đơn (Món ăn)
   public readonly isMenuModalOpen = signal<boolean>(false);
@@ -100,6 +108,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   private html5Qrcode: any = null;
 
   public readonly menuForm = signal<any>({
+    type: 'product',
     sku: '',
     barcode: '',
     unit: '',
@@ -111,7 +120,8 @@ export class MenuComponent implements OnInit, OnDestroy {
     status: true,
     short_description: '',
     description: '',
-    variants: []
+    variants: [],
+    recipes: []
   });
 
   // Form Quản lý Danh mục
@@ -140,6 +150,9 @@ export class MenuComponent implements OnInit, OnDestroy {
   // Lọc sản phẩm cục bộ tức thời tại client
   public readonly filteredProducts = computed(() => {
     return this.products().filter(p => {
+      const type = this.menuProductTypeFilter();
+      const matchType = (p.type || 'product') === type;
+
       const category = this.menuCategoryFilter();
       const matchCategory = category === 'Tất cả' || 
                             (p.categories && p.categories.some((c: any) => c.name === category)) || 
@@ -152,7 +165,7 @@ export class MenuComponent implements OnInit, OnDestroy {
                           p.sku?.toLowerCase().includes(search) || 
                           (p.short_description && p.short_description.toLowerCase().includes(search));
                           
-      return matchCategory && matchSearch;
+      return matchType && matchCategory && matchSearch;
     });
   });
 
@@ -183,6 +196,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   public openAddMenuModal() {
     this.menuModalType.set('add');
     this.menuForm.set({
+      type: this.menuProductTypeFilter(),
       sku: '',
       barcode: '',
       unit: '',
@@ -194,7 +208,8 @@ export class MenuComponent implements OnInit, OnDestroy {
       status: true,
       short_description: '',
       description: '',
-      variants: []
+      variants: [],
+      recipes: []
     });
     this.isMenuModalOpen.set(true);
   }
@@ -204,6 +219,7 @@ export class MenuComponent implements OnInit, OnDestroy {
     this.menuModalType.set('edit');
     this.editingProduct.set(product);
     this.menuForm.set({
+      type: product.type || 'product',
       sku: product.sku || '',
       barcode: product.barcode || '',
       unit: product.unit || '',
@@ -215,7 +231,8 @@ export class MenuComponent implements OnInit, OnDestroy {
       status: product.status,
       short_description: product.short_description || '',
       description: product.description || '',
-      variants: product.variants ? product.variants.map((v: any) => ({ ...v })) : []
+      variants: product.variants ? product.variants.map((v: any) => ({ ...v })) : [],
+      recipes: product.recipes ? product.recipes.map((r: any) => ({ ...r })) : []
     });
     this.isMenuModalOpen.set(true);
   }
@@ -255,6 +272,45 @@ export class MenuComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Cấu hình Recipe (Định lượng nguyên vật liệu) trong form
+  public addRecipeRow() {
+    this.menuForm.update(form => ({
+      ...form,
+      recipes: [...(form.recipes || []), { ingredient_id: 0, product_variant_id: null, quantity: 1 }]
+    }));
+  }
+
+  public removeRecipeRow(index: number) {
+    this.menuForm.update(form => {
+      const list = [...(form.recipes || [])];
+      list.splice(index, 1);
+      return { ...form, recipes: list };
+    });
+  }
+
+  public updateRecipeField(index: number, field: string, value: any) {
+    this.menuForm.update(form => {
+      const list = [...(form.recipes || [])];
+      if (list[index]) {
+        list[index] = {
+          ...list[index],
+          [field]: field === 'quantity' ? Number(value) : (value ? Number(value) : null)
+        };
+      }
+      return { ...form, recipes: list };
+    });
+  }
+
+  // Danh sách các nguyên vật liệu có sẵn (để chọn trong dropdown định lượng)
+  public readonly ingredientOptions = computed(() => {
+    return this.products().filter(p => p.type === 'ingredient');
+  });
+
+  public getIngredientUnit(ingredientId: number): string {
+    const ing = this.products().find(p => p.id === Number(ingredientId));
+    return ing ? (ing.unit || 'g/ml') : 'g/ml';
+  }
+
   // Lưu món ăn qua API
   public saveProduct() {
     if (!this.web3Service.walletConnected()) {
@@ -263,17 +319,33 @@ export class MenuComponent implements OnInit, OnDestroy {
     }
 
     const formData = this.menuForm();
-    const hasVariants = formData.variants && formData.variants.length > 0;
-    if (!formData.name || (!hasVariants && formData.price <= 0)) {
-      this.stateService.showToast('Vui lòng điền tên và đơn giá hợp lệ!', 'error');
+    const isIngredient = formData.type === 'ingredient';
+    const hasVariants = !isIngredient && formData.variants && formData.variants.length > 0;
+    
+    if (!formData.name) {
+      this.stateService.showToast('Vui lòng điền tên món ăn!', 'error');
       return;
+    }
+
+    if (!isIngredient && !hasVariants && formData.price <= 0) {
+      this.stateService.showToast('Vui lòng điền đơn giá hợp lệ!', 'error');
+      return;
+    }
+
+    // Validate recipes nếu là product
+    if (formData.type === 'product' && formData.recipes && formData.recipes.length > 0) {
+      const hasInvalidRecipe = formData.recipes.some((r: any) => !r.ingredient_id || r.quantity <= 0);
+      if (hasInvalidRecipe) {
+        this.stateService.showToast('Vui lòng chọn nguyên vật liệu và nhập định lượng lớn hơn 0!', 'error');
+        return;
+      }
     }
 
     this.isProductSaving.set(true);
     if (this.menuModalType() === 'add') {
       this.apiService.createProduct(formData).subscribe({
         next: (res) => {
-          this.stateService.showToast('Thêm món ăn thành công!', 'success');
+          this.stateService.showToast('Thêm món thành công!', 'success');
           this.closeMenuModal();
           this.stateService.clearPosProductsCache();
           this.stateService.refreshProducts();
@@ -288,7 +360,7 @@ export class MenuComponent implements OnInit, OnDestroy {
       const id = this.editingProduct().id;
       this.apiService.updateProduct(id, formData).subscribe({
         next: (res) => {
-          this.stateService.showToast('Cập nhật món ăn thành công!', 'success');
+          this.stateService.showToast('Cập nhật món thành công!', 'success');
           this.closeMenuModal();
           this.stateService.clearPosProductsCache();
           this.stateService.refreshProducts();

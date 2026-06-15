@@ -14,6 +14,7 @@ class Product extends Model
         'sku',
         'barcode',
         'unit',
+        'type',
         'name',
         'price',
         'cost_price',
@@ -54,5 +55,13 @@ class Product extends Model
     public function variants()
     {
         return $this->hasMany(ProductVariant::class)->orderBy('price', 'asc');
+    }
+
+    /**
+     * Mối quan hệ 1-Nhiều với Recipe (Công thức định lượng)
+     */
+    public function recipes()
+    {
+        return $this->hasMany(Recipe::class, 'product_id');
     }
 }

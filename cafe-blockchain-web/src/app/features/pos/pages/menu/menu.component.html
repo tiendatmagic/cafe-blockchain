@@ -67,6 +67,32 @@
 
   @if (stateService.web3Service.walletConnected()) {
     @if (stateService.hasPermission('menu')) {
+    <!-- Tab phân loại: Món bán & Nguyên vật liệu -->
+    <div class="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800/60 pb-3">
+      <button
+        type="button"
+        (click)="menuProductTypeFilter.set('product'); menuCurrentPage.set(1)"
+        [class]="menuProductTypeFilter() === 'product'
+          ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)] dark:text-[var(--color-secondary)] border border-[var(--color-primary)]/20 shadow-sm'
+          : 'bg-transparent text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900 border border-transparent'"
+        class="flex items-center gap-2 px-4 py-2 rounded-[12px] text-sm font-bold transition-all"
+      >
+        <app-icon name="menu" class="h-4 w-4 text-[var(--color-primary)]" strokeWidth="2.5" />
+        <span>Món bán (Thành phẩm)</span>
+      </button>
+      <button
+        type="button"
+        (click)="menuProductTypeFilter.set('ingredient'); menuCurrentPage.set(1)"
+        [class]="menuProductTypeFilter() === 'ingredient'
+          ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)] dark:text-[var(--color-secondary)] border border-[var(--color-primary)]/20 shadow-sm'
+          : 'bg-transparent text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900 border border-transparent'"
+        class="flex items-center gap-2 px-4 py-2 rounded-[12px] text-sm font-bold transition-all"
+      >
+        <app-icon name="scale" class="h-4 w-4" strokeWidth="2.5" />
+        <span>Nguyên vật liệu (Kho thô)</span>
+      </button>
+    </div>
+
     <!-- Bộ tìm kiếm và lọc danh mục thực đơn (Search & Category filter) -->
     <div
       [class.hidden]="isProductsLoading()"
@@ -741,12 +767,26 @@
     <!-- ==================== MODAL THÊM / SỬA MÓN ĂN ==================== -->
     <app-modal
       [isOpen]="isMenuModalOpen()"
-      [title]="menuModalType() === 'add' ? 'Thêm món ăn mới' : 'Cập nhật món ăn'"
+      [title]="menuForm().type === 'ingredient' ? (menuModalType() === 'add' ? 'Thêm nguyên liệu mới' : 'Cập nhật nguyên liệu') : (menuModalType() === 'add' ? 'Thêm món ăn mới' : 'Cập nhật món ăn')"
       (close)="closeMenuModal()"
       size="md"
     >
       <!-- Body Form -->
       <div class="space-y-5">
+        <!-- Loại sản phẩm -->
+        <div class="space-y-1.5 relative focus-within:z-10">
+          <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Loại sản phẩm</label>
+          <app-mini-buttons
+            [options]="productTypeOptions"
+            [activeValue]="menuForm().type"
+            (valueChange)="updateMenuForm('type', $event)"
+            containerClass="tab-group flex w-full"
+            buttonClass="tab-item flex-1"
+            activeClass="active"
+            inactiveClass=""
+          ></app-mini-buttons>
+        </div>
+
         <!-- Tên món -->
         <div class="space-y-1.5 relative focus-within:z-10">
           <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5"
@@ -825,18 +865,20 @@
           </div>
         </div>
 
-        <!-- Đơn giá -->
-        <div class="space-y-1.5 relative focus-within:z-10">
-          <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5"
-            >Đơn giá bán (VND)</label
-          >
-          <input
-            type="number"
-            [ngModel]="menuForm().price"
-            (ngModelChange)="updateMenuForm('price', $event)"
-            class="form-input"
-          />
-        </div>
+        @if (menuForm().type === 'product') {
+          <!-- Đơn giá -->
+          <div class="space-y-1.5 relative focus-within:z-10">
+            <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5"
+              >Đơn giá bán (VND)</label
+            >
+            <input
+              type="number"
+              [ngModel]="menuForm().price"
+              (ngModelChange)="updateMenuForm('price', $event)"
+              class="form-input"
+            />
+          </div>
+        }
 
         <!-- Giá vốn -->
         <div class="space-y-1.5 relative focus-within:z-10">
@@ -919,73 +961,148 @@
           ></textarea>
         </div>
 
-        <!-- Cấu hình biến thể size -->
-        <div
-          class="space-y-3 p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200/60 dark:border-slate-800/60"
-        >
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wide"
-              >Biến thể sản phẩm (Kích thước / Size)</span
-            >
-            <button
-              (click)="addVariantRow()"
-              class="px-2.5 py-1 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 font-extrabold text-[10px] rounded-lg border border-purple-200/25 transition-all"
-            >
-              + Thêm size
-            </button>
+        @if (menuForm().type === 'product') {
+          <!-- Định lượng nguyên vật liệu -->
+          <div
+            class="space-y-3 p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200/60 dark:border-slate-800/60"
+          >
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wide"
+                >Định lượng hao hụt nguyên liệu thô</span
+              >
+              <button
+                (click)="addRecipeRow()"
+                class="px-2.5 py-1 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 font-extrabold text-[10px] rounded-lg border border-purple-200/25 transition-all"
+              >
+                + Thêm nguyên liệu
+              </button>
+            </div>
+
+            @if (menuForm().recipes && menuForm().recipes.length > 0) {
+              <div class="space-y-2.5 max-h-48 overflow-y-auto pr-1">
+                @for (recipe of menuForm().recipes; track $index) {
+                  <div class="flex items-center gap-2">
+                    <app-custom-select
+                      [value]="recipe.ingredient_id"
+                      (valueChange)="updateRecipeField($index, 'ingredient_id', $event)"
+                      [options]="ingredientOptions()"
+                      valueKey="id"
+                      labelKey="name"
+                      placeholder="Chọn..."
+                      containerClass="flex-1 min-w-0"
+                      triggerClass="w-full form-input-sm h-[34px]"
+                    ></app-custom-select>
+
+                    @if (menuForm().variants && menuForm().variants.length > 0) {
+                      <select
+                        [ngModel]="recipe.product_variant_id"
+                        (ngModelChange)="updateRecipeField($index, 'product_variant_id', $event)"
+                        class="w-24 form-input-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 h-[34px] text-xs py-0"
+                      >
+                        <option [value]="null">Tất cả size</option>
+                        @for (v of menuForm().variants; track v.id) {
+                          <option [value]="v.id">{{ v.variant_name }}</option>
+                        }
+                      </select>
+                    }
+
+                    <input
+                      type="number"
+                      [(ngModel)]="recipe.quantity"
+                      placeholder="Lượng"
+                      class="w-16 form-input-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 h-[34px]"
+                    />
+
+                    <span class="text-xs text-slate-400 font-semibold shrink-0 min-w-8">
+                      {{ getIngredientUnit(recipe.ingredient_id) }}
+                    </span>
+
+                    <button
+                      (click)="removeRecipeRow($index)"
+                      class="text-rose-500 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all shrink-0"
+                    >
+                      <app-icon name="trash" class="h-4 w-4" strokeWidth="2" />
+                    </button>
+                  </div>
+                }
+              </div>
+            } @else {
+              <span class="text-xs text-slate-400 italic block py-2 text-center"
+                >Chưa cấu hình định lượng nguyên liệu cho món này</span
+              >
+            }
           </div>
 
-          @if (menuForm().variants && menuForm().variants.length > 0) {
-            <div class="space-y-2.5 max-h-36 overflow-y-auto pr-1">
-              @for (variant of menuForm().variants; track $index) {
-                <div class="flex items-center gap-2">
-                  <input
-                    type="text"
-                    [(ngModel)]="variant.variant_name"
-                    placeholder="Tên (Ví dụ: Size L, Cốc to...)"
-                    class="flex-1 min-w-0 form-input-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
-                  />
-                  <input
-                    type="number"
-                    [(ngModel)]="variant.price"
-                    placeholder="Giá bán"
-                    class="w-20 form-input-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
-                  />
-                  <input
-                    type="number"
-                    [(ngModel)]="variant.cost_price"
-                    placeholder="Giá vốn"
-                    class="w-20 form-input-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
-                  />
-                  <button
-                    (click)="removeVariantRow($index)"
-                    class="text-rose-500 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all shrink-0"
-                  >
-                    <app-icon name="trash" class="h-4 w-4" strokeWidth="2" />
-                  </button>
-                </div>
-              }
-            </div>
-          } @else {
-            <span class="text-xs text-slate-400 italic block py-2 text-center"
-              >Chưa có biến thể (Sản phẩm sẽ bán theo đơn giá gốc)</span
-            >
-          }
-        </div>
-
-        <!-- Trạng thái bán -->
-        <div
-          class="flex items-center justify-between py-1 bg-slate-50 dark:bg-slate-950 px-4 py-3 rounded-[15px] border border-slate-200/40 dark:border-slate-800/40"
-        >
-          <span class="text-sm font-extrabold text-slate-600 dark:text-slate-300"
-            >Đang phục vụ / bán</span
+          <!-- Cấu hình biến thể size -->
+          <div
+            class="space-y-3 p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200/60 dark:border-slate-800/60"
           >
-          <app-custom-switch
-            type="compact"
-            [checked]="menuForm().status"
-            (checkedChange)="updateMenuForm('status', $event)"
-          ></app-custom-switch>
-        </div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wide"
+                >Biến thể sản phẩm (Kích thước / Size)</span
+              >
+              <button
+                (click)="addVariantRow()"
+                class="px-2.5 py-1 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 font-extrabold text-[10px] rounded-lg border border-purple-200/25 transition-all"
+              >
+                + Thêm size
+              </button>
+            </div>
+
+            @if (menuForm().variants && menuForm().variants.length > 0) {
+              <div class="space-y-2.5 max-h-36 overflow-y-auto pr-1">
+                @for (variant of menuForm().variants; track $index) {
+                  <div class="flex items-center gap-2">
+                    <input
+                      type="text"
+                      [(ngModel)]="variant.variant_name"
+                      placeholder="Tên (Ví dụ: Size L, Cốc to...)"
+                      class="flex-1 min-w-0 form-input-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
+                    />
+                    <input
+                      type="number"
+                      [(ngModel)]="variant.price"
+                      placeholder="Giá bán"
+                      class="w-20 form-input-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
+                    />
+                    <input
+                      type="number"
+                      [(ngModel)]="variant.cost_price"
+                      placeholder="Giá vốn"
+                      class="w-20 form-input-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
+                    />
+                    <button
+                      (click)="removeVariantRow($index)"
+                      class="text-rose-500 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all shrink-0"
+                    >
+                      <app-icon name="trash" class="h-4 w-4" strokeWidth="2" />
+                    </button>
+                  </div>
+                }
+              </div>
+            } @else {
+              <span class="text-xs text-slate-400 italic block py-2 text-center"
+                >Chưa có biến thể (Sản phẩm sẽ bán theo đơn giá gốc)</span
+              >
+            }
+          </div>
+        }
+
+        @if (menuForm().type === 'product') {
+          <!-- Trạng thái bán -->
+          <div
+            class="flex items-center justify-between py-1 bg-slate-50 dark:bg-slate-950 px-4 py-3 rounded-[15px] border border-slate-200/40 dark:border-slate-800/40"
+          >
+            <span class="text-sm font-extrabold text-slate-600 dark:text-slate-300"
+              >Đang phục vụ / bán</span
+            >
+            <app-custom-switch
+              type="compact"
+              [checked]="menuForm().status"
+              (checkedChange)="updateMenuForm('status', $event)"
+            ></app-custom-switch>
+          </div>
+        }
       </div>
 
       <!-- Actions -->
