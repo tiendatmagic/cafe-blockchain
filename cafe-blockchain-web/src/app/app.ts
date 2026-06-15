@@ -43,9 +43,16 @@ export class App implements OnInit, OnDestroy {
   }
 
   public get isPublicLayout(): boolean {
-    return this.router.url.includes('/mobile-sign') || 
-           this.router.url.includes('/blockchain-explorer') ||
-           this.router.url.includes('/store/');
+    const isBrowser = typeof window !== 'undefined';
+    const path = isBrowser ? window.location.pathname : '';
+    const routerUrl = this.router.url;
+
+    return path.includes('/mobile-sign') || 
+           routerUrl.includes('/mobile-sign') || 
+           path.includes('/blockchain-explorer') ||
+           routerUrl.includes('/blockchain-explorer') ||
+           path.includes('/store/') ||
+           routerUrl.includes('/store/');
   }
 
   // Getters từ StateService để binding dễ dàng trong app.html
