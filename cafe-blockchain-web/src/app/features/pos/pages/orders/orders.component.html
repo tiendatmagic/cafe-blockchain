@@ -131,13 +131,13 @@
         class="app-card flex flex-col lg:flex-row gap-5 justify-between items-stretch lg:items-end"
       >
         <!-- Nhóm bộ lọc (trạng thái + blockchain) -->
-        <div class="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-4.5">
+        <div class="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-4.5 w-full lg:w-auto">
           <!-- Lọc trạng thái đơn hàng -->
-          <div class="flex flex-col gap-1.5">
+          <div class="flex flex-col gap-1.5 w-full sm:w-auto">
             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider"
               >Trạng thái đơn hàng</span
             >
-            <div class="tab-group">
+            <div class="tab-group w-full sm:w-auto">
               <button
                 type="button"
                 (click)="setOrderStatusFilter('all')"
@@ -182,11 +182,11 @@
           </div>
 
           <!-- Lọc trạng thái blockchain -->
-          <div class="flex flex-col gap-1.5">
+          <div class="flex flex-col gap-1.5 w-full sm:w-auto">
             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider"
               >Blockchain (Bằng chứng hóa đơn)</span
             >
-            <div class="tab-group">
+            <div class="tab-group w-full sm:w-auto">
               <button
                 type="button"
                 (click)="setOrderBlockchainFilter('all')"
