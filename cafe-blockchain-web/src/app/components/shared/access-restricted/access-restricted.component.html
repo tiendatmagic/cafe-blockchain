@@ -2,9 +2,7 @@
   <!-- BANNER TRUY CẬP HẠN CHẾ (Premium Glassmorphism) -->
   <div class="app-card bg-white/60 dark:bg-slate-900/60 backdrop-blur-md shadow-lg flex flex-col items-center justify-center min-h-[500px] p-8 text-center max-w-2xl mx-auto my-10 animate-in fade-in zoom-in-95 duration-300">
     <div class="w-20 h-20 rounded-full bg-rose-100 dark:bg-rose-950/40 flex items-center justify-center text-rose-500 mb-6 shadow-inner animate-bounce-slow">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-      </svg>
+      <app-icon name="warning" class="h-10 w-10 text-rose-500" strokeWidth="1.8" />
     </div>
     <h4 class="text-xl font-extrabold text-slate-800 dark:text-white tracking-tight mb-3">{{ displayTitle }}</h4>
     <p class="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-8 leading-relaxed">
@@ -14,9 +12,7 @@
       (click)="goBack()"
       class="flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] text-white font-extrabold text-xs shadow-lg shadow-[var(--dynamic-primary)]/25 hover:shadow-[var(--dynamic-primary)]/40 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-      </svg>
+      <app-icon name="arrow-left" class="h-4.5 w-4.5" strokeWidth="2.5" />
       <span>QUAY LẠI TRANG TRƯỚC</span>
     </button>
   </div>

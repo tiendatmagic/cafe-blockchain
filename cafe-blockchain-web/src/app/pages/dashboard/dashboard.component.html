@@ -8,37 +8,11 @@
       '.'
     "
   >
-    <svg
-      icon
-      class="h-6.5 w-6.5 text-[var(--dynamic-primary)]"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      stroke-width="2.5"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-      />
-    </svg>
+    <app-icon name="home" class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" [strokeWidth]="2.5"></app-icon>
 
     @if (web3Service.walletConnected()) {
       <button (click)="loadAllData()" class="btn-secondary self-start sm:self-center">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-4 w-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.99m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
-          />
-        </svg>
+        <app-icon name="sync" class="h-4 w-4" [strokeWidth]="2"></app-icon>
         <span>Làm mới</span>
       </button>
     }
@@ -171,20 +145,7 @@
             <div
               class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-6 w-6 text-amber-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
+              <app-icon name="financials" class="h-6 w-6 text-amber-500" [strokeWidth]="2"></app-icon>
             </div>
           </div>
 
@@ -206,20 +167,7 @@
             <div
               class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-6 w-6 text-emerald-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                />
-              </svg>
+              <app-icon name="trending-up" class="h-6 w-6 text-emerald-500" [strokeWidth]="2"></app-icon>
             </div>
           </div>
 
@@ -242,19 +190,7 @@
             <div
               class="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-500 flex items-center justify-center"
             >
-              <svg
-                class="h-6 w-6 text-purple-500"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M12 2L4.5 12 12 22l7.5-10L12 2z"></path>
-                <path d="M12 2v20"></path>
-                <path d="M4.5 12H19.5"></path>
-              </svg>
+              <app-icon name="ethereum" class="h-6 w-6 text-purple-500" [strokeWidth]="2"></app-icon>
             </div>
           </div>
 
@@ -277,20 +213,7 @@
             <div
               class="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-6 w-6 text-rose-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
+              <app-icon name="clock" class="h-6 w-6 text-rose-500" [strokeWidth]="2"></app-icon>
             </div>
           </div>
         </div>
@@ -303,20 +226,7 @@
           >
             <div class="flex items-center justify-between shrink-0">
               <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-5 w-5 text-slate-500 shrink-0"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                  />
-                </svg>
+                <app-icon name="reports" class="h-5 w-5 text-slate-500 shrink-0" [strokeWidth]="2"></app-icon>
                 <span>Xu hướng doanh thu</span>
               </h4>
               <span
@@ -402,21 +312,7 @@
           >
             <div class="space-y-1 shrink-0">
               <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-5 w-5 text-slate-500 shrink-0"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <circle cx="12" cy="12" r="9" />
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0 M12 12L12 8 M12 12L15 15"
-                  />
-                </svg>
+                <app-icon name="clock" class="h-5 w-5 text-slate-500 shrink-0" [strokeWidth]="2"></app-icon>
                 <span>Cơ cấu thanh toán</span>
               </h4>
               <p class="text-xs text-slate-500 dark:text-slate-400 leading-none">
@@ -553,20 +449,7 @@
           >
             <div class="space-y-1 shrink-0">
               <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-5 w-5 text-slate-500 shrink-0"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                  />
-                </svg>
+                <app-icon name="shield-check" class="h-5 w-5 text-slate-500 shrink-0" [strokeWidth]="2"></app-icon>
                 <span>Giao dịch Blockchain</span>
               </h4>
               <p class="text-xs text-slate-500 dark:text-slate-400 leading-none">
@@ -579,20 +462,7 @@
                 <div
                   class="flex flex-col items-center justify-center py-10 text-center gap-2 h-full"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-8 w-8 text-slate-300 dark:text-slate-700"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                    />
-                  </svg>
+                  <app-icon name="orders" class="h-8 w-8 text-slate-300 dark:text-slate-700" [strokeWidth]="2"></app-icon>
                   <span class="text-[10px] font-semibold text-slate-400"
                     >Chưa có giao dịch blockchain nào.</span
                   >
@@ -646,18 +516,7 @@
               class="app-card space-y-4"
             >
               <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-5 w-5 text-amber-500"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
+                <app-icon name="bolt" [solid]="true" class="h-5 w-5 text-amber-500"></app-icon>
                 <span>Sản phẩm bán chạy nhất trong kỳ</span>
               </h4>
 
@@ -727,18 +586,7 @@
                 <h4
                   class="text-base sm:text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2 flex-1 min-w-0"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5 text-rose-500 animate-pulse shrink-0"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fill-rule="evenodd"
-                      d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                      clip-rule="evenodd"
-                    />
-                  </svg>
+                  <app-icon name="warning-solid" [solid]="true" class="h-5 w-5 text-rose-500 animate-pulse shrink-0"></app-icon>
                   <span class="leading-tight"
                     >Cảnh báo tồn kho thấp
                     <span class="text-slate-400 font-semibold">(≤ 10)</span></span
@@ -761,20 +609,7 @@
                   <div
                     class="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-2xl text-xs font-bold"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="h-4.5 w-4.5 text-emerald-500 shrink-0"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      stroke-width="2.5"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
+                    <app-icon name="check-circle" class="h-4.5 w-4.5 text-emerald-500 shrink-0" [strokeWidth]="2.5"></app-icon>
                     <span>Tất cả sản phẩm đều đủ lượng tồn kho. Không có cảnh báo!</span>
                   </div>
                 } @else {
@@ -843,16 +678,7 @@
               class="app-card flex flex-col justify-between h-[300px]"
             >
               <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-5 w-5 text-indigo-500"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"
-                  />
-                </svg>
+                <app-icon name="table-bar" [solid]="true" class="h-5 w-5 text-indigo-500"></app-icon>
                 <span>Trạng thái bàn ăn</span>
               </h4>
 
@@ -922,18 +748,7 @@
               class="app-card space-y-4"
             >
               <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-5 w-5 text-purple-500"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M5 2a2 2 0 00-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V4a2 2 0 00-2-2H5zm4.707 3.707a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L8.414 9H10a3 3 0 013 3v1a1 1 0 102 0v-1a5 5 0 00-5-5H8.414l1.293-1.293z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
+                <app-icon name="ticket" class="h-5 w-5 text-purple-500"></app-icon>
                 <span>Hoạt động Voucher NFT</span>
               </h4>
 

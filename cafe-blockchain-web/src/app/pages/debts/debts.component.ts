@@ -15,6 +15,7 @@ import { VNDCurrencyPipe } from '@pipes/vnd.pipe';
 import { DrawerComponent } from '@components/shared/drawer/drawer.component';
 import * as XLSX from 'xlsx';
 import { CustomDatePickerComponent } from '@components/shared/custom-date-picker/custom-date-picker.component';
+import { IconComponent } from '@components/shared/icon/icon.component';
 
 @Component({
   selector: 'app-debts',
@@ -32,7 +33,8 @@ import { CustomDatePickerComponent } from '@components/shared/custom-date-picker
     PageHeaderComponent,
     VNDCurrencyPipe,
     DrawerComponent,
-    CustomDatePickerComponent
+    CustomDatePickerComponent,
+    IconComponent
   ],
   templateUrl: './debts.component.html'
 })

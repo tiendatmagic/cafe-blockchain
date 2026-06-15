@@ -46,17 +46,7 @@
         >
           <span class="w-1.5 h-1.5 rounded-full animate-pulse" [class]="getChainColorClass(web3Service.walletConnected() ? web3Service.chainId() : web3Service.configuredChainId())"></span>
           <span>{{ (web3Service.walletConnected() ? web3Service.networkName() : web3Service.configuredNetworkName()) | uppercase }}</span>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-3 w-3 text-slate-500 transition-transform duration-200"
-            [class.rotate-180]="isChainDropdownOpen()"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            stroke-width="2.5"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
+          <app-icon name="chevron-down" class="h-3 w-3 text-slate-500 transition-transform duration-200" [class.rotate-180]="isChainDropdownOpen()" [strokeWidth]="2.5"></app-icon>
         </button>
 
         @if (isChainDropdownOpen()) {
@@ -105,20 +95,7 @@
           <div
             class="w-8 h-8 rounded-xl bg-amber-500/20 dark:bg-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="2.5"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-              />
-            </svg>
+            <app-icon name="warning" class="h-5 w-5" [strokeWidth]="2.5"></app-icon>
           </div>
           <div class="flex flex-col">
             <span
@@ -138,20 +115,7 @@
           (click)="switchNetwork()"
           class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs rounded-2xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-3.5 w-3.5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            stroke-width="3"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-            />
-          </svg>
+          <app-icon name="sync" class="h-3.5 w-3.5" [strokeWidth]="3"></app-icon>
           Chuyển mạng tự động
         </button>
       </div>
@@ -165,20 +129,7 @@
         <div
           class="w-16 h-16 rounded-full bg-rose-100 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-500/20 flex items-center justify-center mx-auto mb-4 text-rose-500"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-8 w-8 text-rose-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            stroke-width="2.2"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-            />
-          </svg>
+          <app-icon name="warning" class="h-8 w-8 text-rose-500" [strokeWidth]="2.2"></app-icon>
         </div>
         <h2 class="text-lg font-black text-rose-600 dark:text-rose-400 mb-2">Đã xảy ra lỗi</h2>
         <p class="text-xs font-bold text-slate-500 dark:text-slate-400 leading-relaxed">
@@ -202,32 +153,19 @@
           <div
             class="w-20 h-20 rounded-full bg-gradient-to-tr from-rose-500 to-red-400 text-white flex items-center justify-center mx-auto mb-5 text-4xl shadow-lg shadow-rose-500/20"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            <app-icon name="close" class="h-10 w-10 text-white" [strokeWidth]="2.5"></app-icon>
           </div>
         } @else if (orderStatus() === 'pending' || orderStatus() === 'preparing') {
           <div
             class="w-20 h-20 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-400 text-white flex items-center justify-center mx-auto mb-5 shadow-lg shadow-indigo-500/20 animate-pulse"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-10 w-10 text-white"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="2.2"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M6 14a6 6 0 0012 0V8a2 2 0 00-2-2H8a2 2 0 00-2 2v6zM18 10h1a2 2 0 012 2v0a2 2 0 01-2 2h-1M6 18h12M10 2v2M14 2v2"
-              />
-            </svg>
+            <app-icon name="coffee" class="h-10 w-10 text-white" [strokeWidth]="2.2"></app-icon>
           </div>
         } @else {
           <div
             class="w-20 h-20 rounded-full bg-gradient-to-tr from-emerald-500 to-green-400 text-white flex items-center justify-center mx-auto mb-5 text-4xl shadow-lg shadow-emerald-500/20"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+            <app-icon name="check" class="h-10 w-10 text-white" [strokeWidth]="2.5"></app-icon>
           </div>
         }
 
@@ -301,20 +239,7 @@
                 class="text-xs font-bold text-purple-600 dark:text-purple-400 truncate hover:underline flex items-center gap-1 leading-none font-mono"
               >
                 {{ txHash() }}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-3 w-3 inline shrink-0"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                  />
-                </svg>
+                <app-icon name="external-link" class="h-3 w-3 inline shrink-0" [strokeWidth]="2.5"></app-icon>
               </a>
             </div>
           }
@@ -339,7 +264,7 @@
             class="p-4 rounded-2xl bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border border-purple-100 dark:border-purple-500/10 mb-6 flex items-center justify-between"
           >
             <div class="flex items-center gap-3">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600 dark:text-purple-400 shrink-0 inline-block animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5a2 2 0 10-2 2h2zm-2 4h4M3 8h18v3H3V8zm2 3h14v9a2 2 0 01-2 2H7a2 2 0 01-2-2v-9z" /></svg>
+              <app-icon name="gift" class="h-6 w-6 text-purple-600 dark:text-purple-400 shrink-0 inline-block animate-pulse" [strokeWidth]="2"></app-icon>
               <div class="flex flex-col">
                 <span
                   class="text-xs font-black text-purple-600 dark:text-purple-400 uppercase tracking-wide"
@@ -399,7 +324,7 @@
         <h2
           class="text-lg font-black text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--dynamic-primary)] inline-block shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg> <span>Xác Thực Chữ Ký</span>
+          <app-icon name="lock" class="h-5 w-5 text-[var(--dynamic-primary)] inline-block shrink-0" [strokeWidth]="2"></app-icon> <span>Xác Thực Chữ Ký</span>
         </h2>
 
         <!-- Connected Wallet Display -->

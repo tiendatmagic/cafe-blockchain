@@ -4,9 +4,7 @@
     title="Báo cáo hoạt động kinh doanh"
     description="Theo dõi kết quả tài chính, mặt hàng bán chạy và hiệu suất khách hàng thân thiết."
   >
-    <svg icon class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
-    </svg>
+    <app-icon name="reports" class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" strokeWidth="2.5" />
   </app-page-header>
 
   @if (web3Service.walletConnected()) {
@@ -42,7 +40,7 @@
     } @else if (reportsError()) {
       <!-- Lỗi hiển thị -->
       <div class="flex items-center gap-3 p-4 bg-[var(--dynamic-primary)]/10 border border-[var(--dynamic-primary)]/20 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] rounded-xl text-sm font-bold">
-        <span class="flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg><span>{{ reportsError() }}</span></span>
+        <span class="flex items-center gap-1.5"><app-icon name="warning" class="h-4 w-4 shrink-0 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] inline-block" strokeWidth="2" /><span>{{ reportsError() }}</span></span>
       </div>
     } @else {
       <!-- BÁO CÁO DỮ LIỆU THẬT -->
@@ -59,9 +57,7 @@
             <span class="text-[10px] text-slate-400 font-medium">Hoạt động bán hàng POS & Web Store</span>
           </div>
           <div class="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <app-icon name="financials" class="h-6 w-6 text-purple-650 dark:text-purple-400" strokeWidth="2" />
           </div>
         </div>
 
@@ -75,9 +71,7 @@
             <span class="text-[10px] text-slate-400 font-medium">Lợi nhuận gộp: <strong class="text-emerald-500 font-black">{{ reportsData()?.financials?.gross_profit | vnd }}</strong> <span class="text-[10px] text-slate-400 dark:text-slate-500 font-bold ml-1">(Biên: {{ getGrossProfitMargin() | number: '1.0-1' }}%)</span></span>
           </div>
           <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
+            <app-icon name="orders" class="h-6 w-6 text-amber-500" strokeWidth="2" />
           </div>
         </div>
 
@@ -91,9 +85,7 @@
             <span class="text-[10px] text-slate-400 font-medium">Thu nhập khác: <strong class="text-purple-500 font-black">+{{ reportsData()?.financials?.other_income | vnd }}</strong></span>
           </div>
           <div class="w-12 h-12 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <app-icon name="minus-circle" class="h-6 w-6 text-rose-500" strokeWidth="2" />
           </div>
         </div>
 
@@ -126,9 +118,7 @@
             [class.text-rose-500]="reportsData()?.financials?.net_profit < 0"
             class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <app-icon name="check-circle" class="h-6 w-6" strokeWidth="2" />
           </div>
         </div>
       </div>
@@ -139,9 +129,7 @@
         <div class="lg:col-span-2 app-card flex flex-col justify-between space-y-4">
           <div class="flex items-center justify-between shrink-0">
             <h4 class="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
+              <app-icon name="reports" class="h-5 w-5 text-slate-500 shrink-0" strokeWidth="2" />
               <span>Xu hướng thu chi</span>
             </h4>
             <div class="flex items-center gap-4 text-[10px] font-bold">
@@ -285,9 +273,7 @@
               (click)="exportToExcel('products')"
               class="px-3 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-black transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-1.5 shadow-sm"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
+              <app-icon name="download" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
               <span>Xuất Excel (XLSX)</span>
             </button>
           </div>
@@ -355,9 +341,7 @@
               (click)="exportToExcel('customers')"
               class="px-3 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-black transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-1.5 shadow-sm"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
+              <app-icon name="download" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
               <span>Xuất Excel (XLSX)</span>
             </button>
           </div>

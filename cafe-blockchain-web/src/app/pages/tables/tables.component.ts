@@ -10,6 +10,7 @@ import { ConfirmModalComponent } from '@components/shared/confirm-modal/confirm-
 import { PageHeaderComponent } from '@components/shared/page-header/page-header.component';
 import { ModalComponent } from '@components/shared/modal/modal.component';
 import { CustomSelectComponent } from '@components/shared/custom-select/custom-select.component';
+import { IconComponent } from '@components/shared/icon/icon.component';
 
 @Component({
   selector: 'app-tables',
@@ -23,7 +24,8 @@ import { CustomSelectComponent } from '@components/shared/custom-select/custom-s
     ConfirmModalComponent,
     PageHeaderComponent,
     ModalComponent,
-    CustomSelectComponent
+    CustomSelectComponent,
+    IconComponent
   ],
   templateUrl: './tables.component.html'
 })

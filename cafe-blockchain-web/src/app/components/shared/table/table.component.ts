@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, ContentChildren, QueryList, Dir
 import { CommonModule } from '@angular/common';
 import { SkeletonLoaderComponent } from '../skeleton-loader/skeleton-loader.component';
 import { PaginationComponent } from '../pagination/pagination.component';
+import { IconComponent } from '../icon/icon.component';
 
 export interface TableColumn {
   key: string;
@@ -23,7 +24,7 @@ export class TableCellDirective {
 @Component({
   selector: 'app-table',
   standalone: true,
-  imports: [CommonModule, SkeletonLoaderComponent, PaginationComponent],
+  imports: [CommonModule, SkeletonLoaderComponent, PaginationComponent, IconComponent],
   templateUrl: './table.component.html',
   styleUrls: []
 })

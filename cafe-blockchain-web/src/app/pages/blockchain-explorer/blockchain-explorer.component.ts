@@ -15,6 +15,7 @@ import { ShortAddressPipe } from '@pipes/short-address.pipe';
 import { ThemeToggleComponent } from '@components/shared/theme-toggle/theme-toggle.component';
 import { CustomSelectComponent } from '@components/shared/custom-select/custom-select.component';
 import { PaginationComponent } from '@components/shared/pagination/pagination.component';
+import { IconComponent } from '@components/shared/icon/icon.component';
 
 @Component({
   selector: 'app-blockchain-explorer',
@@ -26,7 +27,8 @@ import { PaginationComponent } from '@components/shared/pagination/pagination.co
     ShortAddressPipe,
     ThemeToggleComponent,
     CustomSelectComponent,
-    PaginationComponent
+    PaginationComponent,
+    IconComponent
   ],
   templateUrl: './blockchain-explorer.component.html'
 })

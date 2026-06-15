@@ -1,11 +1,12 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ElementRef, HostListener, inject, signal, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-custom-date-picker',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, IconComponent],
   templateUrl: './custom-date-picker.component.html'
 })
 export class CustomDatePickerComponent implements OnInit, OnChanges, OnDestroy {

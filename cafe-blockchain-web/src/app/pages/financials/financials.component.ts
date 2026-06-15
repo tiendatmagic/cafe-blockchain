@@ -11,6 +11,7 @@ import { ConfirmModalComponent } from '@components/shared/confirm-modal/confirm-
 import { PageHeaderComponent } from '@components/shared/page-header/page-header.component';
 import { VNDCurrencyPipe } from '@pipes/vnd.pipe';
 import { CustomDatePickerComponent } from '@components/shared/custom-date-picker/custom-date-picker.component';
+import { IconComponent } from '@components/shared/icon/icon.component';
 
 @Component({
   selector: 'app-financials',
@@ -25,7 +26,8 @@ import { CustomDatePickerComponent } from '@components/shared/custom-date-picker
     ConfirmModalComponent,
     PageHeaderComponent,
     VNDCurrencyPipe,
-    CustomDatePickerComponent
+    CustomDatePickerComponent,
+    IconComponent
   ],
   templateUrl: './financials.component.html'
 })

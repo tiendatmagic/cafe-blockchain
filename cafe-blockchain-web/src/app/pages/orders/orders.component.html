@@ -320,9 +320,7 @@
             @if (row.is_verified === false) {
               <div class="flex flex-col gap-1 items-start">
                 <span class="px-2 py-0.5 rounded-lg bg-red-500/10 text-red-500 font-bold text-xs flex items-center gap-1 border border-red-500/15 shadow-sm animate-pulse">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
+                  <app-icon name="warning" class="h-4 w-4 text-amber-500 shrink-0" [strokeWidth]="2" />
                   <span>Dữ liệu bị thay đổi!</span>
                 </span>
                 <button [disabled]="true" class="btn-cancel btn-sm">
@@ -490,8 +488,7 @@
                         <div
                           class="flex items-center gap-1.5 text-red-500 font-extrabold text-xs animate-pulse"
                         >
-                            CẢNH BÁO: Dữ liệu DB bị can thiệp trái phép!</span
-                          >
+                          <span>CẢNH BÁO: Dữ liệu DB bị can thiệp trái phép!</span>
                         </div>
                         <p class="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
                           Số tiền hoặc thông tin đơn hàng hiện tại trong Database đã bị sửa đổi lệch
@@ -678,8 +675,7 @@
                           class="flex items-center gap-1.5 text-red-500 font-bold text-xs animate-pulse"
                         >
                           <app-icon name="warning" class="h-4 w-4 shrink-0 text-amber-500 inline-block" strokeWidth="2" />
-                            CẢNH BÁO: Dữ liệu đơn bị sửa đổi trái phép!</span
-                          >
+                          <span>CẢNH BÁO: Dữ liệu đơn bị sửa đổi trái phép!</span>
                         </div>
                         <p class="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
                           Chữ ký số đối soát (HMAC-SHA256) không trùng khớp với dữ liệu hiện tại

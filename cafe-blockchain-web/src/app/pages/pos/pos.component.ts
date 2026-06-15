@@ -15,6 +15,7 @@ import { VNDCurrencyPipe } from '@pipes/vnd.pipe';
 import { MiniButtonsComponent } from '@components/shared/mini-buttons/mini-buttons.component';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { ModalComponent } from '@components/shared/modal/modal.component';
+import { IconComponent } from '@components/shared/icon/icon.component';
 
 @Component({
   selector: 'app-pos',
@@ -29,7 +30,8 @@ import { ModalComponent } from '@components/shared/modal/modal.component';
     PageHeaderComponent,
     VNDCurrencyPipe,
     MiniButtonsComponent,
-    ModalComponent
+    ModalComponent,
+    IconComponent
   ],
   templateUrl: './pos.component.html'
 })

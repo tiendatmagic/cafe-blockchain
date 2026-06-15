@@ -1,11 +1,12 @@
 import { Component, Input, Output, EventEmitter, ElementRef, HostListener, inject, signal, computed, OnDestroy, forwardRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-custom-select',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, IconComponent],
   templateUrl: './custom-select.component.html',
   providers: [
     {

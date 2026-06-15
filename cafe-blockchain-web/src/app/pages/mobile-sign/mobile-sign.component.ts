@@ -9,11 +9,12 @@ import { CAFE_VOUCHER_NFT_ABI } from '@services/voucher-contract-abi';
 
 import { VNDCurrencyPipe } from '@pipes/vnd.pipe';
 import { ThemeToggleComponent } from '@components/shared/theme-toggle/theme-toggle.component';
+import { IconComponent } from '@components/shared/icon/icon.component';
 
 @Component({
   selector: 'app-mobile-sign',
   standalone: true,
-  imports: [CommonModule, VNDCurrencyPipe, ThemeToggleComponent],
+  imports: [CommonModule, VNDCurrencyPipe, ThemeToggleComponent, IconComponent],
   templateUrl: './mobile-sign.component.html'
 })
 export class MobileSignComponent implements OnInit {

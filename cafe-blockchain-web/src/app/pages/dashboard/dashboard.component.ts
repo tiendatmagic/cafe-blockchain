@@ -10,6 +10,7 @@ import { VNDCurrencyPipe } from '@pipes/vnd.pipe';
 import { CustomDatePickerComponent } from '@components/shared/custom-date-picker/custom-date-picker.component';
 import { MiniButtonsComponent, DASHBOARD_DATE_OPTIONS } from '@components/shared/mini-buttons/mini-buttons.component';
 import { PaginationComponent } from '@components/shared/pagination/pagination.component';
+import { IconComponent } from '@components/shared/icon/icon.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -24,7 +25,8 @@ import { PaginationComponent } from '@components/shared/pagination/pagination.co
     VNDCurrencyPipe,
     CustomDatePickerComponent,
     MiniButtonsComponent,
-    PaginationComponent
+    PaginationComponent,
+    IconComponent
   ],
   templateUrl: './dashboard.component.html'
 })

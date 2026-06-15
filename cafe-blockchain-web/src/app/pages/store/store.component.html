@@ -33,20 +33,7 @@
       <div
         class="w-20 h-20 bg-rose-500/10 rounded-full flex items-center justify-center text-rose-500 animate-bounce"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke-width="2"
-          stroke="currentColor"
-          class="w-10 h-10"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
-          />
-        </svg>
+        <app-icon name="warning" class="w-10 h-10" [strokeWidth]="2"></app-icon>
       </div>
       <div class="space-y-2">
         <h3 class="text-xl font-extrabold text-slate-800 dark:text-white uppercase tracking-tight">
@@ -123,20 +110,7 @@
               <p
                 class="text-xs text-slate-400 dark:text-slate-500 font-semibold flex items-center gap-1"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-3.5 w-3.5 text-emerald-500 shrink-0"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
-                  />
-                </svg>
+                <app-icon name="check-badge" class="h-3.5 w-3.5 text-emerald-500 shrink-0" [strokeWidth]="2"></app-icon>
                 <span>Thực đơn cửa hàng trực tuyến</span>
               </p>
             </div>
@@ -152,20 +126,7 @@
                 class="tab-item"
                 title="Thực đơn"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2.5"
-                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                  />
-                </svg>
+                <app-icon name="menu" class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block" [strokeWidth]="2.5"></app-icon>
                 <span class="hidden md:inline-block">Thực đơn</span>
               </button>
               <button
@@ -175,20 +136,7 @@
                 class="tab-item"
                 title="Yêu thích ({{ favorites().length }})"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2.5"
-                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                  />
-                </svg>
+                <app-icon name="heart" class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block" [strokeWidth]="2.5"></app-icon>
                 <span class="hidden md:inline-block">Yêu thích ({{ favorites().length }})</span>
               </button>
             </div>
@@ -238,20 +186,7 @@
                 placeholder="Tìm món ngon của quán..."
                 class="w-full search-input"
               />
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="absolute left-3 top-3 h-4 w-4 text-slate-400 dark:text-slate-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2.5"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
+              <app-icon name="search" class="absolute left-3 top-3 h-4 w-4 text-slate-400 dark:text-slate-500" [strokeWidth]="2.5"></app-icon>
             </div>
 
             <div class="flex items-center justify-between md:justify-start gap-4 shrink-0">
@@ -275,20 +210,7 @@
                   class="tab-item h-7 px-3"
                   title="Lưới"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2.5"
-                      d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-                    />
-                  </svg>
+                  <app-icon name="grid" class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block" [strokeWidth]="2.5"></app-icon>
                   <span class="hidden md:inline-block">Lưới</span>
                 </button>
                 <button
@@ -298,20 +220,7 @@
                   class="tab-item h-7 px-3"
                   title="Danh sách"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2.5"
-                      d="M4 6h16M4 12h16M4 18h16"
-                    />
-                  </svg>
+                  <app-icon name="list" class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block" [strokeWidth]="2.5"></app-icon>
                   <span class="hidden md:inline-block">Danh sách</span>
                 </button>
               </div>
@@ -344,31 +253,9 @@
                       class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 dark:bg-slate-800/90 shadow-md flex items-center justify-center transition-transform active:scale-90 hover:scale-105 z-10 cursor-pointer border border-slate-100 dark:border-slate-700"
                     >
                       @if (isFavorite(product.id)) {
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="currentColor"
-                          class="w-4 h-4 text-rose-500"
-                        >
-                          <path
-                            d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"
-                          />
-                        </svg>
+                        <app-icon name="heart-solid" [solid]="true" class="w-4 h-4 text-rose-500"></app-icon>
                       } @else {
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke-width="2.5"
-                          stroke="currentColor"
-                          class="w-4 h-4 text-slate-400 dark:text-slate-500 hover:text-rose-500"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
-                          />
-                        </svg>
+                        <app-icon name="heart" class="w-4 h-4 text-slate-400 dark:text-slate-500 hover:text-rose-500" [strokeWidth]="2.5"></app-icon>
                       }
                     </button>
 
@@ -386,20 +273,7 @@
                         <div
                           class="bg-slate-50 dark:bg-slate-950 w-full h-full flex items-center justify-center text-slate-400 dark:text-slate-600"
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke-width="1.5"
-                            stroke="currentColor"
-                            class="w-12 h-12"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m16.5 0a1.5 1.5 0 00-1.5-1.5H5.25A1.5 1.5 0 003.75 7.5m16.5 0v2.25a3.75 3.75 0 01-3.75 3.75h-9a3.75 3.75 0 01-3.75-3.75V7.5m10.5-3.75V3.75"
-                            />
-                          </svg>
+                          <app-icon name="archive" class="w-12 h-12" [strokeWidth]="1.5"></app-icon>
                         </div>
                       }
                       <div
@@ -475,31 +349,9 @@
                       class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/95 dark:bg-slate-800/95 shadow-sm flex items-center justify-center transition-transform active:scale-90 hover:scale-105 z-10 cursor-pointer border border-slate-100 dark:border-slate-700"
                     >
                       @if (isFavorite(product.id)) {
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="currentColor"
-                          class="w-4 h-4 text-rose-500"
-                        >
-                          <path
-                            d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"
-                          />
-                        </svg>
+                        <app-icon name="heart-solid" class="w-4 h-4 text-rose-500"></app-icon>
                       } @else {
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke-width="2.5"
-                          stroke="currentColor"
-                          class="w-4 h-4 text-slate-400 dark:text-slate-500 hover:text-rose-500"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
-                          />
-                        </svg>
+                        <app-icon name="heart" class="w-4 h-4 text-slate-400 dark:text-slate-500 hover:text-rose-500" [strokeWidth]="2.5"></app-icon>
                       }
                     </button>
 
@@ -517,20 +369,7 @@
                         <div
                           class="bg-slate-50 dark:bg-slate-950 w-full h-full flex items-center justify-center text-slate-400 dark:text-slate-600 font-bold"
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke-width="1.5"
-                            stroke="currentColor"
-                            class="w-10 h-10"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m16.5 0a1.5 1.5 0 00-1.5-1.5H5.25A1.5 1.5 0 003.75 7.5m16.5 0v2.25a3.75 3.75 0 01-3.75 3.75h-9a3.75 3.75 0 01-3.75-3.75V7.5m10.5-3.75V3.75"
-                            />
-                          </svg>
+                          <app-icon name="archive" class="w-10 h-10" [strokeWidth]="1.5"></app-icon>
                         </div>
                       }
                     </div>
@@ -615,20 +454,7 @@
             <div
               class="w-10 h-10 rounded-xl bg-[var(--dynamic-primary)] text-white flex items-center justify-center relative"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="2.5"
-                stroke="currentColor"
-                class="w-5 h-5"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
-                />
-              </svg>
+              <app-icon name="cart" class="w-5 h-5" [strokeWidth]="2.5"></app-icon>
               <span
                 class="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-slate-900 shadow-sm animate-pulse"
               >
@@ -684,20 +510,7 @@
                         class="w-full h-full object-cover"
                       />
                     } @else {
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke-width="1.5"
-                        stroke="currentColor"
-                        class="w-6 h-6 text-slate-400"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m16.5 0a1.5 1.5 0 00-1.5-1.5H5.25A1.5 1.5 0 003.75 7.5m16.5 0v2.25a3.75 3.75 0 01-3.75 3.75h-9a3.75 3.75 0 01-3.75-3.75V7.5m10.5-3.75V3.75"
-                        />
-                      </svg>
+                      <app-icon name="archive" class="w-6 h-6 text-slate-400" [strokeWidth]="1.5"></app-icon>
                     }
                   </div>
 
@@ -853,20 +666,7 @@
                       : 'border-slate-200 dark:border-slate-800 text-slate-500 font-extrabold'
                   "
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="2"
-                    stroke="currentColor"
-                    class="w-7 h-7"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5h16.5c.621 0 1.125.504 1.125 1.125v12.75c0 .621-.504 1.125-1.125 1.125H3.75A1.125 1.125 0 012.625 17.25V5.625C2.625 5.004 3.129 4.5 3.75 4.5zM12 11.25a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"
-                    />
-                  </svg>
+                  <app-icon name="cash" class="w-7 h-7" [strokeWidth]="2"></app-icon>
                   <span class="text-xs sm:text-sm uppercase mt-1.5">Tiền mặt (COD)</span>
                 </div>
 
@@ -880,20 +680,7 @@
                       : 'border-slate-200 dark:border-slate-800 text-slate-500 font-extrabold'
                   "
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="2"
-                    stroke="currentColor"
-                    class="w-7 h-7"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.5M4.5 21V10.5M3 21h18M12 9.75v-1.5"
-                    />
-                  </svg>
+                  <app-icon name="bank" class="w-7 h-7" [strokeWidth]="2"></app-icon>
                   <span class="text-xs sm:text-sm uppercase mt-1.5">Chuyển khoản</span>
                 </div>
               </div>
@@ -932,18 +719,7 @@
                   <div
                     class="p-3 rounded-xl bg-emerald-500/5 dark:bg-emerald-950/20 border border-emerald-500/10 dark:border-emerald-800/40 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      class="w-4 h-4 shrink-0"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
+                    <app-icon name="check-circle" class="w-4 h-4 shrink-0" [strokeWidth]="2"></app-icon>
                     <span>Chúc mừng! Đơn hàng của bạn đã được miễn phí vận chuyển</span>
                   </div>
                 }
@@ -1015,16 +791,7 @@
                 class="app-modal-close"
                 title="Đóng chọn size"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                >
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <app-icon name="close" class="h-5 w-5" [strokeWidth]="2.5"></app-icon>
               </button>
             </div>
 
@@ -1133,16 +900,7 @@
             <div
               class="w-16 h-16 rounded-full bg-emerald-500 text-white flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-8 w-8 text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2.5"
-              >
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
+              <app-icon name="check" class="h-8 w-8 text-white" [strokeWidth]="2.5"></app-icon>
             </div>
 
             <div class="space-y-2">

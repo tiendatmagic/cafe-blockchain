@@ -1,20 +1,11 @@
 <div class="space-y-6 p-4 sm:p-6 max-w-[1530px] mx-auto">
   <!-- Header tiêu đề tab -->
   <app-page-header title="Quản lý sơ đồ bàn" description="Thiết lập sơ đồ khu vực và bàn ăn cho quán. In mã QR gọi món trực tuyến và quản lý trạng thái trực quan.">
-    <svg
-      icon
+    <app-icon
+      name="tables"
       class="h-6.5 w-6.5 text-[var(--dynamic-primary)]"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      stroke-width="2.5"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z"
-      />
-    </svg>
+      strokeWidth="2.5"
+    />
     @if (stateService.web3Service.walletConnected()) {
       <div class="flex items-center gap-3 shrink-0 flex-wrap">
       <button
@@ -28,20 +19,11 @@
         (click)="openAddTableModal()"
         class="px-4.5 py-2.5 bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] hover:opacity-90 text-white font-bold rounded-xl text-sm shadow-md shadow-[var(--dynamic-primary)]/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
+        <app-icon
+          name="plus"
           class="h-4.5 w-4.5 shrink-0"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2.5"
-            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-          />
-        </svg>
+          strokeWidth="2.5"
+        />
         <span>Thêm Bàn ăn</span>
       </button>
       </div>
@@ -147,17 +129,11 @@
         <div
           class="col-span-full py-16 text-center app-card flex flex-col items-center justify-center gap-3"
         >
-          <svg
+          <app-icon
+            name="archive"
             class="h-10 w-10 text-slate-300 dark:text-slate-700"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="9" y1="9" x2="15" y2="9"></line>
-            <line x1="9" y1="13" x2="15" y2="13"></line>
-          </svg>
+            strokeWidth="2"
+          />
           <span class="text-xs font-bold text-slate-400"
             >Không tìm thấy bàn nào phù hợp với bộ lọc hiện tại.</span
           >
@@ -201,15 +177,11 @@
               title="In QR bàn"
             >
               <!-- Vẽ QR mockup bằng SVG -->
-              <svg
+              <app-icon
+                name="qr-code"
                 class="w-full h-full text-slate-800 dark:text-slate-300"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
-                <path
-                  d="M3 3h6v6H3V3zm2 2v2h2V5H5zm8-2h6v6h-6V3zm2 2v2h2V5h-2M3 15h6v6H3v-6zm2 2v2h2v-2H5zm10-2h2v2h-2v-2zm2 2h2v2h-2v-2zm-2 2h2v2h-2v-2zm2-4h2v2h-2v-2zm-4 4h2v2h-2v-2z"
-                ></path>
-              </svg>
+                [solid]="true"
+              />
               <div
                 class="absolute inset-0 bg-[var(--color-primary)]/90 text-white font-extrabold text-[8px] tracking-widest flex items-center justify-center opacity-0 group-hover/qr:opacity-100 rounded-xl transition-opacity uppercase leading-none"
               >
@@ -264,20 +236,11 @@
           <h4
             class="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
+            <app-icon
+              name="archive"
               class="h-5 w-5 text-slate-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-              />
-            </svg>
+              strokeWidth="2"
+            />
             <span>Quản lý danh sách Khu vực</span>
             <span
               class="text-xs font-bold text-[var(--color-primary)] bg-[var(--color-primary)]/10 dark:bg-[var(--color-primary)]/20 dark:text-[var(--color-secondary)] px-2.5 py-1 rounded-xl"

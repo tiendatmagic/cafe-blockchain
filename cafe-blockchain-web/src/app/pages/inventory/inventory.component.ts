@@ -12,6 +12,7 @@ import { PageHeaderComponent } from '@components/shared/page-header/page-header.
 import { VNDCurrencyPipe } from '@pipes/vnd.pipe';
 import { CustomDatePickerComponent } from '@components/shared/custom-date-picker/custom-date-picker.component';
 import { CustomSelectComponent } from '@components/shared/custom-select/custom-select.component';
+import { IconComponent } from '@components/shared/icon/icon.component';
 
 @Component({
   selector: 'app-inventory',
@@ -27,7 +28,8 @@ import { CustomSelectComponent } from '@components/shared/custom-select/custom-s
     PageHeaderComponent,
     VNDCurrencyPipe,
     CustomDatePickerComponent,
-    CustomSelectComponent
+    CustomSelectComponent,
+    IconComponent
   ],
   templateUrl: './inventory.component.html'
 })

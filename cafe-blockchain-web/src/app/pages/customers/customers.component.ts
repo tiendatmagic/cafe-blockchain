@@ -12,6 +12,7 @@ import { ConfirmModalComponent } from '@components/shared/confirm-modal/confirm-
 import { PageHeaderComponent } from '@components/shared/page-header/page-header.component';
 import { CustomDatePickerComponent } from '@components/shared/custom-date-picker/custom-date-picker.component';
 import { TableComponent, TableCellDirective, TableColumn } from '@components/shared/table/table.component';
+import { IconComponent } from '@components/shared/icon/icon.component';
 
 @Component({
   selector: 'app-customers',
@@ -28,7 +29,8 @@ import { TableComponent, TableCellDirective, TableColumn } from '@components/sha
     PageHeaderComponent,
     CustomDatePickerComponent,
     TableComponent,
-    TableCellDirective
+    TableCellDirective,
+    IconComponent
   ],
   templateUrl: './customers.component.html'
 })

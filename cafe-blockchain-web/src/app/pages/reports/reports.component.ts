@@ -14,6 +14,7 @@ import { VNDCurrencyPipe } from '@pipes/vnd.pipe';
 import { CustomDatePickerComponent } from '@components/shared/custom-date-picker/custom-date-picker.component';
 import { MiniButtonsComponent, DATE_FILTER_OPTIONS } from '@components/shared/mini-buttons/mini-buttons.component';
 import { TableComponent, TableCellDirective, TableColumn } from '@components/shared/table/table.component';
+import { IconComponent } from '@components/shared/icon/icon.component';
 
 @Component({
   selector: 'app-reports',
@@ -30,7 +31,8 @@ import { TableComponent, TableCellDirective, TableColumn } from '@components/sha
     CustomDatePickerComponent,
     MiniButtonsComponent,
     TableComponent,
-    TableCellDirective
+    TableCellDirective,
+    IconComponent
   ],
   templateUrl: './reports.component.html'
 })

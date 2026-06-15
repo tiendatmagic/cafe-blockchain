@@ -10,6 +10,7 @@ import { PageHeaderComponent } from '@components/shared/page-header/page-header.
 import { Web3ConnectPromptComponent } from '@components/shared/web3-connect-prompt/web3-connect-prompt.component';
 import { TableComponent, TableColumn, TableCellDirective } from '@components/shared/table/table.component';
 import { ModalComponent } from '@components/shared/modal/modal.component';
+import { IconComponent } from '@components/shared/icon/icon.component';
 
 @Component({
   selector: 'app-staffs',
@@ -25,7 +26,8 @@ import { ModalComponent } from '@components/shared/modal/modal.component';
     Web3ConnectPromptComponent,
     TableComponent,
     TableCellDirective,
-    ModalComponent
+    ModalComponent,
+    IconComponent
   ],
   templateUrl: './staffs.component.html'
 })
