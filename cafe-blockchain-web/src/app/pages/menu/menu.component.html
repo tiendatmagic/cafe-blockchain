@@ -4,9 +4,7 @@
     title="Quản lý Thực đơn"
     description="Thêm, sửa, hoặc gỡ bỏ các món đồ uống và món ăn trong danh mục thực đơn của quán."
   >
-    <svg icon class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-    </svg>
+    <app-icon name="menu" class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" strokeWidth="2.5" />
 
     @if (stateService.web3Service.walletConnected()) {
       <!-- Nút chuyển đổi và Thêm mới -->
@@ -20,20 +18,7 @@
             class="tab-item"
             title="Dạng thẻ"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2.5"
-                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-              />
-            </svg>
+            <app-icon name="grid" class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block" strokeWidth="2.5" />
             <span class="hidden md:inline-block">Dạng thẻ</span>
           </button>
           <button
@@ -43,20 +28,7 @@
             class="tab-item"
             title="Dạng bảng"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2.5"
-                d="M4 6h16M4 10h16M4 14h16M4 18h16"
-              />
-            </svg>
+            <app-icon name="list" class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block" strokeWidth="2.5" />
             <span class="hidden md:inline-block">Dạng bảng</span>
           </button>
         </div>
@@ -74,20 +46,7 @@
               ></div>
               <span>Đang đồng bộ...</span>
             } @else {
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-4 w-4 shrink-0"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.99m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
-                />
-              </svg>
+              <app-icon name="sync" class="h-4 w-4 shrink-0" strokeWidth="2" />
               <span>Đồng bộ Blockchain</span>
             }
           </button>
@@ -99,20 +58,7 @@
           [disabled]="!web3Service.walletConnected()"
           class="btn-primary"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4 shrink-0"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
+          <app-icon name="plus" class="h-4 w-4 shrink-0" strokeWidth="2" />
           <span>Thêm món mới</span>
         </button>
       </div>
@@ -152,20 +98,7 @@
           placeholder="Tìm món ăn, SKU..."
           class="w-full search-input"
         />
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="absolute left-3 top-3 h-4 w-4 text-slate-400"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          stroke-width="2.5"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-          />
-        </svg>
+        <app-icon name="search" class="absolute left-3 top-3 h-4 w-4 text-slate-400" strokeWidth="2.5" />
       </div>
     </div>
 
@@ -317,20 +250,7 @@
                           [disabled]="!web3Service.walletConnected()"
                           class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[var(--dynamic-primary)]/10 hover:bg-[var(--dynamic-primary)]/20 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] text-xs font-extrabold transition-all hover:scale-[1.03] active:scale-[0.97] border border-[var(--dynamic-primary)]/10 dark:border-[var(--dynamic-secondary)]/10 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-3.5 w-3.5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            stroke-width="2"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                            />
-                          </svg>
+                          <app-icon name="pen" class="h-3.5 w-3.5" strokeWidth="2" />
                           <span>Sửa</span>
                         </button>
 
@@ -340,20 +260,7 @@
                           [disabled]="!web3Service.walletConnected()"
                           class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-950/60 text-rose-600 dark:text-rose-400 text-xs font-extrabold transition-all hover:scale-[1.03] active:scale-[0.97] border border-rose-200/20 dark:border-rose-800/20 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-3.5 w-3.5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            stroke-width="2"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            />
-                          </svg>
+                          <app-icon name="trash" class="h-3.5 w-3.5" strokeWidth="2" />
                           <span>Xóa</span>
                         </button>
                       </div>
@@ -431,10 +338,7 @@
                     <span>{{ p.sku || 'SP-XXXXXX' }}</span>
                     @if (p.barcode) {
                       <span class="text-[var(--dynamic-primary)] flex items-center gap-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z" />
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M15 15h.008v.008H15V15Zm0 3h.008v.008H15V18Zm-3-3h.008v.008H12V15Zm0 3h.008v.008H12V18Zm-3-3h.008v.008H9V15Zm0 3h.008v.008H9V18Zm-3-3h.008v.008H6V15Zm0 3h.008v.008H6V18Zm6-6h.008v.008H12V12Zm3 0h.008v.008H15V12Zm-3 3h.008v.008H12V15Zm3 0h.008v.008H15V15Zm-9-9h.008v.008H6V6Zm3 0h.008v.008H9V6Zm0 3h.008v.008H9V9Zm6-3h.008v.008H15V6Zm0 3h.008v.008H15V9Zm3 0h.008v.008H18V9Zm0 3h.008v.008H18V12Zm0 3h.008v.008H18V15Zm0 3h.008v.008H18V18Zm-9-9h.008v.008H9V9Zm6 6h.008v.008H15V15Zm-3-6h.008v.008H12V9Zm3 3h.008v.008H15V12Z" />
-                        </svg>
+                        <app-icon name="qr-code" class="h-3 w-3 shrink-0" strokeWidth="2.5" />
                         <span>{{ p.barcode }}</span>
                       </span>
                     }
@@ -474,20 +378,7 @@
                       [disabled]="!web3Service.walletConnected()"
                       class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[var(--dynamic-primary)]/10 hover:bg-[var(--dynamic-primary)]/20 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] text-sm font-extrabold transition-all hover:scale-[1.02] active:scale-[0.98] border border-[var(--dynamic-primary)]/10 dark:border-[var(--dynamic-secondary)]/10 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-4 w-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        stroke-width="2"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                        />
-                      </svg>
+                      <app-icon name="pen" class="h-4 w-4" strokeWidth="2" />
                       <span>Sửa</span>
                     </button>
 
@@ -497,20 +388,7 @@
                       [disabled]="!web3Service.walletConnected()"
                       class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-950/60 text-rose-600 dark:text-rose-400 text-sm font-extrabold transition-all hover:scale-[1.02] active:scale-[0.98] border border-rose-200/20 dark:border-rose-800/20 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-4 w-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        stroke-width="2"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        />
-                      </svg>
+                      <app-icon name="trash" class="h-4 w-4" strokeWidth="2" />
                       <span>Xóa</span>
                     </button>
                   </div>
@@ -544,16 +422,7 @@
             <h4
               class="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5 text-slate-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7" />
-              </svg>
+              <app-icon name="list-bullet" class="h-5 w-5 text-slate-500" strokeWidth="2" />
               <span>Quản lý danh mục sản phẩm</span>
               <span
                 class="text-xs font-bold text-purple-600 bg-purple-50 dark:bg-purple-950/40 dark:text-purple-400 px-2.5 py-1 rounded-xl"
@@ -567,16 +436,7 @@
               [disabled]="!web3Service.walletConnected()"
               class="flex items-center gap-1.5 px-4.5 py-2.5 bg-[var(--dynamic-primary)] hover:opacity-90 text-white font-bold rounded-xl text-sm shadow-md shadow-[var(--dynamic-primary)]/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2.5"
-              >
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-              </svg>
+              <app-icon name="plus" class="h-4 w-4" strokeWidth="2.5" />
               <span>Thêm danh mục mới</span>
             </button>
           </div>
@@ -632,20 +492,7 @@
                   <div
                     class="w-9 h-9 rounded-2xl bg-gradient-to-br from-violet-500/20 to-purple-500/10 flex items-center justify-center shrink-0"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="h-4.5 w-4.5 text-violet-500"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
+                    <app-icon name="clock" class="h-4.5 w-4.5 text-violet-500" strokeWidth="2" />
                   </div>
                   <div>
                     <h4 class="text-base font-extrabold text-slate-800 dark:text-white">
@@ -670,21 +517,7 @@
                   [disabled]="isMenuSyncLogsLoading()"
                   class="btn-secondary btn-sm"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-3.5 w-3.5"
-                    [class.animate-spin]="isMenuSyncLogsLoading()"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.99m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
-                    />
-                  </svg>
+                  <app-icon name="sync" class="h-3.5 w-3.5" [class.animate-spin]="isMenuSyncLogsLoading()" strokeWidth="2.5" />
                   <span>{{ isMenuSyncLogsLoading() ? 'Đang tải...' : 'Làm mới' }}</span>
                 </button>
               </div>
@@ -718,20 +551,7 @@
                   <div
                     class="flex items-center gap-3 p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200/40 dark:border-rose-800/30 text-rose-600 dark:text-rose-400 text-sm font-semibold"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="h-5 w-5 shrink-0"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
-                      />
-                    </svg>
+                    <app-icon name="warning" class="h-5 w-5 shrink-0" strokeWidth="2" />
                     {{ menuSyncLogsError() }}
                   </div>
                 }
@@ -742,20 +562,7 @@
                     <div
                       class="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-7 w-7 text-slate-400"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        stroke-width="1.5"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
-                        />
-                      </svg>
+                      <app-icon name="sync" class="h-7 w-7 text-slate-400" strokeWidth="1.5" />
                     </div>
                     <p class="text-sm font-bold text-slate-500 dark:text-slate-400">
                       Chưa có lịch sử đồng bộ
@@ -814,20 +621,7 @@
                                 <div
                                   class="w-7 h-7 rounded-xl bg-gradient-to-br from-violet-500/20 to-purple-500/10 flex items-center justify-center shrink-0"
                                 >
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    class="h-3.5 w-3.5 text-violet-500"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                  >
-                                    <path
-                                      stroke-linecap="round"
-                                      stroke-linejoin="round"
-                                      d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632z"
-                                    />
-                                  </svg>
+                                  <app-icon name="user-circle" class="h-3.5 w-3.5 text-violet-500" strokeWidth="2" />
                                 </div>
                                 <span
                                   class="font-mono text-xs font-bold text-slate-600 dark:text-slate-300"
@@ -839,20 +633,7 @@
                               <span
                                 class="inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 text-xs font-extrabold px-2.5 py-1 rounded-xl"
                               >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  class="h-3 w-3"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                  stroke-width="2.5"
-                                >
-                                  <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12"
-                                  />
-                                </svg>
+                                <app-icon name="list-bullet" class="h-3 w-3" strokeWidth="2.5" />
                                 {{ log.product_count }} món
                               </span>
                             </td>
@@ -868,20 +649,7 @@
                                     class="font-mono text-xs text-violet-600 dark:text-violet-400 font-bold group-hover/link:underline"
                                     >{{ log.tx_hash | appShortAddress }}</span
                                   >
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    class="h-3.5 w-3.5 text-slate-400 group-hover/link:text-violet-500 transition-colors"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                  >
-                                    <path
-                                      stroke-linecap="round"
-                                      stroke-linejoin="round"
-                                      d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
-                                    />
-                                  </svg>
+                                  <app-icon name="external-link" class="h-3.5 w-3.5 text-slate-400 group-hover/link:text-violet-500 transition-colors" strokeWidth="2" />
                                 </a>
                               } @else {
                                 <span class="text-xs text-slate-400 italic">—</span>
@@ -955,20 +723,7 @@
                                  class="font-mono text-xs text-violet-600 dark:text-violet-400 font-bold underline"
                                  >{{ log.tx_hash | appShortAddress }}</span
                               >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="h-3 w-3 text-violet-400"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                stroke-width="2"
-                              >
-                                <path
-                                  stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                  d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
-                                />
-                              </svg>
+                              <app-icon name="external-link" class="h-3 w-3 text-violet-400" strokeWidth="2" />
                             </a>
                           </div>
                         }
@@ -1065,10 +820,7 @@
               class="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-xl text-[var(--dynamic-primary)] hover:bg-[var(--dynamic-primary)]/10 dark:text-[var(--dynamic-secondary)] dark:hover:bg-[var(--dynamic-primary)]/20 transition-all shrink-0 cursor-pointer"
               title="Quét mã vạch bằng camera"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
-              </svg>
+              <app-icon name="camera" class="h-5 w-5" strokeWidth="2" />
             </button>
           </div>
         </div>
@@ -1209,20 +961,7 @@
                     (click)="removeVariantRow($index)"
                     class="text-rose-500 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all shrink-0"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
+                    <app-icon name="trash" class="h-4 w-4" strokeWidth="2" />
                   </button>
                 </div>
               }
@@ -1364,9 +1103,7 @@
         <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/60 flex flex-col items-center gap-2">
           <span class="text-xs font-semibold text-slate-400">Hoặc tải ảnh chụp mã vạch lên để quét cục bộ:</span>
           <label class="btn btn-secondary btn-sm flex items-center gap-2 cursor-pointer w-full justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
-            </svg>
+            <app-icon name="upload" class="h-4 w-4" strokeWidth="2" />
             <span>Chọn ảnh mã vạch</span>
             <input type="file" accept="image/*" class="hidden" (change)="onBarcodeFileSelected($event)" />
           </label>

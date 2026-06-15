@@ -1,11 +1,12 @@
 import { Component, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StateService } from '@services/state.service';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-web3-connect-prompt',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, IconComponent],
   templateUrl: './web3-connect-prompt.component.html'
 })
 export class Web3ConnectPromptComponent {

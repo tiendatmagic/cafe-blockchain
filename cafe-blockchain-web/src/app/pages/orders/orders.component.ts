@@ -9,6 +9,7 @@ import { ApiService } from '@services/api.service';
 import { PageHeaderComponent } from '@components/shared/page-header/page-header.component';
 import { VNDCurrencyPipe } from '@pipes/vnd.pipe';
 import { TableComponent, TableCellDirective, TableColumn } from '@components/shared/table/table.component';
+import { IconComponent } from '@components/shared/icon/icon.component';
 
 @Component({
   selector: 'app-orders',
@@ -22,7 +23,8 @@ import { TableComponent, TableCellDirective, TableColumn } from '@components/sha
     PageHeaderComponent,
     VNDCurrencyPipe,
     TableComponent,
-    TableCellDirective
+    TableCellDirective,
+    IconComponent
   ],
   templateUrl: './orders.component.html'
 })

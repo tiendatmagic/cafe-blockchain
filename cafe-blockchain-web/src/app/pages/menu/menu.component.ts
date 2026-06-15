@@ -13,6 +13,7 @@ import { PageHeaderComponent } from '@components/shared/page-header/page-header.
 import { ModalComponent } from '@components/shared/modal/modal.component';
 import { CustomSwitchComponent } from '@components/shared/custom-switch/custom-switch.component';
 import { CustomSelectComponent } from '@components/shared/custom-select/custom-select.component';
+import { IconComponent } from '@components/shared/icon/icon.component';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 @Component({
@@ -30,7 +31,8 @@ import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
     PageHeaderComponent,
     ModalComponent,
     CustomSwitchComponent,
-    CustomSelectComponent
+    CustomSelectComponent,
+    IconComponent
   ],
   templateUrl: './menu.component.html'
 })

@@ -10,6 +10,7 @@ import { ConfirmModalComponent } from '@components/shared/confirm-modal/confirm-
 import { PageHeaderComponent } from '@components/shared/page-header/page-header.component';
 import { CustomSelectComponent } from '@components/shared/custom-select/custom-select.component';
 import { CustomSwitchComponent } from '@components/shared/custom-switch/custom-switch.component';
+import { IconComponent } from '@components/shared/icon/icon.component';
 
 @Component({
   selector: 'app-settings',
@@ -23,7 +24,8 @@ import { CustomSwitchComponent } from '@components/shared/custom-switch/custom-s
     ConfirmModalComponent,
     PageHeaderComponent,
     CustomSelectComponent,
-    CustomSwitchComponent
+    CustomSwitchComponent,
+    IconComponent
   ],
   templateUrl: './settings.component.html'
 })

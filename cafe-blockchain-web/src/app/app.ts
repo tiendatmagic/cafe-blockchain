@@ -6,11 +6,12 @@ import { StateService } from '@services/state.service';
 import { Web3Service } from '@services/web3.service';
 import { ApiService } from '@services/api.service';
 import { SidebarComponent } from '@components/layout/sidebar/sidebar.component';
+import { IconComponent } from '@components/shared/icon/icon.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, SidebarComponent],
+  imports: [CommonModule, FormsModule, RouterModule, SidebarComponent, IconComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
