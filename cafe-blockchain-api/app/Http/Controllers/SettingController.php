@@ -441,6 +441,16 @@ class SettingController extends Controller
                 'website_avatar_image' => $settings['website_avatar_image'] ?? '',
             ];
 
+            // Nếu cửa hàng tạm đóng thì không cần load danh mục và sản phẩm
+            $storeStatus = $settings['store_status'] ?? '0';
+            if ($storeStatus === '0') {
+                return [
+                    'store' => $publicSettings,
+                    'categories' => [],
+                    'products' => []
+                ];
+            }
+
             // Lấy các danh mục của quán
             $categoriesQuery = \App\Domain\Entities\Category::where('store_owner_address', $storeOwner);
             $storeCategoriesCsv = $settings['store_categories'] ?? '';

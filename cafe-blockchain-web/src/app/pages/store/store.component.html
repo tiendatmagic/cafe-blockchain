@@ -56,10 +56,7 @@
           {{ errorMessage() || 'Đường dẫn liên kết không đúng hoặc cửa hàng đã ngừng hoạt động.' }}
         </p>
       </div>
-      <a
-        routerLink="/"
-        class="btn btn-primary text-xs uppercase tracking-wide"
-      >
+      <a routerLink="/" class="btn btn-primary text-xs uppercase tracking-wide">
         Về trang chủ POS
       </a>
     </div>
@@ -67,1039 +64,1093 @@
 
   <!-- GIAO DIỆN CHÍNH STOREFRONT -->
   @if (!isLoading() && !isError() && storeSettings()) {
-    <!-- THÔNG BÁO CỬA HÀNG TẠM ĐÓNG (GLASSMORPHISM) -->
-    @if (storeSettings().store_status === '0') {
-      <div class="fixed inset-0 z-[1500] flex items-center justify-center p-4 backdrop-blur-md bg-slate-900/60 dark:bg-slate-950/80 animate-in fade-in duration-300">
-        <div class="app-card max-w-sm w-full shadow-2xl text-center p-6 space-y-6 animate-in zoom-in-95 duration-200 border border-slate-200/20 dark:border-slate-800/20">
-          <div class="w-16 h-16 rounded-full bg-slate-500/10 text-slate-500 dark:text-slate-400 flex items-center justify-center mx-auto">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-8 h-8">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-            </svg>
-          </div>
-          <div class="space-y-2">
-            <h3 class="text-md font-extrabold text-slate-800 dark:text-white uppercase tracking-tight">Cửa hàng đang tạm đóng</h3>
-            <p class="text-xs text-slate-400 dark:text-slate-500 font-semibold leading-relaxed">
-              Hiện tại cửa hàng đang tạm ngưng nhận đơn hàng trực tuyến. Xin vui lòng quay lại sau!
-            </p>
-          </div>
-          <div class="pt-2">
-            <a routerLink="/" class="btn btn-secondary btn-full h-11 text-xs uppercase tracking-wider">Quay lại trang chủ</a>
-          </div>
-        </div>
-      </div>
-    }
-
-    <!-- HEADER QUÁN (BANNER & AVATAR) -->
-    <header
-      class="relative bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800/80 transition-colors duration-300"
-    >
-      <!-- Ảnh bìa trang trí (Cấu hình ảnh bìa hoặc Gradient phong cách) -->
-      <div
-        class="h-48 sm:h-64 w-full relative overflow-hidden"
-        [class.bg-gradient-to-r]="!storeSettings().website_cover_image"
-        [class.from-[var(--dynamic-primary)]/80]="!storeSettings().website_cover_image"
-        [class.to-[var(--dynamic-secondary)]/80]="!storeSettings().website_cover_image"
+    @if (storeSettings().store_status === '1') {
+      <!-- HEADER QUÁN (BANNER & AVATAR) -->
+      <header
+        class="relative bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800/80 transition-colors duration-300"
       >
-        @if (storeSettings().website_cover_image) {
-          <img
-            [src]="storeSettings().website_cover_image"
-            alt="Ảnh bìa cửa hàng"
-            class="w-full h-full object-cover"
-          />
-        }
-        <div class="absolute inset-0 bg-black/20"></div>
-        <div class="absolute inset-0 backdrop-blur-[1px]"></div>
-      </div>
-
-      <!-- Thông tin quán -->
-      <div
-        class="px-4 pb-4 pt-1 flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-10 sm:-mt-12 relative z-10 max-w-[1530px] mx-auto"
-      >
-        <div class="flex items-end gap-3.5">
-          <!-- Logo/Avatar quán -->
-          <div
-            class="w-20 h-20 sm:w-24 sm:h-24 rounded-[15px] bg-white dark:bg-slate-900 border-4 border-white dark:border-slate-900 shadow-md flex items-center justify-center text-3xl font-black text-white shrink-0 overflow-hidden relative"
-            [style.background-color]="storeSettings().primary_color"
-          >
-            @if (storeSettings().website_avatar_image) {
-              <img
-                [src]="storeSettings().website_avatar_image"
-                alt="Logo cửa hàng"
-                class="w-full h-full object-cover absolute inset-0"
-              />
-            } @else {
-              <!-- Sử dụng chữ cái đầu của quán làm Logo đại diện -->
-              {{
-                storeSettings().store_name ? storeSettings().store_name.charAt(0).toUpperCase() : 'C'
-              }}
-            }
-          </div>
-
-          <div class="pb-1.5 space-y-0.5">
-            <h1
-              class="text-lg sm:text-xl font-extrabold text-slate-800 dark:text-white tracking-tight flex items-center gap-1.5"
-            >
-              <span>{{ storeSettings().store_name || 'Cafe Web3 POS' }}</span>
-              <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Online"></span>
-            </h1>
-            <p
-              class="text-xs text-slate-400 dark:text-slate-500 font-semibold flex items-center gap-1"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-3.5 w-3.5 text-emerald-500 shrink-0"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
-                />
-              </svg>
-              <span>Thực đơn cửa hàng trực tuyến</span>
-            </p>
-          </div>
-        </div>
-
-        <!-- Nút chuyển chế độ: Danh mục / Yêu thích -->
-        <div class="flex items-center gap-2.5 self-start sm:self-end flex-wrap">
-          <app-mini-buttons
-            [options]="[
-              { value: false, label: 'Thực đơn' },
-              { value: true, label: 'Yêu thích (' + favorites().length + ')' }
-            ]"
-            [activeValue]="showFavoritesOnly()"
-            [showDot]="false"
-            containerClass="tab-group h-11"
-            buttonClass="tab-item h-9 px-5 text-sm sm:text-base font-black tracking-wide transition-all"
-            activeClass="active"
-            inactiveClass=""
-            (valueChange)="showFavoritesOnly.set($event)"
-          ></app-mini-buttons>
-
-          <!-- Standalone Theme Toggle Component -->
-          <app-theme-toggle size="md"></app-theme-toggle>
-        </div>
-      </div>
-    </header>
-
-    <!-- BỐ CỤC CHÍNH (DESKTOP: 2 CỘT, MOBILE: LAYOUT DỌC TRƯỢT NGANG) -->
-    <div class="max-w-[1530px] mx-auto px-4 py-6 flex flex-col md:flex-row gap-6 items-start">
-      <!-- CỘT DANH MỤC (DESKTOP: Sidebar bên trái, MOBILE: Trượt ngang phía trên) -->
-      @if (!showFavoritesOnly()) {
-        <div class="w-full md:w-56 shrink-0 app-card md:p-3 overflow-x-auto no-scrollbar md:overflow-visible flex md:flex-col gap-2 p-1 mb-2 sticky top-0 md:top-6 z-20 transition-all duration-300">
-          @for (cat of categoryOptions(); track cat.value) {
-            <button
-              type="button"
-              (click)="activeCategoryId.set(cat.value); currentPage.set(1)"
-              [class]="'flex items-center px-4.5 py-3 rounded-2xl text-xs sm:text-sm transition-all duration-200 group w-full text-left active:scale-[0.98] border md:border-none whitespace-nowrap md:whitespace-normal shrink-0 ' + 
-                (activeCategoryId() === cat.value
-                  ? 'bg-purple-50 dark:bg-purple-950/40 !text-purple-600 dark:!text-purple-400 font-bold border-purple-200/40 dark:border-purple-800/40 shadow-sm shadow-purple-500/5'
-                  : 'bg-white dark:bg-slate-900 md:bg-transparent border-slate-200/60 dark:border-slate-800/60 text-slate-700 dark:text-slate-350 font-semibold md:font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50')"
-            >
-              <span>{{ cat.label }}</span>
-            </button>
-          }
-        </div>
-      }
-
-      <!-- DANH SÁCH SẢN PHẨM -->
-      <main class="flex-1 w-full space-y-4">
-        <!-- Ô tìm kiếm và Bộ lọc thực đơn -->
+        <!-- Ảnh bìa trang trí (Cấu hình ảnh bìa hoặc Gradient phong cách) -->
         <div
-          class="app-card p-4 flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between"
+          class="h-48 sm:h-64 w-full relative overflow-hidden"
+          [class.bg-gradient-to-r]="!storeSettings().website_cover_image"
+          [class.from-[var(--dynamic-primary)]/80]="!storeSettings().website_cover_image"
+          [class.to-[var(--dynamic-secondary)]/80]="!storeSettings().website_cover_image"
         >
-          <!-- Thanh tìm kiếm Storefront -->
-          <div class="relative flex-1">
-            <input
-              type="text"
-              [ngModel]="searchQuery()"
-              (ngModelChange)="searchQuery.set($event); currentPage.set(1)"
-              placeholder="Tìm món ngon của quán..."
-              class="w-full search-input"
+          @if (storeSettings().website_cover_image) {
+            <img
+              [src]="storeSettings().website_cover_image"
+              alt="Ảnh bìa cửa hàng"
+              class="w-full h-full object-cover"
             />
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="absolute left-3 top-3 h-4 w-4 text-slate-400 dark:text-slate-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="2.5"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-          </div>
+          }
+          <div class="absolute inset-0 bg-black/20"></div>
+          <div class="absolute inset-0 backdrop-blur-[1px]"></div>
+        </div>
 
-          <div class="flex items-center justify-between md:justify-start gap-4 shrink-0">
-            <div class="flex items-center gap-2">
-              <h2
-                class="text-sm sm:text-base font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider"
-              >
-                {{ showFavoritesOnly() ? 'Sản phẩm yêu thích' : 'Món ăn & Đồ uống' }}
-              </h2>
-              <span class="text-xs font-bold text-slate-400"
-                >({{ filteredProducts().length }} món)</span
-              >
+        <!-- Thông tin quán -->
+        <div
+          class="px-4 pb-4 pt-1 flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-10 sm:-mt-12 relative z-10 max-w-[1530px] mx-auto"
+        >
+          <div class="flex items-end gap-3.5">
+            <!-- Logo/Avatar quán -->
+            <div
+              class="w-20 h-20 sm:w-24 sm:h-24 rounded-[15px] bg-white dark:bg-slate-900 border-4 border-white dark:border-slate-900 shadow-md flex items-center justify-center text-3xl font-black text-white shrink-0 overflow-hidden relative"
+              [style.background-color]="storeSettings().primary_color"
+            >
+              @if (storeSettings().website_avatar_image) {
+                <img
+                  [src]="storeSettings().website_avatar_image"
+                  alt="Logo cửa hàng"
+                  class="w-full h-full object-cover absolute inset-0"
+                />
+              } @else {
+                <!-- Sử dụng chữ cái đầu của quán làm Logo đại diện -->
+                {{
+                  storeSettings().store_name
+                    ? storeSettings().store_name.charAt(0).toUpperCase()
+                    : 'C'
+                }}
+              }
             </div>
 
-            <!-- Nút Toggle Grid / List -->
+            <div class="pb-1.5 space-y-0.5">
+              <h1
+                class="text-lg sm:text-xl font-extrabold text-slate-800 dark:text-white tracking-tight flex items-center gap-1.5"
+              >
+                <span>{{ storeSettings().store_name || 'Cafe Web3 POS' }}</span>
+                <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Online"></span>
+              </h1>
+              <p
+                class="text-xs text-slate-400 dark:text-slate-500 font-semibold flex items-center gap-1"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-3.5 w-3.5 text-emerald-500 shrink-0"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+                  />
+                </svg>
+                <span>Thực đơn cửa hàng trực tuyến</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Nút chuyển chế độ: Danh mục / Yêu thích -->
+          <div class="flex items-center gap-2.5 self-start sm:self-end flex-wrap">
             <app-mini-buttons
               [options]="[
-                { value: 'grid', label: 'Lưới' },
-                { value: 'list', label: 'Danh sách' }
+                { value: false, label: 'Thực đơn' },
+                { value: true, label: 'Yêu thích (' + favorites().length + ')' },
               ]"
-              [activeValue]="displayMode()"
+              [activeValue]="showFavoritesOnly()"
               [showDot]="false"
-              containerClass="tab-group h-9"
-              buttonClass="tab-item h-7 px-3 text-xs font-bold transition-all"
+              containerClass="tab-group h-11"
+              buttonClass="tab-item h-9 px-5 text-sm sm:text-base font-black tracking-wide transition-all"
               activeClass="active"
               inactiveClass=""
-              (valueChange)="displayMode.set($event)"
+              (valueChange)="showFavoritesOnly.set($event)"
             ></app-mini-buttons>
+
+            <!-- Standalone Theme Toggle Component -->
+            <app-theme-toggle size="md"></app-theme-toggle>
           </div>
         </div>
+      </header>
 
-        @if (filteredProducts().length === 0) {
+      <!-- BỐ CỤC CHÍNH (DESKTOP: 2 CỘT, MOBILE: LAYOUT DỌC TRƯỢT NGANG) -->
+      <div class="max-w-[1530px] mx-auto px-4 py-6 flex flex-col md:flex-row gap-6 items-start">
+        <!-- CỘT DANH MỤC (DESKTOP: Sidebar bên trái, MOBILE: Trượt ngang phía trên) -->
+        @if (!showFavoritesOnly()) {
           <div
-            class="app-card p-12 text-center"
+            class="w-full md:w-56 shrink-0 app-card md:p-3 overflow-x-auto no-scrollbar md:overflow-visible flex md:flex-col gap-2 p-1 mb-2 sticky top-0 md:top-6 z-20 transition-all duration-300"
           >
-            <p class="text-slate-400 font-semibold text-sm">
-              {{
-                showFavoritesOnly()
-                  ? 'Chưa có món ăn yêu thích nào được lưu!'
-                  : 'Không có sản phẩm nào thuộc danh mục này!'
-              }}
-            </p>
+            @for (cat of categoryOptions(); track cat.value) {
+              <button
+                type="button"
+                (click)="activeCategoryId.set(cat.value); currentPage.set(1)"
+                [class]="
+                  'flex items-center px-4.5 py-3 rounded-2xl text-xs sm:text-sm transition-all duration-200 group w-full text-left active:scale-[0.98] border md:border-none whitespace-nowrap md:whitespace-normal shrink-0 ' +
+                  (activeCategoryId() === cat.value
+                    ? 'bg-purple-50 dark:bg-purple-950/40 !text-purple-600 dark:!text-purple-400 font-bold border-purple-200/40 dark:border-purple-800/40 shadow-sm shadow-purple-500/5'
+                    : 'bg-white dark:bg-slate-900 md:bg-transparent border-slate-200/60 dark:border-slate-800/60 text-slate-700 dark:text-slate-350 font-semibold md:font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50')
+                "
+              >
+                <span>{{ cat.label }}</span>
+              </button>
+            }
           </div>
-        } @else {
-          <!-- Grid hoặc List sản phẩm dựa theo displayMode() -->
-          @if (displayMode() === 'grid') {
-            <!-- Layout dạng Grid cải tiến: Tên món to hơn, ảnh h-44, đồng bộ POS, 1 cột trên điện thoại, 2 cột trên sm, 3 cột trên lg, 4 cột trên xl -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              @for (product of paginatedProducts(); track product.id) {
-                <div
-                  class="group app-card-interactive p-0 overflow-hidden flex flex-col h-full relative"
-                >
-                  <!-- Nút yêu thích dạng Tim -->
-                  <button
-                    type="button"
-                    (click)="toggleFavorite(product.id)"
-                    class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 dark:bg-slate-800/90 shadow-md flex items-center justify-center transition-transform active:scale-90 hover:scale-105 z-10 cursor-pointer border border-slate-100 dark:border-slate-700"
-                  >
-                    @if (isFavorite(product.id)) {
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                        class="w-4 h-4 text-rose-500"
-                      >
-                        <path
-                          d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"
-                        />
-                      </svg>
-                    } @else {
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke-width="2.5"
-                        stroke="currentColor"
-                        class="w-4 h-4 text-slate-400 dark:text-slate-500 hover:text-rose-500"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
-                        />
-                      </svg>
-                    }
-                  </button>
-
-                  <!-- Ảnh sản phẩm -->
-                  <div
-                    class="relative h-44 w-full bg-slate-100 dark:bg-slate-800 overflow-hidden shrink-0 flex items-center justify-center border-b border-slate-100 dark:border-slate-800"
-                  >
-                    @if (product.image) {
-                      <img
-                        [src]="product.image"
-                        [alt]="product.name"
-                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    } @else {
-                      <div
-                        class="bg-slate-50 dark:bg-slate-950 w-full h-full flex items-center justify-center text-slate-400 dark:text-slate-600"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke-width="1.5"
-                          stroke="currentColor"
-                          class="w-12 h-12"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m16.5 0a1.5 1.5 0 00-1.5-1.5H5.25A1.5 1.5 0 003.75 7.5m16.5 0v2.25a3.75 3.75 0 01-3.75 3.75h-9a3.75 3.75 0 01-3.75-3.75V7.5m10.5-3.75V3.75"
-                          />
-                        </svg>
-                      </div>
-                    }
-                    <div
-                      class="absolute inset-0 bg-slate-950/5 group-hover:bg-slate-950/0 transition-all"
-                    ></div>
-                    <!-- Badges danh mục -->
-                    <div class="absolute top-3 left-3 flex flex-wrap gap-1 max-w-[calc(100%-48px)]">
-                      @for (cat of product.categories; track cat.id) {
-                        <span
-                          class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm text-[var(--dynamic-primary)] text-[10px] font-extrabold px-2 py-0.5 rounded-xl shadow-sm border border-[var(--dynamic-primary)]/10"
-                        >
-                          {{ cat.name }}
-                        </span>
-                      }
-                    </div>
-                  </div>
-
-                  <!-- Thông tin sản phẩm -->
-                  <div class="p-4.5 flex-1 flex flex-col justify-between gap-3">
-                    <div class="space-y-1">
-                      <h3
-                        class="font-extrabold text-slate-800 dark:text-white text-[15px] sm:text-base leading-tight group-hover:text-[var(--dynamic-primary)] transition-colors truncate"
-                      >
-                        {{ product.name }}
-                      </h3>
-                      @if (product.short_description) {
-                        <p
-                          class="text-xs text-slate-400 dark:text-slate-500 font-medium line-clamp-2 mt-0.5 leading-relaxed"
-                        >
-                          {{ product.short_description }}
-                        </p>
-                      }
-                    </div>
-
-                    <div class="flex items-center justify-between pt-1">
-                      <!-- Giá bán -->
-                      <div class="flex flex-col">
-                        <span class="text-[10px] text-slate-400 font-bold uppercase leading-none"
-                          >Giá bán</span
-                        >
-                        <span class="text-base font-black text-[var(--dynamic-primary)] mt-0.5">
-                          {{ product.price | vnd }}
-                          @if (product.unit) {
-                            <span class="text-xs text-slate-400 dark:text-slate-500 font-normal">/ {{ product.unit }}</span>
-                          }
-                        </span>
-                      </div>
-
-                      <!-- Nút thêm vào giỏ hàng (Đồng bộ kiểu dấu + của POS) -->
-                      <button
-                        type="button"
-                        (click)="addToCart(product)"
-                        class="btn-add-cart"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              }
-            </div>
-          } @else {
-            <!-- Layout dạng List cải tiến: layout hàng ngang, tối ưu mobile -->
-            <div class="flex flex-col gap-3.5">
-              @for (product of paginatedProducts(); track product.id) {
-                <div
-                  class="group app-card-interactive overflow-hidden flex flex-row p-3.5 gap-4 relative"
-                >
-                  <!-- Nút yêu thích dạng Tim -->
-                  <button
-                    type="button"
-                    (click)="toggleFavorite(product.id)"
-                    class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/95 dark:bg-slate-800/95 shadow-sm flex items-center justify-center transition-transform active:scale-90 hover:scale-105 z-10 cursor-pointer border border-slate-100 dark:border-slate-700"
-                  >
-                    @if (isFavorite(product.id)) {
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                        class="w-4 h-4 text-rose-500"
-                      >
-                        <path
-                          d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"
-                        />
-                      </svg>
-                    } @else {
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke-width="2.5"
-                        stroke="currentColor"
-                        class="w-4 h-4 text-slate-400 dark:text-slate-500 hover:text-rose-500"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
-                        />
-                      </svg>
-                    }
-                  </button>
-
-                  <!-- Ảnh sản phẩm -->
-                  <div
-                    class="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl bg-slate-100 dark:bg-slate-800 overflow-hidden shrink-0 flex items-center justify-center border border-slate-100 dark:border-slate-800"
-                  >
-                    @if (product.image) {
-                      <img
-                        [src]="product.image"
-                        [alt]="product.name"
-                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    } @else {
-                      <div
-                        class="bg-slate-50 dark:bg-slate-950 w-full h-full flex items-center justify-center text-slate-400 dark:text-slate-600 font-bold"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke-width="1.5"
-                          stroke="currentColor"
-                          class="w-10 h-10"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m16.5 0a1.5 1.5 0 00-1.5-1.5H5.25A1.5 1.5 0 003.75 7.5m16.5 0v2.25a3.75 3.75 0 01-3.75 3.75h-9a3.75 3.75 0 01-3.75-3.75V7.5m10.5-3.75V3.75"
-                          />
-                        </svg>
-                      </div>
-                    }
-                  </div>
-
-                  <!-- Thông tin sản phẩm -->
-                  <div class="flex-1 min-w-0 flex flex-col justify-between py-0.5 pr-8">
-                    <div class="space-y-1">
-                      <div class="flex items-center gap-2 flex-wrap">
-                        <h3
-                          class="text-[15px] sm:text-base font-extrabold text-slate-800 dark:text-white tracking-tight group-hover:text-[var(--dynamic-primary)] transition-colors truncate"
-                        >
-                          {{ product.name }}
-                        </h3>
-                        <!-- Badges danh mục -->
-                        <div class="flex flex-wrap gap-1">
-                          @for (cat of product.categories; track cat.id) {
-                            <span
-                              class="bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] text-[9px] font-extrabold px-1.5 py-0.5 rounded-md border border-[var(--dynamic-primary)]/10"
-                            >
-                              {{ cat.name }}
-                            </span>
-                          }
-                        </div>
-                      </div>
-                      @if (product.short_description) {
-                        <p
-                          class="text-xs text-slate-400 dark:text-slate-500 font-medium line-clamp-2 leading-relaxed"
-                        >
-                          {{ product.short_description }}
-                        </p>
-                      }
-                    </div>
-
-                    <div class="flex items-end justify-between mt-2">
-                      <!-- Giá bán -->
-                      <div class="flex flex-col">
-                        <span class="text-[10px] text-slate-400 font-bold uppercase leading-none"
-                          >Giá bán</span
-                        >
-                        <span class="text-base font-black text-[var(--dynamic-primary)] mt-0.5">
-                          {{ product.price | vnd }}
-                          @if (product.unit) {
-                            <span class="text-xs text-slate-400 dark:text-slate-500 font-normal">/ {{ product.unit }}</span>
-                          }
-                        </span>
-                      </div>
-
-                      <!-- Nút thêm vào giỏ hàng (Đồng bộ kiểu dấu + của POS) -->
-                      <button
-                        type="button"
-                        (click)="addToCart(product)"
-                        class="btn-add-cart"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              }
-            </div>
-          }
-
-          @if (filteredProducts().length > itemsPerPage) {
-            <app-pagination
-              [currentPage]="currentPage()"
-              [totalPages]="totalPages()"
-              [totalItems]="filteredProducts().length"
-              [itemsPerPage]="itemsPerPage"
-              itemName="món"
-              (pageChange)="currentPage.set($event)"
-            ></app-pagination>
-          }
         }
-      </main>
-    </div>
 
-    <!-- FLOATING CART BAR (XUẤT HIỆN KHI CÓ MÓN TRONG GIỎ) -->
-    @if (cartCount() > 0) {
-      <div
-        class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[500] w-[calc(100%-2rem)] max-w-lg bg-slate-900/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-xl shadow-black/25 text-white flex items-center justify-between p-3.5 border border-slate-700/40 animate-in slide-in-from-bottom-5 duration-300"
-      >
-        <div class="flex items-center gap-3">
-          <!-- Huy hiệu số lượng -->
+        <!-- DANH SÁCH SẢN PHẨM -->
+        <main class="flex-1 w-full space-y-4">
+          <!-- Ô tìm kiếm và Bộ lọc thực đơn -->
           <div
-            class="w-10 h-10 rounded-xl bg-[var(--dynamic-primary)] text-white flex items-center justify-center relative"
+            class="app-card p-4 flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="2.5"
-              stroke="currentColor"
-              class="w-5 h-5"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
+            <!-- Thanh tìm kiếm Storefront -->
+            <div class="relative flex-1">
+              <input
+                type="text"
+                [ngModel]="searchQuery()"
+                (ngModelChange)="searchQuery.set($event); currentPage.set(1)"
+                placeholder="Tìm món ngon của quán..."
+                class="w-full search-input"
               />
-            </svg>
-            <span
-              class="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-slate-900 shadow-sm animate-pulse"
-            >
-              {{ cartCount() }}
-            </span>
-          </div>
-          <div class="flex flex-col">
-            <span class="text-[10px] text-slate-400 font-bold uppercase leading-none"
-              >Tổng giỏ hàng</span
-            >
-            <span class="text-sm font-black text-emerald-400 mt-0.5">
-              {{ cartTotal() | vnd }}
-            </span>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          (click)="isCartOpen.set(true)"
-          class="btn btn-primary"
-        >
-          Đặt hàng ngay
-        </button>
-      </div>
-    }
-
-    <!-- DRAWER GIỎ HÀNG & THANH TOÁN (SLIDE OUT DRAWER CHUYÊN NGHIỆP) -->
-    <app-drawer
-      [isOpen]="isCartOpen()"
-      (close)="isCartOpen.set(false)"
-      title="Giỏ hàng của bạn"
-    >
-      <div class="space-y-6">
-        <!-- Chi tiết món đã chọn -->
-        <div class="space-y-3">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wide"
-              >Chi tiết món đã chọn</span
-            >
-            <button
-              type="button"
-              (click)="clearCart()"
-              class="text-xs text-rose-500 hover:text-rose-600 font-bold hover:underline"
-            >
-              Xóa tất cả
-            </button>
-          </div>
-
-          <div class="space-y-2.5">
-            @for (item of cart(); track $index) {
-              <div
-                class="flex gap-3 bg-slate-50 dark:bg-slate-950/40 p-3 rounded-2xl border border-slate-100 dark:border-slate-800/40"
-              >
-                <div
-                  class="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-900 overflow-hidden shrink-0 flex items-center justify-center border border-slate-200/20"
-                >
-                  @if (item.product.image) {
-                    <img
-                      [src]="item.product.image"
-                      [alt]="item.product.name"
-                      class="w-full h-full object-cover"
-                    />
-                  } @else {
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke-width="1.5"
-                      stroke="currentColor"
-                      class="w-6 h-6 text-slate-400"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m16.5 0a1.5 1.5 0 00-1.5-1.5H5.25A1.5 1.5 0 003.75 7.5m16.5 0v2.25a3.75 3.75 0 01-3.75 3.75h-9a3.75 3.75 0 01-3.75-3.75V7.5m10.5-3.75V3.75"
-                      />
-                    </svg>
-                  }
-                </div>
-
-                <div class="flex-1 min-w-0 flex flex-col justify-between">
-                  <div>
-                    <h4 class="text-xs font-extrabold text-slate-800 dark:text-white truncate">
-                      {{ item.product.name }}
-                    </h4>
-                    @if (item.variant) {
-                      <span
-                        class="text-[10px] bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] px-2 py-0.5 rounded-md font-bold mt-1 inline-block"
-                      >
-                        {{ item.variant.variant_name }}
-                      </span>
-                    }
-                    <!-- Ô nhập ghi chú cho từng món tương tự POS thu ngân -->
-                    <div class="mt-1.5 relative">
-                      <input
-                        type="text"
-                        [(ngModel)]="item.note"
-                        (ngModelChange)="onCartItemNoteChange()"
-                        placeholder="Ghi chú (ít đá, ít ngọt...)"
-                        class="w-full form-input-sm bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80"
-                      />
-                    </div>
-                  </div>
-
-                  <div class="flex items-center justify-between mt-2 shrink-0">
-                    <span
-                      class="text-xs font-black text-slate-700 dark:text-slate-300 font-mono"
-                    >
-                      {{
-                        (item.variant ? item.variant.price : item.product.price) * item.quantity
-                          | number
-                      }}đ
-                      @if (item.product.unit) {
-                        <span class="text-[10px] text-slate-450 dark:text-slate-500 font-normal"> / {{ item.product.unit }}</span>
-                      }
-                    </span>
-
-                    <!-- Bộ tăng giảm số lượng -->
-                    <div
-                      class="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1 shrink-0"
-                    >
-                      <button
-                        type="button"
-                        (click)="updateCartQty($index, -1)"
-                        class="w-8 h-8 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-center text-sm font-bold text-slate-400 hover:text-[var(--dynamic-primary)] dark:hover:text-[var(--dynamic-primary)]"
-                      >
-                        -
-                      </button>
-                      <span
-                        class="text-sm font-bold text-slate-800 dark:text-white w-7 text-center"
-                      >
-                        {{ item.quantity }}
-                      </span>
-                      <button
-                        type="button"
-                        (click)="updateCartQty($index, 1)"
-                        class="w-8 h-8 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-center text-sm font-bold text-slate-400 hover:text-[var(--dynamic-primary)] dark:hover:text-[var(--dynamic-primary)]"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            }
-          </div>
-        </div>
-
-        <!-- Form điền thông tin đặt đơn -->
-        <div class="border-t border-slate-100 dark:border-slate-800/60 pt-5 space-y-4">
-          <span class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-            >Thông tin nhận đơn</span
-          >
-
-          <!-- Tên -->
-          <div class="space-y-1.5">
-            <label
-              class="text-xs sm:text-sm font-black text-slate-700 dark:text-slate-350 uppercase tracking-wide block"
-              >Tên của bạn <span class="text-rose-500">*</span></label
-            >
-            <input
-              type="text"
-              [ngModel]="orderForm().customer_name"
-              (ngModelChange)="orderForm.update((f) => ({ ...f, customer_name: $event }))"
-              placeholder="Nhập tên của bạn"
-              class="form-input"
-            />
-          </div>
-
-          <!-- SĐT -->
-          <div class="space-y-1.5">
-            <label
-              class="text-xs sm:text-sm font-black text-slate-700 dark:text-slate-350 uppercase tracking-wide block"
-              >Số điện thoại liên hệ <span class="text-rose-500">*</span></label
-            >
-            <input
-              type="text"
-              [ngModel]="orderForm().customer_phone"
-              (ngModelChange)="orderForm.update((f) => ({ ...f, customer_phone: $event }))"
-              placeholder="Nhập số điện thoại để quán liên hệ"
-              class="form-input"
-            />
-          </div>
-
-          <!-- Địa chỉ giao hàng -->
-          <div class="space-y-1.5">
-            <label
-              class="text-xs sm:text-sm font-black text-slate-700 dark:text-slate-350 uppercase tracking-wide block"
-              >Địa chỉ giao hàng <span class="text-rose-500">*</span></label
-            >
-            <input
-              type="text"
-              [ngModel]="orderForm().table_number"
-              (ngModelChange)="orderForm.update((f) => ({ ...f, table_number: $event }))"
-              placeholder="Nhập địa chỉ giao hàng của bạn (bắt buộc)"
-              class="form-input"
-              required
-            />
-          </div>
-
-          <!-- Ghi chú chung -->
-          <div class="space-y-1.5">
-            <label
-              class="text-xs sm:text-sm font-black text-slate-700 dark:text-slate-350 uppercase tracking-wide block"
-              >Ghi chú đơn hàng</label
-            >
-            <textarea
-              rows="2"
-              [ngModel]="orderForm().note"
-              (ngModelChange)="orderForm.update((f) => ({ ...f, note: $event }))"
-              placeholder="Ghi chú thêm cho quán (Ví dụ: ít đường, nhiều đá...)"
-              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-sm focus:outline-none focus:border-[var(--color-primary)] text-slate-800 dark:text-white resize-none transition-all duration-200"
-            ></textarea>
-          </div>
-
-          <!-- Chọn phương thức thanh toán -->
-          <div class="space-y-2">
-            <label
-              class="text-xs sm:text-sm font-black text-slate-700 dark:text-slate-350 uppercase tracking-wide block"
-              >Hình thức thanh toán</label
-            >
-            <div class="grid grid-cols-2 gap-3">
-              <!-- COD -->
-              <div
-                (click)="orderForm.update((f) => ({ ...f, payment_method: 'cash' }))"
-                class="p-4.5 rounded-2xl border-2 flex flex-col items-center justify-center cursor-pointer transition-all"
-                [ngClass]="orderForm().payment_method === 'cash'
-                  ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 text-[var(--dynamic-primary)] font-black'
-                  : 'border-slate-200 dark:border-slate-800 text-slate-500 font-extrabold'"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="2"
-                  stroke="currentColor"
-                  class="w-7 h-7"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5h16.5c.621 0 1.125.504 1.125 1.125v12.75c0 .621-.504 1.125-1.125 1.125H3.75A1.125 1.125 0 012.625 17.25V5.625C2.625 5.004 3.129 4.5 3.75 4.5zM12 11.25a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"
-                  />
-                </svg>
-                <span class="text-xs sm:text-sm uppercase mt-1.5">Tiền mặt (COD)</span>
-              </div>
-
-              <!-- Chuyển khoản -->
-              <div
-                (click)="orderForm.update((f) => ({ ...f, payment_method: 'bank_transfer' }))"
-                class="p-4.5 rounded-2xl border-2 flex flex-col items-center justify-center cursor-pointer transition-all"
-                [ngClass]="orderForm().payment_method === 'bank_transfer'
-                  ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 text-[var(--dynamic-primary)] font-black'
-                  : 'border-slate-200 dark:border-slate-800 text-slate-500 font-extrabold'"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="2"
-                  stroke="currentColor"
-                  class="w-7 h-7"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.5M4.5 21V10.5M3 21h18M12 9.75v-1.5"
-                  />
-                </svg>
-                <span class="text-xs sm:text-sm uppercase mt-1.5">Chuyển khoản</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Footer Drawer (Thực hiện hành động đặt hàng) -->
-        <div class="border-t border-slate-100 dark:border-slate-800/60 pt-5 space-y-4">
-          <!-- Chi tiết phí vận chuyển nếu được cấu hình -->
-          @if (storeSettings() && storeSettings().shipping_fee_flat_enabled === '1') {
-            <!-- Tiến trình miễn phí vận chuyển -->
-            @if (storeSettings().shipping_fee_free_enabled === '1') {
-              @if (cartTotal() < (storeSettings().shipping_fee_free_min_amount || 0)) {
-                <div class="p-3 rounded-xl bg-purple-500/5 dark:bg-purple-950/20 border border-purple-500/10 dark:border-purple-800/40 text-[11px] font-bold text-slate-500 dark:text-slate-400 flex items-center justify-between gap-2">
-                  <span>Mua thêm <span class="text-[var(--dynamic-primary)]">{{ (storeSettings().shipping_fee_free_min_amount - cartTotal()) | vnd }}</span> để được miễn phí vận chuyển</span>
-                  <div class="w-16 bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden shrink-0">
-                    <div class="bg-[var(--dynamic-primary)] h-full transition-all duration-300" [style.width.%]="(cartTotal() / storeSettings().shipping_fee_free_min_amount) * 100"></div>
-                  </div>
-                </div>
-              } @else {
-                <div class="p-3 rounded-xl bg-emerald-500/5 dark:bg-emerald-950/20 border border-emerald-500/10 dark:border-emerald-800/40 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 shrink-0"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
-                  <span>Chúc mừng! Đơn hàng của bạn đã được miễn phí vận chuyển</span>
-                </div>
-              }
-            }
-
-            <div class="space-y-2 text-xs font-bold text-slate-500 dark:text-slate-400">
-              <div class="flex items-center justify-between">
-                <span>Tạm tính:</span>
-                <span class="font-mono text-slate-700 dark:text-slate-350">{{ cartTotal() | vnd }}</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span>Phí vận chuyển:</span>
-                <span class="font-mono text-slate-700 dark:text-slate-350">
-                  @if (shippingFee() > 0) {
-                    {{ shippingFee() | vnd }}
-                  } @else {
-                    <span class="text-emerald-500 uppercase tracking-wider text-[10px]">Miễn phí</span>
-                  }
-                </span>
-              </div>
-            </div>
-          }
-
-          <div class="flex items-center justify-between text-slate-800 dark:text-white border-t border-slate-100 dark:border-slate-800/40 pt-3">
-            <span class="text-xs sm:text-sm font-extrabold uppercase">Tổng thanh toán:</span>
-            <span class="text-base font-black text-rose-500 font-mono">
-              {{ cartTotalWithShipping() | vnd }}
-            </span>
-          </div>
-
-          <button
-            type="button"
-            (click)="placeOrder()"
-            [disabled]="isSubmittingOrder()"
-            class="btn btn-primary btn-full text-sm uppercase tracking-wider"
-          >
-            @if (isSubmittingOrder()) {
-              <div
-                class="w-5 h-5 rounded-full border-2 border-white/30 border-t-white animate-spin"
-              ></div>
-              <span>Đang xử lý đơn...</span>
-            } @else {
-              <span>XÁC NHẬN ĐẶT ĐƠN HÀNG</span>
-            }
-          </button>
-        </div>
-      </div>
-    </app-drawer>
-
-    <!-- POPUP/MODAL CHỌN BIẾN THỂ (VARIANT SELECTION DIALOG) -->
-    @if (selectedProductForVariant()) {
-      <div class="app-modal-overlay !z-[1000]">
-        <!-- Backdrop overlay -->
-        <div (click)="selectedProductForVariant.set(null)" class="app-modal-backdrop"></div>
-
-        <!-- Modal Content -->
-        <div class="app-modal-content animate-in fade-in zoom-in duration-200">
-          <!-- Header -->
-          <div class="app-modal-header">
-            <h4 class="app-modal-title">
-              Chọn size: {{ selectedProductForVariant().name }}
-            </h4>
-            <button
-              (click)="selectedProductForVariant.set(null)"
-              class="app-modal-close"
-              title="Đóng chọn size"
-            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5"
+                class="absolute left-3 top-3 h-4 w-4 text-slate-400 dark:text-slate-500"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
                 stroke-width="2.5"
               >
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
               </svg>
-            </button>
-          </div>
-
-          <!-- Content (Các biến thể) -->
-          <div class="app-modal-body">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-2"
-              >Kích thước khả dụng</span
-            >
-            <div class="space-y-2">
-              @for (variant of selectedProductForVariant().variants; track variant.id) {
-                <button
-                  (click)="selectedVariantId.set(variant.id)"
-                  [class]="
-                    selectedVariantId() === variant.id
-                      ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)]'
-                      : 'border-slate-200 dark:border-slate-800 hover:border-purple-300 dark:hover:border-purple-900 bg-slate-50/50 dark:bg-slate-950/20 text-slate-700 dark:text-slate-300'
-                  "
-                  class="w-full flex items-center justify-between p-4 rounded-2xl border-2 font-bold text-left transition-all active:scale-[0.98]"
-                >
-                  <div class="flex items-center gap-3">
-                    <!-- Custom Radio Circle -->
-                    <div
-                      [class]="
-                        selectedVariantId() === variant.id
-                          ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]'
-                          : 'border-slate-300 dark:border-slate-700'
-                      "
-                      class="w-4 h-4 rounded-full border border-2 flex items-center justify-center transition-all shrink-0"
-                    >
-                      @if (selectedVariantId() === variant.id) {
-                        <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
-                      }
-                    </div>
-                    <span class="text-sm font-bold">{{ variant.variant_name }}</span>
-                  </div>
-                  <span class="text-sm font-extrabold text-[var(--dynamic-primary)]"
-                    >{{ variant.price | vnd }}</span
-                  >
-                </button>
-              }
             </div>
 
-            <!-- Ghi chú cho cốc nước -->
-            <div class="space-y-1.5 pt-3">
+            <div class="flex items-center justify-between md:justify-start gap-4 shrink-0">
+              <div class="flex items-center gap-2">
+                <h2
+                  class="text-sm sm:text-base font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider"
+                >
+                  {{ showFavoritesOnly() ? 'Sản phẩm yêu thích' : 'Món ăn & Đồ uống' }}
+                </h2>
+                <span class="text-xs font-bold text-slate-400"
+                  >({{ filteredProducts().length }} món)</span
+                >
+              </div>
+
+              <!-- Nút Toggle Grid / List -->
+              <app-mini-buttons
+                [options]="[
+                  { value: 'grid', label: 'Lưới' },
+                  { value: 'list', label: 'Danh sách' },
+                ]"
+                [activeValue]="displayMode()"
+                [showDot]="false"
+                containerClass="tab-group h-9"
+                buttonClass="tab-item h-7 px-3 text-xs font-bold transition-all"
+                activeClass="active"
+                inactiveClass=""
+                (valueChange)="displayMode.set($event)"
+              ></app-mini-buttons>
+            </div>
+          </div>
+
+          @if (filteredProducts().length === 0) {
+            <div class="app-card p-12 text-center">
+              <p class="text-slate-400 font-semibold text-sm">
+                {{
+                  showFavoritesOnly()
+                    ? 'Chưa có món ăn yêu thích nào được lưu!'
+                    : 'Không có sản phẩm nào thuộc danh mục này!'
+                }}
+              </p>
+            </div>
+          } @else {
+            <!-- Grid hoặc List sản phẩm dựa theo displayMode() -->
+            @if (displayMode() === 'grid') {
+              <!-- Layout dạng Grid cải tiến: Tên món to hơn, ảnh h-44, đồng bộ POS, 1 cột trên điện thoại, 2 cột trên sm, 3 cột trên lg, 4 cột trên xl -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                @for (product of paginatedProducts(); track product.id) {
+                  <div
+                    class="group app-card-interactive p-0 overflow-hidden flex flex-col h-full relative"
+                  >
+                    <!-- Nút yêu thích dạng Tim -->
+                    <button
+                      type="button"
+                      (click)="toggleFavorite(product.id)"
+                      class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 dark:bg-slate-800/90 shadow-md flex items-center justify-center transition-transform active:scale-90 hover:scale-105 z-10 cursor-pointer border border-slate-100 dark:border-slate-700"
+                    >
+                      @if (isFavorite(product.id)) {
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                          class="w-4 h-4 text-rose-500"
+                        >
+                          <path
+                            d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"
+                          />
+                        </svg>
+                      } @else {
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke-width="2.5"
+                          stroke="currentColor"
+                          class="w-4 h-4 text-slate-400 dark:text-slate-500 hover:text-rose-500"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
+                          />
+                        </svg>
+                      }
+                    </button>
+
+                    <!-- Ảnh sản phẩm -->
+                    <div
+                      class="relative h-44 w-full bg-slate-100 dark:bg-slate-800 overflow-hidden shrink-0 flex items-center justify-center border-b border-slate-100 dark:border-slate-800"
+                    >
+                      @if (product.image) {
+                        <img
+                          [src]="product.image"
+                          [alt]="product.name"
+                          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      } @else {
+                        <div
+                          class="bg-slate-50 dark:bg-slate-950 w-full h-full flex items-center justify-center text-slate-400 dark:text-slate-600"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="1.5"
+                            stroke="currentColor"
+                            class="w-12 h-12"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m16.5 0a1.5 1.5 0 00-1.5-1.5H5.25A1.5 1.5 0 003.75 7.5m16.5 0v2.25a3.75 3.75 0 01-3.75 3.75h-9a3.75 3.75 0 01-3.75-3.75V7.5m10.5-3.75V3.75"
+                            />
+                          </svg>
+                        </div>
+                      }
+                      <div
+                        class="absolute inset-0 bg-slate-950/5 group-hover:bg-slate-950/0 transition-all"
+                      ></div>
+                      <!-- Badges danh mục -->
+                      <div
+                        class="absolute top-3 left-3 flex flex-wrap gap-1 max-w-[calc(100%-48px)]"
+                      >
+                        @for (cat of product.categories; track cat.id) {
+                          <span
+                            class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm text-[var(--dynamic-primary)] text-[10px] font-extrabold px-2 py-0.5 rounded-xl shadow-sm border border-[var(--dynamic-primary)]/10"
+                          >
+                            {{ cat.name }}
+                          </span>
+                        }
+                      </div>
+                    </div>
+
+                    <!-- Thông tin sản phẩm -->
+                    <div class="p-4.5 flex-1 flex flex-col justify-between gap-3">
+                      <div class="space-y-1">
+                        <h3
+                          class="font-extrabold text-slate-800 dark:text-white text-[15px] sm:text-base leading-tight group-hover:text-[var(--dynamic-primary)] transition-colors truncate"
+                        >
+                          {{ product.name }}
+                        </h3>
+                        @if (product.short_description) {
+                          <p
+                            class="text-xs text-slate-400 dark:text-slate-500 font-medium line-clamp-2 mt-0.5 leading-relaxed"
+                          >
+                            {{ product.short_description }}
+                          </p>
+                        }
+                      </div>
+
+                      <div class="flex items-center justify-between pt-1">
+                        <!-- Giá bán -->
+                        <div class="flex flex-col">
+                          <span class="text-[10px] text-slate-400 font-bold uppercase leading-none"
+                            >Giá bán</span
+                          >
+                          <span class="text-base font-black text-[var(--dynamic-primary)] mt-0.5">
+                            {{ product.price | vnd }}
+                            @if (product.unit) {
+                              <span class="text-xs text-slate-400 dark:text-slate-500 font-normal"
+                                >/ {{ product.unit }}</span
+                              >
+                            }
+                          </span>
+                        </div>
+
+                        <!-- Nút thêm vào giỏ hàng (Đồng bộ kiểu dấu + của POS) -->
+                        <button type="button" (click)="addToCart(product)" class="btn-add-cart">
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <!-- Layout dạng List cải tiến: layout hàng ngang, tối ưu mobile -->
+              <div class="flex flex-col gap-3.5">
+                @for (product of paginatedProducts(); track product.id) {
+                  <div
+                    class="group app-card-interactive overflow-hidden flex flex-row p-3.5 gap-4 relative"
+                  >
+                    <!-- Nút yêu thích dạng Tim -->
+                    <button
+                      type="button"
+                      (click)="toggleFavorite(product.id)"
+                      class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/95 dark:bg-slate-800/95 shadow-sm flex items-center justify-center transition-transform active:scale-90 hover:scale-105 z-10 cursor-pointer border border-slate-100 dark:border-slate-700"
+                    >
+                      @if (isFavorite(product.id)) {
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                          class="w-4 h-4 text-rose-500"
+                        >
+                          <path
+                            d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"
+                          />
+                        </svg>
+                      } @else {
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke-width="2.5"
+                          stroke="currentColor"
+                          class="w-4 h-4 text-slate-400 dark:text-slate-500 hover:text-rose-500"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
+                          />
+                        </svg>
+                      }
+                    </button>
+
+                    <!-- Ảnh sản phẩm -->
+                    <div
+                      class="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl bg-slate-100 dark:bg-slate-800 overflow-hidden shrink-0 flex items-center justify-center border border-slate-100 dark:border-slate-800"
+                    >
+                      @if (product.image) {
+                        <img
+                          [src]="product.image"
+                          [alt]="product.name"
+                          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      } @else {
+                        <div
+                          class="bg-slate-50 dark:bg-slate-950 w-full h-full flex items-center justify-center text-slate-400 dark:text-slate-600 font-bold"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="1.5"
+                            stroke="currentColor"
+                            class="w-10 h-10"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m16.5 0a1.5 1.5 0 00-1.5-1.5H5.25A1.5 1.5 0 003.75 7.5m16.5 0v2.25a3.75 3.75 0 01-3.75 3.75h-9a3.75 3.75 0 01-3.75-3.75V7.5m10.5-3.75V3.75"
+                            />
+                          </svg>
+                        </div>
+                      }
+                    </div>
+
+                    <!-- Thông tin sản phẩm -->
+                    <div class="flex-1 min-w-0 flex flex-col justify-between py-0.5 pr-8">
+                      <div class="space-y-1">
+                        <div class="flex items-center gap-2 flex-wrap">
+                          <h3
+                            class="text-[15px] sm:text-base font-extrabold text-slate-800 dark:text-white tracking-tight group-hover:text-[var(--dynamic-primary)] transition-colors truncate"
+                          >
+                            {{ product.name }}
+                          </h3>
+                          <!-- Badges danh mục -->
+                          <div class="flex flex-wrap gap-1">
+                            @for (cat of product.categories; track cat.id) {
+                              <span
+                                class="bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] text-[9px] font-extrabold px-1.5 py-0.5 rounded-md border border-[var(--dynamic-primary)]/10"
+                              >
+                                {{ cat.name }}
+                              </span>
+                            }
+                          </div>
+                        </div>
+                        @if (product.short_description) {
+                          <p
+                            class="text-xs text-slate-400 dark:text-slate-500 font-medium line-clamp-2 leading-relaxed"
+                          >
+                            {{ product.short_description }}
+                          </p>
+                        }
+                      </div>
+
+                      <div class="flex items-end justify-between mt-2">
+                        <!-- Giá bán -->
+                        <div class="flex flex-col">
+                          <span class="text-[10px] text-slate-400 font-bold uppercase leading-none"
+                            >Giá bán</span
+                          >
+                          <span class="text-base font-black text-[var(--dynamic-primary)] mt-0.5">
+                            {{ product.price | vnd }}
+                            @if (product.unit) {
+                              <span class="text-xs text-slate-400 dark:text-slate-500 font-normal"
+                                >/ {{ product.unit }}</span
+                              >
+                            }
+                          </span>
+                        </div>
+
+                        <!-- Nút thêm vào giỏ hàng (Đồng bộ kiểu dấu + của POS) -->
+                        <button type="button" (click)="addToCart(product)" class="btn-add-cart">
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+
+            @if (filteredProducts().length > itemsPerPage) {
+              <app-pagination
+                [currentPage]="currentPage()"
+                [totalPages]="totalPages()"
+                [totalItems]="filteredProducts().length"
+                [itemsPerPage]="itemsPerPage"
+                itemName="món"
+                (pageChange)="currentPage.set($event)"
+              ></app-pagination>
+            }
+          }
+        </main>
+      </div>
+
+      <!-- FLOATING CART BAR (XUẤT HIỆN KHI CÓ MÓN TRONG GIỎ) -->
+      @if (cartCount() > 0) {
+        <div
+          class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[500] w-[calc(100%-2rem)] max-w-lg bg-slate-900/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-xl shadow-black/25 text-white flex items-center justify-between p-3.5 border border-slate-700/40 animate-in slide-in-from-bottom-5 duration-300"
+        >
+          <div class="flex items-center gap-3">
+            <!-- Huy hiệu số lượng -->
+            <div
+              class="w-10 h-10 rounded-xl bg-[var(--dynamic-primary)] text-white flex items-center justify-center relative"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="2.5"
+                stroke="currentColor"
+                class="w-5 h-5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
+                />
+              </svg>
+              <span
+                class="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-slate-900 shadow-sm animate-pulse"
+              >
+                {{ cartCount() }}
+              </span>
+            </div>
+            <div class="flex flex-col">
+              <span class="text-[10px] text-slate-400 font-bold uppercase leading-none"
+                >Tổng giỏ hàng</span
+              >
+              <span class="text-sm font-black text-emerald-400 mt-0.5">
+                {{ cartTotal() | vnd }}
+              </span>
+            </div>
+          </div>
+
+          <button type="button" (click)="isCartOpen.set(true)" class="btn btn-primary">
+            Đặt hàng ngay
+          </button>
+        </div>
+      }
+
+      <!-- DRAWER GIỎ HÀNG & THANH TOÁN (SLIDE OUT DRAWER CHUYÊN NGHIỆP) -->
+      <app-drawer [isOpen]="isCartOpen()" (close)="isCartOpen.set(false)" title="Giỏ hàng của bạn">
+        <div class="space-y-6">
+          <!-- Chi tiết món đã chọn -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wide"
+                >Chi tiết món đã chọn</span
+              >
+              <button
+                type="button"
+                (click)="clearCart()"
+                class="text-xs text-rose-500 hover:text-rose-600 font-bold hover:underline"
+              >
+                Xóa tất cả
+              </button>
+            </div>
+
+            <div class="space-y-2.5">
+              @for (item of cart(); track $index) {
+                <div
+                  class="flex gap-3 bg-slate-50 dark:bg-slate-950/40 p-3 rounded-2xl border border-slate-100 dark:border-slate-800/40"
+                >
+                  <div
+                    class="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-900 overflow-hidden shrink-0 flex items-center justify-center border border-slate-200/20"
+                  >
+                    @if (item.product.image) {
+                      <img
+                        [src]="item.product.image"
+                        [alt]="item.product.name"
+                        class="w-full h-full object-cover"
+                      />
+                    } @else {
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                        class="w-6 h-6 text-slate-400"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m16.5 0a1.5 1.5 0 00-1.5-1.5H5.25A1.5 1.5 0 003.75 7.5m16.5 0v2.25a3.75 3.75 0 01-3.75 3.75h-9a3.75 3.75 0 01-3.75-3.75V7.5m10.5-3.75V3.75"
+                        />
+                      </svg>
+                    }
+                  </div>
+
+                  <div class="flex-1 min-w-0 flex flex-col justify-between">
+                    <div>
+                      <h4 class="text-xs font-extrabold text-slate-800 dark:text-white truncate">
+                        {{ item.product.name }}
+                      </h4>
+                      @if (item.variant) {
+                        <span
+                          class="text-[10px] bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] px-2 py-0.5 rounded-md font-bold mt-1 inline-block"
+                        >
+                          {{ item.variant.variant_name }}
+                        </span>
+                      }
+                      <!-- Ô nhập ghi chú cho từng món tương tự POS thu ngân -->
+                      <div class="mt-1.5 relative">
+                        <input
+                          type="text"
+                          [(ngModel)]="item.note"
+                          (ngModelChange)="onCartItemNoteChange()"
+                          placeholder="Ghi chú (ít đá, ít ngọt...)"
+                          class="w-full form-input-sm bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80"
+                        />
+                      </div>
+                    </div>
+
+                    <div class="flex items-center justify-between mt-2 shrink-0">
+                      <span class="text-xs font-black text-slate-700 dark:text-slate-300 font-mono">
+                        {{
+                          (item.variant ? item.variant.price : item.product.price) * item.quantity
+                            | number
+                        }}đ
+                        @if (item.product.unit) {
+                          <span class="text-[10px] text-slate-450 dark:text-slate-500 font-normal">
+                            / {{ item.product.unit }}</span
+                          >
+                        }
+                      </span>
+
+                      <!-- Bộ tăng giảm số lượng -->
+                      <div
+                        class="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1 shrink-0"
+                      >
+                        <button
+                          type="button"
+                          (click)="updateCartQty($index, -1)"
+                          class="w-8 h-8 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-center text-sm font-bold text-slate-400 hover:text-[var(--dynamic-primary)] dark:hover:text-[var(--dynamic-primary)]"
+                        >
+                          -
+                        </button>
+                        <span
+                          class="text-sm font-bold text-slate-800 dark:text-white w-7 text-center"
+                        >
+                          {{ item.quantity }}
+                        </span>
+                        <button
+                          type="button"
+                          (click)="updateCartQty($index, 1)"
+                          class="w-8 h-8 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-center text-sm font-bold text-slate-400 hover:text-[var(--dynamic-primary)] dark:hover:text-[var(--dynamic-primary)]"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Form điền thông tin đặt đơn -->
+          <div class="border-t border-slate-100 dark:border-slate-800/60 pt-5 space-y-4">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+              >Thông tin nhận đơn</span
+            >
+
+            <!-- Tên -->
+            <div class="space-y-1.5">
               <label
                 class="text-xs sm:text-sm font-black text-slate-700 dark:text-slate-350 uppercase tracking-wide block"
-                >Ghi chú riêng món này</label
+                >Tên của bạn <span class="text-rose-500">*</span></label
               >
               <input
                 type="text"
-                [ngModel]="variantNote()"
-                (ngModelChange)="variantNote.set($event)"
-                placeholder="Ví dụ: Không đường, ít đá, nhiều kem..."
+                [ngModel]="orderForm().customer_name"
+                (ngModelChange)="orderForm.update((f) => ({ ...f, customer_name: $event }))"
+                placeholder="Nhập tên của bạn"
                 class="form-input"
               />
             </div>
+
+            <!-- SĐT -->
+            <div class="space-y-1.5">
+              <label
+                class="text-xs sm:text-sm font-black text-slate-700 dark:text-slate-350 uppercase tracking-wide block"
+                >Số điện thoại liên hệ <span class="text-rose-500">*</span></label
+              >
+              <input
+                type="text"
+                [ngModel]="orderForm().customer_phone"
+                (ngModelChange)="orderForm.update((f) => ({ ...f, customer_phone: $event }))"
+                placeholder="Nhập số điện thoại để quán liên hệ"
+                class="form-input"
+              />
+            </div>
+
+            <!-- Địa chỉ giao hàng -->
+            <div class="space-y-1.5">
+              <label
+                class="text-xs sm:text-sm font-black text-slate-700 dark:text-slate-350 uppercase tracking-wide block"
+                >Địa chỉ giao hàng <span class="text-rose-500">*</span></label
+              >
+              <input
+                type="text"
+                [ngModel]="orderForm().table_number"
+                (ngModelChange)="orderForm.update((f) => ({ ...f, table_number: $event }))"
+                placeholder="Nhập địa chỉ giao hàng của bạn (bắt buộc)"
+                class="form-input"
+                required
+              />
+            </div>
+
+            <!-- Ghi chú chung -->
+            <div class="space-y-1.5">
+              <label
+                class="text-xs sm:text-sm font-black text-slate-700 dark:text-slate-350 uppercase tracking-wide block"
+                >Ghi chú đơn hàng</label
+              >
+              <textarea
+                rows="2"
+                [ngModel]="orderForm().note"
+                (ngModelChange)="orderForm.update((f) => ({ ...f, note: $event }))"
+                placeholder="Ghi chú thêm cho quán (Ví dụ: ít đường, nhiều đá...)"
+                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-sm focus:outline-none focus:border-[var(--color-primary)] text-slate-800 dark:text-white resize-none transition-all duration-200"
+              ></textarea>
+            </div>
+
+            <!-- Chọn phương thức thanh toán -->
+            <div class="space-y-2">
+              <label
+                class="text-xs sm:text-sm font-black text-slate-700 dark:text-slate-350 uppercase tracking-wide block"
+                >Hình thức thanh toán</label
+              >
+              <div class="grid grid-cols-2 gap-3">
+                <!-- COD -->
+                <div
+                  (click)="orderForm.update((f) => ({ ...f, payment_method: 'cash' }))"
+                  class="p-4.5 rounded-2xl border-2 flex flex-col items-center justify-center cursor-pointer transition-all"
+                  [ngClass]="
+                    orderForm().payment_method === 'cash'
+                      ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 text-[var(--dynamic-primary)] font-black'
+                      : 'border-slate-200 dark:border-slate-800 text-slate-500 font-extrabold'
+                  "
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="2"
+                    stroke="currentColor"
+                    class="w-7 h-7"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5h16.5c.621 0 1.125.504 1.125 1.125v12.75c0 .621-.504 1.125-1.125 1.125H3.75A1.125 1.125 0 012.625 17.25V5.625C2.625 5.004 3.129 4.5 3.75 4.5zM12 11.25a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"
+                    />
+                  </svg>
+                  <span class="text-xs sm:text-sm uppercase mt-1.5">Tiền mặt (COD)</span>
+                </div>
+
+                <!-- Chuyển khoản -->
+                <div
+                  (click)="orderForm.update((f) => ({ ...f, payment_method: 'bank_transfer' }))"
+                  class="p-4.5 rounded-2xl border-2 flex flex-col items-center justify-center cursor-pointer transition-all"
+                  [ngClass]="
+                    orderForm().payment_method === 'bank_transfer'
+                      ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 text-[var(--dynamic-primary)] font-black'
+                      : 'border-slate-200 dark:border-slate-800 text-slate-500 font-extrabold'
+                  "
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="2"
+                    stroke="currentColor"
+                    class="w-7 h-7"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.5M4.5 21V10.5M3 21h18M12 9.75v-1.5"
+                    />
+                  </svg>
+                  <span class="text-xs sm:text-sm uppercase mt-1.5">Chuyển khoản</span>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <!-- Footer: Số lượng và Thêm -->
-          <div class="app-modal-footer justify-between">
+          <!-- Footer Drawer (Thực hiện hành động đặt hàng) -->
+          <div class="border-t border-slate-100 dark:border-slate-800/60 pt-5 space-y-4">
+            <!-- Chi tiết phí vận chuyển nếu được cấu hình -->
+            @if (storeSettings() && storeSettings().shipping_fee_flat_enabled === '1') {
+              <!-- Tiến trình miễn phí vận chuyển -->
+              @if (storeSettings().shipping_fee_free_enabled === '1') {
+                @if (cartTotal() < (storeSettings().shipping_fee_free_min_amount || 0)) {
+                  <div
+                    class="p-3 rounded-xl bg-purple-500/5 dark:bg-purple-950/20 border border-purple-500/10 dark:border-purple-800/40 text-[11px] font-bold text-slate-500 dark:text-slate-400 flex items-center justify-between gap-2"
+                  >
+                    <span
+                      >Mua thêm
+                      <span class="text-[var(--dynamic-primary)]">{{
+                        storeSettings().shipping_fee_free_min_amount - cartTotal() | vnd
+                      }}</span>
+                      để được miễn phí vận chuyển</span
+                    >
+                    <div
+                      class="w-16 bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden shrink-0"
+                    >
+                      <div
+                        class="bg-[var(--dynamic-primary)] h-full transition-all duration-300"
+                        [style.width.%]="
+                          (cartTotal() / storeSettings().shipping_fee_free_min_amount) * 100
+                        "
+                      ></div>
+                    </div>
+                  </div>
+                } @else {
+                  <div
+                    class="p-3 rounded-xl bg-emerald-500/5 dark:bg-emerald-950/20 border border-emerald-500/10 dark:border-emerald-800/40 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      class="w-4 h-4 shrink-0"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                    <span>Chúc mừng! Đơn hàng của bạn đã được miễn phí vận chuyển</span>
+                  </div>
+                }
+              }
+
+              <div class="space-y-2 text-xs font-bold text-slate-500 dark:text-slate-400">
+                <div class="flex items-center justify-between">
+                  <span>Tạm tính:</span>
+                  <span class="font-mono text-slate-700 dark:text-slate-350">{{
+                    cartTotal() | vnd
+                  }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span>Phí vận chuyển:</span>
+                  <span class="font-mono text-slate-700 dark:text-slate-350">
+                    @if (shippingFee() > 0) {
+                      {{ shippingFee() | vnd }}
+                    } @else {
+                      <span class="text-emerald-500 uppercase tracking-wider text-[10px]"
+                        >Miễn phí</span
+                      >
+                    }
+                  </span>
+                </div>
+              </div>
+            }
+
             <div
-              class="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-1 rounded-xl shrink-0"
+              class="flex items-center justify-between text-slate-800 dark:text-white border-t border-slate-100 dark:border-slate-800/40 pt-3"
             >
-              <button
-                type="button"
-                (click)="variantQuantity.set(variantQuantity() > 1 ? variantQuantity() - 1 : 1)"
-                class="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-sm font-bold text-slate-400 hover:text-[var(--dynamic-primary)] dark:hover:text-[var(--dynamic-primary)]"
-              >
-                -
-              </button>
-              <span class="text-sm font-bold w-8 text-center text-slate-800 dark:text-white">
-                {{ variantQuantity() }}
+              <span class="text-xs sm:text-sm font-extrabold uppercase">Tổng thanh toán:</span>
+              <span class="text-base font-black text-rose-500 font-mono">
+                {{ cartTotalWithShipping() | vnd }}
               </span>
-              <button
-                type="button"
-                (click)="variantQuantity.set(variantQuantity() + 1)"
-                class="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-sm font-bold text-slate-400 hover:text-[var(--dynamic-primary)] dark:hover:text-[var(--dynamic-primary)]"
-              >
-                +
-              </button>
             </div>
 
             <button
               type="button"
-              (click)="submitVariantSelection()"
-              class="btn btn-primary h-11 px-6 text-sm font-bold shadow-md shadow-[var(--dynamic-primary)]/20 hover:scale-[1.02] shrink-0"
+              (click)="placeOrder()"
+              [disabled]="isSubmittingOrder()"
+              class="btn btn-primary btn-full text-sm uppercase tracking-wider"
             >
-              Thêm vào giỏ
+              @if (isSubmittingOrder()) {
+                <div
+                  class="w-5 h-5 rounded-full border-2 border-white/30 border-t-white animate-spin"
+                ></div>
+                <span>Đang xử lý đơn...</span>
+              } @else {
+                <span>XÁC NHẬN ĐẶT ĐƠN HÀNG</span>
+              }
             </button>
           </div>
         </div>
-      </div>
-    }
+      </app-drawer>
 
-    <!-- MODAL ĐẶT HÀNG THÀNH CÔNG (SUCCESS SCREEN) -->
-    @if (isOrderSuccess()) {
-      <div class="fixed inset-0 z-[2000] flex items-center justify-center p-4">
-        <!-- Backdrop mờ tối -->
-        <div
-          (click)="isOrderSuccess.set(false)"
-          class="fixed inset-0 bg-black/40"
-        ></div>
+      <!-- POPUP/MODAL CHỌN BIẾN THỂ (VARIANT SELECTION DIALOG) -->
+      @if (selectedProductForVariant()) {
+        <div class="app-modal-overlay !z-[1000]">
+          <!-- Backdrop overlay -->
+          <div (click)="selectedProductForVariant.set(null)" class="app-modal-backdrop"></div>
 
-        <!-- Nội dung modal thành công -->
-        <div
-          class="relative app-card max-w-sm w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200 text-slate-800 dark:text-slate-200 text-center space-y-6"
-        >
-          <!-- Icon thành công -->
-          <div
-            class="w-16 h-16 rounded-full bg-emerald-500 text-white flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+          <!-- Modal Content -->
+          <div class="app-modal-content animate-in fade-in zoom-in duration-200">
+            <!-- Header -->
+            <div class="app-modal-header">
+              <h4 class="app-modal-title">Chọn size: {{ selectedProductForVariant().name }}</h4>
+              <button
+                (click)="selectedProductForVariant.set(null)"
+                class="app-modal-close"
+                title="Đóng chọn size"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <!-- Content (Các biến thể) -->
+            <div class="app-modal-body">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-2"
+                >Kích thước khả dụng</span
+              >
+              <div class="space-y-2">
+                @for (variant of selectedProductForVariant().variants; track variant.id) {
+                  <button
+                    (click)="selectedVariantId.set(variant.id)"
+                    [class]="
+                      selectedVariantId() === variant.id
+                        ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)]'
+                        : 'border-slate-200 dark:border-slate-800 hover:border-purple-300 dark:hover:border-purple-900 bg-slate-50/50 dark:bg-slate-950/20 text-slate-700 dark:text-slate-300'
+                    "
+                    class="w-full flex items-center justify-between p-4 rounded-2xl border-2 font-bold text-left transition-all active:scale-[0.98]"
+                  >
+                    <div class="flex items-center gap-3">
+                      <!-- Custom Radio Circle -->
+                      <div
+                        [class]="
+                          selectedVariantId() === variant.id
+                            ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]'
+                            : 'border-slate-300 dark:border-slate-700'
+                        "
+                        class="w-4 h-4 rounded-full border border-2 flex items-center justify-center transition-all shrink-0"
+                      >
+                        @if (selectedVariantId() === variant.id) {
+                          <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+                        }
+                      </div>
+                      <span class="text-sm font-bold">{{ variant.variant_name }}</span>
+                    </div>
+                    <span class="text-sm font-extrabold text-[var(--dynamic-primary)]">{{
+                      variant.price | vnd
+                    }}</span>
+                  </button>
+                }
+              </div>
+
+              <!-- Ghi chú cho cốc nước -->
+              <div class="space-y-1.5 pt-3">
+                <label
+                  class="text-xs sm:text-sm font-black text-slate-700 dark:text-slate-350 uppercase tracking-wide block"
+                  >Ghi chú riêng món này</label
+                >
+                <input
+                  type="text"
+                  [ngModel]="variantNote()"
+                  (ngModelChange)="variantNote.set($event)"
+                  placeholder="Ví dụ: Không đường, ít đá, nhiều kem..."
+                  class="form-input"
+                />
+              </div>
+            </div>
+
+            <!-- Footer: Số lượng và Thêm -->
+            <div class="app-modal-footer justify-between">
+              <div
+                class="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-1 rounded-xl shrink-0"
+              >
+                <button
+                  type="button"
+                  (click)="variantQuantity.set(variantQuantity() > 1 ? variantQuantity() - 1 : 1)"
+                  class="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-sm font-bold text-slate-400 hover:text-[var(--dynamic-primary)] dark:hover:text-[var(--dynamic-primary)]"
+                >
+                  -
+                </button>
+                <span class="text-sm font-bold w-8 text-center text-slate-800 dark:text-white">
+                  {{ variantQuantity() }}
+                </span>
+                <button
+                  type="button"
+                  (click)="variantQuantity.set(variantQuantity() + 1)"
+                  class="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-sm font-bold text-slate-400 hover:text-[var(--dynamic-primary)] dark:hover:text-[var(--dynamic-primary)]"
+                >
+                  +
+                </button>
+              </div>
+
+              <button
+                type="button"
+                (click)="submitVariantSelection()"
+                class="btn btn-primary h-11 px-6 text-sm font-bold shadow-md shadow-[var(--dynamic-primary)]/20 hover:scale-[1.02] shrink-0"
+              >
+                Thêm vào giỏ
+              </button>
+            </div>
           </div>
+        </div>
+      }
 
+      <!-- MODAL ĐẶT HÀNG THÀNH CÔNG (SUCCESS SCREEN) -->
+      @if (isOrderSuccess()) {
+        <div class="fixed inset-0 z-[2000] flex items-center justify-center p-4">
+          <!-- Backdrop mờ tối -->
+          <div (click)="isOrderSuccess.set(false)" class="fixed inset-0 bg-black/40"></div>
+
+          <!-- Nội dung modal thành công -->
+          <div
+            class="relative app-card max-w-sm w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200 text-slate-800 dark:text-slate-200 text-center space-y-6"
+          >
+            <!-- Icon thành công -->
+            <div
+              class="w-16 h-16 rounded-full bg-emerald-500 text-white flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-8 w-8 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2.5"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+
+            <div class="space-y-2">
+              <h3
+                class="text-md font-extrabold text-slate-800 dark:text-white uppercase tracking-tight"
+              >
+                Đặt đơn hàng thành công!
+              </h3>
+              <p class="text-xs text-slate-400 font-semibold leading-relaxed">
+                Cảm ơn bạn đã lựa chọn cửa hàng! Đơn hàng của bạn đã được gửi trực tiếp tới hệ thống
+                POS của quán.
+              </p>
+            </div>
+
+            <!-- Thông tin mã đơn hàng -->
+            <div
+              class="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-100 dark:border-slate-900"
+            >
+              <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block"
+                >Mã đơn hàng</span
+              >
+              <span class="text-lg font-black text-[var(--dynamic-primary)] font-mono block mt-1">
+                {{ lastOrderCode() }}
+              </span>
+              <span
+                class="text-[9px] bg-amber-500/10 text-amber-600 dark:text-amber-400 font-black px-2.5 py-0.5 rounded-full mt-2 inline-block uppercase tracking-wider"
+              >
+                Chờ quán duyệt
+              </span>
+            </div>
+
+            <div class="pt-2">
+              <button
+                type="button"
+                (click)="isOrderSuccess.set(false)"
+                class="btn btn-primary btn-full h-12 text-sm uppercase tracking-wider shadow-md shadow-[var(--dynamic-primary)]/20"
+              >
+                Tiếp tục mua hàng
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+    } @else {
+      <!-- THÔNG BÁO CỬA HÀNG TẠM ĐÓNG (TRANG TRẮNG SẠCH SẼ - KHÔNG OVERLAY/BLUR) -->
+      <div
+        class="min-h-[80vh] flex flex-col items-center justify-center p-6 text-center max-w-sm mx-auto space-y-6 animate-in fade-in duration-300"
+      >
+        <div
+          class="app-card w-full shadow-md text-center p-8 space-y-6 border border-slate-200/60 dark:border-slate-850"
+        >
+          <div
+            class="w-16 h-16 rounded-full bg-slate-500/10 text-slate-550 dark:text-slate-400 flex items-center justify-center mx-auto"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              class="w-8 h-8"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
+              />
+            </svg>
+          </div>
           <div class="space-y-2">
             <h3
               class="text-md font-extrabold text-slate-800 dark:text-white uppercase tracking-tight"
             >
-              Đặt đơn hàng thành công!
+              Cửa hàng đang tạm đóng
             </h3>
-            <p class="text-xs text-slate-400 font-semibold leading-relaxed">
-              Cảm ơn bạn đã lựa chọn cửa hàng! Đơn hàng của bạn đã được gửi trực tiếp tới hệ thống
-              POS của quán.
+            <p class="text-xs text-slate-400 dark:text-slate-500 font-semibold leading-relaxed">
+              Hiện tại cửa hàng đang tạm ngưng nhận đơn hàng trực tuyến. Xin vui lòng quay lại sau!
             </p>
-          </div>
-
-          <!-- Thông tin mã đơn hàng -->
-          <div
-            class="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-100 dark:border-slate-900"
-          >
-            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block"
-              >Mã đơn hàng</span
-            >
-            <span class="text-lg font-black text-[var(--dynamic-primary)] font-mono block mt-1">
-              {{ lastOrderCode() }}
-            </span>
-            <span
-              class="text-[9px] bg-amber-500/10 text-amber-600 dark:text-amber-400 font-black px-2.5 py-0.5 rounded-full mt-2 inline-block uppercase tracking-wider"
-            >
-              Chờ quán duyệt
-            </span>
-          </div>
-
-          <div class="pt-2">
-            <button
-              type="button"
-              (click)="isOrderSuccess.set(false)"
-              class="btn btn-primary btn-full h-12 text-sm uppercase tracking-wider shadow-md shadow-[var(--dynamic-primary)]/20"
-            >
-              Tiếp tục mua hàng
-            </button>
           </div>
         </div>
       </div>
