@@ -67,6 +67,28 @@
 
   <!-- GIAO DIỆN CHÍNH STOREFRONT -->
   @if (!isLoading() && !isError() && storeSettings()) {
+    <!-- THÔNG BÁO CỬA HÀNG TẠM ĐÓNG (GLASSMORPHISM) -->
+    @if (storeSettings().store_status === '0') {
+      <div class="fixed inset-0 z-[1500] flex items-center justify-center p-4 backdrop-blur-md bg-slate-900/60 dark:bg-slate-950/80 animate-in fade-in duration-300">
+        <div class="app-card max-w-sm w-full shadow-2xl text-center p-6 space-y-6 animate-in zoom-in-95 duration-200 border border-slate-200/20 dark:border-slate-800/20">
+          <div class="w-16 h-16 rounded-full bg-slate-500/10 text-slate-500 dark:text-slate-400 flex items-center justify-center mx-auto">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-8 h-8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+            </svg>
+          </div>
+          <div class="space-y-2">
+            <h3 class="text-md font-extrabold text-slate-800 dark:text-white uppercase tracking-tight">Cửa hàng đang tạm đóng</h3>
+            <p class="text-xs text-slate-400 dark:text-slate-500 font-semibold leading-relaxed">
+              Hiện tại cửa hàng đang tạm ngưng nhận đơn hàng trực tuyến. Xin vui lòng quay lại sau!
+            </p>
+          </div>
+          <div class="pt-2">
+            <a routerLink="/" class="btn btn-secondary btn-full h-11 text-xs uppercase tracking-wider">Quay lại trang chủ</a>
+          </div>
+        </div>
+      </div>
+    }
+
     <!-- HEADER QUÁN (BANNER & AVATAR) -->
     <header
       class="relative bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800/80 transition-colors duration-300"
@@ -96,13 +118,21 @@
         <div class="flex items-end gap-3.5">
           <!-- Logo/Avatar quán -->
           <div
-            class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white dark:bg-slate-900 border-4 border-white dark:border-slate-900 shadow-md flex items-center justify-center text-3xl font-black text-white shrink-0 overflow-hidden"
+            class="w-20 h-20 sm:w-24 sm:h-24 rounded-[15px] bg-white dark:bg-slate-900 border-4 border-white dark:border-slate-900 shadow-md flex items-center justify-center text-3xl font-black text-white shrink-0 overflow-hidden relative"
             [style.background-color]="storeSettings().primary_color"
           >
-            <!-- Sử dụng chữ cái đầu của quán làm Logo đại diện -->
-            {{
-              storeSettings().store_name ? storeSettings().store_name.charAt(0).toUpperCase() : 'C'
-            }}
+            @if (storeSettings().website_avatar_image) {
+              <img
+                [src]="storeSettings().website_avatar_image"
+                alt="Logo cửa hàng"
+                class="w-full h-full object-cover absolute inset-0"
+              />
+            } @else {
+              <!-- Sử dụng chữ cái đầu của quán làm Logo đại diện -->
+              {{
+                storeSettings().store_name ? storeSettings().store_name.charAt(0).toUpperCase() : 'C'
+              }}
+            }
           </div>
 
           <div class="pb-1.5 space-y-0.5">
@@ -828,10 +858,47 @@
 
         <!-- Footer Drawer (Thực hiện hành động đặt hàng) -->
         <div class="border-t border-slate-100 dark:border-slate-800/60 pt-5 space-y-4">
-          <div class="flex items-center justify-between text-slate-800 dark:text-white">
-            <span class="text-xs sm:text-sm font-extrabold uppercase">Thành tiền:</span>
+          <!-- Chi tiết phí vận chuyển nếu được cấu hình -->
+          @if (storeSettings() && storeSettings().shipping_fee_flat_enabled === '1') {
+            <!-- Tiến trình miễn phí vận chuyển -->
+            @if (storeSettings().shipping_fee_free_enabled === '1') {
+              @if (cartTotal() < (storeSettings().shipping_fee_free_min_amount || 0)) {
+                <div class="p-3 rounded-xl bg-purple-500/5 dark:bg-purple-950/20 border border-purple-500/10 dark:border-purple-800/40 text-[11px] font-bold text-slate-500 dark:text-slate-400 flex items-center justify-between gap-2">
+                  <span>Mua thêm <span class="text-[var(--dynamic-primary)]">{{ (storeSettings().shipping_fee_free_min_amount - cartTotal()) | vnd }}</span> để được miễn phí vận chuyển</span>
+                  <div class="w-16 bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden shrink-0">
+                    <div class="bg-[var(--dynamic-primary)] h-full transition-all duration-300" [style.width.%]="(cartTotal() / storeSettings().shipping_fee_free_min_amount) * 100"></div>
+                  </div>
+                </div>
+              } @else {
+                <div class="p-3 rounded-xl bg-emerald-500/5 dark:bg-emerald-950/20 border border-emerald-500/10 dark:border-emerald-800/40 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 shrink-0"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
+                  <span>Chúc mừng! Đơn hàng của bạn đã được miễn phí vận chuyển</span>
+                </div>
+              }
+            }
+
+            <div class="space-y-2 text-xs font-bold text-slate-500 dark:text-slate-400">
+              <div class="flex items-center justify-between">
+                <span>Tạm tính:</span>
+                <span class="font-mono text-slate-700 dark:text-slate-350">{{ cartTotal() | vnd }}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span>Phí vận chuyển:</span>
+                <span class="font-mono text-slate-700 dark:text-slate-350">
+                  @if (shippingFee() > 0) {
+                    {{ shippingFee() | vnd }}
+                  } @else {
+                    <span class="text-emerald-500 uppercase tracking-wider text-[10px]">Miễn phí</span>
+                  }
+                </span>
+              </div>
+            </div>
+          }
+
+          <div class="flex items-center justify-between text-slate-800 dark:text-white border-t border-slate-100 dark:border-slate-800/40 pt-3">
+            <span class="text-xs sm:text-sm font-extrabold uppercase">Tổng thanh toán:</span>
             <span class="text-base font-black text-rose-500 font-mono">
-              {{ cartTotal() | vnd }}
+              {{ cartTotalWithShipping() | vnd }}
             </span>
           </div>
 

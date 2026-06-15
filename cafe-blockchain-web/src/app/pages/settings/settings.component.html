@@ -1770,96 +1770,244 @@
       </div>
 
       <div class="space-y-6">
-        <!-- Nhập Slug website -->
-        <div class="space-y-1.5">
-          <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-            >Đường dẫn Slug website cửa hàng</label
-          >
-          <div class="relative">
-            <input
-              type="text"
-              [ngModel]="configForm().website_slug"
-              (ngModelChange)="updateConfigForm('website_slug', $event)"
-              placeholder="Ví dụ: cafe-web3"
-              [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
-              class="form-input"
-            />
-          </div>
-          <span class="text-xs text-slate-400 font-medium block leading-tight">
-            * Nhập slug duy nhất đại diện cho quán (Ví dụ: <code>cafe-web3</code>). Nếu bỏ trống và
-            lưu, hệ thống sẽ tự sinh slug không dấu dựa trên tên quán kèm chữ cái ngẫu nhiên.
-          </span>
-        </div>
+        <!-- Khối 1: Thông tin Website & Trạng thái -->
+        <div class="p-5 rounded-[15px] bg-slate-50/50 dark:bg-slate-950/20 border border-slate-100/80 dark:border-slate-900/40 space-y-4">
+          <app-custom-switch
+            type="full"
+            label="Trạng thái hoạt động của Website Cửa hàng"
+            description="Bật để cho phép khách hàng truy cập, xem thực đơn và đặt món qua website storefront."
+            [checked]="configForm().store_status === '1'"
+            (checkedChange)="updateConfigForm('store_status', $event ? '1' : '0')"
+            [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+          ></app-custom-switch>
 
-        <!-- Nhập Ảnh bìa website -->
-        <div class="space-y-1.5">
-          <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-            >Ảnh bìa Web Store (Đường dẫn URL ảnh)</label
-          >
-          <div class="relative">
-            <input
-              type="text"
-              [ngModel]="configForm().website_cover_image"
-              (ngModelChange)="updateConfigForm('website_cover_image', $event)"
-              placeholder="Nhập đường dẫn URL ảnh bìa (Ví dụ: https://images.unsplash.com/...)"
-              [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
-              class="form-input"
-            />
+          <!-- Nhập Slug website -->
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+              >Đường dẫn Slug website cửa hàng</label
+            >
+            <div class="relative">
+              <input
+                type="text"
+                [ngModel]="configForm().website_slug"
+                (ngModelChange)="updateConfigForm('website_slug', $event)"
+                placeholder="Ví dụ: cafe-web3"
+                [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                class="form-input"
+              />
+            </div>
+            <span class="text-[11px] text-slate-400 font-medium block leading-tight">
+              * Nhập slug duy nhất đại diện cho quán (Ví dụ: <code>cafe-web3</code>). Nếu bỏ trống và
+              lưu, hệ thống sẽ tự sinh slug không dấu dựa trên tên quán.
+            </span>
           </div>
-          @if (configForm().website_cover_image) {
-            <div class="mt-2 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 max-h-40 flex items-center justify-center bg-slate-50 dark:bg-slate-950">
-              <img [src]="configForm().website_cover_image" alt="Preview ảnh bìa" class="w-full h-full object-cover" />
+
+          <!-- Đường dẫn liên kết cửa hàng (Nằm ngay dưới Slug) -->
+          @if (configForm().website_slug) {
+            <div
+              class="p-4 rounded-[15px] bg-purple-500/5 dark:bg-purple-950/20 border border-purple-500/10 dark:border-purple-800/40 space-y-2 mt-2 animate-in fade-in duration-200"
+            >
+              <span
+                class="text-[10px] font-bold text-purple-600 dark:text-purple-400 block uppercase tracking-wider"
+                >Đường dẫn website của quán bạn:</span
+              >
+              <div class="flex items-center gap-2">
+                <a
+                  [href]="getFullStoreLink()"
+                  target="_blank"
+                  class="text-xs sm:text-sm font-extrabold text-slate-700 dark:text-slate-200 hover:text-[var(--dynamic-primary)] transition-colors truncate underline"
+                >
+                  {{ getFullStoreLink() }}
+                </a>
+                <button
+                  type="button"
+                  (click)="copyStoreLink()"
+                  class="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors shrink-0"
+                  title="Sao chép liên kết"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-3.5 w-3.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
           }
-          <span class="text-xs text-slate-400 font-medium block leading-tight">
-            * Nhập URL hình ảnh (JPEG, PNG, WebP) để làm ảnh bìa phía trên cùng trang Web Store.
-          </span>
         </div>
 
-        <!-- Đường dẫn liên kết cửa hàng (Hiển thị trực quan nếu có slug) -->
-        @if (configForm().website_slug) {
-          <div
-            class="p-4 rounded-2xl bg-purple-500/5 dark:bg-purple-950/20 border border-purple-500/10 dark:border-purple-800/40 space-y-2"
-          >
-            <span
-              class="text-xs font-bold text-purple-600 dark:text-purple-400 block uppercase tracking-wide"
-              >Đường dẫn website của quán bạn:</span
-            >
-            <div class="flex items-center gap-2">
-              <a
-                [href]="getFullStoreLink()"
-                target="_blank"
-                class="text-sm font-bold text-slate-700 dark:text-slate-200 hover:text-[var(--dynamic-primary)] transition-colors truncate underline"
-              >
-                {{ getFullStoreLink() }}
-              </a>
-              <button
-                type="button"
-                (click)="copyStoreLink()"
-                class="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors shrink-0"
-                title="Sao chép liên kết"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="2.5"
+        <!-- Khối 2: Cấu hình Vận chuyển -->
+        <div class="p-5 rounded-[15px] bg-slate-50/50 dark:bg-slate-950/20 border border-slate-100/80 dark:border-slate-900/40 space-y-4">
+          <app-custom-switch
+            type="full"
+            label="Phí vận chuyển đồng giá"
+            description="Áp dụng một mức phí vận chuyển cố định cho tất cả các đơn hàng giao tận nơi."
+            [checked]="configForm().shipping_fee_flat_enabled === '1'"
+            (checkedChange)="updateConfigForm('shipping_fee_flat_enabled', $event ? '1' : '0')"
+            [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+          ></app-custom-switch>
+
+          @if (configForm().shipping_fee_flat_enabled === '1') {
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2 animate-in slide-in-from-top-2 duration-200">
+              <!-- Nhập Phí vận chuyển -->
+              <div class="space-y-1.5">
+                <label class="text-[11px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wide block"
+                  >Phí vận chuyển giao hàng (đ)</label
                 >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+                <div class="relative">
+                  <input
+                    type="number"
+                    [ngModel]="configForm().shipping_fee_flat_amount"
+                    (ngModelChange)="updateConfigForm('shipping_fee_flat_amount', $event)"
+                    placeholder="Ví dụ: 20000"
+                    [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                    class="form-input"
+                    min="0"
                   />
-                </svg>
-              </button>
+                </div>
+              </div>
+
+              <!-- Miễn phí vận chuyển cho đơn từ -->
+              <div class="space-y-3">
+                <app-custom-switch
+                  type="full"
+                  label="Miễn phí vận chuyển đơn hàng tối thiểu"
+                  description="Miễn phí ship khi tổng giá trị đạt ngưỡng tối thiểu."
+                  [checked]="configForm().shipping_fee_free_enabled === '1'"
+                  (checkedChange)="updateConfigForm('shipping_fee_free_enabled', $event ? '1' : '0')"
+                  [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                ></app-custom-switch>
+
+                @if (configForm().shipping_fee_free_enabled === '1') {
+                  <div class="space-y-1.5 animate-in slide-in-from-top-1 duration-150">
+                    <label class="text-[11px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wide block"
+                      >Giá trị đơn hàng tối thiểu (đ)</label
+                    >
+                    <input
+                      type="number"
+                      [ngModel]="configForm().shipping_fee_free_min_amount"
+                      (ngModelChange)="updateConfigForm('shipping_fee_free_min_amount', $event)"
+                      placeholder="Ví dụ: 150000"
+                      [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                      class="form-input"
+                      min="0"
+                    />
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Khối 3: Giao diện & Hình ảnh -->
+        <div class="p-5 rounded-[15px] bg-slate-50/50 dark:bg-slate-950/20 border border-slate-100/80 dark:border-slate-900/40 space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Nhập Ảnh đại diện website -->
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                >Ảnh đại diện Web Store (Đường dẫn URL ảnh)</label
+              >
+              <div class="relative">
+                <input
+                  type="text"
+                  [ngModel]="configForm().website_avatar_image"
+                  (ngModelChange)="updateConfigForm('website_avatar_image', $event)"
+                  placeholder="Nhập đường dẫn URL ảnh đại diện (Ví dụ: https://images.unsplash.com/...)"
+                  [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                  class="form-input"
+                />
+              </div>
+              <span class="text-[11px] text-slate-400 font-medium block leading-tight">
+                * Nhập URL hình ảnh avatar vuông bo góc của quán.
+              </span>
+            </div>
+
+            <!-- Nhập Ảnh bìa website -->
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                >Ảnh bìa Web Store (Đường dẫn URL ảnh)</label
+              >
+              <div class="relative">
+                <input
+                  type="text"
+                  [ngModel]="configForm().website_cover_image"
+                  (ngModelChange)="updateConfigForm('website_cover_image', $event)"
+                  placeholder="Nhập đường dẫn URL ảnh bìa (Ví dụ: https://images.unsplash.com/...)"
+                  [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                  class="form-input"
+                />
+              </div>
+              <span class="text-[11px] text-slate-400 font-medium block leading-tight">
+                * Nhập URL hình ảnh ngang rộng làm ảnh bìa của trang Web Store.
+              </span>
             </div>
           </div>
-        }
 
-        <!-- Chọn danh mục hiển thị trên Storefront -->
-        <div class="border-t border-slate-100 dark:border-slate-800/60 pt-5 space-y-3">
+          <!-- Khung xem trước Header của Storefront -->
+          <div class="space-y-2 pt-2">
+            <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+              >Xem trước giao diện Header Web Store</label
+            >
+            <div class="relative w-full h-44 sm:h-52 rounded-[15px] overflow-hidden border border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-950">
+              <!-- Cover image -->
+              @if (configForm().website_cover_image) {
+                <img [src]="configForm().website_cover_image" alt="Preview Cover" class="absolute inset-0 w-full h-full object-cover" />
+              } @else {
+                <div class="absolute inset-0 flex items-center justify-center text-[11px] text-slate-400 dark:text-slate-600 font-extrabold tracking-wider">
+                  CHƯA CẤU HÌNH ẢNH BÌA
+                </div>
+              }
+
+              <!-- Bottom overlay gradient to ensure readability -->
+              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+
+              <!-- Header Content Container -->
+              <div class="absolute bottom-4 left-4 right-4 flex items-end gap-3 z-10">
+                <!-- Avatar -->
+                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-[15px] border-4 border-white dark:border-slate-900 bg-white dark:bg-slate-800 overflow-hidden flex items-center justify-center shrink-0 shadow-lg">
+                  @if (configForm().website_avatar_image) {
+                    <img [src]="configForm().website_avatar_image" alt="Preview Avatar" class="w-full h-full object-cover" />
+                  } @else {
+                    <div class="w-full h-full bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] flex items-center justify-center text-xl font-black">
+                      {{ (configForm().store_name || 'C').substring(0, 1).toUpperCase() }}
+                    </div>
+                  }
+                </div>
+
+                <!-- Store Title & Slug -->
+                <div class="mb-1 text-white truncate">
+                  <h5 class="text-sm sm:text-base font-extrabold truncate drop-shadow-md leading-tight">
+                    {{ configForm().store_name || 'Tên Cửa Hàng' }}
+                  </h5>
+                  <p class="text-[10px] sm:text-xs text-white/80 font-bold truncate drop-shadow-sm leading-none mt-1">
+                    @if (configForm().store_status === '1') {
+                      <span class="inline-flex items-center gap-1 bg-emerald-500/80 text-white text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider">
+                        Đang mở cửa
+                      </span>
+                    } @else {
+                      <span class="inline-flex items-center gap-1 bg-slate-500/80 text-white text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider">
+                        Tạm đóng
+                      </span>
+                    }
+                    <span class="ml-2 font-mono">/store/{{ configForm().website_slug || 'slug' }}</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Khối 4: Chọn danh mục hiển thị trên Storefront -->
+        <div class="p-5 rounded-[15px] bg-slate-50/50 dark:bg-slate-950/20 border border-slate-100/80 dark:border-slate-900/40 space-y-4">
           <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
               <span class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
@@ -1906,7 +2054,7 @@
                       : toggleCategorySelection(category.id)
                   "
                   [class]="
-                    'flex items-center gap-3 p-3.5 rounded-2xl border-2 transition-all cursor-pointer select-none ' +
+                    'flex items-center gap-3 p-3.5 rounded-[15px] border-2 transition-all cursor-pointer select-none ' +
                     (isCategorySelected(category.id)
                       ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-slate-800 dark:text-white'
                       : 'border-slate-100 dark:border-slate-950 hover:border-slate-200 dark:hover:border-slate-800 text-slate-500') +

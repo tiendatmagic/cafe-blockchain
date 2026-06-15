@@ -88,6 +88,26 @@ export class StoreComponent implements OnInit {
     }, 0);
   });
 
+  public readonly shippingFee = computed(() => {
+    const settings = this.storeSettings();
+    if (!settings || settings.shipping_fee_flat_enabled !== '1') {
+      return 0;
+    }
+    const flatAmount = parseFloat(settings.shipping_fee_flat_amount) || 0;
+    const freeEnabled = settings.shipping_fee_free_enabled === '1';
+    if (freeEnabled) {
+      const minAmount = parseFloat(settings.shipping_fee_free_min_amount) || 0;
+      if (this.cartTotal() >= minAmount) {
+        return 0;
+      }
+    }
+    return flatAmount;
+  });
+
+  public readonly cartTotalWithShipping = computed(() => {
+    return this.cartTotal() + this.shippingFee();
+  });
+
   // Lấy các sản phẩm thuộc danh mục đang hoạt động và lọc theo tìm kiếm
   public readonly filteredProducts = computed(() => {
     let list = this.products();

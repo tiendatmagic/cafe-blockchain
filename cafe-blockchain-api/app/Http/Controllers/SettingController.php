@@ -41,6 +41,12 @@ class SettingController extends Controller
             'website_slug' => '',
             'store_categories' => '',
             'website_cover_image' => '',
+            'store_status' => '0',
+            'shipping_fee_flat_enabled' => '0',
+            'shipping_fee_flat_amount' => '0',
+            'shipping_fee_free_enabled' => '0',
+            'shipping_fee_free_min_amount' => '0',
+            'website_avatar_image' => '',
         ];
 
         if (empty($settings)) {
@@ -114,6 +120,12 @@ class SettingController extends Controller
             'website_slug' => 'nullable|string|max:100',
             'store_categories' => 'nullable|string',
             'website_cover_image' => 'nullable|string|max:1000',
+            'store_status' => 'nullable|string|in:0,1',
+            'shipping_fee_flat_enabled' => 'nullable|string|in:0,1',
+            'shipping_fee_flat_amount' => 'nullable|integer|min:0',
+            'shipping_fee_free_enabled' => 'nullable|string|in:0,1',
+            'shipping_fee_free_min_amount' => 'nullable|integer|min:0',
+            'website_avatar_image' => 'nullable|string|max:1000',
         ]);
 
         // Lấy các cấu hình hiện tại trong Database để đối soát bảo mật
@@ -342,6 +354,12 @@ class SettingController extends Controller
             'website_slug' => $settings['website_slug'] ?? '',
             'store_categories' => $settings['store_categories'] ?? '',
             'website_cover_image' => $settings['website_cover_image'] ?? '',
+            'store_status' => $settings['store_status'] ?? '0',
+            'shipping_fee_flat_enabled' => $settings['shipping_fee_flat_enabled'] ?? '0',
+            'shipping_fee_flat_amount' => $settings['shipping_fee_flat_amount'] ?? '0',
+            'shipping_fee_free_enabled' => $settings['shipping_fee_free_enabled'] ?? '0',
+            'shipping_fee_free_min_amount' => $settings['shipping_fee_free_min_amount'] ?? '0',
+            'website_avatar_image' => $settings['website_avatar_image'] ?? '',
             'temp_order' => $tempOrderData, // Trả về thông tin đơn hàng tạm thời/thực tế để client hiển thị
             'order_status' => $order ? $order->status : null,
             'blockchain_status' => $order ? $order->blockchain_status : null,
@@ -415,6 +433,12 @@ class SettingController extends Controller
                 'website_slug' => $settings['website_slug'] ?? '',
                 'store_categories' => $settings['store_categories'] ?? '',
                 'website_cover_image' => $settings['website_cover_image'] ?? '',
+                'store_status' => $settings['store_status'] ?? '0',
+                'shipping_fee_flat_enabled' => $settings['shipping_fee_flat_enabled'] ?? '0',
+                'shipping_fee_flat_amount' => $settings['shipping_fee_flat_amount'] ?? '0',
+                'shipping_fee_free_enabled' => $settings['shipping_fee_free_enabled'] ?? '0',
+                'shipping_fee_free_min_amount' => $settings['shipping_fee_free_min_amount'] ?? '0',
+                'website_avatar_image' => $settings['website_avatar_image'] ?? '',
             ];
 
             // Lấy các danh mục của quán
@@ -503,12 +527,45 @@ class SettingController extends Controller
                 $customer->save();
             }
 
+            // Tính toán giá trị đơn hàng trước khi giảm giá/phí ship để làm cơ sở tính miễn phí ship
+            $itemSubtotal = 0;
+            foreach ($validated['items'] as $item) {
+                $product = \App\Domain\Entities\Product::where('store_owner_address', $storeOwner)->findOrFail($item['product_id']);
+                $price = $product->price;
+                if (!empty($item['product_variant_id'])) {
+                    $variant = $product->variants()->where('id', $item['product_variant_id'])->first();
+                    if ($variant) {
+                        $price = $variant->price;
+                    }
+                }
+                $itemSubtotal += $price * $item['quantity'];
+            }
+
+            // Tính toán phí vận chuyển thực tế
+            $shippingFee = 0;
+            $shippingFeeEnabled = Setting::getForStore('shipping_fee_flat_enabled', $storeOwner, '0') === '1';
+            if ($shippingFeeEnabled) {
+                $flatAmount = (float)Setting::getForStore('shipping_fee_flat_amount', $storeOwner, 0);
+                $freeEnabled = Setting::getForStore('shipping_fee_free_enabled', $storeOwner, '0') === '1';
+                if ($freeEnabled) {
+                    $minAmount = (float)Setting::getForStore('shipping_fee_free_min_amount', $storeOwner, 0);
+                    if ($itemSubtotal >= $minAmount) {
+                        $shippingFee = 0;
+                    } else {
+                        $shippingFee = $flatAmount;
+                    }
+                } else {
+                    $shippingFee = $flatAmount;
+                }
+            }
+
             // Chuẩn bị payload để tạo đơn hàng qua CreateOrderCommand
             $orderData = [
                 'table_number' => $validated['table_number'] ?? null,
                 'customer_id' => $customer->id,
                 'payment_method' => $validated['payment_method'],
-                'items' => $validated['items']
+                'items' => $validated['items'],
+                'shipping_fee' => $shippingFee,
             ];
 
             // Thực thi tạo đơn hàng

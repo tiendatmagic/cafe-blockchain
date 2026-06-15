@@ -115,7 +115,8 @@ class CreateOrderCommand
                 DB::table('voucher_signatures')->where('order_code', $orderCode)->delete();
             }
 
-            $finalTotalAmount = max(0, $totalAmount - $discountAmount);
+            $shippingFee = isset($data['shipping_fee']) ? (float)$data['shipping_fee'] : 0;
+            $finalTotalAmount = max(0, $totalAmount - $discountAmount) + $shippingFee;
 
             if ($data['payment_method'] === 'debt') {
                 if (empty($data['customer_id'])) {

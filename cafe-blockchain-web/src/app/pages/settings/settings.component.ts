@@ -84,6 +84,12 @@ export class SettingsComponent implements OnInit {
     website_slug: '',
     store_categories: '',
     website_cover_image: '',
+    store_status: '0',
+    shipping_fee_flat_enabled: '0',
+    shipping_fee_flat_amount: 0,
+    shipping_fee_free_enabled: '0',
+    shipping_fee_free_min_amount: 0,
+    website_avatar_image: '',
     has_relayer_private_key: false
   });
 
