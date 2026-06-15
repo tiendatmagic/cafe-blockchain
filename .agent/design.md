@@ -195,3 +195,18 @@ Các biến dynamic này được biên dịch thành hệ màu chủ đạo c�
 - **Bộ lọc danh mục**: Cố định bên trái (Desktop) hoặc thanh trượt ngang mượt mà (Mobile).
 - **Grid/List Toggle**: Nút chuyển đổi giao diện hiển thị danh sách sản phẩm dạng lưới (2-3 cột) hoặc dạng hàng dọc (List) tiện lợi trên di động.
 - **Giỏ hàng & Yêu thích**: Lưu trữ trực tiếp tại `localStorage` phía client-side để khách hàng không cần kết nối ví/đăng nhập vẫn có thể thêm món và đặt hàng nhanh.
+
+---
+
+## 8. Quy tắc Spacing, Tránh lỗi Giao diện & Flat Design (CRITICAL)
+
+Để tránh các lỗi bố cục nhỏ nhưng ảnh hưởng nghiêm trọng đến trải nghiệm người dùng:
+
+### 8.1. Lỗi dính sát lề của Custom Component (:host display)
+- **Vấn đề**: Các custom components của Angular (ví dụ: `app-custom-switch`, `app-custom-select`, `app-custom-date-picker`, v.v.) mặc định có kiểu hiển thị là `inline` theo tiêu chuẩn của trình duyệt. Khi sử dụng chúng trong các layout dọc (như flex-col, grid, hoặc `space-y-` của Tailwind), trình duyệt sẽ bỏ qua `margin-top`, `margin-bottom` và các khoảng cách dòng của chúng, dẫn đến các nhãn (label) hoặc nội dung mô tả bên dưới bị dính sát vào component.
+- **Giải pháp bắt buộc**: Luôn khai báo `:host { display: block; }` (hoặc `:host { display: inline-block; width: 100%; }`) trong phần styles của component TS hoặc CSS để biến component thành một block element thực thụ. Điều này giúp các thuộc tính spacing hoạt động chính xác.
+
+### 8.2. Thiết kế Flat Layout (Hạn chế chia cắt giao diện)
+- **Nguyên tắc**: Ưu tiên sử dụng giao diện phẳng, thoáng đãng và có khoảng cách rộng rãi (sử dụng `space-y-6` hoặc `gap-6` làm tiêu chuẩn cho các nhóm cấu hình).
+- **Hạn chế border-t**: Tránh sử dụng quá nhiều các đường kẻ ngang phân tách (`border-t`, `border-b`) màu đen/xám đậm phân cắt giữa các mục cấu hình trong cùng một tab. Chỉ sử dụng khi thật sự cần phân tách các phân hệ lớn khác hẳn nhau. Hãy dùng khoảng cách âm dương (spacing) và cấu trúc nhóm (cards) để phân vùng thông tin một cách tự nhiên.
+- **Độ tương phản của Label**: Đảm bảo các nhãn cấu hình và văn bản mô tả (helper text) có độ giãn dọc hợp lý, không chồng chéo hoặc quá sát với trường nhập liệu tương ứng.

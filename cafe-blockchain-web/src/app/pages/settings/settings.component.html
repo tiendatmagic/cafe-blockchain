@@ -1792,6 +1792,7 @@
           [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
         ></app-custom-switch>
 
+        @if (configForm().store_status === '1') {
         <!-- Nhập Slug website -->
         <div class="space-y-1.5">
           <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
@@ -2098,6 +2099,7 @@
             </div>
           }
         </div>
+        }
 
         <div class="pt-4">
           <button

@@ -271,9 +271,8 @@ When user's prompt is NOT in English:
 >   2. Define its default state (true/false) for standard roles ("Chủ quán", "Quản lý", "Thu ngân", "Kế toán") in `StaffController.php` (both `indexRoles` and `resetDefaultRoles`).
 >   3. Apply the `permission:key_module` middleware to any associated backend Laravel API routes.
 >   4. Protect UI sidebar navigation items (Desktop & Mobile) and route access with `@if (stateService.hasPermission('key_module'))` and `<app-access-restricted>`.
-
-
-
+> - **Angular Custom Component Host Display (CRITICAL):** All Angular custom components (e.g. `app-custom-switch`, `app-custom-select`, `app-custom-date-picker`) must explicitly set `:host { display: block; }` in their stylesheet to prevent display: inline default browser behavior from ignoring Tailwind vertical margins/spacings (which causes adjacent labels/elements to stick together).
+> - **Flat Layout & Border Elimination (CRITICAL):** Avoid using unnecessary horizontal border dividers (`border-t`) to separate sub-sections or settings. Use a flat design with consistent spacing (e.g. `space-y-6`) instead.
 ---
 
 ## 📁 QUICK REFERENCE
