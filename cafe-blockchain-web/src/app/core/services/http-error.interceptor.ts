@@ -12,12 +12,7 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
       if (error instanceof HttpErrorResponse) {
         const stateService = injector.get(StateService);
 
-        // 1. Kiểm tra lỗi 401 Unauthorized (Unauthenticated)
-        const isUnauthenticated = error.status === 401 && 
-          (
-            (error.error && error.error.message === 'Unauthenticated.') ||
-            (typeof error.error === 'string' && error.error.includes('Unauthenticated.'))
-          );
+        const isUnauthenticated = error.status === 401;
 
         if (isUnauthenticated) {
           if (stateService.web3Service.walletConnected()) {
