@@ -28,6 +28,19 @@ class UpdateOrderStatusCommand
             $order->verification_hash = $orderEntity->generateVerificationHash();
         }
 
+        // Tự động gắn ca trực đang mở của nhân viên thực hiện duyệt đơn nếu đơn hàng chưa có ca trực (đơn storefront)
+        if ($order->shift_id === null) {
+            $user = auth()->user();
+            if ($user) {
+                $activeShift = \App\Domain\Entities\Shift::where('user_id', $user->id)
+                    ->where('status', 'open')
+                    ->first();
+                if ($activeShift) {
+                    $order->shift_id = $activeShift->id;
+                }
+            }
+        }
+
         $order->save();
 
         // Nếu đơn hàng bị hủy và thanh toán bằng ghi nợ, thực hiện hoàn trả số dư nợ của khách

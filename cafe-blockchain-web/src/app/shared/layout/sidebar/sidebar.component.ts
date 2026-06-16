@@ -38,11 +38,11 @@ export class SidebarComponent {
   public readonly currentShift = computed(() => this.stateService.currentShift());
 
   // Getters thuận tiện từ summary (backend trả về)
-  public readonly shiftFiatRevenue = computed(() => this.shiftSummary()?.total_fiat_revenue ?? 0);
-  public readonly shiftBankTransferRevenue = computed(() => this.shiftSummary()?.total_bank_transfer_revenue ?? 0);
-  public readonly shiftCryptoRevenue = computed(() => this.shiftSummary()?.total_crypto_revenue ?? 0);
-  public readonly shiftEWalletRevenue = computed(() => this.shiftSummary()?.total_e_wallet_revenue ?? 0);
-  public readonly shiftFiatExpenses = computed(() => this.shiftSummary()?.total_fiat_expenses ?? 0);
+  public readonly shiftFiatRevenue = computed(() => this.shiftSummary()?.payment_revenues?.cash ?? 0);
+  public readonly shiftBankTransferRevenue = computed(() => this.shiftSummary()?.payment_revenues?.bank_transfer ?? 0);
+  public readonly shiftCryptoRevenue = computed(() => this.shiftSummary()?.payment_revenues?.crypto ?? 0);
+  public readonly shiftEWalletRevenue = computed(() => this.shiftSummary()?.payment_revenues?.e_wallet ?? 0);
+  public readonly shiftFiatExpenses = computed(() => this.shiftSummary()?.payment_expenses?.cash ?? 0);
   public readonly shiftExpectedCash = computed(() => this.shiftSummary()?.expected_cash ?? 0);
 
   public onActualCashInput(event: any) {

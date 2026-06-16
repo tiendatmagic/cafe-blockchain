@@ -17,10 +17,8 @@ class Shift extends Model
         'initial_cash',
         'actual_cash',
         'expected_cash',
-        'total_fiat_revenue',
-        'total_bank_transfer_revenue',
-        'total_crypto_revenue',
-        'total_fiat_expenses',
+        'payment_revenues',
+        'payment_expenses',
         'status',
         'note',
     ];
@@ -31,10 +29,8 @@ class Shift extends Model
         'initial_cash' => 'float',
         'actual_cash' => 'float',
         'expected_cash' => 'float',
-        'total_fiat_revenue' => 'float',
-        'total_bank_transfer_revenue' => 'float',
-        'total_crypto_revenue' => 'float',
-        'total_fiat_expenses' => 'float',
+        'payment_revenues' => 'array',
+        'payment_expenses' => 'array',
     ];
 
     /**

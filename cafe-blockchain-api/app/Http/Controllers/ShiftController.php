@@ -84,32 +84,57 @@ class ShiftController extends Controller
         try {
             DB::beginTransaction();
 
-            // 1. Tính tổng doanh thu tiền mặt thu được trong ca trực (Đơn hàng completed trong ca trực)
+            // 1. Tính tổng doanh thu theo từng phương thức thanh toán
             $totalFiatRevenue = (float)Order::where('shift_id', $shift->id)
                 ->where('status', 'completed')
                 ->where('payment_method', 'cash')
                 ->sum('total_amount');
 
-            // 2. Tính doanh thu chuyển khoản ngân hàng trong ca trực
             $totalBankTransferRevenue = (float)Order::where('shift_id', $shift->id)
                 ->where('status', 'completed')
                 ->where('payment_method', 'bank_transfer')
                 ->sum('total_amount');
 
-            // 3. Tính doanh thu Crypto trong ca trực
             $totalCryptoRevenue = (float)Order::where('shift_id', $shift->id)
                 ->where('status', 'completed')
                 ->where('payment_method', 'crypto')
                 ->sum('total_amount');
 
-            // 4. Tính chi phí chi ra bằng tiền mặt phát sinh trong ca trực
+            $totalEWalletRevenue = (float)Order::where('shift_id', $shift->id)
+                ->where('status', 'completed')
+                ->where('payment_method', 'e_wallet')
+                ->sum('total_amount');
+
+            $totalDebtRevenue = (float)Order::where('shift_id', $shift->id)
+                ->where('status', 'completed')
+                ->where('payment_method', 'debt')
+                ->sum('total_amount');
+
+            $paymentRevenues = [
+                'cash' => $totalFiatRevenue,
+                'bank_transfer' => $totalBankTransferRevenue,
+                'crypto' => $totalCryptoRevenue,
+                'e_wallet' => $totalEWalletRevenue,
+                'debt' => $totalDebtRevenue
+            ];
+
+            // 2. Tính chi phí theo từng phương thức thanh toán
             $totalFiatExpenses = (float)Transaction::where('shift_id', $shift->id)
                 ->where('type', 'chi')
                 ->where('payment_method', 'cash')
                 ->sum('amount');
 
-            // 5. Tính số tiền mặt lý thuyết trong két
-            // Expected Cash = Tiền mặt ban đầu + Tiền mặt thu được - Tiền mặt chi ra
+            $totalBankExpenses = (float)Transaction::where('shift_id', $shift->id)
+                ->where('type', 'chi')
+                ->where('payment_method', 'bank_transfer')
+                ->sum('amount');
+
+            $paymentExpenses = [
+                'cash' => $totalFiatExpenses,
+                'bank_transfer' => $totalBankExpenses
+            ];
+
+            // 3. Tính số tiền mặt lý thuyết trong két (chỉ liên quan tiền mặt vật lý)
             $expectedCash = $shift->initial_cash + $totalFiatRevenue - $totalFiatExpenses;
             $actualCash = $validated['actual_cash'];
 
@@ -117,10 +142,8 @@ class ShiftController extends Controller
                 'end_time' => now(),
                 'actual_cash' => $actualCash,
                 'expected_cash' => $expectedCash,
-                'total_fiat_revenue' => $totalFiatRevenue,
-                'total_bank_transfer_revenue' => $totalBankTransferRevenue,
-                'total_crypto_revenue' => $totalCryptoRevenue,
-                'total_fiat_expenses' => $totalFiatExpenses,
+                'payment_revenues' => $paymentRevenues,
+                'payment_expenses' => $paymentExpenses,
                 'status' => 'closed',
                 'note' => $validated['note'] ?? null,
             ]);
@@ -175,20 +198,36 @@ class ShiftController extends Controller
             ->where('payment_method', 'e_wallet')
             ->sum('total_amount');
 
+        $totalDebtRevenue = (float)Order::where('shift_id', $shift->id)
+            ->where('status', 'completed')
+            ->where('payment_method', 'debt')
+            ->sum('total_amount');
+
         $totalFiatExpenses = (float)Transaction::where('shift_id', $shift->id)
             ->where('type', 'chi')
             ->where('payment_method', 'cash')
+            ->sum('amount');
+
+        $totalBankExpenses = (float)Transaction::where('shift_id', $shift->id)
+            ->where('type', 'chi')
+            ->where('payment_method', 'bank_transfer')
             ->sum('amount');
 
         $expectedCash = (float)$shift->initial_cash + $totalFiatRevenue - $totalFiatExpenses;
 
         return response()->json([
             'shift'                      => $shift,
-            'total_fiat_revenue'         => $totalFiatRevenue,
-            'total_bank_transfer_revenue'=> $totalBankTransferRevenue,
-            'total_crypto_revenue'       => $totalCryptoRevenue,
-            'total_e_wallet_revenue'     => $totalEWalletRevenue,
-            'total_fiat_expenses'        => $totalFiatExpenses,
+            'payment_revenues'           => [
+                'cash' => $totalFiatRevenue,
+                'bank_transfer' => $totalBankTransferRevenue,
+                'crypto' => $totalCryptoRevenue,
+                'e_wallet' => $totalEWalletRevenue,
+                'debt' => $totalDebtRevenue
+            ],
+            'payment_expenses'           => [
+                'cash' => $totalFiatExpenses,
+                'bank_transfer' => $totalBankExpenses
+            ],
             'expected_cash'              => $expectedCash,
         ]);
     }

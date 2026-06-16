@@ -122,7 +122,7 @@ class UpdateOrderCommand
 
             $finalTotalAmount = max(0, $totalAmount - $discountAmount);
 
-            $order->update([
+            $updateData = [
                 'table_number' => $data['table_number'] ?? null,
                 'customer_id' => $data['customer_id'] ?? null,
                 'total_amount' => $finalTotalAmount,
@@ -130,7 +130,21 @@ class UpdateOrderCommand
                 'voucher_nft_token_id' => $voucherNftTokenId,
                 'payment_method' => $data['payment_method'],
                 'tx_hash' => isset($relayerResult['txHash']) ? $relayerResult['txHash'] : $order->tx_hash,
-            ]);
+            ];
+
+            if ($order->shift_id === null) {
+                $user = auth()->user();
+                if ($user) {
+                    $activeShift = \App\Domain\Entities\Shift::where('user_id', $user->id)
+                        ->where('status', 'open')
+                        ->first();
+                    if ($activeShift) {
+                        $updateData['shift_id'] = $activeShift->id;
+                    }
+                }
+            }
+
+            $order->update($updateData);
 
             $order->items()->delete();
 
