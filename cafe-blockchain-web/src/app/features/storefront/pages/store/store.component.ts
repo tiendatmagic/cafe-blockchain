@@ -202,6 +202,34 @@ export class StoreComponent implements OnInit {
 
           // Mặc định chọn Tất cả danh mục
           this.activeCategoryId.set(null);
+
+          // Lọc sạch giỏ hàng đối chiếu với danh sách món ăn đang phục vụ
+          const activeProducts = res.products || [];
+          const currentCart = [...this.cart()];
+          let cartChanged = false;
+          const updatedCart = currentCart.filter(item => {
+            const activeProd = activeProducts.find((p: any) => p.id === item.product.id);
+            if (!activeProd) {
+              cartChanged = true;
+              return false;
+            }
+            if (item.variant) {
+              const activeVar = activeProd.variants && activeProd.variants.find((v: any) => v.id === item.variant.id && v.status);
+              if (!activeVar) {
+                cartChanged = true;
+                return false;
+              }
+            }
+            return true;
+          });
+
+          if (cartChanged) {
+            this.cart.set(updatedCart);
+            this.saveCartToStorage(updatedCart);
+            setTimeout(() => {
+              this.showFloatingToastSuccess('Một số món ăn trong giỏ hàng đã ngừng phục vụ và được tự động loại bỏ.');
+            }, 1000);
+          }
         } else {
           this.isError.set(true);
           this.errorMessage.set('Không tìm thấy thông tin cửa hàng!');

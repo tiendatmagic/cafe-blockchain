@@ -705,6 +705,22 @@ export class PosComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Kiểm tra trạng thái hoạt động của sản phẩm và biến thể trong giỏ hàng trước khi thanh toán
+    for (const item of this.cart()) {
+      const liveProduct = this.products().find(p => p.id === item.product.id);
+      if (!liveProduct || !liveProduct.status) {
+        this.stateService.showToast(`Món ăn "${item.product.name}" đã ngừng phục vụ! Vui lòng xóa khỏi giỏ.`, 'error');
+        return;
+      }
+      if (item.variant) {
+        const liveVariant = liveProduct.variants && liveProduct.variants.find((v: any) => v.id === item.variant.id);
+        if (!liveVariant || !liveVariant.status) {
+          this.stateService.showToast(`Biến thể "${item.variant.variant_name || liveVariant.name}" của "${item.product.name}" đã ngừng phục vụ! Vui lòng xóa khỏi giỏ.`, 'error');
+          return;
+        }
+      }
+    }
+
     this.isOrderSubmitting.set(true);
     
     // Khởi tạo thông tin đơn hàng

@@ -56,23 +56,39 @@
 
   @if (stateService.web3Service.walletConnected()) {
     @if (stateService.hasPermission('menu')) {
-      <!-- Tab phân loại: Món bán & Nguyên vật liệu -->
-      <div class="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800/60 pb-3">
+      <!-- Tab phân loại: Món bán & Nguyên vật liệu & Tìm kiếm -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 dark:border-slate-800/60 pb-3">
         <app-tab-group
           [options]="mainProductTypeOptions"
           [activeValue]="menuProductTypeFilter()"
-          (valueChange)="menuProductTypeFilter.set($event); menuCurrentPage.set(1)"
+          (valueChange)="menuProductTypeFilter.set($event); menuCurrentPage.set(1); menuSearchQuery.set('')"
           containerClass="w-full sm:max-w-md"
         ></app-tab-group>
+
+        <!-- Search input -->
+        <div class="relative w-full sm:w-72 shrink-0">
+          <input
+            type="text"
+            [ngModel]="menuSearchQuery()"
+            (ngModelChange)="menuSearchQuery.set($event); menuCurrentPage.set(1)"
+            [placeholder]="menuProductTypeFilter() === 'product' ? 'Tìm món ăn, SKU...' : 'Tìm nguyên liệu, SKU...'"
+            class="w-full search-input"
+          />
+          <app-icon
+            name="search"
+            class="absolute left-3 top-3 h-4 w-4 text-slate-400"
+            strokeWidth="2.5"
+          />
+        </div>
       </div>
 
-      <!-- Bộ tìm kiếm và lọc danh mục thực đơn (Search & Category filter) -->
+      <!-- Bộ lọc danh mục thực đơn (Category filter) -->
       <div
         [class.hidden]="isProductsLoading()"
-        class="app-card p-4 flex flex-col md:flex-row gap-4 items-center justify-between"
+        class="app-card p-4 flex items-center"
       >
         <!-- Danh mục trượt mượt mà (Horizontal scrolling) -->
-        <div class="flex gap-2 overflow-x-auto pb-1.5 pr-1 no-scrollbar w-full md:max-w-[70%]">
+        <div class="flex gap-2 overflow-x-auto pb-1.5 pr-1 no-scrollbar w-full">
           @for (cat of categories(); track cat) {
             <button
               (click)="menuCategoryFilter.set(cat); menuCurrentPage.set(1)"
@@ -86,22 +102,6 @@
               {{ cat }}
             </button>
           }
-        </div>
-
-        <!-- Search input -->
-        <div class="relative w-full md:w-72 shrink-0">
-          <input
-            type="text"
-            [ngModel]="menuSearchQuery()"
-            (ngModelChange)="menuSearchQuery.set($event); menuCurrentPage.set(1)"
-            placeholder="Tìm món ăn, SKU..."
-            class="w-full search-input"
-          />
-          <app-icon
-            name="search"
-            class="absolute left-3 top-3 h-4 w-4 text-slate-400"
-            strokeWidth="2.5"
-          />
         </div>
       </div>
 

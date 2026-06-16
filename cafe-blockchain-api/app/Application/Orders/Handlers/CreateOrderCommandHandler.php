@@ -39,6 +39,10 @@ class CreateOrderCommandHandler
             foreach ($data['items'] as $item) {
                 $product = Product::where('store_owner_address', $storeOwner)->findOrFail($item['product_id']);
                 
+                if (!$product->status) {
+                    throw new \Exception("Product '" . $product->name . "' is currently disabled and not available for purchase!");
+                }
+                
                 $price = $product->price;
                 $costPrice = $product->cost_price;
                 $variantId = $item['product_variant_id'] ?? null;
@@ -46,6 +50,9 @@ class CreateOrderCommandHandler
                 if ($variantId) {
                     $variant = $product->variants()->where('id', $variantId)->first();
                     if ($variant) {
+                        if (!$variant->status) {
+                            throw new \Exception("Variant '" . $variant->variant_name . "' of product '" . $product->name . "' is currently disabled!");
+                        }
                         $price = $variant->price;
                         $costPrice = $variant->cost_price;
                     } else {
