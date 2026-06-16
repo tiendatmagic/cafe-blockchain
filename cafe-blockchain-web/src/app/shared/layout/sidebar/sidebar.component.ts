@@ -74,6 +74,7 @@ export class SidebarComponent {
   }
 
   public confirmCloseShift() {
+    if (this.stateService.isLoading()) return;
     const actual = this.actualCashInput();
     const note = this.closeShiftNote();
     this.stateService.closeShift(actual, note, () => {

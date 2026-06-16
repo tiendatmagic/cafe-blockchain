@@ -757,9 +757,15 @@
       </button>
       <button
         (click)="confirmCloseShift()"
-        class="btn-primary flex-1 shadow-md bg-gradient-to-r from-rose-500 to-pink-500 hover:opacity-90 border-none font-black text-white"
+        [disabled]="stateService.isLoading()"
+        class="btn-primary flex-1 shadow-md bg-gradient-to-r from-rose-500 to-pink-500 hover:opacity-90 border-none font-black text-white flex items-center justify-center gap-1.5"
       >
-        Kết ca & Đối soát két
+        @if (stateService.isLoading()) {
+          <div class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"></div>
+          <span>Đang đóng ca...</span>
+        } @else {
+          <span>Kết ca & Đối soát két</span>
+        }
       </button>
     </div>
 

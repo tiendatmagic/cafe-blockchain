@@ -1,4 +1,3 @@
-import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prompt/web3-connect-prompt.component';
 import { AccessRestrictedComponent } from '@shared/components/access-restricted/access-restricted.component';
 import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -25,7 +24,6 @@ import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-g
     CommonModule,
     FormsModule,
     RouterModule,
-    Web3ConnectPromptComponent,
     AccessRestrictedComponent,
     PaginationComponent,
     PageHeaderComponent,
