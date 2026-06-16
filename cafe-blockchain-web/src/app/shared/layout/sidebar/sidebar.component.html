@@ -156,7 +156,7 @@
   </nav>
 
   <!-- Ca làm việc Widget (Sidebar Desktop) -->
-  @if (stateService.web3Service.walletConnected() && stateService.currentShift()) {
+  @if (stateService.web3Service.walletConnected() && stateService.currentShift() && stateService.currentShift().id) {
     <div class="px-5 py-4.5 border-t border-slate-200/60 dark:border-slate-800/60 shrink-0 bg-slate-50/50 dark:bg-slate-950/20 text-xs flex flex-col gap-2.5">
       <div class="flex items-center justify-between font-bold">
         <span class="text-slate-400">Ca trực mở từ:</span>
@@ -168,10 +168,24 @@
       </div>
       <button
         (click)="openCloseShiftModal()"
-        class="w-full py-2.5 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 text-rose-600 dark:text-rose-455 text-xs font-black rounded-xl border border-rose-200/20 dark:border-rose-800/20 transition-all flex items-center justify-center gap-1.5"
+        class="btn-danger-light btn-sm w-full font-black flex items-center justify-center gap-1.5"
       >
         <app-icon name="logout" class="h-3.5 w-3.5" strokeWidth="2.5" />
         <span>Kết ca & Đối soát</span>
+      </button>
+    </div>
+  } @else if (stateService.web3Service.walletConnected() && stateService.hasPermission('shifts')) {
+    <div class="px-5 py-4.5 border-t border-slate-200/60 dark:border-slate-800/60 shrink-0 bg-slate-50/50 dark:bg-slate-950/20 text-xs flex flex-col gap-2">
+      <div class="flex items-center gap-1.5 text-slate-400 font-bold justify-center mb-1">
+        <app-icon name="warning" class="h-4 w-4 text-slate-400" strokeWidth="2.5" />
+        <span>Chưa vào ca trực</span>
+      </div>
+      <button
+        (click)="openStartShiftModal()"
+        class="btn-primary btn-sm w-full font-black flex items-center justify-center gap-1.5"
+      >
+        <app-icon name="lock-open" class="h-3.5 w-3.5 text-white" strokeWidth="2.5" />
+        <span>Bắt đầu ca trực</span>
       </button>
     </div>
   }
@@ -540,7 +554,7 @@
       </div>
 
       <!-- Ca làm việc Widget (Mobile Drawer) -->
-      @if (web3Service.walletConnected() && stateService.currentShift()) {
+      @if (web3Service.walletConnected() && stateService.currentShift() && stateService.currentShift().id) {
         <div class="p-4.5 rounded-2xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 space-y-2.5 shrink-0 text-xs mb-3">
           <div class="flex items-center justify-between font-bold">
             <span class="text-slate-500 dark:text-slate-400">Ca trực từ:</span>
@@ -552,10 +566,24 @@
           </div>
           <button
             (click)="openCloseShiftModal(); isMobileMenuOpen.set(false)"
-            class="w-full py-2.5 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 text-rose-600 dark:text-rose-455 text-xs font-black rounded-xl border border-rose-200/20 dark:border-rose-800/20 transition-all flex items-center justify-center gap-1.5"
+            class="btn-danger-light btn-sm w-full font-black flex items-center justify-center gap-1.5"
           >
             <app-icon name="logout" class="h-3.5 w-3.5" strokeWidth="2.5" />
             <span>Kết ca & Đối soát</span>
+          </button>
+        </div>
+      } @else if (web3Service.walletConnected() && stateService.hasPermission('shifts')) {
+        <div class="p-4.5 rounded-2xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 space-y-2 shrink-0 text-xs mb-3">
+          <div class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 font-bold justify-center mb-1.5">
+            <app-icon name="warning" class="h-4 w-4 text-slate-400" strokeWidth="2.5" />
+            <span>Chưa vào ca trực</span>
+          </div>
+          <button
+            (click)="openStartShiftModal(); isMobileMenuOpen.set(false)"
+            class="btn-primary btn-sm w-full font-black flex items-center justify-center gap-1.5"
+          >
+            <app-icon name="lock-open" class="h-3.5 w-3.5 text-white" strokeWidth="2.5" />
+            <span>Bắt đầu ca trực</span>
           </button>
         </div>
       }
@@ -758,7 +786,7 @@
       <button
         (click)="confirmCloseShift()"
         [disabled]="stateService.isLoading()"
-        class="btn-primary flex-1 shadow-md bg-gradient-to-r from-rose-500 to-pink-500 hover:opacity-90 border-none font-black text-white flex items-center justify-center gap-1.5"
+        class="btn-danger flex-1 font-black"
       >
         @if (stateService.isLoading()) {
           <div class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"></div>
@@ -770,5 +798,106 @@
     </div>
 
     } <!-- end @else isShiftSummaryLoading -->
+  </div>
+</app-modal>
+
+<!-- ==================== MODAL BẮT ĐẦU CA LÀM VIỆC ==================== -->
+<app-modal
+  [isOpen]="isStartShiftModalOpen()"
+  title="Bắt đầu ca làm việc mới"
+  (close)="isStartShiftModalOpen.set(false)"
+  size="md"
+>
+  <div class="space-y-5">
+    <div class="space-y-2 text-center py-2">
+      <div
+        class="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500/20 to-purple-500/10 flex items-center justify-center mx-auto"
+      >
+        <app-icon
+          name="lock"
+          class="h-7 w-7 text-purple-600 dark:text-purple-400"
+          strokeWidth="2.5"
+        />
+      </div>
+      <p class="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+        Vui lòng khai báo số tiền mặt ban đầu trong két để bắt đầu ghi nhận doanh thu và bán hàng POS.
+      </p>
+    </div>
+
+    <div class="space-y-4 text-left">
+      <div class="space-y-1.5 relative">
+        <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1"
+          >Số tiền mặt đầu ca (két tiền)</label
+        >
+        <div class="relative">
+          <input
+            type="text"
+            [value]="initialCashFormatted()"
+            (input)="onInitialCashInput($event)"
+            placeholder="Nhập số tiền mặt (Ví dụ: 1,000,000)"
+            class="form-input pr-12 text-base font-extrabold text-[var(--dynamic-primary)]"
+          />
+          <span
+            class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400"
+            >đ</span
+          >
+        </div>
+      </div>
+
+      <!-- Gợi ý nhanh số tiền đầu ca -->
+      <div class="flex flex-wrap gap-2 pt-1">
+        <button
+          type="button"
+          (click)="initialCashInput.set(0)"
+          class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-400 transition-all cursor-pointer"
+        >
+          Két trống
+        </button>
+        <button
+          type="button"
+          (click)="initialCashInput.set(500000)"
+          class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-400 transition-all cursor-pointer"
+        >
+          500K
+        </button>
+        <button
+          type="button"
+          (click)="initialCashInput.set(1000000)"
+          class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-400 transition-all cursor-pointer"
+        >
+          1 Triệu
+        </button>
+        <button
+          type="button"
+          (click)="initialCashInput.set(2000000)"
+          class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-400 transition-all cursor-pointer"
+        >
+          2 Triệu
+        </button>
+      </div>
+    </div>
+
+    <!-- Actions button -->
+    <div class="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800 shrink-0 mt-5">
+      <button
+        (click)="isStartShiftModalOpen.set(false)"
+        class="btn-cancel flex-1"
+      >
+        Hủy bỏ
+      </button>
+      <button
+        (click)="confirmStartShift()"
+        [disabled]="stateService.isLoading()"
+        class="btn-primary flex-1 font-black text-white flex items-center justify-center gap-1.5"
+      >
+        @if (stateService.isLoading()) {
+          <div class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"></div>
+          <span>Đang mở ca...</span>
+        } @else {
+          <app-icon name="lock-open" class="h-4 w-4 shrink-0" strokeWidth="2" />
+          <span>Mở ca & Bắt đầu</span>
+        }
+      </button>
+    </div>
   </div>
 </app-modal>

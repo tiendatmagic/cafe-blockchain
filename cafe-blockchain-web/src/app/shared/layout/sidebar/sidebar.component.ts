@@ -35,6 +35,14 @@ export class SidebarComponent {
   });
   public readonly closeShiftNote = signal<string>('');
 
+  // --- Quản lý ca trực (Bắt đầu ca) ---
+  public readonly isStartShiftModalOpen = signal<boolean>(false);
+  public readonly initialCashInput = signal<number>(0);
+  public readonly initialCashFormatted = computed(() => {
+    const val = this.initialCashInput();
+    return val > 0 ? val.toLocaleString('en-US') : '';
+  });
+
   public readonly currentShift = computed(() => this.stateService.currentShift());
 
   // Getters thuận tiện từ summary (backend trả về)
@@ -51,6 +59,28 @@ export class SidebarComponent {
     const numVal = Number(cleanVal) || 0;
     this.actualCashInput.set(numVal);
     event.target.value = numVal > 0 ? numVal.toLocaleString('en-US') : '';
+  }
+
+  public onInitialCashInput(event: any) {
+    const inputVal = event.target.value;
+    const cleanVal = inputVal.replace(/[^0-9]/g, '');
+    const numVal = Number(cleanVal) || 0;
+    this.initialCashInput.set(numVal);
+    event.target.value = numVal > 0 ? numVal.toLocaleString('en-US') : '';
+  }
+
+  public openStartShiftModal() {
+    this.initialCashInput.set(0);
+    this.isStartShiftModalOpen.set(true);
+  }
+
+  public confirmStartShift() {
+    if (this.stateService.isLoading()) return;
+    const cash = this.initialCashInput();
+    this.stateService.openShift(cash, () => {
+      this.isStartShiftModalOpen.set(false);
+      this.initialCashInput.set(0);
+    });
   }
 
   public openCloseShiftModal() {
