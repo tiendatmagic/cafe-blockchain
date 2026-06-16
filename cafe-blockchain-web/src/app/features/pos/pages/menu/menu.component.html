@@ -65,20 +65,135 @@
           containerClass="w-full sm:max-w-md"
         ></app-tab-group>
 
-        <!-- Search input -->
-        <div class="relative w-full sm:w-72 shrink-0">
-          <input
-            type="text"
-            [ngModel]="menuSearchQuery()"
-            (ngModelChange)="menuSearchQuery.set($event); menuCurrentPage.set(1)"
-            [placeholder]="menuProductTypeFilter() === 'product' ? 'Tìm món ăn, SKU...' : 'Tìm nguyên liệu, SKU...'"
-            class="w-full search-input"
-          />
-          <app-icon
-            name="search"
-            class="absolute left-3 top-3 h-4 w-4 text-slate-400"
-            strokeWidth="2.5"
-          />
+        <!-- Search & Filter bar -->
+        <div class="flex items-center gap-2 w-full sm:w-auto shrink-0 relative">
+          <!-- Search input -->
+          <div class="relative w-full sm:w-72">
+            <input
+              type="text"
+              [ngModel]="menuSearchQuery()"
+              (ngModelChange)="menuSearchQuery.set($event); menuCurrentPage.set(1)"
+              [placeholder]="menuProductTypeFilter() === 'product' ? 'Tìm món ăn, SKU...' : 'Tìm nguyên liệu, SKU...'"
+              class="w-full search-input pr-10"
+            />
+            <app-icon
+              name="search"
+              class="absolute left-3 top-3 h-4 w-4 text-slate-400"
+              strokeWidth="2.5"
+            />
+          </div>
+
+          <!-- Nút Lọc Menu -->
+          <div class="relative shrink-0">
+            <button
+              type="button"
+              (click)="isFilterPanelOpen.set(!isFilterPanelOpen())"
+              [class]="isFilterPanelOpen() ? 'bg-[var(--color-primary)] text-white shadow-md shadow-[var(--color-primary)]/20' : 'bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800'"
+              class="h-10.5 px-3 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition-all active:scale-[0.98]"
+              title="Lọc nâng cao"
+            >
+              <app-icon name="filter" class="h-4 w-4" [strokeWidth]="2" />
+              <span class="hidden sm:inline">Lọc</span>
+            </button>
+
+            <!-- Dropdown Bộ lọc (Popover) -->
+            @if (isFilterPanelOpen()) {
+              <!-- Click-outside backdrop -->
+              <div (click)="isFilterPanelOpen.set(false)" class="fixed inset-0 z-30"></div>
+
+              <div
+                class="absolute right-0 mt-2 z-40 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-4.5 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200 text-left"
+              >
+                <!-- Header -->
+                <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800/60">
+                  <span class="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider">Bộ lọc Thực đơn</span>
+                  <button
+                    type="button"
+                    (click)="resetMenuFilters(); isFilterPanelOpen.set(false)"
+                    class="text-[10px] text-rose-500 font-bold hover:underline"
+                  >
+                    Đặt lại
+                  </button>
+                </div>
+
+                <!-- Lọc giá sản phẩm chính -->
+                <div class="space-y-1.5">
+                  <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wide">Khoảng giá món</label>
+                  <div class="grid grid-cols-2 gap-2">
+                    <input
+                      type="number"
+                      placeholder="Từ đ"
+                      [ngModel]="menuMinPrice()"
+                      (ngModelChange)="menuMinPrice.set($event); menuCurrentPage.set(1)"
+                      class="form-input-sm"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Đến đ"
+                      [ngModel]="menuMaxPrice()"
+                      (ngModelChange)="menuMaxPrice.set($event); menuCurrentPage.set(1)"
+                      class="form-input-sm"
+                    />
+                  </div>
+                </div>
+
+                <!-- Lọc giá biến thể -->
+                <div class="space-y-1.5">
+                  <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wide">Giá biến thể (Size)</label>
+                  <div class="grid grid-cols-2 gap-2">
+                    <input
+                      type="number"
+                      placeholder="Từ đ"
+                      [ngModel]="menuMinVariantPrice()"
+                      (ngModelChange)="menuMinVariantPrice.set($event); menuCurrentPage.set(1)"
+                      class="form-input-sm"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Đến đ"
+                      [ngModel]="menuMaxVariantPrice()"
+                      (ngModelChange)="menuMaxVariantPrice.set($event); menuCurrentPage.set(1)"
+                      class="form-input-sm"
+                    />
+                  </div>
+                </div>
+
+                <!-- Lọc Trạng thái Bán -->
+                <div class="space-y-1.5">
+                  <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wide">Trạng thái bán</label>
+                  <div class="flex gap-2">
+                    @for (opt of [
+                      { value: 'all', label: 'Tất cả' },
+                      { value: 'active', label: 'Đang bán' },
+                      { value: 'inactive', label: 'Ngừng bán' }
+                    ]; track opt.value) {
+                      <button
+                        type="button"
+                        (click)="menuFilterStatus.set(opt.value); menuCurrentPage.set(1)"
+                        [class]="menuFilterStatus() === opt.value
+                          ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)] border-[var(--color-primary)] font-bold'
+                          : 'bg-slate-50 dark:bg-slate-950/40 text-slate-500 border-slate-200/60 dark:border-slate-800/80'"
+                        class="flex-1 py-1 px-2 text-[10px] rounded-lg border text-center transition-all"
+                      >
+                        {{ opt.label }}
+                      </button>
+                    }
+                  </div>
+                </div>
+
+                <!-- Nút hành động -->
+                <div class="flex gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/60">
+                  <button
+                    type="button"
+                    (click)="isFilterPanelOpen.set(false)"
+                    class="flex-1 btn-secondary btn-sm h-9 text-xs"
+                  >
+                    Đóng
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
         </div>
       </div>
 

@@ -91,6 +91,12 @@ export class MenuComponent implements OnInit, OnDestroy {
   public readonly menuSearchQuery = signal<string>('');
   public readonly menuCategoryFilter = signal<string>('Tất cả');
   public readonly menuProductTypeFilter = signal<'product' | 'ingredient'>('product');
+  public readonly menuMinPrice = signal<number | null>(null);
+  public readonly menuMaxPrice = signal<number | null>(null);
+  public readonly menuMinVariantPrice = signal<number | null>(null);
+  public readonly menuMaxVariantPrice = signal<number | null>(null);
+  public readonly menuFilterStatus = signal<string>('all'); // 'all' | 'active' | 'inactive'
+  public readonly isFilterPanelOpen = signal<boolean>(false);
 
   // Form Quản lý Thực đơn (Món ăn)
   public readonly isMenuModalOpen = signal<boolean>(false);
@@ -175,9 +181,46 @@ export class MenuComponent implements OnInit, OnDestroy {
                           p.sku?.toLowerCase().includes(search) || 
                           (p.short_description && p.short_description.toLowerCase().includes(search));
                           
-      return matchType && matchCategory && matchSearch;
+      // Lọc theo khoảng giá sản phẩm chính
+      const minPrice = this.menuMinPrice();
+      const matchMinPrice = minPrice === null || minPrice === undefined || p.price >= minPrice;
+      const maxPrice = this.menuMaxPrice();
+      const matchMaxPrice = maxPrice === null || maxPrice === undefined || p.price <= maxPrice;
+
+      // Lọc theo khoảng giá biến thể sản phẩm
+      const minVarPrice = this.menuMinVariantPrice();
+      const maxVarPrice = this.menuMaxVariantPrice();
+      let matchVarPrice = true;
+      if (minVarPrice !== null || maxVarPrice !== null) {
+        matchVarPrice = p.variants && p.variants.length > 0 && p.variants.some((v: any) => {
+          const matchMin = minVarPrice === null || minVarPrice === undefined || v.price >= minVarPrice;
+          const matchMax = maxVarPrice === null || maxVarPrice === undefined || v.price <= maxVarPrice;
+          return matchMin && matchMax;
+        });
+      }
+
+      // Lọc theo trạng thái bật/tắt (Đang bán/Ngừng bán)
+      const statusFilter = this.menuFilterStatus();
+      let matchStatus = true;
+      if (statusFilter === 'active') {
+        matchStatus = p.status === true || Number(p.status) === 1;
+      } else if (statusFilter === 'inactive') {
+        matchStatus = p.status === false || Number(p.status) === 0;
+      }
+                          
+      return matchType && matchCategory && matchSearch && matchMinPrice && matchMaxPrice && matchVarPrice && matchStatus;
     });
   });
+
+  public resetMenuFilters() {
+    this.menuMinPrice.set(null);
+    this.menuMaxPrice.set(null);
+    this.menuMinVariantPrice.set(null);
+    this.menuMaxVariantPrice.set(null);
+    this.menuFilterStatus.set('all');
+    this.menuCategoryFilter.set('Tất cả');
+    this.menuCurrentPage.set(1);
+  }
 
   // Computed properties phục vụ phân trang client dựa trên sản phẩm đã lọc
   public readonly menuTotalPages = computed(() => Math.ceil(this.filteredProducts().length / this.menuItemsPerPage));

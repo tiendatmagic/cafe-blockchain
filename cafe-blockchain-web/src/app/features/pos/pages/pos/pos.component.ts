@@ -76,6 +76,7 @@ export class PosComponent implements OnInit, OnDestroy {
   public readonly activeSelectingProduct = signal<any>(null);
   public readonly selectedVariantForCart = signal<any>(null);
   public readonly isVariantSelectModalOpen = signal<boolean>(false);
+  public readonly isFilterPanelOpen = signal<boolean>(false);
 
   // Trạng thái Tìm kiếm & Chọn Khách hàng tại POS
   public readonly posCustomerSearchQuery = signal<string>('');

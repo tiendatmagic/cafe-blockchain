@@ -54,6 +54,13 @@ export class StoreComponent implements OnInit {
   public readonly currentPage = signal<number>(1);
   public readonly itemsPerPage = 20;
 
+  // Bộ lọc storefront nâng cao
+  public readonly storeMinPrice = signal<number | null>(null);
+  public readonly storeMaxPrice = signal<number | null>(null);
+  public readonly storeMinVariantPrice = signal<number | null>(null);
+  public readonly storeMaxVariantPrice = signal<number | null>(null);
+  public readonly isFilterPanelOpen = signal<boolean>(false);
+
   // Trạng thái chọn biến thể sản phẩm (Variant Selection Modal)
   public readonly selectedProductForVariant = signal<any>(null);
   public readonly selectedVariantId = signal<number | null>(null);
@@ -148,8 +155,37 @@ export class StoreComponent implements OnInit {
       );
     }
 
+    // Lọc theo khoảng giá sản phẩm chính
+    const minPrice = this.storeMinPrice();
+    if (minPrice !== null && minPrice !== undefined) {
+      list = list.filter(p => p.price >= minPrice);
+    }
+    const maxPrice = this.storeMaxPrice();
+    if (maxPrice !== null && maxPrice !== undefined) {
+      list = list.filter(p => p.price <= maxPrice);
+    }
+
+    // Lọc theo khoảng giá biến thể sản phẩm
+    const minVarPrice = this.storeMinVariantPrice();
+    const maxVarPrice = this.storeMaxVariantPrice();
+    if (minVarPrice !== null || maxVarPrice !== null) {
+      list = list.filter(p => p.variants && p.variants.length > 0 && p.variants.some((v: any) => {
+        const matchMin = minVarPrice === null || minVarPrice === undefined || v.price >= minVarPrice;
+        const matchMax = maxVarPrice === null || maxVarPrice === undefined || v.price <= maxVarPrice;
+        return matchMin && matchMax;
+      }));
+    }
+
     return list;
   });
+
+  public resetStoreFilters() {
+    this.storeMinPrice.set(null);
+    this.storeMaxPrice.set(null);
+    this.storeMinVariantPrice.set(null);
+    this.storeMaxVariantPrice.set(null);
+    this.currentPage.set(1);
+  }
 
   // Phân trang sản phẩm hiển thị thực tế
   public readonly paginatedProducts = computed(() => {
@@ -390,6 +426,11 @@ export class StoreComponent implements OnInit {
 
   public isFavorite(productId: number): boolean {
     return this.favorites().includes(productId);
+  }
+
+  public onPhoneInputChange(value: string) {
+    const cleaned = value.replace(/[^0-9]/g, '');
+    this.orderForm.update(f => ({ ...f, customer_phone: cleaned }));
   }
 
   // --- Đặt hàng ---

@@ -79,6 +79,11 @@ export class StateService {
   public readonly paymentMethod = signal<string>('cash');
   public readonly posCategoryFilter = signal<string>('Tất cả');
   public readonly posSearchQuery = signal<string>('');
+  public readonly posMinPrice = signal<number | null>(null);
+  public readonly posMaxPrice = signal<number | null>(null);
+  public readonly posMinVariantPrice = signal<number | null>(null);
+  public readonly posMaxVariantPrice = signal<number | null>(null);
+  public readonly posFilterStatus = signal<string>('all'); // 'all' | 'active' | 'inactive'
   public readonly posSelectedCustomer = signal<any | null>(null);
   public readonly editingOrderId = signal<number | null>(null);
   public readonly isOrderSubmitting = signal<boolean>(false);
@@ -692,6 +697,37 @@ export class StateService {
       );
     }
 
+    // 3. Lọc theo khoảng giá sản phẩm chính
+    const minPrice = this.posMinPrice();
+    if (minPrice !== null && minPrice !== undefined) {
+      list = list.filter(p => p.price >= minPrice);
+    }
+    const maxPrice = this.posMaxPrice();
+    if (maxPrice !== null && maxPrice !== undefined) {
+      list = list.filter(p => p.price <= maxPrice);
+    }
+
+    // 4. Lọc theo khoảng giá biến thể sản phẩm
+    const minVarPrice = this.posMinVariantPrice();
+    const maxVarPrice = this.posMaxVariantPrice();
+    if (minVarPrice !== null || maxVarPrice !== null) {
+      list = list.filter(p => 
+        p.variants && p.variants.length > 0 && p.variants.some((v: any) => {
+          const matchMin = minVarPrice === null || minVarPrice === undefined || v.price >= minVarPrice;
+          const matchMax = maxVarPrice === null || maxVarPrice === undefined || v.price <= maxVarPrice;
+          return matchMin && matchMax;
+        })
+      );
+    }
+
+    // 5. Lọc theo trạng thái bật/tắt (Đang bán/Ngừng bán)
+    const statusFilter = this.posFilterStatus();
+    if (statusFilter === 'active') {
+      list = list.filter(p => p.status === true || Number(p.status) === 1);
+    } else if (statusFilter === 'inactive') {
+      list = list.filter(p => p.status === false || Number(p.status) === 0);
+    }
+
     // Cập nhật tổng số sản phẩm sau khi lọc
     const totalItems = list.length;
     this.posTotalItems.set(totalItems);
@@ -701,7 +737,7 @@ export class StateService {
     const totalPages = Math.ceil(totalItems / limit) || 1;
     this.posTotalPages.set(totalPages);
 
-    // 3. Phân trang danh sách sản phẩm
+    // 6. Phân trang danh sách sản phẩm
     let page = this.posCurrentPage();
     // Đảm bảo số trang hiện tại không vượt quá tổng số trang sau khi lọc
     if (page > totalPages) {
@@ -713,6 +749,17 @@ export class StateService {
 
     // Cập nhật danh sách hiển thị
     this.posProductsList.set(paginatedList);
+  }
+
+  public resetPosFilters() {
+    this.posMinPrice.set(null);
+    this.posMaxPrice.set(null);
+    this.posMinVariantPrice.set(null);
+    this.posMaxVariantPrice.set(null);
+    this.posFilterStatus.set('all');
+    this.posCategoryFilter.set('Tất cả');
+    this.posCurrentPage.set(1);
+    this.loadPosProducts();
   }
 
   public clearPosProductsCache() {

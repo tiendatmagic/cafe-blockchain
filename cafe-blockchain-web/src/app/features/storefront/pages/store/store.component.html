@@ -140,17 +140,17 @@
         <!-- CỘT DANH MỤC (DESKTOP: Sidebar bên trái, MOBILE: Trượt ngang phía trên) -->
         @if (!showFavoritesOnly()) {
           <div
-            class="w-full md:w-56 shrink-0 app-card md:p-3 overflow-x-auto no-scrollbar md:overflow-visible flex md:flex-col gap-2 p-1 mb-2 sticky top-0 md:top-6 z-20 transition-all duration-300"
+            class="w-full md:w-56 shrink-0 app-card md:p-3 overflow-x-auto no-scrollbar md:overflow-visible flex md:flex-col gap-2 p-1 mb-2 sticky top-0 md:top-6 z-20 transition-all duration-300 bg-transparent md:bg-white dark:md:bg-slate-900 border-none md:border border-slate-200/50 dark:border-slate-800/50"
           >
             @for (cat of categoryOptions(); track cat.value) {
               <button
                 type="button"
                 (click)="activeCategoryId.set(cat.value); currentPage.set(1)"
                 [class]="
-                  'flex items-center px-4.5 py-3 rounded-2xl text-xs sm:text-sm transition-all duration-200 group w-full text-left active:scale-[0.98] border md:border-none whitespace-nowrap md:whitespace-normal shrink-0 ' +
+                  'flex items-center justify-center md:justify-start px-4 py-2 md:px-4.5 md:py-2.5 rounded-xl text-xs md:text-sm transition-all duration-200 group w-auto md:w-full text-center md:text-left active:scale-[0.98] border md:border-none whitespace-nowrap shrink-0 ' +
                   (activeCategoryId() === cat.value
-                    ? 'bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-bold border-purple-200/40 dark:border-purple-800/40 shadow-sm shadow-purple-500/5'
-                    : 'bg-white dark:bg-slate-900 md:bg-transparent border-slate-200/60 dark:border-slate-800/60 text-slate-700 dark:text-slate-300 font-semibold md:font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50')
+                    ? 'bg-[var(--dynamic-primary)]/10 dark:bg-[var(--dynamic-primary)]/20 !text-[var(--dynamic-primary)] font-extrabold border-[var(--dynamic-primary)]/30 dark:border-[var(--dynamic-secondary)]/30 shadow-sm'
+                    : 'bg-white dark:bg-slate-900 md:bg-transparent border-slate-200/60 dark:border-slate-800/60 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-50 dark:hover:bg-slate-800/50')
                 "
               >
                 <span>{{ cat.label }}</span>
@@ -165,30 +165,121 @@
           <div
             class="app-card p-4 flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between"
           >
-            <!-- Thanh tìm kiếm Storefront -->
-            <div class="relative flex-1">
-              <input
-                type="text"
-                [ngModel]="searchQuery()"
-                (ngModelChange)="searchQuery.set($event); currentPage.set(1)"
-                placeholder="Tìm món ngon của quán..."
-                class="w-full search-input"
-              />
-              <app-icon
-                name="search"
-                class="absolute left-3 top-3 h-4 w-4 text-slate-400 dark:text-slate-500"
-                [strokeWidth]="2.5"
-              ></app-icon>
+            <!-- Thanh tìm kiếm Storefront và Nút Lọc -->
+            <div class="relative flex-1 flex items-center gap-2">
+              <div class="relative flex-1">
+                <input
+                  type="text"
+                  [ngModel]="searchQuery()"
+                  (ngModelChange)="searchQuery.set($event); currentPage.set(1)"
+                  placeholder="Tìm món ngon của quán..."
+                  class="w-full search-input pr-10"
+                />
+                <app-icon
+                  name="search"
+                  class="absolute left-3 top-3 h-4 w-4 text-slate-400 dark:text-slate-500"
+                  [strokeWidth]="2.5"
+                ></app-icon>
+              </div>
+
+              <!-- Nút Lọc Store -->
+              <div class="relative shrink-0">
+                <button
+                  type="button"
+                  (click)="isFilterPanelOpen.set(!isFilterPanelOpen())"
+                  [class]="isFilterPanelOpen() ? 'bg-[var(--color-primary)] text-white shadow-md shadow-[var(--color-primary)]/20' : 'bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800'"
+                  class="h-10.5 px-3 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition-all active:scale-[0.98]"
+                  title="Lọc nâng cao"
+                >
+                  <app-icon name="filter" class="h-4 w-4" [strokeWidth]="2" />
+                  <span class="hidden sm:inline">Lọc</span>
+                </button>
+
+                <!-- Dropdown Bộ lọc (Popover) -->
+                @if (isFilterPanelOpen()) {
+                  <!-- Click-outside backdrop -->
+                  <div (click)="isFilterPanelOpen.set(false)" class="fixed inset-0 z-30"></div>
+
+                  <div
+                    class="absolute right-0 mt-2 z-40 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-4.5 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200 text-left"
+                  >
+                    <!-- Header -->
+                    <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800/60">
+                      <span class="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider">Bộ lọc Thực đơn</span>
+                      <button
+                        type="button"
+                        (click)="resetStoreFilters(); isFilterPanelOpen.set(false)"
+                        class="text-[10px] text-rose-500 font-bold hover:underline"
+                      >
+                        Đặt lại
+                      </button>
+                    </div>
+
+                    <!-- Lọc giá sản phẩm chính -->
+                    <div class="space-y-1.5">
+                      <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wide">Khoảng giá món</label>
+                      <div class="grid grid-cols-2 gap-2">
+                        <input
+                          type="number"
+                          placeholder="Từ đ"
+                          [ngModel]="storeMinPrice()"
+                          (ngModelChange)="storeMinPrice.set($event); currentPage.set(1)"
+                          class="form-input-sm"
+                        />
+                        <input
+                          type="number"
+                          placeholder="Đến đ"
+                          [ngModel]="storeMaxPrice()"
+                          (ngModelChange)="storeMaxPrice.set($event); currentPage.set(1)"
+                          class="form-input-sm"
+                        />
+                      </div>
+                    </div>
+
+                    <!-- Lọc giá biến thể -->
+                    <div class="space-y-1.5">
+                      <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wide">Giá biến thể (Size)</label>
+                      <div class="grid grid-cols-2 gap-2">
+                        <input
+                          type="number"
+                          placeholder="Từ đ"
+                          [ngModel]="storeMinVariantPrice()"
+                          (ngModelChange)="storeMinVariantPrice.set($event); currentPage.set(1)"
+                          class="form-input-sm"
+                        />
+                        <input
+                          type="number"
+                          placeholder="Đến đ"
+                          [ngModel]="storeMaxVariantPrice()"
+                          (ngModelChange)="storeMaxVariantPrice.set($event); currentPage.set(1)"
+                          class="form-input-sm"
+                        />
+                      </div>
+                    </div>
+
+                    <!-- Nút hành động -->
+                    <div class="flex gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/60">
+                      <button
+                        type="button"
+                        (click)="isFilterPanelOpen.set(false)"
+                        class="flex-1 btn-secondary btn-sm h-9 text-xs"
+                      >
+                        Đóng
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
             </div>
 
-            <div class="flex items-center justify-between md:justify-start gap-4 shrink-0">
-              <div class="flex items-center gap-2">
+            <div class="flex items-center justify-between md:justify-start gap-4 w-full md:w-auto shrink-0 min-w-0">
+              <div class="flex items-center gap-1.5 min-w-0 flex-1 sm:flex-none">
                 <h2
-                  class="text-sm sm:text-base font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider"
+                  class="text-xs sm:text-sm md:text-base font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider truncate"
                 >
                   {{ showFavoritesOnly() ? 'Sản phẩm yêu thích' : 'Món ăn & Đồ uống' }}
                 </h2>
-                <span class="text-xs font-bold text-slate-400"
+                <span class="text-[10px] sm:text-xs font-bold text-slate-400 shrink-0"
                   >({{ filteredProducts().length }} món)</span
                 >
               </div>
@@ -198,7 +289,7 @@
                 [options]="displayModeOptions"
                 [activeValue]="displayMode()"
                 (valueChange)="displayMode.set($event)"
-                containerClass="bg-slate-200/40 dark:bg-slate-950 border-none h-9 w-full sm:w-auto"
+                containerClass="bg-slate-200/40 dark:bg-slate-950 border-none h-9 shrink-0"
               ></app-tab-group>
             </div>
           </div>
@@ -603,8 +694,10 @@
               >
               <input
                 type="text"
+                pattern="[0-9]*"
+                inputmode="numeric"
                 [ngModel]="orderForm().customer_phone"
-                (ngModelChange)="orderForm.update((f) => ({ ...f, customer_phone: $event }))"
+                (ngModelChange)="onPhoneInputChange($event)"
                 placeholder="Nhập số điện thoại để quán liên hệ"
                 class="form-input"
               />
