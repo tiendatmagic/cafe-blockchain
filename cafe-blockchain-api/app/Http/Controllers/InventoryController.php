@@ -63,7 +63,7 @@ class InventoryController extends Controller
                 if ($variantId) {
                     $variant = $product->variants()->where('id', $variantId)->first();
                     if (!$variant) {
-                        throw new \Exception("Biến thể sản phẩm không hợp lệ cho món: " . $product->name);
+                        throw new \Exception("Invalid product variant for item: " . $product->name);
                     }
                 }
 

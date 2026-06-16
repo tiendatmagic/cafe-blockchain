@@ -23,11 +23,11 @@ class UpdateOrderCommand
         $order = OrderModel::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         if ($order->status !== 'pending') {
-            throw new \Exception("Chỉ có thể chỉnh sửa đơn hàng đang ở trạng thái chờ (pending)!");
+            throw new \Exception("Only orders in pending status can be edited!");
         }
 
         if ($order->blockchain_status !== 'none') {
-            throw new \Exception("Không thể chỉnh sửa đơn hàng đã được đồng bộ lên Blockchain!");
+            throw new \Exception("Cannot edit orders that have already been synchronized to the blockchain!");
         }
 
         return DB::transaction(function () use ($storeOwner, $order, $data) {
@@ -47,7 +47,7 @@ class UpdateOrderCommand
                         $price = $variant->price;
                         $costPrice = $variant->cost_price;
                     } else {
-                        throw new \Exception("Biến thể sản phẩm không hợp lệ cho món: " . $product->name);
+                        throw new \Exception("Invalid product variant for item: " . $product->name);
                     }
                 }
 
@@ -72,7 +72,7 @@ class UpdateOrderCommand
 
             if ($order->voucher_nft_token_id !== null) {
                 if ($voucherNftTokenId !== null && (int)$voucherNftTokenId !== (int)$order->voucher_nft_token_id) {
-                    throw new \Exception("Không thể thay đổi NFT Voucher đã được áp dụng và tiêu hủy cho đơn hàng này!");
+                    throw new \Exception("Cannot change the NFT Voucher that has already been applied and burned for this order!");
                 }
                 $discountAmount = $order->discount_amount;
                 $voucherNftTokenId = $order->voucher_nft_token_id;
@@ -83,25 +83,25 @@ class UpdateOrderCommand
                 }
 
                 if (!$customer || empty($customer->wallet_address)) {
-                    throw new \Exception("NFT Voucher chỉ áp dụng cho khách hàng có liên kết ví EVM!");
+                    throw new \Exception("NFT Vouchers only apply to customers with linked EVM wallets!");
                 }
 
                 $relayerGet = $this->blockchainService->getVoucher($storeOwner, (int)$voucherNftTokenId);
                 if (!$relayerGet['success']) {
-                    throw new \Exception("Không thể xác thực NFT Voucher từ Blockchain: " . ($relayerGet['error'] ?? 'Lỗi không xác định'));
+                    throw new \Exception("Cannot validate NFT Voucher from the blockchain: " . ($relayerGet['error'] ?? 'Unknown error'));
                 }
 
                 if ($relayerGet['isUsed']) {
-                    throw new \Exception("NFT Voucher này đã được sử dụng hoặc đã bị tiêu hủy trên chuỗi!");
+                    throw new \Exception("This NFT Voucher has already been used or burned on-chain!");
                 }
 
                 if (strtolower($relayerGet['owner']) !== strtolower($customer->wallet_address)) {
-                    throw new \Exception("NFT Voucher này không thuộc sở hữu của khách hàng được chọn!");
+                    throw new \Exception("This NFT Voucher does not belong to the selected customer!");
                 }
 
                 $blockchainMinOrder = (int)$relayerGet['minOrderAmount'];
                 if ($totalAmount < $blockchainMinOrder) {
-                    throw new \Exception("Đơn hàng chưa đạt giá trị tối thiểu " . number_format($blockchainMinOrder) . "đ để áp dụng NFT Voucher!");
+                    throw new \Exception("The order total has not reached the minimum value of " . number_format($blockchainMinOrder) . " VND to apply the NFT Voucher!");
                 }
 
                 $relayerResult = $this->blockchainService->useVoucher(
@@ -112,7 +112,7 @@ class UpdateOrderCommand
                 );
 
                 if (!$relayerResult['success']) {
-                    throw new \Exception("Không thể quy đổi NFT Voucher trên Blockchain: " . ($relayerResult['error'] ?? 'Lỗi không xác định'));
+                    throw new \Exception("Cannot redeem NFT Voucher on the blockchain: " . ($relayerResult['error'] ?? 'Unknown error'));
                 }
 
                 $discountAmount = (int)$relayerGet['discountAmount'];

@@ -53,7 +53,7 @@ class VoucherController extends Controller
         if (!$voucherEnabled) {
             return response()->json([
                 'success' => false,
-                'message' => 'Chương trình Voucher NFT của cửa hàng hiện đang tạm tắt!'
+                'message' => "The store's NFT Voucher program is currently disabled!"
             ], 400);
         }
 

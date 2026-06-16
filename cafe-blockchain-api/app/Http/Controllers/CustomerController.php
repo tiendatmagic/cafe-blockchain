@@ -88,10 +88,10 @@ class CustomerController extends Controller
             'website' => 'nullable|string|max:150',
             'business_status' => 'nullable|string|max:100',
         ], [
-            'phone.unique' => 'Số điện thoại này đã tồn tại trong danh sách khách hàng của quán!',
-            'email.unique' => 'Địa chỉ email này đã tồn tại trong danh sách khách hàng của quán!',
-            'wallet_address.unique' => 'Địa chỉ ví Web3 này đã tồn tại trong danh sách khách hàng của quán!',
-            'wallet_address.regex' => 'Địa chỉ ví Web3 không hợp lệ! Phải đúng 42 ký tự EVM (bắt đầu 0x + 40 ký tự hex).',
+            'phone.unique' => 'This phone number already exists in the store\'s customer list!',
+            'email.unique' => 'This email address already exists in the store\'s customer list!',
+            'wallet_address.unique' => 'This Web3 wallet address already exists in the store\'s customer list!',
+            'wallet_address.regex' => 'Invalid Web3 wallet address! Must be a valid 42-character EVM address (starting with 0x + 40 hex characters).',
         ]);
 
         $customer = Customer::create([
@@ -174,10 +174,10 @@ class CustomerController extends Controller
             'website' => 'nullable|string|max:150',
             'business_status' => 'nullable|string|max:100',
         ], [
-            'phone.unique' => 'Số điện thoại này đã tồn tại trong danh sách khách hàng của quán!',
-            'email.unique' => 'Địa chỉ email này đã tồn tại trong danh sách khách hàng của quán!',
-            'wallet_address.unique' => 'Địa chỉ ví Web3 này đã tồn tại trong danh sách khách hàng của quán!',
-            'wallet_address.regex' => 'Địa chỉ ví Web3 không hợp lệ! Phải đúng 42 ký tự EVM (bắt đầu 0x + 40 ký tự hex).',
+            'phone.unique' => 'This phone number already exists in the store\'s customer list!',
+            'email.unique' => 'This email address already exists in the store\'s customer list!',
+            'wallet_address.unique' => 'This Web3 wallet address already exists in the store\'s customer list!',
+            'wallet_address.regex' => 'Invalid Web3 wallet address! Must be a valid 42-character EVM address (starting with 0x + 40 hex characters).',
         ]);
 
         $customer->update([

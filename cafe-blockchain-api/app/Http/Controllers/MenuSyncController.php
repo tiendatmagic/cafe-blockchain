@@ -60,7 +60,7 @@ class MenuSyncController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Ghi nhận đồng bộ thực đơn thành công.',
+            'message' => 'Menu synchronization logged successfully.',
             'data'    => [
                 'id'            => $log->id,
                 'synced_by'     => $log->synced_by,

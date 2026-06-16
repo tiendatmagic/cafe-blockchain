@@ -18,8 +18,8 @@ class GetVoucherMetadataQuery
             $minOrderAmount = (int)$parts[2];
         }
 
-        $discountFormatted = number_format($discountAmount) . 'đ';
-        $minOrderFormatted = number_format($minOrderAmount) . 'đ';
+        $discountFormatted = number_format($discountAmount) . ' VND';
+        $minOrderFormatted = number_format($minOrderAmount) . ' VND';
 
         $expirationTime = time() + (30 * 24 * 60 * 60);
         if (count($parts) >= 4) {
@@ -59,7 +59,7 @@ class GetVoucherMetadataQuery
 
         return [
             'name' => "Cafe Web3 NFT Voucher " . $discountFormatted,
-            'description' => "Mã giảm giá dạng NFT trị giá {$discountFormatted} áp dụng cho các hóa đơn tối thiểu {$minOrderFormatted} tại quán Cafe Web3 POS.",
+            'description' => "NFT Discount Voucher worth {$discountFormatted} applicable for minimum invoices of {$minOrderFormatted} at Cafe Web3 POS.",
             'image' => url('/images/nft-voucher.png'),
             'attributes' => $attributes
         ];

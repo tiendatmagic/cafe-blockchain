@@ -23,11 +23,11 @@ class SubmitSignatureCommand
             ->first();
 
         if (!$sigRecord) {
-            throw new \Exception("Không tìm thấy yêu cầu ký số cho hóa đơn này!", 404);
+            throw new \Exception("No signature request found for this invoice!", 404);
         }
 
         if ($sigRecord->status === 'signed') {
-            throw new \Exception("Hóa đơn này đã được ký số và chốt đơn trước đó!", 400);
+            throw new \Exception("This invoice has already been signed and finalized!", 400);
         }
 
         return DB::transaction(function () use ($sigRecord, $orderCode, $signature) {
@@ -43,13 +43,13 @@ class SubmitSignatureCommand
             );
 
             if (!$relayerResult['success']) {
-                throw new \Exception("Không thể quy đổi NFT Voucher trên Blockchain: " . ($relayerResult['error'] ?? 'Lỗi không xác định'));
+                throw new \Exception("Cannot redeem NFT Voucher on the blockchain: " . ($relayerResult['error'] ?? 'Unknown error'));
             }
 
             // 2. Tự động tạo đơn hàng chính thức từ temp_order_data
             $tempOrderData = !empty($sigRecord->temp_order_data) ? json_decode($sigRecord->temp_order_data, true) : null;
             if (empty($tempOrderData) || empty($tempOrderData['items'])) {
-                throw new \Exception("Dữ liệu giỏ hàng tạm thời không hợp lệ hoặc đã bị xóa!");
+                throw new \Exception("Temporary cart data is invalid or has been deleted!");
             }
 
             $discountAmount = (int)($tempOrderData['discount_amount'] ?? 0);

@@ -152,7 +152,7 @@ class SettingController extends Controller
                 ->exists();
             if ($existing) {
                 return response()->json([
-                    'message' => 'Slug website đã được sử dụng bởi quán khác, vui lòng chọn slug khác!'
+                    'message' => 'This website slug is already taken by another store, please choose a different one!'
                 ], 400);
             }
             $settingsData['website_slug'] = $processedSlug;
@@ -186,28 +186,28 @@ class SettingController extends Controller
         // 1. Logic khóa cứng Mạng Blockchain (Chain ID)
         if (!empty($existingChainId) && isset($settingsData['chain_id']) && $settingsData['chain_id'] !== $existingChainId) {
             return response()->json([
-                'message' => 'Mạng Blockchain (Chain ID) đã được thiết lập trước đó và đã bị khóa để đảm bảo tính toàn vẹn tài chính! Không thể thay đổi Chain ID.'
+                'message' => 'Blockchain network (Chain ID) has been set previously and is locked to ensure financial integrity! Chain ID cannot be changed.'
             ], 400);
         }
 
         // 2. Logic khóa cứng địa chỉ Smart Contract POS linh hoạt (chỉ khóa khi đã có giao dịch thành công)
         if ($hasSyncedOrders && !empty($existingContractAddress) && isset($settingsData['contract_address']) && $settingsData['contract_address'] !== $existingContractAddress) {
             return response()->json([
-                'message' => 'Địa chỉ Smart Contract POS đã được sử dụng để đồng bộ đơn hàng lên Blockchain và bị khóa vĩnh viễn! Không thể chỉnh sửa.'
+                'message' => 'POS Smart Contract address has been used to sync orders to the blockchain and is permanently locked! It cannot be edited.'
             ], 400);
         }
 
         // 3. Logic khóa cứng địa chỉ Smart Contract Tài chính linh hoạt (chỉ khóa khi đã có giao dịch thành công)
         if ($hasSyncedTransactions && !empty($existingFinanceContractAddress) && isset($settingsData['finance_contract_address']) && $settingsData['finance_contract_address'] !== $existingFinanceContractAddress) {
             return response()->json([
-                'message' => 'Địa chỉ Smart Contract Tài chính đã được sử dụng để đồng bộ giao dịch lên Blockchain và bị khóa vĩnh viễn! Không thể chỉnh sửa.'
+                'message' => 'Finance Smart Contract address has been used to sync transactions to the blockchain and is permanently locked! It cannot be edited.'
             ], 400);
         }
 
         // 4. Logic khóa cứng địa chỉ Smart Contract Menu Registry linh hoạt (chỉ khóa khi đã đồng bộ thực đơn thành công)
         if ($hasSyncedMenu && !empty($existingMenuRegistryContractAddress) && isset($settingsData['menu_registry_contract_address']) && $settingsData['menu_registry_contract_address'] !== $existingMenuRegistryContractAddress) {
             return response()->json([
-                'message' => 'Địa chỉ Smart Contract Menu Registry đã được sử dụng để đồng bộ thực đơn lên Blockchain và bị khóa vĩnh viễn! Không thể chỉnh sửa.'
+                'message' => 'Menu Registry Smart Contract address has been used to sync the menu to the blockchain and is permanently locked! It cannot be edited.'
             ], 400);
         }
 
@@ -230,22 +230,22 @@ class SettingController extends Controller
                             $rpcChainIdDec = (string)hexdec($rpcChainIdHex);
                             if ($rpcChainIdDec !== (string)$targetChainId) {
                                 return response()->json([
-                                    'message' => "RPC Endpoint không hợp lệ! Mạng này trả về Chain ID là $rpcChainIdDec, không khớp với Chain ID được cấu hình của cửa hàng là $targetChainId."
+                                    'message' => "Invalid RPC Endpoint! This network returned Chain ID $rpcChainIdDec, which does not match the store's configured Chain ID $targetChainId."
                                 ], 400);
                             }
                         } else {
                             return response()->json([
-                                'message' => 'RPC Endpoint không trả về Chain ID hợp lệ.'
+                                    'message' => 'RPC Endpoint did not return a valid Chain ID.'
                             ], 400);
                         }
                     } else {
                         return response()->json([
-                            'message' => 'Không thể kết nối đến RPC Endpoint được cung cấp. Vui lòng kiểm tra lại URL.'
+                            'message' => 'Could not connect to the provided RPC Endpoint. Please check the URL again.'
                         ], 400);
                     }
                 } catch (\Exception $e) {
                     return response()->json([
-                        'message' => 'Lỗi kết nối RPC để kiểm tra Chain ID: ' . $e->getMessage()
+                        'message' => 'RPC connection error to verify Chain ID: ' . $e->getMessage()
                     ], 400);
                 }
             }
@@ -313,7 +313,7 @@ class SettingController extends Controller
                     $storeOwner = strtolower($sigRecord->store_owner_address);
                     $tempOrderData = !empty($sigRecord->temp_order_data) ? json_decode($sigRecord->temp_order_data, true) : null;
                 } else {
-                    return response()->json(['message' => 'Không tìm thấy đơn hàng tương ứng!'], 404);
+                    return response()->json(['message' => 'Order not found!'], 404);
                 }
             } else {
                 $storeOwner = strtolower($order->store_owner_address);
@@ -493,7 +493,7 @@ class SettingController extends Controller
         });
 
         if (!$storeData) {
-            return response()->json(['message' => 'Cửa hàng không tồn tại!'], 404);
+            return response()->json(['message' => 'Store does not exist!'], 404);
         }
 
         return response()->json($storeData);
@@ -506,7 +506,7 @@ class SettingController extends Controller
     {
         $setting = Setting::where('key', 'website_slug')->where('value', $slug)->first();
         if (!$setting) {
-            return response()->json(['message' => 'Cửa hàng không tồn tại!'], 404);
+            return response()->json(['message' => 'Store does not exist!'], 404);
         }
 
         $storeOwner = strtolower($setting->store_owner_address);
@@ -588,12 +588,12 @@ class SettingController extends Controller
             $order = $bus->dispatch($command);
 
             return response()->json([
-                'message' => 'Đặt đơn hàng thành công!',
+                'message' => 'Order placed successfully!',
                 'data' => \App\Infrastructure\Persistence\Eloquent\OrderModel::with(['customer', 'items.product', 'items.variant'])->find($order->id)
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Đặt đơn hàng thất bại: ' . $e->getMessage()
+                'message' => 'Failed to place order: ' . $e->getMessage()
             ], 500);
         }
     }

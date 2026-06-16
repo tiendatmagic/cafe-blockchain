@@ -72,7 +72,7 @@ class MintVoucherGiftListener implements ShouldQueue
                         $order->saveQuietly();
                     }
                 } else {
-                    Log::warning("Async Mint NFT Voucher failed: " . ($relayerResult['error'] ?? 'Lỗi không xác định'));
+                    Log::warning("Async Mint NFT Voucher failed: " . ($relayerResult['error'] ?? 'Unknown error'));
                 }
             }
         }

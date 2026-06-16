@@ -91,13 +91,13 @@ class DebtController extends Controller
                 'customer_id' => $customer->id,
                 'type' => 'debt',
                 'amount' => $validated['amount'],
-                'note' => $validated['note'] ?? 'Ghi nợ thủ công',
+                'note' => $validated['note'] ?? 'Manual debt entry',
                 'recorded_at' => $validated['recorded_at'],
             ]);
         });
 
         return response()->json([
-            'message' => 'Ghi nợ thành công.',
+            'message' => 'Manual debt recorded successfully.',
             'data' => $debtLog
         ], 201);
     }
@@ -122,13 +122,13 @@ class DebtController extends Controller
         $debtLog = DB::transaction(function () use ($storeOwner, $validated, $customer) {
             // 1. Tạo giao dịch thu quỹ
             $paymentMethodLabel = [
-                'cash' => 'Tiền mặt',
-                'bank_transfer' => 'Chuyển khoản',
-                'crypto' => 'Tiền mã hóa',
-                'e_wallet' => 'Ví điện tử'
-            ][$validated['payment_method']] ?? 'Tiền mặt';
+                'cash' => 'Cash',
+                'bank_transfer' => 'Bank Transfer',
+                'crypto' => 'Crypto',
+                'e_wallet' => 'E-Wallet'
+            ][$validated['payment_method']] ?? 'Cash';
 
-            $noteStr = "Thu nợ từ khách hàng " . $customer->name . " (" . $customer->customer_code . ")";
+            $noteStr = "Debt payment from customer " . $customer->name . " (" . $customer->customer_code . ")";
             if (!empty($validated['note'])) {
                 $noteStr .= " - " . $validated['note'];
             }
@@ -137,7 +137,7 @@ class DebtController extends Controller
                 'type' => 'thu',
                 'amount' => $validated['amount'],
                 'category' => 'Thu nợ khách hàng',
-                'description' => $noteStr . " (Phương thức: " . $paymentMethodLabel . ")",
+                'description' => $noteStr . " (Method: " . $paymentMethodLabel . ")",
                 'transaction_date' => $validated['recorded_at'],
                 'store_owner_address' => $storeOwner,
                 'blockchain_status' => 'none',
@@ -153,13 +153,13 @@ class DebtController extends Controller
                 'transaction_id' => $transaction->id,
                 'type' => 'payment',
                 'amount' => $validated['amount'],
-                'note' => $validated['note'] ?? "Thu nợ khách hàng (Qua " . $paymentMethodLabel . ")",
+                'note' => $validated['note'] ?? "Customer debt payment (Via " . $paymentMethodLabel . ")",
                 'recorded_at' => $validated['recorded_at'],
             ]);
         });
 
         return response()->json([
-            'message' => 'Thu nợ thành công và đã ghi nhận dòng tiền vào sổ quỹ.',
+            'message' => 'Debt payment recorded successfully and cash flow updated.',
             'data' => $debtLog
         ], 201);
     }
@@ -175,7 +175,7 @@ class DebtController extends Controller
         // Nếu log nợ này sinh ra từ Đơn hàng POS, ta không cho phép xóa tự do mà phải hủy đơn hàng ở mục Đơn hàng.
         if (!empty($debtLog->order_id)) {
             return response()->json([
-                'message' => 'Bản ghi nợ này liên kết với Đơn hàng POS. Vui lòng hủy đơn hàng đó tại mục Đơn hàng để hoàn tác công nợ!'
+                'message' => 'This debt record is linked to a POS Order. Please cancel that order under Orders to undo this debt!'
             ], 400);
         }
 
@@ -186,7 +186,7 @@ class DebtController extends Controller
                 // Chặn xóa nếu transaction đã đồng bộ blockchain thành công
                 if ($transaction->blockchain_status === 'success') {
                     return response()->json([
-                        'message' => 'Giao dịch thu tiền tương ứng đã được đồng bộ lên Blockchain, không thể hủy bỏ khoản thu nợ này!'
+                        'message' => 'The corresponding payment transaction has been synchronized to the blockchain, cannot cancel this debt payment!'
                     ], 400);
                 }
                 
@@ -211,7 +211,7 @@ class DebtController extends Controller
         });
 
         return response()->json([
-            'message' => 'Đã hủy bản ghi công nợ và hoàn tác số dư nợ của khách hàng thành công.'
+            'message' => 'Debt record deleted and customer debt balance updated successfully.'
         ]);
     }
 }
