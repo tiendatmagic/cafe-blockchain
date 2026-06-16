@@ -42,7 +42,7 @@ class ShiftController extends Controller
 
         if ($existingShift) {
             return response()->json([
-                'message' => 'Bạn đã có một ca trực đang mở. Vui lòng kết ca cũ trước khi mở ca mới!'
+                'message' => 'You already have an active shift. Please close your current shift before opening a new one!'
             ], 400);
         }
 
@@ -55,7 +55,7 @@ class ShiftController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Mở ca trực thành công!',
+            'message' => 'Shift opened successfully!',
             'data' => $shift
         ], 201);
     }
@@ -72,7 +72,7 @@ class ShiftController extends Controller
 
         if (!$shift) {
             return response()->json([
-                'message' => 'Không tìm thấy ca trực nào đang mở!'
+                'message' => 'No active shift found!'
             ], 404);
         }
 
@@ -128,7 +128,7 @@ class ShiftController extends Controller
             DB::commit();
 
             return response()->json([
-                'message' => 'Kết ca và đối soát két thành công!',
+                'message' => 'Shift closed and drawer reconciled successfully!',
                 'data' => $shift,
                 'difference' => $actualCash - $expectedCash
             ]);
@@ -136,7 +136,7 @@ class ShiftController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
-                'message' => 'Kết ca trực thất bại: ' . $e->getMessage()
+                'message' => 'Failed to close shift: ' . $e->getMessage()
             ], 500);
         }
     }

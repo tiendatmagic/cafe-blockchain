@@ -33,7 +33,7 @@ class CheckPermission
 
         return response()->json([
             'success' => false,
-            'message' => 'Bạn không có quyền truy cập chức năng này.'
+            'message' => 'You do not have permission to access this function.'
         ], 403);
     }
 }

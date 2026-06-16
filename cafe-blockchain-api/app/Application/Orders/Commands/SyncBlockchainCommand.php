@@ -17,7 +17,7 @@ class SyncBlockchainCommand
             $orderEntity = OrderMapper::toDomain($order);
             $expectedHash = $orderEntity->generateVerificationHash();
             if (empty($order->verification_hash) || $order->verification_hash !== $expectedHash) {
-                throw new \Exception("Dữ liệu tài chính của đơn hàng đã bị can thiệp và sửa đổi trái phép! Từ chối đối soát và ghi chuỗi.");
+                throw new \Exception("Order financial data has been tampered with or modified unauthorized! Sync denied.");
             }
         }
 

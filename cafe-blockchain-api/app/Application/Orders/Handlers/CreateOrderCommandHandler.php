@@ -49,7 +49,7 @@ class CreateOrderCommandHandler
                         $price = $variant->price;
                         $costPrice = $variant->cost_price;
                     } else {
-                        throw new \Exception("Biến thể sản phẩm không hợp lệ cho món: " . $product->name);
+                        throw new \Exception("Invalid product variant for item: " . $product->name);
                     }
                 }
 
@@ -76,7 +76,7 @@ class CreateOrderCommandHandler
             if ($voucherNftTokenId !== null && !empty($voucherNftSignature)) {
                 $voucherEnabled = Setting::getForStore('voucher_enabled', $storeOwner, '0') === '1';
                 if (!$voucherEnabled) {
-                    throw new \Exception("Chương trình Voucher NFT của cửa hàng hiện đang tạm tắt!");
+                    throw new \Exception("The store's NFT Voucher program is currently disabled!");
                 }
 
                 $orderCode = $data['order_code'] ?? null;
@@ -91,26 +91,26 @@ class CreateOrderCommandHandler
                 }
 
                 if (!$customer || empty($customer->wallet_address)) {
-                    throw new \Exception("NFT Voucher chỉ áp dụng cho khách hàng có liên kết ví EVM!");
+                    throw new \Exception("NFT Vouchers only apply to customers with linked EVM wallets!");
                 }
 
                 // Truy vấn thông tin voucher directly on-chain
                 $relayerGet = $this->blockchainService->getVoucher($storeOwner, (int)$voucherNftTokenId);
                 if (!$relayerGet['success']) {
-                    throw new \Exception("Không thể xác thực NFT Voucher từ Blockchain: " . ($relayerGet['error'] ?? 'Lỗi không xác định'));
+                    throw new \Exception("Cannot validate NFT Voucher from the blockchain: " . ($relayerGet['error'] ?? 'Unknown error'));
                 }
 
                 if ($relayerGet['isUsed']) {
-                    throw new \Exception("NFT Voucher này đã được sử dụng hoặc đã bị tiêu hủy trên chuỗi!");
+                    throw new \Exception("This NFT Voucher has already been used or burned on-chain!");
                 }
 
                 if (strtolower($relayerGet['owner']) !== strtolower($customer->wallet_address)) {
-                    throw new \Exception("NFT Voucher này không thuộc sở hữu của khách hàng được chọn!");
+                    throw new \Exception("This NFT Voucher does not belong to the selected customer!");
                 }
 
                 $blockchainMinOrder = (int)$relayerGet['minOrderAmount'];
                 if ($totalAmount < $blockchainMinOrder) {
-                    throw new \Exception("Đơn hàng chưa đạt giá trị tối thiểu " . number_format($blockchainMinOrder) . "đ để áp dụng NFT Voucher!");
+                    throw new \Exception("The order total has not reached the minimum value of " . number_format($blockchainMinOrder) . " VND to apply the NFT Voucher!");
                 }
 
                 // Thực hiện gọi Relayer để tiêu hủy (burn) NFT Voucher trên chuỗi bằng chữ ký số của khách hàng
@@ -122,7 +122,7 @@ class CreateOrderCommandHandler
                 );
 
                 if (!$relayerResult['success']) {
-                    throw new \Exception("Không thể quy đổi NFT Voucher trên Blockchain: " . ($relayerResult['error'] ?? 'Lỗi không xác định'));
+                    throw new \Exception("Cannot redeem NFT Voucher on the blockchain: " . ($relayerResult['error'] ?? 'Unknown error'));
                 }
 
                 $discountAmount = (int)$relayerGet['discountAmount'];
@@ -136,7 +136,7 @@ class CreateOrderCommandHandler
 
             if ($data['payment_method'] === 'debt') {
                 if (empty($data['customer_id'])) {
-                    throw new \Exception("Đơn hàng ghi nợ bắt buộc phải chọn khách hàng!");
+                    throw new \Exception("A customer must be selected for debt orders!");
                 }
             }
 
@@ -187,7 +187,7 @@ class CreateOrderCommandHandler
                     'order_id' => $savedOrder->id,
                     'type' => 'debt',
                     'amount' => $savedOrder->total_amount,
-                    'note' => "Nợ đơn hàng " . ($savedOrder->order_code ?? $savedOrder->id),
+                    'note' => "Debt for order " . ($savedOrder->order_code ?? $savedOrder->id),
                     'recorded_at' => now()->toDateString(),
                 ]);
             }

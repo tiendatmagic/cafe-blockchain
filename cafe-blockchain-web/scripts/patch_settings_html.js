@@ -208,7 +208,7 @@ const storeBlockText = `            </div>
                 Chỉ những danh mục được chọn dưới đây mới được hiển thị cho khách mua hàng trực tuyến.
               </span>
             </div>
-            
+
             <div class="flex items-center gap-2 shrink-0">
               <button
                 type="button"
@@ -244,7 +244,7 @@ const storeBlockText = `            </div>
                       : toggleCategorySelection(category.id)
                   "
                   [class]="
-                    'flex items-center gap-3 p-3.5 rounded-2xl border-2 transition-all cursor-pointer select-none ' +
+                    'flex items-center gap-3 p-3.5 rounded-2xl border-2 transition-all cursor-pointer ' +
                     (isCategorySelected(category.id)
                       ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-slate-800 dark:text-white'
                       : 'border-slate-100 dark:border-slate-950 hover:border-slate-200 dark:hover:border-slate-800 text-slate-500') +

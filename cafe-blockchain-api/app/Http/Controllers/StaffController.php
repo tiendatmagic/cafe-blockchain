@@ -58,7 +58,7 @@ class StaffController extends Controller
         if ($isStoreOwner || $walletAddress === $storeOwner) {
             return response()->json([
                 'success' => false,
-                'message' => 'Địa chỉ ví này là của một chủ quán, không thể thêm làm nhân viên.'
+                'message' => 'This wallet address belongs to a store owner and cannot be added as a staff member.'
             ], 422);
         }
 
@@ -78,7 +78,7 @@ class StaffController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Thêm nhân viên thành công.',
+            'message' => 'Staff added successfully.',
             'data' => $staff->load('role')
         ], 201);
     }
@@ -118,7 +118,7 @@ class StaffController extends Controller
         if ($isStoreOwner || $newWalletAddress === $storeOwner) {
             return response()->json([
                 'success' => false,
-                'message' => 'Địa chỉ ví này là của một chủ quán, không thể thêm làm nhân viên.'
+                'message' => 'This wallet address belongs to a store owner and cannot be added as a staff member.'
             ], 422);
         }
 
@@ -146,7 +146,7 @@ class StaffController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Cập nhật nhân viên thành công.',
+            'message' => 'Staff updated successfully.',
             'data' => $staff->load('role')
         ]);
     }
@@ -171,7 +171,7 @@ class StaffController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Xóa nhân viên thành công.'
+            'message' => 'Staff deleted successfully.'
         ]);
     }
 
@@ -256,7 +256,7 @@ class StaffController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Thêm vai trò thành công.',
+            'message' => 'Role added successfully.',
             'data' => $role
         ], 201);
     }
@@ -281,7 +281,7 @@ class StaffController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Cập nhật vai trò thành công.',
+            'message' => 'Role updated successfully.',
             'data' => $role
         ]);
     }
@@ -299,7 +299,7 @@ class StaffController extends Controller
         if ($staffCount > 0) {
             return response()->json([
                 'success' => false,
-                'message' => 'Không thể xóa vai trò này vì đang có nhân viên sử dụng.'
+                'message' => 'Cannot delete this role because it is currently assigned to one or more staff members.'
             ], 422);
         }
 
@@ -307,7 +307,7 @@ class StaffController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Xóa vai trò thành công.'
+            'message' => 'Role deleted successfully.'
         ]);
     }
 
@@ -373,7 +373,7 @@ class StaffController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Khôi phục các vai trò mặc định thành công.'
+            'message' => 'Default roles restored successfully.'
         ]);
     }
 }

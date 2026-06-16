@@ -1,31 +1,53 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject, Injector } from '@angular/core';
-import { catchError } from 'rxjs/operators';
+import { catchError, takeUntil } from 'rxjs/operators';
 import { throwError } from 'rxjs';
 import { StateService } from './state.service';
+import { Router } from '@angular/router';
+import { environment } from '@environments/environment';
 
 export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
   const injector = inject(Injector);
-  
+  const stateService = injector.get(StateService);
+  const router = injector.get(Router);
+
+  // Kiểm tra xem trang hiện tại có phải là blockchain explorer không
+  const isExplorer = router.url.includes('/blockchain-explorer') || 
+                      (typeof window !== 'undefined' && window.location.pathname.includes('/blockchain-explorer'));
+
+  const isBackendApi = req.url.startsWith(environment.apiBaseUrl);
+
+  // Nếu hệ thống đang trong trạng thái bảo trì và không phải trang explorer, chặn request ngay từ client để chống spam
+  if (stateService.isMaintenance() && isBackendApi && !isExplorer) {
+    return throwError(() => new HttpErrorResponse({
+      status: 503,
+      statusText: 'Service Unavailable',
+      error: { message: 'Hệ thống đang bảo trì, vui lòng quay lại sau.' }
+    }));
+  }
+
   return next(req).pipe(
+    // Tự động hủy request này nếu nhận được tín hiệu hủy
+    takeUntil(stateService.cancelRequests$),
     catchError((error: any) => {
       if (error instanceof HttpErrorResponse) {
-        const stateService = injector.get(StateService);
+        // Xử lý lỗi 503 bảo trì hệ thống hoặc lỗi status 0 (CORS block/mất kết nối) từ API backend
+        if ((error.status === 503 || error.status === 0) && isBackendApi && !isExplorer) {
+          console.warn(`Nhận được lỗi status ${error.status} từ Backend. Kích hoạt trạng thái bảo trì toàn hệ thống...`);
+          stateService.isMaintenance.set(true);
+          stateService.isInitialLoading.set(false); // Ẩn màn hình loading khởi tạo lập tức để hiện màn hình bảo trì
+          stateService.cancelRequests$.next(); // Phát tín hiệu hủy toàn bộ request đang bay
+        }
 
-        // 1. Kiểm tra lỗi 401 Unauthorized (Unauthenticated)
-        const isUnauthenticated = error.status === 401 && 
-          (
-            (error.error && error.error.message === 'Unauthenticated.') ||
-            (typeof error.error === 'string' && error.error.includes('Unauthenticated.'))
-          );
+        const isUnauthenticated = error.status === 401;
 
         if (isUnauthenticated) {
           if (stateService.web3Service.walletConnected()) {
             console.warn('Nhận được lỗi 401 (Unauthenticated) từ API. Tự động ngắt kết nối ví...');
             stateService.disconnectWalletAndClose('Phiên làm việc đã hết hạn hoặc không hợp lệ. Vui lòng kết nối lại ví!', true);
           }
-        } else {
-          // 2. Tự động hiển thị Toast báo lỗi từ API
+        } else if (error.status !== 503 && !(error.status === 0 && isBackendApi)) {
+          // 2. Tự động hiển thị Toast báo lỗi từ API (Bỏ qua lỗi 503 và lỗi sập backend vì đã có màn hình bảo trì)
           // Loại trừ trường hợp lấy thông tin store details trên trang public store (/store/:slug) 
           // để tránh hiện Toast đỏ lòm làm xấu giao diện (giao diện store tự render box thông báo lỗi chuyên nghiệp)
           const isStorefrontDetails = req.url.includes('/store/') && !req.url.includes('/orders');

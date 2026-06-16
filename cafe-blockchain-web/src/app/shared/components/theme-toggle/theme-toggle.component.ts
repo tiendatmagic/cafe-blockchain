@@ -9,7 +9,7 @@ import { StateService } from '@core/services/state.service';
   template: `
     @if (size === 'md') {
       <div
-        class="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 px-3 py-1.5 rounded-2xl h-[42px] shrink-0 select-none shadow-sm transition-colors duration-300"
+        class="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 px-3 py-1.5 rounded-2xl h-[42px] shrink-0 shadow-sm transition-colors duration-300"
         title="Đổi giao diện Sáng / Tối / Tự động"
       >
         <button

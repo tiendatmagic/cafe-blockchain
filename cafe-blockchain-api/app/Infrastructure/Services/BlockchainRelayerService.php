@@ -29,16 +29,16 @@ class BlockchainRelayerService implements BlockchainRelayerServiceInterface
             try {
                 $privateKey = \Illuminate\Support\Facades\Crypt::decryptString($encryptedKey);
             } catch (\Exception $e) {
-                return ['success' => false, 'error' => 'Lỗi giải mã khóa ví Relayer của quán: ' . $e->getMessage()];
+                return ['success' => false, 'error' => 'Error decrypting store relayer wallet key: ' . $e->getMessage()];
             }
         }
 
         if (empty($contractAddress)) {
-            return ['success' => false, 'error' => 'Chưa cấu hình hợp đồng NFT Voucher cho quán!'];
+            return ['success' => false, 'error' => 'NFT Voucher contract address is not configured for the store!'];
         }
 
         if (empty($privateKey)) {
-            return ['success' => false, 'error' => 'Chưa cấu hình khóa ví Relayer (relayer_private_key) cho quán trong cơ sở dữ liệu!'];
+            return ['success' => false, 'error' => 'Relayer wallet private key is not configured for the store in the database!'];
         }
 
         $payload = [
@@ -74,7 +74,7 @@ class BlockchainRelayerService implements BlockchainRelayerServiceInterface
         }
 
         if (empty($contractAddress)) {
-            return ['success' => false, 'error' => 'Chưa cấu hình hợp đồng NFT Voucher cho quán!'];
+            return ['success' => false, 'error' => 'NFT Voucher contract address is not configured for the store!'];
         }
 
         $payload = [
@@ -103,16 +103,16 @@ class BlockchainRelayerService implements BlockchainRelayerServiceInterface
             try {
                 $privateKey = \Illuminate\Support\Facades\Crypt::decryptString($encryptedKey);
             } catch (\Exception $e) {
-                return ['success' => false, 'error' => 'Lỗi giải mã khóa ví Relayer của quán: ' . $e->getMessage()];
+                return ['success' => false, 'error' => 'Error decrypting store relayer wallet key: ' . $e->getMessage()];
             }
         }
 
         if (empty($contractAddress)) {
-            return ['success' => false, 'error' => 'Chưa cấu hình hợp đồng NFT Voucher cho quán!'];
+            return ['success' => false, 'error' => 'NFT Voucher contract address is not configured for the store!'];
         }
 
         if (empty($privateKey)) {
-            return ['success' => false, 'error' => 'Chưa cấu hình khóa ví Relayer (relayer_private_key) cho quán trong cơ sở dữ liệu!'];
+            return ['success' => false, 'error' => 'Relayer wallet private key is not configured for the store in the database!'];
         }
 
         $payload = [
@@ -142,12 +142,12 @@ class BlockchainRelayerService implements BlockchainRelayerServiceInterface
             try {
                 $privateKey = \Illuminate\Support\Facades\Crypt::decryptString($encryptedKey);
             } catch (\Exception $e) {
-                return ['success' => false, 'error' => 'Lỗi giải mã khóa ví Relayer: ' . $e->getMessage()];
+                return ['success' => false, 'error' => 'Error decrypting relayer wallet key: ' . $e->getMessage()];
             }
         }
 
         if (empty($contractAddress)) {
-            return ['success' => false, 'error' => 'Chưa cấu hình hợp đồng NFT Voucher cho quán!'];
+            return ['success' => false, 'error' => 'NFT Voucher contract address is not configured for the store!'];
         }
 
         $payload = [
@@ -192,14 +192,14 @@ class BlockchainRelayerService implements BlockchainRelayerServiceInterface
             } else {
                 return [
                     'success' => false,
-                    'error' => 'Các hàm thực thi lệnh hệ thống (shell_exec, exec, system, passthru) đều bị vô hiệu hóa trên hosting của bạn vì lý do bảo mật.'
+                    'error' => 'System execution functions (shell_exec, exec, system, passthru) are disabled on your hosting for security reasons.'
                 ];
             }
             
             if (empty($output)) {
                 return [
                     'success' => false,
-                    'error' => 'Không nhận được phản hồi từ tiến trình Blockchain Relayer Node.js.'
+                    'error' => 'No response received from the Blockchain Relayer Node.js process.'
                 ];
             }
 
@@ -208,7 +208,7 @@ class BlockchainRelayerService implements BlockchainRelayerServiceInterface
                 Log::error('Blockchain Relayer raw output error: ' . $output);
                 return [
                     'success' => false,
-                    'error' => 'Lỗi định dạng phản hồi từ Relayer: ' . substr($output, 0, 300)
+                    'error' => 'Relayer response format error: ' . substr($output, 0, 300)
                 ];
             }
 
@@ -217,7 +217,7 @@ class BlockchainRelayerService implements BlockchainRelayerServiceInterface
             Log::error('Blockchain Relayer Exception: ' . $e->getMessage());
             return [
                 'success' => false,
-                'error' => 'Lỗi thực thi Relayer: ' . $e->getMessage()
+                'error' => 'Relayer execution error: ' . $e->getMessage()
             ];
         }
     }

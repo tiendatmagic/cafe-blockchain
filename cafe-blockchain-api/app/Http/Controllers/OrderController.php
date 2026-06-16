@@ -47,9 +47,9 @@ class OrderController extends Controller
             
             return response()->json($order);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['message' => 'Không tìm thấy đơn hàng tương ứng!'], 404);
+            return response()->json(['message' => 'Order not found!'], 404);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Lỗi lấy chi tiết đơn hàng: ' . $e->getMessage()], 500);
+            return response()->json(['message' => 'Error fetching order details: ' . $e->getMessage()], 500);
         }
     }
 
@@ -113,12 +113,12 @@ class OrderController extends Controller
             $order = $command->execute($storeOwner, $id, $validated);
 
             return response()->json([
-                'message' => 'Cập nhật đơn hàng thành công.',
+                'message' => 'Order updated successfully.',
                 'data' => OrderModel::with(['customer', 'items.product', 'items.variant'])->find($order->id)
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Lỗi cập nhật đơn hàng: ' . $e->getMessage()
+                'message' => 'Error updating order: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -143,7 +143,7 @@ class OrderController extends Controller
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Lỗi cập nhật trạng thái đơn hàng: ' . $e->getMessage()
+                'message' => 'Error updating order status: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -170,7 +170,7 @@ class OrderController extends Controller
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Lỗi đồng bộ blockchain: ' . $e->getMessage()
+                'message' => 'Blockchain sync error: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -186,12 +186,12 @@ class OrderController extends Controller
             $order = $command->execute($storeOwner, $id);
 
             return response()->json([
-                'message' => 'Tặng và đúc thành công Voucher NFT cho khách hàng!',
+                'message' => 'NFT Voucher gifted and minted successfully to the customer!',
                 'data' => OrderModel::with(['customer', 'items.product', 'items.variant'])->find($order->id)
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Lỗi tặng voucher: ' . $e->getMessage()
+                'message' => 'Error gifting voucher: ' . $e->getMessage()
             ], 500);
         }
     }

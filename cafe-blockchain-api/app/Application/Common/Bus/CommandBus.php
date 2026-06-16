@@ -24,7 +24,7 @@ class CommandBus
         }
 
         if (!class_exists($handlerClass)) {
-            throw new \RuntimeException("Không tìm thấy Handler tương ứng cho Command: {$commandClass}");
+            throw new \RuntimeException("No handler found for command: {$commandClass}");
         }
 
         // Tự động phân giải Handler thông qua Service Container

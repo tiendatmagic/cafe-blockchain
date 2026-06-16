@@ -32,7 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (\Illuminate\Database\Eloquent\ModelNotFoundException $e, \Illuminate\Http\Request $request) {
             if ($request->is('api/*') || $request->wantsJson()) {
                 return response()->json([
-                    'message' => 'Tài nguyên yêu cầu không tồn tại!'
+                    'message' => 'Requested resource not found!'
                 ], 404);
             }
         });
@@ -40,7 +40,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, \Illuminate\Http\Request $request) {
             if ($request->is('api/*') || $request->wantsJson()) {
                 return response()->json([
-                    'message' => 'Đường dẫn API hoặc tài nguyên không tồn tại!'
+                    'message' => 'API route or resource not found!'
                 ], 404);
             }
         });
@@ -48,7 +48,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, \Illuminate\Http\Request $request) {
             if ($request->is('api/*') || $request->wantsJson()) {
                 return response()->json([
-                    'message' => 'Chưa xác thực quyền truy cập!'
+                    'message' => 'Unauthorized access.'
                 ], 401);
             }
         });

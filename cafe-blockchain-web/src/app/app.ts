@@ -1,17 +1,18 @@
-import { Component, OnInit, OnDestroy, inject, signal, HostListener, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, HostListener, ElementRef, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { StateService } from '@core/services/state.service';
 import { Web3Service } from '@core/services/web3.service';
 import { ApiService } from '@core/services/api.service';
 import { SidebarComponent } from '@shared/layout/sidebar/sidebar.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
+import { MaintenanceComponent } from '@shared/components/maintenance/maintenance.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, SidebarComponent, IconComponent],
+  imports: [CommonModule, FormsModule, RouterModule, SidebarComponent, IconComponent, MaintenanceComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -23,6 +24,7 @@ export class App implements OnInit, OnDestroy {
 
   public readonly isPriceDropdownOpen = signal<boolean>(false);
   public readonly isChainDropdownOpen = signal<boolean>(false);
+  public readonly currentUrl = signal<string>('');
   public get usdtPriceVND() { return this.stateService.usdtPriceVND; }
   private readonly router = inject(Router);
 
@@ -66,10 +68,28 @@ export class App implements OnInit, OnDestroy {
     return this.web3Service.isWrongChain();
   }
 
+  public readonly isExplorerRoute = computed(() => {
+    const url = this.currentUrl();
+    const isBrowser = typeof window !== 'undefined';
+    const path = isBrowser ? window.location.pathname : '';
+    return path.includes('/blockchain-explorer') || url.includes('/blockchain-explorer');
+  });
+
+  public readonly isMaintenanceMode = computed(() => {
+    return this.stateService.isMaintenance() && !this.isExplorerRoute();
+  });
+
 
   private accountsChangedSub?: any;
 
   ngOnInit() {
+    this.currentUrl.set(this.router.url);
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        this.currentUrl.set(event.urlAfterRedirects || event.url);
+      }
+    });
+
     const isPublic = typeof window !== 'undefined' && (
       window.location.pathname.includes('/mobile-sign') || 
       window.location.pathname.includes('/blockchain-explorer') ||

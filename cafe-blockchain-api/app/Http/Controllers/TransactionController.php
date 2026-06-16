@@ -84,7 +84,7 @@ class TransactionController extends Controller
         // Chặn sửa nếu đã đồng bộ Blockchain thành công
         if ($transaction->blockchain_status === 'success') {
             return response()->json([
-                'message' => 'Giao dịch đã được ghi nhận thành công trên Blockchain, không thể chỉnh sửa!'
+                'message' => 'Transaction has been successfully recorded on the blockchain and cannot be edited!'
             ], 400);
         }
 
@@ -123,7 +123,7 @@ class TransactionController extends Controller
         // Chặn xóa nếu đã đồng bộ Blockchain thành công
         if ($transaction->blockchain_status === 'success') {
             return response()->json([
-                'message' => 'Giao dịch đã được ghi nhận thành công trên Blockchain, không thể xóa!'
+                'message' => 'Transaction has been successfully recorded on the blockchain and cannot be deleted!'
             ], 400);
         }
 
@@ -146,7 +146,7 @@ class TransactionController extends Controller
         $expectedHash = $transaction->generateVerificationHash();
         if (empty($transaction->verification_hash) || $transaction->verification_hash !== $expectedHash) {
             return response()->json([
-                'message' => 'Dữ liệu tài chính của giao dịch đã bị can thiệp và sửa đổi trái phép! Từ chối đối soát và ghi chuỗi.'
+                'message' => 'Transaction financial data has been tampered with or modified unauthorized! Sync denied.'
             ], 400);
         }
 
@@ -187,14 +187,14 @@ class TransactionController extends Controller
                             !isset($result['status']) || 
                             hexdec($result['status']) !== 1 ||
                             strtolower($result['to']) !== strtolower($contractAddress)) {
-                            return response()->json(['message' => 'Giao dịch trên Blockchain không hợp lệ hoặc đã thất bại.'], 400);
+                            return response()->json(['message' => 'Invalid or failed transaction on the blockchain.'], 400);
                         }
                     } else {
                         // RPC error, cannot verify
-                        return response()->json(['message' => 'Không thể kết nối để đối soát với nút mạng Blockchain.'], 500);
+                        return response()->json(['message' => 'Could not connect to the blockchain network node for verification.'], 500);
                     }
                 } catch (\Exception $e) {
-                    return response()->json(['message' => 'Lỗi xác thực giao dịch: ' . $e->getMessage()], 500);
+                    return response()->json(['message' => 'Transaction verification error: ' . $e->getMessage()], 500);
                 }
             }
         }

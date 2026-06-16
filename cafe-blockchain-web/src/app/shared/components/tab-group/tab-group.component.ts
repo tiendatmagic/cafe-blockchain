@@ -11,7 +11,8 @@ import {
   ViewChild, 
   signal,
   OnChanges,
-  SimpleChanges
+  SimpleChanges,
+  OnDestroy
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IconComponent } from '../icon/icon.component';
@@ -35,7 +36,7 @@ export interface TabOption {
     }
   `]
 })
-export class TabGroupComponent implements AfterViewInit, OnChanges {
+export class TabGroupComponent implements AfterViewInit, OnChanges, OnDestroy {
   /** Danh sách các lựa chọn tab */
   @Input() options: TabOption[] = [];
 
@@ -54,6 +55,8 @@ export class TabGroupComponent implements AfterViewInit, OnChanges {
   @ViewChild('containerEl') containerEl!: ElementRef<HTMLDivElement>;
   @ViewChildren('tabBtn') tabButtons!: QueryList<ElementRef<HTMLButtonElement>>;
 
+  private resizeObserver?: ResizeObserver;
+
   /** Trạng thái vị trí và kích thước của slider */
   public readonly sliderStyle = signal<{ left: string; width: string }>({ left: '0px', width: '0px' });
 
@@ -64,12 +67,25 @@ export class TabGroupComponent implements AfterViewInit, OnChanges {
   ngAfterViewInit(): void {
     // Đợi render ban đầu hoàn tất để đo đạc kích thước chính xác
     setTimeout(() => this.updateSliderPosition(), 50);
+
+    if (typeof ResizeObserver !== 'undefined' && this.containerEl) {
+      this.resizeObserver = new ResizeObserver(() => {
+        this.updateSliderPosition();
+      });
+      this.resizeObserver.observe(this.containerEl.nativeElement);
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['activeValue'] || changes['options']) {
       // Cập nhật vị trí slider khi đổi tab hoặc đổi options
       setTimeout(() => this.updateSliderPosition(), 0);
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
     }
   }
 
@@ -99,10 +115,16 @@ export class TabGroupComponent implements AfterViewInit, OnChanges {
 
     if (activeIdx !== -1 && buttons[activeIdx]) {
       const activeEl = buttons[activeIdx].nativeElement;
-      this.sliderStyle.set({
-        left: `${activeEl.offsetLeft}px`,
-        width: `${activeEl.offsetWidth}px`
-      });
+      const nextLeft = `${activeEl.offsetLeft}px`;
+      const nextWidth = `${activeEl.offsetWidth}px`;
+      
+      const current = this.sliderStyle();
+      if (current.left !== nextLeft || current.width !== nextWidth) {
+        this.sliderStyle.set({
+          left: nextLeft,
+          width: nextWidth
+        });
+      }
 
       // Tự động cuộn container để hiển thị tab active nếu bị che khuất
       const container = this.containerEl.nativeElement;
@@ -117,10 +139,13 @@ export class TabGroupComponent implements AfterViewInit, OnChanges {
         container.scrollTo({ left: buttonLeft + buttonWidth - containerWidth + 8, behavior: 'smooth' });
       }
     } else {
-      this.sliderStyle.set({
-        left: '0px',
-        width: '0px'
-      });
+      const current = this.sliderStyle();
+      if (current.left !== '0px' || current.width !== '0px') {
+        this.sliderStyle.set({
+          left: '0px',
+          width: '0px'
+        });
+      }
     }
   }
 }
