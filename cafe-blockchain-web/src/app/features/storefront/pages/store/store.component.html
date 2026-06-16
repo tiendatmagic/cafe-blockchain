@@ -435,7 +435,7 @@
       <!-- FLOATING CART BAR (XUẤT HIỆN KHI CÓ MÓN TRONG GIỎ) -->
       @if (cartCount() > 0) {
         <div
-          class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[500] w-[calc(100%-2rem)] max-w-lg bg-slate-900/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-xl shadow-black/25 text-white flex items-center justify-between p-3.5 border border-slate-700/40 animate-in slide-in-from-bottom-5 duration-300"
+          class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[500] w-[calc(100%-2rem)] max-w-lg bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-black/45 text-slate-800 dark:text-white flex items-center justify-between p-3.5 border border-slate-200/80 dark:border-slate-800/80 animate-in slide-in-from-bottom-5 duration-300"
         >
           <div class="flex items-center gap-3">
             <!-- Huy hiệu số lượng -->
@@ -444,16 +444,16 @@
             >
               <app-icon name="cart" class="w-5 h-5" [strokeWidth]="2.5"></app-icon>
               <span
-                class="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-slate-900 shadow-sm animate-pulse"
+                class="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900 shadow-sm animate-pulse"
               >
                 {{ cartCount() }}
               </span>
             </div>
             <div class="flex flex-col">
-              <span class="text-[10px] text-slate-400 font-bold uppercase leading-none"
+              <span class="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase leading-none"
                 >Tổng giỏ hàng</span
               >
-              <span class="text-sm font-black text-emerald-400 mt-0.5">
+              <span class="text-sm font-black text-emerald-600 dark:text-emerald-400 mt-0.5">
                 {{ cartTotal() | vnd }}
               </span>
             </div>
@@ -884,13 +884,13 @@
 
       <!-- MODAL ĐẶT HÀNG THÀNH CÔNG (SUCCESS SCREEN) -->
       @if (isOrderSuccess()) {
-        <div class="fixed inset-0 z-[2000] flex items-center justify-center p-4">
+        <div class="app-modal-overlay !z-[2000]">
           <!-- Backdrop mờ tối -->
-          <div (click)="isOrderSuccess.set(false)" class="fixed inset-0 bg-black/40"></div>
+          <div (click)="isOrderSuccess.set(false)" class="app-modal-backdrop"></div>
 
           <!-- Nội dung modal thành công -->
           <div
-            class="relative app-card max-w-sm w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200 text-slate-800 dark:text-slate-200 text-center space-y-6"
+            class="app-modal-content max-w-sm text-center space-y-6 animate-in fade-in zoom-in duration-200"
           >
             <!-- Icon thành công -->
             <div
@@ -913,7 +913,7 @@
 
             <!-- Thông tin mã đơn hàng -->
             <div
-              class="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-100 dark:border-slate-900"
+              class="bg-slate-50 dark:bg-slate-950 p-4 rounded-[15px] border border-slate-100 dark:border-slate-900"
             >
               <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block"
                 >Mã đơn hàng</span
@@ -935,6 +935,50 @@
                 class="btn btn-primary btn-full h-12 text-sm uppercase tracking-wider shadow-md shadow-[var(--dynamic-primary)]/20"
               >
                 Tiếp tục mua hàng
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- POPUP THÔNG BÁO LỖI (ERROR DIALOG) -->
+      @if (alertModalMessage()) {
+        <div class="app-modal-overlay !z-[2000]">
+          <!-- Backdrop overlay -->
+          <div (click)="alertModalMessage.set('')" class="app-modal-backdrop"></div>
+
+          <!-- Modal Content -->
+          <div class="app-modal-content max-w-md animate-in fade-in zoom-in duration-200">
+            <!-- Header -->
+            <div class="app-modal-header">
+              <h4 class="app-modal-title flex items-center gap-2">
+                <app-icon name="warning" class="h-5 w-5 text-rose-500" [strokeWidth]="2"></app-icon>
+                <span>Thông báo</span>
+              </h4>
+              <button
+                (click)="alertModalMessage.set('')"
+                class="app-modal-close"
+                title="Đóng thông báo"
+              >
+                <app-icon name="close" class="h-5 w-5" [strokeWidth]="2.5"></app-icon>
+              </button>
+            </div>
+
+            <!-- Content -->
+            <div class="app-modal-body py-5">
+              <p class="text-sm font-semibold text-slate-600 dark:text-slate-400 leading-relaxed">
+                {{ alertModalMessage() }}
+              </p>
+            </div>
+
+            <!-- Footer -->
+            <div class="app-modal-footer justify-end">
+              <button
+                type="button"
+                (click)="alertModalMessage.set('')"
+                class="btn btn-primary h-11 px-6 text-sm font-bold shadow-md shadow-[var(--dynamic-primary)]/20 hover:scale-[1.02] shrink-0"
+              >
+                Đóng
               </button>
             </div>
           </div>

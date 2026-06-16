@@ -41,6 +41,7 @@ export class StoreComponent implements OnInit {
   public readonly isLoading = signal<boolean>(true);
   public readonly isError = signal<boolean>(false);
   public readonly errorMessage = signal<string>('');
+  public readonly alertModalMessage = signal<string>('');
 
   // UI States
   public readonly activeCategoryId = signal<number | null>(null);
@@ -397,15 +398,15 @@ export class StoreComponent implements OnInit {
 
     const form = this.orderForm();
     if (!form.customer_name.trim()) {
-      alert('Vui lòng nhập Tên của bạn!');
+      this.alertModalMessage.set('Vui lòng nhập Tên của bạn!');
       return;
     }
     if (!form.customer_phone.trim()) {
-      alert('Vui lòng nhập Số điện thoại liên hệ!');
+      this.alertModalMessage.set('Vui lòng nhập Số điện thoại liên hệ!');
       return;
     }
     if (!form.table_number.trim()) {
-      alert('Vui lòng nhập Địa chỉ giao hàng!');
+      this.alertModalMessage.set('Vui lòng nhập Địa chỉ giao hàng!');
       return;
     }
 
@@ -454,10 +455,63 @@ export class StoreComponent implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        alert(err.error?.message || 'Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại!');
+        const translatedMsg = this.translateErrorMessage(err.error?.message);
+        this.alertModalMessage.set(translatedMsg);
         this.isSubmittingOrder.set(false);
       }
     });
+  }
+
+  // Dịch thông báo lỗi tiếng Anh từ API backend sang tiếng Việt cho giao diện frontend storefront
+  private translateErrorMessage(msg: string): string {
+    if (!msg) return 'Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại!';
+    
+    const lowerMsg = msg.toLowerCase();
+    
+    // Dịch các lỗi phổ biến liên quan đến sản phẩm ngừng phục vụ
+    if (lowerMsg.includes('is currently disabled and not available for purchase')) {
+      const match = msg.match(/Product '(.*)' is currently disabled/i);
+      const prodName = match ? match[1] : 'sản phẩm';
+      return `Đặt hàng thất bại: Sản phẩm '${prodName}' hiện đã ngừng phục vụ và không thể chọn mua!`;
+    }
+    if (lowerMsg.includes('is currently disabled')) {
+      const match = msg.match(/Variant '(.*)' of product '(.*)' is currently disabled/i);
+      if (match) {
+        return `Biến thể '${match[1]}' của sản phẩm '${match[2]}' đã ngừng phục vụ!`;
+      }
+      return 'Sản phẩm hoặc biến thể này đã ngừng phục vụ!';
+    }
+    if (lowerMsg.includes('invalid product variant for item')) {
+      const match = msg.match(/Invalid product variant for item: (.*)/i);
+      const prodName = match ? match[1] : 'sản phẩm';
+      return `Biến thể sản phẩm không hợp lệ: ${prodName}`;
+    }
+    if (lowerMsg.includes("the store's nft voucher program is currently disabled")) {
+      return 'Chương trình NFT Voucher của cửa hàng hiện đang tạm dừng!';
+    }
+    if (lowerMsg.includes('nft vouchers only apply to customers with linked evm wallets')) {
+      return 'NFT Voucher chỉ áp dụng cho khách hàng đã liên kết ví EVM!';
+    }
+    if (lowerMsg.includes('cannot validate nft voucher from the blockchain')) {
+      return 'Không thể xác thực NFT Voucher trên blockchain!';
+    }
+    if (lowerMsg.includes('this nft voucher has already been used or burned on-chain')) {
+      return 'NFT Voucher này đã được sử dụng hoặc tiêu hủy trên blockchain!';
+    }
+    if (lowerMsg.includes('this nft voucher does not belong to the selected customer')) {
+      return 'NFT Voucher này không thuộc sở hữu của khách hàng đã chọn!';
+    }
+    if (lowerMsg.includes('the order total has not reached the minimum value')) {
+      return 'Tổng giá trị đơn hàng chưa đạt mức tối thiểu để áp dụng NFT Voucher!';
+    }
+    if (lowerMsg.includes('cannot redeem nft voucher on the blockchain')) {
+      return 'Không thể sử dụng NFT Voucher trên blockchain!';
+    }
+    if (lowerMsg.includes('failed to place order')) {
+      return 'Đặt đơn hàng không thành công. Vui lòng kiểm tra lại!';
+    }
+
+    return msg;
   }
 
   // Helper hiển thị thông báo góc màn hình
