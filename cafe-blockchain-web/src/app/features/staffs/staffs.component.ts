@@ -62,21 +62,72 @@ export class StaffsComponent implements OnInit {
     { value: 'roles', label: 'Vai trò & Phân quyền' }
   ];
 
+  // Bộ tìm kiếm nhân viên & vai trò
+  public readonly searchQuery = signal<string>('');
+
   // Phân trang cho Nhân viên và Vai trò
   public readonly staffCurrentPage = signal<number>(1);
   public readonly roleCurrentPage = signal<number>(1);
   public readonly staffsPerPage = 10;
   public readonly rolesPerPage = 10;
 
+  // Loại bỏ dấu tiếng Việt để tìm kiếm không dấu
+  private removeSign(str: string): string {
+    if (!str) return '';
+    return str
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
+      .replace(/Đ/g, 'D');
+  }
+
+  // Lọc danh sách nhân viên theo từ khóa tìm kiếm
+  public readonly filteredStaffs = computed(() => {
+    let list = this.stateService.staffs() || [];
+    const search = this.searchQuery().trim().toLowerCase();
+    if (search) {
+      const searchClean = this.removeSign(search);
+      list = list.filter(s => {
+        const nameClean = s.name ? this.removeSign(s.name.toLowerCase()) : '';
+        const phoneClean = s.phone ? s.phone.toLowerCase() : '';
+        const walletClean = s.wallet_address ? s.wallet_address.toLowerCase() : '';
+        const roleClean = s.role?.name ? this.removeSign(s.role.name.toLowerCase()) : '';
+        const idClean = s.id ? s.id.toString() : '';
+
+        return nameClean.includes(searchClean) ||
+               phoneClean.includes(searchClean) ||
+               walletClean.includes(searchClean) ||
+               roleClean.includes(searchClean) ||
+               idClean.includes(searchClean);
+      });
+    }
+    return list;
+  });
+
+  // Lọc danh sách vai trò theo từ khóa tìm kiếm
+  public readonly filteredRoles = computed(() => {
+    let list = this.stateService.roles() || [];
+    const search = this.searchQuery().trim().toLowerCase();
+    if (search) {
+      const searchClean = this.removeSign(search);
+      list = list.filter(r => {
+        const nameClean = r.name ? this.removeSign(r.name.toLowerCase()) : '';
+        const idClean = r.id ? r.id.toString() : '';
+        return nameClean.includes(searchClean) || idClean.includes(searchClean);
+      });
+    }
+    return list;
+  });
+
   // Dữ liệu đã phân trang
   public readonly paginatedStaffs = computed(() => {
-    const staffs = this.stateService.staffs() || [];
+    const staffs = this.filteredStaffs();
     const startIndex = (this.staffCurrentPage() - 1) * this.staffsPerPage;
     return staffs.slice(startIndex, startIndex + this.staffsPerPage);
   });
 
   public readonly paginatedRoles = computed(() => {
-    const roles = this.stateService.roles() || [];
+    const roles = this.filteredRoles();
     const startIndex = (this.roleCurrentPage() - 1) * this.rolesPerPage;
     return roles.slice(startIndex, startIndex + this.rolesPerPage);
   });
@@ -158,6 +209,15 @@ export class StaffsComponent implements OnInit {
 
   public setSubTab(tab: 'staffs' | 'roles') {
     this.activeSubTab.set(tab);
+    this.searchQuery.set('');
+    this.staffCurrentPage.set(1);
+    this.roleCurrentPage.set(1);
+  }
+
+  public onSearchQueryChange(query: string) {
+    this.searchQuery.set(query);
+    this.staffCurrentPage.set(1);
+    this.roleCurrentPage.set(1);
   }
 
   // Mở form thêm nhân viên

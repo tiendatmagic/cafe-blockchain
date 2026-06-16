@@ -42,13 +42,31 @@
   @if (stateService.web3Service.walletConnected()) {
     @if (stateService.hasPermission('staffs')) {
     
-    <!-- SUB TABS NAVIGATION -->
-    <app-tab-group
-      [options]="staffsSubTabOptions"
-      [activeValue]="activeSubTab()"
-      (valueChange)="activeSubTab.set($event)"
-      class="mb-6"
-    ></app-tab-group>
+    <!-- SUB TABS NAVIGATION & SEARCH -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <app-tab-group
+        [options]="staffsSubTabOptions"
+        [activeValue]="activeSubTab()"
+        (valueChange)="setSubTab($event)"
+        class="w-full sm:w-auto"
+      ></app-tab-group>
+
+      <!-- Search input -->
+      <div class="relative w-full sm:w-60">
+        <input
+          type="text"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="onSearchQueryChange($event)"
+          [placeholder]="activeSubTab() === 'staffs' ? 'Tìm tên, SĐT, ví nhân viên...' : 'Tìm tên vai trò...'"
+          class="w-full search-input"
+        />
+        <app-icon
+          name="search"
+          class="absolute left-3 top-3 h-4 w-4 text-slate-400"
+          strokeWidth="2.5"
+        />
+      </div>
+    </div>
 
     <!-- NỘI DUNG CHÍNH -->
     <div class="space-y-6">
@@ -60,7 +78,7 @@
           [isLoading]="stateService.isStaffsLoading()"
           noDataMessage="Chưa có nhân viên nào trong quán của bạn. Bấm 'Thêm nhân viên' để bắt đầu!"
           [showPagination]="true"
-          [totalItems]="stateService.staffs().length"
+          [totalItems]="filteredStaffs().length"
           [itemsPerPage]="staffsPerPage"
           [currentPage]="staffCurrentPage()"
           (pageChange)="staffCurrentPage.set($event)"
@@ -126,7 +144,7 @@
           [isLoading]="stateService.isStaffsLoading()"
           noDataMessage="Không có vai trò nào."
           [showPagination]="true"
-          [totalItems]="stateService.roles().length"
+          [totalItems]="filteredRoles().length"
           [itemsPerPage]="rolesPerPage"
           [currentPage]="roleCurrentPage()"
           (pageChange)="roleCurrentPage.set($event)"
