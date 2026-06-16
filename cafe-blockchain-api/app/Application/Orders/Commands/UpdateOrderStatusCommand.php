@@ -3,6 +3,7 @@
 namespace App\Application\Orders\Commands;
 
 use App\Infrastructure\Persistence\Eloquent\OrderModel;
+use App\Infrastructure\Persistence\Mappers\OrderMapper;
 use App\Domain\Entities\Customer;
 use App\Domain\Entities\DebtLog;
 
@@ -18,6 +19,13 @@ class UpdateOrderStatusCommand
         if ($status === 'cancelled') {
             $order->blockchain_status = 'none';
             $order->tx_hash = null;
+            $order->verification_hash = null;
+        }
+
+        // Tự động sinh verification_hash khi đơn hàng hoàn tất để cho phép đồng bộ blockchain sau
+        if ($status === 'completed') {
+            $orderEntity = OrderMapper::toDomain($order);
+            $order->verification_hash = $orderEntity->generateVerificationHash();
         }
 
         $order->save();
