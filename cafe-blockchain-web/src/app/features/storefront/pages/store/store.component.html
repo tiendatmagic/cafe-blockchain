@@ -140,17 +140,17 @@
         <!-- CỘT DANH MỤC (DESKTOP: Sidebar bên trái, MOBILE: Trượt ngang phía trên) -->
         @if (!showFavoritesOnly()) {
           <div
-            class="w-full md:w-56 shrink-0 app-card md:p-3 overflow-x-auto no-scrollbar md:overflow-visible flex md:flex-col gap-2 p-1 mb-2 sticky top-0 md:top-6 z-20 transition-all duration-300 bg-transparent md:bg-white dark:md:bg-slate-900 border-none md:border border-slate-200/50 dark:border-slate-800/50"
+            class="w-full md:w-56 shrink-0 app-card md:p-3 overflow-x-auto no-scrollbar md:overflow-visible flex md:flex-col gap-2 md:gap-1.5 p-1 mb-2 sticky top-0 md:top-6 z-20 transition-all duration-300 bg-transparent md:bg-white dark:md:bg-slate-900 border-none md:border border-slate-200/50 dark:border-slate-800/50"
           >
             @for (cat of categoryOptions(); track cat.value) {
               <button
                 type="button"
                 (click)="activeCategoryId.set(cat.value); currentPage.set(1)"
                 [class]="
-                  'flex items-center justify-center md:justify-start px-4 py-2 md:px-4.5 md:py-2.5 rounded-xl text-xs md:text-sm transition-all duration-200 group w-auto md:w-full text-center md:text-left active:scale-[0.98] border md:border-none whitespace-nowrap shrink-0 ' +
                   (activeCategoryId() === cat.value
-                    ? 'bg-[var(--dynamic-primary)]/10 dark:bg-[var(--dynamic-primary)]/20 !text-[var(--dynamic-primary)] font-extrabold border-[var(--dynamic-primary)]/30 dark:border-[var(--dynamic-secondary)]/30 shadow-sm'
-                    : 'bg-white dark:bg-slate-900 md:bg-transparent border-slate-200/60 dark:border-slate-800/60 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-50 dark:hover:bg-slate-800/50')
+                    ? 'bg-[var(--dynamic-primary)]/10 dark:bg-[var(--dynamic-primary)]/20 !text-[var(--dynamic-primary)] font-bold border-[var(--dynamic-primary)]/30 dark:border-[var(--dynamic-secondary)]/30 md:border-none'
+                    : 'bg-white dark:bg-slate-900 md:bg-transparent border-slate-200/60 dark:border-slate-800/60 text-slate-700 dark:text-slate-300 font-semibold md:font-medium hover:bg-slate-50 dark:hover:bg-slate-800/50 md:hover:bg-slate-100 dark:md:hover:bg-slate-800/50') +
+                  ' flex items-center justify-center md:justify-start px-4 py-2 md:px-4 md:py-3 rounded-xl md:rounded-2xl text-xs md:text-sm transition-all duration-200 w-auto md:w-full text-center md:text-left active:scale-[0.98] border md:border-none whitespace-nowrap shrink-0'
                 "
               >
                 <span>{{ cat.label }}</span>
@@ -161,12 +161,12 @@
 
         <!-- DANH SÁCH SẢN PHẨM -->
         <main class="flex-1 w-full space-y-4">
-          <!-- Ô tìm kiếm và Bộ lọc thực đơn -->
+          <!-- Ô tìm kiếm và Bộ lọc thực đơn (Tối ưu Responsive 2 hàng phẳng) -->
           <div
-            class="app-card p-4 flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between"
+            class="app-card p-4.5 space-y-4"
           >
-            <!-- Thanh tìm kiếm Storefront và Nút Lọc -->
-            <div class="relative flex-1 flex items-center gap-2">
+            <!-- Hàng 1: Ô tìm kiếm và nút Lọc -->
+            <div class="flex items-center gap-3 w-full">
               <div class="relative flex-1">
                 <input
                   type="text"
@@ -272,7 +272,8 @@
               </div>
             </div>
 
-            <div class="flex items-center justify-between md:justify-start gap-4 w-full md:w-auto shrink-0 min-w-0">
+            <!-- Hàng 2: Tiêu đề món ăn & Toggle View Mode -->
+            <div class="flex items-center justify-between gap-4 w-full shrink-0 min-w-0">
               <div class="flex items-center gap-1.5 min-w-0 flex-1 sm:flex-none">
                 <h2
                   class="text-xs sm:text-sm md:text-base font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider truncate"
