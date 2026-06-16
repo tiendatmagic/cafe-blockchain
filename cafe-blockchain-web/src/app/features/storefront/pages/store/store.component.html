@@ -100,7 +100,7 @@
               }
             </div>
 
-            <div class="pb-1.5 space-y-0.5">
+            <div class="pb-0 space-y-0.5">
               <h1
                 class="text-lg sm:text-xl font-extrabold text-slate-800 dark:text-white tracking-tight flex items-center gap-1.5"
               >
@@ -110,7 +110,11 @@
               <p
                 class="text-xs text-slate-400 dark:text-slate-500 font-semibold flex items-center gap-1"
               >
-                <app-icon name="check-badge" class="h-3.5 w-3.5 text-emerald-500 shrink-0" [strokeWidth]="2"></app-icon>
+                <app-icon
+                  name="check-badge"
+                  class="h-3.5 w-3.5 text-emerald-500 shrink-0"
+                  [strokeWidth]="2"
+                ></app-icon>
                 <span>Thực đơn cửa hàng trực tuyến</span>
               </p>
             </div>
@@ -126,7 +130,11 @@
                 class="tab-item"
                 title="Thực đơn"
               >
-                <app-icon name="menu" class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block" [strokeWidth]="2.5"></app-icon>
+                <app-icon
+                  name="menu"
+                  class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block"
+                  [strokeWidth]="2.5"
+                ></app-icon>
                 <span class="hidden md:inline-block">Thực đơn</span>
               </button>
               <button
@@ -136,7 +144,11 @@
                 class="tab-item"
                 title="Yêu thích ({{ favorites().length }})"
               >
-                <app-icon name="heart" class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block" [strokeWidth]="2.5"></app-icon>
+                <app-icon
+                  name="heart"
+                  class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block"
+                  [strokeWidth]="2.5"
+                ></app-icon>
                 <span class="hidden md:inline-block">Yêu thích ({{ favorites().length }})</span>
               </button>
             </div>
@@ -186,7 +198,11 @@
                 placeholder="Tìm món ngon của quán..."
                 class="w-full search-input"
               />
-              <app-icon name="search" class="absolute left-3 top-3 h-4 w-4 text-slate-400 dark:text-slate-500" [strokeWidth]="2.5"></app-icon>
+              <app-icon
+                name="search"
+                class="absolute left-3 top-3 h-4 w-4 text-slate-400 dark:text-slate-500"
+                [strokeWidth]="2.5"
+              ></app-icon>
             </div>
 
             <div class="flex items-center justify-between md:justify-start gap-4 shrink-0">
@@ -210,7 +226,11 @@
                   class="tab-item h-7 px-3"
                   title="Lưới"
                 >
-                  <app-icon name="grid" class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block" [strokeWidth]="2.5"></app-icon>
+                  <app-icon
+                    name="grid"
+                    class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block"
+                    [strokeWidth]="2.5"
+                  ></app-icon>
                   <span class="hidden md:inline-block">Lưới</span>
                 </button>
                 <button
@@ -220,7 +240,11 @@
                   class="tab-item h-7 px-3"
                   title="Danh sách"
                 >
-                  <app-icon name="list" class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block" [strokeWidth]="2.5"></app-icon>
+                  <app-icon
+                    name="list"
+                    class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block"
+                    [strokeWidth]="2.5"
+                  ></app-icon>
                   <span class="hidden md:inline-block">Danh sách</span>
                 </button>
               </div>
@@ -253,9 +277,17 @@
                       class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 dark:bg-slate-800/90 shadow-md flex items-center justify-center transition-transform active:scale-90 hover:scale-105 z-10 cursor-pointer border border-slate-100 dark:border-slate-700"
                     >
                       @if (isFavorite(product.id)) {
-                        <app-icon name="heart-solid" [solid]="true" class="w-4 h-4 text-rose-500"></app-icon>
+                        <app-icon
+                          name="heart-solid"
+                          [solid]="true"
+                          class="w-4 h-4 text-rose-500"
+                        ></app-icon>
                       } @else {
-                        <app-icon name="heart" class="w-4 h-4 text-slate-400 dark:text-slate-500 hover:text-rose-500" [strokeWidth]="2.5"></app-icon>
+                        <app-icon
+                          name="heart"
+                          class="w-4 h-4 text-slate-400 dark:text-slate-500 hover:text-rose-500"
+                          [strokeWidth]="2.5"
+                        ></app-icon>
                       }
                     </button>
 
@@ -351,7 +383,11 @@
                       @if (isFavorite(product.id)) {
                         <app-icon name="heart-solid" class="w-4 h-4 text-rose-500"></app-icon>
                       } @else {
-                        <app-icon name="heart" class="w-4 h-4 text-slate-400 dark:text-slate-500 hover:text-rose-500" [strokeWidth]="2.5"></app-icon>
+                        <app-icon
+                          name="heart"
+                          class="w-4 h-4 text-slate-400 dark:text-slate-500 hover:text-rose-500"
+                          [strokeWidth]="2.5"
+                        ></app-icon>
                       }
                     </button>
 
@@ -510,7 +546,11 @@
                         class="w-full h-full object-cover"
                       />
                     } @else {
-                      <app-icon name="archive" class="w-6 h-6 text-slate-400" [strokeWidth]="1.5"></app-icon>
+                      <app-icon
+                        name="archive"
+                        class="w-6 h-6 text-slate-400"
+                        [strokeWidth]="1.5"
+                      ></app-icon>
                     }
                   </div>
 
@@ -719,7 +759,11 @@
                   <div
                     class="p-3 rounded-xl bg-emerald-500/5 dark:bg-emerald-950/20 border border-emerald-500/10 dark:border-emerald-800/40 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5"
                   >
-                    <app-icon name="check-circle" class="w-4 h-4 shrink-0" [strokeWidth]="2"></app-icon>
+                    <app-icon
+                      name="check-circle"
+                      class="w-4 h-4 shrink-0"
+                      [strokeWidth]="2"
+                    ></app-icon>
                     <span>Chúc mừng! Đơn hàng của bạn đã được miễn phí vận chuyển</span>
                   </div>
                 }

@@ -1,6 +1,9 @@
 <div class="relative w-full">
   <!-- Label nếu có -->
-  <label *ngIf="label" class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">
+  <label
+    *ngIf="label"
+    class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5"
+  >
     {{ label }}
   </label>
 
@@ -12,12 +15,16 @@
     [class.border-[var(--color-primary)]]="isOpen()"
     [class.ring-1]="isOpen()"
     [class.ring-[var(--color-primary)]/20]="isOpen()"
-    class="flex items-center justify-between h-[42px] w-full text-sm font-semibold rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-slate-800 dark:text-white px-4 cursor-pointer select-none transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-700/60"
+    class="flex items-center justify-between h-[42px] w-full text-sm font-semibold rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-slate-800 dark:text-white px-4 cursor-pointer transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-700/60"
   >
     <span [class.text-slate-400]="!selectedDate" class="truncate font-semibold text-xs sm:text-sm">
       {{ displayValue() || placeholder }}
     </span>
-    <app-icon name="calendar" class="h-4.5 w-4.5 text-slate-400 dark:text-slate-500 shrink-0 ml-2" strokeWidth="2" />
+    <app-icon
+      name="calendar"
+      class="h-4.5 w-4.5 text-slate-400 dark:text-slate-500 shrink-0 ml-2"
+      strokeWidth="2"
+    />
   </div>
 
   <!-- Popup lịch tháng -->
@@ -49,7 +56,10 @@
 
     <!-- Lưới Thứ (Tuần) -->
     <div class="grid grid-cols-7 gap-1 text-center mb-2">
-      <span *ngFor="let dayName of daysOfWeek" class="text-xs font-black text-slate-400 uppercase select-none py-1">
+      <span
+        *ngFor="let dayName of daysOfWeek"
+        class="text-xs font-black text-slate-400 uppercase py-1"
+      >
         {{ dayName }}
       </span>
     </div>

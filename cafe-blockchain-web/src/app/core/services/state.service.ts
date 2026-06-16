@@ -1,7 +1,7 @@
 import { Injectable, inject, signal, computed, effect, untracked } from '@angular/core';
 import { ApiService } from './api.service';
 import { Web3Service } from './web3.service';
-import { forkJoin, Subject, Subscription } from 'rxjs';
+import { forkJoin, Subject, Subscription, of } from 'rxjs';
 import { Router, NavigationEnd } from '@angular/router';
 import { debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
 import { OrderStore } from '@features/pos/store/order.store';
@@ -24,6 +24,8 @@ export class StateService {
   public readonly themeMode = signal<'light' | 'auto' | 'dark'>('light');
   public readonly isMobileMenuOpen = signal<boolean>(false);
   public readonly isWalletModalOpen = signal<boolean>(false);
+  public readonly isMaintenance = signal<boolean>(false);
+  public readonly isInitialLoading = signal<boolean>(true);
 
   // Vai trò và quyền truy cập của người dùng hiện tại
   public readonly currentUserRole = signal<string>('Chủ cửa hàng');
@@ -99,6 +101,7 @@ export class StateService {
   private searchSubject = new Subject<string>();
   private searchSubscription?: Subscription;
   private routerSubscription?: Subscription;
+  public readonly cancelRequests$ = new Subject<void>();
 
   // Giá VND của các coin từ CoinGecko (hoặc fallback mặc định)
   public readonly coingeckoPrices = signal<{
@@ -243,9 +246,42 @@ export class StateService {
     effect(() => {
       if (this.web3Service.walletConnected()) {
         untracked(() => {
-          this.loadSettings();
-          this.refreshCurrentShift();
-          this.reloadCurrentTab();
+          this.isInitialLoading.set(true);
+
+          const settings$ = this.apiService.getSettings();
+          const shift$ = this.hasPermission('shifts') 
+            ? this.apiService.getCurrentShift() 
+            : of(null);
+
+          forkJoin({
+            settings: settings$,
+            shift: shift$
+          }).subscribe({
+            next: (res) => {
+              if (res.settings) {
+                const settings = {
+                  default_print_size: '80mm',
+                  show_crypto_payment: '0',
+                  has_synced_menu: '0',
+                  ...res.settings
+                };
+                this.settingStore.settings.set(settings);
+                this.settingStore.applyAndCacheDynamicColors(settings.primary_color, settings.secondary_color);
+                this.web3Service.updateConfig(settings);
+              }
+              this.currentShift.set(res.shift || null);
+              
+              // Nạp dữ liệu cho tab hiện tại
+              this.reloadCurrentTab();
+              
+              // Tắt loading khởi tạo
+              this.isInitialLoading.set(false);
+            },
+            error: (err) => {
+              console.error('[StateService] Lỗi tải dữ liệu khởi tạo ví:', err);
+              this.isInitialLoading.set(false);
+            }
+          });
         });
       }
     }, { allowSignalWrites: true });
@@ -489,16 +525,23 @@ export class StateService {
                     this.loadPosProducts();
                   }
                 }
+                this.isInitialLoading.set(false);
               },
               error: (err) => {
                 console.error('[StateService] Lỗi tải menu storefront công khai:', err);
+                this.isInitialLoading.set(false);
               }
             });
+          } else {
+            this.isInitialLoading.set(false);
           }
+        } else {
+          this.isInitialLoading.set(false);
         }
       },
       error: (err) => {
         console.error('[StateService] Lỗi tải cấu hình public:', err);
+        this.isInitialLoading.set(false);
       }
     });
   }
