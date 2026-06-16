@@ -142,6 +142,58 @@ class ShiftController extends Controller
     }
 
     /**
+     * Lấy thống kê real-time của ca hiện tại (doanh thu, chi phí, tiền lý thuyết)
+     */
+    public function summary(Request $request)
+    {
+        $user = $request->user();
+        $shift = Shift::where('user_id', $user->id)
+            ->where('status', 'open')
+            ->first();
+
+        if (!$shift) {
+            return response()->json(null);
+        }
+
+        $totalFiatRevenue = (float)Order::where('shift_id', $shift->id)
+            ->where('status', 'completed')
+            ->where('payment_method', 'cash')
+            ->sum('total_amount');
+
+        $totalBankTransferRevenue = (float)Order::where('shift_id', $shift->id)
+            ->where('status', 'completed')
+            ->where('payment_method', 'bank_transfer')
+            ->sum('total_amount');
+
+        $totalCryptoRevenue = (float)Order::where('shift_id', $shift->id)
+            ->where('status', 'completed')
+            ->where('payment_method', 'crypto')
+            ->sum('total_amount');
+
+        $totalEWalletRevenue = (float)Order::where('shift_id', $shift->id)
+            ->where('status', 'completed')
+            ->where('payment_method', 'e_wallet')
+            ->sum('total_amount');
+
+        $totalFiatExpenses = (float)Transaction::where('shift_id', $shift->id)
+            ->where('type', 'chi')
+            ->where('payment_method', 'cash')
+            ->sum('amount');
+
+        $expectedCash = (float)$shift->initial_cash + $totalFiatRevenue - $totalFiatExpenses;
+
+        return response()->json([
+            'shift'                      => $shift,
+            'total_fiat_revenue'         => $totalFiatRevenue,
+            'total_bank_transfer_revenue'=> $totalBankTransferRevenue,
+            'total_crypto_revenue'       => $totalCryptoRevenue,
+            'total_e_wallet_revenue'     => $totalEWalletRevenue,
+            'total_fiat_expenses'        => $totalFiatExpenses,
+            'expected_cash'              => $expectedCash,
+        ]);
+    }
+
+    /**
      * Lấy danh sách lịch sử ca làm việc (Cho Admin / Quản lý)
      */
     public function index(Request $request)

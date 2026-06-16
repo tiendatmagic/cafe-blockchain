@@ -2,6 +2,7 @@ import { Component, inject, signal, HostListener, ElementRef, computed } from '@
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { StateService } from '@core/services/state.service';
+import { ApiService } from '@core/services/api.service';
 import { ThemeToggleComponent } from '@shared/components/theme-toggle/theme-toggle.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { ModalComponent } from '@shared/components/modal/modal.component';
@@ -15,12 +16,18 @@ import { FormsModule } from '@angular/forms';
 })
 export class SidebarComponent {
   public readonly stateService = inject(StateService);
+  private readonly apiService = inject(ApiService);
   private readonly elementRef = inject(ElementRef);
 
   public readonly isChainDropdownOpen = signal<boolean>(false);
 
   // --- Quản lý ca trực (Kết ca) ---
   public readonly isCloseShiftModalOpen = signal<boolean>(false);
+  public readonly isShiftSummaryLoading = signal<boolean>(false);
+
+  // Dữ liệu summary ca lấy trực tiếp từ API backend (real-time)
+  public readonly shiftSummary = signal<any>(null);
+
   public readonly actualCashInput = signal<number>(0);
   public readonly actualCashFormatted = computed(() => {
     const val = this.actualCashInput();
@@ -30,39 +37,13 @@ export class SidebarComponent {
 
   public readonly currentShift = computed(() => this.stateService.currentShift());
 
-  public readonly shiftOrders = computed(() => {
-    const shift = this.currentShift();
-    if (!shift) return [];
-    return this.stateService.orders().filter(o => o.shift_id === shift.id && o.status === 'completed');
-  });
-
-  public readonly shiftTransactions = computed(() => {
-    const shift = this.currentShift();
-    if (!shift) return [];
-    return this.stateService.transactions().filter(t => t.shift_id === shift.id && t.type === 'chi' && t.payment_method === 'cash');
-  });
-
-  public readonly shiftFiatRevenue = computed(() => {
-    return this.shiftOrders().reduce((sum, o) => o.payment_method === 'cash' ? sum + (Number(o.total_amount) || 0) : sum, 0);
-  });
-
-  public readonly shiftBankTransferRevenue = computed(() => {
-    return this.shiftOrders().reduce((sum, o) => o.payment_method === 'bank_transfer' ? sum + (Number(o.total_amount) || 0) : sum, 0);
-  });
-
-  public readonly shiftCryptoRevenue = computed(() => {
-    return this.shiftOrders().reduce((sum, o) => o.payment_method === 'crypto' ? sum + (Number(o.total_amount) || 0) : sum, 0);
-  });
-
-  public readonly shiftFiatExpenses = computed(() => {
-    return this.shiftTransactions().reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
-  });
-
-  public readonly shiftExpectedCash = computed(() => {
-    const shift = this.currentShift();
-    if (!shift) return 0;
-    return (Number(shift.initial_cash) || 0) + this.shiftFiatRevenue() - this.shiftFiatExpenses();
-  });
+  // Getters thuận tiện từ summary (backend trả về)
+  public readonly shiftFiatRevenue = computed(() => this.shiftSummary()?.total_fiat_revenue ?? 0);
+  public readonly shiftBankTransferRevenue = computed(() => this.shiftSummary()?.total_bank_transfer_revenue ?? 0);
+  public readonly shiftCryptoRevenue = computed(() => this.shiftSummary()?.total_crypto_revenue ?? 0);
+  public readonly shiftEWalletRevenue = computed(() => this.shiftSummary()?.total_e_wallet_revenue ?? 0);
+  public readonly shiftFiatExpenses = computed(() => this.shiftSummary()?.total_fiat_expenses ?? 0);
+  public readonly shiftExpectedCash = computed(() => this.shiftSummary()?.expected_cash ?? 0);
 
   public onActualCashInput(event: any) {
     const inputVal = event.target.value;
@@ -73,16 +54,23 @@ export class SidebarComponent {
   }
 
   public openCloseShiftModal() {
-    this.stateService.refreshOrders();
-    this.stateService.refreshTransactions();
-    
-    // Đợi dữ liệu load xong và cập nhật expected
-    setTimeout(() => {
-      const expected = this.shiftExpectedCash();
-      this.actualCashInput.set(expected);
-      this.closeShiftNote.set('');
-      this.isCloseShiftModalOpen.set(true);
-    }, 300);
+    this.isShiftSummaryLoading.set(true);
+    this.closeShiftNote.set('');
+    this.isCloseShiftModalOpen.set(true);
+
+    // Gọi API lấy thống kê real-time từ backend thay vì tính từ frontend state
+    this.apiService.getShiftSummary().subscribe({
+      next: (res) => {
+        this.shiftSummary.set(res);
+        const expected = res?.expected_cash ?? 0;
+        this.actualCashInput.set(expected);
+        this.isShiftSummaryLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Lỗi tải thống kê ca trực:', err);
+        this.isShiftSummaryLoading.set(false);
+      }
+    });
   }
 
   public confirmCloseShift() {
@@ -90,6 +78,7 @@ export class SidebarComponent {
     const note = this.closeShiftNote();
     this.stateService.closeShift(actual, note, () => {
       this.isCloseShiftModalOpen.set(false);
+      this.shiftSummary.set(null);
     });
   }
 
@@ -168,4 +157,3 @@ export class SidebarComponent {
     }
   }
 }
-

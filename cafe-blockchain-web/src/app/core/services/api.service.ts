@@ -391,6 +391,10 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/shifts/current`, { headers: this.getHeaders() });
   }
 
+  public getShiftSummary(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/shifts/current/summary`, { headers: this.getHeaders() });
+  }
+
   public openShift(initialCash: number): Observable<any> {
     return this.http.post(`${this.baseUrl}/shifts/open`, { initial_cash: initialCash }, { headers: this.getHeaders() });
   }

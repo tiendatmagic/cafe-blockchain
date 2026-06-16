@@ -134,6 +134,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Shifts API (Ca làm việc & Két tiền)
     Route::get('/shifts/current', [ShiftController::class, 'current']);
+    Route::get('/shifts/current/summary', [ShiftController::class, 'summary']);
     Route::post('/shifts/open', [ShiftController::class, 'open']);
     Route::post('/shifts/close', [ShiftController::class, 'close']);
     Route::get('/shifts', [ShiftController::class, 'index'])->middleware('permission:staffs|reports');
