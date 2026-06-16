@@ -219,8 +219,10 @@ export class StateService {
         }
       }
     }
-    // Không tự động gọi loadSettings() khi khởi tạo để tránh gọi API dư thừa khi chưa kết nối ví
-
+    // Gọi tải cấu hình public và menu storefront ban đầu khi chưa kết nối ví
+    if (!this.web3Service.walletConnected()) {
+      this.loadPublicSettingsAndMenu();
+    }
     if (typeof window !== 'undefined') {
       this.loadCoinPrices();
       setInterval(() => {
@@ -453,6 +455,50 @@ export class StateService {
       error: (err) => {
         console.error('Lỗi refresh dashboard:', err);
         this.isDashboardLoading.set(false);
+      }
+    });
+  }
+
+  // Tải cấu hình public và menu storefront khi chưa kết nối ví
+  public loadPublicSettingsAndMenu() {
+    this.apiService.getPublicSettings().subscribe({
+      next: (res) => {
+        if (res) {
+          const settings = {
+            default_print_size: '80mm',
+            show_crypto_payment: '0',
+            has_synced_menu: '0',
+            ...res
+          };
+          this.settingStore.settings.set(settings);
+          this.settingStore.applyAndCacheDynamicColors(settings.primary_color, settings.secondary_color);
+          this.web3Service.updateConfig(settings);
+
+          // Nếu có website_slug, tải menu storefront công khai để hiển thị lên POS
+          if (settings.website_slug) {
+            this.apiService.getPublicStoreBySlug(settings.website_slug).subscribe({
+              next: (storeRes) => {
+                if (storeRes) {
+                  const publicProducts = storeRes.products || [];
+                  const publicCategories = storeRes.categories || [];
+                  
+                  // Chỉ gán nếu ví chưa kết nối (tránh ghi đè dữ liệu thật sau khi đăng nhập)
+                  if (!this.web3Service.walletConnected()) {
+                    this.products.set(publicProducts);
+                    this.categoriesList.set(publicCategories);
+                    this.loadPosProducts();
+                  }
+                }
+              },
+              error: (err) => {
+                console.error('[StateService] Lỗi tải menu storefront công khai:', err);
+              }
+            });
+          }
+        }
+      },
+      error: (err) => {
+        console.error('[StateService] Lỗi tải cấu hình public:', err);
       }
     });
   }

@@ -2,25 +2,27 @@
   <!-- Header tiêu đề tab -->
   <app-page-header title="Bán hàng POS" description="Chọn các món đồ uống và món ăn ngon miệng từ thực đơn và tạo hóa đơn bán hàng.">
     <app-icon icon name="pos" class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" strokeWidth="2.5" />
-    @if (web3Service.walletConnected()) {
-      <!-- Search & Filter bar -->
-      <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto shrink-0">
-      <!-- Chuyển đổi chế độ đặt hàng POS bằng Icon và Tooltip -->
-      <div
-        class="flex items-center gap-1.5 bg-slate-100/80 dark:bg-slate-900 p-1 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 w-full sm:w-auto shadow-sm"
-      >
-        <span
-          class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider pl-2.5 pr-1 whitespace-nowrap"
+    
+    <!-- Search & Filter bar luôn hiển thị -->
+    <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto shrink-0">
+      @if (web3Service.walletConnected()) {
+        <!-- Chuyển đổi chế độ đặt hàng POS bằng Icon và Tooltip -->
+        <div
+          class="flex items-center gap-1.5 bg-slate-100/80 dark:bg-slate-900 p-1 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 w-full sm:w-auto shadow-sm"
         >
-          Chế độ
-        </span>
-        <app-tab-group
-          [options]="posCheckoutModeOptions"
-          [activeValue]="posCheckoutMode()"
-          (valueChange)="posCheckoutMode.set($event)"
-          containerClass="bg-slate-200/40 dark:bg-slate-950 border-none h-9 w-full sm:w-auto"
-        ></app-tab-group>
-      </div>
+          <span
+            class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider pl-2.5 pr-1 whitespace-nowrap"
+          >
+            Chế độ
+          </span>
+          <app-tab-group
+            [options]="posCheckoutModeOptions"
+            [activeValue]="posCheckoutMode()"
+            (valueChange)="posCheckoutMode.set($event)"
+            containerClass="bg-slate-200/40 dark:bg-slate-950 border-none h-9 w-full sm:w-auto"
+          ></app-tab-group>
+        </div>
+      }
 
       <div class="relative w-full sm:w-72">
         <input
@@ -30,25 +32,23 @@
           placeholder="Tìm món, mã vạch..."
           class="w-full search-input pr-10"
         />
-        <button
-          type="button"
-          (click)="startPosBarcodeScan()"
-          class="absolute right-2.5 top-1/2 -translate-y-1/2 p-2 rounded-xl text-[var(--dynamic-primary)] hover:bg-[var(--dynamic-primary)]/10 dark:text-[var(--dynamic-secondary)] dark:hover:bg-[var(--dynamic-primary)]/20 transition-all shrink-0 cursor-pointer"
-          title="Quét mã vạch bằng camera"
-        >
-          <app-icon name="camera" class="h-4.5 w-4.5" strokeWidth="2" />
-        </button>
+        @if (web3Service.walletConnected()) {
+          <button
+            type="button"
+            (click)="startPosBarcodeScan()"
+            class="absolute right-2.5 top-1/2 -translate-y-1/2 p-2 rounded-xl text-[var(--dynamic-primary)] hover:bg-[var(--dynamic-primary)]/10 dark:text-[var(--dynamic-secondary)] dark:hover:bg-[var(--dynamic-primary)]/20 transition-all shrink-0 cursor-pointer"
+            title="Quét mã vạch bằng camera"
+          >
+            <app-icon name="camera" class="h-4.5 w-4.5" strokeWidth="2" />
+          </button>
+        }
         <app-icon name="search" class="absolute left-3 top-3 h-4 w-4 text-slate-400" strokeWidth="2.5" />
       </div>
-      </div>
-    }
+    </div>
   </app-page-header>
 
-  @if (web3Service.walletConnected()) {
-    @if (stateService.hasPermission('pos')) {
-      @if (stateService.currentShift()) {
-      <!-- BỐ CỤC 2 CỘT RESPONSIVE -->
-      <div class="grid grid-cols-1 xl:grid-cols-6 gap-6">
+  <!-- BỐ CỤC 2 CỘT RESPONSIVE -->
+  <div class="grid grid-cols-1 xl:grid-cols-6 gap-6">
     <!-- CỘT 1 & 2: THỰC ĐƠN (LEFT) -->
     <div class="xl:col-span-4 space-y-6">
       <!-- Danh mục trượt mượt mà (Horizontal scrolling) -->
@@ -85,27 +85,7 @@
 
       <div [class.hidden]="isProductsLoading()" class="space-y-6">
         <!-- Grid Danh sách món ăn/đồ uống -->
-        @if (!web3Service.walletConnected()) {
-          <div
-            class="app-card flex flex-col items-center justify-center py-20 text-center gap-4"
-          >
-            <div class="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center text-3xl">
-              <app-icon name="shield-check" class="h-4 w-4 shrink-0 inline-block" strokeWidth="2" />
-            </div>
-            <h5 class="text-base font-extrabold text-slate-800 dark:text-white">
-              Ví Web3 chưa được kết nối!
-            </h5>
-            <p class="text-xs text-slate-400 max-w-sm leading-relaxed">
-              Vui lòng kết nối ví Metamask của bạn để xác thực quyền truy cập thực đơn và thực hiện các giao dịch bán hàng POS.
-            </p>
-            <button
-              (click)="connectWalletAndSign()"
-              class="btn-primary"
-            >
-              Kết nối và Ký ví ngay
-            </button>
-          </div>
-        } @else if (paginatedPosProducts().length === 0) {
+        @if (paginatedPosProducts().length === 0) {
           <div
             class="app-card flex flex-col items-center justify-center py-20 text-center gap-3"
           >
@@ -121,8 +101,11 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4.5">
             @for (p of paginatedPosProducts(); track p.id) {
               <div
-                (click)="addToCart(p)"
-                class="group app-card-interactive p-0 overflow-hidden flex flex-col h-full"
+                (click)="web3Service.walletConnected() ? addToCart(p) : null"
+                [class.cursor-default]="!web3Service.walletConnected()"
+                [class.app-card]="!web3Service.walletConnected()"
+                [class.app-card-interactive]="web3Service.walletConnected()"
+                class="group p-0 overflow-hidden flex flex-col h-full"
               >
                 <!-- Hình ảnh món ăn có overlay mờ -->
                 <div
@@ -172,9 +155,11 @@
                         <span class="text-xs font-semibold text-slate-400">/ {{ p.unit }}</span>
                       }
                     </span>
-                    <div class="btn-add-cart">
-                      +
-                    </div>
+                    @if (web3Service.walletConnected()) {
+                      <div class="btn-add-cart">
+                        +
+                      </div>
+                    }
                   </div>
                 </div>
               </div>
@@ -200,6 +185,9 @@
     <div
       class="xl:col-span-2 app-card flex flex-col h-auto xl:h-[calc(100vh-115px)] min-h-[400px] xl:min-h-[600px] xl:sticky xl:top-[50px]"
     >
+      @if (web3Service.walletConnected()) {
+        @if (stateService.hasPermission('pos')) {
+          @if (stateService.currentShift()) {
       <div
         class="flex items-center justify-between pb-4 border-b border-slate-200/60 dark:border-slate-800/60"
       >
@@ -848,8 +836,108 @@
           </button>
         </div>
       }
+          } @else {
+            <!-- GIAO DIỆN BẮT BUỘC MỞ CA TRỰC (SHIFT GUARD) -->
+            <div class="flex-1 flex flex-col justify-center py-6 px-4 text-center space-y-6">
+              <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500/20 to-purple-500/10 flex items-center justify-center mx-auto animate-pulse">
+                <app-icon name="lock" class="h-8 w-8 text-purple-600 dark:text-purple-400" strokeWidth="2" />
+              </div>
+              <div class="space-y-2">
+                <h4 class="text-base font-extrabold text-slate-800 dark:text-white">
+                  Bắt đầu ca làm việc mới
+                </h4>
+                <p class="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+                  Bạn chưa mở ca trực. Vui lòng khai báo số tiền mặt ban đầu trong két để bắt đầu ghi nhận doanh thu và bán hàng POS.
+                </p>
+              </div>
+
+              <div class="space-y-4 text-left">
+                <div class="space-y-1.5 relative">
+                  <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1">Số tiền mặt đầu ca (két tiền)</label>
+                  <div class="relative">
+                    <input
+                      type="text"
+                      [value]="initialCashFormatted()"
+                      (input)="onInitialCashInput($event)"
+                      placeholder="Nhập số tiền mặt (Ví dụ: 1,000,000)"
+                      class="form-input pr-12 text-base font-extrabold text-[var(--dynamic-primary)]"
+                    />
+                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">đ</span>
+                  </div>
+                </div>
+
+                <!-- Gợi ý nhanh số tiền đầu ca -->
+                <div class="flex flex-wrap gap-2 pt-1">
+                  <button
+                    type="button"
+                    (click)="initialCashInput.set(0)"
+                    class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-850 dark:hover:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-400 transition-all"
+                  >
+                    Két trống
+                  </button>
+                  <button
+                    type="button"
+                    (click)="initialCashInput.set(500000)"
+                    class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-850 dark:hover:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-400 transition-all"
+                  >
+                    500K
+                  </button>
+                  <button
+                    type="button"
+                    (click)="initialCashInput.set(1000000)"
+                    class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-850 dark:hover:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-400 transition-all"
+                  >
+                    1 Triệu
+                  </button>
+                  <button
+                    type="button"
+                    (click)="initialCashInput.set(2000000)"
+                    class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-850 dark:hover:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-400 transition-all"
+                  >
+                    2 Triệu
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  (click)="startShift()"
+                  class="w-full btn-primary h-12 text-sm shadow-lg shadow-[var(--color-primary)]/20"
+                >
+                  <app-icon name="lock-open" class="h-4 w-4 shrink-0" strokeWidth="2" />
+                  <span>Mở ca & Bắt đầu bán hàng</span>
+                </button>
+              </div>
+            </div>
+          }
+        } @else {
+          <div class="flex-1 flex flex-col justify-center py-6 px-4 text-center">
+            <app-access-restricted pageName="Bán hàng POS"></app-access-restricted>
+          </div>
+        }
+      } @else {
+        <!-- BANNER KẾT NỐI VÍ TRỰC QUAN KHI CHƯA ĐĂNG NHẬP -->
+        <div class="flex-1 flex flex-col items-center justify-center text-center p-6 gap-5 animate-in fade-in duration-300">
+          <div class="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center animate-bounce">
+            <app-icon name="wallet" class="h-8 w-8 text-[var(--dynamic-primary)]" strokeWidth="2" />
+          </div>
+          <h4 class="text-base font-extrabold text-slate-800 dark:text-white">
+            Bán hàng POS bị khóa
+          </h4>
+          <p class="text-xs text-slate-400 leading-relaxed max-w-xs">
+            Vui lòng kết nối và ký xác thực ví Web3 (Metamask) để mở ca trực, chọn món và in hóa đơn thanh toán cho khách hàng.
+          </p>
+          <button
+            type="button"
+            (click)="connectWalletAndSign()"
+            class="btn-primary w-full py-3 text-sm flex items-center justify-center gap-2 rounded-2xl shadow-lg shadow-purple-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all"
+          >
+            <app-icon name="lock-open" class="h-4 w-4" strokeWidth="2.5" />
+            <span>Kết nối ví & Đăng nhập</span>
+          </button>
+        </div>
+      }
+    </div>
   </div>
-</div>
 
 
 <!-- ==================== MODAL CHỌN SIZE SẢN PHẨM ==================== -->
@@ -1378,83 +1466,4 @@
         </div>
       </div>
     </app-modal>
-      } @else {
-        <!-- Giao diện bắt buộc mở ca trực (Shift Guard) -->
-        <div class="app-card max-w-lg mx-auto py-8 px-6 text-center space-y-6 shadow-xl border border-slate-200/60 dark:border-slate-800/60 mt-10 rounded-[15px]">
-          <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500/20 to-purple-500/10 flex items-center justify-center mx-auto">
-            <app-icon name="lock" class="h-8 w-8 text-purple-600 dark:text-purple-400" strokeWidth="2" />
-          </div>
-          <div class="space-y-2">
-            <h4 class="text-lg font-black text-slate-800 dark:text-white">
-              Bắt đầu ca làm việc mới
-            </h4>
-            <p class="text-sm text-slate-400 max-w-sm mx-auto leading-relaxed">
-              Bạn chưa mở ca trực. Vui lòng khai báo số tiền mặt ban đầu trong két để bắt đầu ghi nhận doanh thu và bán hàng POS.
-            </p>
-          </div>
-
-          <div class="space-y-4 pt-2 text-left">
-            <div class="space-y-1.5 relative">
-              <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Số tiền mặt đầu ca (két tiền)</label>
-              <div class="relative">
-                <input
-                  type="text"
-                  [value]="initialCashFormatted()"
-                  (input)="onInitialCashInput($event)"
-                  placeholder="Nhập số tiền mặt (Ví dụ: 1,000,000)"
-                  class="form-input pr-12 text-lg font-extrabold text-[var(--dynamic-primary)]"
-                />
-                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">đ</span>
-              </div>
-            </div>
-
-            <!-- Gợi ý nhanh số tiền đầu ca -->
-            <div class="flex flex-wrap gap-2 pt-1">
-              <button
-                type="button"
-                (click)="initialCashInput.set(0)"
-                class="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-850 dark:hover:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-400 transition-all"
-              >
-                Két trống (0đ)
-              </button>
-              <button
-                type="button"
-                (click)="initialCashInput.set(500000)"
-                class="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-850 dark:hover:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-400 transition-all"
-              >
-                500,000đ
-              </button>
-              <button
-                type="button"
-                (click)="initialCashInput.set(1000000)"
-                class="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-850 dark:hover:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-400 transition-all"
-              >
-                1,000,000đ
-              </button>
-              <button
-                type="button"
-                (click)="initialCashInput.set(2000000)"
-                class="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-850 dark:hover:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-400 transition-all"
-              >
-                2,000,000đ
-              </button>
-            </div>
-
-            <button
-              type="button"
-              (click)="startShift()"
-              class="w-full btn-primary h-12 text-sm shadow-lg shadow-[var(--color-primary)]/20"
-            >
-              <app-icon name="lock-open" class="h-4 w-4 shrink-0" strokeWidth="2" />
-              <span>Mở ca & Bắt đầu bán hàng</span>
-            </button>
-          </div>
-        </div>
-      }
-    } @else {
-      <app-access-restricted pageName="Bán hàng POS"></app-access-restricted>
-    }
-  } @else {
-    <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý Bán hàng POS'"></app-web3-connect-prompt>
-  }
 </div>

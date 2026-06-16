@@ -44,4 +44,12 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 404);
             }
         });
+
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, \Illuminate\Http\Request $request) {
+            if ($request->is('api/*') || $request->wantsJson()) {
+                return response()->json([
+                    'message' => 'Chưa xác thực quyền truy cập!'
+                ], 401);
+            }
+        });
     })->create();
