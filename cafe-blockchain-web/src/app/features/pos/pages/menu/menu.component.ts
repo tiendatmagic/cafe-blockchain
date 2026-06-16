@@ -82,6 +82,11 @@ export class MenuComponent implements OnInit, OnDestroy {
   public readonly menuCurrentPage = signal<number>(1);
   public readonly menuItemsPerPage = 9;
 
+  public readonly menuViewModeOptions: TabOption[] = [
+    { value: 'card', label: 'Dạng thẻ', icon: 'grid' },
+    { value: 'table', label: 'Dạng bảng', icon: 'list' }
+  ];
+
   // Bộ lọc & Tìm kiếm Thực đơn cục bộ
   public readonly menuSearchQuery = signal<string>('');
   public readonly menuCategoryFilter = signal<string>('Tất cả');

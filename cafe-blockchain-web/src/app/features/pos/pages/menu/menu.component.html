@@ -15,36 +15,12 @@
       <!-- Nút chuyển đổi và Thêm mới -->
       <div class="flex items-center gap-3 w-full sm:w-auto shrink-0 flex-wrap">
         <!-- Bộ chuyển đổi Bảng / Thẻ -->
-        <div class="tab-group">
-          <button
-            type="button"
-            (click)="setMenuViewMode('card')"
-            [class.active]="menuViewMode() === 'card'"
-            class="tab-item"
-            title="Dạng thẻ"
-          >
-            <app-icon
-              name="grid"
-              class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block"
-              strokeWidth="2.5"
-            />
-            <span class="hidden md:inline-block">Dạng thẻ</span>
-          </button>
-          <button
-            type="button"
-            (click)="setMenuViewMode('table')"
-            [class.active]="menuViewMode() === 'table'"
-            class="tab-item"
-            title="Dạng bảng"
-          >
-            <app-icon
-              name="list"
-              class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block"
-              strokeWidth="2.5"
-            />
-            <span class="hidden md:inline-block">Dạng bảng</span>
-          </button>
-        </div>
+        <app-tab-group
+          [options]="menuViewModeOptions"
+          [activeValue]="menuViewMode()"
+          (valueChange)="setMenuViewMode($event)"
+          containerClass="bg-slate-200/40 dark:bg-slate-950 border-none h-9 w-full sm:w-auto"
+        ></app-tab-group>
 
         <!-- Đồng bộ thực đơn lên Blockchain -->
         @if (web3Service.walletConnected() && web3Service.menuRegistryContractAddress()) {

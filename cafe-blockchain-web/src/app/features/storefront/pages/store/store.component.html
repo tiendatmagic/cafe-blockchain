@@ -122,36 +122,12 @@
 
           <!-- Nút chuyển chế độ: Danh mục / Yêu thích -->
           <div class="flex items-center gap-2.5 self-start sm:self-end flex-wrap">
-            <div class="tab-group">
-              <button
-                type="button"
-                (click)="showFavoritesOnly.set(false)"
-                [class.active]="!showFavoritesOnly()"
-                class="tab-item"
-                title="Thực đơn"
-              >
-                <app-icon
-                  name="menu"
-                  class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block"
-                  [strokeWidth]="2.5"
-                ></app-icon>
-                <span class="hidden md:inline-block">Thực đơn</span>
-              </button>
-              <button
-                type="button"
-                (click)="showFavoritesOnly.set(true)"
-                [class.active]="showFavoritesOnly()"
-                class="tab-item"
-                title="Yêu thích ({{ favorites().length }})"
-              >
-                <app-icon
-                  name="heart"
-                  class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block"
-                  [strokeWidth]="2.5"
-                ></app-icon>
-                <span class="hidden md:inline-block">Yêu thích ({{ favorites().length }})</span>
-              </button>
-            </div>
+            <app-tab-group
+              [options]="storeViewModeOptions()"
+              [activeValue]="showFavoritesOnly()"
+              (valueChange)="showFavoritesOnly.set($event)"
+              containerClass="bg-slate-200/40 dark:bg-slate-950 border-none h-9 w-full sm:w-auto"
+            ></app-tab-group>
 
             <!-- Standalone Theme Toggle Component -->
             <app-theme-toggle size="md"></app-theme-toggle>
@@ -218,36 +194,12 @@
               </div>
 
               <!-- Nút Toggle Grid / List -->
-              <div class="tab-group h-9">
-                <button
-                  type="button"
-                  (click)="displayMode.set('grid')"
-                  [class.active]="displayMode() === 'grid'"
-                  class="tab-item h-7 px-3"
-                  title="Lưới"
-                >
-                  <app-icon
-                    name="grid"
-                    class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block"
-                    [strokeWidth]="2.5"
-                  ></app-icon>
-                  <span class="hidden md:inline-block">Lưới</span>
-                </button>
-                <button
-                  type="button"
-                  (click)="displayMode.set('list')"
-                  [class.active]="displayMode() === 'list'"
-                  class="tab-item h-7 px-3"
-                  title="Danh sách"
-                >
-                  <app-icon
-                    name="list"
-                    class="h-4.5 w-4.5 inline-block md:hidden lg:inline-block"
-                    [strokeWidth]="2.5"
-                  ></app-icon>
-                  <span class="hidden md:inline-block">Danh sách</span>
-                </button>
-              </div>
+              <app-tab-group
+                [options]="displayModeOptions"
+                [activeValue]="displayMode()"
+                (valueChange)="displayMode.set($event)"
+                containerClass="bg-slate-200/40 dark:bg-slate-950 border-none h-9 w-full sm:w-auto"
+              ></app-tab-group>
             </div>
           </div>
 

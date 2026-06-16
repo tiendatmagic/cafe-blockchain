@@ -1052,11 +1052,12 @@ export class StateService {
 
   public openShift(initialCash: number, onSuccess?: () => void) {
     if (!this.web3Service.walletConnected()) return;
+    if (this.isLoading()) return;
     this.isLoading.set(true);
     this.apiService.openShift(initialCash).subscribe({
       next: (res) => {
         this.isLoading.set(false);
-        this.currentShift.set(res.shift || res);
+        this.currentShift.set(res.data || res.shift || res);
         this.showToast('Vào ca làm việc thành công', 'success');
         if (onSuccess) onSuccess();
       },
@@ -1070,6 +1071,7 @@ export class StateService {
 
   public closeShift(actualCash: number, note?: string, onSuccess?: () => void) {
     if (!this.web3Service.walletConnected()) return;
+    if (this.isLoading()) return;
     this.isLoading.set(true);
     this.apiService.closeShift(actualCash, note).subscribe({
       next: (res) => {

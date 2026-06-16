@@ -194,7 +194,7 @@
     >
       @if (web3Service.walletConnected()) {
         @if (stateService.hasPermission('pos')) {
-          @if (stateService.currentShift()) {
+          @if (stateService.currentShift() && stateService.currentShift().id) {
             <div
               class="flex items-center justify-between pb-4 border-b border-slate-200/60 dark:border-slate-800/60"
             >
@@ -993,10 +993,16 @@
                 <button
                   type="button"
                   (click)="startShift()"
-                  class="w-full btn-primary h-12 text-sm shadow-lg shadow-[var(--color-primary)]/20"
+                  [disabled]="stateService.isLoading()"
+                  class="w-full btn-primary h-12 text-sm shadow-lg shadow-[var(--color-primary)]/20 flex items-center justify-center gap-1.5"
                 >
-                  <app-icon name="lock-open" class="h-4 w-4 shrink-0" strokeWidth="2" />
-                  <span>Mở ca & Bắt đầu bán hàng</span>
+                  @if (stateService.isLoading()) {
+                    <div class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"></div>
+                    <span>Đang mở ca...</span>
+                  } @else {
+                    <app-icon name="lock-open" class="h-4 w-4 shrink-0" strokeWidth="2" />
+                    <span>Mở ca & Bắt đầu bán hàng</span>
+                  }
                 </button>
               </div>
             </div>

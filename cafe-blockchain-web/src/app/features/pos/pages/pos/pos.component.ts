@@ -103,6 +103,7 @@ export class PosComponent implements OnInit, OnDestroy {
   }
 
   public startShift() {
+    if (this.stateService.isLoading()) return;
     const cash = this.initialCashInput();
     this.stateService.openShift(cash, () => {
       this.initialCashInput.set(0);
@@ -291,6 +292,12 @@ export class PosComponent implements OnInit, OnDestroy {
 
   // Thêm sản phẩm vào giỏ
   public addToCart(product: any, variant: any = null) {
+    if (!this.web3Service.walletConnected()) return;
+    if (!this.stateService.currentShift() || !this.stateService.currentShift()?.id) {
+      this.stateService.showToast('Vui lòng mở ca trực trước khi chọn món bán hàng!', 'error');
+      return;
+    }
+
     if (product.variants && product.variants.length > 0 && !variant) {
       this.activeSelectingProduct.set(product);
       this.selectedVariantForCart.set(product.variants[0]);

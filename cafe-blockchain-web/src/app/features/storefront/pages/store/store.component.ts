@@ -11,6 +11,7 @@ import { ThemeToggleComponent } from '@shared/components/theme-toggle/theme-togg
 import { DrawerComponent } from '@shared/components/drawer/drawer.component';
 import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prompt/web3-connect-prompt.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
+import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 
 
 interface CartItem {
@@ -23,7 +24,7 @@ interface CartItem {
 @Component({
   selector: 'app-store',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, PaginationComponent, VNDCurrencyPipe, ThemeToggleComponent, DrawerComponent, Web3ConnectPromptComponent, IconComponent],
+  imports: [CommonModule, FormsModule, RouterModule, PaginationComponent, VNDCurrencyPipe, ThemeToggleComponent, DrawerComponent, Web3ConnectPromptComponent, IconComponent, TabGroupComponent],
   templateUrl: './store.component.html',
   styleUrls: []
 })
@@ -77,6 +78,16 @@ export class StoreComponent implements OnInit {
     const list = this.categories().map(cat => ({ value: cat.id, label: cat.name }));
     return [{ value: null, label: 'Tất cả' }, ...list];
   });
+
+  public readonly storeViewModeOptions = computed<TabOption[]>(() => [
+    { value: false, label: 'Thực đơn', icon: 'menu' },
+    { value: true, label: 'Yêu thích', icon: 'heart', badge: this.favorites().length || undefined }
+  ]);
+
+  public readonly displayModeOptions: TabOption[] = [
+    { value: 'grid', label: 'Lưới', icon: 'grid' },
+    { value: 'list', label: 'Danh sách', icon: 'list' }
+  ];
 
   public readonly cartCount = computed(() => {
     return this.cart().reduce((sum, item) => sum + item.quantity, 0);
