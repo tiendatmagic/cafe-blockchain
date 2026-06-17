@@ -443,4 +443,34 @@ export class ApiService {
   public resetDefaultRoles(): Observable<any> {
     return this.http.post(`${this.baseUrl}/roles/reset-default`, {}, { headers: this.getHeaders() });
   }
+
+  // --- Payment Methods (Phương thức thanh toán) API ---
+  public getPaymentMethods(params?: { page?: number; per_page?: number; search?: string }): Observable<any> {
+    let httpParams = new HttpParams();
+    if (params) {
+      if (params.page !== undefined) {
+        httpParams = httpParams.set('page', params.page.toString());
+      }
+      if (params.per_page !== undefined) {
+        httpParams = httpParams.set('per_page', params.per_page.toString());
+      }
+      if (params.search !== undefined && params.search.trim() !== '') {
+        httpParams = httpParams.set('search', params.search.trim());
+      }
+    }
+    return this.http.get<any>(`${this.baseUrl}/payment-methods`, { params: httpParams, headers: this.getHeaders() });
+  }
+
+  public createPaymentMethod(paymentMethod: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/payment-methods`, paymentMethod, { headers: this.getHeaders() });
+  }
+
+  public updatePaymentMethod(id: number | string, paymentMethod: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/payment-methods/${id}`, paymentMethod, { headers: this.getHeaders() });
+  }
+
+  public deletePaymentMethod(id: number | string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/payment-methods/${id}`, { headers: this.getHeaders() });
+  }
 }
+

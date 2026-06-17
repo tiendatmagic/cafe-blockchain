@@ -485,10 +485,16 @@ class SettingController extends Controller
                 }
             }
 
+            // Lấy danh sách phương thức thanh toán đã kích hoạt
+            $paymentMethods = \App\Domain\Entities\PaymentMethod::where('store_owner_address', $storeOwner)
+                ->where('is_active', 1)
+                ->get();
+
             return [
                 'store' => $publicSettings,
                 'categories' => $categories->toArray(),
-                'products' => $products->toArray()
+                'products' => $products->toArray(),
+                'payment_methods' => $paymentMethods->toArray()
             ];
         });
 

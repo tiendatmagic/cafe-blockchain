@@ -10,9 +10,11 @@ import { ConfirmModalComponent } from '@shared/components/confirm-modal/confirm-
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { CustomSelectComponent } from '@shared/components/custom-select/custom-select.component';
 import { CustomSwitchComponent } from '@shared/components/custom-switch/custom-switch.component';
+import { ModalComponent } from '@shared/components/modal/modal.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
+import { TableComponent, TableCellDirective, TableColumn } from '@shared/components/table/table.component';
 
 @Component({
   selector: 'app-settings',
@@ -27,9 +29,12 @@ import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skel
     PageHeaderComponent,
     CustomSelectComponent,
     CustomSwitchComponent,
+    ModalComponent,
     IconComponent,
     TabGroupComponent,
-    SkeletonLoaderComponent
+    SkeletonLoaderComponent,
+    TableComponent,
+    TableCellDirective
   ],
   templateUrl: './settings.component.html'
 })
@@ -64,8 +69,8 @@ export class SettingsComponent implements OnInit {
     });
   }
 
-  // Tab nhỏ trong Cấu hình: 'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher' | 'store'
-  public readonly settingsSubTab = signal<'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher' | 'store'>('general');
+  // Tab nhỏ trong Cấu hình: 'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher' | 'store' | 'payment'
+  public readonly settingsSubTab = signal<'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher' | 'store' | 'payment'>('general');
 
   public readonly settingsSubTabOptions: TabOption[] = [
     { value: 'general', label: 'Cấu hình Quán' },
@@ -74,6 +79,7 @@ export class SettingsComponent implements OnInit {
     { value: 'voucher', label: 'Voucher NFT' },
     { value: 'blockchain', label: 'Kết nối & Hợp đồng Web3' },
     { value: 'permissions', label: 'Ủy quyền nhân sự (Ví)' },
+    { value: 'payment', label: 'Phương thức thanh toán' },
   ];
 
   // Form Cấu hình hệ thống
@@ -175,7 +181,7 @@ export class SettingsComponent implements OnInit {
     // Đồng bộ tab hiện tại với Query Parameter 'tab' trên URL
     this.route.queryParams.subscribe(params => {
       const tab = params['tab'];
-      if (tab && ['general', 'blockchain', 'permissions', 'invoice', 'voucher', 'store'].includes(tab)) {
+      if (tab && ['general', 'blockchain', 'permissions', 'invoice', 'voucher', 'store', 'payment'].includes(tab)) {
         this.settingsSubTab.set(tab as any);
         if (tab === 'permissions' && this.web3Service.walletConnected()) {
           this.loadOwnersList();
@@ -183,12 +189,15 @@ export class SettingsComponent implements OnInit {
         if (tab === 'store') {
           this.loadStoreCategories();
         }
+        if (tab === 'payment') {
+          this.loadPaymentMethods();
+        }
       }
     });
   }
 
 
-  public setSettingsSubTab(subTab: 'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher' | 'store') {
+  public setSettingsSubTab(subTab: 'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher' | 'store' | 'payment') {
     this.settingsSubTab.set(subTab);
 
     // Cập nhật query parameter tab trên URL
@@ -203,6 +212,9 @@ export class SettingsComponent implements OnInit {
     }
     if (subTab === 'store') {
       this.loadStoreCategories();
+    }
+    if (subTab === 'payment') {
+      this.loadPaymentMethods();
     }
   }
 
@@ -855,5 +867,261 @@ export class SettingsComponent implements OnInit {
       this.stateService.showToast(res.error || 'Xóa ví Quản trị Voucher thất bại!', 'error');
     }
     this.isVoucherOwnerActionLoading.set(false);
+  }
+
+  // --- Hỗ trợ cấu hình Phương thức thanh toán ---
+  public readonly paymentColumns: TableColumn[] = [
+    { key: 'type', header: 'Loại', sortable: false, class: 'font-semibold text-slate-700 dark:text-slate-300' },
+    { key: 'name', header: 'Tên Ngân hàng / Ví', sortable: false, class: 'font-extrabold text-slate-800 dark:text-white' },
+    { key: 'account_number', header: 'Số tài khoản / Số điện thoại', sortable: false, class: 'font-mono font-bold text-slate-700 dark:text-slate-300' },
+    { key: 'account_holder', header: 'Chủ tài khoản', sortable: false, class: 'font-bold uppercase text-slate-700 dark:text-slate-300' },
+    { key: 'is_active', header: 'Trạng thái', sortable: false },
+    { key: 'actions', header: 'Thao tác', sortable: false, class: 'text-right', headerClass: 'text-right' }
+  ];
+
+  public readonly paymentMethodsList = signal<any[]>([]);
+  public readonly paymentMethodsTotal = signal<number>(0);
+  public readonly paymentMethodsPage = signal<number>(1);
+  public readonly paymentMethodsPerPage = signal<number>(10);
+  public readonly paymentMethodsSearch = signal<string>('');
+  public readonly isPaymentMethodsLoading = signal<boolean>(false);
+  public readonly isPaymentActionLoading = signal<boolean>(false);
+  public readonly isPaymentFormOpen = signal<boolean>(false);
+  public readonly isEditingPaymentMethod = signal<boolean>(false);
+  public readonly editingPaymentMethodId = signal<number | null>(null);
+  public readonly paymentForm = signal<any>({
+    type: 'bank',
+    name: '',
+    account_number: '',
+    account_holder: '',
+    bank_code: '',
+    is_active: true
+  });
+
+  public readonly POPULAR_BANKS = [
+    { code: 'VCB', name: 'Vietcombank' },
+    { code: 'MB', name: 'MB Bank' },
+    { code: 'TCB', name: 'Techcombank' },
+    { code: 'BIDV', name: 'BIDV' },
+    { code: 'VTB', name: 'VietinBank' },
+    { code: 'ACB', name: 'ACB' },
+    { code: 'VPB', name: 'VPBank' },
+    { code: 'TPB', name: 'TPBank' },
+    { code: 'STB', name: 'Sacombank' },
+    { code: 'SHB', name: 'SHB' },
+    { code: 'VBA', name: 'Agribank' }
+  ];
+
+  public readonly POPULAR_WALLETS = [
+    { name: 'Momo' },
+    { name: 'ZaloPay' },
+    { name: 'Viettel Money' }
+  ];
+
+  public readonly isQrModalOpen = signal<boolean>(false);
+  public readonly selectedPaymentForQr = signal<any>(null);
+
+  public readonly isDeletePaymentConfirmOpen = signal<boolean>(false);
+  public readonly deletingPaymentMethodId = signal<number | null>(null);
+
+  public loadPaymentMethods() {
+    this.isPaymentMethodsLoading.set(true);
+    this.apiService.getPaymentMethods({
+      page: this.paymentMethodsPage(),
+      per_page: this.paymentMethodsPerPage(),
+      search: this.paymentMethodsSearch()
+    }).subscribe({
+      next: (res) => {
+        if (res) {
+          this.paymentMethodsList.set(res.data || []);
+          this.paymentMethodsTotal.set(res.total || 0);
+        }
+        this.isPaymentMethodsLoading.set(false);
+      },
+      error: () => {
+        this.stateService.showToast('Không thể tải danh sách phương thức thanh toán!', 'error');
+        this.isPaymentMethodsLoading.set(false);
+      }
+    });
+  }
+
+  public onPaymentSearchChange() {
+    this.paymentMethodsPage.set(1);
+    this.loadPaymentMethods();
+  }
+
+  public setPaymentMethodsPage(page: number) {
+    if (page < 1 || page > this.getPaymentTotalPages()) return;
+    this.paymentMethodsPage.set(page);
+    this.loadPaymentMethods();
+  }
+
+  public getPaymentTotalPages(): number {
+    return Math.ceil(this.paymentMethodsTotal() / this.paymentMethodsPerPage()) || 1;
+  }
+
+  public getPaymentPagesArray(): number[] {
+    const total = this.getPaymentTotalPages();
+    const current = this.paymentMethodsPage();
+    const pages: number[] = [];
+    
+    let start = Math.max(1, current - 2);
+    let end = Math.min(total, start + 4);
+    if (end - start < 4) {
+      start = Math.max(1, end - 4);
+    }
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  public openAddPaymentModal() {
+    this.paymentForm.set({
+      type: 'bank',
+      name: '',
+      account_number: '',
+      account_holder: '',
+      bank_code: '',
+      is_active: true
+    });
+    this.isEditingPaymentMethod.set(false);
+    this.editingPaymentMethodId.set(null);
+    this.isPaymentFormOpen.set(true);
+  }
+
+  public openEditPaymentModal(item: any) {
+    this.paymentForm.set({
+      type: item.type,
+      name: item.name,
+      account_number: item.account_number,
+      account_holder: item.account_holder,
+      bank_code: item.bank_code || '',
+      is_active: item.is_active
+    });
+    this.isEditingPaymentMethod.set(true);
+    this.editingPaymentMethodId.set(item.id);
+    this.isPaymentFormOpen.set(true);
+  }
+
+  public selectPopularBank(bank: { code: string, name: string }) {
+    this.paymentForm.update(form => ({
+      ...form,
+      name: bank.name,
+      bank_code: bank.code
+    }));
+  }
+
+  public onBankSelectChange(bankCode: string) {
+    const bank = this.POPULAR_BANKS.find(b => b.code === bankCode);
+    if (bank) {
+      this.paymentForm.update(form => ({
+        ...form,
+        name: bank.name,
+        bank_code: bank.code
+      }));
+    } else {
+      this.paymentForm.update(form => ({
+        ...form,
+        bank_code: bankCode
+      }));
+    }
+  }
+
+  public selectPopularWallet(wallet: { name: string }) {
+    this.paymentForm.update(form => ({
+      ...form,
+      name: wallet.name,
+      bank_code: ''
+    }));
+  }
+
+  public onWalletSelectChange(walletName: string) {
+    this.paymentForm.update(form => ({
+      ...form,
+      name: walletName,
+      bank_code: ''
+    }));
+  }
+
+  public savePaymentMethod() {
+    const data = this.paymentForm();
+    if (!data.name || !data.account_number || !data.account_holder) {
+      this.stateService.showToast('Vui lòng nhập đầy đủ thông tin bắt buộc!', 'error');
+      return;
+    }
+
+    if (data.type === 'bank' && !data.bank_code) {
+      this.stateService.showToast('Vui lòng chọn hoặc nhập mã ngân hàng!', 'error');
+      return;
+    }
+
+    if (this.isPaymentActionLoading()) return;
+    this.isPaymentActionLoading.set(true);
+
+    const request = this.isEditingPaymentMethod()
+      ? this.apiService.updatePaymentMethod(this.editingPaymentMethodId()!, data)
+      : this.apiService.createPaymentMethod(data);
+
+    request.subscribe({
+      next: () => {
+        this.stateService.showToast(
+          this.isEditingPaymentMethod() 
+            ? 'Cập nhật phương thức thanh toán thành công!' 
+            : 'Thêm phương thức thanh toán thành công!', 
+          'success'
+        );
+        this.isPaymentFormOpen.set(false);
+        this.isPaymentActionLoading.set(false);
+        this.loadPaymentMethods();
+      },
+      error: (err) => {
+        this.stateService.showToast(err.error?.message || 'Có lỗi xảy ra khi lưu!', 'error');
+        this.isPaymentActionLoading.set(false);
+      }
+    });
+  }
+
+  public deletePaymentMethod(id: number) {
+    this.deletingPaymentMethodId.set(id);
+    this.isDeletePaymentConfirmOpen.set(true);
+  }
+
+  public confirmDeletePaymentMethod() {
+    const id = this.deletingPaymentMethodId();
+    if (!id) return;
+
+    if (this.isPaymentActionLoading()) return;
+    this.isPaymentActionLoading.set(true);
+
+    this.apiService.deletePaymentMethod(id).subscribe({
+      next: () => {
+        this.stateService.showToast('Xóa phương thức thanh toán thành công!', 'success');
+        this.isDeletePaymentConfirmOpen.set(false);
+        this.deletingPaymentMethodId.set(null);
+        this.isPaymentActionLoading.set(false);
+        this.loadPaymentMethods();
+      },
+      error: () => {
+        this.stateService.showToast('Xóa phương thức thanh toán thất bại!', 'error');
+        this.isPaymentActionLoading.set(false);
+      }
+    });
+  }
+
+  public showQrCode(item: any) {
+    this.selectedPaymentForQr.set(item);
+    this.isQrModalOpen.set(true);
+  }
+
+  public getQrCodeUrl(item: any): string {
+    if (!item) return '';
+    if (item.type === 'bank') {
+      return `https://img.vietqr.io/image/${item.bank_code}-${item.account_number}-compact2.png?accountName=${encodeURIComponent(item.account_holder)}`;
+    } else if (item.type === 'wallet' && item.name.toLowerCase() === 'momo') {
+      return `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https%3A%2F%2Fnhantien.momo.vn%2F${item.account_number}`;
+    } else {
+      return `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(item.account_number)}`;
+    }
   }
 }

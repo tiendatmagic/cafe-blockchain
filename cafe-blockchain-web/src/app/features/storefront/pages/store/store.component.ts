@@ -38,6 +38,7 @@ export class StoreComponent implements OnInit {
   public readonly storeSettings = signal<any>(null);
   public readonly categories = signal<any[]>([]);
   public readonly products = signal<any[]>([]);
+  public readonly paymentMethods = signal<any[]>([]);
   public readonly isLoading = signal<boolean>(true);
   public readonly isError = signal<boolean>(false);
   public readonly errorMessage = signal<string>('');
@@ -77,7 +78,8 @@ export class StoreComponent implements OnInit {
     customer_phone: '',
     table_number: '',
     payment_method: 'cash',
-    note: ''
+    note: '',
+    selected_payment_method_id: null
   });
   public readonly isSubmittingOrder = signal<boolean>(false);
 
@@ -229,6 +231,7 @@ export class StoreComponent implements OnInit {
           this.storeSettings.set(res.store);
           this.categories.set(res.categories || []);
           this.products.set(res.products || []);
+          this.paymentMethods.set(res.payment_methods || []);
 
           // Cập nhật Title trang web theo tên quán
           const storeName = res.store.store_name || 'Cafe Web3 POS';
@@ -450,6 +453,10 @@ export class StoreComponent implements OnInit {
       this.alertModalMessage.set('Vui lòng nhập Địa chỉ giao hàng!');
       return;
     }
+    if (form.payment_method === 'bank_transfer' && !form.selected_payment_method_id) {
+      this.alertModalMessage.set('Vui lòng chọn tài khoản ngân hàng hoặc ví điện tử để chuyển khoản!');
+      return;
+    }
 
     this.isSubmittingOrder.set(true);
 
@@ -462,16 +469,20 @@ export class StoreComponent implements OnInit {
     }));
 
     // Gộp ghi chú chung của đơn hàng vào table_number hoặc truyền riêng
+    const selectedPM = this.getSelectedPaymentMethod();
     let tableInfo = form.table_number.trim();
     if (form.note && form.note.trim()) {
       tableInfo += ` (Ghi chú: ${form.note.trim()})`;
+    }
+    if (form.payment_method === 'bank_transfer' && selectedPM) {
+      tableInfo += ` [Đã CK: ${selectedPM.name} - ${selectedPM.account_number}]`;
     }
 
     const payload = {
       customer_name: form.customer_name.trim(),
       customer_phone: form.customer_phone.trim(),
       table_number: tableInfo,
-      payment_method: form.payment_method,
+      payment_method: form.payment_method === 'e_wallet' ? 'bank_transfer' : form.payment_method,
       items
     };
 
@@ -489,7 +500,8 @@ export class StoreComponent implements OnInit {
             customer_phone: '',
             table_number: '',
             payment_method: 'cash',
-            note: ''
+            note: '',
+            selected_payment_method_id: null
           });
         }
         this.isSubmittingOrder.set(false);
@@ -566,5 +578,26 @@ export class StoreComponent implements OnInit {
         this.toastMessage.set('');
       }
     }, 2500);
+  }
+
+  public selectStorePaymentMethod(id: number) {
+    this.orderForm.update(f => ({ ...f, selected_payment_method_id: id }));
+  }
+
+  public getSelectedPaymentMethod(): any {
+    const id = this.orderForm().selected_payment_method_id;
+    if (!id) return null;
+    return this.paymentMethods().find(pm => pm.id === id);
+  }
+
+  public getStoreQrUrl(item: any): string {
+    if (!item) return '';
+    if (item.type === 'bank') {
+      return `https://img.vietqr.io/image/${item.bank_code}-${item.account_number}-compact2.png?accountName=${encodeURIComponent(item.account_holder)}`;
+    } else if (item.type === 'wallet' && item.name.toLowerCase() === 'momo') {
+      return `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https%3A%2F%2Fnhantien.momo.vn%2F${item.account_number}`;
+    } else {
+      return `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(item.account_number)}`;
+    }
   }
 }

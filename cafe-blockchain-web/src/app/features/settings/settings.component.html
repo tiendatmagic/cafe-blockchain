@@ -1871,6 +1871,128 @@
           </div>
         }
 
+        <!-- Tab 7: Phương thức thanh toán -->
+        @if (settingsSubTab() === 'payment') {
+          <div class="app-card space-y-6 w-full animate-in fade-in duration-200">
+            <!-- Header Tab -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800/60">
+              <div class="flex items-center gap-2.5">
+                <div class="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0 flex items-center">
+                  <app-icon name="debts" class="h-5 w-5" strokeWidth="2" />
+                </div>
+                <div>
+                  <h4 class="text-md font-bold text-slate-800 dark:text-white uppercase tracking-wider">
+                    Phương thức thanh toán
+                  </h4>
+                  <p class="text-xs text-slate-500 dark:text-slate-400 font-bold mt-0.5">
+                    Quản lý tài khoản ngân hàng và ví điện tử dùng cho khách chuyển khoản trên Storefront.
+                  </p>
+                </div>
+              </div>
+              <button
+                (click)="openAddPaymentModal()"
+                [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                class="btn-primary w-full sm:w-auto"
+              >
+                <app-icon name="plus" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
+                <span>Thêm phương thức</span>
+              </button>
+            </div>
+
+            <!-- Tìm kiếm phương thức thanh toán -->
+            <div class="flex flex-col sm:flex-row gap-4 items-end justify-between">
+              <div class="flex flex-col gap-1.5 w-full sm:max-w-xs shrink-0">
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Tìm kiếm phương thức</span>
+                <div class="relative w-full">
+                  <input
+                    type="text"
+                    [ngModel]="paymentMethodsSearch()"
+                    (ngModelChange)="paymentMethodsSearch.set($event); onPaymentSearchChange()"
+                    placeholder="Ngân hàng, số tài khoản..."
+                    class="w-full search-input text-xs sm:text-sm h-10.5 pl-10 pr-4"
+                  />
+                  <app-icon
+                    name="search"
+                    class="absolute left-3 top-3 h-4.5 w-4.5 text-slate-400"
+                    strokeWidth="2.5"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Bảng danh sách phương thức thanh toán -->
+            <app-table
+              [data]="paymentMethodsList()"
+              [columns]="paymentColumns"
+              [isLoading]="isPaymentMethodsLoading()"
+              skeletonType="table"
+              [skeletonRows]="5"
+              [totalItems]="paymentMethodsTotal()"
+              [itemsPerPage]="paymentMethodsPerPage()"
+              [currentPage]="paymentMethodsPage()"
+              (pageChange)="setPaymentMethodsPage($event)"
+              [showPagination]="true"
+              itemName="phương thức thanh toán"
+            >
+              <!-- Cell Loại -->
+              <ng-template appCell="type" let-row>
+                <span
+                  [class]="'text-xs font-black px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0 ' +
+                    (row.type === 'bank' 
+                      ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' 
+                      : 'bg-pink-500/10 text-pink-600 dark:text-pink-400')"
+                >
+                  {{ row.type === 'bank' ? 'Ngân hàng' : 'Ví điện tử' }}
+                </span>
+              </ng-template>
+
+              <!-- Cell Trạng thái -->
+              <ng-template appCell="is_active" let-row>
+                <span
+                  [class]="'text-xs font-black px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0 ' +
+                    (row.is_active 
+                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' 
+                      : 'bg-slate-500/10 text-slate-500 dark:text-slate-400')"
+                >
+                  {{ row.is_active ? 'Kích hoạt' : 'Vô hiệu' }}
+                </span>
+              </ng-template>
+
+              <!-- Cell Thao tác -->
+              <ng-template appCell="actions" let-row>
+                <div class="flex items-center justify-end gap-2">
+                  <button
+                    (click)="showQrCode(row)"
+                    class="btn-secondary btn-sm !px-2.5 !py-1 flex items-center gap-1.5"
+                    title="Xem mã QR"
+                  >
+                    <app-icon name="qr-code" class="h-3.5 w-3.5" strokeWidth="2.5" />
+                    <span>Xem QR</span>
+                  </button>
+                  <button
+                    (click)="openEditPaymentModal(row)"
+                    [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                    class="btn-secondary btn-sm !px-2.5 !py-1 flex items-center gap-1.5"
+                    title="Chỉnh sửa"
+                  >
+                    <app-icon name="pencil" class="h-3.5 w-3.5" strokeWidth="2.5" />
+                    <span>Sửa</span>
+                  </button>
+                  <button
+                    (click)="deletePaymentMethod(row.id)"
+                    [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                    class="btn-danger-light btn-sm !px-2.5 !py-1 flex items-center gap-1.5"
+                    title="Xóa"
+                  >
+                    <app-icon name="trash" class="h-3.5 w-3.5" strokeWidth="2.5" />
+                    <span>Xóa</span>
+                  </button>
+                </div>
+              </ng-template>
+            </app-table>
+          </div>
+        }
+
         <!-- Modal Confirm: Xóa Owner ví thu ngân -->
         <app-confirm-modal
           [isOpen]="isDeleteOwnerConfirmOpen()"
@@ -1944,6 +2066,232 @@
               class="font-mono text-xs bg-slate-100 dark:bg-slate-950 p-1.5 rounded-lg text-slate-600 dark:text-slate-400 mt-2 block break-all font-bold"
               >{{ deletingMenuOwnerAddress() }}</span
             >
+          </p>
+        </app-confirm-modal>
+
+        <!-- MODAL FORM THÊM/SỬA PHƯƠNG THỨC THANH TOÁN -->
+        <app-modal
+          [isOpen]="isPaymentFormOpen()"
+          [title]="isEditingPaymentMethod() ? 'Chỉnh sửa phương thức' : 'Thêm phương thức mới'"
+          size="md"
+          (close)="isPaymentFormOpen.set(false)"
+        >
+          <div class="space-y-5">
+            <!-- Loại phương thức -->
+            <div class="space-y-1.5 font-bold">
+              <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block">Loại phương thức</label>
+              <div class="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  (click)="paymentForm.update(f => ({ ...f, type: 'bank', bank_code: '', name: '' }))"
+                  [class]="'py-2.5 rounded-xl border-2 font-bold text-xs uppercase transition-all ' + 
+                    (paymentForm().type === 'bank' 
+                      ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)]' 
+                      : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-600 dark:text-slate-400')"
+                >
+                  Ngân hàng
+                </button>
+                <button
+                  type="button"
+                  (click)="paymentForm.update(f => ({ ...f, type: 'wallet', bank_code: '', name: '' }))"
+                  [class]="'py-2.5 rounded-xl border-2 font-bold text-xs uppercase transition-all ' + 
+                    (paymentForm().type === 'wallet' 
+                      ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)]' 
+                      : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-600 dark:text-slate-400')"
+                >
+                  Ví điện tử
+                </button>
+              </div>
+            </div>
+
+            <!-- Dropdown chọn nhanh Ngân hàng -->
+            @if (paymentForm().type === 'bank') {
+              <div class="space-y-1.5 font-bold">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block">Chọn nhanh Ngân hàng</label>
+                <app-custom-select
+                  [value]="paymentForm().bank_code"
+                  (valueChange)="onBankSelectChange($event)"
+                  [options]="POPULAR_BANKS"
+                  valueKey="code"
+                  labelKey="name"
+                  placeholder="Chọn ngân hàng từ danh sách..."
+                  [showSearch]="true"
+                ></app-custom-select>
+              </div>
+
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block">Mã Ngân hàng (VietQR Code)</label>
+                <input
+                  type="text"
+                  [ngModel]="paymentForm().bank_code"
+                  (ngModelChange)="paymentForm.update(f => ({ ...f, bank_code: $event }))"
+                  placeholder="Ví dụ: VCB, MB, TCB"
+                  class="form-input font-mono uppercase"
+                />
+              </div>
+
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block">Tên Ngân hàng <span class="text-red-500">*</span></label>
+                <input
+                  type="text"
+                  [ngModel]="paymentForm().name"
+                  (ngModelChange)="paymentForm.update(f => ({ ...f, name: $event }))"
+                  placeholder="Ví dụ: Vietcombank"
+                  class="form-input"
+                />
+              </div>
+            }
+
+            <!-- Chọn nhanh ví điện tử -->
+            @if (paymentForm().type === 'wallet') {
+              <div class="space-y-1.5 font-bold">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block">Chọn nhanh Ví</label>
+                <app-custom-select
+                  [value]="paymentForm().name"
+                  (valueChange)="onWalletSelectChange($event)"
+                  [options]="POPULAR_WALLETS"
+                  valueKey="name"
+                  labelKey="name"
+                  placeholder="Chọn ví điện tử..."
+                ></app-custom-select>
+              </div>
+
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block">Tên Ví điện tử <span class="text-red-500">*</span></label>
+                <input
+                  type="text"
+                  [ngModel]="paymentForm().name"
+                  (ngModelChange)="paymentForm.update(f => ({ ...f, name: $event }))"
+                  placeholder="Ví dụ: Momo"
+                  class="form-input"
+                />
+              </div>
+            }
+
+            <!-- Số tài khoản / Số điện thoại -->
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block">
+                {{ paymentForm().type === 'bank' ? 'Số tài khoản' : 'Số điện thoại ví' }} <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                [ngModel]="paymentForm().account_number"
+                (ngModelChange)="paymentForm.update(f => ({ ...f, account_number: $event }))"
+                placeholder="Nhập số tài khoản hoặc số điện thoại..."
+                class="form-input font-mono"
+              />
+            </div>
+
+            <!-- Tên chủ tài khoản -->
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block">Tên chủ tài khoản (Không dấu) <span class="text-red-500">*</span></label>
+              <input
+                type="text"
+                [ngModel]="paymentForm().account_holder"
+                (ngModelChange)="paymentForm.update(f => ({ ...f, account_holder: $event }))"
+                placeholder="Ví dụ: NGUYEN VAN A"
+                class="form-input uppercase"
+              />
+            </div>
+
+            <!-- Trạng thái kích hoạt -->
+            <app-custom-switch
+              type="full"
+              label="Kích hoạt sử dụng"
+              description="Kích hoạt phương thức này để hiển thị trên website Storefront."
+              [checked]="paymentForm().is_active"
+              (checkedChange)="paymentForm.update(f => ({ ...f, is_active: $event }))"
+            ></app-custom-switch>
+
+            <!-- Nút xác nhận lưu -->
+            <div class="pt-5 border-t border-slate-100 dark:border-slate-800/60">
+              <button
+                type="button"
+                [disabled]="isPaymentActionLoading()"
+                (click)="savePaymentMethod()"
+                class="btn-primary w-full h-11 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                @if (isPaymentActionLoading()) {
+                  <svg class="animate-spin h-4.5 w-4.5 text-white animate-infinite" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Đang xử lý...</span>
+                } @else {
+                  <app-icon name="save" class="h-4.5 w-4.5 shrink-0" strokeWidth="2.5" />
+                  <span>Xác nhận lưu</span>
+                }
+              </button>
+            </div>
+          </div>
+        </app-modal>
+
+        <!-- MODAL XEM MÃ QR THANH TOÁN -->
+        @if (isQrModalOpen()) {
+          <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <!-- Backdrop -->
+            <div (click)="isQrModalOpen.set(false)" class="fixed inset-0 bg-black/40"></div>
+
+            <!-- Content -->
+            <div class="relative app-card max-w-sm w-full shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] animate-in fade-in zoom-in duration-200 text-center flex flex-col items-center p-6 bg-white dark:bg-slate-950">
+              <!-- Close button -->
+              <button
+                (click)="isQrModalOpen.set(false)"
+                class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all"
+              >
+                <app-icon name="close" class="h-5 w-5" strokeWidth="2.5" />
+              </button>
+
+              <h4 class="text-base font-extrabold text-slate-900 dark:text-white uppercase tracking-wider mb-2">
+                Mã QR chuyển khoản
+              </h4>
+              <p class="text-xs text-slate-500 dark:text-slate-400 font-bold mb-5 font-mono">
+                {{ selectedPaymentForQr()?.name }} - {{ selectedPaymentForQr()?.account_number }}
+              </p>
+
+              <!-- QR Image -->
+              <div class="p-3 bg-white rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-md flex items-center justify-center w-56 h-56 shrink-0">
+                <img
+                  [src]="getQrCodeUrl(selectedPaymentForQr())"
+                  alt="QR Code"
+                  class="w-full h-full object-contain rounded-lg"
+                />
+              </div>
+
+              <!-- Chi tiết thông tin -->
+              <div class="w-full mt-5 p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800/40 text-left space-y-1.5">
+                <div class="flex justify-between text-xs">
+                  <span class="text-slate-400 font-bold uppercase tracking-wider">Chủ tài khoản:</span>
+                  <span class="font-extrabold text-slate-800 dark:text-white uppercase">{{ selectedPaymentForQr()?.account_holder }}</span>
+                </div>
+                <div class="flex justify-between text-xs">
+                  <span class="text-slate-400 font-bold uppercase tracking-wider">Số tài khoản:</span>
+                  <span class="font-bold text-slate-800 dark:text-white font-mono">{{ selectedPaymentForQr()?.account_number }}</span>
+                </div>
+                @if (selectedPaymentForQr()?.type === 'bank') {
+                  <div class="flex justify-between text-xs">
+                    <span class="text-slate-400 font-bold uppercase tracking-wider">Ngân hàng:</span>
+                    <span class="font-extrabold text-slate-800 dark:text-white">{{ selectedPaymentForQr()?.name }} ({{ selectedPaymentForQr()?.bank_code }})</span>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Modal Confirm: Xóa Phương thức thanh toán -->
+        <app-confirm-modal
+          [isOpen]="isDeletePaymentConfirmOpen()"
+          title="Xóa phương thức thanh toán?"
+          confirmText="Xác nhận xóa"
+          cancelText="Hủy"
+          [isSubmitting]="isPaymentActionLoading()"
+          (confirm)="confirmDeletePaymentMethod()"
+          (cancel)="isDeletePaymentConfirmOpen.set(false)"
+        >
+          <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
+            Bạn có chắc chắn muốn xóa phương thức thanh toán này khỏi hệ thống?<br />
+            Hành động này sẽ gỡ bỏ phương thức khỏi website Storefront ngay lập tức.
           </p>
         </app-confirm-modal>
       }

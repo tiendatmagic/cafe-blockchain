@@ -16,6 +16,7 @@ use App\Http\Controllers\MenuSyncController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\ShiftController;
+use App\Http\Controllers\PaymentMethodController;
 use App\Http\Middleware\RequireOwner;
 use Illuminate\Support\Facades\Route;
 
@@ -83,6 +84,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Settings API
     Route::get('/settings', [SettingController::class, 'index'])->middleware('permission:settings');
+
+    // Payment Methods API
+    Route::get('/payment-methods', [PaymentMethodController::class, 'index'])->middleware('permission:settings');
+    Route::post('/payment-methods', [PaymentMethodController::class, 'store'])->middleware('permission:settings');
+    Route::put('/payment-methods/{id}', [PaymentMethodController::class, 'update'])->middleware('permission:settings');
+    Route::delete('/payment-methods/{id}', [PaymentMethodController::class, 'destroy'])->middleware('permission:settings');
 
     // Menu Sync Logs API
     Route::get('/menu-sync-logs', [MenuSyncController::class, 'index'])->middleware('permission:settings|menu');
