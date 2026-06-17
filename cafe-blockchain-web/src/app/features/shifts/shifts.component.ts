@@ -44,7 +44,7 @@ export class ShiftsComponent implements OnInit {
     { key: 'expected_cash', header: 'TIỀN HỆ THỐNG', sortable: true, class: 'text-right text-slate-500', headerClass: 'text-right' },
     { key: 'actual_cash', header: 'TIỀN THỰC TẾ', sortable: true, class: 'text-right font-bold text-slate-800 dark:text-white', headerClass: 'text-right' },
     { key: 'difference', header: 'CHÊNH LỆCH', sortable: true, class: 'text-right font-black', headerClass: 'text-right' },
-    { key: 'actions', header: 'THAO TÁC', sortable: false, class: 'text-right pr-6', headerClass: 'text-right pr-6' }
+    { key: 'actions', header: 'THAO TÁC', sortable: false, class: 'text-right pr-6 whitespace-nowrap', headerClass: 'text-right pr-6 whitespace-nowrap' }
   ];
 
   // Lọc ngày

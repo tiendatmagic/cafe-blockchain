@@ -53,7 +53,7 @@
             <button
               type="button"
               (click)="openCloseShiftModal()"
-              class="btn-danger w-full lg:w-auto px-6 py-3 rounded-2xl font-black text-sm flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-98 transition-all shrink-0"
+              class="btn-danger w-full lg:w-auto hover:scale-[1.01]"
             >
               <app-icon name="logout" class="h-4.5 w-4.5" strokeWidth="2.5" />
               <span>Kết thúc ca & Đối soát két</span>
@@ -78,7 +78,7 @@
             <button
               type="button"
               (click)="openStartShiftModal()"
-              class="btn-primary w-full sm:w-auto px-6 py-3 rounded-2xl font-black text-sm flex items-center justify-center gap-2 bg-[var(--dynamic-primary)] text-white hover:scale-[1.02] active:scale-98 transition-all"
+              class="btn-primary w-full sm:w-auto hover:scale-[1.01]"
             >
               <app-icon name="lock-open" class="h-4.5 w-4.5" strokeWidth="2.5" />
               <span>Khai báo két & Vào ca</span>
@@ -87,154 +87,149 @@
         </div>
       }
 
-      <!-- KHỐI LỊCH SỬ CA TRỰC -->
-      <div class="app-card p-0 overflow-hidden">
-        <!-- Tiêu đề bảng & Bộ lọc thời gian -->
-        <div class="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-800 space-y-4">
-          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div>
-              <h5 class="text-base font-extrabold text-slate-800 dark:text-white">Lịch sử ca làm việc của nhân viên</h5>
-              <p class="text-xs text-slate-400">Xem và đối soát tiền mặt đầu ca, tiền hệ thống và tiền kiểm đếm thực tế.</p>
-            </div>
+      <!-- THANH LỌC & TIÊU ĐỀ LỊCH SỬ CA TRỰC -->
+      <div class="app-card p-4 sm:p-6">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div>
+            <h5 class="text-base font-extrabold text-slate-800 dark:text-white">Lịch sử ca làm việc của nhân viên</h5>
+            <p class="text-xs text-slate-400">Xem và đối soát tiền mặt đầu ca, tiền hệ thống và tiền kiểm đếm thực tế.</p>
+          </div>
 
-            <!-- Bộ lọc thời gian -->
-            <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-end">
-              <app-mini-buttons
-                [options]="datePresets"
-                [activeValue]="activePreset()"
-                (valueChange)="setDatePreset($event)"
-              ></app-mini-buttons>
+          <!-- Bộ lọc thời gian -->
+          <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-end">
+            <app-mini-buttons
+              [options]="datePresets"
+              [activeValue]="activePreset()"
+              (valueChange)="setDatePreset($event)"
+            ></app-mini-buttons>
 
-              <div *ngIf="activePreset() === 'custom'" class="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
-                <app-custom-date-picker
-                  [(selectedDate)]="tempStartDate"
-                  (selectedDateChange)="onCustomDatesChange()"
-                  placeholder="Từ ngày"
-                  class="w-full sm:w-36"
-                ></app-custom-date-picker>
-                <app-custom-date-picker
-                  [(selectedDate)]="tempEndDate"
-                  (selectedDateChange)="onCustomDatesChange()"
-                  placeholder="Đến ngày"
-                  class="w-full sm:w-36"
-                ></app-custom-date-picker>
-              </div>
+            <div *ngIf="activePreset() === 'custom'" class="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+              <app-custom-date-picker
+                [(selectedDate)]="tempStartDate"
+                (selectedDateChange)="onCustomDatesChange()"
+                placeholder="Từ ngày"
+                class="w-full sm:w-36"
+              ></app-custom-date-picker>
+              <app-custom-date-picker
+                [(selectedDate)]="tempEndDate"
+                (selectedDateChange)="onCustomDatesChange()"
+                placeholder="Đến ngày"
+                class="w-full sm:w-36"
+              ></app-custom-date-picker>
             </div>
           </div>
         </div>
-
-        <!-- Bảng ca trực -->
-        <div class="p-4 sm:p-6">
-          <app-table
-            [data]="shiftsPaged()"
-            [columns]="shiftColumns"
-            [isLoading]="stateService.isShiftsLoading()"
-            [showPagination]="true"
-            [totalItems]="sortedShifts().length"
-            [itemsPerPage]="shiftLimit"
-            [currentPage]="shiftPage()"
-            [sortKey]="shiftSortField()"
-            [sortDirection]="shiftSortDesc() ? 'desc' : 'asc'"
-            itemName="ca trực"
-            (pageChange)="shiftPage.set($event)"
-            (sortChange)="onSortChange($event)"
-            noDataMessage="Không có dữ liệu ca trực trong khoảng thời gian được chọn."
-          >
-            <!-- Custom Cell cho Nhân viên -->
-            <ng-template appCell="staff_name" let-row>
-              <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-full bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] flex items-center justify-center font-extrabold text-sm shrink-0">
-                  {{ (row.user?.name || row.user?.wallet_address || 'U').substring(0, 1) | uppercase }}
-                </div>
-                <div class="flex flex-col">
-                  <span class="font-extrabold text-slate-800 dark:text-white leading-tight">
-                    {{ row.user?.name || 'Nhân viên' }}
-                  </span>
-                  <span class="text-[10px] font-mono text-slate-400 leading-tight mt-0.5">
-                    {{ row.user?.wallet_address ? (row.user.wallet_address | appShortAddress) : '—' }}
-                  </span>
-                </div>
-              </div>
-            </ng-template>
-
-            <!-- Custom Cell cho Trạng thái -->
-            <ng-template appCell="status" let-row>
-              <span
-                [class.bg-emerald-500/10]="row.status === 'open'"
-                [class.text-emerald-600]="row.status === 'open'"
-                [class.dark:text-emerald-400]="row.status === 'open'"
-                [class.bg-slate-100]="row.status === 'closed'"
-                [class.text-slate-600]="row.status === 'closed'"
-                [class.dark:bg-slate-800/40]="row.status === 'closed'"
-                [class.dark:text-slate-400]="row.status === 'closed'"
-                class="px-2 py-0.5 rounded-lg text-xs font-black"
-              >
-                {{ row.status === 'open' ? 'Đang mở' : 'Đã đóng' }}
-              </span>
-            </ng-template>
-
-            <!-- Custom Cell cho Mở ca -->
-            <ng-template appCell="start_time" let-row>
-              <span class="text-slate-500 text-xs font-medium">{{ row.start_time | date: 'dd/MM/yyyy HH:mm' }}</span>
-            </ng-template>
-
-            <!-- Custom Cell cho Kết ca -->
-            <ng-template appCell="end_time" let-row>
-              <span class="text-slate-500 text-xs font-medium">
-                {{ row.end_time ? (row.end_time | date: 'dd/MM/yyyy HH:mm') : '—' }}
-              </span>
-            </ng-template>
-
-            <!-- Custom Cell cho Tiền đầu ca -->
-            <ng-template appCell="initial_cash" let-row>
-              <span class="text-slate-500 font-bold font-mono">{{ row.initial_cash | vnd }}</span>
-            </ng-template>
-
-            <!-- Custom Cell cho Tiền hệ thống -->
-            <ng-template appCell="expected_cash" let-row>
-              <span class="text-slate-500 font-bold font-mono">
-                {{ row.expected_cash !== null && row.expected_cash !== undefined ? (row.expected_cash | vnd) : '—' }}
-              </span>
-            </ng-template>
-
-            <!-- Custom Cell cho Tiền thực tế -->
-            <ng-template appCell="actual_cash" let-row>
-              <span class="font-bold text-slate-800 dark:text-white font-mono">
-                {{ row.actual_cash !== null && row.actual_cash !== undefined ? (row.actual_cash | vnd) : '—' }}
-              </span>
-            </ng-template>
-
-            <!-- Custom Cell cho Chênh lệch -->
-            <ng-template appCell="difference" let-row>
-              @if (row.actual_cash !== null && row.expected_cash !== null && row.actual_cash !== undefined && row.expected_cash !== undefined) {
-                @let diff = row.actual_cash - row.expected_cash;
-                <span
-                  [class.text-emerald-500]="diff >= 0"
-                  [class.text-rose-500]="diff < 0"
-                  class="font-black font-mono text-sm"
-                >
-                  {{ diff > 0 ? '+' : '' }}{{ diff | number }}đ
-                </span>
-              } @else {
-                <span class="text-slate-400">—</span>
-              }
-            </ng-template>
-
-            <!-- Custom Cell cho Action (In phiếu) -->
-            <ng-template appCell="actions" let-row>
-              <button
-                type="button"
-                (click)="printShiftReceipt(row)"
-                class="btn-cancel btn-sm flex items-center justify-center gap-1 cursor-pointer font-bold shrink-0 hover:border-purple-300 active:scale-95 transition-all text-xs"
-                title="In phiếu ca trực"
-              >
-                <app-icon name="download" class="h-3.5 w-3.5" strokeWidth="2.5" />
-                <span>In phiếu</span>
-              </button>
-            </ng-template>
-          </app-table>
-        </div>
       </div>
+
+      <!-- Bảng ca trực -->
+      <app-table
+        [data]="shiftsPaged()"
+        [columns]="shiftColumns"
+        [isLoading]="stateService.isShiftsLoading()"
+        [showPagination]="true"
+        [totalItems]="sortedShifts().length"
+        [itemsPerPage]="shiftLimit"
+        [currentPage]="shiftPage()"
+        [sortKey]="shiftSortField()"
+        [sortDirection]="shiftSortDesc() ? 'desc' : 'asc'"
+        itemName="ca trực"
+        (pageChange)="shiftPage.set($event)"
+        (sortChange)="onSortChange($event)"
+        noDataMessage="Không có dữ liệu ca trực trong khoảng thời gian được chọn."
+      >
+        <!-- Custom Cell cho Nhân viên -->
+        <ng-template appCell="staff_name" let-row>
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-full bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] flex items-center justify-center font-extrabold text-sm shrink-0">
+              {{ (row.user?.name || row.user?.wallet_address || 'U').substring(0, 1) | uppercase }}
+            </div>
+            <div class="flex flex-col">
+              <span class="font-extrabold text-slate-800 dark:text-white leading-tight">
+                {{ row.user?.name || 'Nhân viên' }}
+              </span>
+              <span class="text-[10px] font-mono text-slate-400 leading-tight mt-0.5">
+                {{ row.user?.wallet_address ? (row.user.wallet_address | appShortAddress) : '—' }}
+              </span>
+            </div>
+          </div>
+        </ng-template>
+
+        <!-- Custom Cell cho Trạng thái -->
+        <ng-template appCell="status" let-row>
+          <span
+            [class.bg-emerald-500/10]="row.status === 'open'"
+            [class.text-emerald-600]="row.status === 'open'"
+            [class.dark:text-emerald-400]="row.status === 'open'"
+            [class.bg-slate-100]="row.status === 'closed'"
+            [class.text-slate-600]="row.status === 'closed'"
+            [class.dark:bg-slate-800/40]="row.status === 'closed'"
+            [class.dark:text-slate-400]="row.status === 'closed'"
+            class="px-2 py-0.5 rounded-lg text-xs font-black"
+          >
+            {{ row.status === 'open' ? 'Đang mở' : 'Đã đóng' }}
+          </span>
+        </ng-template>
+
+        <!-- Custom Cell cho Mở ca -->
+        <ng-template appCell="start_time" let-row>
+          <span class="text-slate-500 text-xs font-medium">{{ row.start_time | date: 'dd/MM/yyyy HH:mm' }}</span>
+        </ng-template>
+
+        <!-- Custom Cell cho Kết ca -->
+        <ng-template appCell="end_time" let-row>
+          <span class="text-slate-500 text-xs font-medium">
+            {{ row.end_time ? (row.end_time | date: 'dd/MM/yyyy HH:mm') : '—' }}
+          </span>
+        </ng-template>
+
+        <!-- Custom Cell cho Tiền đầu ca -->
+        <ng-template appCell="initial_cash" let-row>
+          <span class="text-slate-500 font-bold font-mono">{{ row.initial_cash | vnd }}</span>
+        </ng-template>
+
+        <!-- Custom Cell cho Tiền hệ thống -->
+        <ng-template appCell="expected_cash" let-row>
+          <span class="text-slate-500 font-bold font-mono">
+            {{ row.expected_cash !== null && row.expected_cash !== undefined ? (row.expected_cash | vnd) : '—' }}
+          </span>
+        </ng-template>
+
+        <!-- Custom Cell cho Tiền thực tế -->
+        <ng-template appCell="actual_cash" let-row>
+          <span class="font-bold text-slate-800 dark:text-white font-mono">
+            {{ row.actual_cash !== null && row.actual_cash !== undefined ? (row.actual_cash | vnd) : '—' }}
+          </span>
+        </ng-template>
+
+        <!-- Custom Cell cho Chênh lệch -->
+        <ng-template appCell="difference" let-row>
+          @if (row.actual_cash !== null && row.expected_cash !== null && row.actual_cash !== undefined && row.expected_cash !== undefined) {
+            @let diff = row.actual_cash - row.expected_cash;
+            <span
+              [class.text-emerald-500]="diff >= 0"
+              [class.text-rose-500]="diff < 0"
+              class="font-black font-mono text-sm"
+            >
+              {{ diff > 0 ? '+' : '' }}{{ diff | number }}đ
+            </span>
+          } @else {
+            <span class="text-slate-400">—</span>
+          }
+        </ng-template>
+
+        <!-- Custom Cell cho Action (In phiếu) -->
+        <ng-template appCell="actions" let-row>
+          <button
+            type="button"
+            (click)="printShiftReceipt(row)"
+            class="btn-cancel btn-sm flex items-center justify-center gap-1 hover:scale-[1.01] whitespace-nowrap"
+            title="In phiếu ca trực"
+          >
+            <app-icon name="print" class="h-3.5 w-3.5" strokeWidth="2.5" />
+            <span>In phiếu</span>
+          </button>
+        </ng-template>
+      </app-table>
 
     } @else {
       <app-access-restricted pageName="Ca trực"></app-access-restricted>
