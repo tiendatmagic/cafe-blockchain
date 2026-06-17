@@ -233,16 +233,23 @@ class ShiftController extends Controller
     }
 
     /**
-     * Lấy danh sách lịch sử ca làm việc (Cho Admin / Quản lý)
+     * Lấy danh sách lịch sử ca làm việc (Cho Admin / Quản lý / Nhân viên)
      */
     public function index(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $user = $request->user();
+        $storeOwner = strtolower($user->store_owner_address ?: $user->wallet_address);
         
-        $shifts = Shift::where('store_owner_address', $storeOwner)
-            ->with('user')
-            ->orderBy('start_time', 'desc')
-            ->get();
+        $query = Shift::where('store_owner_address', $storeOwner)->with('user');
+
+        // Phân quyền bảo mật: Nếu là nhân viên thông thường (không có quyền quản lý nhân sự staffs hoặc báo cáo reports)
+        // thì chỉ cho phép họ nhìn thấy lịch sử ca trực của chính mình.
+        $permissions = $user->role ? $user->role->permissions : null;
+        if ($permissions !== null && !($permissions['staffs'] ?? false) && !($permissions['reports'] ?? false)) {
+            $query->where('user_id', $user->id);
+        }
+
+        $shifts = $query->orderBy('start_time', 'desc')->get();
 
         return response()->json($shifts);
     }

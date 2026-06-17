@@ -45,8 +45,7 @@ export class ReportsComponent implements OnInit {
 
   public readonly reportTabOptions: TabOption[] = [
     { value: 'products', label: 'Báo cáo bán hàng theo món' },
-    { value: 'customers', label: 'Báo cáo chi tiêu khách hàng' },
-    { value: 'shifts', label: 'Lịch sử ca trực' }
+    { value: 'customers', label: 'Báo cáo chi tiêu khách hàng' }
   ];
 
   public readonly productColumns: TableColumn[] = [
@@ -65,17 +64,6 @@ export class ReportsComponent implements OnInit {
     { key: 'orders_count', header: 'SỐ ĐƠN MUA', sortable: true, class: 'text-right font-bold text-slate-800 dark:text-white', headerClass: 'text-right' },
     { key: 'total_spent', header: 'TỔNG CHI TIÊU', sortable: true, class: 'text-right font-black text-slate-800 dark:text-white', headerClass: 'text-right' },
     { key: 'average_order_value', header: 'TB ĐƠN HÀNG', sortable: true, class: 'text-right font-bold text-purple-600 dark:text-purple-400', headerClass: 'text-right' },
-  ];
-
-  public readonly shiftColumns: TableColumn[] = [
-    { key: 'staff_name', header: 'NHÂN VIÊN', sortable: true, class: 'font-extrabold text-slate-800 dark:text-white' },
-    { key: 'status', header: 'TRẠNG THÁI', sortable: true, class: 'font-bold' },
-    { key: 'start_time', header: 'MỞ CA', sortable: true, class: 'text-slate-500' },
-    { key: 'end_time', header: 'KẾT CA', sortable: true, class: 'text-slate-500' },
-    { key: 'initial_cash', header: 'TIỀN ĐẦU CA', sortable: true, class: 'text-right text-slate-500', headerClass: 'text-right' },
-    { key: 'expected_cash', header: 'TIỀN HỆ THỐNG', sortable: true, class: 'text-right text-slate-500', headerClass: 'text-right' },
-    { key: 'actual_cash', header: 'TIỀN THỰC TẾ', sortable: true, class: 'text-right font-bold text-slate-800 dark:text-white', headerClass: 'text-right' },
-    { key: 'difference', header: 'CHÊNH LỆCH', sortable: true, class: 'text-right font-black', headerClass: 'text-right' },
   ];
 
   constructor() {
@@ -97,7 +85,7 @@ export class ReportsComponent implements OnInit {
   public tempEndDate = '';
 
   // Tab báo cáo chi tiết
-  public readonly activeTab = signal<'products' | 'customers' | 'shifts'>('products');
+  public readonly activeTab = signal<'products' | 'customers'>('products');
 
   // Sắp xếp cột báo cáo
   public readonly productSortField = signal<string>('total_quantity');
@@ -105,13 +93,6 @@ export class ReportsComponent implements OnInit {
 
   public readonly customerSortField = signal<string>('total_spent');
   public readonly customerSortDesc = signal<boolean>(true);
-
-  public readonly shiftSortField = signal<string>('start_time');
-  public readonly shiftSortDesc = signal<boolean>(true);
-
-  // Phân trang danh sách ca trực
-  public readonly shiftPage = signal<number>(1);
-  public readonly shiftLimit = 10;
 
   // Dữ liệu báo cáo
   public readonly reportsData = signal<any>(null);
@@ -251,15 +232,7 @@ export class ReportsComponent implements OnInit {
     this.customerPage.set(1); // Quay về trang 1
   }
 
-  public toggleShiftSort(field: string) {
-    if (this.shiftSortField() === field) {
-      this.shiftSortDesc.set(!this.shiftSortDesc());
-    } else {
-      this.shiftSortField.set(field);
-      this.shiftSortDesc.set(true);
-    }
-    this.shiftPage.set(1);
-  }
+
 
   public onProductSortChange(event: { key: string, direction: 'asc' | 'desc' | '' }) {
     if (event.key) {
@@ -283,16 +256,7 @@ export class ReportsComponent implements OnInit {
     this.customerPage.set(1);
   }
 
-  public onShiftSortChange(event: { key: string, direction: 'asc' | 'desc' | '' }) {
-    if (event.key) {
-      this.shiftSortField.set(event.key);
-      this.shiftSortDesc.set(event.direction === 'desc');
-    } else {
-      this.shiftSortField.set('start_time');
-      this.shiftSortDesc.set(true);
-    }
-    this.shiftPage.set(1);
-  }
+
 
   // --- Hỗ trợ vẽ biểu đồ Conic Gradient (Cơ cấu thanh toán) ---
   public getConicGradient(): string {
@@ -416,47 +380,6 @@ export class ReportsComponent implements OnInit {
   public readonly customersTotalPages = computed(() => {
     const list = this.sortedCustomers();
     return Math.ceil(list.length / this.customerLimit);
-  });
-
-  // --- Phân trang & Sắp xếp Báo cáo ca trực (computed signals) ---
-  public readonly sortedShifts = computed(() => {
-    const list = this.stateService.shifts();
-    const field = this.shiftSortField();
-    const desc = this.shiftSortDesc();
-
-    const result = [...list];
-    result.sort((a, b) => {
-      let valA = a[field];
-      let valB = b[field];
-
-      if (field === 'staff_name') {
-        valA = a.user?.name || a.user?.wallet_address || '';
-        valB = b.user?.name || b.user?.wallet_address || '';
-      } else if (field === 'difference') {
-        valA = (a.actual_cash ?? 0) - (a.expected_cash ?? 0);
-        valB = (b.actual_cash ?? 0) - (b.expected_cash ?? 0);
-      }
-
-      if (valA === null || valA === undefined) return desc ? 1 : -1;
-      if (valB === null || valB === undefined) return desc ? -1 : 1;
-
-      if (typeof valA === 'string') {
-        return desc ? valB.localeCompare(valA) : valA.localeCompare(valB);
-      }
-      return desc ? (valB - valA) : (valA - valB);
-    });
-    return result;
-  });
-
-  public readonly shiftsPaged = computed(() => {
-    const list = this.sortedShifts();
-    const start = (this.shiftPage() - 1) * this.shiftLimit;
-    return list.slice(start, start + this.shiftLimit);
-  });
-
-  public readonly shiftsTotalPages = computed(() => {
-    const list = this.sortedShifts();
-    return Math.ceil(list.length / this.shiftLimit);
   });
 
 

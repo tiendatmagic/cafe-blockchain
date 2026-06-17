@@ -290,10 +290,7 @@
                 <button
                   type="button"
                   (click)="isShiftDropdownOpen.set(!isShiftDropdownOpen())"
-                  class="flex items-center justify-center gap-1.5 h-9.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-[var(--dynamic-primary)] dark:hover:text-[var(--dynamic-primary)] transition-all duration-200 active:scale-95 cursor-pointer shadow-sm relative"
-                  [class.w-9.5]="!(stateService.currentShift() && stateService.currentShift().id)"
-                  [class.w-auto]="stateService.currentShift() && stateService.currentShift().id"
-                  [class.px-3]="stateService.currentShift() && stateService.currentShift().id"
+                  class="flex items-center justify-center w-9.5 h-9.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-[var(--dynamic-primary)] dark:hover:text-[var(--dynamic-primary)] transition-all duration-200 active:scale-95 cursor-pointer shadow-sm relative"
                   [class.text-[var(--dynamic-primary)]]="
                     stateService.currentShift() && stateService.currentShift().id
                   "
@@ -307,9 +304,6 @@
                 >
                   <app-icon name="clock" class="h-4.5 w-4.5 shrink-0" strokeWidth="2.2" />
                   @if (stateService.currentShift() && stateService.currentShift().id) {
-                    <span class="text-xs font-mono font-bold">{{
-                      stateService.shiftDurationString()
-                    }}</span>
                     <span
                       class="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-500 animate-pulse"
                     ></span>

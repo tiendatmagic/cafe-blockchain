@@ -13,6 +13,7 @@ export const routes: Routes = [
   { path: 'reports', loadComponent: () => import('@features/reports/reports.component').then(m => m.ReportsComponent) },
   { path: 'debts', loadComponent: () => import('@features/pos/pages/debts/debts.component').then(m => m.DebtsComponent) },
   { path: 'staffs', loadComponent: () => import('@features/staffs/staffs.component').then(m => m.StaffsComponent) },
+  { path: 'shifts', loadComponent: () => import('@features/shifts/shifts.component').then(m => m.ShiftsComponent) },
   { path: 'mobile-sign', loadComponent: () => import('@features/auth/pages/mobile-sign/mobile-sign.component').then(m => m.MobileSignComponent) },
   { path: 'blockchain-explorer', loadComponent: () => import('@features/blockchain/pages/blockchain-explorer/blockchain-explorer.component').then(m => m.BlockchainExplorerComponent) },
   { path: 'store/:slug', loadComponent: () => import('@features/storefront/pages/store/store.component').then(m => m.StoreComponent) },

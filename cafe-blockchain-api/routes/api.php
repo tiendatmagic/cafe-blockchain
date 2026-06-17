@@ -137,7 +137,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/shifts/current/summary', [ShiftController::class, 'summary']);
     Route::post('/shifts/open', [ShiftController::class, 'open']);
     Route::post('/shifts/close', [ShiftController::class, 'close']);
-    Route::get('/shifts', [ShiftController::class, 'index'])->middleware('permission:staffs|reports');
+    Route::get('/shifts', [ShiftController::class, 'index'])->middleware('permission:staffs|reports|shifts');
 
     // Staffs & Roles API (Chỉ truy cập khi có quyền staffs)
     Route::get('/staffs', [StaffController::class, 'index'])->middleware('permission:staffs');
