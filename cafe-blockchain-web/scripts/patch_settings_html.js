@@ -114,7 +114,7 @@ const storeBlockText = `            </div>
       <div
         class="flex items-center gap-2.5 pb-2 border-b border-slate-100 dark:border-slate-800/60"
       >
-        <div class="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0">
+        <div class="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0 flex items-center">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             class="h-5 w-5"
