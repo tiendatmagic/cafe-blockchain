@@ -97,10 +97,10 @@ export class StaffsComponent implements OnInit {
         const idClean = s.id ? s.id.toString() : '';
 
         return nameClean.includes(searchClean) ||
-               phoneClean.includes(searchClean) ||
-               walletClean.includes(searchClean) ||
-               roleClean.includes(searchClean) ||
-               idClean.includes(searchClean);
+          phoneClean.includes(searchClean) ||
+          walletClean.includes(searchClean) ||
+          roleClean.includes(searchClean) ||
+          idClean.includes(searchClean);
       });
     }
     return list;
@@ -153,19 +153,19 @@ export class StaffsComponent implements OnInit {
 
   // Danh sách các module trong Web POS hỗ trợ phân quyền
   public readonly modules = [
-    { key: 'dashboard', name: 'Tổng quan (Dashboard)', desc: 'Xem biểu đồ thống kê, doanh thu, lợi nhuận, ca trực' },
-    { key: 'pos', name: 'Bán hàng (POS)', desc: 'Lập đơn hàng, chọn món, in hóa đơn tạm, thanh toán' },
-    { key: 'menu', name: 'Thực đơn (Menu)', desc: 'Thêm, sửa, xóa món ăn, đồ uống và các biến thể' },
-    { key: 'orders', name: 'Đơn hàng (Orders)', desc: 'Quản lý lịch sử đơn hàng, cập nhật trạng thái, đồng bộ blockchain' },
-    { key: 'financials', name: 'Sổ thu chi (Financials)', desc: 'Lập phiếu thu, phiếu chi, quản lý dòng tiền mặt/on-chain' },
-    { key: 'customers', name: 'Khách hàng (Customers)', desc: 'Quản lý thông tin khách hàng và nhóm khách hàng' },
-    { key: 'debts', name: 'Sổ nợ (Debts)', desc: 'Xem danh sách nợ khách hàng, lập phiếu thu nợ, xóa nợ' },
-    { key: 'inventory', name: 'Kho hàng (Inventory)', desc: 'Quản lý nhập kho, xuất kho, kiểm kho hàng hóa' },
-    { key: 'tables', name: 'Sơ đồ bàn (Tables)', desc: 'Quản lý khu vực, bàn ăn và trạng thái sử dụng' },
-    { key: 'reports', name: 'Báo cáo (Reports)', desc: 'Xem chi tiết báo cáo doanh thu, lãi lỗ, xuất file Excel' },
-    { key: 'settings', name: 'Cấu hình quán (Settings)', desc: 'Thiết lập thông tin quán, màu sắc dynamic, địa chỉ ví hợp đồng' },
-    { key: 'staffs', name: 'Nhân viên (Staffs)', desc: 'Quản lý nhân viên, phân quyền truy cập hệ thống' },
-    { key: 'shifts', name: 'Ca trực (Shifts)', desc: 'Mở ca, kết ca, khai báo két tiền mặt và đối soát chênh lệch' }
+    { key: 'dashboard', name: 'Tổng quan', desc: 'Xem biểu đồ thống kê, doanh thu, lợi nhuận, ca trực' },
+    { key: 'pos', name: 'Bán hàng', desc: 'Lập đơn hàng, chọn món, in hóa đơn tạm, thanh toán' },
+    { key: 'menu', name: 'Thực đơn', desc: 'Thêm, sửa, xóa món ăn, đồ uống và các biến thể' },
+    { key: 'orders', name: 'Đơn hàng', desc: 'Quản lý lịch sử đơn hàng, cập nhật trạng thái, đồng bộ blockchain' },
+    { key: 'financials', name: 'Sổ thu chi', desc: 'Lập phiếu thu, phiếu chi, quản lý dòng tiền mặt/on-chain' },
+    { key: 'customers', name: 'Khách hàng', desc: 'Quản lý thông tin khách hàng và nhóm khách hàng' },
+    { key: 'debts', name: 'Sổ nợ', desc: 'Xem danh sách nợ khách hàng, lập phiếu thu nợ, xóa nợ' },
+    { key: 'inventory', name: 'Kho hàng', desc: 'Quản lý nhập kho, xuất kho, kiểm kho hàng hóa' },
+    { key: 'tables', name: 'Sơ đồ bàn', desc: 'Quản lý khu vực, bàn ăn và trạng thái sử dụng' },
+    { key: 'reports', name: 'Báo cáo', desc: 'Xem chi tiết báo cáo doanh thu, lãi lỗ, xuất file Excel' },
+    { key: 'settings', name: 'Cấu hình quán', desc: 'Thiết lập thông tin quán, màu sắc dynamic, địa chỉ ví hợp đồng' },
+    { key: 'staffs', name: 'Nhân viên', desc: 'Quản lý nhân viên, phân quyền truy cập hệ thống' },
+    { key: 'shifts', name: 'Ca trực', desc: 'Mở ca, kết ca, khai báo két tiền mặt và đối soát chênh lệch' }
   ];
 
   // Map các tùy chọn vai trò cho CustomSelect
@@ -245,7 +245,7 @@ export class StaffsComponent implements OnInit {
   public openAddRole() {
     this.editingRole.set(null);
     this.roleForm.reset();
-    
+
     // Đặt mặc định false cho tất cả checkbox quyền
     const defaultPerms: any = {};
     this.modules.forEach(mod => {
@@ -258,7 +258,7 @@ export class StaffsComponent implements OnInit {
   // Mở form sửa vai trò
   public openEditRole(role: any) {
     this.editingRole.set(role);
-    
+
     const perms = role.permissions || {};
     const formattedPerms: any = {};
     this.modules.forEach(mod => {
@@ -428,7 +428,7 @@ export class StaffsComponent implements OnInit {
     const activeModules = this.modules
       .filter(m => !!perms[m.key])
       .map(m => m.name.split(' ')[0]); // Lấy chữ đầu (Tổng, Bán, Thực...)
-    
+
     if (activeModules.length === this.modules.length) {
       return 'Tất cả các quyền';
     }
