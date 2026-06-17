@@ -155,17 +155,17 @@ export class StaffsComponent implements OnInit {
   public readonly modules = [
     { key: 'dashboard', name: 'Tổng quan', desc: 'Xem biểu đồ thống kê, doanh thu, lợi nhuận, ca trực' },
     { key: 'pos', name: 'Bán hàng', desc: 'Lập đơn hàng, chọn món, in hóa đơn tạm, thanh toán' },
-    { key: 'menu', name: 'Thực đơn', desc: 'Thêm, sửa, xóa món ăn, đồ uống và các biến thể' },
     { key: 'orders', name: 'Đơn hàng', desc: 'Quản lý lịch sử đơn hàng, cập nhật trạng thái, đồng bộ blockchain' },
-    { key: 'financials', name: 'Sổ thu chi', desc: 'Lập phiếu thu, phiếu chi, quản lý dòng tiền mặt/on-chain' },
+    { key: 'tables', name: 'Sơ đồ bàn', desc: 'Quản lý khu vực, bàn ăn và trạng thái sử dụng' },
+    { key: 'shifts', name: 'Ca trực', desc: 'Mở ca, kết ca, khai báo két tiền mặt và đối soát chênh lệch' },
+    { key: 'menu', name: 'Thực đơn', desc: 'Thêm, sửa, xóa món ăn, đồ uống và các biến thể' },
+    { key: 'inventory', name: 'Kho hàng', desc: 'Quản lý nhập kho, xuất kho, kiểm kho hàng hóa' },
     { key: 'customers', name: 'Khách hàng', desc: 'Quản lý thông tin khách hàng và nhóm khách hàng' },
     { key: 'debts', name: 'Sổ nợ', desc: 'Xem danh sách nợ khách hàng, lập phiếu thu nợ, xóa nợ' },
-    { key: 'inventory', name: 'Kho hàng', desc: 'Quản lý nhập kho, xuất kho, kiểm kho hàng hóa' },
-    { key: 'tables', name: 'Sơ đồ bàn', desc: 'Quản lý khu vực, bàn ăn và trạng thái sử dụng' },
+    { key: 'financials', name: 'Sổ thu chi', desc: 'Lập phiếu thu, phiếu chi, quản lý dòng tiền mặt/on-chain' },
     { key: 'reports', name: 'Báo cáo', desc: 'Xem chi tiết báo cáo doanh thu, lãi lỗ, xuất file Excel' },
-    { key: 'settings', name: 'Cấu hình quán', desc: 'Thiết lập thông tin quán, màu sắc dynamic, địa chỉ ví hợp đồng' },
     { key: 'staffs', name: 'Nhân viên', desc: 'Quản lý nhân viên, phân quyền truy cập hệ thống' },
-    { key: 'shifts', name: 'Ca trực', desc: 'Mở ca, kết ca, khai báo két tiền mặt và đối soát chênh lệch' }
+    { key: 'settings', name: 'Cấu hình quán', desc: 'Thiết lập thông tin quán, màu sắc dynamic, địa chỉ ví hợp đồng' }
   ];
 
   // Map các tùy chọn vai trò cho CustomSelect

@@ -74,12 +74,12 @@ export class SettingsComponent implements OnInit {
 
   public readonly settingsSubTabOptions: TabOption[] = [
     { value: 'general', label: 'Cấu hình Quán' },
-    { value: 'store', label: 'Website Cửa hàng' },
+    { value: 'payment', label: 'Phương thức thanh toán' },
     { value: 'invoice', label: 'Mẫu hoá đơn' },
+    { value: 'store', label: 'Website Cửa hàng' },
     { value: 'voucher', label: 'Voucher NFT' },
     { value: 'blockchain', label: 'Kết nối & Hợp đồng Web3' },
     { value: 'permissions', label: 'Ủy quyền nhân sự (Ví)' },
-    { value: 'payment', label: 'Phương thức thanh toán' },
   ];
 
   // Form Cấu hình hệ thống

@@ -45,13 +45,13 @@ export class MenuComponent implements OnInit, OnDestroy {
   private readonly apiService = inject(ApiService);
 
   public readonly productTypeOptions: TabOption[] = [
-    { value: 'product', label: 'Món bán (Thành phẩm)' },
-    { value: 'ingredient', label: 'Nguyên vật liệu (Kho thô)' }
+    { value: 'product', label: 'Món ăn' },
+    { value: 'ingredient', label: 'Nguyên vật liệu' }
   ];
 
   public readonly mainProductTypeOptions: TabOption[] = [
-    { value: 'product', label: 'Món bán (Thành phẩm)', icon: 'menu' },
-    { value: 'ingredient', label: 'Nguyên vật liệu (Kho thô)', icon: 'scale' }
+    { value: 'product', label: 'Món ăn', icon: 'menu' },
+    { value: 'ingredient', label: 'Nguyên vật liệu', icon: 'scale' }
   ];
 
   constructor() {
@@ -172,17 +172,17 @@ export class MenuComponent implements OnInit, OnDestroy {
       const matchType = (p.type || 'product') === type;
 
       const category = this.menuCategoryFilter();
-      const matchCategory = category === 'Tất cả' || 
-                            (p.categories && p.categories.some((c: any) => c.name === category)) || 
-                            p.category_name === category || 
-                            p.category?.category_name === category;
-                            
+      const matchCategory = category === 'Tất cả' ||
+        (p.categories && p.categories.some((c: any) => c.name === category)) ||
+        p.category_name === category ||
+        p.category?.category_name === category;
+
       const search = this.menuSearchQuery().trim().toLowerCase();
-      const matchSearch = !search || 
-                          p.name.toLowerCase().includes(search) || 
-                          p.sku?.toLowerCase().includes(search) || 
-                          (p.short_description && p.short_description.toLowerCase().includes(search));
-                          
+      const matchSearch = !search ||
+        p.name.toLowerCase().includes(search) ||
+        p.sku?.toLowerCase().includes(search) ||
+        (p.short_description && p.short_description.toLowerCase().includes(search));
+
       // Lọc theo khoảng giá sản phẩm chính
       const minPrice = this.menuMinPrice();
       const matchMinPrice = minPrice === null || minPrice === undefined || p.price >= minPrice;
@@ -209,7 +209,7 @@ export class MenuComponent implements OnInit, OnDestroy {
       } else if (statusFilter === 'inactive') {
         matchStatus = p.status === false || Number(p.status) === 0;
       }
-                          
+
       return matchType && matchCategory && matchSearch && matchMinPrice && matchMaxPrice && matchVarPrice && matchStatus;
     });
   });
@@ -376,7 +376,7 @@ export class MenuComponent implements OnInit, OnDestroy {
     const formData = this.menuForm();
     const isIngredient = formData.type === 'ingredient';
     const hasVariants = !isIngredient && formData.variants && formData.variants.length > 0;
-    
+
     if (!formData.name) {
       this.stateService.showToast('Vui lòng điền tên món ăn!', 'error');
       return;
@@ -855,7 +855,7 @@ export class MenuComponent implements OnInit, OnDestroy {
     this.isBarcodeScannerOpen.set(true);
     this.isScannerLoading.set(true);
     this.scannerError.set('');
-    
+
     setTimeout(() => {
       this.initScanner();
     }, 300);
@@ -875,7 +875,7 @@ export class MenuComponent implements OnInit, OnDestroy {
         ],
         verbose: false
       });
-      
+
       const config = {
         fps: 10,
         qrbox: (width: number, height: number) => {
@@ -922,7 +922,7 @@ export class MenuComponent implements OnInit, OnDestroy {
         if (this.html5Qrcode && this.html5Qrcode.isScanning) {
           await this.html5Qrcode.stop();
         }
-        
+
         // Tạo thực thể mới nếu chưa có
         if (!this.html5Qrcode) {
           this.html5Qrcode = new Html5Qrcode("barcode-scanner-reader", {
