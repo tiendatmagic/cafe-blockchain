@@ -215,11 +215,8 @@ export class ShiftsComponent implements OnInit {
     const isBrowser = typeof window !== 'undefined';
     if (!isBrowser) return;
 
-    const printWindow = window.open('', '_blank', 'width=300,height=400');
-    if (!printWindow) {
-      this.stateService.showToast('Không thể mở cửa sổ in. Vui lòng kiểm tra cài đặt trình duyệt!', 'error');
-      return;
-    }
+    const storeName = this.stateService.settings()?.store_name || 'Cafe Web3 POS';
+    const printSize = this.stateService.settings()?.default_print_size || '80mm';
 
     const start = new Date(shift.start_time).toLocaleString('vi-VN');
     const end = shift.end_time ? new Date(shift.end_time).toLocaleString('vi-VN') : 'Chưa kết ca';
@@ -231,57 +228,77 @@ export class ShiftsComponent implements OnInit {
     const note = shift.note || 'Không có';
     const staff = shift.user?.name || 'Nhân viên';
 
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow?.document;
+    if (!doc) return;
+
     const html = `
       <html>
       <head>
-        <title>Phieu Ket Ca</title>
+        <title>In Phieu Ket Ca</title>
         <style>
-          body { font-family: monospace; font-size: 12px; margin: 10px; color: #000; }
+          @page { size: ${printSize === '80mm' ? '80mm 200mm' : printSize}; margin: 0; }
+          body { font-family: 'Courier New', Courier, monospace; font-size: 12px; line-height: 1.4; color: #000; margin: 0; padding: 10px; width: ${printSize === '80mm' ? '72mm' : 'auto'}; }
           .text-center { text-align: center; }
-          .font-bold { font-weight: bold; }
-          .border-bottom { border-bottom: 1px dashed #000; padding-bottom: 5px; margin-bottom: 5px; }
+          .bold { font-weight: bold; }
+          .divider { border-top: 1px dashed #000; margin: 8px 0; }
+          .header { font-size: 16px; margin-bottom: 2px; text-transform: uppercase; }
           .flex-between { display: flex; justify-content: space-between; }
+          .footer { font-size: 10px; margin-top: 12px; }
           .mt-10 { margin-top: 10px; }
         </style>
       </head>
       <body>
-        <div class="text-center font-bold" style="font-size: 14px;">CAFE WEB3 POS</div>
-        <div class="text-center font-bold border-bottom">PHIẾU BÁO CÁO KẾT CA</div>
+        <div class="text-center bold header">${storeName}</div>
+        <div class="text-center" style="font-size: 10px;">BÁO CÁO KẾT CA TRỰC</div>
+        <div class="divider"></div>
         
-        <div class="border-bottom">
-          <div class="flex-between"><span>Nhân viên:</span><span>${staff}</span></div>
-          <div class="flex-between"><span>Mở ca:</span><span>${start}</span></div>
-          <div class="flex-between"><span>Kết ca:</span><span>${end}</span></div>
-          <div class="flex-between"><span>Trạng thái:</span><span>${shift.status === 'open' ? 'ĐANG MỞ' : 'ĐÃ ĐÓNG'}</span></div>
-        </div>
+        <div class="flex-between"><span>Nhân viên:</span><span class="bold">${staff}</span></div>
+        <div class="flex-between"><span>Mở ca:</span><span>${start}</span></div>
+        <div class="flex-between"><span>Kết ca:</span><span>${end}</span></div>
+        <div class="flex-between"><span>Trạng thái:</span><span class="bold">${shift.status === 'open' ? 'ĐANG MỞ' : 'ĐÃ ĐÓNG'}</span></div>
         
-        <div class="border-bottom">
-          <div class="flex-between font-bold"><span>Tiền đầu ca:</span><span>${initial}</span></div>
-          <div class="flex-between"><span>Tiền hệ thống:</span><span>${expected}</span></div>
-          <div class="flex-between font-bold"><span>Tiền thực tế:</span><span>${actual}</span></div>
-          <div class="flex-between font-bold" style="font-size:13px;"><span>Chênh lệch:</span><span>${diff}</span></div>
-        </div>
+        <div class="divider"></div>
+        
+        <div class="flex-between bold"><span>Tiền đầu ca:</span><span>${initial}</span></div>
+        <div class="flex-between"><span>Tiền hệ thống:</span><span>${expected}</span></div>
+        <div class="flex-between bold"><span>Tiền thực tế:</span><span>${actual}</span></div>
+        <div class="flex-between bold" style="font-size: 13px;"><span>Chênh lệch:</span><span>${diff}</span></div>
+        
+        <div class="divider"></div>
         
         <div class="mt-10">
-          <div class="font-bold">Ghi chú giải trình:</div>
-          <div style="font-style: italic; white-space: pre-wrap;">${note}</div>
+          <div class="bold">Ghi chú giải trình:</div>
+          <div style="font-style: italic; white-space: pre-wrap; margin-top: 4px;">${note}</div>
         </div>
         
-        <div class="mt-10 text-center" style="font-size: 10px; border-top: 1px dashed #000; padding-top: 10px;">
-          Đã in ngày: ${new Date().toLocaleString('vi-VN')}
+        <div class="divider"></div>
+        
+        <div class="text-center footer">
+          Đã in ngày: ${new Date().toLocaleString('vi-VN')}<br>
+          Powered by Blockchain Dapp POS
         </div>
         
         <script>
           window.onload = function() {
             window.print();
-            setTimeout(function() { window.close(); }, 500);
+            setTimeout(function() { window.frameElement.remove(); }, 1000);
           }
         </script>
       </body>
       </html>
     `;
 
-    printWindow.document.write(html);
-    printWindow.document.close();
+    doc.open();
+    doc.write(html);
+    doc.close();
   }
 }
