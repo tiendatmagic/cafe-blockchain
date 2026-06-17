@@ -1,85 +1,169 @@
-<div class="container mx-auto max-w-[1530px] p-4 sm:p-6 min-h-[calc(100vh-80px)] flex flex-col justify-between">
-
+<div class="container mx-auto max-w-[1530px] p-4 sm:p-6 min-h-[calc(100vh-80px)] flex flex-col">
 
   @if (web3Service.walletConnected()) {
-    <!-- Tab Điều Hướng -->
-    <div class="mt-6 flex border-b border-slate-100 dark:border-slate-850 gap-2">
-      <button 
-        (click)="setActiveTab('shop')" 
-        [class]="activeTab() === 'shop' 
-          ? 'pb-3 px-4 text-sm font-extrabold text-[var(--dynamic-primary)] border-b-2 border-[var(--dynamic-primary)] cursor-pointer transition-all' 
-          : 'pb-3 px-4 text-sm font-bold text-slate-400 dark:text-slate-500 hover:text-slate-650 cursor-pointer transition-all'">
-        Đổi Voucher (Shop)
-      </button>
-      <button 
-        (click)="setActiveTab('market')" 
-        [class]="activeTab() === 'market' 
-          ? 'pb-3 px-4 text-sm font-extrabold text-[var(--dynamic-primary)] border-b-2 border-[var(--dynamic-primary)] cursor-pointer transition-all' 
-          : 'pb-3 px-4 text-sm font-bold text-slate-400 dark:text-slate-500 hover:text-slate-650 cursor-pointer transition-all'">
-        Chợ Giao Dịch
-      </button>
-      <button 
-        (click)="setActiveTab('my-vouchers')" 
-        [class]="activeTab() === 'my-vouchers' 
-          ? 'pb-3 px-4 text-sm font-extrabold text-[var(--dynamic-primary)] border-b-2 border-[var(--dynamic-primary)] cursor-pointer transition-all' 
-          : 'pb-3 px-4 text-sm font-bold text-slate-400 dark:text-slate-500 hover:text-slate-650 cursor-pointer transition-all'">
-        Voucher của tôi
-      </button>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- HERO STATS BANNER (OpenSea-style)                  -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="mt-2 p-5 sm:p-6 rounded-[15px] bg-gradient-to-br from-[var(--dynamic-primary)]/5 via-white/60 to-[var(--dynamic-secondary)]/5 dark:from-[var(--dynamic-primary)]/10 dark:via-slate-900/60 dark:to-[var(--dynamic-secondary)]/10 border border-slate-200/40 dark:border-slate-800/40 backdrop-blur-md shadow-sm">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <!-- Branding -->
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-[12px] bg-gradient-to-br from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] flex items-center justify-center shadow-md shadow-[var(--dynamic-primary)]/20 shrink-0">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-lg sm:text-xl font-black text-slate-800 dark:text-white tracking-tight">Marketplace</h2>
+            <p class="text-xs font-semibold text-slate-400 dark:text-slate-500">Chợ Voucher NFT on-chain</p>
+          </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="flex items-center gap-3 sm:gap-4 overflow-x-auto no-scrollbar w-full sm:w-auto">
+          <!-- Số dư $CAFE -->
+          <div class="flex items-center gap-2.5 px-4 py-2.5 rounded-[12px] bg-white/80 dark:bg-slate-950/60 border border-slate-200/50 dark:border-slate-800/50 shadow-sm min-w-fit">
+            <div class="w-8 h-8 rounded-lg bg-[var(--dynamic-primary)]/10 flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4 text-[var(--dynamic-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <div class="flex flex-col">
+              <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none">Số dư</span>
+              <span class="text-sm font-black text-slate-800 dark:text-white leading-tight mt-0.5">{{ cafeTokenBalance() }} <span class="text-[10px] font-extrabold text-[var(--dynamic-primary)]">$CAFE</span></span>
+            </div>
+          </div>
+
+          <!-- Số NFT sở hữu -->
+          <div class="flex items-center gap-2.5 px-4 py-2.5 rounded-[12px] bg-white/80 dark:bg-slate-950/60 border border-slate-200/50 dark:border-slate-800/50 shadow-sm min-w-fit">
+            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+              </svg>
+            </div>
+            <div class="flex flex-col">
+              <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none">Sở hữu</span>
+              <span class="text-sm font-black text-slate-800 dark:text-white leading-tight mt-0.5">{{ totalOwnedNFTs() }} <span class="text-[10px] font-extrabold text-emerald-500">NFT</span></span>
+            </div>
+          </div>
+
+          <!-- Tổng trên chợ -->
+          <div class="flex items-center gap-2.5 px-4 py-2.5 rounded-[12px] bg-white/80 dark:bg-slate-950/60 border border-slate-200/50 dark:border-slate-800/50 shadow-sm min-w-fit">
+            <div class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+              </svg>
+            </div>
+            <div class="flex flex-col">
+              <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none">Đang bán</span>
+              <span class="text-sm font-black text-slate-800 dark:text-white leading-tight mt-0.5">{{ totalMarketListings() }} <span class="text-[10px] font-extrabold text-amber-500">Voucher</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Màn hình Loading -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- TAB NAVIGATION (Dùng TabGroupComponent dùng chung) -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="mt-6">
+      <app-tab-group
+        [options]="tabOptions"
+        [activeValue]="activeTab()"
+        (valueChange)="onTabChange($event)"
+        containerClass="w-full"
+        [flex]="true"
+      ></app-tab-group>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- LOADING STATE: Skeleton Cards                      -->
+    <!-- ═══════════════════════════════════════════════════ -->
     @if (isLoadingData() || isActionPending()) {
-      <div class="mt-8 flex-1 flex flex-col justify-center items-center py-20">
-        <!-- Loading Spinner -->
-        <svg class="animate-spin h-10 w-10 text-[var(--dynamic-primary)] mb-3" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        <p class="text-sm font-bold text-slate-500 dark:text-slate-400">Đang đồng bộ dữ liệu với Blockchain...</p>
+      <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        @for (i of [1,2,3,4,5,6]; track i) {
+          <div class="rounded-[15px] border border-slate-200/50 dark:border-slate-800/50 bg-white/60 dark:bg-slate-900/60 overflow-hidden animate-pulse">
+            <!-- Skeleton Art -->
+            <div class="h-44 bg-slate-200/60 dark:bg-slate-800/40"></div>
+            <!-- Skeleton Info -->
+            <div class="p-4 space-y-3">
+              <div class="h-3.5 bg-slate-200/80 dark:bg-slate-800/60 rounded-lg w-3/4"></div>
+              <div class="h-5 bg-slate-200/80 dark:bg-slate-800/60 rounded-lg w-1/2"></div>
+              <div class="h-3 bg-slate-200/60 dark:bg-slate-800/40 rounded-lg w-2/3"></div>
+            </div>
+            <!-- Skeleton Footer -->
+            <div class="px-4 pb-4 pt-3 border-t border-slate-100 dark:border-slate-800/50 flex justify-between items-center">
+              <div class="h-4 bg-slate-200/80 dark:bg-slate-800/60 rounded-lg w-1/3"></div>
+              <div class="h-9 bg-slate-200/80 dark:bg-slate-800/60 rounded-[10px] w-24"></div>
+            </div>
+          </div>
+        }
       </div>
     } @else {
-      
-      <!-- TAB 1: SHOP ĐỔI VOUCHER -->
+
+      <!-- ═══════════════════════════════════════════════════ -->
+      <!-- TAB 1: SHOP ĐỔI VOUCHER                           -->
+      <!-- ═══════════════════════════════════════════════════ -->
       @if (activeTab() === 'shop') {
-        <div class="mt-8 flex-1">
+        <div class="mt-6 flex-1">
           @if (shopVouchers().length === 0) {
-            <div class="text-center py-16 p-6 rounded-[15px] border border-dashed border-slate-200 dark:border-slate-800">
-              <p class="text-slate-400 dark:text-slate-500 text-sm font-bold">Chưa có loại voucher nào được cấu hình bán tại shop.</p>
+            <!-- Empty State -->
+            <div class="flex flex-col items-center justify-center py-20 px-6">
+              <div class="w-20 h-20 rounded-full bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 flex items-center justify-center mb-5">
+                <svg class="w-10 h-10 text-[var(--dynamic-primary)]/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5a2 2 0 10-2 2h2zm-2 2h4M5 10H3a2 2 0 00-2 2v3a2 2 0 002 2h18a2 2 0 002-2v-3a2 2 0 00-2-2H5z"/>
+                </svg>
+              </div>
+              <h4 class="text-base font-extrabold text-slate-600 dark:text-slate-300">Chưa có Voucher nào</h4>
+              <p class="text-sm text-slate-400 dark:text-slate-500 mt-1.5 text-center max-w-sm">Chủ quán chưa cấu hình bán voucher nào tại shop. Hãy quay lại sau nhé!</p>
             </div>
           } @else {
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               @for (v of shopVouchers(); track v.id) {
                 @if (v.isActive) {
-                  <div class="p-5 rounded-[15px] border border-slate-200/60 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between">
-                    <div>
-                      <div class="flex justify-between items-start">
-                        <span class="text-[10px] font-black uppercase text-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/10 px-2 py-0.5 rounded-[5px]">
-                          Voucher ID: #{{ v.id }}
-                        </span>
-                        <span class="text-xs font-black text-emerald-500">Giảm trực tiếp</span>
+                  <div class="group rounded-[15px] border border-slate-200/50 dark:border-slate-800/50 bg-white/70 dark:bg-slate-900/60 overflow-hidden shadow-sm hover:shadow-xl hover:shadow-[var(--dynamic-primary)]/10 hover:-translate-y-1 transition-all duration-300 flex flex-col">
+
+                    <!-- NFT Generative Art Section -->
+                    <div class="relative h-44 overflow-hidden" [ngClass]="'bg-gradient-to-br ' + getCardGradient(v.id)">
+                      <!-- Decorative dot grid overlay -->
+                      <div class="absolute inset-0 opacity-15" style="background-image: radial-gradient(circle, white 1.5px, transparent 1.5px); background-size: 20px 20px;"></div>
+
+                      <!-- Badge Token ID -->
+                      <div class="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-black/30 backdrop-blur-sm border border-white/10">
+                        <span class="text-[10px] font-black text-white/90 uppercase tracking-wide">Voucher #{{ v.id }}</span>
                       </div>
 
-                      <h4 class="text-2xl font-black text-slate-800 dark:text-slate-200 mt-3">
-                        -{{ v.discountAmount | number }}đ
-                      </h4>
-                      <p class="text-xs text-slate-400 dark:text-slate-500 mt-1.5 font-semibold">
-                        Áp dụng đơn từ: {{ v.minOrderAmount | number }}đ
-                      </p>
+                      <!-- Giá trị giảm nổi bật giữa card art -->
+                      <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="text-center">
+                          <span class="text-3xl sm:text-4xl font-black text-white drop-shadow-lg">-{{ v.discountAmount | number }}đ</span>
+                        </div>
+                      </div>
+
+                      <!-- Badge loại -->
+                      <div class="absolute top-3 right-3 px-2 py-0.5 rounded-md bg-emerald-500/80 backdrop-blur-sm">
+                        <span class="text-[9px] font-black text-white uppercase tracking-wider">Giảm trực tiếp</span>
+                      </div>
                     </div>
 
-                    <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center gap-3">
-                      <div>
-                        <span class="text-[10px] font-extrabold uppercase text-slate-400">Giá quy đổi</span>
-                        <p class="text-lg font-black text-[var(--dynamic-primary)] leading-none mt-0.5">
-                          {{ v.priceInCafeToken }} <span class="text-xs font-black uppercase">$CAFE</span>
-                        </p>
-                      </div>
+                    <!-- Info Section -->
+                    <div class="p-4 flex-1 flex flex-col">
+                      <h4 class="text-sm font-extrabold text-slate-800 dark:text-white leading-snug">Voucher Giảm {{ v.discountAmount | number }}đ</h4>
+                      <p class="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium">Đơn tối thiểu {{ v.minOrderAmount | number }}đ</p>
+                    </div>
 
-                      <button 
+                    <!-- Footer: Giá + CTA -->
+                    <div class="px-4 pb-4 pt-3 border-t border-slate-100/80 dark:border-slate-800/40 flex items-center justify-between gap-2">
+                      <div>
+                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block leading-none">Giá quy đổi</span>
+                        <span class="text-sm font-black text-[var(--dynamic-primary)] leading-tight">{{ v.priceInCafeToken }} <span class="text-[9px] font-extrabold">$CAFE</span></span>
+                      </div>
+                      <button
                         (click)="exchangeVoucher(v)"
                         [disabled]="isActionPending() || parseFloat(cafeTokenBalance()) < v.priceInCafeToken"
-                        class="h-10 px-4 rounded-[15px] text-xs font-extrabold text-white bg-[var(--dynamic-primary)] hover:scale-[1.03] active:scale-[0.97] disabled:opacity-40 disabled:pointer-events-none transition duration-200 cursor-pointer shadow-sm">
-                        Đổi Voucher
+                        class="h-9 px-4 rounded-[10px] text-xs font-extrabold text-white bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] hover:scale-[1.04] active:scale-[0.97] disabled:opacity-35 disabled:pointer-events-none transition-all duration-200 cursor-pointer shadow-sm shadow-[var(--dynamic-primary)]/15">
+                        Đổi ngay
                       </button>
                     </div>
                   </div>
@@ -90,54 +174,73 @@
         </div>
       }
 
-      <!-- TAB 2: CHỢ GIAO DỊCH VOUCHER -->
+      <!-- ═══════════════════════════════════════════════════ -->
+      <!-- TAB 2: CHỢ GIAO DỊCH VOUCHER                      -->
+      <!-- ═══════════════════════════════════════════════════ -->
       @if (activeTab() === 'market') {
-        <div class="mt-8 flex-1">
+        <div class="mt-6 flex-1">
           @if (marketListings().length === 0) {
-            <div class="text-center py-16 p-6 rounded-[15px] border border-dashed border-slate-200 dark:border-slate-800">
-              <p class="text-slate-400 dark:text-slate-500 text-sm font-bold">Hiện chưa có voucher nào được rao bán trên chợ.</p>
+            <!-- Empty State -->
+            <div class="flex flex-col items-center justify-center py-20 px-6">
+              <div class="w-20 h-20 rounded-full bg-amber-500/5 dark:bg-amber-500/10 flex items-center justify-center mb-5">
+                <svg class="w-10 h-10 text-amber-400/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+              </div>
+              <h4 class="text-base font-extrabold text-slate-600 dark:text-slate-300">Chợ đang trống</h4>
+              <p class="text-sm text-slate-400 dark:text-slate-500 mt-1.5 text-center max-w-sm">Chưa có voucher nào được rao bán. Hãy treo bán voucher của bạn để khởi động chợ!</p>
             </div>
           } @else {
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               @for (l of marketListings(); track l.tokenId) {
-                <div class="p-5 rounded-[15px] border border-slate-200/60 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between">
-                  <div>
-                    <div class="flex justify-between items-start">
-                      <span class="text-[10px] font-black uppercase text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-[5px]">
-                        NFT Token ID: #{{ l.tokenId }}
-                      </span>
-                      <span class="text-[10px] font-extrabold text-slate-400 truncate max-w-[120px]" [title]="l.seller">
-                        Bán bởi: {{ l.seller.substring(0,6) }}...{{ l.seller.substring(l.seller.length-4) }}
-                      </span>
+                <div class="group rounded-[15px] border border-slate-200/50 dark:border-slate-800/50 bg-white/70 dark:bg-slate-900/60 overflow-hidden shadow-sm hover:shadow-xl hover:shadow-[var(--dynamic-primary)]/10 hover:-translate-y-1 transition-all duration-300 flex flex-col">
+
+                  <!-- NFT Generative Art Section -->
+                  <div class="relative h-44 overflow-hidden" [ngClass]="'bg-gradient-to-br ' + getCardGradient(l.tokenId)">
+                    <!-- Decorative line grid overlay -->
+                    <div class="absolute inset-0 opacity-10" style="background-image: linear-gradient(white 1px, transparent 1px), linear-gradient(90deg, white 1px, transparent 1px); background-size: 30px 30px;"></div>
+
+                    <!-- Badge Token ID -->
+                    <div class="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-black/30 backdrop-blur-sm border border-white/10">
+                      <span class="text-[10px] font-black text-white/90 uppercase tracking-wide">NFT #{{ l.tokenId }}</span>
                     </div>
 
-                    <h4 class="text-2xl font-black text-slate-800 dark:text-slate-200 mt-3">
-                      -{{ l.discountAmount | number }}đ
-                    </h4>
-                    <p class="text-xs text-slate-400 dark:text-slate-500 mt-1.5 font-semibold">
-                      Áp dụng đơn từ: {{ l.minOrderAmount | number }}đ
-                    </p>
+                    <!-- Giá trị giảm nổi bật -->
+                    <div class="absolute inset-0 flex items-center justify-center">
+                      <span class="text-3xl sm:text-4xl font-black text-white drop-shadow-lg">-{{ l.discountAmount | number }}đ</span>
+                    </div>
+
+                    <!-- Người bán -->
+                    <div class="absolute bottom-3 left-3 right-3 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-black/20 backdrop-blur-sm border border-white/10">
+                      <div class="w-4 h-4 rounded-full bg-gradient-to-br from-sky-400 to-blue-600 shrink-0"></div>
+                      <span class="text-[10px] font-bold text-white/80 truncate">{{ l.seller.substring(0,6) }}...{{ l.seller.substring(l.seller.length-4) }}</span>
+                    </div>
                   </div>
 
-                  <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center gap-3">
+                  <!-- Info Section -->
+                  <div class="p-4 flex-1 flex flex-col">
+                    <h4 class="text-sm font-extrabold text-slate-800 dark:text-white leading-snug">Voucher Giảm {{ l.discountAmount | number }}đ</h4>
+                    <p class="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium">Đơn tối thiểu {{ l.minOrderAmount | number }}đ</p>
+                  </div>
+
+                  <!-- Footer: Giá + CTA -->
+                  <div class="px-4 pb-4 pt-3 border-t border-slate-100/80 dark:border-slate-800/40 flex items-center justify-between gap-2">
                     <div>
-                      <span class="text-[10px] font-extrabold uppercase text-slate-400">Giá bán</span>
-                      <p class="text-lg font-black text-[var(--dynamic-primary)] leading-none mt-0.5">
-                        {{ l.price }} <span class="text-xs font-black uppercase">$CAFE</span>
-                      </p>
+                      <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block leading-none">Giá bán</span>
+                      <span class="text-sm font-black text-[var(--dynamic-primary)] leading-tight">{{ l.price }} <span class="text-[9px] font-extrabold">$CAFE</span></span>
                     </div>
 
                     @if (l.seller.toLowerCase() === web3Service.currentAccount().toLowerCase()) {
-                      <button 
+                      <button
                         (click)="cancelListing(l.tokenId)"
-                        class="h-10 px-4 rounded-[15px] text-xs font-extrabold text-[var(--dynamic-primary)] border border-[var(--dynamic-primary)] hover:bg-[var(--dynamic-primary)]/5 active:scale-[0.97] transition duration-200 cursor-pointer">
-                        Hủy Treo Bán
+                        class="h-9 px-4 rounded-[10px] text-xs font-extrabold text-[var(--dynamic-primary)] border border-[var(--dynamic-primary)]/30 bg-[var(--dynamic-primary)]/5 hover:bg-[var(--dynamic-primary)]/10 active:scale-[0.97] transition-all duration-200 cursor-pointer">
+                        Hủy bán
                       </button>
                     } @else {
-                      <button 
+                      <button
                         (click)="purchaseFromMarket(l)"
                         [disabled]="isActionPending() || parseFloat(cafeTokenBalance()) < l.price"
-                        class="h-10 px-4 rounded-[15px] text-xs font-extrabold text-white bg-[var(--dynamic-primary)] hover:scale-[1.03] active:scale-[0.97] disabled:opacity-40 disabled:pointer-events-none transition duration-200 cursor-pointer shadow-sm">
+                        class="h-9 px-4 rounded-[10px] text-xs font-extrabold text-white bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] hover:scale-[1.04] active:scale-[0.97] disabled:opacity-35 disabled:pointer-events-none transition-all duration-200 cursor-pointer shadow-sm shadow-[var(--dynamic-primary)]/15">
                         Mua NFT
                       </button>
                     }
@@ -149,53 +252,77 @@
         </div>
       }
 
-      <!-- TAB 3: VOUCHER CỦA TÔI -->
+      <!-- ═══════════════════════════════════════════════════ -->
+      <!-- TAB 3: VOUCHER CỦA TÔI                            -->
+      <!-- ═══════════════════════════════════════════════════ -->
       @if (activeTab() === 'my-vouchers') {
-        <div class="mt-8 flex-1">
+        <div class="mt-6 flex-1">
           @if (myNFTVouchers().length === 0) {
-            <div class="text-center py-16 p-6 rounded-[15px] border border-dashed border-slate-200 dark:border-slate-800">
-              <p class="text-slate-400 dark:text-slate-500 text-sm font-bold">Bạn chưa sở hữu voucher NFT nào trong ví.</p>
+            <!-- Empty State -->
+            <div class="flex flex-col items-center justify-center py-20 px-6">
+              <div class="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800/40 flex items-center justify-center mb-5">
+                <svg class="w-10 h-10 text-slate-300 dark:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                </svg>
+              </div>
+              <h4 class="text-base font-extrabold text-slate-600 dark:text-slate-300">Ví trống</h4>
+              <p class="text-sm text-slate-400 dark:text-slate-500 mt-1.5 text-center max-w-sm">Bạn chưa sở hữu voucher NFT nào. Hãy đổi điểm $CAFE hoặc mua trên chợ!</p>
+              <button 
+                (click)="onTabChange('shop')"
+                class="mt-5 h-10 px-6 rounded-[10px] text-xs font-extrabold text-white bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] hover:scale-[1.03] active:scale-[0.97] transition-all duration-200 cursor-pointer shadow-sm shadow-[var(--dynamic-primary)]/15">
+                Khám phá Shop
+              </button>
             </div>
           } @else {
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               @for (my of myNFTVouchers(); track my.tokenId) {
-                <div class="p-5 rounded-[15px] border border-slate-200/60 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between">
-                  <div>
-                    <div class="flex justify-between items-start">
-                      <span class="text-[10px] font-black uppercase text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-[5px]">
-                        NFT ID: #{{ my.tokenId }}
-                      </span>
-                      
-                      @if (isTokenListedByMe(my.tokenId, marketListings())) {
-                        <span class="text-[10px] font-black uppercase text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-[5px]">
-                          Đang treo bán
-                        </span>
-                      } @else {
-                        <span class="text-[10px] font-black uppercase text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-[5px]">
-                          Trong ví
-                        </span>
-                      }
+                <div class="group rounded-[15px] border border-slate-200/50 dark:border-slate-800/50 bg-white/70 dark:bg-slate-900/60 overflow-hidden shadow-sm hover:shadow-xl hover:shadow-[var(--dynamic-primary)]/10 hover:-translate-y-1 transition-all duration-300 flex flex-col">
+
+                  <!-- NFT Generative Art Section -->
+                  <div class="relative h-44 overflow-hidden" [ngClass]="'bg-gradient-to-br ' + getCardGradient(my.tokenId)">
+                    <!-- Decorative dot pattern overlay -->
+                    <div class="absolute inset-0 opacity-12" style="background-image: radial-gradient(circle, white 2px, transparent 2px); background-size: 24px 24px;"></div>
+
+                    <!-- Badge NFT ID -->
+                    <div class="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-black/30 backdrop-blur-sm border border-white/10">
+                      <span class="text-[10px] font-black text-white/90 uppercase tracking-wide">NFT #{{ my.tokenId }}</span>
                     </div>
 
-                    <h4 class="text-2xl font-black text-slate-800 dark:text-slate-200 mt-3">
-                      -{{ my.discountAmount | number }}đ
-                    </h4>
-                    <p class="text-xs text-slate-400 dark:text-slate-500 mt-1.5 font-semibold">
-                      Áp dụng đơn từ: {{ my.minOrderAmount | number }}đ
-                    </p>
+                    <!-- Giá trị giảm nổi bật -->
+                    <div class="absolute inset-0 flex items-center justify-center">
+                      <span class="text-3xl sm:text-4xl font-black text-white drop-shadow-lg">-{{ my.discountAmount | number }}đ</span>
+                    </div>
+
+                    <!-- Trạng thái badge -->
+                    @if (isTokenListedByMe(my.tokenId, marketListings())) {
+                      <div class="absolute top-3 right-3 px-2 py-0.5 rounded-md bg-amber-500/80 backdrop-blur-sm">
+                        <span class="text-[9px] font-black text-white uppercase tracking-wider">Đang bán</span>
+                      </div>
+                    } @else {
+                      <div class="absolute top-3 right-3 px-2 py-0.5 rounded-md bg-emerald-500/80 backdrop-blur-sm">
+                        <span class="text-[9px] font-black text-white uppercase tracking-wider">Trong ví</span>
+                      </div>
+                    }
                   </div>
 
-                  <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2">
+                  <!-- Info Section -->
+                  <div class="p-4 flex-1 flex flex-col">
+                    <h4 class="text-sm font-extrabold text-slate-800 dark:text-white leading-snug">Voucher Giảm {{ my.discountAmount | number }}đ</h4>
+                    <p class="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium">Đơn tối thiểu {{ my.minOrderAmount | number }}đ</p>
+                  </div>
+
+                  <!-- Footer: Actions -->
+                  <div class="px-4 pb-4 pt-3 border-t border-slate-100/80 dark:border-slate-800/40 flex justify-end gap-2">
                     @if (isTokenListedByMe(my.tokenId, marketListings())) {
-                      <button 
+                      <button
                         (click)="cancelListing(my.tokenId)"
-                        class="h-10 px-4 rounded-[15px] text-xs font-extrabold text-[var(--dynamic-primary)] border border-[var(--dynamic-primary)] hover:bg-[var(--dynamic-primary)]/5 active:scale-[0.97] transition duration-200 cursor-pointer">
+                        class="h-9 px-4 rounded-[10px] text-xs font-extrabold text-amber-600 dark:text-amber-400 border border-amber-300 dark:border-amber-700/40 bg-amber-50 dark:bg-amber-950/20 hover:bg-amber-100 dark:hover:bg-amber-950/40 active:scale-[0.97] transition-all duration-200 cursor-pointer">
                         Hủy bán
                       </button>
                     } @else {
-                      <button 
+                      <button
                         (click)="openListModal(my.tokenId)"
-                        class="h-10 px-4 rounded-[15px] text-xs font-extrabold text-white bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] hover:scale-[1.03] active:scale-[0.97] transition duration-200 cursor-pointer shadow-sm">
+                        class="h-9 px-5 rounded-[10px] text-xs font-extrabold text-white bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] hover:scale-[1.04] active:scale-[0.97] transition-all duration-200 cursor-pointer shadow-sm shadow-[var(--dynamic-primary)]/15">
                         Bán Voucher
                       </button>
                     }
@@ -213,53 +340,68 @@
     <div class="mt-8 flex-1 flex items-center justify-center">
       <div class="max-w-md w-full">
         <app-web3-connect-prompt 
-          [title]="'Chợ Voucher & Điểm thưởng'" 
+          [title]="'Chợ Voucher & NFT'"
           [description]="'Đăng nhập ví Web3 để bắt đầu quy đổi điểm $CAFE lấy voucher giảm giá hoặc giao dịch NFT với cộng đồng.'">
         </app-web3-connect-prompt>
       </div>
     </div>
   }
 
-  <!-- Modal Treo Bán NFT (Modal Glassmorphism) -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- MODAL TREO BÁN NFT (Glassmorphism Premium)        -->
+  <!-- ═══════════════════════════════════════════════════ -->
   @if (isListModalOpen()) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-sm">
-      <div class="relative w-full max-w-sm p-6 rounded-[15px] border border-white/20 dark:border-slate-800/60 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl shadow-2xl flex flex-col animate-in fade-in zoom-in-95 duration-200">
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
+      <div class="relative w-full max-w-sm rounded-[15px] border border-slate-200/40 dark:border-slate-800/60 bg-white dark:bg-slate-900 shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         
-        <h3 class="text-lg font-black text-slate-850 dark:text-slate-100 flex items-center gap-2">
-          <!-- Tag Icon SVG -->
-          <svg class="w-5 h-5 text-[var(--dynamic-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-          </svg>
-          Treo bán Voucher NFT #{{ listingTokenId() }}
-        </h3>
-        
-        <p class="text-xs text-slate-400 mt-2">NFT của bạn sẽ tạm thời được chuyển ký gửi vào hợp đồng sàn giao dịch cho đến khi giao dịch được thực hiện hoặc bạn hủy bán.</p>
+        <!-- Modal Header with mini card preview -->
+        <div class="relative h-28 overflow-hidden" [ngClass]="'bg-gradient-to-br ' + (listingTokenId() !== null ? getCardGradient(listingTokenId()!) : 'from-violet-500/80 to-fuchsia-400/60')">
+          <div class="absolute inset-0 flex items-center justify-center">
+            <span class="text-2xl font-black text-white drop-shadow-md">NFT #{{ listingTokenId() }}</span>
+          </div>
+          <!-- Close button -->
+          <button 
+            (click)="closeListModal()" 
+            class="absolute top-3 right-3 w-8 h-8 rounded-lg bg-black/20 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-black/30 transition-all cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
 
-        <!-- Nhập giá bán -->
-        <div class="mt-5 flex flex-col gap-2">
-          <label class="text-xs font-extrabold uppercase text-slate-400">Giá bán (Đơn vị: $CAFE)</label>
-          <div class="relative flex items-center">
+        <div class="p-5">
+          <h3 class="text-base font-black text-slate-800 dark:text-white flex items-center gap-2">
+            <svg class="w-4.5 h-4.5 text-[var(--dynamic-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            Treo bán Voucher
+          </h3>
+          <p class="text-xs text-slate-400 dark:text-slate-500 mt-1.5 leading-relaxed">NFT sẽ được ký gửi vào hợp đồng sàn cho đến khi giao dịch thành công hoặc bạn hủy bán.</p>
+
+          <!-- Nhập giá bán -->
+          <div class="mt-5 flex flex-col gap-2">
+            <label class="text-xs font-extrabold uppercase text-slate-400 dark:text-slate-500 tracking-wider">Giá bán ($CAFE)</label>
             <input 
               type="text" 
               [ngModel]="listingPrice()" 
               (ngModelChange)="listingPrice.set($event)"
-              placeholder="Nhập số lượng token $CAFE muốn bán" 
-              class="w-full h-12 px-4 rounded-[15px] border border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-950/20 text-slate-800 dark:text-slate-200 text-sm font-semibold focus:border-[var(--dynamic-primary)] focus:ring-1 focus:ring-[var(--dynamic-primary)] outline-none transition-all duration-200 placeholder-slate-400"
+              placeholder="Nhập số lượng $CAFE" 
+              class="w-full h-12 px-4 rounded-[12px] border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 text-slate-800 dark:text-slate-200 text-sm font-semibold focus:border-[var(--dynamic-primary)] focus:ring-1 focus:ring-[var(--dynamic-primary)] outline-none transition-all duration-200 placeholder-slate-400"
               required>
           </div>
-        </div>
 
-        <div class="mt-6 flex gap-3">
-          <button 
-            (click)="closeListModal()" 
-            class="flex-1 h-11 rounded-[15px] text-xs font-extrabold text-slate-500 border border-slate-200 bg-white/20 dark:border-slate-800/60 dark:text-slate-400 hover:bg-slate-100/10 active:scale-[0.98] transition cursor-pointer">
-            Hủy Bỏ
-          </button>
-          <button 
-            (click)="submitListing()" 
-            class="flex-1 h-11 rounded-[15px] text-xs font-extrabold text-white bg-[var(--dynamic-primary)] hover:scale-[1.02] active:scale-[0.98] transition cursor-pointer shadow-sm">
-            Treo Bán Ngay
-          </button>
+          <div class="mt-5 flex gap-3">
+            <button 
+              (click)="closeListModal()" 
+              class="flex-1 h-10 rounded-[10px] text-xs font-extrabold text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/30 hover:bg-slate-100 dark:hover:bg-slate-800/50 active:scale-[0.98] transition-all cursor-pointer">
+              Hủy
+            </button>
+            <button 
+              (click)="submitListing()" 
+              class="flex-1 h-10 rounded-[10px] text-xs font-extrabold text-white bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer shadow-sm shadow-[var(--dynamic-primary)]/15">
+              Treo bán
+            </button>
+          </div>
         </div>
       </div>
     </div>

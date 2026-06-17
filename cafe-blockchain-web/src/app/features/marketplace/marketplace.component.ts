@@ -1,10 +1,11 @@
-import { Component, inject, signal, OnInit, effect } from '@angular/core';
+import { Component, inject, signal, OnInit, effect, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StateService } from '@core/services/state.service';
 import { Web3Service } from '@core/services/web3.service';
 import { ApiService } from '@core/services/api.service';
 import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prompt/web3-connect-prompt.component';
+import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { Contract, JsonRpcProvider, formatEther } from 'ethers';
 import { CAFE_VOUCHER_NFT_ABI } from '@core/services/voucher-contract-abi';
 
@@ -14,7 +15,8 @@ import { CAFE_VOUCHER_NFT_ABI } from '@core/services/voucher-contract-abi';
   imports: [
     CommonModule,
     FormsModule,
-    Web3ConnectPromptComponent
+    Web3ConnectPromptComponent,
+    TabGroupComponent
   ],
   templateUrl: './marketplace.component.html'
 })
@@ -26,6 +28,13 @@ export class MarketplaceComponent implements OnInit {
 
   // Tab: 'shop' (Đổi Voucher) | 'market' (Chợ giao dịch) | 'my-vouchers' (Voucher của tôi)
   public readonly activeTab = signal<'shop' | 'market' | 'my-vouchers'>('shop');
+
+  // Tab options cho TabGroupComponent
+  public readonly tabOptions: TabOption[] = [
+    { value: 'shop', label: 'Đổi Voucher', icon: 'gift' },
+    { value: 'market', label: 'Chợ Giao Dịch', icon: 'ticket' },
+    { value: 'my-vouchers', label: 'Voucher của tôi', icon: 'wallet' }
+  ];
 
   // Dữ liệu từ Blockchain
   public readonly cafeTokenBalance = signal<string>('0.00');
@@ -42,6 +51,22 @@ export class MarketplaceComponent implements OnInit {
   public readonly listingTokenId = signal<number | null>(null);
   public readonly listingPrice = signal<string>('');
 
+  // Computed stats cho Hero Banner
+  public readonly totalOwnedNFTs = computed(() => this.myNFTVouchers().length);
+  public readonly totalMarketListings = computed(() => this.marketListings().length);
+
+  // Gradients palette cho NFT card art
+  private readonly CARD_GRADIENTS = [
+    'from-violet-500/80 via-fuchsia-400/60 to-pink-400/40',
+    'from-blue-500/80 via-cyan-400/60 to-teal-400/40',
+    'from-emerald-500/80 via-green-400/60 to-lime-400/40',
+    'from-amber-500/80 via-orange-400/60 to-rose-400/40',
+    'from-indigo-500/80 via-purple-400/60 to-pink-400/40',
+    'from-rose-500/80 via-pink-400/60 to-fuchsia-400/40',
+    'from-teal-500/80 via-emerald-400/60 to-cyan-400/40',
+    'from-sky-500/80 via-blue-400/60 to-indigo-400/40',
+  ];
+
   constructor() {
     // Tự động load lại dữ liệu khi kết nối ví thành công
     effect(() => {
@@ -57,6 +82,24 @@ export class MarketplaceComponent implements OnInit {
     }
   }
 
+  /**
+   * Trả về class gradient dựa trên tokenId/index để tạo hiệu ứng generative art đa dạng
+   */
+  public getCardGradient(id: number): string {
+    return this.CARD_GRADIENTS[id % this.CARD_GRADIENTS.length];
+  }
+
+  /**
+   * Trả về góc rotation cho SVG pattern dựa trên id
+   */
+  public getPatternRotation(id: number): number {
+    return (id * 37) % 360;
+  }
+
+  public onTabChange(tab: string) {
+    this.setActiveTab(tab as 'shop' | 'market' | 'my-vouchers');
+  }
+
   public async refreshAllData() {
     if (!this.web3Service.walletConnected()) return;
     this.isLoadingData.set(true);
@@ -70,6 +113,15 @@ export class MarketplaceComponent implements OnInit {
 
       // 2. Lấy dữ liệu từng tab tùy theo tab active
       await this.loadTabSpecificData();
+
+      // 3. Pre-load thêm myNFTVouchers và marketListings cho Hero Stats
+      if (this.activeTab() !== 'my-vouchers') {
+        await this.loadMyNFTVouchers();
+      }
+      if (this.activeTab() !== 'market') {
+        const list = await this.web3Service.getActiveListingsFromMarket();
+        this.marketListings.set(list);
+      }
     } catch (e) {
       console.error('Lỗi khi nạp dữ liệu Marketplace:', e);
     } finally {
