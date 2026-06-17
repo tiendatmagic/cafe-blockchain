@@ -4,12 +4,16 @@
     title="Quản lý ca làm việc & két tiền"
     description="Theo dõi lịch sử vào ca, kết ca, két tiền mặt ban đầu và đối soát chênh lệch két của nhân viên."
   >
-    <app-icon icon name="clock" class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" strokeWidth="2.5" />
+    <app-icon
+      icon
+      name="clock"
+      class="h-6.5 w-6.5 text-[var(--dynamic-primary)]"
+      strokeWidth="2.5"
+    />
   </app-page-header>
 
   @if (web3Service.walletConnected()) {
     @if (stateService.hasPermission('shifts')) {
-      
       <!-- WIDGET CA TRỰC ĐANG HOẠT ĐỘNG (Dành cho Thu ngân tự đối soát nhanh) -->
       @if (stateService.currentShift() && stateService.currentShift().id) {
         <div class="app-card border-l-4 border-l-emerald-500 overflow-hidden relative">
@@ -18,33 +22,50 @@
             <app-icon name="clock" class="w-64 h-64 text-emerald-500" strokeWidth="1" />
           </div>
 
-          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+          <div
+            class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10"
+          >
             <div class="space-y-3">
               <div class="flex items-center gap-2">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                <span
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                >
                   <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-1.5"></span>
                   Ca trực của bạn đang hoạt động
                 </span>
-                <span class="text-xs text-slate-400 font-bold font-mono">ID ca: #{{ stateService.currentShift().id }}</span>
+                <span class="text-xs text-slate-400 font-bold font-mono"
+                  >ID ca: #{{ stateService.currentShift().id }}</span
+                >
               </div>
-              
+
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-12">
                 <div>
-                  <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">Thời gian vào ca</span>
+                  <span
+                    class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1"
+                    >Thời gian vào ca</span
+                  >
                   <span class="text-sm font-extrabold text-slate-800 dark:text-white">
                     {{ formatShiftTime(stateService.currentShift().start_time) }}
                   </span>
                 </div>
                 <div>
-                  <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">Thời gian đã làm</span>
-                  <span class="text-sm font-extrabold text-purple-600 dark:text-purple-400 font-mono animate-pulse">
+                  <span
+                    class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1"
+                    >Thời gian đã làm</span
+                  >
+                  <span
+                    class="text-sm font-extrabold text-purple-600 dark:text-purple-400 font-mono animate-pulse"
+                  >
                     {{ stateService.shiftDurationString() }}
                   </span>
                 </div>
                 <div>
-                  <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">Tiền mặt két ban đầu</span>
+                  <span
+                    class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1"
+                    >Tiền mặt két ban đầu</span
+                  >
                   <span class="text-sm font-extrabold text-slate-800 dark:text-white">
-                    {{ (stateService.currentShift().initial_cash || 0) | number }}đ
+                    {{ stateService.currentShift().initial_cash || 0 | number }}đ
                   </span>
                 </div>
               </div>
@@ -65,13 +86,18 @@
         <div class="app-card border-l-4 border-l-amber-500 p-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div class="flex items-start gap-4">
-              <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+              <div
+                class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0"
+              >
                 <app-icon name="warning" class="h-6 w-6" strokeWidth="2.5" />
               </div>
               <div class="space-y-1">
-                <h4 class="text-base font-extrabold text-slate-800 dark:text-white leading-tight">Bạn chưa vào ca làm việc</h4>
+                <h4 class="text-base font-extrabold text-slate-800 dark:text-white leading-tight">
+                  Bạn chưa vào ca làm việc
+                </h4>
                 <p class="text-xs text-slate-400 max-w-xl leading-relaxed">
-                  Vui lòng khai báo số tiền mặt đầu ca để kích hoạt két tiền mặt và bắt đầu bán hàng POS.
+                  Vui lòng khai báo số tiền mặt đầu ca để kích hoạt két tiền mặt và bắt đầu bán hàng
+                  POS.
                 </p>
               </div>
             </div>
@@ -88,22 +114,31 @@
       }
 
       <!-- THANH LỌC & TIÊU ĐỀ LỊCH SỬ CA TRỰC -->
-      <div class="app-card p-4 sm:p-6">
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div class="app-card p-4 sm:p-6 flex flex-col gap-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h5 class="text-base font-extrabold text-slate-800 dark:text-white">Lịch sử ca làm việc của nhân viên</h5>
-            <p class="text-xs text-slate-400">Xem và đối soát tiền mặt đầu ca, tiền hệ thống và tiền kiểm đếm thực tế.</p>
+            <h5 class="text-base font-extrabold text-slate-800 dark:text-white">
+              Lịch sử ca làm việc của nhân viên
+            </h5>
+            <p class="text-xs text-slate-400">
+              Xem và đối soát tiền mặt đầu ca, tiền hệ thống và tiền kiểm đếm thực tế.
+            </p>
           </div>
 
           <!-- Bộ lọc thời gian -->
-          <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-end">
+          <div
+            class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-start md:justify-end"
+          >
             <app-mini-buttons
               [options]="datePresets"
               [activeValue]="activePreset()"
               (valueChange)="setDatePreset($event)"
             ></app-mini-buttons>
 
-            <div *ngIf="activePreset() === 'custom'" class="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+            <div
+              *ngIf="activePreset() === 'custom'"
+              class="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0"
+            >
               <app-custom-date-picker
                 [(selectedDate)]="tempStartDate"
                 (selectedDateChange)="onCustomDatesChange()"
@@ -116,6 +151,44 @@
                 placeholder="Đến ngày"
                 class="w-full sm:w-36"
               ></app-custom-date-picker>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="flex flex-col lg:flex-row gap-4 justify-between items-stretch lg:items-end border-t border-slate-100 dark:border-slate-800/40 pt-4"
+        >
+          <!-- Lọc trạng thái ca trực -->
+          <div class="flex flex-col gap-1.5 w-full lg:w-auto">
+            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider"
+              >Trạng thái ca trực</span
+            >
+            <app-tab-group
+              [options]="statusFilterOptions"
+              [activeValue]="shiftStatusFilter()"
+              (valueChange)="setShiftStatusFilter($event)"
+              containerClass="w-full sm:w-auto"
+            ></app-tab-group>
+          </div>
+
+          <!-- Tìm kiếm nhân viên -->
+          <div class="flex flex-col gap-1.5 w-full lg:w-80 shrink-0">
+            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider"
+              >Tìm kiếm nhân viên</span
+            >
+            <div class="relative w-full">
+              <input
+                type="text"
+                [ngModel]="shiftSearchQuery()"
+                (ngModelChange)="shiftSearchQuery.set($event); shiftPage.set(1)"
+                placeholder="Tên nhân viên hoặc địa chỉ ví..."
+                class="w-full search-input text-xs sm:text-sm h-10.5 pl-10 pr-4"
+              />
+              <app-icon
+                name="search"
+                class="absolute left-3 top-3 h-4.5 w-4.5 text-slate-400"
+                strokeWidth="2.5"
+              />
             </div>
           </div>
         </div>
@@ -140,7 +213,9 @@
         <!-- Custom Cell cho Nhân viên -->
         <ng-template appCell="staff_name" let-row>
           <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-full bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] flex items-center justify-center font-extrabold text-sm shrink-0">
+            <div
+              class="w-8 h-8 rounded-full bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] flex items-center justify-center font-extrabold text-sm shrink-0"
+            >
               {{ (row.user?.name || row.user?.wallet_address || 'U').substring(0, 1) | uppercase }}
             </div>
             <div class="flex flex-col">
@@ -172,7 +247,9 @@
 
         <!-- Custom Cell cho Mở ca -->
         <ng-template appCell="start_time" let-row>
-          <span class="text-slate-500 text-xs font-medium">{{ row.start_time | date: 'dd/MM/yyyy HH:mm' }}</span>
+          <span class="text-slate-500 text-xs font-medium">{{
+            row.start_time | date: 'dd/MM/yyyy HH:mm'
+          }}</span>
         </ng-template>
 
         <!-- Custom Cell cho Kết ca -->
@@ -190,20 +267,33 @@
         <!-- Custom Cell cho Tiền hệ thống -->
         <ng-template appCell="expected_cash" let-row>
           <span class="text-slate-500 font-bold font-mono">
-            {{ row.expected_cash !== null && row.expected_cash !== undefined ? (row.expected_cash | vnd) : '—' }}
+            {{
+              row.expected_cash !== null && row.expected_cash !== undefined
+                ? (row.expected_cash | vnd)
+                : '—'
+            }}
           </span>
         </ng-template>
 
         <!-- Custom Cell cho Tiền thực tế -->
         <ng-template appCell="actual_cash" let-row>
           <span class="font-bold text-slate-800 dark:text-white font-mono">
-            {{ row.actual_cash !== null && row.actual_cash !== undefined ? (row.actual_cash | vnd) : '—' }}
+            {{
+              row.actual_cash !== null && row.actual_cash !== undefined
+                ? (row.actual_cash | vnd)
+                : '—'
+            }}
           </span>
         </ng-template>
 
         <!-- Custom Cell cho Chênh lệch -->
         <ng-template appCell="difference" let-row>
-          @if (row.actual_cash !== null && row.expected_cash !== null && row.actual_cash !== undefined && row.expected_cash !== undefined) {
+          @if (
+            row.actual_cash !== null &&
+            row.expected_cash !== null &&
+            row.actual_cash !== undefined &&
+            row.expected_cash !== undefined
+          ) {
             @let diff = row.actual_cash - row.expected_cash;
             <span
               [class.text-emerald-500]="diff >= 0"
@@ -217,24 +307,311 @@
           }
         </ng-template>
 
-        <!-- Custom Cell cho Action (In phiếu) -->
+        <!-- Custom Cell cho Action (Chi tiết & In phiếu) -->
         <ng-template appCell="actions" let-row>
-          <button
-            type="button"
-            (click)="printShiftReceipt(row)"
-            class="btn-cancel btn-sm flex items-center justify-center gap-1 hover:scale-[1.01] whitespace-nowrap"
-            title="In phiếu ca trực"
-          >
-            <app-icon name="print" class="h-3.5 w-3.5" strokeWidth="2.5" />
-            <span>In phiếu</span>
-          </button>
+          <div class="flex items-center justify-end gap-2">
+            <button
+              type="button"
+              (click)="viewShiftDetail(row)"
+              class="btn-cancel btn-sm whitespace-nowrap"
+            >
+              Chi tiết
+            </button>
+            <button
+              type="button"
+              (click)="printShiftReceipt(row)"
+              class="btn-cancel btn-sm flex items-center justify-center gap-1 hover:scale-[1.01] whitespace-nowrap"
+              title="In phiếu ca trực"
+            >
+              <app-icon name="print" class="h-3.5 w-3.5" strokeWidth="2.5" />
+              <span>In phiếu</span>
+            </button>
+          </div>
         </ng-template>
       </app-table>
 
+      <!-- ==================== MODAL XEM CHI TIẾT CA TRỰC ==================== -->
+      @if (isShiftDetailModalOpen()) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <!-- Backdrop overlay -->
+          <div (click)="closeShiftDetail()" class="fixed inset-0 bg-black/40 animate-fade-in"></div>
+
+          <!-- Modal Content -->
+          <div
+            class="relative app-card max-w-md md:max-w-4xl w-full max-h-[90vh] md:max-h-[85vh] shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200 flex flex-col overflow-hidden"
+          >
+            <!-- Header Modal -->
+            <div
+              class="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-800 shrink-0"
+            >
+              <h4
+                class="text-base sm:text-lg font-extrabold text-slate-800 dark:text-white flex items-center gap-2"
+              >
+                <app-icon
+                  name="clock"
+                  class="h-5.5 w-5.5 text-[var(--dynamic-primary)]"
+                  strokeWidth="2.5"
+                />
+                <span>Chi tiết ca trực #{{ selectedShiftDetails()?.id }}</span>
+              </h4>
+              <button
+                (click)="closeShiftDetail()"
+                class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all"
+              >
+                <app-icon name="close" class="h-5 w-5" strokeWidth="2.5" />
+              </button>
+            </div>
+
+            <!-- Layout 2 cột -->
+            <div class="flex-1 overflow-y-auto pr-1 no-scrollbar pt-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- CỘT BÊN TRÁI: THÔNG TIN CHUNG -->
+                <div class="space-y-4 flex flex-col justify-between">
+                  <div class="space-y-4">
+                    <span
+                      class="text-xs font-black text-slate-400 uppercase tracking-wider block border-b border-slate-100 dark:border-slate-800/60 pb-2"
+                      >Thông tin ca làm việc</span
+                    >
+
+                    <div
+                      class="space-y-3.5 bg-slate-50/50 dark:bg-slate-950/20 p-4.5 rounded-[15px] border border-slate-100 dark:border-slate-900/60"
+                    >
+                      <div class="flex items-center gap-3">
+                        <div
+                          class="w-10 h-10 rounded-full bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] flex items-center justify-center font-extrabold text-sm shrink-0"
+                        >
+                          {{
+                            (
+                              selectedShiftDetails()?.user?.name ||
+                              selectedShiftDetails()?.user?.wallet_address ||
+                              'U'
+                            ).substring(0, 1) | uppercase
+                          }}
+                        </div>
+                        <div class="flex flex-col min-w-0">
+                          <span
+                            class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none"
+                            >NHÂN VIÊN</span
+                          >
+                          <span
+                            class="font-extrabold text-slate-800 dark:text-white text-sm truncate mt-1"
+                          >
+                            {{ selectedShiftDetails()?.user?.name || 'Nhân viên' }}
+                          </span>
+                          <span
+                            class="text-[10px] font-mono text-slate-400 truncate mt-0.5"
+                            [title]="selectedShiftDetails()?.user?.wallet_address"
+                          >
+                            Ví: {{ selectedShiftDetails()?.user?.wallet_address || '—' }}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div
+                        class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-200/40 dark:border-slate-800/40 text-xs"
+                      >
+                        <div>
+                          <span
+                            class="text-slate-400 font-bold block uppercase tracking-wider text-[10px]"
+                            >Trạng thái</span
+                          >
+                          <span
+                            [class.bg-emerald-500/10]="selectedShiftDetails()?.status === 'open'"
+                            [class.text-emerald-600]="selectedShiftDetails()?.status === 'open'"
+                            [class.bg-slate-100]="selectedShiftDetails()?.status === 'closed'"
+                            [class.text-slate-600]="selectedShiftDetails()?.status === 'closed'"
+                            [class.dark:bg-slate-800/40]="
+                              selectedShiftDetails()?.status === 'closed'
+                            "
+                            [class.dark:text-slate-400]="
+                              selectedShiftDetails()?.status === 'closed'
+                            "
+                            class="inline-block px-2.5 py-0.5 rounded-lg text-xs font-black mt-1"
+                          >
+                            {{ selectedShiftDetails()?.status === 'open' ? 'Đang mở' : 'Đã đóng' }}
+                          </span>
+                        </div>
+                        <div>
+                          <span
+                            class="text-slate-400 font-bold block uppercase tracking-wider text-[10px]"
+                            >Thời gian làm</span
+                          >
+                          <span
+                            class="font-extrabold text-slate-700 dark:text-slate-300 text-xs mt-1 block"
+                          >
+                            @if (selectedShiftDetails()?.status === 'open') {
+                              <span
+                                class="text-purple-600 dark:text-purple-400 font-mono animate-pulse"
+                              >
+                                {{ stateService.shiftDurationString() }}
+                              </span>
+                            } @else {
+                              <span>{{
+                                calculateShiftDuration(
+                                  selectedShiftDetails()?.start_time,
+                                  selectedShiftDetails()?.end_time
+                                )
+                              }}</span>
+                            }
+                          </span>
+                        </div>
+                      </div>
+
+                      <div
+                        class="pt-3 border-t border-slate-200/40 dark:border-slate-800/40 text-xs space-y-2.5"
+                      >
+                        <div class="flex justify-between">
+                          <span
+                            class="text-slate-400 font-bold uppercase tracking-wider text-[10px]"
+                            >Mở ca trực:</span
+                          >
+                          <span class="font-bold text-slate-700 dark:text-slate-300 font-mono">{{
+                            selectedShiftDetails()?.start_time | date: 'dd/MM/yyyy HH:mm:ss'
+                          }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span
+                            class="text-slate-400 font-bold uppercase tracking-wider text-[10px]"
+                            >Kết ca trực:</span
+                          >
+                          <span class="font-bold text-slate-700 dark:text-slate-300 font-mono">
+                            {{
+                              selectedShiftDetails()?.end_time
+                                ? (selectedShiftDetails()?.end_time | date: 'dd/MM/yyyy HH:mm:ss')
+                                : 'Chưa kết ca'
+                            }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="pt-2 flex flex-col sm:flex-row gap-2">
+                    <button
+                      type="button"
+                      (click)="printShiftReceipt(selectedShiftDetails())"
+                      class="btn-primary flex-1 flex items-center justify-center gap-1.5"
+                    >
+                      <app-icon
+                        name="print"
+                        class="h-4 w-4 shrink-0 text-white"
+                        strokeWidth="2.5"
+                      />
+                      <span>IN PHIẾU CA TRỰC</span>
+                    </button>
+                    <button
+                      type="button"
+                      (click)="closeShiftDetail()"
+                      class="flex-1 btn-cancel px-5"
+                    >
+                      Đóng cửa sổ
+                    </button>
+                  </div>
+                </div>
+
+                <!-- CỘT BÊN PHẢI: CHI TIẾT TÀI CHÍNH KÉT -->
+                <div
+                  class="flex flex-col justify-between bg-slate-50/60 dark:bg-slate-950/30 p-4.5 rounded-[15px] border border-slate-200/40 dark:border-slate-800/40 min-h-[280px]"
+                >
+                  <div class="space-y-3.5">
+                    <span
+                      class="text-xs font-bold text-slate-400 uppercase tracking-wider block border-b border-slate-200/60 dark:border-slate-800/60 pb-2"
+                      >Chi tiết đối soát két tiền</span
+                    >
+
+                    <div class="space-y-3 text-xs">
+                      <div
+                        class="flex justify-between items-center py-1 border-b border-slate-100 dark:border-slate-800/20"
+                      >
+                        <span class="text-slate-500 font-bold">Tiền mặt đầu ca</span>
+                        <span
+                          class="font-extrabold text-slate-800 dark:text-white font-mono text-sm"
+                        >
+                          {{ selectedShiftDetails()?.initial_cash || 0 | vnd }}
+                        </span>
+                      </div>
+
+                      <div
+                        class="flex justify-between items-center py-1 border-b border-slate-100 dark:border-slate-800/20"
+                      >
+                        <span class="text-slate-500 font-bold">Doanh thu hệ thống dự kiến</span>
+                        <span class="font-extrabold text-slate-600 dark:text-slate-400 font-mono">
+                          {{
+                            selectedShiftDetails()?.expected_cash !== null &&
+                            selectedShiftDetails()?.expected_cash !== undefined
+                              ? (selectedShiftDetails()?.expected_cash | vnd)
+                              : '—'
+                          }}
+                        </span>
+                      </div>
+
+                      <div
+                        class="flex justify-between items-center py-1 border-b border-slate-100 dark:border-slate-800/20"
+                      >
+                        <span class="text-slate-800 dark:text-white font-black"
+                          >Tiền mặt thực tế bàn giao</span
+                        >
+                        <span class="font-black text-slate-800 dark:text-white font-mono text-sm">
+                          {{
+                            selectedShiftDetails()?.actual_cash !== null &&
+                            selectedShiftDetails()?.actual_cash !== undefined
+                              ? (selectedShiftDetails()?.actual_cash | vnd)
+                              : '—'
+                          }}
+                        </span>
+                      </div>
+
+                      @if (
+                        selectedShiftDetails()?.actual_cash !== null &&
+                        selectedShiftDetails()?.expected_cash !== null &&
+                        selectedShiftDetails()?.actual_cash !== undefined &&
+                        selectedShiftDetails()?.expected_cash !== undefined
+                      ) {
+                        @let diff =
+                          selectedShiftDetails().actual_cash - selectedShiftDetails().expected_cash;
+                        <div
+                          class="flex justify-between items-center py-2.5 bg-white dark:bg-slate-900 px-3 rounded-xl border border-slate-100 dark:border-slate-800/40"
+                        >
+                          <span class="text-xs font-black uppercase tracking-wider text-slate-400"
+                            >CHÊNH LỆCH KÉT</span
+                          >
+                          <span
+                            [class.text-emerald-500]="diff >= 0"
+                            [class.text-rose-500]="diff < 0"
+                            class="font-black font-mono text-base"
+                          >
+                            {{ diff > 0 ? '+' : '' }}{{ diff | vnd }}
+                          </span>
+                        </div>
+                      }
+                    </div>
+                  </div>
+
+                  <div
+                    class="pt-3 border-t border-slate-200/50 dark:border-slate-800/60 mt-4 shrink-0 space-y-1.5"
+                  >
+                    <span
+                      class="text-[10px] font-black text-slate-400 uppercase tracking-wider block"
+                      >Ghi chú giải trình của nhân viên</span
+                    >
+                    <p
+                      class="text-xs text-slate-600 dark:text-slate-400 font-bold bg-white dark:bg-slate-900/60 p-3 rounded-xl border border-slate-100 dark:border-slate-800/30 min-h-[50px] italic whitespace-pre-wrap"
+                    >
+                      {{ selectedShiftDetails()?.note || 'Không có ghi chú giải trình.' }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
     } @else {
       <app-access-restricted pageName="Ca trực"></app-access-restricted>
     }
   } @else {
-    <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý ca làm việc'"></app-web3-connect-prompt>
+    <app-web3-connect-prompt
+      [title]="'Kết nối ví Web3 để quản lý ca làm việc'"
+    ></app-web3-connect-prompt>
   }
 </div>

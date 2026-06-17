@@ -9,6 +9,7 @@ import { AccessRestrictedComponent } from '@shared/components/access-restricted/
 import { MiniButtonsComponent, DATE_FILTER_OPTIONS } from '@shared/components/mini-buttons/mini-buttons.component';
 import { CustomDatePickerComponent } from '@shared/components/custom-date-picker/custom-date-picker.component';
 import { TableComponent, TableColumn, TableCellDirective } from '@shared/components/table/table.component';
+import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { ShortAddressPipe } from '@shared/pipes/short-address.pipe';
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
 
@@ -26,6 +27,7 @@ import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
     CustomDatePickerComponent,
     TableComponent,
     TableCellDirective,
+    TabGroupComponent,
     ShortAddressPipe,
     VNDCurrencyPipe
   ],
@@ -59,6 +61,20 @@ export class ShiftsComponent implements OnInit {
   public readonly shiftSortDesc = signal<boolean>(true);
   public readonly shiftPage = signal<number>(1);
   public readonly shiftLimit = 10;
+
+  // Tìm kiếm & Lọc trạng thái ca trực
+  public readonly shiftSearchQuery = signal<string>('');
+  public readonly shiftStatusFilter = signal<string>('all');
+
+  public readonly statusFilterOptions: TabOption[] = [
+    { value: 'all', label: 'Tất cả' },
+    { value: 'open', label: 'Đang mở' },
+    { value: 'closed', label: 'Đã đóng' }
+  ];
+
+  // Chi tiết ca trực (Modal)
+  public readonly selectedShiftDetails = signal<any>(null);
+  public readonly isShiftDetailModalOpen = signal<boolean>(false);
 
   public get web3Service() {
     return this.stateService.web3Service;
@@ -124,20 +140,41 @@ export class ShiftsComponent implements OnInit {
     }
   }
 
-  // Lọc cục bộ theo ngày
+  // Lọc cục bộ theo ngày, từ khóa tìm kiếm nhân viên và trạng thái ca
   public readonly filteredShifts = computed(() => {
     const list = this.stateService.shifts() || [];
     const start = this.reportsStartDate();
     const end = this.reportsEndDate();
-    if (!start || !end) return list;
+    const search = this.shiftSearchQuery().trim().toLowerCase();
+    const status = this.shiftStatusFilter();
 
-    const startDate = new Date(start + 'T00:00:00');
-    const endDate = new Date(end + 'T23:59:59');
+    let result = list;
 
-    return list.filter(shift => {
-      const shiftDate = new Date(shift.start_time);
-      return shiftDate >= startDate && shiftDate <= endDate;
-    });
+    // 1. Lọc theo ngày
+    if (start && end) {
+      const startDate = new Date(start + 'T00:00:00');
+      const endDate = new Date(end + 'T23:59:59');
+      result = result.filter(shift => {
+        const shiftDate = new Date(shift.start_time);
+        return shiftDate >= startDate && shiftDate <= endDate;
+      });
+    }
+
+    // 2. Lọc theo từ khóa tìm kiếm (tên nhân viên hoặc địa chỉ ví)
+    if (search) {
+      result = result.filter(shift => {
+        const name = (shift.user?.name || '').toLowerCase();
+        const address = (shift.user?.wallet_address || '').toLowerCase();
+        return name.includes(search) || address.includes(search);
+      });
+    }
+
+    // 3. Lọc theo trạng thái ca trực
+    if (status !== 'all') {
+      result = result.filter(shift => shift.status === status);
+    }
+
+    return result;
   });
 
   // Sắp xếp danh sách
@@ -300,5 +337,40 @@ export class ShiftsComponent implements OnInit {
     doc.open();
     doc.write(html);
     doc.close();
+  }
+
+  // Lọc theo trạng thái ca trực
+  public setShiftStatusFilter(status: string) {
+    this.shiftStatusFilter.set(status);
+    this.shiftPage.set(1);
+  }
+
+  // Mở modal xem chi tiết ca trực
+  public viewShiftDetail(shift: any) {
+    this.selectedShiftDetails.set(shift);
+    this.isShiftDetailModalOpen.set(true);
+  }
+
+  // Đóng modal xem chi tiết ca trực
+  public closeShiftDetail() {
+    this.isShiftDetailModalOpen.set(false);
+    this.selectedShiftDetails.set(null);
+  }
+
+  // Tính thời lượng làm việc (dành cho ca đã kết thúc)
+  public calculateShiftDuration(startIso: string, endIso: string | null | undefined): string {
+    if (!startIso || !endIso) return '—';
+    const start = new Date(startIso);
+    const end = new Date(endIso);
+    const diffMs = end.getTime() - start.getTime();
+    if (diffMs <= 0) return '00:00:00';
+
+    const diffSecs = Math.floor(diffMs / 1000);
+    const hours = Math.floor(diffSecs / 3600);
+    const minutes = Math.floor((diffSecs % 3600) / 60);
+    const seconds = diffSecs % 60;
+
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
   }
 }
