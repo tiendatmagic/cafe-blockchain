@@ -485,19 +485,67 @@
 
                 <!-- CỘT BÊN PHẢI: CHI TIẾT TÀI CHÍNH KÉT -->
                 <div
-                  class="flex flex-col justify-between bg-slate-50/60 dark:bg-slate-950/30 p-4.5 rounded-[15px] border border-slate-200/40 dark:border-slate-800/40 min-h-[280px]"
+                  class="flex flex-col justify-between bg-slate-50/60 dark:bg-slate-950/30 p-4.5 rounded-[15px] border border-slate-200/40 dark:border-slate-800/40 min-h-[280px] space-y-4"
                 >
+                  <!-- Doanh thu theo phương thức thanh toán -->
+                  <div class="space-y-3">
+                    <span
+                      class="text-xs font-bold text-slate-400 uppercase tracking-wider block border-b border-slate-200/60 dark:border-slate-800/60 pb-2"
+                      >Doanh thu theo phương thức</span
+                    >
+                    <div
+                      class="divide-y divide-slate-100 dark:divide-slate-800/50 border border-slate-200/40 dark:border-slate-800/40 rounded-[15px] overflow-hidden bg-white dark:bg-slate-900 text-xs"
+                    >
+                      <div class="flex justify-between items-center p-2.5">
+                        <span class="text-slate-500 dark:text-slate-400 font-bold flex items-center gap-1.5">
+                          <app-icon name="financials" class="h-3.5 w-3.5 text-slate-400" />
+                          Tiền mặt
+                        </span>
+                        <span class="font-extrabold text-slate-800 dark:text-white font-mono">
+                          {{ (selectedShiftDetails()?.payment_revenues?.cash || 0) | vnd }}
+                        </span>
+                      </div>
+                      <div class="flex justify-between items-center p-2.5">
+                        <span class="text-slate-500 dark:text-slate-400 font-bold flex items-center gap-1.5">
+                          <app-icon name="building" class="h-3.5 w-3.5 text-slate-400" />
+                          Chuyển khoản
+                        </span>
+                        <span class="font-extrabold text-slate-800 dark:text-white font-mono">
+                          {{ (selectedShiftDetails()?.payment_revenues?.bank_transfer || 0) | vnd }}
+                        </span>
+                      </div>
+                      <div class="flex justify-between items-center p-2.5">
+                        <span class="text-slate-500 dark:text-slate-400 font-bold flex items-center gap-1.5">
+                          <app-icon name="blockchain" class="h-3.5 w-3.5 text-slate-400" />
+                          Crypto
+                        </span>
+                        <span class="font-extrabold text-slate-800 dark:text-white font-mono">
+                          {{ (selectedShiftDetails()?.payment_revenues?.crypto || 0) | vnd }}
+                        </span>
+                      </div>
+                      <div class="flex justify-between items-center p-2.5">
+                        <span class="text-slate-500 dark:text-slate-400 font-bold flex items-center gap-1.5">
+                          <app-icon name="wallet" class="h-3.5 w-3.5 text-slate-400" />
+                          Ví điện tử
+                        </span>
+                        <span class="font-extrabold text-slate-800 dark:text-white font-mono">
+                          {{ (selectedShiftDetails()?.payment_revenues?.e_wallet || 0) | vnd }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
                   <div class="space-y-3.5">
                     <span
                       class="text-xs font-bold text-slate-400 uppercase tracking-wider block border-b border-slate-200/60 dark:border-slate-800/60 pb-2"
-                      >Chi tiết đối soát két tiền</span
+                      >Đối soát két tiền mặt vật lý</span
                     >
 
                     <div class="space-y-3 text-xs">
                       <div
                         class="flex justify-between items-center py-1 border-b border-slate-100 dark:border-slate-800/20"
                       >
-                        <span class="text-slate-500 font-bold">Tiền mặt đầu ca</span>
+                        <span class="text-slate-500 font-bold">Tiền mặt ban đầu</span>
                         <span
                           class="font-extrabold text-slate-800 dark:text-white font-mono text-sm"
                         >
@@ -508,8 +556,26 @@
                       <div
                         class="flex justify-between items-center py-1 border-b border-slate-100 dark:border-slate-800/20"
                       >
-                        <span class="text-slate-500 font-bold">Doanh thu hệ thống dự kiến</span>
-                        <span class="font-extrabold text-slate-600 dark:text-slate-400 font-mono">
+                        <span class="text-slate-500 font-bold">Doanh thu tiền mặt</span>
+                        <span class="font-extrabold text-slate-650 dark:text-slate-400 font-mono">
+                          +{{ (selectedShiftDetails()?.total_fiat_revenue || selectedShiftDetails()?.payment_revenues?.cash || 0) | vnd }}
+                        </span>
+                      </div>
+
+                      <div
+                        class="flex justify-between items-center py-1 border-b border-slate-100 dark:border-slate-800/20"
+                      >
+                        <span class="text-slate-500 font-bold">Chi phí tiền mặt (từ két)</span>
+                        <span class="font-extrabold text-rose-500 font-mono">
+                          -{{ (selectedShiftDetails()?.total_fiat_expenses || selectedShiftDetails()?.payment_expenses?.cash || 0) | vnd }}
+                        </span>
+                      </div>
+
+                      <div
+                        class="flex justify-between items-center py-1 border-b border-slate-100 dark:border-slate-800/20"
+                      >
+                        <span class="text-slate-600 dark:text-slate-400 font-bold">Tiền mặt lý thuyết (hệ thống tính)</span>
+                        <span class="font-extrabold text-[var(--dynamic-primary)] font-mono text-sm">
                           {{
                             selectedShiftDetails()?.expected_cash !== null &&
                             selectedShiftDetails()?.expected_cash !== undefined

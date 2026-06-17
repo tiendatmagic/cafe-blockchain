@@ -832,17 +832,15 @@
               >{{ stateService.shiftCryptoRevenue() | number }}đ</span
             >
           </div>
-          @if (stateService.shiftEWalletRevenue() > 0) {
-            <div class="flex justify-between items-center p-3 text-sm">
-              <span class="text-slate-500 dark:text-slate-400 font-bold flex items-center gap-1.5">
-                <app-icon name="wallet" class="h-4 w-4 text-slate-400" />
-                Ví điện tử
-              </span>
-              <span class="font-extrabold text-slate-800 dark:text-white"
-                >{{ stateService.shiftEWalletRevenue() | number }}đ</span
-              >
-            </div>
-          }
+          <div class="flex justify-between items-center p-3 text-sm">
+            <span class="text-slate-500 dark:text-slate-400 font-bold flex items-center gap-1.5">
+              <app-icon name="wallet" class="h-4 w-4 text-slate-400" />
+              Ví điện tử
+            </span>
+            <span class="font-extrabold text-slate-800 dark:text-white"
+              >{{ stateService.shiftEWalletRevenue() | number }}đ</span
+            >
+          </div>
         </div>
       </div>
 

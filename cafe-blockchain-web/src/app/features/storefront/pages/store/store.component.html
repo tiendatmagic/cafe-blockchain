@@ -741,34 +741,70 @@
                 class="text-xs sm:text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-wide block"
                 >Hình thức thanh toán</label
               >
-              <div class="grid grid-cols-2 gap-3">
+              <div
+                [class]="
+                  storeSettings()?.show_crypto_payment === '1'
+                    ? 'grid grid-cols-2 sm:grid-cols-4 gap-3'
+                    : 'grid grid-cols-3 gap-3'
+                "
+              >
                 <!-- COD -->
                 <div
                   (click)="orderForm.update((f) => ({ ...f, payment_method: 'cash' }))"
-                  class="p-4.5 rounded-2xl border-2 flex flex-col items-center justify-center cursor-pointer transition-all"
+                  class="p-3.5 rounded-2xl border-2 flex flex-col items-center justify-center cursor-pointer transition-all text-center h-24"
                   [ngClass]="
                     orderForm().payment_method === 'cash'
                       ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 text-[var(--dynamic-primary)] font-black'
                       : 'border-slate-200 dark:border-slate-800 text-slate-500 font-extrabold'
                   "
                 >
-                  <app-icon name="cash" class="w-7 h-7" [strokeWidth]="2"></app-icon>
-                  <span class="text-xs sm:text-sm uppercase mt-1.5">Tiền mặt (COD)</span>
+                  <app-icon name="cash" class="w-6 h-6 shrink-0" [strokeWidth]="2"></app-icon>
+                  <span class="text-[11px] sm:text-xs uppercase mt-1.5 leading-tight">Tiền mặt (COD)</span>
                 </div>
 
                 <!-- Chuyển khoản -->
                 <div
                   (click)="orderForm.update((f) => ({ ...f, payment_method: 'bank_transfer' }))"
-                  class="p-4.5 rounded-2xl border-2 flex flex-col items-center justify-center cursor-pointer transition-all"
+                  class="p-3.5 rounded-2xl border-2 flex flex-col items-center justify-center cursor-pointer transition-all text-center h-24"
                   [ngClass]="
                     orderForm().payment_method === 'bank_transfer'
                       ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 text-[var(--dynamic-primary)] font-black'
                       : 'border-slate-200 dark:border-slate-800 text-slate-500 font-extrabold'
                   "
                 >
-                  <app-icon name="bank" class="w-7 h-7" [strokeWidth]="2"></app-icon>
-                  <span class="text-xs sm:text-sm uppercase mt-1.5">Chuyển khoản</span>
+                  <app-icon name="bank" class="w-6 h-6 shrink-0" [strokeWidth]="2"></app-icon>
+                  <span class="text-[11px] sm:text-xs uppercase mt-1.5 leading-tight">Chuyển khoản</span>
                 </div>
+
+                <!-- Ví điện tử -->
+                <div
+                  (click)="orderForm.update((f) => ({ ...f, payment_method: 'e_wallet' }))"
+                  class="p-3.5 rounded-2xl border-2 flex flex-col items-center justify-center cursor-pointer transition-all text-center h-24"
+                  [ngClass]="
+                    orderForm().payment_method === 'e_wallet'
+                      ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 text-[var(--dynamic-primary)] font-black'
+                      : 'border-slate-200 dark:border-slate-800 text-slate-500 font-extrabold'
+                  "
+                >
+                  <app-icon name="wallet" class="w-6 h-6 shrink-0" [strokeWidth]="2"></app-icon>
+                  <span class="text-[11px] sm:text-xs uppercase mt-1.5 leading-tight">Ví điện tử</span>
+                </div>
+
+                <!-- Crypto (nếu được bật) -->
+                @if (storeSettings()?.show_crypto_payment === '1') {
+                  <div
+                    (click)="orderForm.update((f) => ({ ...f, payment_method: 'crypto' }))"
+                    class="p-3.5 rounded-2xl border-2 flex flex-col items-center justify-center cursor-pointer transition-all text-center h-24"
+                    [ngClass]="
+                      orderForm().payment_method === 'crypto'
+                        ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 text-[var(--dynamic-primary)] font-black'
+                        : 'border-slate-200 dark:border-slate-800 text-slate-500 font-extrabold'
+                    "
+                  >
+                    <app-icon name="blockchain" class="w-6 h-6 shrink-0" [strokeWidth]="2"></app-icon>
+                    <span class="text-[11px] sm:text-xs uppercase mt-1.5 leading-tight">Crypto</span>
+                  </div>
+                }
               </div>
             </div>
           </div>
