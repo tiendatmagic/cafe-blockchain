@@ -8,11 +8,12 @@ import { ApiService } from '@core/services/api.service';
 import { SidebarComponent } from '@shared/layout/sidebar/sidebar.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { MaintenanceComponent } from '@shared/components/maintenance/maintenance.component';
+import { ModalComponent } from '@shared/components/modal/modal.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, SidebarComponent, IconComponent, MaintenanceComponent],
+  imports: [CommonModule, FormsModule, RouterModule, SidebarComponent, IconComponent, MaintenanceComponent, ModalComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -24,6 +25,9 @@ export class App implements OnInit, OnDestroy {
 
   public readonly isPriceDropdownOpen = signal<boolean>(false);
   public readonly isChainDropdownOpen = signal<boolean>(false);
+  public readonly isShiftDropdownOpen = signal<boolean>(false);
+
+
   public readonly currentUrl = signal<string>('');
   public get usdtPriceVND() { return this.stateService.usdtPriceVND; }
   private readonly router = inject(Router);
@@ -41,6 +45,9 @@ export class App implements OnInit, OnDestroy {
     }
     if (!this.elementRef.nativeElement.querySelector('#chain-dropdown-container')?.contains(target)) {
       this.isChainDropdownOpen.set(false);
+    }
+    if (!this.elementRef.nativeElement.querySelector('#shift-dropdown-container')?.contains(target)) {
+      this.isShiftDropdownOpen.set(false);
     }
   }
 
@@ -406,5 +413,22 @@ export class App implements OnInit, OnDestroy {
       default:
         return 'bg-slate-400';
     }
+  }
+
+  // --- Quản lý ca trực ---
+  public openStartShiftModal() {
+    this.isShiftDropdownOpen.set(false);
+    this.stateService.openStartShiftModal();
+  }
+
+  public openCloseShiftModal() {
+    this.isShiftDropdownOpen.set(false);
+    this.stateService.openCloseShiftModal();
+  }
+
+  public formatShiftTime(isoStr: string): string {
+    if (!isoStr) return '';
+    const d = new Date(isoStr);
+    return d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) + ' ' + d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
   }
 }

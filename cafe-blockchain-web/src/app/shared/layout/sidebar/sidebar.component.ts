@@ -1,122 +1,28 @@
-import { Component, inject, signal, HostListener, ElementRef, computed } from '@angular/core';
+import { Component, inject, signal, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { StateService } from '@core/services/state.service';
-import { ApiService } from '@core/services/api.service';
 import { ThemeToggleComponent } from '@shared/components/theme-toggle/theme-toggle.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
-import { ModalComponent } from '@shared/components/modal/modal.component';
-import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule, ThemeToggleComponent, IconComponent, ModalComponent, FormsModule],
+  imports: [CommonModule, RouterModule, ThemeToggleComponent, IconComponent],
   templateUrl: './sidebar.component.html'
 })
 export class SidebarComponent {
   public readonly stateService = inject(StateService);
-  private readonly apiService = inject(ApiService);
   private readonly elementRef = inject(ElementRef);
 
   public readonly isChainDropdownOpen = signal<boolean>(false);
 
-  // --- Quản lý ca trực (Kết ca) ---
-  public readonly isCloseShiftModalOpen = signal<boolean>(false);
-  public readonly isShiftSummaryLoading = signal<boolean>(false);
-
-  // Dữ liệu summary ca lấy trực tiếp từ API backend (real-time)
-  public readonly shiftSummary = signal<any>(null);
-
-  public readonly actualCashInput = signal<number>(0);
-  public readonly actualCashFormatted = computed(() => {
-    const val = this.actualCashInput();
-    return val > 0 ? val.toLocaleString('en-US') : '';
-  });
-  public readonly closeShiftNote = signal<string>('');
-
-  // --- Quản lý ca trực (Bắt đầu ca) ---
-  public readonly isStartShiftModalOpen = signal<boolean>(false);
-  public readonly initialCashInput = signal<number>(0);
-  public readonly initialCashFormatted = computed(() => {
-    const val = this.initialCashInput();
-    return val > 0 ? val.toLocaleString('en-US') : '';
-  });
-
-  public readonly currentShift = computed(() => this.stateService.currentShift());
-
-  // Getters thuận tiện từ summary (backend trả về)
-  public readonly shiftFiatRevenue = computed(() => this.shiftSummary()?.payment_revenues?.cash ?? 0);
-  public readonly shiftBankTransferRevenue = computed(() => this.shiftSummary()?.payment_revenues?.bank_transfer ?? 0);
-  public readonly shiftCryptoRevenue = computed(() => this.shiftSummary()?.payment_revenues?.crypto ?? 0);
-  public readonly shiftEWalletRevenue = computed(() => this.shiftSummary()?.payment_revenues?.e_wallet ?? 0);
-  public readonly shiftFiatExpenses = computed(() => this.shiftSummary()?.payment_expenses?.cash ?? 0);
-  public readonly shiftExpectedCash = computed(() => this.shiftSummary()?.expected_cash ?? 0);
-
-  public onActualCashInput(event: any) {
-    const inputVal = event.target.value;
-    const cleanVal = inputVal.replace(/[^0-9]/g, '');
-    const numVal = Number(cleanVal) || 0;
-    this.actualCashInput.set(numVal);
-    event.target.value = numVal > 0 ? numVal.toLocaleString('en-US') : '';
-  }
-
-  public onInitialCashInput(event: any) {
-    const inputVal = event.target.value;
-    const cleanVal = inputVal.replace(/[^0-9]/g, '');
-    const numVal = Number(cleanVal) || 0;
-    this.initialCashInput.set(numVal);
-    event.target.value = numVal > 0 ? numVal.toLocaleString('en-US') : '';
-  }
-
-  public openStartShiftModal() {
-    this.initialCashInput.set(0);
-    this.isStartShiftModalOpen.set(true);
-  }
-
-  public confirmStartShift() {
-    if (this.stateService.isLoading()) return;
-    const cash = this.initialCashInput();
-    this.stateService.openShift(cash, () => {
-      this.isStartShiftModalOpen.set(false);
-      this.initialCashInput.set(0);
-    });
-  }
-
-  public openCloseShiftModal() {
-    this.isShiftSummaryLoading.set(true);
-    this.closeShiftNote.set('');
-    this.isCloseShiftModalOpen.set(true);
-
-    // Gọi API lấy thống kê real-time từ backend thay vì tính từ frontend state
-    this.apiService.getShiftSummary().subscribe({
-      next: (res) => {
-        this.shiftSummary.set(res);
-        const expected = res?.expected_cash ?? 0;
-        this.actualCashInput.set(expected);
-        this.isShiftSummaryLoading.set(false);
-      },
-      error: (err) => {
-        console.error('Lỗi tải thống kê ca trực:', err);
-        this.isShiftSummaryLoading.set(false);
-      }
-    });
-  }
-
-  public confirmCloseShift() {
-    if (this.stateService.isLoading()) return;
-    const actual = this.actualCashInput();
-    const note = this.closeShiftNote();
-    this.stateService.closeShift(actual, note, () => {
-      this.isCloseShiftModalOpen.set(false);
-      this.shiftSummary.set(null);
-    });
-  }
-
-  public formatShiftTime(isoStr: string): string {
-    if (!isoStr) return '';
-    const d = new Date(isoStr);
-    return d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) + ' ' + d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+  public handleMobileShiftClick() {
+    if (this.stateService.currentShift() && this.stateService.currentShift().id) {
+      this.stateService.openCloseShiftModal();
+    } else {
+      this.stateService.openStartShiftModal();
+    }
   }
 
   public get isMobileMenuOpen() {
