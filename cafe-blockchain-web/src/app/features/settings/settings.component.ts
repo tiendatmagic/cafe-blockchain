@@ -923,8 +923,15 @@ export class SettingsComponent implements OnInit {
 
   public readonly isDeletePaymentConfirmOpen = signal<boolean>(false);
   public readonly deletingPaymentMethodId = signal<number | null>(null);
+  private lastPaymentMethodsLoadTimestamp = 0;
 
-  public loadPaymentMethods() {
+  public loadPaymentMethods(force = false) {
+    const now = Date.now();
+    // Cache 5 phút cho việc chuyển tab, không tải lại nếu dữ liệu đã có sẵn và chưa hết hạn
+    if (!force && this.paymentMethodsList().length > 0 && (now - this.lastPaymentMethodsLoadTimestamp < 300000)) {
+      return;
+    }
+
     this.isPaymentMethodsLoading.set(true);
     this.apiService.getPaymentMethods({
       page: this.paymentMethodsPage(),
@@ -935,6 +942,7 @@ export class SettingsComponent implements OnInit {
         if (res) {
           this.paymentMethodsList.set(res.data || []);
           this.paymentMethodsTotal.set(res.total || 0);
+          this.lastPaymentMethodsLoadTimestamp = now;
         }
         this.isPaymentMethodsLoading.set(false);
       },
@@ -947,13 +955,13 @@ export class SettingsComponent implements OnInit {
 
   public onPaymentSearchChange() {
     this.paymentMethodsPage.set(1);
-    this.loadPaymentMethods();
+    this.loadPaymentMethods(true);
   }
 
   public setPaymentMethodsPage(page: number) {
     if (page < 1 || page > this.getPaymentTotalPages()) return;
     this.paymentMethodsPage.set(page);
-    this.loadPaymentMethods();
+    this.loadPaymentMethods(true);
   }
 
   public getPaymentTotalPages(): number {
@@ -1073,7 +1081,7 @@ export class SettingsComponent implements OnInit {
         );
         this.isPaymentFormOpen.set(false);
         this.isPaymentActionLoading.set(false);
-        this.loadPaymentMethods();
+        this.loadPaymentMethods(true);
       },
       error: (err) => {
         this.stateService.showToast(err.error?.message || 'Có lỗi xảy ra khi lưu!', 'error');
@@ -1100,7 +1108,7 @@ export class SettingsComponent implements OnInit {
         this.isDeletePaymentConfirmOpen.set(false);
         this.deletingPaymentMethodId.set(null);
         this.isPaymentActionLoading.set(false);
-        this.loadPaymentMethods();
+        this.loadPaymentMethods(true);
       },
       error: () => {
         this.stateService.showToast('Xóa phương thức thanh toán thất bại!', 'error');
@@ -1114,10 +1122,32 @@ export class SettingsComponent implements OnInit {
     this.isQrModalOpen.set(true);
   }
 
+  public downloadQrCode(item: any) {
+    if (!item) return;
+    const url = this.getQrCodeUrl(item);
+    const filename = `qrcode-${item.bank_code || item.name}-${item.account_number}.jpg`;
+    
+    fetch(url)
+      .then(response => response.blob())
+      .then(blob => {
+        const blobUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(blobUrl);
+      })
+      .catch(() => {
+        window.open(url, '_blank');
+      });
+  }
+
   public getQrCodeUrl(item: any): string {
     if (!item) return '';
     if (item.type === 'bank') {
-      return `https://img.vietqr.io/image/${item.bank_code}-${item.account_number}-compact2.png?accountName=${encodeURIComponent(item.account_holder)}`;
+      return `https://img.vietqr.io/image/${item.bank_code}-${item.account_number}-compact.jpg?accountName=${encodeURIComponent(item.account_holder)}`;
     } else if (item.type === 'wallet' && item.name.toLowerCase() === 'momo') {
       return `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https%3A%2F%2Fnhantien.momo.vn%2F${item.account_number}`;
     } else {

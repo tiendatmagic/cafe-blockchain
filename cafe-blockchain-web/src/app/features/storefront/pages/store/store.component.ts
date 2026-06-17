@@ -590,10 +590,32 @@ export class StoreComponent implements OnInit {
     return this.paymentMethods().find(pm => pm.id === id);
   }
 
+  public downloadQrCode(item: any) {
+    if (!item) return;
+    const url = this.getStoreQrUrl(item);
+    const filename = `qrcode-${item.bank_code || item.name}-${item.account_number}.jpg`;
+    
+    fetch(url)
+      .then(response => response.blob())
+      .then(blob => {
+        const blobUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(blobUrl);
+      })
+      .catch(() => {
+        window.open(url, '_blank');
+      });
+  }
+
   public getStoreQrUrl(item: any): string {
     if (!item) return '';
     if (item.type === 'bank') {
-      return `https://img.vietqr.io/image/${item.bank_code}-${item.account_number}-compact2.png?accountName=${encodeURIComponent(item.account_holder)}`;
+      return `https://img.vietqr.io/image/${item.bank_code}-${item.account_number}-compact.jpg?accountName=${encodeURIComponent(item.account_holder)}`;
     } else if (item.type === 'wallet' && item.name.toLowerCase() === 'momo') {
       return `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https%3A%2F%2Fnhantien.momo.vn%2F${item.account_number}`;
     } else {
