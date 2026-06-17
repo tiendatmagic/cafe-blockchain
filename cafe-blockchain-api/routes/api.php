@@ -34,6 +34,7 @@ Route::post('/vouchers/submit-signature', [\App\Http\Controllers\VoucherControll
 Route::get('/settings/public', [SettingController::class, 'getPublicSettings']);
 Route::get('/store/{slug}', [SettingController::class, 'getStoreDetailsBySlug']);
 Route::post('/store/{slug}/orders', [SettingController::class, 'createStoreOrderBySlug']);
+Route::post('/orders/claim-points', [\App\Http\Controllers\ClaimController::class, 'claimPoints']);
 
 // Protected routes (require valid Sanctum token)
 Route::middleware('auth:sanctum')->group(function () {

@@ -1,0 +1,310 @@
+<!-- ==================== MODAL KẾT THÚC CA LÀM VIỆC ==================== -->
+<app-modal
+  [isOpen]="stateService.isCloseShiftModalOpen()"
+  title="Kết thúc ca làm việc & Đối soát két"
+  (close)="stateService.isCloseShiftModalOpen.set(false)"
+  size="md"
+>
+  <div class="space-y-5">
+    <!-- Skeleton Loading khi đang tải dữ liệu từ API -->
+    @if (stateService.isShiftSummaryLoading()) {
+      <div class="space-y-4 animate-pulse">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="h-14 bg-slate-100 dark:bg-slate-800 rounded-[15px]"></div>
+          <div class="h-14 bg-slate-100 dark:bg-slate-800 rounded-[15px]"></div>
+        </div>
+        <div class="h-32 bg-slate-100 dark:bg-slate-800 rounded-[15px]"></div>
+        <div class="h-28 bg-slate-100 dark:bg-slate-800 rounded-[15px]"></div>
+        <div class="h-12 bg-slate-100 dark:bg-slate-800 rounded-[15px]"></div>
+      </div>
+    } @else {
+      <!-- Thông tin ca trực cơ bản -->
+      <div
+        class="grid grid-cols-2 gap-4 p-4.5 bg-slate-50 dark:bg-slate-950 rounded-[15px] border border-slate-200/40 dark:border-slate-800/40 text-xs"
+      >
+        <div class="space-y-1">
+          <span class="text-slate-400 font-bold block">Thời gian vào ca</span>
+          <span class="font-extrabold text-slate-800 dark:text-white">{{
+            stateService.currentShift()
+              ? formatShiftTime(stateService.currentShift().start_time)
+              : ''
+          }}</span>
+        </div>
+        <div class="space-y-1">
+          <span class="text-slate-400 font-bold block">Tiền két ban đầu</span>
+          <span class="font-extrabold text-slate-800 dark:text-white"
+            >{{ stateService.currentShift()?.initial_cash || 0 | number }}đ</span
+          >
+        </div>
+      </div>
+
+      <!-- Chi tiết doanh thu tạm tính -->
+      <div class="space-y-3">
+        <h5 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+          Doanh thu tạm tính trong ca
+        </h5>
+        <div
+          class="divide-y divide-slate-100 dark:divide-slate-800/50 border border-slate-200/40 dark:border-slate-800/40 rounded-[15px] overflow-hidden bg-white dark:bg-slate-900"
+        >
+          <div class="flex justify-between items-center p-3 text-sm">
+            <span class="text-slate-500 dark:text-slate-400 font-bold flex items-center gap-1.5">
+              <app-icon name="financials" class="h-4 w-4 text-slate-400" />
+              Tiền mặt
+            </span>
+            <span class="font-extrabold text-slate-800 dark:text-white"
+              >{{ stateService.shiftFiatRevenue() | number }}đ</span
+            >
+          </div>
+          <div class="flex justify-between items-center p-3 text-sm">
+            <span class="text-slate-500 dark:text-slate-400 font-bold flex items-center gap-1.5">
+              <app-icon name="building" class="h-4 w-4 text-slate-400" />
+              Chuyển khoản
+            </span>
+            <span class="font-extrabold text-slate-800 dark:text-white"
+              >{{ stateService.shiftBankTransferRevenue() | number }}đ</span
+            >
+          </div>
+          <div class="flex justify-between items-center p-3 text-sm">
+            <span class="text-slate-500 dark:text-slate-400 font-bold flex items-center gap-1.5">
+              <app-icon name="blockchain" class="h-4 w-4 text-slate-400" />
+              Crypto
+            </span>
+            <span class="font-extrabold text-slate-800 dark:text-white"
+              >{{ stateService.shiftCryptoRevenue() | number }}đ</span
+            >
+          </div>
+          <div class="flex justify-between items-center p-3 text-sm">
+            <span class="text-slate-500 dark:text-slate-400 font-bold flex items-center gap-1.5">
+              <app-icon name="wallet" class="h-4 w-4 text-slate-400" />
+              Ví điện tử
+            </span>
+            <span class="font-extrabold text-slate-800 dark:text-white"
+              >{{ stateService.shiftEWalletRevenue() | number }}đ</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- Chi phí và Lý thuyết -->
+      <div class="space-y-3">
+        <h5 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+          Đối soát két tiền mặt vật lý
+        </h5>
+        <div
+          class="p-4 bg-slate-50 dark:bg-slate-950 rounded-[15px] border border-slate-200/40 dark:border-slate-800/40 space-y-3 text-sm font-bold"
+        >
+          <div class="flex justify-between items-center text-slate-600 dark:text-slate-400">
+            <span>Tiền mặt ban đầu</span>
+            <span>+{{ stateService.currentShift()?.initial_cash || 0 | number }}đ</span>
+          </div>
+          <div class="flex justify-between items-center text-slate-600 dark:text-slate-400">
+            <span>Doanh thu tiền mặt</span>
+            <span>+{{ stateService.shiftFiatRevenue() | number }}đ</span>
+          </div>
+          <div class="flex justify-between items-center text-rose-500">
+            <span>Chi phí tiền mặt (từ két)</span>
+            <span>-{{ stateService.shiftFiatExpenses() | number }}đ</span>
+          </div>
+          <div
+            class="pt-2.5 border-t border-slate-200/60 dark:border-slate-800/60 flex justify-between items-center text-base font-black"
+          >
+            <span class="text-slate-800 dark:text-white">Tiền mặt lý thuyết (hệ thống tính)</span>
+            <span class="text-[var(--dynamic-primary)]"
+              >{{ stateService.shiftExpectedCash() | number }}đ</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- Ô nhập tiền mặt thực tế và chênh lệch -->
+      <div class="space-y-4 pt-1">
+        <div class="space-y-1.5 relative">
+          <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5"
+            >Tiền mặt thực tế kiểm đếm tại két</label
+          >
+          <div class="relative">
+            <input
+              type="text"
+              [value]="stateService.actualCashFormatted()"
+              (input)="stateService.onActualCashInput($event)"
+              placeholder="Nhập số tiền mặt thực tế..."
+              class="form-input pr-12 text-lg font-extrabold text-[var(--dynamic-primary)]"
+            />
+            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400"
+              >đ</span
+            >
+          </div>
+        </div>
+
+        <!-- Hiển thị chênh lệch -->
+        <div
+          class="flex justify-between items-center px-4.5 py-3 rounded-xl border text-xs font-bold"
+          [class]="
+            stateService.actualCashInput() - stateService.shiftExpectedCash() === 0
+              ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/40 text-emerald-600 dark:text-emerald-400'
+              : stateService.actualCashInput() - stateService.shiftExpectedCash() < 0
+                ? 'bg-rose-50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-800/40 text-rose-600 dark:text-rose-455'
+                : 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800/40 text-blue-600 dark:text-blue-400'
+          "
+        >
+          <span>Chênh lệch lệch két:</span>
+          <span class="text-sm font-black">
+            {{ stateService.actualCashInput() - stateService.shiftExpectedCash() > 0 ? '+' : ''
+            }}{{ stateService.actualCashInput() - stateService.shiftExpectedCash() | number }}đ ({{
+              stateService.actualCashInput() - stateService.shiftExpectedCash() === 0
+                ? 'Khớp két'
+                : stateService.actualCashInput() - stateService.shiftExpectedCash() < 0
+                  ? 'Thiếu tiền'
+                  : 'Thừa tiền'
+            }})
+          </span>
+        </div>
+
+        <!-- Ghi chú giải trình -->
+        <div class="space-y-1.5 relative">
+          <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+            >Ghi chú giải trình chênh lệch</label
+          >
+          <textarea
+            [value]="stateService.closeShiftNote()"
+            (input)="stateService.closeShiftNote.set($any($event.target).value)"
+            placeholder="Lý do chênh lệch hoặc các lưu ý khác..."
+            rows="2"
+            class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-sm focus:outline-none focus:border-[var(--color-primary)] text-slate-800 dark:text-white resize-none transition-all duration-200"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Actions button -->
+      <div class="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800 shrink-0 mt-5">
+        <button
+          type="button"
+          (click)="stateService.isCloseShiftModalOpen.set(false)"
+          class="btn-cancel flex-1"
+        >
+          Quay lại
+        </button>
+        <button
+          type="button"
+          (click)="stateService.confirmCloseShift()"
+          [disabled]="stateService.isLoading()"
+          class="btn-danger flex-1 font-black cursor-pointer"
+        >
+          @if (stateService.isLoading()) {
+            <div
+              class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
+            ></div>
+            <span>Đang đóng ca...</span>
+          } @else {
+            <span>Kết ca & Đối soát két</span>
+          }
+        </button>
+      </div>
+    }
+  </div>
+</app-modal>
+
+<!-- ==================== MODAL BẮT ĐẦU CA LÀM VIỆC ==================== -->
+<app-modal
+  [isOpen]="stateService.isStartShiftModalOpen()"
+  title="Bắt đầu ca làm việc mới"
+  (close)="stateService.isStartShiftModalOpen.set(false)"
+  size="md"
+>
+  <div class="space-y-5">
+    <div class="space-y-2 text-center py-2">
+      <div
+        class="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500/20 to-purple-500/10 flex items-center justify-center mx-auto"
+      >
+        <app-icon
+          name="lock"
+          class="h-7 w-7 text-purple-600 dark:text-purple-400"
+          strokeWidth="2.5"
+        />
+      </div>
+      <p class="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+        Vui lòng khai báo số tiền mặt ban đầu trong két để bắt đầu ghi nhận doanh thu và bán hàng
+        POS.
+      </p>
+    </div>
+
+    <div class="space-y-4 text-left">
+      <div class="space-y-1.5 relative">
+        <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1"
+          >Số tiền mặt đầu ca (két tiền)</label
+        >
+        <div class="relative">
+          <input
+            type="text"
+            [value]="stateService.initialCashFormatted()"
+            (input)="stateService.onInitialCashInput($event)"
+            placeholder="Nhập số tiền mặt (Ví dụ: 1,000,000)"
+            class="form-input pr-12 text-base font-extrabold text-[var(--dynamic-primary)]"
+          />
+          <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400"
+            >đ</span
+          >
+        </div>
+      </div>
+
+      <!-- Gợi ý nhanh số tiền đầu ca -->
+      <div class="flex flex-wrap gap-2 pt-1">
+        <button
+          type="button"
+          (click)="stateService.initialCashInput.set(0)"
+          class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-400 transition-all cursor-pointer"
+        >
+          Két trống
+        </button>
+        <button
+          type="button"
+          (click)="stateService.initialCashInput.set(500000)"
+          class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-400 transition-all cursor-pointer"
+        >
+          500K
+        </button>
+        <button
+          type="button"
+          (click)="stateService.initialCashInput.set(1000000)"
+          class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-400 transition-all cursor-pointer"
+        >
+          1 Triệu
+        </button>
+        <button
+          type="button"
+          (click)="stateService.initialCashInput.set(2000000)"
+          class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-400 transition-all cursor-pointer"
+        >
+          2 Triệu
+        </button>
+      </div>
+    </div>
+
+    <!-- Actions button -->
+    <div class="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800 shrink-0 mt-5">
+      <button
+        type="button"
+        (click)="stateService.isStartShiftModalOpen.set(false)"
+        class="btn-cancel flex-1"
+      >
+        Hủy bỏ
+      </button>
+      <button
+        type="button"
+        (click)="stateService.confirmStartShift()"
+        [disabled]="stateService.isLoading()"
+        class="btn-primary flex-1 font-black text-white flex items-center justify-center gap-1.5 bg-[var(--dynamic-primary)] cursor-pointer"
+      >
+        @if (stateService.isLoading()) {
+          <div
+            class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
+          ></div>
+          <span>Đang mở ca...</span>
+        } @else {
+          <app-icon name="lock-open" class="h-4 w-4 shrink-0" strokeWidth="2" />
+          <span>Mở ca & Bắt đầu</span>
+        }
+      </button>
+    </div>
+  </div>
+</app-modal>

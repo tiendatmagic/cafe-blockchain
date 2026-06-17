@@ -176,6 +176,17 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/orders/${orderId}/mint-voucher-manual`, {}, { headers: this.getHeaders() });
   }
 
+  /**
+   * Khách hàng gửi yêu cầu claim điểm tích lũy bằng mã hóa đơn
+   */
+  public claimPoints(orderCode: string, phoneLast5: string, walletAddress: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/orders/claim-points`, {
+      order_code: orderCode,
+      phone_last_5: phoneLast5,
+      wallet_address: walletAddress
+    });
+  }
+
   // 4. Settings (Cấu hình) API
   public getSettings(): Observable<any> {
     return this.http.get(`${this.baseUrl}/settings`, { headers: this.getHeaders() });

@@ -16,6 +16,8 @@ export const routes: Routes = [
   { path: 'shifts', loadComponent: () => import('@features/shifts/shifts.component').then(m => m.ShiftsComponent) },
   { path: 'mobile-sign', loadComponent: () => import('@features/auth/pages/mobile-sign/mobile-sign.component').then(m => m.MobileSignComponent) },
   { path: 'blockchain-explorer', loadComponent: () => import('@features/blockchain/pages/blockchain-explorer/blockchain-explorer.component').then(m => m.BlockchainExplorerComponent) },
+  { path: 'claim-points', loadComponent: () => import('@features/claim-points/claim-points.component').then(m => m.ClaimPointsComponent) },
+  { path: 'marketplace', loadComponent: () => import('@features/marketplace/marketplace.component').then(m => m.MarketplaceComponent) },
   { path: 'store/:slug', loadComponent: () => import('@features/storefront/pages/store/store.component').then(m => m.StoreComponent) },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   { path: '**', redirectTo: 'dashboard' }

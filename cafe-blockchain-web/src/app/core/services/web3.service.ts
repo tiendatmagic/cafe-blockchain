@@ -8,6 +8,12 @@ import { CAFE_VOUCHER_NFT_ABI } from './voucher-contract-abi';
 import { CAFE_VOUCHER_NFT_BYTECODE } from './voucher-contract-bytecode';
 import { CAFE_MENU_REGISTRY_ABI } from './menu-registry-contract-abi';
 import { CAFE_MENU_REGISTRY_BYTECODE } from './menu-registry-contract-bytecode';
+import { CAFE_TOKEN_ABI } from './cafe-token-abi';
+import { CAFE_TOKEN_BYTECODE } from './cafe-token-bytecode';
+import { VOUCHER_SHOP_ABI } from './voucher-shop-abi';
+import { VOUCHER_SHOP_BYTECODE } from './voucher-shop-bytecode';
+import { VOUCHER_MARKETPLACE_ABI } from './voucher-marketplace-abi';
+import { VOUCHER_MARKETPLACE_BYTECODE } from './voucher-marketplace-bytecode';
 import { Subject } from 'rxjs';
 import { environment } from '@environments/environment';
 
@@ -36,6 +42,9 @@ export class Web3Service {
   public readonly financeContractAddress = signal<string>('');
   public readonly voucherContractAddress = signal<string>('');
   public readonly menuRegistryContractAddress = signal<string>('');
+  public readonly loyaltyTokenContractAddress = signal<string>('');
+  public readonly voucherShopContractAddress = signal<string>('');
+  public readonly voucherMarketplaceContractAddress = signal<string>('');
   public readonly rpcUrl = signal<string>(environment.defaultRpcUrl || 'https://bnb-testnet.api.onfinality.io/public');
   public readonly explorerUrl = signal<string>(environment.defaultExplorerUrl || 'https://testnet.bscscan.com');
   public readonly explorerApiKey = signal<string>('');
@@ -406,11 +415,14 @@ export class Web3Service {
   /**
    * Cập nhật cấu hình Blockchain từ API
    */
-  public updateConfig(config: { contract_address?: string, finance_contract_address?: string, voucher_contract_address?: string, menu_registry_contract_address?: string, rpc_url?: string, explorer_url?: string, chain_id?: string, explorer_api_key?: string }) {
+  public updateConfig(config: { contract_address?: string, finance_contract_address?: string, voucher_contract_address?: string, menu_registry_contract_address?: string, loyalty_token_contract_address?: string, voucher_shop_contract_address?: string, voucher_marketplace_contract_address?: string, rpc_url?: string, explorer_url?: string, chain_id?: string, explorer_api_key?: string }) {
     this.contractAddress.set(config.contract_address || '');
     if (config.finance_contract_address !== undefined) this.financeContractAddress.set(config.finance_contract_address || '');
     if (config.voucher_contract_address !== undefined) this.voucherContractAddress.set(config.voucher_contract_address || '');
     if (config.menu_registry_contract_address !== undefined) this.menuRegistryContractAddress.set(config.menu_registry_contract_address || '');
+    if (config.loyalty_token_contract_address !== undefined) this.loyaltyTokenContractAddress.set(config.loyalty_token_contract_address || '');
+    if (config.voucher_shop_contract_address !== undefined) this.voucherShopContractAddress.set(config.voucher_shop_contract_address || '');
+    if (config.voucher_marketplace_contract_address !== undefined) this.voucherMarketplaceContractAddress.set(config.voucher_marketplace_contract_address || '');
     if (config.rpc_url) this.rpcUrl.set(config.rpc_url);
     if (config.explorer_url) this.explorerUrl.set(config.explorer_url);
     if (config.chain_id) this.configuredChainId.set(config.chain_id);
@@ -1735,6 +1747,165 @@ export class Web3Service {
   }
 
   /**
+   * Tự động Deploy Smart Contract CafeToken ($CAFE) mới lên Blockchain EVM
+   */
+  public async deployLoyaltyTokenContractOnChain(targetChainId?: string): Promise<{ contractAddress: string; success: boolean; error?: string }> {
+    if (!this.walletConnected() || !this.currentAccount()) {
+      return { contractAddress: '', success: false, error: 'Chưa kết nối ví Web3!' };
+    }
+    this.provider = this.getBrowserProvider();
+    if (!this.provider) {
+      return { contractAddress: '', success: false, error: 'Không tìm thấy provider ví Web3!' };
+    }
+
+    const hasCorrectNetwork = await this.ensureCorrectNetwork(targetChainId);
+    if (!hasCorrectNetwork) {
+      return { contractAddress: '', success: false, error: this.walletError() || 'Vui lòng chuyển mạng!' };
+    }
+
+    try {
+      this.provider = new BrowserProvider((window as any).ethereum);
+      const signer = await this.provider.getSigner();
+      const factory = new ContractFactory(CAFE_TOKEN_ABI, CAFE_TOKEN_BYTECODE, signer);
+
+      const contract = await factory.deploy();
+      await contract.waitForDeployment();
+
+      const newAddress = await contract.getAddress();
+      this.loyaltyTokenContractAddress.set(newAddress);
+
+      return {
+        contractAddress: newAddress,
+        success: true
+      };
+    } catch (err: any) {
+      console.error('Loi deploy CafeToken Contract:', err);
+      return {
+        contractAddress: '',
+        success: false,
+        error: err.reason || err.message || 'Giao dịch deploy bị từ chối hoặc lỗi chuỗi.'
+      };
+    }
+  }
+
+  /**
+   * Tự động Deploy Smart Contract VoucherShop mới lên Blockchain EVM
+   */
+  public async deployVoucherShopContractOnChain(
+    targetChainId?: string,
+    cafeToken?: string,
+    voucherNft?: string
+  ): Promise<{ contractAddress: string; success: boolean; error?: string }> {
+    if (!this.walletConnected() || !this.currentAccount()) {
+      return { contractAddress: '', success: false, error: 'Chưa kết nối ví Web3!' };
+    }
+    this.provider = this.getBrowserProvider();
+    if (!this.provider) {
+      return { contractAddress: '', success: false, error: 'Không tìm thấy provider ví Web3!' };
+    }
+
+    const tokenAddr = (cafeToken || this.loyaltyTokenContractAddress() || '').trim();
+    const nftAddr = (voucherNft || this.voucherContractAddress() || '').trim();
+
+    if (!tokenAddr.startsWith('0x') || tokenAddr.length !== 42) {
+      return { contractAddress: '', success: false, error: 'Địa chỉ CafeToken ($CAFE) không hợp lệ!' };
+    }
+    if (!nftAddr.startsWith('0x') || nftAddr.length !== 42) {
+      return { contractAddress: '', success: false, error: 'Địa chỉ Voucher NFT không hợp lệ!' };
+    }
+
+    const hasCorrectNetwork = await this.ensureCorrectNetwork(targetChainId);
+    if (!hasCorrectNetwork) {
+      return { contractAddress: '', success: false, error: this.walletError() || 'Vui lòng chuyển mạng!' };
+    }
+
+    try {
+      this.provider = new BrowserProvider((window as any).ethereum);
+      const signer = await this.provider.getSigner();
+      const factory = new ContractFactory(VOUCHER_SHOP_ABI, VOUCHER_SHOP_BYTECODE, signer);
+
+      const contract = await factory.deploy(tokenAddr, nftAddr);
+      await contract.waitForDeployment();
+
+      const newAddress = await contract.getAddress();
+      this.voucherShopContractAddress.set(newAddress);
+
+      return {
+        contractAddress: newAddress,
+        success: true
+      };
+    } catch (err: any) {
+      console.error('Loi deploy VoucherShop Contract:', err);
+      return {
+        contractAddress: '',
+        success: false,
+        error: err.reason || err.message || 'Giao dịch deploy bị từ chối hoặc lỗi chuỗi.'
+      };
+    }
+  }
+
+  /**
+   * Tự động Deploy Smart Contract VoucherMarketplace mới lên Blockchain EVM
+   */
+  public async deployVoucherMarketplaceContractOnChain(
+    targetChainId?: string,
+    cafeToken?: string,
+    voucherNft?: string,
+    feeRecipient?: string
+  ): Promise<{ contractAddress: string; success: boolean; error?: string }> {
+    if (!this.walletConnected() || !this.currentAccount()) {
+      return { contractAddress: '', success: false, error: 'Chưa kết nối ví Web3!' };
+    }
+    this.provider = this.getBrowserProvider();
+    if (!this.provider) {
+      return { contractAddress: '', success: false, error: 'Không tìm thấy provider ví Web3!' };
+    }
+
+    const tokenAddr = (cafeToken || this.loyaltyTokenContractAddress() || '').trim();
+    const nftAddr = (voucherNft || this.voucherContractAddress() || '').trim();
+    const recipientAddr = (feeRecipient || this.currentAccount() || '').trim();
+
+    if (!tokenAddr.startsWith('0x') || tokenAddr.length !== 42) {
+      return { contractAddress: '', success: false, error: 'Địa chỉ CafeToken ($CAFE) không hợp lệ!' };
+    }
+    if (!nftAddr.startsWith('0x') || nftAddr.length !== 42) {
+      return { contractAddress: '', success: false, error: 'Địa chỉ Voucher NFT không hợp lệ!' };
+    }
+    if (!recipientAddr.startsWith('0x') || recipientAddr.length !== 42) {
+      return { contractAddress: '', success: false, error: 'Địa chỉ ví nhận phí không hợp lệ!' };
+    }
+
+    const hasCorrectNetwork = await this.ensureCorrectNetwork(targetChainId);
+    if (!hasCorrectNetwork) {
+      return { contractAddress: '', success: false, error: this.walletError() || 'Vui lòng chuyển mạng!' };
+    }
+
+    try {
+      this.provider = new BrowserProvider((window as any).ethereum);
+      const signer = await this.provider.getSigner();
+      const factory = new ContractFactory(VOUCHER_MARKETPLACE_ABI, VOUCHER_MARKETPLACE_BYTECODE, signer);
+
+      const contract = await factory.deploy(tokenAddr, nftAddr, recipientAddr);
+      await contract.waitForDeployment();
+
+      const newAddress = await contract.getAddress();
+      this.voucherMarketplaceContractAddress.set(newAddress);
+
+      return {
+        contractAddress: newAddress,
+        success: true
+      };
+    } catch (err: any) {
+      console.error('Loi deploy VoucherMarketplace Contract:', err);
+      return {
+        contractAddress: '',
+        success: false,
+        error: err.reason || err.message || 'Giao dịch deploy bị từ chối hoặc lỗi chuỗi.'
+      };
+    }
+  }
+
+  /**
    * Truy vấn danh sách Owners hiện tại trực tiếp từ Smart Contract Menu Registry
    */
   public async getMenuRegistryOwnersFromChain(): Promise<string[]> {
@@ -1930,6 +2101,217 @@ export class Web3Service {
       CAFE_VOUCHER_NFT_ABI,
       'removeOwners',
       [ownersToRemove]
+    );
+  }
+
+  // ==========================================
+  // HỆ THỐNG ĐIỂM THƯỞNG $CAFE & MARKETPLACE
+  // ==========================================
+
+  /**
+   * Lấy số dư CafeToken ($CAFE) của một ví khách hàng
+   */
+  public async getCafeTokenBalance(account: string): Promise<string> {
+    if (!this.loyaltyTokenContractAddress()) return '0.00';
+    try {
+      const activeProvider = new JsonRpcProvider(this.rpcUrl());
+      const contract = new Contract(this.loyaltyTokenContractAddress(), CAFE_TOKEN_ABI, activeProvider);
+      const balanceObj = await contract['balanceOf'](account);
+      return parseFloat(formatEther(balanceObj)).toFixed(2);
+    } catch (e) {
+      console.error('Lỗi lấy số dư token $CAFE:', e);
+      return '0.00';
+    }
+  }
+
+  /**
+   * Truy vấn danh sách các loại voucher đổi bằng điểm từ VoucherShop contract
+   */
+  public async getVoucherTypesFromShop(): Promise<any[]> {
+    if (!this.voucherShopContractAddress()) return [];
+    try {
+      const activeProvider = new JsonRpcProvider(this.rpcUrl());
+      const contract = new Contract(this.voucherShopContractAddress(), VOUCHER_SHOP_ABI, activeProvider);
+      const rawTypes = await contract['getVoucherTypes']();
+      return rawTypes.map((v: any) => ({
+        id: Number(v.id),
+        discountAmount: Number(v.discountAmount),
+        minOrderAmount: Number(v.minOrderAmount),
+        priceInCafeToken: parseFloat(formatEther(v.priceInCafeToken)),
+        tokenURI: v.tokenURI,
+        isActive: v.isActive
+      }));
+    } catch (e) {
+      console.error('Lỗi lấy danh sách voucher types từ Shop:', e);
+      return [];
+    }
+  }
+
+  /**
+   * Đổi điểm lấy Voucher NFT tại Voucher Shop của quán
+   */
+  public async buyVoucherFromShop(voucherTypeId: number, priceInCafeToken: string): Promise<{ txHash: string; success: boolean; error?: string }> {
+    if (!this.voucherShopContractAddress()) {
+      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng Voucher Shop!' };
+    }
+    if (!this.loyaltyTokenContractAddress()) {
+      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng token $CAFE!' };
+    }
+
+    try {
+      // 1. Phê duyệt (Approve) cho VoucherShop contract chi tiêu token $CAFE
+      const approveAmount = parseEther(priceInCafeToken);
+      const approveResult = await this.runContractWriteTx(
+        this.loyaltyTokenContractAddress(),
+        CAFE_TOKEN_ABI,
+        'approve',
+        [this.voucherShopContractAddress(), approveAmount]
+      );
+
+      if (!approveResult.success) {
+        return { txHash: '', success: false, error: 'Phê duyệt chi tiêu token thất bại: ' + approveResult.error };
+      }
+
+      // 2. Chờ phê duyệt được xác nhận rồi gọi hàm buyVoucher
+      return this.runContractWriteTx(
+        this.voucherShopContractAddress(),
+        VOUCHER_SHOP_ABI,
+        'buyVoucher',
+        [voucherTypeId]
+      );
+    } catch (err: any) {
+      return { txHash: '', success: false, error: err.message || 'Lỗi quy đổi voucher.' };
+    }
+  }
+
+  /**
+   * Truy vấn danh sách các voucher đang treo bán trên Marketplace
+   */
+  public async getActiveListingsFromMarket(): Promise<any[]> {
+    if (!this.voucherMarketplaceContractAddress()) return [];
+    try {
+      const activeProvider = new JsonRpcProvider(this.rpcUrl());
+      const contract = new Contract(this.voucherMarketplaceContractAddress(), VOUCHER_MARKETPLACE_ABI, activeProvider);
+      const rawListings = await contract['getActiveListings']();
+      
+      // Đọc metadata NFT Voucher song song để hiển thị đầy đủ thông tin
+      const nftContract = new Contract(this.voucherContractAddress(), CAFE_VOUCHER_NFT_ABI, activeProvider);
+      
+      const promises = rawListings.map(async (l: any) => {
+        const tokenId = Number(l.tokenId);
+        let discountAmount = 0;
+        let minOrderAmount = 0;
+        try {
+          const vInfo = await nftContract['vouchers'](tokenId);
+          discountAmount = Number(vInfo.discountAmount);
+          minOrderAmount = Number(vInfo.minOrderAmount);
+        } catch (e) {
+          // Bỏ qua lỗi nếu NFT đã bị thay đổi
+        }
+
+        return {
+          tokenId: tokenId,
+          seller: l.seller,
+          price: parseFloat(formatEther(l.price)),
+          discountAmount: discountAmount,
+          minOrderAmount: minOrderAmount,
+          isActive: l.isActive
+        };
+      });
+
+      return await Promise.all(promises);
+    } catch (e) {
+      console.error('Lỗi lấy danh sách listing từ Market:', e);
+      return [];
+    }
+  }
+
+  /**
+   * Ký gửi và Treo bán NFT Voucher lên Marketplace của khách hàng
+   */
+  public async listVoucherOnMarket(tokenId: number, priceInCafeToken: string): Promise<{ txHash: string; success: boolean; error?: string }> {
+    if (!this.voucherMarketplaceContractAddress()) {
+      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng Marketplace!' };
+    }
+    if (!this.voucherContractAddress()) {
+      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng Voucher NFT!' };
+    }
+
+    try {
+      // 1. Phê duyệt (Approve) NFT cho Marketplace contract
+      const approveResult = await this.runContractWriteTx(
+        this.voucherContractAddress(),
+        CAFE_VOUCHER_NFT_ABI,
+        'approve',
+        [this.voucherMarketplaceContractAddress(), tokenId]
+      );
+
+      if (!approveResult.success) {
+        return { txHash: '', success: false, error: 'Phê duyệt NFT thất bại: ' + approveResult.error };
+      }
+
+      // 2. Chờ approve hoàn tất, tiến hành list NFT
+      const priceWei = parseEther(priceInCafeToken);
+      return this.runContractWriteTx(
+        this.voucherMarketplaceContractAddress(),
+        VOUCHER_MARKETPLACE_ABI,
+        'listVoucher',
+        [tokenId, priceWei]
+      );
+    } catch (err: any) {
+      return { txHash: '', success: false, error: err.message || 'Lỗi treo bán NFT.' };
+    }
+  }
+
+  /**
+   * Mua Voucher NFT của khách hàng khác trên Marketplace
+   */
+  public async buyVoucherFromMarket(tokenId: number, priceInCafeToken: string): Promise<{ txHash: string; success: boolean; error?: string }> {
+    if (!this.voucherMarketplaceContractAddress()) {
+      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng Marketplace!' };
+    }
+    if (!this.loyaltyTokenContractAddress()) {
+      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng token $CAFE!' };
+    }
+
+    try {
+      // 1. Phê duyệt (Approve) cho Marketplace contract chi tiêu token $CAFE
+      const approveAmount = parseEther(priceInCafeToken);
+      const approveResult = await this.runContractWriteTx(
+        this.loyaltyTokenContractAddress(),
+        CAFE_TOKEN_ABI,
+        'approve',
+        [this.voucherMarketplaceContractAddress(), approveAmount]
+      );
+
+      if (!approveResult.success) {
+        return { txHash: '', success: false, error: 'Phê duyệt chi tiêu token thất bại: ' + approveResult.error };
+      }
+
+      // 2. Chờ approve được ghi nhận, gọi hàm buyVoucher
+      return this.runContractWriteTx(
+        this.voucherMarketplaceContractAddress(),
+        VOUCHER_MARKETPLACE_ABI,
+        'buyVoucher',
+        [tokenId]
+      );
+    } catch (err: any) {
+      return { txHash: '', success: false, error: err.message || 'Lỗi mua voucher.' };
+    }
+  }
+
+  /**
+   * Hủy treo bán NFT Voucher và thu hồi về ví cá nhân
+   */
+  public async cancelListingOnMarket(tokenId: number): Promise<{ txHash: string; success: boolean; error?: string }> {
+    if (!this.voucherMarketplaceContractAddress()) {
+      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng Marketplace!' };
+    }
+    return this.runContractWriteTx(
+      this.voucherMarketplaceContractAddress(),
+      VOUCHER_MARKETPLACE_ABI,
+      'cancelListing',
+      [tokenId]
     );
   }
 }

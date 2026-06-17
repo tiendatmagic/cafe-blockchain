@@ -28,7 +28,8 @@ const ABI = [
   "function ownerOf(uint256 tokenId) public view returns (address)",
   "function tokenURI(uint256 tokenId) public view returns (string)",
   "function vouchers(uint256 tokenId) public view returns (uint256 discountAmount, uint256 minOrderAmount, bool isUsed)",
-  "event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)"
+  "event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)",
+  "function mint(address to, uint256 value) public returns (bool)"
 ];
 
 async function main() {
@@ -202,6 +203,26 @@ async function main() {
         action: 'checkMinted',
         exists: foundTokenId !== null,
         tokenId: foundTokenId
+      }));
+
+    } else if (action === 'mintToken') {
+      const { to, amount } = data;
+      if (!to || amount === undefined) {
+        console.error(JSON.stringify({ success: false, error: 'Thiếu thông tin để mintToken (to, amount).' }));
+        process.exit(1);
+      }
+
+      // Gửi transaction mint token $CAFE (sử dụng parseEther từ ethers)
+      const value = ethers.parseEther(amount.toString());
+      const tx = await contract.mint(to, value);
+      const receipt = await tx.wait();
+
+      console.log(JSON.stringify({
+        success: true,
+        action: 'mintToken',
+        txHash: receipt.hash,
+        to: to,
+        amount: amount.toString()
       }));
 
     } else {

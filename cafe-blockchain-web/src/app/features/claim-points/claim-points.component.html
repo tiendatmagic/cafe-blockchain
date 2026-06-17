@@ -1,0 +1,194 @@
+<div class="container mx-auto max-w-[1530px] p-4 sm:p-6 min-h-[calc(100vh-80px)] flex flex-col justify-between">
+
+  <!-- Nội dung chính -->
+  <div class="mt-6 flex-1 flex flex-col lg:flex-row gap-6 items-stretch justify-center max-w-5xl mx-auto w-full">
+    
+    <!-- Khối Thông tin và Token Balance -->
+    <div class="w-full lg:w-2/5 p-6 rounded-[15px] border border-slate-200/60 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md flex flex-col justify-between shadow-sm">
+      <div>
+        <h3 class="text-lg font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+          <!-- Icon Cúp SVG -->
+          <svg class="w-5 h-5 text-[var(--dynamic-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+          </svg>
+          Hệ sinh thái $CAFE
+        </h3>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+          Tích lũy điểm thưởng on-chain mỗi khi thưởng thức đồ uống tại quán. Sử dụng điểm `$CAFE` để đổi lấy các Voucher giảm giá cực khủng hoặc mua bán voucher của bạn trên thị trường!
+        </p>
+
+        <div class="mt-6 p-4 rounded-[12px] bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-900/40">
+          <div class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Tỷ lệ quy đổi</div>
+          <div class="text-lg font-black text-[var(--dynamic-primary)] mt-1">1.000 VNĐ = 1 $CAFE</div>
+        </div>
+      </div>
+
+      <!-- Khối Hiển thị Ví & Số dư -->
+      <div class="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800/60">
+        @if (web3Service.walletConnected()) {
+          <div class="flex flex-col gap-3">
+            <div class="flex justify-between items-center text-sm">
+              <span class="text-slate-500 dark:text-slate-400 font-medium">Ví đã kết nối:</span>
+              <span class="font-mono text-slate-700 dark:text-slate-300 font-bold bg-slate-100 dark:bg-slate-800/80 px-2.5 py-1 rounded-[8px] text-xs">
+                {{ web3Service.shortAddress() }}
+              </span>
+            </div>
+            
+            <div class="flex justify-between items-center p-4 rounded-[12px] bg-[var(--dynamic-primary)]/10 dark:bg-[var(--dynamic-primary)]/5 border border-[var(--dynamic-primary)]/20">
+              <span class="text-slate-700 dark:text-slate-300 font-semibold text-sm">Số dư tích điểm:</span>
+              <span class="text-2xl font-black text-[var(--dynamic-primary)]">
+                {{ tokenBalance() }} <span class="text-xs font-extrabold uppercase">$CAFE</span>
+              </span>
+            </div>
+          </div>
+        } @else {
+          <div class="text-center py-4">
+            <p class="text-xs text-slate-400 dark:text-slate-500 mb-3">Vui lòng kết nối ví Web3 để kiểm tra số dư và bắt đầu tích điểm.</p>
+            <button 
+              (click)="connectWallet()" 
+              class="w-full h-11 flex items-center justify-center gap-2 rounded-[15px] text-sm font-extrabold text-white bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer">
+              <!-- Wallet Icon SVG -->
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+              </svg>
+              Kết nối Ví Web3
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Form Nhập Liệu -->
+    <div class="w-full lg:w-3/5 p-6 rounded-[15px] border border-slate-200/60 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md shadow-sm flex flex-col justify-center">
+      
+      @if (web3Service.walletConnected()) {
+        <h3 class="text-lg font-bold text-slate-800 dark:text-slate-200 mb-6 flex items-center gap-2">
+          <!-- Receipt Icon SVG -->
+          <svg class="w-5 h-5 text-[var(--dynamic-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          Nhập thông tin Hóa đơn
+        </h3>
+
+        <form (ngSubmit)="onSubmitClaim()" class="space-y-5">
+          <!-- Mã Hóa Đơn -->
+          <div class="flex flex-col gap-2">
+            <label class="text-xs font-extrabold uppercase text-slate-400 dark:text-slate-500 tracking-wider">Mã hóa đơn (Order Code)</label>
+            <div class="relative flex items-center">
+              <span class="absolute left-4 text-slate-400 dark:text-slate-500">
+                <!-- Tag Icon SVG -->
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+              </span>
+              <input 
+                type="text" 
+                [ngModel]="orderCode()" 
+                (ngModelChange)="orderCode.set($event)"
+                name="orderCode"
+                placeholder="Ví dụ: ABCXYZ" 
+                class="w-full h-12 pl-11 pr-4 rounded-[15px] border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-950/20 text-slate-800 dark:text-slate-200 text-sm font-medium focus:border-[var(--dynamic-primary)] focus:ring-1 focus:ring-[var(--dynamic-primary)] outline-none transition-all duration-200 placeholder-slate-400"
+                required>
+            </div>
+            <span class="text-xs text-slate-400 dark:text-slate-500">Mã hóa đơn in trên hóa đơn mua hàng của bạn (mã ký tự viết hoa).</span>
+          </div>
+
+          <!-- 5 số cuối SĐT -->
+          <div class="flex flex-col gap-2">
+            <label class="text-xs font-extrabold uppercase text-slate-400 dark:text-slate-500 tracking-wider">5 số cuối Số điện thoại</label>
+            <div class="relative flex items-center">
+              <span class="absolute left-4 text-slate-400 dark:text-slate-500">
+                <!-- Phone Icon SVG -->
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                </svg>
+              </span>
+              <input 
+                type="text" 
+                [ngModel]="phoneLast5()" 
+                (ngModelChange)="phoneLast5.set($event)"
+                name="phoneLast5"
+                maxlength="5"
+                placeholder="Nhập 5 số cuối SĐT tích điểm" 
+                class="w-full h-12 pl-11 pr-4 rounded-[15px] border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-950/20 text-slate-800 dark:text-slate-200 text-sm font-medium focus:border-[var(--dynamic-primary)] focus:ring-1 focus:ring-[var(--dynamic-primary)] outline-none transition-all duration-200 placeholder-slate-400"
+                required>
+            </div>
+            <span class="text-xs text-slate-400 dark:text-slate-500">Số điện thoại bạn đã đọc cho thu ngân để tính điểm khi thanh toán tại quầy.</span>
+          </div>
+
+          <!-- Button Gửi -->
+          <div class="pt-4">
+            <button 
+              type="submit" 
+              [disabled]="isClaiming()" 
+              class="w-full h-12 flex items-center justify-center gap-2 rounded-[15px] text-sm font-extrabold text-white bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] shadow-md hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none transition-all duration-200 cursor-pointer">
+              @if (isClaiming()) {
+                <!-- Loading Spinner SVG -->
+                <svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Đang xử lý giao dịch...
+              } @else {
+                <!-- Gift Icon SVG -->
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5a2 2 0 10-2 2h2zm-2 2h4M5 10H3a2 2 0 00-2 2v3a2 2 0 002 2h18a2 2 0 002-2v-3a2 2 0 00-2-2H5z"/>
+                </svg>
+                Nhận điểm tích lũy
+              }
+            </button>
+          </div>
+        </form>
+      } @else {
+        <app-web3-connect-prompt 
+          [title]="'Tích điểm Hóa đơn'" 
+          [description]="'Bạn cần kết nối ví Web3 của mình trước khi thực hiện tích lũy và quy đổi điểm thưởng $CAFE.'">
+        </app-web3-connect-prompt>
+      }
+    </div>
+  </div>
+
+  <!-- Popup Thành Công Glassmorphism -->
+  @if (isSuccessModalOpen()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-sm">
+      <div class="relative w-full max-w-md p-6 rounded-[15px] border border-white/20 dark:border-slate-800/60 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-200">
+        
+        <!-- Icon Thành công SVG động nhấp nháy -->
+        <div class="w-16 h-16 rounded-full bg-emerald-500/20 dark:bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mb-4">
+          <svg class="w-10 h-10 text-emerald-500 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+
+        <h3 class="text-xl font-black text-slate-850 dark:text-slate-100">Tích điểm Thành công!</h3>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">
+          Giao dịch đã được ghi nhận trên Blockchain. Bạn nhận được:
+        </p>
+
+        <!-- Khối hiển thị Token to -->
+        <div class="mt-4 px-6 py-3 rounded-[12px] bg-emerald-500/10 dark:bg-emerald-500/5 border border-emerald-500/20 text-3xl font-black text-emerald-500">
+          +{{ claimResult()?.amount }} <span class="text-xs font-black uppercase">$CAFE</span>
+        </div>
+
+        <!-- Khối TxHash Link -->
+        @if (claimResult()?.txHash) {
+          <div class="mt-5 w-full p-3 rounded-[10px] bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-900/40 flex flex-col gap-1.5 items-center">
+            <span class="text-[10px] font-extrabold uppercase text-slate-400 dark:text-slate-500 tracking-wider">Mã giao dịch (TxHash)</span>
+            <a 
+              [href]="getTxLink(claimResult().txHash)" 
+              target="_blank" 
+              class="text-xs text-[var(--dynamic-primary)] hover:underline font-mono truncate max-w-xs block">
+              {{ claimResult().txHash }}
+            </a>
+          </div>
+        }
+
+        <button 
+          (click)="closeSuccessModal()" 
+          class="mt-6 w-full h-11 rounded-[15px] text-sm font-extrabold text-white bg-[var(--dynamic-primary)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer shadow-sm">
+          Đóng & Xem số dư
+        </button>
+      </div>
+    </div>
+  }
+</div>

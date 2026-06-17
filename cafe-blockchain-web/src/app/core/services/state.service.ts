@@ -27,6 +27,17 @@ export class StateService {
   public readonly isMaintenance = signal<boolean>(false);
   public readonly isInitialLoading = signal<boolean>(true);
 
+  // Trạng thái chờ ký xác thực Web3 và modal gửi token
+  public readonly isWaitingForSignature = signal<boolean>(false);
+  public readonly isSendTokenModalOpen = signal<boolean>(false);
+  public readonly recipientAddress = signal<string>('');
+  public readonly sendAmount = signal<string>('');
+  public readonly isSendingToken = signal<boolean>(false);
+
+  public pendingNonceMessage = '';
+  public pendingAddress = '';
+  private accountsChangedSub?: Subscription;
+
   // Vai trò và quyền truy cập của người dùng hiện tại
   public readonly currentUserRole = signal<string>('Chủ cửa hàng');
   public readonly currentUserPermissions = signal<any>(null); // null tức là Chủ cửa hàng (Full quyền)
@@ -354,6 +365,11 @@ export class StateService {
         this.syncTabWithUrl(this.router.url);
       }
     }, 200);
+
+    // Lắng nghe sự kiện thay đổi ví từ Web3Service
+    this.accountsChangedSub = this.web3Service.accountsChanged$.subscribe((newAccount) => {
+      this.handleAccountSwitch(newAccount);
+    });
   }
 
   // Hủy đăng ký khi service bị destroy (thường Injectable root không destroy nhưng viết cho chuẩn)
@@ -363,6 +379,9 @@ export class StateService {
     }
     if (this.routerSubscription) {
       this.routerSubscription.unsubscribe();
+    }
+    if (this.accountsChangedSub) {
+      this.accountsChangedSub.unsubscribe();
     }
   }
 
@@ -815,85 +834,6 @@ export class StateService {
     }
   }
 
-  public async connectWalletAndSign() {
-    const isConnected = await this.web3Service.connectWallet();
-    if (isConnected) {
-      const address = this.web3Service.currentAccount();
-      if (!address) return;
-
-      this.showToast('Vui lòng ký xác thực trên ví Metamask...', 'success');
-      this.apiService.getNonce(address).subscribe({
-        next: async (res) => {
-          try {
-            const signature = await this.web3Service.signMessage(res.message);
-
-            this.apiService.verifySignature(address, signature).subscribe({
-              next: (verifyRes) => {
-                if (verifyRes.token) {
-                  this.apiService.setToken(verifyRes.token);
-                  if (typeof window !== 'undefined') {
-                    localStorage.setItem('auth_address', address);
-                    localStorage.setItem('auth_logged_in', 'true');
-                    if (verifyRes.role) {
-                      localStorage.setItem('auth_role', verifyRes.role);
-                      this.currentUserRole.set(verifyRes.role);
-                    }
-                    if (verifyRes.permissions) {
-                      const permStr = JSON.stringify(verifyRes.permissions);
-                      localStorage.setItem('auth_permissions', permStr);
-                      this.currentUserPermissions.set(verifyRes.permissions);
-                    } else {
-                      this.currentUserPermissions.set(null);
-                    }
-                  }
-                  
-                  // Thiết lập ngày mặc định cho dashboard nếu chưa có
-                  const today = new Date();
-                  const formatDateStr = (d: Date) => {
-                    const year = d.getFullYear();
-                    const month = String(d.getMonth() + 1).padStart(2, '0');
-                    const day = String(d.getDate()).padStart(2, '0');
-                    return `${year}-${month}-${day}`;
-                  };
-                  if (!this.dashboardStartDate()) {
-                    const check7 = new Date();
-                    check7.setDate(today.getDate() - 6);
-                    this.dashboardStartDate.set(formatDateStr(check7));
-                  }
-                  if (!this.dashboardEndDate()) {
-                    this.dashboardEndDate.set(formatDateStr(today));
-                  }
-
-                  // Đặt trạng thái ví kết nối. Việc này sẽ tự động kích hoạt effect tải settings và nạp dữ liệu tab hiện tại.
-                  this.web3Service.walletConnected.set(true);
-                  this.showToast('Kết nối và xác thực ví thành công!', 'success');
-                  this.isWalletModalOpen.set(false);
-                  
-                  // Chỉ redirect về dashboard nếu đang ở POS
-                  if (this.router.url.includes('/pos')) {
-                    this.router.navigate(['/dashboard']);
-                  }
-                }
-              },
-              error: (err) => {
-                this.web3Service.disconnectWallet();
-                this.showToast('Xác thực chữ ký thất bại!', 'error');
-              }
-            });
-          } catch (e) {
-            this.web3Service.disconnectWallet();
-            this.showToast('Bạn đã từ chối ký xác thực!', 'error');
-          }
-        },
-        error: (err) => {
-          console.error('Lỗi lấy nonce từ server:', err, 'địa chỉ ví:', address);
-          this.web3Service.disconnectWallet();
-          this.showToast(`Lỗi lấy mã xác thực từ server! (Ví: ${address})`, 'error');
-        }
-      });
-    }
-  }
-
   public onSearchQueryChange(query: string) {
     this.searchSubject.next(query);
   }
@@ -1267,5 +1207,258 @@ export class StateService {
 
     const pad = (num: number) => String(num).padStart(2, '0');
     this.shiftDurationString.set(`${pad(hours)}:${pad(minutes)}:${pad(seconds)}`);
+  }
+
+  // Kết nối và Yêu cầu Ký ví Web3 Auth cho Admin
+  public async connectWalletAndSign() {
+    const isConnected = await this.web3Service.connectWallet();
+    if (isConnected) {
+      const address = this.web3Service.currentAccount();
+      if (!address) return;
+
+      this.apiService.getNonce(address).subscribe({
+        next: async (res) => {
+          this.pendingNonceMessage = res.message;
+          this.pendingAddress = address;
+          this.isWaitingForSignature.set(true);
+          this.showToast('Vui lòng ký xác thực trên ví của bạn...', 'success');
+
+          try {
+            const signature = await this.web3Service.signMessage(res.message);
+            this.isWaitingForSignature.set(false);
+
+            this.apiService.verifySignature(address, signature).subscribe({
+              next: (verifyRes) => {
+                if (verifyRes.token) {
+                  this.apiService.setToken(verifyRes.token);
+                  if (typeof window !== 'undefined') {
+                    localStorage.setItem('auth_address', address);
+                    localStorage.setItem('auth_logged_in', 'true');
+                    if (verifyRes.role) {
+                      localStorage.setItem('auth_role', verifyRes.role);
+                      this.currentUserRole.set(verifyRes.role);
+                    } else {
+                      localStorage.removeItem('auth_role');
+                      this.currentUserRole.set('Chủ cửa hàng');
+                    }
+                    if (verifyRes.permissions) {
+                      const permStr = JSON.stringify(verifyRes.permissions);
+                      localStorage.setItem('auth_permissions', permStr);
+                      this.currentUserPermissions.set(verifyRes.permissions);
+                    } else {
+                      localStorage.removeItem('auth_permissions');
+                      this.currentUserPermissions.set(null);
+                    }
+                  }
+                  this.web3Service.walletConnected.set(true);
+                  this.showToast('Kết nối và xác thực ví thành công!', 'success');
+                  this.isWalletModalOpen.set(false);
+
+                  // Thiết lập ngày mặc định cho dashboard nếu chưa có
+                  const today = new Date();
+                  const formatDateStr = (d: Date) => {
+                    const year = d.getFullYear();
+                    const month = String(d.getMonth() + 1).padStart(2, '0');
+                    const day = String(d.getDate()).padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                  };
+                  if (!this.dashboardStartDate()) {
+                    const check7 = new Date();
+                    check7.setDate(today.getDate() - 6);
+                    this.dashboardStartDate.set(formatDateStr(check7));
+                  }
+                  if (!this.dashboardEndDate()) {
+                    this.dashboardEndDate.set(formatDateStr(today));
+                  }
+
+                  this.loadSettings();
+
+                  // Sau khi đăng nhập thành công: luôn chuyển về dashboard để tải dữ liệu,
+                  // trừ khi người dùng đang ở dashboard thì chỉ refresh dữ liệu
+                  if (this.router.url.includes('/dashboard')) {
+                    this.refreshDashboard();
+                  } else {
+                    this.router.navigate(['/dashboard']);
+                  }
+                }
+              },
+              error: (err) => {
+                this.isWaitingForSignature.set(false);
+                this.web3Service.disconnectWallet();
+                this.showToast('Xác thực chữ ký thất bại!', 'error');
+              }
+            });
+          } catch (e) {
+            this.isWaitingForSignature.set(false);
+            this.web3Service.disconnectWallet();
+            this.showToast('Bạn đã từ chối ký xác thực!', 'error');
+          }
+        },
+        error: (err) => {
+          this.isWaitingForSignature.set(false);
+          console.error('Lỗi lấy nonce từ server:', err, 'địa chỉ ví:', address);
+          this.web3Service.disconnectWallet();
+          this.showToast(`Lỗi lấy mã xác thực từ server! (Ví: ${address})`, 'error');
+        }
+      });
+    }
+  }
+
+  // Ký lại xác thực khi bấm nút "Ký ngay" trên banner
+  public async retrySign() {
+    if (!this.pendingNonceMessage || !this.pendingAddress) return;
+    try {
+      const signature = await this.web3Service.signMessage(this.pendingNonceMessage);
+      this.isWaitingForSignature.set(false);
+
+      this.apiService.verifySignature(this.pendingAddress, signature).subscribe({
+        next: (verifyRes) => {
+          if (verifyRes.token) {
+            this.apiService.setToken(verifyRes.token);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('auth_address', this.pendingAddress);
+              localStorage.setItem('auth_logged_in', 'true');
+              if (verifyRes.role) {
+                localStorage.setItem('auth_role', verifyRes.role);
+                this.currentUserRole.set(verifyRes.role);
+              } else {
+                localStorage.removeItem('auth_role');
+                this.currentUserRole.set('Chủ cửa hàng');
+              }
+              if (verifyRes.permissions) {
+                const permStr = JSON.stringify(verifyRes.permissions);
+                localStorage.setItem('auth_permissions', permStr);
+                this.currentUserPermissions.set(verifyRes.permissions);
+              } else {
+                localStorage.removeItem('auth_permissions');
+                this.currentUserPermissions.set(null);
+              }
+            }
+            this.web3Service.walletConnected.set(true);
+            this.showToast('Kết nối và xác thực ví thành công!', 'success');
+            this.isWalletModalOpen.set(false);
+            this.loadSettings();
+            if (this.router.url.includes('/dashboard')) {
+              this.refreshDashboard();
+            } else {
+              this.router.navigate(['/dashboard']);
+            }
+          }
+        },
+        error: () => {
+          this.isWaitingForSignature.set(false);
+          this.web3Service.disconnectWallet();
+          this.showToast('Phiên ký đã hết hạn. Vui lòng kết nối ví lại!', 'error');
+        }
+      });
+    } catch (e) {
+      this.showToast('Bạn đã từ chối ký xác thực!', 'error');
+    }
+  }
+
+  // Hủy tiến trình ký
+  public cancelSign() {
+    this.isWaitingForSignature.set(false);
+    this.pendingNonceMessage = '';
+    this.pendingAddress = '';
+    this.web3Service.disconnectWallet();
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_logged_in');
+    }
+    this.showToast('Đã hủy xác thực ví.', 'error');
+  }
+
+  // Xử lý khi tài khoản ví Web3 thay đổi
+  public handleAccountSwitch(newAccount: string) {
+    this.apiService.removeToken();
+    this.apiService.logout().subscribe({
+      next: () => {},
+      error: (err) => console.warn('[Auth] Không thể xóa phiên làm việc khi chuyển đổi tài khoản:', err)
+    });
+
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_address');
+      localStorage.removeItem('auth_logged_in');
+      localStorage.removeItem('auth_role');
+      localStorage.removeItem('auth_permissions');
+    }
+
+    this.cart.set([]);
+    this.dashboardData.set(null);
+    this.products.set([]);
+    this.orders.set([]);
+    this.categoriesList.set([]);
+
+    if (newAccount) {
+      this.showToast('Phát hiện tài khoản ví thay đổi. Đang yêu cầu ký xác thực lại...', 'success');
+      this.connectWalletAndSign();
+    } else {
+      this.showToast('Ví đã ngắt kết nối. Vui lòng kết nối ví để tiếp tục!', 'error');
+    }
+  }
+
+  // Sao chép địa chỉ ví vào clipboard
+  public copyAddress() {
+    const address = this.web3Service.currentAccount();
+    if (!address) return;
+    navigator.clipboard.writeText(address).then(() => {
+      this.showToast('Đã sao chép địa chỉ ví vào bộ nhớ tạm!', 'success');
+    }).catch(err => {
+      this.showToast('Lỗi sao chép địa chỉ ví!', 'error');
+    });
+  }
+
+  // Thực hiện phát giao dịch gửi Native Token
+  public async handleSendNativeToken() {
+    const to = this.recipientAddress().trim();
+    const amount = this.sendAmount().trim();
+
+    if (!to) {
+      this.showToast('Vui lòng nhập địa chỉ nhận!', 'error');
+      return;
+    }
+    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+      this.showToast('Số lượng token không hợp lệ!', 'error');
+      return;
+    }
+
+    this.isSendingToken.set(true);
+    this.showToast('Đang gửi giao dịch lên blockchain...', 'success');
+
+    try {
+      const res = await this.web3Service.sendNativeToken(to, amount);
+      if (res.success) {
+        this.showToast('Giao dịch gửi token đã được phát đi thành công!', 'success');
+        this.isSendTokenModalOpen.set(false);
+        this.recipientAddress.set('');
+        this.sendAmount.set('');
+      } else {
+        this.showToast(res.error || 'Gửi token thất bại!', 'error');
+      }
+    } catch (e: any) {
+      this.showToast(e.message || 'Gửi token thất bại!', 'error');
+    } finally {
+      this.isSendingToken.set(false);
+    }
+  }
+
+  // Chuyển đổi mạng (Chain) trên ví Web3
+  public async switchChain(chainId: string) {
+    if (!this.web3Service.walletConnected() || !this.web3Service.currentAccount()) {
+      this.showToast('Vui lòng kết nối ví Web3 trước khi chọn mạng lưới!', 'error');
+      return;
+    }
+
+    this.showToast('Đang yêu cầu chuyển mạng ví...', 'success');
+    try {
+      const success = await this.web3Service.ensureCorrectNetwork(chainId);
+      if (success) {
+        this.showToast(`Đã chuyển mạng ví sang ${this.web3Service.getNetworkNameByChainId(chainId)}!`, 'success');
+      } else {
+        this.showToast(this.web3Service.walletError() || 'Chuyển mạng thất bại!', 'error');
+      }
+    } catch (e: any) {
+      this.showToast(e.message || 'Chuyển mạng thất bại!', 'error');
+    }
   }
 }

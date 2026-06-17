@@ -33,6 +33,9 @@ class OrderModel extends Model
         'store_owner_address',
         'verification_hash',
         'shift_id',
+        'is_points_claimed',
+        'claim_attempts',
+        'last_claim_attempt_at',
         'created_at',
         'updated_at'
     ];

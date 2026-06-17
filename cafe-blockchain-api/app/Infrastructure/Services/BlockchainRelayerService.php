@@ -162,6 +162,44 @@ class BlockchainRelayerService implements BlockchainRelayerServiceInterface
     }
 
     /**
+     * Thực hiện gửi (mint) token tích điểm $CAFE cho khách hàng
+     */
+    public function sendLoyaltyTokens(string $storeOwnerAddress, string $toAddress, float $amount): array
+    {
+        $contractAddress = Setting::getForStore('loyalty_token_contract_address', $storeOwnerAddress);
+        $rpcUrl = Setting::getForStore('rpc_url', $storeOwnerAddress, 'https://ethereum-sepolia.publicnode.com');
+        
+        $encryptedKey = Setting::getForStore('relayer_private_key', $storeOwnerAddress);
+        $privateKey = null;
+        if (!empty($encryptedKey)) {
+            try {
+                $privateKey = \Illuminate\Support\Facades\Crypt::decryptString($encryptedKey);
+            } catch (\Exception $e) {
+                return ['success' => false, 'error' => 'Error decrypting store relayer wallet key: ' . $e->getMessage()];
+            }
+        }
+
+        if (empty($contractAddress)) {
+            return ['success' => false, 'error' => 'Loyalty Token contract address ($CAFE) is not configured for the store!'];
+        }
+
+        if (empty($privateKey)) {
+            return ['success' => false, 'error' => 'Relayer wallet private key is not configured for the store in the database!'];
+        }
+
+        $payload = [
+            'action' => 'mintToken',
+            'privateKey' => $privateKey,
+            'rpcUrl' => $rpcUrl,
+            'contractAddress' => $contractAddress,
+            'to' => $toAddress,
+            'amount' => $amount
+        ];
+
+        return $this->executeRelayer($payload);
+    }
+
+    /**
      * Thực thi lệnh NodeJS để chạy relayer.js
      */
     private function executeRelayer(array $payload): array

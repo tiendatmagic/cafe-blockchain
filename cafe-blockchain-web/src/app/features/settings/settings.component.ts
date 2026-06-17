@@ -89,6 +89,9 @@ export class SettingsComponent implements OnInit {
     finance_contract_address: '',
     voucher_contract_address: '',
     menu_registry_contract_address: '',
+    loyalty_token_contract_address: '',
+    voucher_shop_contract_address: '',
+    voucher_marketplace_contract_address: '',
     relayer_private_key: '',
     rpc_url: '',
     chain_id: '',
@@ -126,6 +129,9 @@ export class SettingsComponent implements OnInit {
   public readonly isDeployingFinance = signal<boolean>(false);
   public readonly isDeployingVoucher = signal<boolean>(false);
   public readonly isDeployingMenuRegistry = signal<boolean>(false);
+  public readonly isDeployingLoyaltyToken = signal<boolean>(false);
+  public readonly isDeployingVoucherShop = signal<boolean>(false);
+  public readonly isDeployingVoucherMarketplace = signal<boolean>(false);
 
   // Trạng thái Quản trị Owner Ví và ví Kế toán trên Blockchain
   public readonly ownersFromChain = signal<string[]>([]);
@@ -436,6 +442,105 @@ export class SettingsComponent implements OnInit {
       this.stateService.showToast(res.error || 'Deploy Smart Contract NFT Voucher thất bại!', 'error');
     }
     this.isDeployingVoucher.set(false);
+  }
+
+  // Tự động deploy Smart Contract CafeToken mới
+  public async deployLoyaltyTokenContract() {
+    if (!this.web3Service.walletConnected()) {
+      this.stateService.showToast('Vui lòng kết nối ví Web3 để thực hiện tác vụ này!', 'error');
+      return;
+    }
+
+    this.web3Service.updateConfig({
+      rpc_url: this.configForm().rpc_url,
+      chain_id: this.configForm().chain_id,
+      explorer_url: this.configForm().explorer_url
+    });
+
+    this.isDeployingLoyaltyToken.set(true);
+    this.stateService.showToast('Vui lòng xác nhận giao dịch Deploy Smart Contract $CAFE Token trên ví của bạn...', 'success');
+
+    const res = await this.web3Service.deployLoyaltyTokenContractOnChain(this.configForm().chain_id);
+    if (res.success && res.contractAddress) {
+      this.configForm.update(form => ({
+        ...form,
+        loyalty_token_contract_address: res.contractAddress
+      }));
+      this.web3Service.updateConfig({ loyalty_token_contract_address: res.contractAddress });
+      this.stateService.showToast(`Deploy $CAFE Token thành công! Địa chỉ mới: ${res.contractAddress}. Nhấn LƯU CẤU HÌNH HỆ THỐNG để ghi nhận!`, 'success');
+    } else {
+      this.stateService.showToast(res.error || 'Deploy $CAFE Token thất bại!', 'error');
+    }
+    this.isDeployingLoyaltyToken.set(false);
+  }
+
+  // Tự động deploy Smart Contract VoucherShop mới
+  public async deployVoucherShopContract() {
+    if (!this.web3Service.walletConnected()) {
+      this.stateService.showToast('Vui lòng kết nối ví Web3 để thực hiện tác vụ này!', 'error');
+      return;
+    }
+
+    this.web3Service.updateConfig({
+      rpc_url: this.configForm().rpc_url,
+      chain_id: this.configForm().chain_id,
+      explorer_url: this.configForm().explorer_url
+    });
+
+    this.isDeployingVoucherShop.set(true);
+    this.stateService.showToast('Vui lòng xác nhận giao dịch Deploy Smart Contract VoucherShop trên ví của bạn...', 'success');
+
+    const res = await this.web3Service.deployVoucherShopContractOnChain(
+      this.configForm().chain_id,
+      this.configForm().loyalty_token_contract_address,
+      this.configForm().voucher_contract_address
+    );
+    if (res.success && res.contractAddress) {
+      this.configForm.update(form => ({
+        ...form,
+        voucher_shop_contract_address: res.contractAddress
+      }));
+      this.web3Service.updateConfig({ voucher_shop_contract_address: res.contractAddress });
+      this.stateService.showToast(`Deploy VoucherShop thành công! Địa chỉ mới: ${res.contractAddress}. Nhấn LƯU CẤU HÌNH HỆ THỐNG để ghi nhận!`, 'success');
+    } else {
+      this.stateService.showToast(res.error || 'Deploy VoucherShop thất bại!', 'error');
+    }
+    this.isDeployingVoucherShop.set(false);
+  }
+
+  // Tự động deploy Smart Contract VoucherMarketplace mới
+  public async deployVoucherMarketplaceContract() {
+    if (!this.web3Service.walletConnected()) {
+      this.stateService.showToast('Vui lòng kết nối ví Web3 để thực hiện tác vụ này!', 'error');
+      return;
+    }
+
+    this.web3Service.updateConfig({
+      rpc_url: this.configForm().rpc_url,
+      chain_id: this.configForm().chain_id,
+      explorer_url: this.configForm().explorer_url
+    });
+
+    this.isDeployingVoucherMarketplace.set(true);
+    this.stateService.showToast('Vui lòng xác nhận giao dịch Deploy Smart Contract VoucherMarketplace trên ví của bạn...', 'success');
+
+    const res = await this.web3Service.deployVoucherMarketplaceContractOnChain(
+      this.configForm().chain_id,
+      this.configForm().loyalty_token_contract_address,
+      this.configForm().voucher_contract_address,
+      this.web3Service.currentAccount()
+    );
+    if (res.success && res.contractAddress) {
+      this.configForm.update(form => ({
+        ...form,
+        voucher_marketplace_contract_address: res.contractAddress
+      }));
+      this.web3Service.updateConfig({ voucher_marketplace_contract_address: res.contractAddress });
+      this.stateService.showToast(`Deploy VoucherMarketplace thành công! Địa chỉ mới: ${res.contractAddress}. Nhấn LƯU CẤU HÌNH HỆ THỐNG để ghi nhận!`, 'success');
+    } else {
+      this.stateService.showToast(res.error || 'Deploy VoucherMarketplace thất bại!', 'error');
+    }
+    this.isDeployingVoucherMarketplace.set(false);
   }
 
   // Tự động deploy Smart Contract Menu Registry mới

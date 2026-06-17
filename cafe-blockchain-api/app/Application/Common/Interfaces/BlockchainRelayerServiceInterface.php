@@ -30,4 +30,9 @@ interface BlockchainRelayerServiceInterface
      * Truy vấn thông tin chi tiết của một NFT Voucher trực tiếp on-chain
      */
     public function getVoucher(string $storeOwnerAddress, int $tokenId): array;
+
+    /**
+     * Thực hiện gửi (mint) token tích điểm $CAFE cho khách hàng
+     */
+    public function sendLoyaltyTokens(string $storeOwnerAddress, string $toAddress, float $amount): array;
 }
