@@ -984,8 +984,8 @@ export class SettingsComponent implements OnInit {
     { key: 'actions', header: 'Thao tác', sortable: false, class: 'text-right', headerClass: 'text-right' }
   ];
 
-  public readonly paymentMethodsList = signal<any[]>([]);
-  public readonly paymentMethodsTotal = signal<number>(0);
+  public get paymentMethodsList() { return this.stateService.paymentMethodsList; }
+  public get paymentMethodsTotal() { return this.stateService.paymentMethodsTotal; }
   public readonly paymentMethodsPage = signal<number>(1);
   public readonly paymentMethodsPerPage = signal<number>(10);
   public readonly paymentMethodsSearch = signal<string>('');
@@ -1028,12 +1028,11 @@ export class SettingsComponent implements OnInit {
 
   public readonly isDeletePaymentConfirmOpen = signal<boolean>(false);
   public readonly deletingPaymentMethodId = signal<number | null>(null);
-  private lastPaymentMethodsLoadTimestamp = 0;
 
   public loadPaymentMethods(force = false) {
     const now = Date.now();
-    // Cache 5 phút cho việc chuyển tab, không tải lại nếu dữ liệu đã có sẵn và chưa hết hạn
-    if (!force && this.paymentMethodsList().length > 0 && (now - this.lastPaymentMethodsLoadTimestamp < 300000)) {
+    // Cache 5 phút: dữ liệu và timestamp nằm ở StateService nên tồn tại xuyên vòng đời component
+    if (!force && this.stateService.paymentMethodsList().length > 0 && (now - this.stateService.lastPaymentMethodsLoadTimestamp < 300000)) {
       return;
     }
 
@@ -1045,9 +1044,9 @@ export class SettingsComponent implements OnInit {
     }).subscribe({
       next: (res) => {
         if (res) {
-          this.paymentMethodsList.set(res.data || []);
-          this.paymentMethodsTotal.set(res.total || 0);
-          this.lastPaymentMethodsLoadTimestamp = now;
+          this.stateService.paymentMethodsList.set(res.data || []);
+          this.stateService.paymentMethodsTotal.set(res.total || 0);
+          this.stateService.lastPaymentMethodsLoadTimestamp = now;
         }
         this.isPaymentMethodsLoading.set(false);
       },

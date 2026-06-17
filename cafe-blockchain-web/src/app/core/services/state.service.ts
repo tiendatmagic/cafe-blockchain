@@ -104,6 +104,11 @@ export class StateService {
   public readonly diningTables = signal<any[]>([]);
   public readonly debts = signal<any[]>([]);
 
+  // Dữ liệu phương thức thanh toán (đặt ở service để cache tồn tại xuyên vòng đời component)
+  public readonly paymentMethodsList = signal<any[]>([]);
+  public readonly paymentMethodsTotal = signal<number>(0);
+  public lastPaymentMethodsLoadTimestamp = 0;
+
   public readonly settings = this.settingStore.settings;
 
   // Trạng thái POS (Giỏ hàng)
