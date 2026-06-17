@@ -14,6 +14,7 @@ import { CustomDatePickerComponent } from '@shared/components/custom-date-picker
 import { CustomSelectComponent } from '@shared/components/custom-select/custom-select.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
+import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 
 @Component({
   selector: 'app-inventory',
@@ -31,7 +32,8 @@ import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-g
     CustomDatePickerComponent,
     CustomSelectComponent,
     IconComponent,
-    TabGroupComponent
+    TabGroupComponent,
+    SkeletonLoaderComponent
   ],
   templateUrl: './inventory.component.html'
 })

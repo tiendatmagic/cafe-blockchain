@@ -26,9 +26,7 @@
     @if (stateService.hasPermission('debts')) {
     <!-- Khối Loading Skeleton dùng chung -->
     @if (isDebtsLoading()) {
-      <div class="mt-6">
-        <app-skeleton-loader type="table"></app-skeleton-loader>
-      </div>
+      <app-skeleton-loader type="debts"></app-skeleton-loader>
     } @else {
       <!-- Thẻ Thống kê Tài chính (3 thẻ) -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mt-6">

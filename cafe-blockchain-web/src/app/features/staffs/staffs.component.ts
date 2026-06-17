@@ -12,6 +12,7 @@ import { TableComponent, TableColumn, TableCellDirective } from '@shared/compone
 import { ModalComponent } from '@shared/components/modal/modal.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
+import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 
 @Component({
   selector: 'app-staffs',
@@ -29,7 +30,8 @@ import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-g
     TableCellDirective,
     ModalComponent,
     IconComponent,
-    TabGroupComponent
+    TabGroupComponent,
+    SkeletonLoaderComponent
   ],
   templateUrl: './staffs.component.html'
 })

@@ -43,33 +43,36 @@
     @if (stateService.hasPermission('staffs')) {
     
     <!-- SUB TABS NAVIGATION & SEARCH -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-      <app-tab-group
-        [options]="staffsSubTabOptions"
-        [activeValue]="activeSubTab()"
-        (valueChange)="setSubTab($event)"
-        class="w-full sm:w-auto"
-      ></app-tab-group>
+    @if (stateService.isStaffsLoading()) {
+      <app-skeleton-loader type="staffs"></app-skeleton-loader>
+    } @else {
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <app-tab-group
+          [options]="staffsSubTabOptions"
+          [activeValue]="activeSubTab()"
+          (valueChange)="setSubTab($event)"
+          class="w-full sm:w-auto"
+        ></app-tab-group>
 
-      <!-- Search input -->
-      <div class="relative w-full sm:w-60">
-        <input
-          type="text"
-          [ngModel]="searchQuery()"
-          (ngModelChange)="onSearchQueryChange($event)"
-          [placeholder]="activeSubTab() === 'staffs' ? 'Tìm tên, SĐT, ví nhân viên...' : 'Tìm tên vai trò...'"
-          class="w-full search-input"
-        />
-        <app-icon
-          name="search"
-          class="absolute left-3 top-3 h-4 w-4 text-slate-400"
-          strokeWidth="2.5"
-        />
+        <!-- Search input -->
+        <div class="relative w-full sm:w-60">
+          <input
+            type="text"
+            [ngModel]="searchQuery()"
+            (ngModelChange)="onSearchQueryChange($event)"
+            [placeholder]="activeSubTab() === 'staffs' ? 'Tìm tên, SĐT, ví nhân viên...' : 'Tìm tên vai trò...'"
+            class="w-full search-input"
+          />
+          <app-icon
+            name="search"
+            class="absolute left-3 top-3 h-4 w-4 text-slate-400"
+            strokeWidth="2.5"
+          />
+        </div>
       </div>
-    </div>
 
-    <!-- NỘI DUNG CHÍNH -->
-    <div class="space-y-6">
+      <!-- NỘI DUNG CHÍNH -->
+      <div class="space-y-6">
       <!-- TAB NHÂN VIÊN -->
       @if (activeSubTab() === 'staffs') {
         <app-table
@@ -183,7 +186,8 @@
           </ng-template>
         </app-table>
       }
-    </div>
+      </div>
+    }
 
     <!-- MODAL THÊM/SỬA NHÂN VIÊN -->
     <app-modal

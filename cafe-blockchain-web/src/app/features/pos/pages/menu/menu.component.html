@@ -56,7 +56,10 @@
 
   @if (stateService.web3Service.walletConnected()) {
     @if (stateService.hasPermission('menu')) {
-      <!-- Tab phân loại: Món bán & Nguyên vật liệu & Tìm kiếm -->
+      @if (isProductsLoading()) {
+        <app-skeleton-loader type="menu"></app-skeleton-loader>
+      } @else {
+        <!-- Tab phân loại: Món bán & Nguyên vật liệu & Tìm kiếm -->
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 dark:border-slate-800/60 pb-3">
         <app-tab-group
           [options]="mainProductTypeOptions"
@@ -197,9 +200,7 @@
         </div>
       </div>
 
-      <!-- Bộ lọc danh mục thực đơn (Category filter) -->
       <div
-        [class.hidden]="isProductsLoading()"
         class="app-card p-4 flex items-center"
       >
         <!-- Danh mục trượt mượt mà (Horizontal scrolling) -->
@@ -220,46 +221,7 @@
         </div>
       </div>
 
-      @if (isProductsLoading()) {
-        <!-- SKELETON LOADING CHO THỰC ĐƠN -->
-        @if (menuViewMode() === 'table') {
-          <div class="app-card overflow-hidden animate-pulse space-y-4">
-            <div class="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-full"></div>
-            @for (i of [1, 2, 3, 4, 5]; track i) {
-              <div
-                class="flex items-center gap-4 py-3 border-b border-slate-50 dark:border-slate-800/40"
-              >
-                <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-lg w-20"></div>
-                <div class="h-10 bg-slate-200 dark:bg-slate-800 rounded-full w-10 shrink-0"></div>
-                <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-lg w-1/3"></div>
-                <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-lg w-1/6"></div>
-                <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-lg w-1/6"></div>
-                <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-lg w-10 ml-auto"></div>
-              </div>
-            }
-          </div>
-        } @else {
-          <div
-            class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5 animate-pulse"
-          >
-            @for (i of [1, 2, 3, 4, 5, 6, 7, 8]; track i) {
-              <div
-                class="app-card overflow-hidden p-4 space-y-4 h-96 flex flex-col justify-between"
-              >
-                <div class="h-48 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full"></div>
-                <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4"></div>
-                <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/2"></div>
-                <div class="flex justify-between items-center pt-2">
-                  <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/3"></div>
-                  <div class="h-8 bg-slate-200 dark:bg-slate-800 rounded-xl w-16"></div>
-                </div>
-              </div>
-            }
-          </div>
-        }
-      }
-
-      <div [class.hidden]="isProductsLoading()" class="space-y-6">
+      <div class="space-y-6">
         <!-- CHẾ ĐỘ XEM 1: DẠNG BẢNG (TABLE VIEW) -->
         @if (menuViewMode() === 'table') {
           <div class="app-card p-0 overflow-hidden">
@@ -1351,6 +1313,7 @@
           </div>
         </div>
       </app-modal>
+      }
     } @else {
       <app-access-restricted pageName="Quản lý Thực đơn"></app-access-restricted>
     }

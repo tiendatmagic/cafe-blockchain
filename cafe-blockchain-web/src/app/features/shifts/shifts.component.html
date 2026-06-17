@@ -14,185 +14,159 @@
 
   @if (web3Service.walletConnected()) {
     @if (stateService.hasPermission('shifts')) {
-      <!-- WIDGET CA TRỰC ĐANG HOẠT ĐỘNG (Dành cho Thu ngân tự đối soát nhanh) -->
-      @if (stateService.currentShift() && stateService.currentShift().id) {
-        <div class="app-card border-l-4 border-l-emerald-500 overflow-hidden relative">
-          <!-- Background SVG trang trí mờ ảo -->
-          <div class="absolute right-0 bottom-0 opacity-[0.03] pointer-events-none">
-            <app-icon name="clock" class="w-64 h-64 text-emerald-500" strokeWidth="1" />
-          </div>
-
-          <div
-            class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10"
-          >
-            <div class="space-y-3">
-              <div class="flex items-center gap-2">
-                <span
-                  class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                >
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-1.5"></span>
-                  Ca trực của bạn đang hoạt động
-                </span>
-                <span class="text-xs text-slate-400 font-bold font-mono"
-                  >ID ca: #{{ stateService.currentShift().id }}</span
-                >
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-12">
-                <div>
-                  <span
-                    class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1"
-                    >Thời gian vào ca</span
-                  >
-                  <span class="text-sm font-extrabold text-slate-800 dark:text-white">
-                    {{ formatShiftTime(stateService.currentShift().start_time) }}
-                  </span>
-                </div>
-                <div>
-                  <span
-                    class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1"
-                    >Thời gian đã làm</span
-                  >
-                  <span
-                    class="text-sm font-extrabold text-purple-600 dark:text-purple-400 font-mono animate-pulse"
-                  >
-                    {{ stateService.shiftDurationString() }}
-                  </span>
-                </div>
-                <div>
-                  <span
-                    class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1"
-                    >Tiền mặt két ban đầu</span
-                  >
-                  <span class="text-sm font-extrabold text-slate-800 dark:text-white">
-                    {{ stateService.currentShift().initial_cash || 0 | number }}đ
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              (click)="openCloseShiftModal()"
-              class="btn-danger w-full lg:w-auto hover:scale-[1.01]"
-            >
-              <app-icon name="logout" class="h-4.5 w-4.5" strokeWidth="2.5" />
-              <span>Kết thúc ca & Đối soát két</span>
-            </button>
-          </div>
-        </div>
+      <!-- WIDGET CA TRỰC ĐANG HOẠT ĐỘNG / CHƯA VÀO CA SKELETON -->
+      @if (stateService.isShiftsLoading()) {
+        <app-skeleton-loader type="shifts"></app-skeleton-loader>
       } @else {
-        <!-- TRẠNG THÁI CHƯA VÀO CA -->
-        <div class="app-card border-l-4 border-l-amber-500 p-6">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div class="flex items-start gap-4">
-              <div
-                class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0"
-              >
-                <app-icon name="warning" class="h-6 w-6" strokeWidth="2.5" />
+        <!-- WIDGET CA TRỰC ĐANG HOẠT ĐỘNG (Dành cho Thu ngân tự đối soát nhanh) -->
+        @if (stateService.currentShift() && stateService.currentShift().id) {
+          <div class="app-card border-l-4 border-l-emerald-500 overflow-hidden relative mb-6">
+            <!-- Background SVG trang trí mờ ảo -->
+            <div class="absolute right-0 bottom-0 opacity-[0.03] pointer-events-none">
+              <app-icon name="clock" class="w-64 h-64 text-emerald-500" strokeWidth="1" />
+            </div>
+
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+              <div class="space-y-3">
+                <div class="flex items-center gap-2">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-1.5"></span>
+                    Ca trực của bạn đang hoạt động
+                  </span>
+                  <span class="text-xs text-slate-400 font-bold font-mono">ID ca: #{{ stateService.currentShift().id }}</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-12">
+                  <div>
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">Thời gian vào ca</span>
+                    <span class="text-sm font-extrabold text-slate-800 dark:text-white">
+                      {{ formatShiftTime(stateService.currentShift().start_time) }}
+                    </span>
+                  </div>
+                  <div>
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">Thời gian đã làm</span>
+                    <span class="text-sm font-extrabold text-purple-600 dark:text-purple-400 font-mono animate-pulse">
+                      {{ stateService.shiftDurationString() }}
+                    </span>
+                  </div>
+                  <div>
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">Tiền mặt két ban đầu</span>
+                    <span class="text-sm font-extrabold text-slate-800 dark:text-white">
+                      {{ stateService.currentShift().initial_cash || 0 | number }}đ
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div class="space-y-1">
-                <h4 class="text-base font-extrabold text-slate-800 dark:text-white leading-tight">
-                  Bạn chưa vào ca làm việc
-                </h4>
-                <p class="text-xs text-slate-400 max-w-xl leading-relaxed">
-                  Vui lòng khai báo số tiền mặt đầu ca để kích hoạt két tiền mặt và bắt đầu bán hàng
-                  POS.
-                </p>
+
+              <button
+                type="button"
+                (click)="openCloseShiftModal()"
+                class="btn-danger w-full lg:w-auto hover:scale-[1.01]"
+              >
+                <app-icon name="logout" class="h-4.5 w-4.5" strokeWidth="2.5" />
+                <span>Kết thúc ca & Đối soát két</span>
+              </button>
+            </div>
+          </div>
+        } @else {
+          <!-- TRẠNG THÁI CHƯA VÀO CA -->
+          <div class="app-card border-l-4 border-l-amber-500 p-6 mb-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+                  <app-icon name="warning" class="h-6 w-6" strokeWidth="2.5" />
+                </div>
+                <div class="space-y-1">
+                  <h4 class="text-base font-extrabold text-slate-800 dark:text-white leading-tight">
+                    Bạn chưa vào ca làm việc
+                  </h4>
+                  <p class="text-xs text-slate-400 max-w-xl leading-relaxed">
+                    Vui lòng khai báo số tiền mặt đầu ca để kích hoạt két tiền mặt và bắt đầu bán hàng POS.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                (click)="openStartShiftModal()"
+                class="btn-primary w-full sm:w-auto hover:scale-[1.01]"
+              >
+                <app-icon name="lock-open" class="h-4.5 w-4.5" strokeWidth="2.5" />
+                <span>Khai báo két & Vào ca</span>
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- THANH LỌC & TIÊU ĐỀ LỊCH SỬ CA TRỰC -->
+        <div class="app-card p-4 sm:p-6 flex flex-col gap-6 mb-6">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h5 class="text-base font-extrabold text-slate-800 dark:text-white">
+                Lịch sử ca làm việc của nhân viên
+              </h5>
+              <p class="text-xs text-slate-400">
+                Xem và đối soát tiền mặt đầu ca, tiền hệ thống và tiền kiểm đếm thực tế.
+              </p>
+            </div>
+
+            <!-- Bộ lọc thời gian -->
+            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-start md:justify-end">
+              <app-mini-buttons
+                [options]="datePresets"
+                [activeValue]="activePreset()"
+                (valueChange)="setDatePreset($event)"
+              ></app-mini-buttons>
+
+              <div *ngIf="activePreset() === 'custom'" class="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                <app-custom-date-picker
+                  [(selectedDate)]="tempStartDate"
+                  (selectedDateChange)="onCustomDatesChange()"
+                  placeholder="Từ ngày"
+                  class="w-full sm:w-36"
+                ></app-custom-date-picker>
+                <app-custom-date-picker
+                  [(selectedDate)]="tempEndDate"
+                  (selectedDateChange)="onCustomDatesChange()"
+                  placeholder="Đến ngày"
+                  class="w-full sm:w-36"
+                ></app-custom-date-picker>
               </div>
             </div>
-            <button
-              type="button"
-              (click)="openStartShiftModal()"
-              class="btn-primary w-full sm:w-auto hover:scale-[1.01]"
-            >
-              <app-icon name="lock-open" class="h-4.5 w-4.5" strokeWidth="2.5" />
-              <span>Khai báo két & Vào ca</span>
-            </button>
+          </div>
+
+          <div class="flex flex-col lg:flex-row gap-4 justify-between items-stretch lg:items-end border-t border-slate-100 dark:border-slate-800/40 pt-4">
+            <!-- Lọc trạng thái ca trực -->
+            <div class="flex flex-col gap-1.5 w-full lg:w-auto">
+              <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Trạng thái ca trực</span>
+              <app-tab-group
+                [options]="statusFilterOptions"
+                [activeValue]="shiftStatusFilter()"
+                (valueChange)="setShiftStatusFilter($event)"
+                containerClass="w-full sm:w-auto"
+              ></app-tab-group>
+            </div>
+
+            <!-- Tìm kiếm nhân viên -->
+            <div class="flex flex-col gap-1.5 w-full lg:w-80 shrink-0">
+              <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Tìm kiếm nhân viên</span>
+              <div class="relative w-full">
+                <input
+                  type="text"
+                  [ngModel]="shiftSearchQuery()"
+                  (ngModelChange)="shiftSearchQuery.set($event); shiftPage.set(1)"
+                  placeholder="Tên nhân viên hoặc địa chỉ ví..."
+                  class="w-full search-input text-xs sm:text-sm h-10.5 pl-10 pr-4"
+                />
+                <app-icon
+                  name="search"
+                  class="absolute left-3 top-3 h-4.5 w-4.5 text-slate-400"
+                  strokeWidth="2.5"
+                />
+              </div>
+            </div>
           </div>
         </div>
       }
-
-      <!-- THANH LỌC & TIÊU ĐỀ LỊCH SỬ CA TRỰC -->
-      <div class="app-card p-4 sm:p-6 flex flex-col gap-6">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h5 class="text-base font-extrabold text-slate-800 dark:text-white">
-              Lịch sử ca làm việc của nhân viên
-            </h5>
-            <p class="text-xs text-slate-400">
-              Xem và đối soát tiền mặt đầu ca, tiền hệ thống và tiền kiểm đếm thực tế.
-            </p>
-          </div>
-
-          <!-- Bộ lọc thời gian -->
-          <div
-            class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-start md:justify-end"
-          >
-            <app-mini-buttons
-              [options]="datePresets"
-              [activeValue]="activePreset()"
-              (valueChange)="setDatePreset($event)"
-            ></app-mini-buttons>
-
-            <div
-              *ngIf="activePreset() === 'custom'"
-              class="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0"
-            >
-              <app-custom-date-picker
-                [(selectedDate)]="tempStartDate"
-                (selectedDateChange)="onCustomDatesChange()"
-                placeholder="Từ ngày"
-                class="w-full sm:w-36"
-              ></app-custom-date-picker>
-              <app-custom-date-picker
-                [(selectedDate)]="tempEndDate"
-                (selectedDateChange)="onCustomDatesChange()"
-                placeholder="Đến ngày"
-                class="w-full sm:w-36"
-              ></app-custom-date-picker>
-            </div>
-          </div>
-        </div>
-
-        <div
-          class="flex flex-col lg:flex-row gap-4 justify-between items-stretch lg:items-end border-t border-slate-100 dark:border-slate-800/40 pt-4"
-        >
-          <!-- Lọc trạng thái ca trực -->
-          <div class="flex flex-col gap-1.5 w-full lg:w-auto">
-            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider"
-              >Trạng thái ca trực</span
-            >
-            <app-tab-group
-              [options]="statusFilterOptions"
-              [activeValue]="shiftStatusFilter()"
-              (valueChange)="setShiftStatusFilter($event)"
-              containerClass="w-full sm:w-auto"
-            ></app-tab-group>
-          </div>
-
-          <!-- Tìm kiếm nhân viên -->
-          <div class="flex flex-col gap-1.5 w-full lg:w-80 shrink-0">
-            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider"
-              >Tìm kiếm nhân viên</span
-            >
-            <div class="relative w-full">
-              <input
-                type="text"
-                [ngModel]="shiftSearchQuery()"
-                (ngModelChange)="shiftSearchQuery.set($event); shiftPage.set(1)"
-                placeholder="Tên nhân viên hoặc địa chỉ ví..."
-                class="w-full search-input text-xs sm:text-sm h-10.5 pl-10 pr-4"
-              />
-              <app-icon
-                name="search"
-                class="absolute left-3 top-3 h-4.5 w-4.5 text-slate-400"
-                strokeWidth="2.5"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- Bảng ca trực -->
       <app-table

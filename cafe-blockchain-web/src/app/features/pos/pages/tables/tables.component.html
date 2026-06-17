@@ -33,215 +33,176 @@
 
   @if (stateService.web3Service.walletConnected()) {
     @if (stateService.hasPermission('tables')) {
-    <!-- THANH BỘ LỌC SƠ ĐỒ BÀN (KHU VỰC VÀ TRẠNG THÁI) -->
-  <div
-    class="app-card flex flex-col sm:flex-row gap-5 justify-between items-start sm:items-center"
-  >
-    <div class="flex flex-col gap-1.5">
-      <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block"
-        >Chọn khu vực để xem</span
-      >
-      <app-tab-group
-        [options]="areaFilterOptions()"
-        [activeValue]="activeAreaFilter()"
-        (valueChange)="activeAreaFilter.set($event)"
-        [flex]="false"
-      ></app-tab-group>
-    </div>
-
-    <!-- Lọc trạng thái bàn -->
-    <div class="flex flex-col gap-1.5">
-      <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block"
-        >Trạng thái bàn</span
-      >
-      <app-tab-group
-        [options]="tableStatusFilterOptions"
-        [activeValue]="tableStatusFilter()"
-        (valueChange)="tableStatusFilter.set($event)"
-      ></app-tab-group>
-    </div>
-  </div>
-
-  @if (isTablesLoading()) {
-    <!-- TABLES SKELETON -->
-    <div
-      class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 animate-pulse pt-4"
-    >
-      @for (i of [1, 2, 3, 4, 5, 6]; track i) {
-        <div
-          class="app-card h-32 flex flex-col justify-between items-center text-center"
-        >
-          <div class="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-2/3"></div>
-          <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-1/2"></div>
-          <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4"></div>
-        </div>
-      }
-    </div>
-  }
-
-  <div [class.hidden]="isTablesLoading()" class="space-y-6">
-    <!-- SƠ ĐỒ LƯỚI BÀN ĂN (RICH AESTHETICS GRID) -->
-    <div
-      class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4"
-    >
-      @if (filteredDiningTables().length === 0) {
-        <div
-          class="col-span-full py-16 text-center app-card flex flex-col items-center justify-center gap-3"
-        >
-          <app-icon
-            name="archive"
-            class="h-10 w-10 text-slate-300 dark:text-slate-700"
-            strokeWidth="2"
-          />
-          <span class="text-xs font-bold text-slate-400"
-            >Không tìm thấy bàn nào phù hợp với bộ lọc hiện tại.</span
-          >
-        </div>
-      }
-      @for (table of filteredDiningTables(); track table.id) {
-        <div
-          class="relative group app-card border-2 overflow-hidden flex flex-col justify-between p-4.5 hover:scale-[1.03] hover:shadow-md"
-          [class]="
-            table.status === 'using'
-              ? 'border-amber-400 dark:border-amber-900/60 bg-amber-500/[0.02]'
-              : 'border-slate-200/60 dark:border-slate-800/60 hover:border-purple-500/40'
-          "
-        >
-          <div class="flex items-start justify-between">
-            <!-- Tên bàn và Khu vực -->
-            <div class="flex flex-col min-w-0">
-              <span class="font-black text-slate-800 dark:text-white text-base truncate">{{
-                table.name
-              }}</span>
-              <span class="text-xs text-slate-400 font-bold tracking-wide truncate mt-0.5">{{
-                table.area?.name || 'Khu vực khác'
-              }}</span>
-            </div>
-
-            <!-- Badge Trạng thái -->
-            <span
-              class="w-2.5 h-2.5 rounded-full shrink-0 animate-pulse"
-              [class]="
-                table.status === 'using'
-                  ? 'bg-amber-500 shadow-md shadow-amber-500/20'
-                  : 'bg-emerald-500 shadow-md shadow-emerald-500/20'
-              "
-            ></span>
+      @if (isTablesLoading()) {
+        <app-skeleton-loader type="tables"></app-skeleton-loader>
+      } @else {
+        <!-- THANH BỘ LỌC SƠ ĐỒ BÀN (KHU VỰC VÀ TRẠNG THÁI) -->
+        <div class="app-card flex flex-col sm:flex-row gap-5 justify-between items-start sm:items-center">
+          <div class="flex flex-col gap-1.5">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Chọn khu vực để xem</span>
+            <app-tab-group
+              [options]="areaFilterOptions()"
+              [activeValue]="activeAreaFilter()"
+              (valueChange)="activeAreaFilter.set($event)"
+              [flex]="false"
+            ></app-tab-group>
           </div>
 
-          <!-- QR code mockup ở giữa thẻ bàn -->
-          <div class="py-4.5 flex items-center justify-center">
-            <div
-              class="w-16 h-16 bg-slate-100 dark:bg-slate-950 p-1.5 rounded-xl border border-slate-200/50 dark:border-slate-800/50 relative group/qr flex items-center justify-center cursor-pointer hover:border-purple-500 transition-colors"
-              title="In QR bàn"
-            >
-              <!-- Vẽ QR mockup bằng SVG -->
-              <app-icon
-                name="qr-code"
-                class="w-full h-full text-slate-800 dark:text-slate-300"
-                [solid]="true"
-              />
+          <!-- Lọc trạng thái bàn -->
+          <div class="flex flex-col gap-1.5">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Trạng thái bàn</span>
+            <app-tab-group
+              [options]="tableStatusFilterOptions"
+              [activeValue]="tableStatusFilter()"
+              (valueChange)="tableStatusFilter.set($event)"
+            ></app-tab-group>
+          </div>
+        </div>
+
+        <div class="space-y-6 pt-4">
+          <!-- SƠ ĐỒ LƯỚI BÀN ĂN (RICH AESTHETICS GRID) -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+            @if (filteredDiningTables().length === 0) {
+              <div class="col-span-full py-16 text-center app-card flex flex-col items-center justify-center gap-3">
+                <app-icon
+                  name="archive"
+                  class="h-10 w-10 text-slate-300 dark:text-slate-700"
+                  strokeWidth="2"
+                />
+                <span class="text-xs font-bold text-slate-400">Không tìm thấy bàn nào phù hợp với bộ lọc hiện tại.</span>
+              </div>
+            }
+            @for (table of filteredDiningTables(); track table.id) {
               <div
-                class="absolute inset-0 bg-[var(--color-primary)]/90 text-white font-extrabold text-[8px] tracking-widest flex items-center justify-center opacity-0 group-hover/qr:opacity-100 rounded-xl transition-opacity uppercase leading-none"
+                class="relative group app-card border-2 overflow-hidden flex flex-col justify-between p-4.5 hover:scale-[1.03] hover:shadow-md"
+                [class]="
+                  table.status === 'using'
+                    ? 'border-amber-400 dark:border-amber-900/60 bg-amber-500/[0.02]'
+                    : 'border-slate-200/60 dark:border-slate-800/60 hover:border-purple-500/40'
+                "
               >
-                In QR
+                <div class="flex items-start justify-between">
+                  <!-- Tên bàn và Khu vực -->
+                  <div class="flex flex-col min-w-0">
+                    <span class="font-black text-slate-800 dark:text-white text-base truncate">{{ table.name }}</span>
+                    <span class="text-xs text-slate-400 font-bold tracking-wide truncate mt-0.5">{{ table.area?.name || 'Khu vực khác' }}</span>
+                  </div>
+
+                  <!-- Badge Trạng thái -->
+                  <span
+                    class="w-2.5 h-2.5 rounded-full shrink-0 animate-pulse"
+                    [class]="
+                      table.status === 'using'
+                        ? 'bg-amber-500 shadow-md shadow-amber-500/20'
+                        : 'bg-emerald-500 shadow-md shadow-emerald-500/20'
+                    "
+                  ></span>
+                </div>
+
+                <!-- QR code mockup ở giữa thẻ bàn -->
+                <div class="py-4.5 flex items-center justify-center">
+                  <div
+                    class="w-16 h-16 bg-slate-100 dark:bg-slate-950 p-1.5 rounded-xl border border-slate-200/50 dark:border-slate-800/50 relative group/qr flex items-center justify-center cursor-pointer hover:border-purple-500 transition-colors"
+                    title="In QR bàn"
+                  >
+                    <!-- Vẽ QR mockup bằng SVG -->
+                    <app-icon
+                      name="qr-code"
+                      class="w-full h-full text-slate-800 dark:text-slate-300"
+                      [solid]="true"
+                    />
+                    <div
+                      class="absolute inset-0 bg-[var(--color-primary)]/90 text-white font-extrabold text-[8px] tracking-widest flex items-center justify-center opacity-0 group-hover/qr:opacity-100 rounded-xl transition-opacity uppercase leading-none"
+                    >
+                      In QR
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 2 Nút hành động Direct -->
+                <div
+                  class="flex gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-800/60 w-full justify-between items-center text-xs shrink-0"
+                >
+                  <button
+                    (click)="toggleTableStatusDirect(table)"
+                    [disabled]="isUpdatingTableStatus()"
+                    [class]="
+                      table.status === 'using'
+                        ? 'text-amber-600 hover:text-amber-700'
+                        : 'text-emerald-600 hover:text-emerald-700'
+                    "
+                    class="font-extrabold tracking-wide hover:underline text-xs disabled:opacity-50"
+                  >
+                    {{ table.status === 'using' ? 'Trống bàn' : 'Mở bàn' }}
+                  </button>
+                  <div class="flex items-center gap-2">
+                    <button
+                      (click)="openEditTableModal(table)"
+                      class="btn-secondary btn-sm"
+                    >
+                      Sửa
+                    </button>
+                    <button
+                      (click)="deleteTable(table)"
+                      class="btn-danger-light btn-sm"
+                    >
+                      Xóa
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
+            }
           </div>
 
-          <!-- 2 Nút hành động Direct -->
-          <div
-            class="flex gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-800/60 w-full justify-between items-center text-xs shrink-0"
-          >
-            <button
-              (click)="toggleTableStatusDirect(table)"
-              [disabled]="isUpdatingTableStatus()"
-              [class]="
-                table.status === 'using'
-                  ? 'text-amber-600 hover:text-amber-700'
-                  : 'text-emerald-600 hover:text-emerald-700'
-              "
-              class="font-extrabold tracking-wide hover:underline text-xs disabled:opacity-50"
-            >
-              {{ table.status === 'using' ? 'Trống bàn' : 'Mở bàn' }}
-            </button>
-            <div class="flex items-center gap-2">
-              <button
-                (click)="openEditTableModal(table)"
-                class="btn-secondary btn-sm"
-              >
-                Sửa
-              </button>
-              <button
-                (click)="deleteTable(table)"
-                class="btn-danger-light btn-sm"
-              >
-                Xóa
-              </button>
+          <!-- WIDGET QUẢN LÝ KHU VỰC ĐỘNG DÀNH CHO ADMIN (FULL WIDTH) -->
+          <div class="mt-8 pt-6 border-t border-slate-200/60 dark:border-slate-800/60">
+            <div class="app-card space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-4 flex-wrap gap-3">
+                <h4 class="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
+                  <app-icon
+                    name="archive"
+                    class="h-5 w-5 text-slate-500"
+                    strokeWidth="2"
+                  />
+                  <span>Quản lý danh sách Khu vực</span>
+                  <span class="text-xs font-bold text-[var(--color-primary)] bg-[var(--color-primary)]/10 dark:bg-[var(--color-primary)]/20 dark:text-[var(--color-secondary)] px-2.5 py-1 rounded-xl">
+                    {{ areas().length }} khu vực
+                  </span>
+                </h4>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                @if (areas().length === 0) {
+                  <div class="col-span-full text-center py-6 text-xs text-slate-400 italic">
+                    Chưa có khu vực nào được thiết lập.
+                  </div>
+                }
+                @for (area of areas(); track area.id) {
+                  <div class="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-900/60">
+                    <span class="text-sm font-extrabold text-slate-700 dark:text-slate-300 truncate pr-2">
+                      {{ area.name }}
+                    </span>
+                    <div class="flex items-center gap-2 shrink-0">
+                      <button
+                        (click)="openEditAreaModal(area)"
+                        class="btn-secondary btn-sm"
+                      >
+                        Sửa
+                      </button>
+                      <button
+                        (click)="deleteArea(area)"
+                        class="btn-danger-light btn-sm"
+                      >
+                        Xóa
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
             </div>
           </div>
         </div>
       }
-    </div>
-
-    <!-- WIDGET QUẢN LÝ KHU VỰC ĐỘNG DÀNH CHO ADMIN (FULL WIDTH) -->
-    <div class="mt-8 pt-6 border-t border-slate-200/60 dark:border-slate-800/60">
-      <div
-        class="app-card space-y-4"
-      >
-        <div
-          class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-4 flex-wrap gap-3"
-        >
-          <h4
-            class="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2"
-          >
-            <app-icon
-              name="archive"
-              class="h-5 w-5 text-slate-500"
-              strokeWidth="2"
-            />
-            <span>Quản lý danh sách Khu vực</span>
-            <span
-              class="text-xs font-bold text-[var(--color-primary)] bg-[var(--color-primary)]/10 dark:bg-[var(--color-primary)]/20 dark:text-[var(--color-secondary)] px-2.5 py-1 rounded-xl"
-              >{{ areas().length }} khu vực</span
-            >
-          </h4>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-          @if (areas().length === 0) {
-            <div class="col-span-full text-center py-6 text-xs text-slate-400 italic">
-              Chưa có khu vực nào được thiết lập.
-            </div>
-          }
-          @for (area of areas(); track area.id) {
-            <div
-              class="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-900/60"
-            >
-              <span
-                class="text-sm font-extrabold text-slate-700 dark:text-slate-300 truncate pr-2"
-                >{{ area.name }}</span
-              >
-              <div class="flex items-center gap-2 shrink-0">
-                <button
-                  (click)="openEditAreaModal(area)"
-                  class="btn-secondary btn-sm"
-                >
-                  Sửa
-                </button>
-                <button
-                  (click)="deleteArea(area)"
-                  class="btn-danger-light btn-sm"
-                >
-                  Xóa
-                </button>
-              </div>
-            </div>
-          }
-        </div>
-      </div>
-    </div>
-  </div>
 
 <!-- ==================== MODALS PHÒNG BÀN ==================== -->
 

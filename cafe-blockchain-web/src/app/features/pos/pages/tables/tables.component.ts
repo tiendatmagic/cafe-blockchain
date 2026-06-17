@@ -12,6 +12,7 @@ import { ModalComponent } from '@shared/components/modal/modal.component';
 import { CustomSelectComponent } from '@shared/components/custom-select/custom-select.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
+import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 
 @Component({
   selector: 'app-tables',
@@ -27,7 +28,8 @@ import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-g
     ModalComponent,
     CustomSelectComponent,
     IconComponent,
-    TabGroupComponent
+    TabGroupComponent,
+    SkeletonLoaderComponent
   ],
   templateUrl: './tables.component.html'
 })

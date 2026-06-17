@@ -12,6 +12,7 @@ import { TableComponent, TableColumn, TableCellDirective } from '@shared/compone
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { ShortAddressPipe } from '@shared/pipes/short-address.pipe';
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
+import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 
 @Component({
   selector: 'app-shifts',
@@ -29,7 +30,8 @@ import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
     TableCellDirective,
     TabGroupComponent,
     ShortAddressPipe,
-    VNDCurrencyPipe
+    VNDCurrencyPipe,
+    SkeletonLoaderComponent
   ],
   templateUrl: './shifts.component.html'
 })

@@ -71,39 +71,7 @@
       ></app-tab-group>
 
       @if (isSettingsLoading() || !configForm().store_name) {
-        <!-- SKELETON LOADING CHO VÙNG NỘI DUNG -->
-        <div class="app-card space-y-6 animate-pulse w-full">
-          <div class="space-y-2">
-            <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-md w-1/4 animate-pulse"></div>
-            <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-1/2 animate-pulse"></div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-            <div class="space-y-2.5">
-              <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-1/3"></div>
-              <div class="h-12 bg-slate-100 dark:bg-slate-800/40 rounded-xl w-full"></div>
-            </div>
-            <div class="space-y-2.5">
-              <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-1/3"></div>
-              <div class="h-12 bg-slate-100 dark:bg-slate-800/40 rounded-xl w-full"></div>
-            </div>
-            <div class="space-y-2.5">
-              <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-1/3"></div>
-              <div class="h-12 bg-slate-100 dark:bg-slate-800/40 rounded-xl w-full"></div>
-            </div>
-            <div class="space-y-2.5">
-              <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-1/3"></div>
-              <div class="h-12 bg-slate-100 dark:bg-slate-800/40 rounded-xl w-full"></div>
-            </div>
-          </div>
-
-          <div
-            class="flex items-center justify-end gap-3 pt-6 border-t border-slate-100 dark:border-slate-800/60"
-          >
-            <div class="h-10 w-32 bg-slate-200 dark:bg-slate-800 rounded-xl"></div>
-            <div class="h-10 w-44 bg-slate-200 dark:bg-slate-800 rounded-xl"></div>
-          </div>
-        </div>
+        <app-skeleton-loader type="settings"></app-skeleton-loader>
       } @else {
         <!-- Tab 1: Cấu hình Quán -->
         @if (settingsSubTab() === 'general') {

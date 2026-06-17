@@ -8,7 +8,7 @@ import { CommonModule } from '@angular/common';
   templateUrl: './skeleton-loader.component.html'
 })
 export class SkeletonLoaderComponent {
-  @Input() type: 'dashboard' | 'reports' | 'table' | 'card-grid' | 'form' = 'table';
+  @Input() type: 'dashboard' | 'reports' | 'table' | 'card-grid' | 'form' | 'pos' | 'menu' | 'orders' | 'financials' | 'customers' | 'debts' | 'inventory' | 'tables' | 'staffs' | 'shifts' | 'settings' = 'table';
   @Input() rows = 5;
   @Input() cols = 5;
   @Input() cards = 8;

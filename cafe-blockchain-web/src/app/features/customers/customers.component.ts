@@ -13,6 +13,7 @@ import { PageHeaderComponent } from '@shared/components/page-header/page-header.
 import { CustomDatePickerComponent } from '@shared/components/custom-date-picker/custom-date-picker.component';
 import { TableComponent, TableCellDirective, TableColumn } from '@shared/components/table/table.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
+import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 
 @Component({
   selector: 'app-customers',
@@ -30,7 +31,8 @@ import { IconComponent } from '@shared/components/icon/icon.component';
     CustomDatePickerComponent,
     TableComponent,
     TableCellDirective,
-    IconComponent
+    IconComponent,
+    SkeletonLoaderComponent
   ],
   templateUrl: './customers.component.html'
 })

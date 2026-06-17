@@ -11,6 +11,7 @@ import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
 import { TableComponent, TableCellDirective, TableColumn } from '@shared/components/table/table.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
+import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 
 @Component({
   selector: 'app-orders',
@@ -26,7 +27,8 @@ import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-g
     TableComponent,
     TableCellDirective,
     IconComponent,
-    TabGroupComponent
+    TabGroupComponent,
+    SkeletonLoaderComponent
   ],
   templateUrl: './orders.component.html'
 })

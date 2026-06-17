@@ -9,390 +9,389 @@
 
   @if (web3Service.walletConnected()) {
     @if (stateService.hasPermission('reports')) {
-    <!-- Bộ lọc mốc thời gian cao cấp -->
-    <div class="app-card flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4">
-      <!-- Lọc nhanh presets -->
-      <app-mini-buttons
-        [options]="datePresets"
-        [activeValue]="activePreset()"
-        (valueChange)="setDatePreset($event)"
-      ></app-mini-buttons>
+      @if (isReportsLoading() || !reportsData()) {
+        <app-skeleton-loader type="reports"></app-skeleton-loader>
+      } @else if (reportsError()) {
+        <!-- Lỗi hiển thị -->
+        <div class="flex items-center gap-3 p-4 bg-[var(--dynamic-primary)]/10 border border-[var(--dynamic-primary)]/20 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] rounded-xl text-sm font-bold">
+          <span class="flex items-center gap-1.5"><app-icon name="warning" class="h-4 w-4 shrink-0 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] inline-block" strokeWidth="2" /><span>{{ reportsError() }}</span></span>
+        </div>
+      } @else {
+        <!-- BÁO CÁO DỮ LIỆU THẬT -->
+        <!-- Bộ lọc mốc thời gian cao cấp thật -->
+        <div class="app-card flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 mb-6">
+          <!-- Lọc nhanh presets -->
+          <app-mini-buttons
+            [options]="datePresets"
+            [activeValue]="activePreset()"
+            (valueChange)="setDatePreset($event)"
+          ></app-mini-buttons>
 
-      <!-- Date Range Picker Đẹp Mắt -->
-      <div *ngIf="activePreset() === 'custom'" class="flex items-center gap-4 flex-wrap w-full sm:w-auto">
-        <app-custom-date-picker
-          [(selectedDate)]="tempStartDate"
-          (selectedDateChange)="onCustomDatesChange()"
-          placeholder="Từ ngày"
-          class="w-full sm:w-44"
-        ></app-custom-date-picker>
-        <app-custom-date-picker
-          [(selectedDate)]="tempEndDate"
-          (selectedDateChange)="onCustomDatesChange()"
-          placeholder="Đến ngày"
-          class="w-full sm:w-44"
-        ></app-custom-date-picker>
-      </div>
-    </div>
-
-    @if (isReportsLoading() || !reportsData()) {
-      <app-skeleton-loader type="reports"></app-skeleton-loader>
-    } @else if (reportsError()) {
-      <!-- Lỗi hiển thị -->
-      <div class="flex items-center gap-3 p-4 bg-[var(--dynamic-primary)]/10 border border-[var(--dynamic-primary)]/20 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] rounded-xl text-sm font-bold">
-        <span class="flex items-center gap-1.5"><app-icon name="warning" class="h-4 w-4 shrink-0 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] inline-block" strokeWidth="2" /><span>{{ reportsError() }}</span></span>
-      </div>
-    } @else {
-      <!-- BÁO CÁO DỮ LIỆU THẬT -->
-      <!-- Khối Thống kê Tài chính (Financial Summary Cards) -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-        <!-- Doanh thu bán hàng -->
-        <div class="app-card-interactive flex items-center justify-between group">
-          <div class="space-y-1.5">
-            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Doanh thu bán hàng</span>
-            <h4 class="text-2xl font-black text-slate-800 dark:text-white leading-none">
-              {{ reportsData()?.financials?.revenue | number }}
-              <span class="text-xs font-bold text-slate-400">đ</span>
-            </h4>
-            <span class="text-[10px] text-slate-400 font-medium">Hoạt động bán hàng POS & Web Store</span>
-          </div>
-          <div class="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0">
-            <app-icon name="financials" class="h-6 w-6 text-purple-650 dark:text-purple-400" strokeWidth="2" />
+          <!-- Date Range Picker Đẹp Mắt -->
+          <div *ngIf="activePreset() === 'custom'" class="flex items-center gap-4 flex-wrap w-full sm:w-auto">
+            <app-custom-date-picker
+              [(selectedDate)]="tempStartDate"
+              (selectedDateChange)="onCustomDatesChange()"
+              placeholder="Từ ngày"
+              class="w-full sm:w-44"
+            ></app-custom-date-picker>
+            <app-custom-date-picker
+              [(selectedDate)]="tempEndDate"
+              (selectedDateChange)="onCustomDatesChange()"
+              placeholder="Đến ngày"
+              class="w-full sm:w-44"
+            ></app-custom-date-picker>
           </div>
         </div>
 
-        <!-- Giá vốn hàng bán -->
-        <div class="app-card-interactive flex items-center justify-between group">
-          <div class="space-y-1.5">
-            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Giá vốn hàng bán (COGS)</span>
-            <h4 class="text-2xl font-black text-slate-800 dark:text-white leading-none">
-              {{ reportsData()?.financials?.cogs | vnd }}
-            </h4>
-            <span class="text-[10px] text-slate-400 font-medium">Lợi nhuận gộp: <strong class="text-emerald-500 font-black">{{ reportsData()?.financials?.gross_profit | vnd }}</strong> <span class="text-[10px] text-slate-400 dark:text-slate-500 font-bold ml-1">(Biên: {{ getGrossProfitMargin() | number: '1.0-1' }}%)</span></span>
+        <!-- Khối Thống kê Tài chính (Financial Summary Cards) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+          <!-- Doanh thu bán hàng -->
+          <div class="app-card-interactive flex items-center justify-between group">
+            <div class="space-y-1.5">
+              <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Doanh thu bán hàng</span>
+              <h4 class="text-2xl font-black text-slate-800 dark:text-white leading-none">
+                {{ reportsData()?.financials?.revenue | number }}
+                <span class="text-xs font-bold text-slate-400">đ</span>
+              </h4>
+              <span class="text-[10px] text-slate-400 font-medium">Hoạt động bán hàng POS & Web Store</span>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0">
+              <app-icon name="financials" class="h-6 w-6 text-purple-650 dark:text-purple-400" strokeWidth="2" />
+            </div>
           </div>
-          <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
-            <app-icon name="orders" class="h-6 w-6 text-amber-500" strokeWidth="2" />
-          </div>
-        </div>
 
-        <!-- Chi phí vận hành & doanh thu khác -->
-        <div class="app-card-interactive flex items-center justify-between group">
-          <div class="space-y-1.5">
-            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Chi phí & Thu nhập khác</span>
-            <h4 class="text-2xl font-black text-slate-800 dark:text-white leading-none">
-              {{ reportsData()?.financials?.expenses | vnd }}
-            </h4>
-            <span class="text-[10px] text-slate-400 font-medium">Thu nhập khác: <strong class="text-purple-500 font-black">+{{ reportsData()?.financials?.other_income | vnd }}</strong></span>
+          <!-- Giá vốn hàng bán -->
+          <div class="app-card-interactive flex items-center justify-between group">
+            <div class="space-y-1.5">
+              <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Giá vốn hàng bán (COGS)</span>
+              <h4 class="text-2xl font-black text-slate-800 dark:text-white leading-none">
+                {{ reportsData()?.financials?.cogs | vnd }}
+              </h4>
+              <span class="text-[10px] text-slate-400 font-medium">Lợi nhuận gộp: <strong class="text-emerald-500 font-black">{{ reportsData()?.financials?.gross_profit | vnd }}</strong> <span class="text-[10px] text-slate-400 dark:text-slate-500 font-bold ml-1">(Biên: {{ getGrossProfitMargin() | number: '1.0-1' }}%)</span></span>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+              <app-icon name="orders" class="h-6 w-6 text-amber-500" strokeWidth="2" />
+            </div>
           </div>
-          <div class="w-12 h-12 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0">
-            <app-icon name="minus-circle" class="h-6 w-6 text-rose-500" strokeWidth="2" />
-          </div>
-        </div>
 
-        <!-- Lợi nhuận ròng -->
-        <div
-          [class.bg-emerald-500/5]="reportsData()?.financials?.net_profit >= 0"
-          [class.dark:bg-emerald-950/20]="reportsData()?.financials?.net_profit >= 0"
-          [class.border-emerald-500/20]="reportsData()?.financials?.net_profit >= 0"
-          [class.bg-rose-500/5]="reportsData()?.financials?.net_profit < 0"
-          [class.dark:bg-rose-950/20]="reportsData()?.financials?.net_profit < 0"
-          [class.border-rose-500/20]="reportsData()?.financials?.net_profit < 0"
-          class="app-card-interactive flex items-center justify-between group"
-        >
-          <div class="space-y-1.5">
-            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Lợi nhuận ròng</span>
-            <h4
-              [class.text-emerald-500]="reportsData()?.financials?.net_profit >= 0"
-              [class.text-rose-500]="reportsData()?.financials?.net_profit < 0"
-              class="text-2xl font-black leading-none"
-            >
-              {{ reportsData()?.financials?.net_profit | number }}
-              <span class="text-xs font-bold">đ</span>
-            </h4>
-            <span class="text-[10px] text-slate-400 font-medium">Hiệu số thu chi (Tỷ suất ròng: {{ getNetProfitMargin() | number: '1.0-1' }}%)</span>
+          <!-- Chi phí vận hành & doanh thu khác -->
+          <div class="app-card-interactive flex items-center justify-between group">
+            <div class="space-y-1.5">
+              <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Chi phí & Thu nhập khác</span>
+              <h4 class="text-2xl font-black text-slate-800 dark:text-white leading-none">
+                {{ reportsData()?.financials?.expenses | vnd }}
+              </h4>
+              <span class="text-[10px] text-slate-400 font-medium">Thu nhập khác: <strong class="text-purple-500 font-black">+{{ reportsData()?.financials?.other_income | vnd }}</strong></span>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0">
+              <app-icon name="minus-circle" class="h-6 w-6 text-rose-500" strokeWidth="2" />
+            </div>
           </div>
+
+          <!-- Lợi nhuận ròng -->
           <div
-            [class.bg-emerald-500/10]="reportsData()?.financials?.net_profit >= 0"
-            [class.text-emerald-500]="reportsData()?.financials?.net_profit >= 0"
-            [class.bg-rose-500/10]="reportsData()?.financials?.net_profit < 0"
-            [class.text-rose-500]="reportsData()?.financials?.net_profit < 0"
-            class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+            [class.bg-emerald-500/5]="reportsData()?.financials?.net_profit >= 0"
+            [class.dark:bg-emerald-950/20]="reportsData()?.financials?.net_profit >= 0"
+            [class.border-emerald-500/20]="reportsData()?.financials?.net_profit >= 0"
+            [class.bg-rose-500/5]="reportsData()?.financials?.net_profit < 0"
+            [class.dark:bg-rose-950/20]="reportsData()?.financials?.net_profit < 0"
+            [class.border-rose-500/20]="reportsData()?.financials?.net_profit < 0"
+            class="app-card-interactive flex items-center justify-between group"
           >
-            <app-icon name="check-circle" class="h-6 w-6" strokeWidth="2" />
+            <div class="space-y-1.5">
+              <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Lợi nhuận ròng</span>
+              <h4
+                [class.text-emerald-500]="reportsData()?.financials?.net_profit >= 0"
+                [class.text-rose-500]="reportsData()?.financials?.net_profit < 0"
+                class="text-2xl font-black leading-none"
+              >
+                {{ reportsData()?.financials?.net_profit | number }}
+                <span class="text-xs font-bold">đ</span>
+              </h4>
+              <span class="text-[10px] text-slate-400 font-medium">Hiệu số thu chi (Tỷ suất ròng: {{ getNetProfitMargin() | number: '1.0-1' }}%)</span>
+            </div>
+            <div
+              [class.bg-emerald-500/10]="reportsData()?.financials?.net_profit >= 0"
+              [class.text-emerald-500]="reportsData()?.financials?.net_profit >= 0"
+              [class.bg-rose-500/10]="reportsData()?.financials?.net_profit < 0"
+              [class.text-rose-500]="reportsData()?.financials?.net_profit < 0"
+              class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+            >
+              <app-icon name="check-circle" class="h-6 w-6" strokeWidth="2" />
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Biểu đồ xu hướng (SVG Charts) -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Biểu đồ cột stacked: Doanh thu & Chi phí -->
-        <div class="lg:col-span-2 app-card flex flex-col justify-between space-y-4">
-          <div class="flex items-center justify-between shrink-0">
-            <h4 class="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
-              <app-icon name="reports" class="h-5 w-5 text-slate-500 shrink-0" strokeWidth="2" />
-              <span>Xu hướng thu chi</span>
-            </h4>
-            <div class="flex items-center gap-4 text-[10px] font-bold">
-              <div class="flex items-center gap-1.5">
-                <span class="w-2.5 h-2.5 rounded bg-[var(--dynamic-primary)] block"></span>
-                <span class="text-slate-500">Doanh thu</span>
+        <!-- Biểu đồ xu hướng (SVG Charts) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+          <!-- Biểu đồ cột stacked: Doanh thu & Chi phí -->
+          <div class="lg:col-span-2 app-card flex flex-col justify-between space-y-4">
+            <div class="flex items-center justify-between shrink-0">
+              <h4 class="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
+                <app-icon name="reports" class="h-5 w-5 text-slate-500 shrink-0" strokeWidth="2" />
+                <span>Xu hướng thu chi</span>
+              </h4>
+              <div class="flex items-center gap-4 text-[10px] font-bold">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-2.5 h-2.5 rounded bg-[var(--dynamic-primary)] block"></span>
+                  <span class="text-slate-500">Doanh thu</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span class="w-2.5 h-2.5 rounded bg-rose-500 block"></span>
+                  <span class="text-slate-500">Chi phí</span>
+                </div>
               </div>
-              <div class="flex items-center gap-1.5">
-                <span class="w-2.5 h-2.5 rounded bg-rose-500 block"></span>
-                <span class="text-slate-500">Chi phí</span>
+            </div>
+
+            <!-- Lưới vẽ SVG Bar Chart -->
+            <div class="relative w-full flex-1 flex items-end justify-between pt-6 pb-2 px-1 sm:px-2 min-h-[220px]">
+              <!-- Trục Y mờ -->
+              <div class="absolute inset-y-6 left-0 right-16 flex flex-col justify-between pointer-events-none">
+                <div class="border-t border-slate-100 dark:border-slate-800/60 w-full pt-0.5"></div>
+                <div class="border-t border-slate-100 dark:border-slate-800/60 w-full pt-0.5"></div>
+                <div class="border-t border-slate-100 dark:border-slate-800/60 w-full pt-0.5"></div>
+                <div class="border-t border-slate-200 dark:border-slate-800 w-full pt-0.5"></div>
+              </div>
+
+              <!-- Nhãn trục Y bên phải -->
+              <div class="absolute inset-y-6 right-0 w-16 flex flex-col justify-between pointer-events-none text-left text-[9px] text-slate-400 font-semibold pl-2 pt-0.5">
+                <div class="truncate">{{ getMaxChartValue() | vnd }}</div>
+                <div class="truncate">{{ (getMaxChartValue() / 2) | vnd }}</div>
+                <div class="truncate">{{ (getMaxChartValue() / 4) | vnd }}</div>
+                <div>0đ</div>
+              </div>
+
+              <!-- Cột Bar vẽ chi tiết -->
+              <div class="w-[calc(100%-64px)] h-52 flex items-end justify-around gap-2 z-10 overflow-x-auto no-scrollbar">
+                @for (day of reportsData()?.trend_chart; track day.date) {
+                  <div class="flex-1 flex flex-col items-center gap-2 group cursor-pointer min-w-[30px] max-w-[60px]">
+                    <div class="relative w-full flex items-end justify-center gap-1 h-32">
+                      <!-- Tooltip hover -->
+                      <div class="absolute -top-14 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 bg-slate-950 text-white dark:bg-white dark:text-slate-900 text-[10px] font-black p-2.5 rounded-xl shadow-xl transition-all duration-200 leading-normal whitespace-nowrap z-30 flex flex-col gap-0.5 border border-slate-800/10 dark:border-slate-200/10">
+                        <span class="text-slate-400 dark:text-slate-500 font-bold">Ngày: {{ day.date }}</span>
+                         <span class="text-purple-400 dark:text-purple-600">Doanh thu: {{ day.revenue | vnd }}</span>
+                        <span class="text-rose-400 dark:text-rose-600">Chi phí: {{ day.expense | vnd }}</span>
+                      </div>
+
+                      <!-- Cột Doanh thu -->
+                      <div
+                        [style.height.%]="day.revenue > 0 ? mathMin(100, (day.revenue / getMaxChartValue()) * 100) : 5"
+                        class="w-1/2 bg-gradient-to-t from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] rounded-t shadow-sm transition-all duration-300"
+                      ></div>
+                      <!-- Cột Chi phí -->
+                      <div
+                        [style.height.%]="day.expense > 0 ? mathMin(100, (day.expense / getMaxChartValue()) * 100) : 5"
+                        class="w-1/2 bg-gradient-to-t from-rose-600 to-rose-400 rounded-t shadow-sm transition-all duration-300"
+                      ></div>
+                    </div>
+                    <span class="text-[9px] font-bold text-slate-400 group-hover:text-[var(--dynamic-primary)] transition-all whitespace-nowrap">
+                      {{ day.day_name }}
+                    </span>
+                  </div>
+                }
               </div>
             </div>
           </div>
 
-          <!-- Lưới vẽ SVG Bar Chart -->
-          <div class="relative w-full flex-1 flex items-end justify-between pt-6 pb-2 px-1 sm:px-2 min-h-[220px]">
-            <!-- Trục Y mờ -->
-            <div class="absolute inset-y-6 left-0 right-16 flex flex-col justify-between pointer-events-none">
-              <div class="border-t border-slate-100 dark:border-slate-800/60 w-full pt-0.5"></div>
-              <div class="border-t border-slate-100 dark:border-slate-800/60 w-full pt-0.5"></div>
-              <div class="border-t border-slate-100 dark:border-slate-800/60 w-full pt-0.5"></div>
-              <div class="border-t border-slate-200 dark:border-slate-800 w-full pt-0.5"></div>
+          <!-- Biểu đồ tròn Doughnut: Cơ cấu thanh toán -->
+          <div class="app-card flex flex-col justify-between space-y-4">
+            <div class="space-y-1 shrink-0">
+              <h4 class="text-base font-extrabold text-slate-800 dark:text-white">Cơ cấu thanh toán</h4>
+              <p class="text-xs text-slate-400">Tỷ lệ giá trị thanh toán qua các phương thức.</p>
             </div>
 
-            <!-- Nhãn trục Y bên phải -->
-            <div class="absolute inset-y-6 right-0 w-16 flex flex-col justify-between pointer-events-none text-left text-[9px] text-slate-400 font-semibold pl-2 pt-0.5">
-              <div class="truncate">{{ getMaxChartValue() | vnd }}</div>
-              <div class="truncate">{{ (getMaxChartValue() / 2) | vnd }}</div>
-              <div class="truncate">{{ (getMaxChartValue() / 4) | vnd }}</div>
-              <div>0đ</div>
-            </div>
-
-            <!-- Cột Bar vẽ chi tiết -->
-            <div class="w-[calc(100%-64px)] h-52 flex items-end justify-around gap-2 z-10 overflow-x-auto no-scrollbar">
-              @for (day of reportsData()?.trend_chart; track day.date) {
-                <div class="flex-1 flex flex-col items-center gap-2 group cursor-pointer min-w-[30px] max-w-[60px]">
-                  <div class="relative w-full flex items-end justify-center gap-1 h-32">
-                    <!-- Tooltip hover -->
-                    <div class="absolute -top-14 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 bg-slate-950 text-white dark:bg-white dark:text-slate-900 text-[10px] font-black p-2.5 rounded-xl shadow-xl transition-all duration-200 leading-normal whitespace-nowrap z-30 flex flex-col gap-0.5 border border-slate-800/10 dark:border-slate-200/10">
-                      <span class="text-slate-400 dark:text-slate-500 font-bold">Ngày: {{ day.date }}</span>
-                       <span class="text-purple-400 dark:text-purple-600">Doanh thu: {{ day.revenue | vnd }}</span>
-                      <span class="text-rose-400 dark:text-rose-600">Chi phí: {{ day.expense | vnd }}</span>
-                    </div>
-
-                    <!-- Cột Doanh thu -->
-                    <div
-                      [style.height.%]="day.revenue > 0 ? mathMin(100, (day.revenue / getMaxChartValue()) * 100) : 5"
-                      class="w-1/2 bg-gradient-to-t from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] rounded-t shadow-sm transition-all duration-300"
-                    ></div>
-                    <!-- Cột Chi phí -->
-                    <div
-                      [style.height.%]="day.expense > 0 ? mathMin(100, (day.expense / getMaxChartValue()) * 100) : 5"
-                      class="w-1/2 bg-gradient-to-t from-rose-600 to-rose-400 rounded-t shadow-sm transition-all duration-300"
-                    ></div>
-                  </div>
-                  <span class="text-[9px] font-bold text-slate-400 group-hover:text-[var(--dynamic-primary)] transition-all whitespace-nowrap">
-                    {{ day.day_name }}
+            <!-- Doughnut Chart Conic Gradient -->
+            <div class="flex-1 flex items-center justify-center my-2 min-h-[160px]">
+              <div
+                class="w-32 h-32 rounded-full shadow-inner relative flex items-center justify-center transition-all duration-500 hover:scale-105"
+                [style.background]="getConicGradient()"
+              >
+                <div class="w-22 h-22 rounded-full bg-white dark:bg-slate-900 flex flex-col items-center justify-center shadow-md">
+                  <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider">Tổng thu</span>
+                  <span class="text-sm font-black text-slate-800 dark:text-white leading-none mt-0.5">
+                    {{ reportsData()?.financials?.revenue | vnd }}
                   </span>
                 </div>
-              }
+              </div>
             </div>
-          </div>
-        </div>
 
-        <!-- Biểu đồ tròn Doughnut: Cơ cấu thanh toán -->
-        <div class="app-card flex flex-col justify-between space-y-4">
-          <div class="space-y-1 shrink-0">
-            <h4 class="text-base font-extrabold text-slate-800 dark:text-white">Cơ cấu thanh toán</h4>
-            <p class="text-xs text-slate-400">Tỷ lệ giá trị thanh toán qua các phương thức.</p>
-          </div>
-
-          <!-- Doughnut Chart Conic Gradient -->
-          <div class="flex-1 flex items-center justify-center my-2 min-h-[160px]">
-            <div
-              class="w-32 h-32 rounded-full shadow-inner relative flex items-center justify-center transition-all duration-500 hover:scale-105"
-              [style.background]="getConicGradient()"
-            >
-              <div class="w-22 h-22 rounded-full bg-white dark:bg-slate-900 flex flex-col items-center justify-center shadow-md">
-                <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider">Tổng thu</span>
-                <span class="text-sm font-black text-slate-800 dark:text-white leading-none mt-0.5">
-                  {{ reportsData()?.financials?.revenue | vnd }}
-                </span>
+            <!-- Chú thích Legend -->
+            <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-slate-800 shrink-0 text-xs font-bold">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded bg-emerald-500 block"></span>
+                <span class="text-slate-500">Ngân hàng: {{ getPaymentPercentage('bank_transfer') }}%</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded bg-pink-500 block"></span>
+                <span class="text-slate-500">Ví điện tử: {{ getPaymentPercentage('e_wallet') }}%</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded bg-amber-500 block"></span>
+                <span class="text-slate-500">Tiền mặt: {{ getPaymentPercentage('cash') }}%</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded bg-[var(--dynamic-primary)] block"></span>
+                <span class="text-slate-500">Crypto: {{ getPaymentPercentage('crypto') }}%</span>
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- Chú thích Legend -->
-          <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-slate-800 shrink-0 text-xs font-bold">
-            <div class="flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full shrink-0" style="background-color: #10b981"></span>
-              <span class="text-slate-500">Ngân hàng: {{ getPaymentPercentage('bank_transfer') }}%</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full shrink-0" style="background-color: #ec4899"></span>
-              <span class="text-slate-500">Ví điện tử: {{ getPaymentPercentage('e_wallet') }}%</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full shrink-0" style="background-color: #f59e0b"></span>
-              <span class="text-slate-500">Tiền mặt: {{ getPaymentPercentage('cash') }}%</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full shrink-0 bg-[var(--dynamic-primary)]"></span>
-              <span class="text-slate-500">Crypto: {{ getPaymentPercentage('crypto') }}%</span>
-            </div>
+        <!-- Khối Lưới chi tiết hàng hóa / khách hàng -->
+        <div class="app-card p-0 overflow-hidden mt-6">
+          <!-- Tabs đầu bảng -->
+          <div class="p-4 border-b border-slate-100 dark:border-slate-800">
+            <app-tab-group
+              [options]="reportTabOptions"
+              [activeValue]="activeTab()"
+              (valueChange)="activeTab.set($event)"
+              containerClass="w-full sm:max-w-2xl"
+            ></app-tab-group>
           </div>
-        </div>
-      </div>
 
-      <!-- Khối Lưới chi tiết hàng hóa / khách hàng -->
-      <div class="app-card p-0 overflow-hidden">
-        <!-- Tabs đầu bảng -->
-        <div class="p-4 border-b border-slate-100 dark:border-slate-800">
-          <app-tab-group
-            [options]="reportTabOptions"
-            [activeValue]="activeTab()"
-            (valueChange)="activeTab.set($event)"
-            containerClass="w-full sm:max-w-2xl"
-          ></app-tab-group>
-        </div>
-
-        <!-- Nội dung của Tab 1: Hàng hóa -->
-        <div *ngIf="activeTab() === 'products'" class="p-4 sm:p-6 space-y-4">
-          <div class="flex justify-between items-center flex-wrap gap-3">
-            <div class="space-y-0.5">
-              <h5 class="text-sm font-extrabold text-slate-800 dark:text-white">Thống kê tiêu thụ món ăn</h5>
-              <p class="text-xs text-slate-400">Bấm vào tiêu đề cột để thay đổi cách sắp xếp (bán chạy hoặc bán chậm)</p>
+          <!-- Nội dung của Tab 1: Hàng hóa -->
+          <div *ngIf="activeTab() === 'products'" class="p-4 sm:p-6 space-y-4">
+            <div class="flex justify-between items-center flex-wrap gap-3">
+              <div class="space-y-0.5">
+                <h5 class="text-sm font-extrabold text-slate-800 dark:text-white">Thống kê tiêu thụ món ăn</h5>
+                <p class="text-xs text-slate-400">Bấm vào tiêu đề cột để thay đổi cách sắp xếp (bán chạy hoặc bán chậm)</p>
+              </div>
+              <button
+                (click)="exportToExcel('products')"
+                class="px-3 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-black transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-1.5 shadow-sm"
+              >
+                <app-icon name="download" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
+                <span>Xuất Excel (XLSX)</span>
+              </button>
             </div>
-            <button
-              (click)="exportToExcel('products')"
-              class="px-3 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-black transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-1.5 shadow-sm"
+
+            <app-table
+              [data]="productsPaged()"
+              [columns]="productColumns"
+              [isLoading]="false"
+              [showPagination]="true"
+              [totalItems]="reportsData()?.products?.length || 0"
+              [itemsPerPage]="productLimit"
+              [currentPage]="productPage()"
+              [sortKey]="productSortField()"
+              [sortDirection]="productSortDesc() ? 'desc' : 'asc'"
+              itemName="món ăn"
+              (pageChange)="productPage.set($event)"
+              (sortChange)="onProductSortChange($event)"
+              noDataMessage="Không có dữ liệu bán hàng."
             >
-              <app-icon name="download" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
-              <span>Xuất Excel (XLSX)</span>
-            </button>
+              <!-- Custom Cell cho cột SKU -->
+              <ng-template appCell="sku" let-row>
+                <span class="font-mono text-slate-500">{{ row.sku || '—' }}</span>
+              </ng-template>
+
+              <!-- Custom Cell cho cột Tên món -->
+              <ng-template appCell="product_name" let-row>
+                <span class="font-extrabold text-slate-800 dark:text-white">
+                  {{ row.product_name }}
+                  @if (row.variant_name) {
+                    <span class="text-slate-400 font-normal">({{ row.variant_name }})</span>
+                  }
+                </span>
+              </ng-template>
+
+              <!-- Custom Cell cho cột Số lượng bán -->
+              <ng-template appCell="total_quantity" let-row>
+                <span class="font-bold text-slate-800 dark:text-white">{{ row.total_quantity }}</span>
+              </ng-template>
+
+              <!-- Custom Cell cho cột Doanh số -->
+              <ng-template appCell="total_revenue" let-row>
+                <span>{{ row.total_revenue | vnd }}</span>
+              </ng-template>
+
+              <!-- Custom Cell cho cột Tổng giá vốn -->
+              <ng-template appCell="total_cost" let-row>
+                <span>{{ row.total_cost | vnd }}</span>
+              </ng-template>
+
+              <!-- Custom Cell cho cột Lợi nhuận gộp -->
+              <ng-template appCell="gross_profit" let-row>
+                <span class="font-black text-emerald-500">{{ row.gross_profit | vnd }}</span>
+              </ng-template>
+            </app-table>
           </div>
 
-          <app-table
-            [data]="productsPaged()"
-            [columns]="productColumns"
-            [isLoading]="false"
-            [showPagination]="true"
-            [totalItems]="reportsData()?.products?.length || 0"
-            [itemsPerPage]="productLimit"
-            [currentPage]="productPage()"
-            [sortKey]="productSortField()"
-            [sortDirection]="productSortDesc() ? 'desc' : 'asc'"
-            itemName="món ăn"
-            (pageChange)="productPage.set($event)"
-            (sortChange)="onProductSortChange($event)"
-            noDataMessage="Không có dữ liệu bán hàng."
-          >
-            <!-- Custom Cell cho cột SKU -->
-            <ng-template appCell="sku" let-row>
-              <span class="font-mono text-slate-500">{{ row.sku || '—' }}</span>
-            </ng-template>
-
-            <!-- Custom Cell cho cột Tên món -->
-            <ng-template appCell="product_name" let-row>
-              <span class="font-extrabold text-slate-800 dark:text-white">
-                {{ row.product_name }}
-                @if (row.variant_name) {
-                  <span class="text-slate-400 font-normal">({{ row.variant_name }})</span>
-                }
-              </span>
-            </ng-template>
-
-            <!-- Custom Cell cho cột Số lượng bán -->
-            <ng-template appCell="total_quantity" let-row>
-              <span class="font-bold text-slate-800 dark:text-white">{{ row.total_quantity }}</span>
-            </ng-template>
-
-            <!-- Custom Cell cho cột Doanh số -->
-            <ng-template appCell="total_revenue" let-row>
-              <span>{{ row.total_revenue | vnd }}</span>
-            </ng-template>
-
-            <!-- Custom Cell cho cột Tổng giá vốn -->
-            <ng-template appCell="total_cost" let-row>
-              <span>{{ row.total_cost | vnd }}</span>
-            </ng-template>
-
-            <!-- Custom Cell cho cột Lợi nhuận gộp -->
-            <ng-template appCell="gross_profit" let-row>
-              <span class="font-black text-emerald-500">{{ row.gross_profit | vnd }}</span>
-            </ng-template>
-          </app-table>
-        </div>
-
-        <!-- Nội dung của Tab 2: Khách hàng -->
-        <div *ngIf="activeTab() === 'customers'" class="p-4 sm:p-6 space-y-4">
-          <div class="flex justify-between items-center flex-wrap gap-3">
-            <div class="space-y-0.5">
-              <h5 class="text-sm font-extrabold text-slate-800 dark:text-white">Thống kê chi tiêu khách hàng</h5>
-              <p class="text-xs text-slate-400">Bấm vào tiêu đề cột để thay đổi cách sắp xếp (chi tiêu nhiều hoặc ít)</p>
+          <!-- Nội dung của Tab 2: Khách hàng -->
+          <div *ngIf="activeTab() === 'customers'" class="p-4 sm:p-6 space-y-4">
+            <div class="flex justify-between items-center flex-wrap gap-3">
+              <div class="space-y-0.5">
+                <h5 class="text-sm font-extrabold text-slate-800 dark:text-white">Thống kê chi tiêu khách hàng</h5>
+                <p class="text-xs text-slate-400">Bấm vào tiêu đề cột để thay đổi cách sắp xếp (chi tiêu nhiều hoặc ít)</p>
+              </div>
+              <button
+                (click)="exportToExcel('customers')"
+                class="px-3 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-black transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-1.5 shadow-sm"
+              >
+                <app-icon name="download" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
+                <span>Xuất Excel (XLSX)</span>
+              </button>
             </div>
-            <button
-              (click)="exportToExcel('customers')"
-              class="px-3 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-black transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-1.5 shadow-sm"
+
+            <app-table
+              [data]="customersPaged()"
+              [columns]="customerColumns"
+              [isLoading]="false"
+              [showPagination]="true"
+              [totalItems]="reportsData()?.customers?.length || 0"
+              [itemsPerPage]="customerLimit"
+              [currentPage]="customerPage()"
+              [sortKey]="customerSortField()"
+              [sortDirection]="customerSortDesc() ? 'desc' : 'asc'"
+              itemName="khách hàng"
+              (pageChange)="customerPage.set($event)"
+              (sortChange)="onCustomerSortChange($event)"
+              noDataMessage="Không có dữ liệu khách hàng."
             >
-              <app-icon name="download" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
-              <span>Xuất Excel (XLSX)</span>
-            </button>
+              <!-- Custom Cell cho cột Tên khách hàng -->
+              <ng-template appCell="customer_name" let-row>
+                <span class="font-extrabold text-slate-800 dark:text-white">{{ row.customer_name }}</span>
+              </ng-template>
+
+              <!-- Custom Cell cho cột Số điện thoại -->
+              <ng-template appCell="customer_phone" let-row>
+                <span class="text-slate-500">{{ row.customer_phone || '—' }}</span>
+              </ng-template>
+
+              <!-- Custom Cell cho cột Địa chỉ ví -->
+              <ng-template appCell="wallet_address" let-row>
+                <span class="font-mono text-[11px] text-slate-500">
+                  @if (row.wallet_address) {
+                    {{ row.wallet_address | appShortAddress }}
+                  } @else {
+                    —
+                  }
+                </span>
+              </ng-template>
+
+              <!-- Custom Cell cho cột Số đơn mua -->
+              <ng-template appCell="orders_count" let-row>
+                <span class="font-bold text-slate-800 dark:text-white">{{ row.orders_count }}</span>
+              </ng-template>
+
+              <!-- Custom Cell cho cột Tổng chi tiêu -->
+              <ng-template appCell="total_spent" let-row>
+                <span class="font-black text-slate-800 dark:text-white">{{ row.total_spent | vnd }}</span>
+              </ng-template>
+
+              <!-- Custom Cell cho cột Trung bình đơn -->
+              <ng-template appCell="average_order_value" let-row>
+                <span class="font-bold text-purple-600 dark:text-purple-400">{{ row.average_order_value | vnd }}</span>
+              </ng-template>
+            </app-table>
           </div>
-
-          <app-table
-            [data]="customersPaged()"
-            [columns]="customerColumns"
-            [isLoading]="false"
-            [showPagination]="true"
-            [totalItems]="reportsData()?.customers?.length || 0"
-            [itemsPerPage]="customerLimit"
-            [currentPage]="customerPage()"
-            [sortKey]="customerSortField()"
-            [sortDirection]="customerSortDesc() ? 'desc' : 'asc'"
-            itemName="khách hàng"
-            (pageChange)="customerPage.set($event)"
-            (sortChange)="onCustomerSortChange($event)"
-            noDataMessage="Không có dữ liệu khách hàng."
-          >
-            <!-- Custom Cell cho cột Tên khách hàng -->
-            <ng-template appCell="customer_name" let-row>
-              <span class="font-extrabold text-slate-800 dark:text-white">{{ row.customer_name }}</span>
-            </ng-template>
-
-            <!-- Custom Cell cho cột Số điện thoại -->
-            <ng-template appCell="customer_phone" let-row>
-              <span class="text-slate-500">{{ row.customer_phone || '—' }}</span>
-            </ng-template>
-
-            <!-- Custom Cell cho cột Địa chỉ ví -->
-            <ng-template appCell="wallet_address" let-row>
-              <span class="font-mono text-[11px] text-slate-500">
-                @if (row.wallet_address) {
-                  {{ row.wallet_address | appShortAddress }}
-                } @else {
-                  —
-                }
-              </span>
-            </ng-template>
-
-            <!-- Custom Cell cho cột Số đơn mua -->
-            <ng-template appCell="orders_count" let-row>
-              <span class="font-bold text-slate-800 dark:text-white">{{ row.orders_count }}</span>
-            </ng-template>
-
-            <!-- Custom Cell cho cột Tổng chi tiêu -->
-            <ng-template appCell="total_spent" let-row>
-              <span class="font-black text-slate-800 dark:text-white">{{ row.total_spent | vnd }}</span>
-            </ng-template>
-
-            <!-- Custom Cell cho cột Trung bình đơn -->
-            <ng-template appCell="average_order_value" let-row>
-              <span class="font-bold text-purple-600 dark:text-purple-400">{{ row.average_order_value | vnd }}</span>
-            </ng-template>
-          </app-table>
         </div>
-
-
-      </div>
-    }
+      }
     } @else {
       <app-access-restricted pageName="Báo cáo"></app-access-restricted>
     }
-} @else {
-  <app-web3-connect-prompt [title]="'Kết nối ví Web3 để xem Báo cáo chi tiết'"></app-web3-connect-prompt>
-}
+  } @else {
+    <app-web3-connect-prompt [title]="'Kết nối ví Web3 để xem Báo cáo chi tiết'"></app-web3-connect-prompt>
+  }
+</div>

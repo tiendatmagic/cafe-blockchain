@@ -12,6 +12,8 @@ import { MiniButtonsComponent, DASHBOARD_DATE_OPTIONS } from '@shared/components
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 
+import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -26,7 +28,8 @@ import { IconComponent } from '@shared/components/icon/icon.component';
     CustomDatePickerComponent,
     MiniButtonsComponent,
     PaginationComponent,
-    IconComponent
+    IconComponent,
+    SkeletonLoaderComponent
   ],
   templateUrl: './dashboard.component.html'
 })

@@ -13,6 +13,7 @@ import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
 import { CustomDatePickerComponent } from '@shared/components/custom-date-picker/custom-date-picker.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
+import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 
 @Component({
   selector: 'app-financials',
@@ -29,7 +30,8 @@ import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-g
     VNDCurrencyPipe,
     CustomDatePickerComponent,
     IconComponent,
-    TabGroupComponent
+    TabGroupComponent,
+    SkeletonLoaderComponent
   ],
   templateUrl: './financials.component.html'
 })

@@ -12,6 +12,7 @@ import { CustomSelectComponent } from '@shared/components/custom-select/custom-s
 import { CustomSwitchComponent } from '@shared/components/custom-switch/custom-switch.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
+import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 
 @Component({
   selector: 'app-settings',
@@ -27,7 +28,8 @@ import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-g
     CustomSelectComponent,
     CustomSwitchComponent,
     IconComponent,
-    TabGroupComponent
+    TabGroupComponent,
+    SkeletonLoaderComponent
   ],
   templateUrl: './settings.component.html'
 })
