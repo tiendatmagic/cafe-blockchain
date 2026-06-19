@@ -222,7 +222,7 @@
               </h4>
               <span
                 class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider"
-                >Crypto vs Fiat</span
+                >Tổng doanh thu</span
               >
             </div>
 
@@ -257,34 +257,20 @@
                     <div class="relative w-full flex items-end justify-center h-24">
                       <!-- Tooltip khi hover cột -->
                       <div
-                        class="absolute -top-16 scale-0 group-hover:scale-100 bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-[9px] font-black p-2 rounded-xl shadow-lg transition-all duration-200 leading-tight whitespace-nowrap z-30 flex flex-col gap-0.5"
+                        class="absolute -top-10 scale-0 group-hover:scale-100 bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-[10px] font-black px-2.5 py-1.5 rounded-xl shadow-lg transition-all duration-200 whitespace-nowrap z-30"
                       >
-                        <span class="text-slate-400">Tổng: {{ item.revenue | vnd }}</span>
-                        <span class="text-purple-500">Crypto: {{ item.crypto_revenue | vnd }}</span>
-                        <span class="text-amber-500">Fiat: {{ item.fiat_revenue | vnd }}</span>
+                        <span>{{ item.revenue | vnd }}</span>
                       </div>
 
-                      <!-- Cột bar stacked chia làm 2 phần Fiat và Crypto -->
+                      <!-- Cột bar thể hiện tổng doanh thu -->
                       <div
                         [style.height.%]="
                           item.revenue > 0
                             ? mathMin(100, (item.revenue / getMaxRevenue()) * 100)
                             : 5
                         "
-                        class="w-full rounded-t-lg overflow-hidden flex flex-col justify-end shadow-md transition-all duration-300"
+                        class="w-full rounded-t-lg overflow-hidden bg-gradient-to-t from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] hover:opacity-90 shadow-md transition-all duration-300"
                       >
-                        <!-- Phần Fiat (ở trên) -->
-                        <div
-                          *ngIf="item.revenue > 0"
-                          [style.height.%]="(item.fiat_revenue / item.revenue) * 100"
-                          class="w-full bg-gradient-to-t from-amber-500/80 to-amber-400/80 hover:from-amber-400 hover:to-amber-300 transition-colors"
-                        ></div>
-                        <!-- Phần Crypto (ở dưới) -->
-                        <div
-                          *ngIf="item.revenue > 0"
-                          [style.height.%]="(item.crypto_revenue / item.revenue) * 100"
-                          class="w-full bg-gradient-to-t from-purple-600/90 to-purple-500/90 hover:from-purple-500 hover:to-purple-400 transition-colors"
-                        ></div>
                       </div>
                     </div>
                     <span
