@@ -326,7 +326,7 @@ div.form-input.p-0 {
 }
 
 .app-table th {
-  @apply p-4 text-xs font-bold text-slate-400 uppercase tracking-wider;
+  @apply p-4 text-xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap;
 }
 
 /* Tự động căn lề trái cột đầu tiên và lề phải cột cuối cùng */
@@ -345,7 +345,7 @@ div.form-input.p-0 {
 }
 
 .app-table td {
-  @apply p-4 text-slate-700 dark:text-slate-300;
+  @apply p-4 text-slate-700 dark:text-slate-300 whitespace-nowrap;
 }
 
 /* Bảng kích thước nhỏ (Small Table) */
@@ -358,7 +358,7 @@ div.form-input.p-0 {
 }
 
 .app-table-sm th {
-  @apply pb-2 font-black text-[11px] uppercase;
+  @apply pb-2 font-black text-[11px] uppercase whitespace-nowrap;
 }
 
 .app-table-sm th:first-child,
@@ -376,7 +376,7 @@ div.form-input.p-0 {
 }
 
 .app-table-sm td {
-  @apply py-2.5 text-xs;
+  @apply py-2.5 text-xs whitespace-nowrap;
 }
 
 /* Loại bỏ hover state trên tr */
