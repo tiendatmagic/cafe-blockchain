@@ -25,7 +25,7 @@ export class TableCellDirective {
 @Component({
   selector: 'app-table',
   standalone: true,
-  imports: [CommonModule, SkeletonLoaderComponent, PaginationComponent, IconComponent],
+  imports: [CommonModule, SkeletonLoaderComponent, PaginationComponent, IconComponent, CardComponent],
   templateUrl: './table.component.html',
   styleUrls: []
 })

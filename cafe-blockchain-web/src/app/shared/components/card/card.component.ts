@@ -11,7 +11,7 @@ import { CommonModule } from '@angular/common';
     '[class.app-card-interactive]': 'interactive'
   },
   styles: [`
-    :host {
+    :host:not(.flex):not(.grid):not(.inline-block):not(.inline-flex):not(.hidden) {
       display: block;
     }
   `]
