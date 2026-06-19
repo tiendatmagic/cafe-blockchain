@@ -76,7 +76,7 @@ export class AdminSaaSComponent implements OnInit {
   public readonly activeSubTab = signal<'tenants' | 'plans'>('tenants');
 
   public readonly subTabOptions: TabOption[] = [
-    { value: 'tenants', label: 'Cửa hàng (Tenants)' },
+    { value: 'tenants', label: 'Cửa hàng' },
     { value: 'plans', label: 'Thiết lập Gói cước & Hệ thống' }
   ];
 
@@ -124,9 +124,13 @@ export class AdminSaaSComponent implements OnInit {
   // Modals xác nhận
   public readonly confirmDeletePlanData = signal<any | null>(null);
   public readonly isDeletingPlan = signal<boolean>(false);
-  
+
   public readonly confirmCleanTokensOpen = signal<boolean>(false);
   public readonly isCleaningTokens = signal<boolean>(false);
+
+  // Khôi phục gói mặc định
+  public readonly confirmResetDefaultPlansOpen = signal<boolean>(false);
+  public readonly isResettingDefaultPlans = signal<boolean>(false);
 
   // Select Options cho Gói cước
   public get planOptions() {
@@ -168,7 +172,7 @@ export class AdminSaaSComponent implements OnInit {
 
   ngOnInit() {
     this.initForms();
-    
+
     // Đồng bộ tab hiện tại với Query Parameter 'tab' trên URL
     this.route.queryParams.subscribe(params => {
       const tab = params['tab'];
@@ -225,7 +229,7 @@ export class AdminSaaSComponent implements OnInit {
   // Load toàn bộ dữ liệu quản trị
   public loadAllAdminData() {
     this.isDataLoading.set(true);
-    
+
     const tenants$ = this.apiService.getAdminTenants();
     const plans$ = this.apiService.getAdminPlans();
     const settings$ = this.apiService.getAdminSystemSettings();
@@ -254,7 +258,7 @@ export class AdminSaaSComponent implements OnInit {
   // --- Quản lý Thuê bao Quán ---
   public openEditSubscription(tenant: any) {
     this.selectedTenant.set(tenant);
-    
+
     // Format ngày hết hạn thành YYYY-MM-DD để input date hiển thị đúng
     let dateStr = null;
     if (tenant.subscription_expires_at) {
@@ -302,7 +306,7 @@ export class AdminSaaSComponent implements OnInit {
   public openAddPlan() {
     this.editingPlan.set(null);
     this.planForm.reset();
-    
+
     this.planForm.get('code')?.enable();
     this.planForm.patchValue({
       is_active: true,
@@ -348,7 +352,7 @@ export class AdminSaaSComponent implements OnInit {
     }
 
     this.isSavingPlan.set(true);
-    
+
     // Lấy value bao gồm cả disabled controls (như 'code' khi sửa)
     const data = this.planForm.getRawValue();
     const editing = this.editingPlan();
@@ -397,6 +401,29 @@ export class AdminSaaSComponent implements OnInit {
         this.stateService.showToast(errorMsg, 'error');
         this.confirmDeletePlanData.set(null);
         this.isDeletingPlan.set(false);
+      }
+    });
+  }
+
+  public triggerResetDefaultPlans() {
+    this.confirmResetDefaultPlansOpen.set(true);
+  }
+
+  public onResetDefaultPlansConfirm() {
+    if (this.isResettingDefaultPlans()) return;
+    this.isResettingDefaultPlans.set(true);
+
+    this.apiService.resetAdminDefaultPlans().subscribe({
+      next: (res) => {
+        this.stateService.showToast(res.message || 'Khôi phục gói mặc định thành công!', 'success');
+        this.confirmResetDefaultPlansOpen.set(false);
+        this.isResettingDefaultPlans.set(false);
+        this.loadAllAdminData();
+      },
+      error: () => {
+        this.stateService.showToast('Có lỗi xảy ra khi khôi phục gói mặc định.', 'error');
+        this.confirmResetDefaultPlansOpen.set(false);
+        this.isResettingDefaultPlans.set(false);
       }
     });
   }

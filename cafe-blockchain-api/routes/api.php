@@ -48,6 +48,7 @@ Route::middleware('auth:sanctum')->group(function () {
         
         Route::get('/plans', [AdminController::class, 'indexPlans']);
         Route::post('/plans', [AdminController::class, 'storePlan']);
+        Route::post('/plans/reset-defaults', [AdminController::class, 'resetDefaultPlans']);
         Route::put('/plans/{id}', [AdminController::class, 'updatePlan']);
         Route::delete('/plans/{id}', [AdminController::class, 'destroyPlan']);
         

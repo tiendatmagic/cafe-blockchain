@@ -147,11 +147,11 @@ class AdminController extends Controller
     {
         $plan = SubscriptionPlan::findOrFail($id);
 
-        // Không cho phép xóa các gói mặc định free/pro/ultra
-        if (in_array($plan->code, ['free', 'pro', 'ultra'])) {
+        // Không cho phép xóa gói mặc định free
+        if ($plan->code === 'free') {
             return response()->json([
                 'success' => false,
-                'message' => 'Không thể xóa các gói cước hệ thống mặc định (free, pro, ultra).'
+                'message' => 'Không thể xóa gói cước hệ thống mặc định (free).'
             ], 400);
         }
 
@@ -169,6 +169,67 @@ class AdminController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Xóa gói cước thành công.'
+        ]);
+    }
+
+    /**
+     * Khôi phục 3 gói cước mặc định (free, pro, ultra) về trạng thái ban đầu.
+     * Dùng updateOrInsert để bảo toàn ID gốc nếu còn tồn tại, hoặc tạo mới nếu đã bị xóa.
+     */
+    public function resetDefaultPlans()
+    {
+        $defaults = [
+            [
+                'code'      => 'free',
+                'name'      => 'Gói Dùng thử (Free)',
+                'is_active' => true,
+                'features'  => json_encode([
+                    'max_products'        => 20,
+                    'max_staffs'          => 2,
+                    'enable_storefront'   => false,
+                    'enable_reports'      => false,
+                    'enable_excel_export' => false,
+                ]),
+            ],
+            [
+                'code'      => 'pro',
+                'name'      => 'Gói Chuyên nghiệp (Pro)',
+                'is_active' => true,
+                'features'  => json_encode([
+                    'max_products'        => 500,
+                    'max_staffs'          => 10,
+                    'enable_storefront'   => true,
+                    'enable_reports'      => true,
+                    'enable_excel_export' => true,
+                ]),
+            ],
+            [
+                'code'      => 'ultra',
+                'name'      => 'Gói Vô hạn (Ultra)',
+                'is_active' => true,
+                'features'  => json_encode([
+                    'max_products'        => -1,
+                    'max_staffs'          => -1,
+                    'enable_storefront'   => true,
+                    'enable_reports'      => true,
+                    'enable_excel_export' => true,
+                ]),
+            ],
+        ];
+
+        foreach ($defaults as $data) {
+            DB::table('subscription_plans')->updateOrInsert(
+                ['code' => $data['code']],
+                array_merge($data, [
+                    'updated_at' => now(),
+                    'created_at' => now(),
+                ])
+            );
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã khôi phục 3 gói cước mặc định (free, pro, ultra) về trạng thái ban đầu thành công.',
         ]);
     }
 

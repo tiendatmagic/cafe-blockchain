@@ -509,6 +509,10 @@ export class ApiService {
     return this.http.delete(`${this.baseUrl}/admin/plans/${id}`, { headers: this.getHeaders() });
   }
 
+  public resetAdminDefaultPlans(): Observable<any> {
+    return this.http.post(`${this.baseUrl}/admin/plans/reset-defaults`, {}, { headers: this.getHeaders() });
+  }
+
   public getAdminSystemSettings(): Observable<any> {
     return this.http.get(`${this.baseUrl}/admin/system-settings`, { headers: this.getHeaders() });
   }
