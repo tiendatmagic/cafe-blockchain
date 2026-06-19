@@ -13,7 +13,6 @@ import { ModalComponent } from '@shared/components/modal/modal.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
-import { FeatureBlockedComponent } from '@shared/components/feature-blocked/feature-blocked.component';
 
 @Component({
   selector: 'app-staffs',
@@ -32,8 +31,7 @@ import { FeatureBlockedComponent } from '@shared/components/feature-blocked/feat
     ModalComponent,
     IconComponent,
     TabGroupComponent,
-    SkeletonLoaderComponent,
-    FeatureBlockedComponent
+    SkeletonLoaderComponent
   ],
   templateUrl: './staffs.component.html'
 })
@@ -184,9 +182,6 @@ export class StaffsComponent implements OnInit {
   }
 
   ngOnInit() {
-    if (!this.stateService.hasFeature('enable_staffs')) {
-      return;
-    }
     this.initStaffForm();
     this.initRoleForm();
     this.stateService.refreshStaffsAndRoles();

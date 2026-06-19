@@ -17,7 +17,6 @@ import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
-import { FeatureBlockedComponent } from '@shared/components/feature-blocked/feature-blocked.component';
 
 @Component({
   selector: 'app-menu',
@@ -37,8 +36,7 @@ import { FeatureBlockedComponent } from '@shared/components/feature-blocked/feat
     CustomSelectComponent,
     IconComponent,
     TabGroupComponent,
-    SkeletonLoaderComponent,
-    FeatureBlockedComponent
+    SkeletonLoaderComponent
   ],
   templateUrl: './menu.component.html'
 })

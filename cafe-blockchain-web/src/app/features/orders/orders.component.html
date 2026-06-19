@@ -18,9 +18,6 @@
     }
   </app-page-header>
 
-  @if (!stateService.hasFeature('enable_orders')) {
-    <app-feature-blocked featureKey="enable_orders" featureName="Đơn hàng"></app-feature-blocked>
-  } @else {
   @if (stateService.web3Service.walletConnected()) {
     @if (stateService.hasPermission('orders')) {
       @if (stateService.isOrdersLoading()) {
@@ -931,6 +928,5 @@
     <app-web3-connect-prompt
       [title]="'Kết nối ví Web3 để quản lý Đơn hàng'"
     ></app-web3-connect-prompt>
-  }
   }
 </div>

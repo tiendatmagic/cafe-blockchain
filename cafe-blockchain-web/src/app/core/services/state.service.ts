@@ -120,6 +120,7 @@ export class StateService {
   public readonly upgradeModalStep = signal<number>(1);
   public readonly lockedFeatureKey = signal<string>('');
   public readonly lockedFeatureName = signal<string>('');
+  public readonly blockedFeatureInRoute = signal<{ key: string, name: string } | null>(null);
 
   // Computed signal to calculate the remaining trial days for free plan
   public readonly freeTrialDaysLeft = computed(() => {
@@ -809,12 +810,6 @@ export class StateService {
     else if (cleanUrl.includes('/shifts')) tab = 'shifts';
 
     if (tab) {
-      if (this.web3Service.walletConnected() && !this.isSuperAdmin()) {
-        const config = this.getFeatureConfigByTab(tab);
-        if (config && !this.hasFeature(config.key)) {
-          this.triggerUpgradeModal(config.key, config.name);
-        }
-      }
       this.setTabState(tab);
     }
   }

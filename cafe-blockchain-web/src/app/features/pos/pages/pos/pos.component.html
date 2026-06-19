@@ -168,10 +168,7 @@
     </div>
   </app-page-header>
 
-  @if (!stateService.hasFeature('enable_pos')) {
-    <app-feature-blocked featureKey="enable_pos" featureName="Bán hàng POS"></app-feature-blocked>
-  } @else {
-    @if (isProductsLoading()) {
+  @if (isProductsLoading()) {
     <app-skeleton-loader type="pos"></app-skeleton-loader>
   } @else {
     <div class="grid grid-cols-1 xl:grid-cols-6 gap-6">
@@ -1685,5 +1682,4 @@
       </div>
     </div>
   </app-modal>
-  }
 </div>

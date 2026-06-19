@@ -12,9 +12,7 @@ use Illuminate\Support\Facades\Cache;
 
 class SettingController extends Controller
 {
-    /**
-     * Khởi tạo và chuẩn hóa cấu hình mặc định cho cửa hàng (Mạng BSC Testnet 97)
-     */
+
     private function ensureDefaultSettings($storeOwner)
     {
         $settings = Setting::where('store_owner_address', $storeOwner)->pluck('value', 'key')->all();

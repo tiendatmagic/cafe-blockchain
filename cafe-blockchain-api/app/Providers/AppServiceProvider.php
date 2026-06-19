@@ -20,6 +20,21 @@ class AppServiceProvider extends ServiceProvider
             \App\Domain\Repositories\OrderRepositoryInterface::class,
             \App\Infrastructure\Persistence\Repositories\EloquentOrderRepository::class
         );
+
+        $this->app->bind(
+            \App\Domain\Repositories\ShiftRepositoryInterface::class,
+            \App\Infrastructure\Persistence\Repositories\EloquentShiftRepository::class
+        );
+
+        $this->app->bind(
+            \App\Domain\Repositories\DebtRepositoryInterface::class,
+            \App\Infrastructure\Persistence\Repositories\EloquentDebtRepository::class
+        );
+
+        $this->app->bind(
+            \App\Domain\Repositories\TransactionRepositoryInterface::class,
+            \App\Infrastructure\Persistence\Repositories\EloquentTransactionRepository::class
+        );
     }
 
     /**

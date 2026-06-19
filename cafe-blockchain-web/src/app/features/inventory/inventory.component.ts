@@ -1,6 +1,5 @@
 import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prompt/web3-connect-prompt.component';
 import { AccessRestrictedComponent } from '@shared/components/access-restricted/access-restricted.component';
-import { FeatureBlockedComponent } from '@shared/components/feature-blocked/feature-blocked.component';
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -27,7 +26,6 @@ import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skel
     RouterModule,
     Web3ConnectPromptComponent,
     AccessRestrictedComponent,
-    FeatureBlockedComponent,
     PaginationComponent,
     ConfirmModalComponent,
     PageHeaderComponent,
@@ -45,11 +43,7 @@ export class InventoryComponent implements OnInit {
   private readonly apiService = inject(ApiService);
   private readonly router = inject(Router);
 
-  ngOnInit() {
-    if (!this.stateService.hasFeature('enable_inventory')) {
-      return;
-    }
-  }
+  ngOnInit() {}
 
   // Bộ lọc, phân trang kho
   public readonly inventoryTypeFilter = signal<string>('all');

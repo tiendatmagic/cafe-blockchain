@@ -12,34 +12,27 @@ use Illuminate\Support\Facades\DB;
 
 class DebtController extends Controller
 {
+    protected $debtRepository;
+    protected $transactionRepository;
+
+    public function __construct(
+        \App\Domain\Repositories\DebtRepositoryInterface $debtRepository,
+        \App\Domain\Repositories\TransactionRepositoryInterface $transactionRepository
+    ) {
+        $this->debtRepository = $debtRepository;
+        $this->transactionRepository = $transactionRepository;
+    }
+
     /**
      * Lấy danh sách nợ khách hàng
      */
     public function index(Request $request)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-        $query = Customer::where('store_owner_address', $storeOwner);
-
-        // Lọc theo từ khóa tìm kiếm (tên, SĐT, mã khách hàng)
         $search = $request->query('search');
-        if ($search) {
-            $searchLower = strtolower(trim($search));
-            $query->where(function($q) use ($searchLower) {
-                $q->whereRaw('LOWER(name) LIKE ?', ["%{$searchLower}%"])
-                  ->orWhereRaw('LOWER(phone) LIKE ?', ["%{$searchLower}%"])
-                  ->orWhereRaw('LOWER(customer_code) LIKE ?', ["%{$searchLower}%"]);
-            });
-        }
-
-        // Lọc: 'only_debt' (chỉ những khách có dư nợ > 0), 'no_debt' (chỉ những khách dư nợ = 0)
         $filter = $request->query('filter', 'all');
-        if ($filter === 'only_debt') {
-            $query->where('debt_balance', '>', 0);
-        } elseif ($filter === 'no_debt') {
-            $query->where('debt_balance', '<=', 0);
-        }
 
-        $customers = $query->orderBy('debt_balance', 'desc')->orderBy('id', 'desc')->get();
+        $customers = $this->debtRepository->getCustomers($storeOwner, $search, $filter);
 
         return response()->json($customers);
     }
@@ -52,14 +45,12 @@ class DebtController extends Controller
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
         
         // Đảm bảo khách hàng thuộc cửa hàng này
-        $customer = Customer::where('store_owner_address', $storeOwner)->findOrFail($id);
+        $customer = $this->debtRepository->findCustomer($storeOwner, $id);
+        if (!$customer) {
+            abort(404, 'Customer not found.');
+        }
 
-        $logs = DebtLog::with(['order', 'transaction'])
-            ->where('customer_id', $customer->id)
-            ->where('store_owner_address', $storeOwner)
-            ->orderBy('recorded_at', 'desc')
-            ->orderBy('id', 'desc')
-            ->get();
+        $logs = $this->debtRepository->getCustomerLogs($storeOwner, $customer->id);
 
         return response()->json([
             'customer' => $customer,
@@ -73,25 +64,20 @@ class DebtController extends Controller
     public function store(StoreDebtRequest $request)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-
         $validated = $request->validated();
 
-        $customer = Customer::where('store_owner_address', $storeOwner)->findOrFail($validated['customer_id']);
+        $customer = $this->debtRepository->findCustomer($storeOwner, $validated['customer_id']);
+        if (!$customer) {
+            abort(404, 'Customer not found.');
+        }
 
-        $debtLog = DB::transaction(function () use ($storeOwner, $validated, $customer) {
-            // Tăng số dư nợ của khách
-            $customer->increment('debt_balance', $validated['amount']);
-
-            // Tạo log nợ
-            return DebtLog::create([
-                'store_owner_address' => $storeOwner,
-                'customer_id' => $customer->id,
-                'type' => 'debt',
-                'amount' => $validated['amount'],
-                'note' => $validated['note'] ?? 'Manual debt entry',
-                'recorded_at' => $validated['recorded_at'],
-            ]);
-        });
+        $debtLog = $this->debtRepository->createManualDebt(
+            $storeOwner,
+            $customer->id,
+            $validated['amount'],
+            $validated['note'] ?? null,
+            $validated['recorded_at']
+        );
 
         return response()->json([
             'message' => 'Manual debt recorded successfully.',
@@ -105,49 +91,21 @@ class DebtController extends Controller
     public function storePayment(StoreDebtPaymentRequest $request)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-
         $validated = $request->validated();
 
-        $customer = Customer::where('store_owner_address', $storeOwner)->findOrFail($validated['customer_id']);
+        $customer = $this->debtRepository->findCustomer($storeOwner, $validated['customer_id']);
+        if (!$customer) {
+            abort(404, 'Customer not found.');
+        }
 
-        $debtLog = DB::transaction(function () use ($storeOwner, $validated, $customer) {
-            // 1. Tạo giao dịch thu quỹ
-            $paymentMethodLabel = [
-                'cash' => 'Cash',
-                'bank_transfer' => 'Bank Transfer',
-                'crypto' => 'Crypto',
-                'e_wallet' => 'E-Wallet'
-            ][$validated['payment_method']] ?? 'Cash';
-
-            $noteStr = "Debt payment from customer " . $customer->name . " (" . $customer->customer_code . ")";
-            if (!empty($validated['note'])) {
-                $noteStr .= " - " . $validated['note'];
-            }
-
-            $transaction = Transaction::create([
-                'type' => 'thu',
-                'amount' => $validated['amount'],
-                'category' => 'Thu nợ khách hàng',
-                'description' => $noteStr . " (Method: " . $paymentMethodLabel . ")",
-                'transaction_date' => $validated['recorded_at'],
-                'store_owner_address' => $storeOwner,
-                'blockchain_status' => 'none',
-            ]);
-
-            // 2. Giảm dư nợ khách hàng
-            $customer->decrement('debt_balance', $validated['amount']);
-
-            // 3. Tạo log trả nợ
-            return DebtLog::create([
-                'store_owner_address' => $storeOwner,
-                'customer_id' => $customer->id,
-                'transaction_id' => $transaction->id,
-                'type' => 'payment',
-                'amount' => $validated['amount'],
-                'note' => $validated['note'] ?? "Customer debt payment (Via " . $paymentMethodLabel . ")",
-                'recorded_at' => $validated['recorded_at'],
-            ]);
-        });
+        $debtLog = $this->debtRepository->createDebtPayment(
+            $storeOwner,
+            $customer->id,
+            $validated['amount'],
+            $validated['payment_method'],
+            $validated['note'] ?? null,
+            $validated['recorded_at']
+        );
 
         return response()->json([
             'message' => 'Debt payment recorded successfully and cash flow updated.',
@@ -161,7 +119,10 @@ class DebtController extends Controller
     public function destroy(Request $request, $id)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-        $debtLog = DebtLog::where('store_owner_address', $storeOwner)->findOrFail($id);
+        $debtLog = $this->debtRepository->findDebtLog($storeOwner, $id);
+        if (!$debtLog) {
+            abort(404, 'Debt record not found.');
+        }
 
         // Nếu log nợ này sinh ra từ Đơn hàng POS, ta không cho phép xóa tự do mà phải hủy đơn hàng ở mục Đơn hàng.
         if (!empty($debtLog->order_id)) {
@@ -172,7 +133,7 @@ class DebtController extends Controller
 
         // Nếu log là trả nợ (payment) và có liên kết với Transaction
         if ($debtLog->type === 'payment' && !empty($debtLog->transaction_id)) {
-            $transaction = Transaction::find($debtLog->transaction_id);
+            $transaction = $this->transactionRepository->find($debtLog->transaction_id);
             if ($transaction) {
                 // Chặn xóa nếu transaction đã đồng bộ blockchain thành công
                 if ($transaction->blockchain_status === 'success') {
@@ -182,24 +143,11 @@ class DebtController extends Controller
                 }
                 
                 // Xóa transaction liên quan
-                $transaction->delete();
+                $this->transactionRepository->delete($transaction);
             }
         }
 
-        DB::transaction(function () use ($debtLog) {
-            $customer = Customer::findOrFail($debtLog->customer_id);
-
-            // Hoàn tác số dư nợ của khách hàng
-            if ($debtLog->type === 'debt') {
-                // Hủy khoản ghi nợ thêm -> Giảm dư nợ của khách
-                $customer->decrement('debt_balance', $debtLog->amount);
-            } else {
-                // Hủy khoản trả nợ -> Tăng lại dư nợ cho khách
-                $customer->increment('debt_balance', $debtLog->amount);
-            }
-
-            $debtLog->delete();
-        });
+        $this->debtRepository->deleteDebtLog($debtLog);
 
         return response()->json([
             'message' => 'Debt record deleted and customer debt balance updated successfully.'

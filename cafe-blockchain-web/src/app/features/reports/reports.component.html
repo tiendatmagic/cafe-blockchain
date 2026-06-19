@@ -7,10 +7,7 @@
     <app-icon icon name="reports" class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" strokeWidth="2.5" />
   </app-page-header>
 
-  @if (!stateService.hasFeature('enable_reports')) {
-    <app-feature-blocked featureKey="enable_reports" featureName="Báo cáo"></app-feature-blocked>
-  } @else {
-    @if (web3Service.walletConnected()) {
+  @if (web3Service.walletConnected()) {
     @if (stateService.hasPermission('reports')) {
       @if (isReportsLoading() || !reportsData()) {
         <app-skeleton-loader type="reports"></app-skeleton-loader>
@@ -418,6 +415,5 @@
     }
   } @else {
     <app-web3-connect-prompt [title]="'Kết nối ví Web3 để xem Báo cáo chi tiết'"></app-web3-connect-prompt>
-    }
   }
 </div>

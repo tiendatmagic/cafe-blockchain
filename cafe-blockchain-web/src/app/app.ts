@@ -11,6 +11,7 @@ import { ShiftModalsComponent } from '@features/shifts/components/shift-modals/s
 import { Web3PublicHeaderComponent } from '@features/marketplace/components/web3-public-header/web3-public-header.component';
 import { SubscriptionBlockedComponent } from './shared/components/subscription-blocked/subscription-blocked.component';
 import { ToastComponent } from './shared/components/toast/toast.component';
+import { FeatureBlockedComponent } from '@shared/components/feature-blocked/feature-blocked.component';
 
 @Component({
   selector: 'app-root',
@@ -25,7 +26,8 @@ import { ToastComponent } from './shared/components/toast/toast.component';
     ShiftModalsComponent,
     Web3PublicHeaderComponent,
     SubscriptionBlockedComponent,
-    ToastComponent
+    ToastComponent,
+    FeatureBlockedComponent
   ],
   templateUrl: './app.html',
   styleUrl: './app.css'

@@ -1,21 +1,11 @@
-import { Injectable, signal, computed } from '@angular/core';
-import { BrowserProvider, Contract, ContractFactory, JsonRpcProvider, formatEther, parseEther, parseUnits } from 'ethers';
-import { CAFE_WEB3_POS_ABI } from './contract-abi';
-import { CAFE_WEB3_POS_BYTECODE } from './contract-bytecode';
-import { CAFE_WEB3_FINANCE_ABI } from './finance-contract-abi';
-import { CAFE_WEB3_FINANCE_BYTECODE } from './finance-contract-bytecode';
-import { CAFE_VOUCHER_NFT_ABI } from './voucher-contract-abi';
-import { CAFE_VOUCHER_NFT_BYTECODE } from './voucher-contract-bytecode';
-import { CAFE_MENU_REGISTRY_ABI } from './menu-registry-contract-abi';
-import { CAFE_MENU_REGISTRY_BYTECODE } from './menu-registry-contract-bytecode';
-import { CAFE_TOKEN_ABI } from './cafe-token-abi';
-import { CAFE_TOKEN_BYTECODE } from './cafe-token-bytecode';
-import { VOUCHER_SHOP_ABI } from './voucher-shop-abi';
-import { VOUCHER_SHOP_BYTECODE } from './voucher-shop-bytecode';
-import { VOUCHER_MARKETPLACE_ABI } from './voucher-marketplace-abi';
-import { VOUCHER_MARKETPLACE_BYTECODE } from './voucher-marketplace-bytecode';
+import { Injectable, signal, computed, inject, Injector } from '@angular/core';
+import { BrowserProvider, Contract, JsonRpcProvider, parseEther, formatEther, parseUnits } from 'ethers';
 import { Subject } from 'rxjs';
 import { environment } from '@environments/environment';
+import { PosContractService } from './web3/pos-contract.service';
+import { FinanceContractService } from './web3/finance-contract.service';
+import { VoucherContractService } from './web3/voucher-contract.service';
+import { CAFE_WEB3_POS_ABI } from './contract-abi';
 
 // Tích hợp Reown AppKit cho WalletConnect
 import { createAppKit } from '@reown/appkit';
@@ -26,6 +16,10 @@ import { mainnet, arbitrum, bsc, polygon, optimism, base, sepolia, bscTestnet, a
   providedIn: 'root'
 })
 export class Web3Service {
+  private readonly injector = inject(Injector);
+  private get posContractService() { return this.injector.get(PosContractService); }
+  private get financeContractService() { return this.injector.get(FinanceContractService); }
+  private get voucherContractService() { return this.injector.get(VoucherContractService); }
   // Trạng thái kết nối ví
   public readonly walletConnected = signal<boolean>(false);
   public readonly currentAccount = signal<string>('');
@@ -456,7 +450,7 @@ export class Web3Service {
   /**
    * Lấy BrowserProvider tương ứng từ ví đã kết nối (ưu tiên AppKit provider)
    */
-  private getBrowserProvider(): BrowserProvider | null {
+  public getBrowserProvider(): BrowserProvider | null {
     if (typeof window === 'undefined') return null;
 
     // Nếu có AppKit modal và đã kết nối, lấy provider từ AppKit
@@ -979,7 +973,7 @@ export class Web3Service {
   /**
    * Dịch lỗi từ blockchain sang tiếng Việt thân thiện
    */
-  private translateBlockchainError(err: any): string {
+  public translateBlockchainError(err: any): string {
     const errMsg = (err.reason || err.message || '').toString();
     const errCode = err.code;
 
@@ -999,9 +993,9 @@ export class Web3Service {
   }
 
   /**
-   * Helper chạy giao dịch ghi (write) contract, xử lý kết nối, mạng lưới và bắt lỗi tập trung
+   * Helper chạy giao dịch ghi (write) contract, xử lý kết nối, mạng lưới và bắt lỗi tập trung (bảo toàn cho các hàm internal trong file)
    */
-  private async runContractWriteTx(
+  public async runContractWriteTx(
     contractAddress: string,
     abi: any,
     methodName: string,
@@ -1039,9 +1033,10 @@ export class Web3Service {
     }
   }
 
-  /**
-   * Ghi nhận đơn hàng lên Smart Contract Blockchain
-   */
+  // ==========================================
+  // DELEGATED SMART CONTRACT METHODS
+  // ==========================================
+
   public async recordOrderOnChain(
     orderId: string | number,
     orderCode: string,
@@ -1050,189 +1045,191 @@ export class Web3Service {
     paymentMethod: string,
     itemsSummary: string
   ): Promise<{ txHash: string; success: boolean; error?: string }> {
-    const finalOrderId = typeof orderId === 'string' ? this.convertUuidToUint256(orderId) : orderId;
-    return this.runContractWriteTx(
-      this.contractAddress(),
-      CAFE_WEB3_POS_ABI,
-      'recordOrder',
-      [
-        finalOrderId,
-        orderCode || '',
-        tableNumber || 'Mang về',
-        Math.round(totalAmount),
-        paymentMethod,
-        itemsSummary
-      ]
-    );
+    return this.posContractService.recordOrderOnChain(orderId, orderCode, tableNumber, totalAmount, paymentMethod, itemsSummary);
   }
 
-  /**
-   * Thêm các Owner ví thu ngân khác trên Smart Contract
-   */
   public async addOwnersOnChain(newOwners: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
-    return this.runContractWriteTx(
-      this.contractAddress(),
-      CAFE_WEB3_POS_ABI,
-      'addOwners',
-      [newOwners]
-    );
+    return this.posContractService.addOwnersOnChain(newOwners);
   }
 
-  /**
-   * Xóa các Owner ví thu ngân khác trên Smart Contract
-   */
   public async removeOwnersOnChain(ownersToRemove: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
-    return this.runContractWriteTx(
-      this.contractAddress(),
-      CAFE_WEB3_POS_ABI,
-      'removeOwners',
-      [ownersToRemove]
-    );
+    return this.posContractService.removeOwnersOnChain(ownersToRemove);
   }
 
-  /**
-   * Truy vấn danh sách Owners hiện tại trực tiếp từ Smart Contract
-   */
   public async getOwnersFromChain(): Promise<string[]> {
-    this.provider = this.getBrowserProvider();
-    if (!this.provider) return [];
-    try {
-      const contract = new Contract(this.contractAddress(), CAFE_WEB3_POS_ABI, this.provider);
-      return await contract['getOwners']();
-    } catch (e) {
-      console.error('Loi doc danh sach owners tu chuoi:', e);
-      return [];
-    }
+    return this.posContractService.getOwnersFromChain();
   }
 
-  /**
-   * Truy vấn tx_hash gốc của đơn hàng đã tồn tại trên Blockchain.
-   * Chiến lược:
-   *   1. Xác minh đơn hàng tồn tại và lấy timestamp từ getOrder()
-   *   2. Tính block ước lượng từ timestamp
-   *   3. Dùng backup RPC (publicnode) để query event log — vì Binance RPC
-   *      default không hỗ trợ eth_getLogs, và MetaMask provider cũng thường bị giới hạn
-   */
   public async getOriginalTxHashForOrder(orderId: string | number): Promise<string | null> {
-    this.provider = this.getBrowserProvider();
-    if (!this.provider || !this.contractAddress()) return null;
-    try {
-      const contract = new Contract(this.contractAddress(), CAFE_WEB3_POS_ABI, this.provider);
-      const finalOrderId = typeof orderId === 'string' ? this.convertUuidToUint256(orderId) : orderId;
+    return this.posContractService.getOriginalTxHashForOrder(orderId);
+  }
 
-      // ===== BƯỚC 1: Xác minh đơn hàng tồn tại + lấy timestamp =====
-      let orderTimestamp = 0;
-      try {
-        const orderData = await contract['getOrder'](finalOrderId);
-        if (!orderData || Number(orderData[0]) === 0) {
-          console.warn('[Blockchain] Order', finalOrderId, 'khong ton tai tren Smart Contract.');
-          return null;
-        }
-        orderTimestamp = Number(orderData[6]); // timestamp field
-      } catch {
-        console.warn('[Blockchain] Khong the goi getOrder() - order co the khong ton tai.');
-        return null;
-      }
+  public async getOrdersPaginatedFromChain(page: number, limit: number): Promise<{ orders: any[], total: number }> {
+    return this.posContractService.getOrdersPaginatedFromChain(page, limit);
+  }
 
-      const chainId = this.chainId() || this.configuredChainId();
+  public async getUserOrdersPaginatedFromChain(user: string, page: number, limit: number): Promise<{ orders: any[], total: number }> {
+    return this.posContractService.getUserOrdersPaginatedFromChain(user, page, limit);
+  }
 
-      // ===== BƯỚC 2: Thử tìm nhanh qua API Block Explorer (BscScan/Etherscan) =====
-      const explorerApiUrl = this.getExplorerApiUrl(chainId);
-      const apiKey = this.explorerApiKey();
-      if (explorerApiUrl && apiKey && apiKey.trim() !== '') {
-        try {
-          // Tạo topic1 bằng cách pad hex orderId sang 32 bytes (64 ký tự)
-          const cleanHexId = typeof finalOrderId === 'string' ? finalOrderId.replace('0x', '') : finalOrderId.toString(16);
-          const topic1 = '0x' + cleanHexId.padStart(64, '0');
-          // Lấy topic0 từ ABI sự kiện
-          const topic0 = contract.interface.getEvent('OrderRecorded')?.topicHash;
+  public async getOrderByCodeFromChain(orderCode: string): Promise<any | null> {
+    return this.posContractService.getOrderByCodeFromChain(orderCode);
+  }
 
-          if (topic0) {
-            const url = `${explorerApiUrl}?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${this.contractAddress()}&topic0=${topic0}&topic1=${topic1}&apikey=${apiKey}`;
-            const response = await fetch(url);
-            const data = await response.json();
+  public async deployMenuRegistryContractOnChain(targetChainId?: string): Promise<{ contractAddress: string; success: boolean; error?: string }> {
+    return this.posContractService.deployMenuRegistryContractOnChain(targetChainId);
+  }
 
-            if (data.status === '1' && data.result && data.result.length > 0) {
-              const txHash = data.result[0].transactionHash;
-              return txHash;
-            }
-          }
-        } catch (apiErr) {
-        }
-      } else {
-      }
+  public async checkIsOwnerOfMenuRegistry(address: string): Promise<boolean> {
+    return this.posContractService.checkIsOwnerOfMenuRegistry(address);
+  }
 
-      // ===== BƯỚC 3: Quét block bằng backup RPC (Fallback có Auto-switch) =====
-      const backupRpcUrls = this.getBackupRpcUrls(chainId);
-      const rpcUrlsToTry = [this.rpcUrl(), ...backupRpcUrls].filter(url => !!url);
+  public async updateMenuOnChain(products: any[]): Promise<{ txHash: string; success: boolean; error?: string }> {
+    return this.posContractService.updateMenuOnChain(products);
+  }
 
-      let eventsFound: any[] = [];
-      let successRpcUrl = '';
+  public async getAllMenuProductsFromChain(): Promise<{ products: any[], lastUpdated: number }> {
+    return this.posContractService.getAllMenuProductsFromChain();
+  }
 
-      for (const rpcUrl of rpcUrlsToTry) {
-        try {
-          const backupProvider = new JsonRpcProvider(rpcUrl);
-          const backupContract = new Contract(this.contractAddress(), CAFE_WEB3_POS_ABI, backupProvider);
+  public async getMenuRegistryOwnersFromChain(): Promise<string[]> {
+    return this.posContractService.getMenuRegistryOwnersFromChain();
+  }
 
-          const currentBlock = await backupProvider.getBlockNumber();
-          const currentTime = Math.floor(Date.now() / 1000);
+  public async addMenuRegistryOwnersOnChain(newOwners: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
+    return this.posContractService.addMenuRegistryOwnersOnChain(newOwners);
+  }
 
-          // Tính block ước lượng dựa trên timestamp và block time trung bình (~3s cho BSC)
-          const blockTime = this.getAvgBlockTime(chainId);
-          const timeDiff = currentTime - orderTimestamp;
-          const blockDiff = Math.floor(timeDiff / blockTime);
-          const approxBlock = currentBlock - blockDiff;
+  public async removeMenuRegistryOwnersOnChain(ownersToRemove: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
+    return this.posContractService.removeMenuRegistryOwnersOnChain(ownersToRemove);
+  }
 
-          // Scan range: Tối ưu ±5K blocks để tránh lỗi Rate Limit HTTP 429
-          const scanStart = Math.max(0, approxBlock - 5000);
-          const scanEnd = Math.min(currentBlock, approxBlock + 5000);
-          const chunkSize = 5000;
+  public async deployContractOnChain(targetChainId?: string): Promise<{ contractAddress: string; success: boolean; error?: string }> {
+    return this.posContractService.deployContractOnChain(targetChainId);
+  }
 
-          console.log(`[Blockchain] Scan blocks ${scanStart} - ${scanEnd} (approx: ${approxBlock}, chunk: ${chunkSize})`);
+  // FINANCE CONTRACT DELEGATION
+  public async deployFinanceContractOnChain(targetChainId?: string): Promise<{ contractAddress: string; success: boolean; error?: string }> {
+    return this.financeContractService.deployFinanceContractOnChain(targetChainId);
+  }
 
-          const filter = backupContract.filters['OrderRecorded'](finalOrderId);
-          let found = false;
+  public async recordTransactionOnChain(
+    txId: string | number,
+    transactionCode: string,
+    type: 'thu' | 'chi',
+    amount: number,
+    category: string,
+    description: string
+  ): Promise<{ txHash: string; success: boolean; error?: string }> {
+    return this.financeContractService.recordTransactionOnChain(txId, transactionCode, type, amount, category, description);
+  }
 
-          for (let start = scanStart; start <= scanEnd; start += chunkSize) {
-            const end = Math.min(start + chunkSize - 1, scanEnd);
-            try {
-              const events = await backupContract.queryFilter(filter, start, end);
-              if (events.length > 0) {
-                eventsFound = events;
-                successRpcUrl = rpcUrl;
-                found = true;
-                break;
-              }
-            } catch {
-              continue;
-            }
-          }
+  public async getOriginalTxHashForTransaction(txId: string | number): Promise<string | null> {
+    return this.financeContractService.getOriginalTxHashForTransaction(txId);
+  }
 
-          if (found) {
-            break; // Thử thành công, dừng xoay vòng RPC
-          }
-        } catch (rpcErr) {
-          console.warn(`[Blockchain] Node RPC ${rpcUrl} loi, dang fallback sang node khac:`, rpcErr);
-          continue;
-        }
-      }
+  public async getFinanceOwnersFromChain(): Promise<string[]> {
+    return this.financeContractService.getFinanceOwnersFromChain();
+  }
 
-      if (eventsFound.length > 0) {
-        return eventsFound[0].transactionHash;
-      }
+  public async addFinanceOwnersOnChain(newOwners: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
+    return this.financeContractService.addFinanceOwnersOnChain(newOwners);
+  }
 
-      console.warn('[Blockchain] ❌ Khong tim thay event OrderRecorded cho order', orderId);
-      return null;
-    } catch (err) {
-      console.error('[Blockchain] Loi tong quat khi truy van tx_hash goc:', err);
-      return null;
-    }
+  public async removeFinanceOwnersOnChain(ownersToRemove: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
+    return this.financeContractService.removeFinanceOwnersOnChain(ownersToRemove);
+  }
+
+  public async getTransactionsPaginatedFromChain(page: number, limit: number): Promise<{ transactions: any[], total: number }> {
+    return this.financeContractService.getTransactionsPaginatedFromChain(page, limit);
+  }
+
+  public async getUserTransactionsPaginatedFromChain(user: string, page: number, limit: number): Promise<{ transactions: any[], total: number }> {
+    return this.financeContractService.getUserTransactionsPaginatedFromChain(user, page, limit);
+  }
+
+  public async getTransactionByCodeFromChain(txCode: string): Promise<any | null> {
+    return this.financeContractService.getTransactionByCodeFromChain(txCode);
+  }
+
+  // VOUCHER CONTRACT DELEGATION
+  public async deployVoucherContractOnChain(targetChainId?: string): Promise<{ contractAddress: string; success: boolean; error?: string }> {
+    return this.voucherContractService.deployVoucherContractOnChain(targetChainId);
+  }
+
+  public async deployLoyaltyTokenContractOnChain(targetChainId?: string): Promise<{ contractAddress: string; success: boolean; error?: string }> {
+    return this.voucherContractService.deployLoyaltyTokenContractOnChain(targetChainId);
+  }
+
+  public async deployVoucherShopContractOnChain(
+    targetChainId?: string,
+    cafeToken?: string,
+    voucherNft?: string
+  ): Promise<{ contractAddress: string; success: boolean; error?: string }> {
+    return this.voucherContractService.deployVoucherShopContractOnChain(targetChainId, cafeToken, voucherNft);
+  }
+
+  public async deployVoucherMarketplaceContractOnChain(
+    targetChainId?: string,
+    cafeToken?: string,
+    voucherNft?: string,
+    feeRecipient?: string
+  ): Promise<{ contractAddress: string; success: boolean; error?: string }> {
+    return this.voucherContractService.deployVoucherMarketplaceContractOnChain(targetChainId, cafeToken, voucherNft, feeRecipient);
+  }
+
+  public async getCustomerVouchersFromChain(customerAddress: string): Promise<any[]> {
+    return this.voucherContractService.getCustomerVouchersFromChain(customerAddress);
+  }
+
+  public async getSingleVoucherFromChain(tokenId: number): Promise<any | null> {
+    return this.voucherContractService.getSingleVoucherFromChain(tokenId);
+  }
+
+  public async getVoucherOwnersFromChain(): Promise<string[]> {
+    return this.voucherContractService.getVoucherOwnersFromChain();
+  }
+
+  public async addVoucherOwnersOnChain(newOwners: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
+    return this.voucherContractService.addVoucherOwnersOnChain(newOwners);
+  }
+
+  public async removeVoucherOwnersOnChain(ownersToRemove: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
+    return this.voucherContractService.removeVoucherOwnersOnChain(ownersToRemove);
+  }
+
+  public async getCafeTokenBalance(account: string): Promise<string> {
+    return this.voucherContractService.getCafeTokenBalance(account);
+  }
+
+  public async getVoucherTypesFromShop(): Promise<any[]> {
+    return this.voucherContractService.getVoucherTypesFromShop();
+  }
+
+  public async buyVoucherFromShop(voucherTypeId: number, priceInCafeToken: string): Promise<{ txHash: string; success: boolean; error?: string }> {
+    return this.voucherContractService.buyVoucherFromShop(voucherTypeId, priceInCafeToken);
+  }
+
+  public async getActiveListingsFromMarket(): Promise<any[]> {
+    return this.voucherContractService.getActiveListingsFromMarket();
+  }
+
+  public async listVoucherOnMarket(tokenId: number, priceInCafeToken: string): Promise<{ txHash: string; success: boolean; error?: string }> {
+    return this.voucherContractService.listVoucherOnMarket(tokenId, priceInCafeToken);
+  }
+
+  public async buyVoucherFromMarket(tokenId: number, priceInCafeToken: string): Promise<{ txHash: string; success: boolean; error?: string }> {
+    return this.voucherContractService.buyVoucherFromMarket(tokenId, priceInCafeToken);
+  }
+
+  public async cancelListingOnMarket(tokenId: number): Promise<{ txHash: string; success: boolean; error?: string }> {
+    return this.voucherContractService.cancelListingOnMarket(tokenId);
   }
 
   /**
    * Lấy API URL của Block Explorer tương ứng với chainId.
    */
-  private getExplorerApiUrl(chainId: string): string | null {
+  public getExplorerApiUrl(chainId: string | number): string | null {
     const id = chainId.toString().trim();
     switch (id) {
       case '97': return 'https://api-testnet.bscscan.com/api';
@@ -1254,7 +1251,7 @@ export class Web3Service {
   /**
    * Lấy danh sách backup RPC URL đáng tin cậy cho event log query và auto-switch.
    */
-  private getBackupRpcUrls(chainId: string): string[] {
+  public getBackupRpcUrls(chainId: string | number): string[] {
     const id = chainId.toString().trim();
     switch (id) {
       case '97': return ['https://bnb-testnet.api.onfinality.io/public', 'https://bsc-testnet-rpc.publicnode.com', 'https://bsc-testnet.blockpi.network/v1/rpc/public'];
@@ -1276,8 +1273,9 @@ export class Web3Service {
   /**
    * Lấy block time trung bình (giây) theo chain.
    */
-  private getAvgBlockTime(chainId: string): number {
-    switch (chainId) {
+  public getAvgBlockTime(chainId: string | number): number {
+    const id = chainId.toString().trim();
+    switch (id) {
       case '56':
       case '97': return 3;   // BSC ~3s
       case '137':
@@ -1286,1188 +1284,6 @@ export class Web3Service {
       case '11155111': return 12;  // Ethereum ~12s
       default: return 3;   // Default 3s
     }
-  }
-
-
-
-  /**
-   * Tự động Deploy Smart Contract mới lên Blockchain EVM
-   */
-  public async deployContractOnChain(targetChainId?: string): Promise<{ contractAddress: string; success: boolean; error?: string }> {
-    if (!this.walletConnected() || !this.currentAccount()) {
-      return { contractAddress: '', success: false, error: 'Chưa kết nối ví Web3!' };
-    }
-    this.provider = this.getBrowserProvider();
-    if (!this.provider) {
-      return { contractAddress: '', success: false, error: 'Không tìm thấy provider ví Web3!' };
-    }
-
-    // Đảm bảo đúng mạng trước khi deploy, truyền targetChainId vào trực tiếp
-    const hasCorrectNetwork = await this.ensureCorrectNetwork(targetChainId);
-    if (!hasCorrectNetwork) {
-      return { contractAddress: '', success: false, error: this.walletError() || 'Vui lòng chuyển mạng!' };
-    }
-
-    try {
-      // Khởi tạo lại provider và signer mới nhất để đảm bảo giao dịch thực thi trên mạng đã cập nhật
-      this.provider = new BrowserProvider((window as any).ethereum);
-      const signer = await this.provider.getSigner();
-      const factory = new ContractFactory(CAFE_WEB3_POS_ABI, CAFE_WEB3_POS_BYTECODE, signer);
-
-      // Deploy contract
-      const contract = await factory.deploy();
-
-      // Đợi transaction được xác thực thành công trên Blockchain
-      await contract.waitForDeployment();
-
-      const newAddress = await contract.getAddress();
-
-      // Cập nhật địa chỉ mới vào signal của Web3Service
-      this.contractAddress.set(newAddress);
-      this.isOwnerContract.set(true); // Người deploy mặc định là owner đầu tiên
-
-      return {
-        contractAddress: newAddress,
-        success: true
-      };
-    } catch (err: any) {
-      console.error('Loi deploy Smart Contract:', err);
-      return {
-        contractAddress: '',
-        success: false,
-        error: err.reason || err.message || 'Giao dịch deploy bị từ chối hoặc lỗi chuỗi.'
-      };
-    }
-  }
-
-  /**
-   * Tự động Deploy Smart Contract Tài chính mới lên Blockchain EVM
-   */
-  public async deployFinanceContractOnChain(targetChainId?: string): Promise<{ contractAddress: string; success: boolean; error?: string }> {
-    if (!this.walletConnected() || !this.currentAccount()) {
-      return { contractAddress: '', success: false, error: 'Chưa kết nối ví Web3!' };
-    }
-    this.provider = this.getBrowserProvider();
-    if (!this.provider) {
-      return { contractAddress: '', success: false, error: 'Không tìm thấy provider ví Web3!' };
-    }
-
-    const hasCorrectNetwork = await this.ensureCorrectNetwork(targetChainId);
-    if (!hasCorrectNetwork) {
-      return { contractAddress: '', success: false, error: this.walletError() || 'Vui lòng chuyển mạng!' };
-    }
-
-    try {
-      this.provider = new BrowserProvider((window as any).ethereum);
-      const signer = await this.provider.getSigner();
-      const factory = new ContractFactory(CAFE_WEB3_FINANCE_ABI, CAFE_WEB3_FINANCE_BYTECODE, signer);
-
-      const contract = await factory.deploy();
-      await contract.waitForDeployment();
-
-      const newAddress = await contract.getAddress();
-      this.financeContractAddress.set(newAddress);
-
-      return {
-        contractAddress: newAddress,
-        success: true
-      };
-    } catch (err: any) {
-      console.error('Loi deploy Smart Contract Tai chinh:', err);
-      return {
-        contractAddress: '',
-        success: false,
-        error: err.reason || err.message || 'Giao dịch deploy bị từ chối hoặc lỗi chuỗi.'
-      };
-    }
-  }
-
-  /**
-   * Tự động Deploy Smart Contract NFT Voucher mới lên Blockchain EVM
-   */
-  public async deployVoucherContractOnChain(targetChainId?: string): Promise<{ contractAddress: string; success: boolean; error?: string }> {
-    if (!this.walletConnected() || !this.currentAccount()) {
-      return { contractAddress: '', success: false, error: 'Chưa kết nối ví Web3!' };
-    }
-    this.provider = this.getBrowserProvider();
-    if (!this.provider) {
-      return { contractAddress: '', success: false, error: 'Không tìm thấy provider ví Web3!' };
-    }
-
-    const hasCorrectNetwork = await this.ensureCorrectNetwork(targetChainId);
-    if (!hasCorrectNetwork) {
-      return { contractAddress: '', success: false, error: this.walletError() || 'Vui lòng chuyển mạng!' };
-    }
-
-    try {
-      this.provider = new BrowserProvider((window as any).ethereum);
-      const signer = await this.provider.getSigner();
-      const factory = new ContractFactory(CAFE_VOUCHER_NFT_ABI, CAFE_VOUCHER_NFT_BYTECODE, signer);
-
-      const contract = await factory.deploy();
-      await contract.waitForDeployment();
-
-      const newAddress = await contract.getAddress();
-      this.voucherContractAddress.set(newAddress);
-
-      return {
-        contractAddress: newAddress,
-        success: true
-      };
-    } catch (err: any) {
-      console.error('Loi deploy Smart Contract NFT Voucher:', err);
-      return {
-        contractAddress: '',
-        success: false,
-        error: err.reason || err.message || 'Giao dịch deploy bị từ chối hoặc lỗi chuỗi.'
-      };
-    }
-  }
-
-  /**
-   * Ghi nhận giao dịch thu chi tài chính lên Smart Contract Blockchain
-   */
-  public async recordTransactionOnChain(
-    txId: string | number,
-    transactionCode: string,
-    type: 'thu' | 'chi',
-    amount: number,
-    category: string,
-    description: string
-  ): Promise<{ txHash: string; success: boolean; error?: string }> {
-    if (!this.financeContractAddress()) {
-      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng Tài chính!' };
-    }
-    const finalTxId = typeof txId === 'string' ? this.convertUuidToUint256(txId) : txId;
-    const txType = type === 'thu' ? 1 : 0;
-    return this.runContractWriteTx(
-      this.financeContractAddress(),
-      CAFE_WEB3_FINANCE_ABI,
-      'recordTransaction',
-      [
-        finalTxId,
-        transactionCode || '',
-        txType,
-        Math.round(amount),
-        category,
-        description || ''
-      ]
-    );
-  }
-
-  /**
-   * Truy vấn tx_hash gốc của giao dịch thu chi đã tồn tại trên Blockchain.
-   */
-  public async getOriginalTxHashForTransaction(txId: string | number): Promise<string | null> {
-    this.provider = this.getBrowserProvider();
-    if (!this.provider || !this.financeContractAddress()) return null;
-    try {
-      const contract = new Contract(this.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, this.provider);
-      const finalTxId = typeof txId === 'string' ? this.convertUuidToUint256(txId) : txId;
-
-      let orderTimestamp = 0;
-      try {
-        const txData = await contract['getTransaction'](finalTxId);
-        if (!txData || Number(txData[0]) === 0) {
-          console.warn('[Blockchain] Transaction', finalTxId, 'khong ton tai tren Smart Contract.');
-          return null;
-        }
-        orderTimestamp = Number(txData[6]); // timestamp field
-      } catch {
-        console.warn('[Blockchain] Khong the goi getTransaction() - transaction co the khong ton tai.');
-        return null;
-      }
-
-      const chainId = this.chainId() || this.configuredChainId();
-
-      const explorerApiUrl = this.getExplorerApiUrl(chainId);
-      const apiKey = this.explorerApiKey();
-      if (explorerApiUrl && apiKey && apiKey.trim() !== '') {
-        try {
-          const cleanHexId = typeof finalTxId === 'string' ? finalTxId.replace('0x', '') : finalTxId.toString(16);
-          const topic1 = '0x' + cleanHexId.padStart(64, '0');
-          const topic0 = contract.interface.getEvent('TransactionRecorded')?.topicHash;
-
-          if (topic0) {
-            const url = `${explorerApiUrl}?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${this.financeContractAddress()}&topic0=${topic0}&topic1=${topic1}&apikey=${apiKey}`;
-            const response = await fetch(url);
-            const data = await response.json();
-
-            if (data.status === '1' && data.result && data.result.length > 0) {
-              const txHash = data.result[0].transactionHash;
-              return txHash;
-            }
-          }
-        } catch (apiErr) {
-          console.error('[Blockchain] Loi goi API Block Explorer, dang fallback ve RPC scan:', apiErr);
-        }
-      }
-
-      const backupRpcUrls = this.getBackupRpcUrls(chainId);
-      const rpcUrlsToTry = [this.rpcUrl(), ...backupRpcUrls].filter(url => !!url);
-
-      let eventsFound: any[] = [];
-
-      for (const rpcUrl of rpcUrlsToTry) {
-        try {
-          const backupProvider = new JsonRpcProvider(rpcUrl);
-          const backupContract = new Contract(this.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, backupProvider);
-
-          const currentBlock = await backupProvider.getBlockNumber();
-          const currentTime = Math.floor(Date.now() / 1000);
-
-          const blockTime = this.getAvgBlockTime(chainId);
-          const timeDiff = currentTime - orderTimestamp;
-          const blockDiff = Math.floor(timeDiff / blockTime);
-          const approxBlock = currentBlock - blockDiff;
-
-          const scanStart = Math.max(0, approxBlock - 5000);
-          const scanEnd = Math.min(currentBlock, approxBlock + 5000);
-          const chunkSize = 5000;
-
-          const filter = backupContract.filters['TransactionRecorded'](finalTxId);
-          let found = false;
-
-          for (let start = scanStart; start <= scanEnd; start += chunkSize) {
-            const end = Math.min(start + chunkSize - 1, scanEnd);
-            try {
-              const events = await backupContract.queryFilter(filter, start, end);
-              if (events.length > 0) {
-                eventsFound = events;
-                found = true;
-                break;
-              }
-            } catch {
-              continue;
-            }
-          }
-
-          if (found) break;
-        } catch (rpcErr) {
-          continue;
-        }
-      }
-
-      if (eventsFound.length > 0) {
-        return eventsFound[0].transactionHash;
-      }
-
-      return null;
-    } catch (err) {
-      console.error('[Blockchain] Loi tong quat khi truy van tx_hash goc thu chi:', err);
-      return null;
-    }
-  }
-
-  /**
-   * Truy vấn danh sách ví Kế toán hiện tại trực tiếp từ Smart Contract Tài chính
-   */
-  public async getFinanceOwnersFromChain(): Promise<string[]> {
-    this.provider = this.getBrowserProvider();
-    if (!this.provider || !this.financeContractAddress()) return [];
-    try {
-      const contract = new Contract(this.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, this.provider);
-      return await contract['getOwners']();
-    } catch (e) {
-      console.error('Loi doc danh sach finance owners tu chuoi:', e);
-      return [];
-    }
-  }
-
-  /**
-   * Thêm các Owner ví kế toán khác trên Smart Contract Tài chính
-   */
-  public async addFinanceOwnersOnChain(newOwners: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
-    if (!this.financeContractAddress()) {
-      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng Tài chính!' };
-    }
-    return this.runContractWriteTx(
-      this.financeContractAddress(),
-      CAFE_WEB3_FINANCE_ABI,
-      'addOwners',
-      [newOwners]
-    );
-  }
-
-  /**
-   * Xóa các Owner ví kế toán khác trên Smart Contract Tài chính
-   */
-  public async removeFinanceOwnersOnChain(ownersToRemove: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
-    if (!this.financeContractAddress()) {
-      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng Tài chính!' };
-    }
-    return this.runContractWriteTx(
-      this.financeContractAddress(),
-      CAFE_WEB3_FINANCE_ABI,
-      'removeOwners',
-      [ownersToRemove]
-    );
-  }
-
-  /**
-   * Truy vấn danh sách NFT Voucher khả dụng của khách hàng trực tiếp từ Blockchain
-   */
-  public async getCustomerVouchersFromChain(customerAddress: string): Promise<any[]> {
-    if (!this.voucherContractAddress() || this.voucherContractAddress().trim() === '') {
-      return [];
-    }
-
-    try {
-      const activeProvider = new JsonRpcProvider(this.rpcUrl());
-      const contract = new Contract(this.voucherContractAddress(), CAFE_VOUCHER_NFT_ABI, activeProvider);
-
-      // 1. Lấy toàn bộ danh sách Token ID của ví khách hàng bằng 1 cuộc gọi duy nhất
-      const tokenIds = await contract['getTokensOfOwner'](customerAddress);
-      if (!tokenIds || tokenIds.length === 0) {
-        return [];
-      }
-
-      const vouchersList: any[] = [];
-
-      // 2. Duyệt qua từng Token ID để lấy thông tin chi tiết
-      for (const tokenId of tokenIds) {
-        try {
-          const tokenIdNum = Number(tokenId);
-          const info = await contract['vouchers'](tokenIdNum);
-
-          if (info && !info.isUsed) {
-            const tokenUri = await contract['tokenURI'](tokenIdNum);
-            const parts = tokenUri.split('/');
-            const code = parts[parts.length - 1] || `NFT-${tokenIdNum}`;
-
-            vouchersList.push({
-              tokenId: tokenIdNum,
-              code: code,
-              discount_amount: Number(info.discountAmount),
-              min_order_amount: Number(info.minOrderAmount),
-              tokenUri: tokenUri,
-              isNft: true,
-              status: 'active'
-            });
-          }
-        } catch (tokenErr) {
-          console.warn(`[Blockchain] Lỗi đọc thông tin NFT Voucher ID ${tokenId}:`, tokenErr);
-          // Tiếp tục xử lý các token tiếp theo nếu một token bị lỗi
-        }
-      }
-
-      return vouchersList;
-    } catch (err) {
-      console.error('Lỗi lấy danh sách voucher NFT của khách hàng:', err);
-      return [];
-    }
-  }
-
-  /**
-   * Truy vấn trực tiếp một NFT Voucher theo ID từ Blockchain không qua quét block events.
-   */
-  public async getSingleVoucherFromChain(tokenId: number): Promise<any | null> {
-    if (!this.voucherContractAddress() || this.voucherContractAddress().trim() === '') {
-      return null;
-    }
-
-    try {
-      const activeProvider = new JsonRpcProvider(this.rpcUrl());
-      const contract = new Contract(this.voucherContractAddress(), CAFE_VOUCHER_NFT_ABI, activeProvider);
-
-      // 1. Kiểm tra chủ sở hữu
-      const owner = await contract['ownerOf'](tokenId);
-
-      // 2. Đọc thông tin chi tiết voucher
-      const info = await contract['vouchers'](tokenId);
-
-      if (info) {
-        const tokenUri = await contract['tokenURI'](tokenId);
-        const parts = tokenUri.split('/');
-        const code = parts[parts.length - 1] || `NFT-${tokenId}`;
-
-        return {
-          tokenId: Number(tokenId),
-          code: code,
-          discount_amount: Number(info.discountAmount),
-          min_order_amount: Number(info.minOrderAmount),
-          tokenUri: tokenUri,
-          isNft: true,
-          status: info.isUsed ? 'used' : 'active',
-          ownerAddress: owner
-        };
-      }
-      return null;
-    } catch (err) {
-      console.error(`Lỗi đọc NFT Voucher ID ${tokenId} trực tiếp từ chain:`, err);
-      return null;
-    }
-  }
-
-  /**
-   * Truy vấn danh sách đơn hàng phân trang trực tiếp từ Blockchain (POS Contract)
-   */
-  public async getOrdersPaginatedFromChain(page: number, limit: number): Promise<{ orders: any[], total: number }> {
-    if (!this.contractAddress()) return { orders: [], total: 0 };
-    try {
-      const activeProvider = new JsonRpcProvider(this.rpcUrl());
-      const contract = new Contract(this.contractAddress(), CAFE_WEB3_POS_ABI, activeProvider);
-
-      const res = await contract['getOrdersPaginated'](page, limit);
-      const orders = res[0].map((o: any) => ({
-        orderId: Number(o.orderId),
-        orderCode: o.orderCode,
-        tableNumber: o.tableNumber,
-        totalAmount: Number(o.totalAmount),
-        paymentMethod: o.paymentMethod,
-        itemsSummary: o.itemsSummary,
-        timestamp: Number(o.timestamp),
-        recordedBy: o.recordedBy
-      }));
-      return { orders, total: Number(res[1]) };
-    } catch (e) {
-      console.error('Loi doc danh sach orders phan trang tu chuoi:', e);
-      return { orders: [], total: 0 };
-    }
-  }
-
-  /**
-   * Truy vấn danh sách đơn hàng phân trang theo ví cashier trực tiếp từ Blockchain (POS Contract)
-   */
-  public async getUserOrdersPaginatedFromChain(user: string, page: number, limit: number): Promise<{ orders: any[], total: number }> {
-    if (!this.contractAddress() || !user) return { orders: [], total: 0 };
-    try {
-      const activeProvider = new JsonRpcProvider(this.rpcUrl());
-      const contract = new Contract(this.contractAddress(), CAFE_WEB3_POS_ABI, activeProvider);
-
-      const res = await contract['getUserOrdersPaginated'](user, page, limit);
-      const orders = res[0].map((o: any) => ({
-        orderId: Number(o.orderId),
-        orderCode: o.orderCode,
-        tableNumber: o.tableNumber,
-        totalAmount: Number(o.totalAmount),
-        paymentMethod: o.paymentMethod,
-        itemsSummary: o.itemsSummary,
-        timestamp: Number(o.timestamp),
-        recordedBy: o.recordedBy
-      }));
-      return { orders, total: Number(res[1]) };
-    } catch (e) {
-      console.error('Loi doc danh sach orders phan trang theo vi tu chuoi:', e);
-      return { orders: [], total: 0 };
-    }
-  }
-
-  /**
-   * Tìm kiếm đơn hàng theo mã đơn hàng trực tiếp từ Blockchain (POS Contract)
-   */
-  public async getOrderByCodeFromChain(orderCode: string): Promise<any | null> {
-    if (!this.contractAddress() || !orderCode) return null;
-    try {
-      const activeProvider = new JsonRpcProvider(this.rpcUrl());
-      const contract = new Contract(this.contractAddress(), CAFE_WEB3_POS_ABI, activeProvider);
-
-      const o = await contract['getOrderByCode'](orderCode);
-      return {
-        orderId: Number(o.orderId),
-        orderCode: o.orderCode,
-        tableNumber: o.tableNumber,
-        totalAmount: Number(o.totalAmount),
-        paymentMethod: o.paymentMethod,
-        itemsSummary: o.itemsSummary,
-        timestamp: Number(o.timestamp),
-        recordedBy: o.recordedBy
-      };
-    } catch (e) {
-      console.warn('Khong tim thay don hang co ma:', orderCode, e);
-      return null;
-    }
-  }
-
-  /**
-   * Truy vấn danh sách phiếu thu chi phân trang trực tiếp từ Blockchain (Finance Contract)
-   */
-  public async getTransactionsPaginatedFromChain(page: number, limit: number): Promise<{ transactions: any[], total: number }> {
-    if (!this.financeContractAddress()) return { transactions: [], total: 0 };
-    try {
-      const activeProvider = new JsonRpcProvider(this.rpcUrl());
-      const contract = new Contract(this.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, activeProvider);
-
-      const res = await contract['getTransactionsPaginated'](page, limit);
-      const transactions = res[0].map((t: any) => ({
-        txId: Number(t.txId),
-        transactionCode: t.transactionCode,
-        txType: t.txType === 1 ? 'thu' : 'chi',
-        amount: Number(t.amount),
-        category: t.category,
-        description: t.description,
-        timestamp: Number(t.timestamp),
-        recordedBy: t.recordedBy
-      }));
-      return { transactions, total: Number(res[1]) };
-    } catch (e) {
-      console.error('Loi doc danh sach transactions phan trang tu chuoi:', e);
-      return { transactions: [], total: 0 };
-    }
-  }
-
-  /**
-   * Truy vấn danh sách phiếu thu chi phân trang theo ví ghi nhận trực tiếp từ Blockchain (Finance Contract)
-   */
-  public async getUserTransactionsPaginatedFromChain(user: string, page: number, limit: number): Promise<{ transactions: any[], total: number }> {
-    if (!this.financeContractAddress() || !user) return { transactions: [], total: 0 };
-    try {
-      const activeProvider = new JsonRpcProvider(this.rpcUrl());
-      const contract = new Contract(this.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, activeProvider);
-
-      const res = await contract['getUserTransactionsPaginated'](user, page, limit);
-      const transactions = res[0].map((t: any) => ({
-        txId: Number(t.txId),
-        transactionCode: t.transactionCode,
-        txType: t.txType === 1 ? 'thu' : 'chi',
-        amount: Number(t.amount),
-        category: t.category,
-        description: t.description,
-        timestamp: Number(t.timestamp),
-        recordedBy: t.recordedBy
-      }));
-      return { transactions, total: Number(res[1]) };
-    } catch (e) {
-      console.error('Loi doc danh sach transactions phan trang theo vi tu chuoi:', e);
-      return { transactions: [], total: 0 };
-    }
-  }
-
-  /**
-   * Tìm kiếm phiếu thu chi theo mã trực tiếp từ Blockchain (Finance Contract)
-   */
-  public async getTransactionByCodeFromChain(txCode: string): Promise<any | null> {
-    if (!this.financeContractAddress() || !txCode) return null;
-    try {
-      const activeProvider = new JsonRpcProvider(this.rpcUrl());
-      const contract = new Contract(this.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, activeProvider);
-
-      const t = await contract['getTransactionByCode'](txCode);
-      return {
-        txId: Number(t.txId),
-        transactionCode: t.transactionCode,
-        txType: t.txType === 1 ? 'thu' : 'chi',
-        amount: Number(t.amount),
-        category: t.category,
-        description: t.description,
-        timestamp: Number(t.timestamp),
-        recordedBy: t.recordedBy
-      };
-    } catch (e) {
-      console.warn('Khong tim thay giao dich co ma:', txCode, e);
-      return null;
-    }
-  }
-
-  /**
-   * Tự động Deploy Smart Contract Menu Registry mới lên Blockchain EVM
-   */
-  public async deployMenuRegistryContractOnChain(targetChainId?: string): Promise<{ contractAddress: string; success: boolean; error?: string }> {
-    if (!this.walletConnected() || !this.currentAccount()) {
-      return { contractAddress: '', success: false, error: 'Chưa kết nối ví Web3!' };
-    }
-    this.provider = this.getBrowserProvider();
-    if (!this.provider) {
-      return { contractAddress: '', success: false, error: 'Không tìm thấy provider ví Web3!' };
-    }
-
-    const hasCorrectNetwork = await this.ensureCorrectNetwork(targetChainId);
-    if (!hasCorrectNetwork) {
-      return { contractAddress: '', success: false, error: this.walletError() || 'Vui lòng chuyển mạng!' };
-    }
-
-    try {
-      this.provider = new BrowserProvider((window as any).ethereum);
-      const signer = await this.provider.getSigner();
-      const factory = new ContractFactory(CAFE_MENU_REGISTRY_ABI, CAFE_MENU_REGISTRY_BYTECODE, signer);
-
-      const contract = await factory.deploy();
-      await contract.waitForDeployment();
-
-      const newAddress = await contract.getAddress();
-      this.menuRegistryContractAddress.set(newAddress);
-
-      return {
-        contractAddress: newAddress,
-        success: true
-      };
-    } catch (err: any) {
-      console.error('Loi deploy Menu Registry Contract:', err);
-      return {
-        contractAddress: '',
-        success: false,
-        error: err.reason || err.message || 'Giao dịch deploy bị từ chối hoặc lỗi chuỗi.'
-      };
-    }
-  }
-
-  /**
-   * Tự động Deploy Smart Contract CafeToken ($CAFE) mới lên Blockchain EVM
-   */
-  public async deployLoyaltyTokenContractOnChain(targetChainId?: string): Promise<{ contractAddress: string; success: boolean; error?: string }> {
-    if (!this.walletConnected() || !this.currentAccount()) {
-      return { contractAddress: '', success: false, error: 'Chưa kết nối ví Web3!' };
-    }
-    this.provider = this.getBrowserProvider();
-    if (!this.provider) {
-      return { contractAddress: '', success: false, error: 'Không tìm thấy provider ví Web3!' };
-    }
-
-    const hasCorrectNetwork = await this.ensureCorrectNetwork(targetChainId);
-    if (!hasCorrectNetwork) {
-      return { contractAddress: '', success: false, error: this.walletError() || 'Vui lòng chuyển mạng!' };
-    }
-
-    try {
-      this.provider = new BrowserProvider((window as any).ethereum);
-      const signer = await this.provider.getSigner();
-      const factory = new ContractFactory(CAFE_TOKEN_ABI, CAFE_TOKEN_BYTECODE, signer);
-
-      const contract = await factory.deploy();
-      await contract.waitForDeployment();
-
-      const newAddress = await contract.getAddress();
-      this.loyaltyTokenContractAddress.set(newAddress);
-
-      return {
-        contractAddress: newAddress,
-        success: true
-      };
-    } catch (err: any) {
-      console.error('Loi deploy CafeToken Contract:', err);
-      return {
-        contractAddress: '',
-        success: false,
-        error: err.reason || err.message || 'Giao dịch deploy bị từ chối hoặc lỗi chuỗi.'
-      };
-    }
-  }
-
-  /**
-   * Tự động Deploy Smart Contract VoucherShop mới lên Blockchain EVM
-   */
-  public async deployVoucherShopContractOnChain(
-    targetChainId?: string,
-    cafeToken?: string,
-    voucherNft?: string
-  ): Promise<{ contractAddress: string; success: boolean; error?: string }> {
-    if (!this.walletConnected() || !this.currentAccount()) {
-      return { contractAddress: '', success: false, error: 'Chưa kết nối ví Web3!' };
-    }
-    this.provider = this.getBrowserProvider();
-    if (!this.provider) {
-      return { contractAddress: '', success: false, error: 'Không tìm thấy provider ví Web3!' };
-    }
-
-    const tokenAddr = (cafeToken || this.loyaltyTokenContractAddress() || '').trim();
-    const nftAddr = (voucherNft || this.voucherContractAddress() || '').trim();
-
-    if (!tokenAddr.startsWith('0x') || tokenAddr.length !== 42) {
-      return { contractAddress: '', success: false, error: 'Địa chỉ CafeToken ($CAFE) không hợp lệ!' };
-    }
-    if (!nftAddr.startsWith('0x') || nftAddr.length !== 42) {
-      return { contractAddress: '', success: false, error: 'Địa chỉ Voucher NFT không hợp lệ!' };
-    }
-
-    const hasCorrectNetwork = await this.ensureCorrectNetwork(targetChainId);
-    if (!hasCorrectNetwork) {
-      return { contractAddress: '', success: false, error: this.walletError() || 'Vui lòng chuyển mạng!' };
-    }
-
-    try {
-      this.provider = new BrowserProvider((window as any).ethereum);
-      const signer = await this.provider.getSigner();
-      const factory = new ContractFactory(VOUCHER_SHOP_ABI, VOUCHER_SHOP_BYTECODE, signer);
-
-      const contract = await factory.deploy(tokenAddr, nftAddr);
-      await contract.waitForDeployment();
-
-      const newAddress = await contract.getAddress();
-      this.voucherShopContractAddress.set(newAddress);
-
-      return {
-        contractAddress: newAddress,
-        success: true
-      };
-    } catch (err: any) {
-      console.error('Loi deploy VoucherShop Contract:', err);
-      return {
-        contractAddress: '',
-        success: false,
-        error: err.reason || err.message || 'Giao dịch deploy bị từ chối hoặc lỗi chuỗi.'
-      };
-    }
-  }
-
-  /**
-   * Tự động Deploy Smart Contract VoucherMarketplace mới lên Blockchain EVM
-   */
-  public async deployVoucherMarketplaceContractOnChain(
-    targetChainId?: string,
-    cafeToken?: string,
-    voucherNft?: string,
-    feeRecipient?: string
-  ): Promise<{ contractAddress: string; success: boolean; error?: string }> {
-    if (!this.walletConnected() || !this.currentAccount()) {
-      return { contractAddress: '', success: false, error: 'Chưa kết nối ví Web3!' };
-    }
-    this.provider = this.getBrowserProvider();
-    if (!this.provider) {
-      return { contractAddress: '', success: false, error: 'Không tìm thấy provider ví Web3!' };
-    }
-
-    const tokenAddr = (cafeToken || this.loyaltyTokenContractAddress() || '').trim();
-    const nftAddr = (voucherNft || this.voucherContractAddress() || '').trim();
-    const recipientAddr = (feeRecipient || this.currentAccount() || '').trim();
-
-    if (!tokenAddr.startsWith('0x') || tokenAddr.length !== 42) {
-      return { contractAddress: '', success: false, error: 'Địa chỉ CafeToken ($CAFE) không hợp lệ!' };
-    }
-    if (!nftAddr.startsWith('0x') || nftAddr.length !== 42) {
-      return { contractAddress: '', success: false, error: 'Địa chỉ Voucher NFT không hợp lệ!' };
-    }
-    if (!recipientAddr.startsWith('0x') || recipientAddr.length !== 42) {
-      return { contractAddress: '', success: false, error: 'Địa chỉ ví nhận phí không hợp lệ!' };
-    }
-
-    const hasCorrectNetwork = await this.ensureCorrectNetwork(targetChainId);
-    if (!hasCorrectNetwork) {
-      return { contractAddress: '', success: false, error: this.walletError() || 'Vui lòng chuyển mạng!' };
-    }
-
-    try {
-      this.provider = new BrowserProvider((window as any).ethereum);
-      const signer = await this.provider.getSigner();
-      const factory = new ContractFactory(VOUCHER_MARKETPLACE_ABI, VOUCHER_MARKETPLACE_BYTECODE, signer);
-
-      const contract = await factory.deploy(tokenAddr, nftAddr, recipientAddr);
-      await contract.waitForDeployment();
-
-      const newAddress = await contract.getAddress();
-      this.voucherMarketplaceContractAddress.set(newAddress);
-
-      return {
-        contractAddress: newAddress,
-        success: true
-      };
-    } catch (err: any) {
-      console.error('Loi deploy VoucherMarketplace Contract:', err);
-      return {
-        contractAddress: '',
-        success: false,
-        error: err.reason || err.message || 'Giao dịch deploy bị từ chối hoặc lỗi chuỗi.'
-      };
-    }
-  }
-
-  /**
-   * Truy vấn danh sách Owners hiện tại trực tiếp từ Smart Contract Menu Registry
-   */
-  public async getMenuRegistryOwnersFromChain(): Promise<string[]> {
-    this.provider = this.getBrowserProvider();
-    if (!this.provider || !this.menuRegistryContractAddress()) return [];
-    try {
-      const contract = new Contract(this.menuRegistryContractAddress(), CAFE_MENU_REGISTRY_ABI, this.provider);
-      return await contract['getOwners']();
-    } catch (e) {
-      console.error('Loi doc danh sach owners Menu Registry tu chuoi:', e);
-      return [];
-    }
-  }
-
-  /**
-   * Thêm các Owner mới trên Smart Contract Menu Registry
-   */
-  public async addMenuRegistryOwnersOnChain(newOwners: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
-    if (!this.menuRegistryContractAddress()) {
-      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng Menu Registry!' };
-    }
-    return this.runContractWriteTx(
-      this.menuRegistryContractAddress(),
-      CAFE_MENU_REGISTRY_ABI,
-      'addOwners',
-      [newOwners]
-    );
-  }
-
-  /**
-   * Xóa các Owner trên Smart Contract Menu Registry
-   */
-  public async removeMenuRegistryOwnersOnChain(ownersToRemove: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
-    if (!this.menuRegistryContractAddress()) {
-      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng Menu Registry!' };
-    }
-    return this.runContractWriteTx(
-      this.menuRegistryContractAddress(),
-      CAFE_MENU_REGISTRY_ABI,
-      'removeOwners',
-      [ownersToRemove]
-    );
-  }
-
-  /**
-   * Kiểm tra xem địa chỉ ví có phải là Owner của Menu Registry không
-   */
-  public async checkIsOwnerOfMenuRegistry(address: string): Promise<boolean> {
-    if (!this.menuRegistryContractAddress()) return false;
-    try {
-      const activeProvider = new JsonRpcProvider(this.rpcUrl());
-      const contract = new Contract(this.menuRegistryContractAddress(), CAFE_MENU_REGISTRY_ABI, activeProvider);
-      return await contract['isOwner'](address);
-    } catch (e) {
-      console.error('Loi checkIsOwnerOfMenuRegistry:', e);
-      return false;
-    }
-  }
-
-  /**
-   * Đồng bộ toàn bộ thực đơn món ăn lên Blockchain (Menu Registry Contract)
-   */
-  public async updateMenuOnChain(products: any[]): Promise<{ txHash: string; success: boolean; error?: string }> {
-    if (!this.menuRegistryContractAddress()) {
-      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng Menu Registry!' };
-    }
-
-    // Chuyển format sang struct Product của contract
-    // Tối ưu hóa: Không gửi URL hình ảnh dài lên blockchain để tránh lỗi Out of Gas (tiết kiệm ~45% gas)
-    // Sử dụng basePrice (giá nhỏ nhất của biến thể) gửi lên blockchain đồng bộ với logic so sánh
-    const formattedProducts = products.map(p => {
-      const basePrice = (p.variants && p.variants.length > 0)
-        ? Math.min(...p.variants.map((v: any) => Number(v.price) || 0))
-        : Number(p.price) || 0;
-      return {
-        sku: p.sku || '',
-        name: p.name || '',
-        price: BigInt(basePrice),
-        image: '',
-        status: p.status === undefined ? true : !!p.status
-      };
-    });
-
-    return this.runContractWriteTx(
-      this.menuRegistryContractAddress(),
-      CAFE_MENU_REGISTRY_ABI,
-      'updateMenu',
-      [formattedProducts]
-    );
-  }
-
-  /**
-   * Tải toàn bộ danh sách thực đơn trực tiếp từ Blockchain (Menu Registry Contract)
-   * Ưu tiên dùng getProductsPaginated() (contract mới) để an toàn với RPC,
-   * fallback sang getAllProducts() nếu contract cũ chưa có hàm paginated.
-   */
-  public async getAllMenuProductsFromChain(): Promise<{ products: any[], lastUpdated: number }> {
-    if (!this.menuRegistryContractAddress()) {
-      return { products: [], lastUpdated: 0 };
-    }
-
-    try {
-      const activeProvider = new JsonRpcProvider(this.rpcUrl());
-      const contract = new Contract(this.menuRegistryContractAddress(), CAFE_MENU_REGISTRY_ABI, activeProvider);
-
-      const lastUpdatedRaw = await contract['lastUpdated']();
-
-      // Thử dùng getProductsPaginated (contract mới) trước - an toàn hơn với RPC và số lượng lớn
-      let allProducts: any[] = [];
-      try {
-        const total = Number(await contract['getProductsCount']());
-        if (total === 0) {
-          return { products: [], lastUpdated: Number(lastUpdatedRaw) * 1000 };
-        }
-
-        // Chunk 100 sản phẩm mỗi lần query để tránh timeout RPC
-        const CHUNK_SIZE = 100;
-        for (let offset = 0; offset < total; offset += CHUNK_SIZE) {
-          const result = await contract['getProductsPaginated'](offset, CHUNK_SIZE);
-          const chunk = result[0]; // tuple[0] = products
-          for (const p of chunk) {
-            allProducts.push({
-              sku: p.sku,
-              name: p.name,
-              price: Number(p.price),
-              image: p.image,
-              status: p.status
-            });
-          }
-        }
-      } catch (paginatedErr) {
-        // Fallback: contract cũ không có getProductsPaginated → dùng getAllProducts()
-        console.warn('[MenuRegistry] getProductsPaginated không khả dụng, fallback sang getAllProducts():', paginatedErr);
-        const rawProducts = await contract['getAllProducts']();
-        allProducts = rawProducts.map((p: any) => ({
-          sku: p.sku,
-          name: p.name,
-          price: Number(p.price),
-          image: p.image,
-          status: p.status
-        }));
-      }
-
-      return {
-        products: allProducts,
-        lastUpdated: Number(lastUpdatedRaw) * 1000
-      };
-    } catch (e) {
-      console.error('Loi doc thuc don onchain:', e);
-      return { products: [], lastUpdated: 0 };
-    }
-  }
-
-  /**
-   * Truy vấn danh sách Owners hiện tại trực tiếp từ Smart Contract Voucher NFT
-   */
-  public async getVoucherOwnersFromChain(): Promise<string[]> {
-    this.provider = this.getBrowserProvider();
-    if (!this.provider || !this.voucherContractAddress()) return [];
-    try {
-      const contract = new Contract(this.voucherContractAddress(), CAFE_VOUCHER_NFT_ABI, this.provider);
-      return await contract['getOwners']();
-    } catch (e) {
-      console.error('Loi doc danh sach voucher owners tu chuoi:', e);
-      return [];
-    }
-  }
-
-  /**
-   * Thêm các Owner mới trên Smart Contract Voucher NFT
-   */
-  public async addVoucherOwnersOnChain(newOwners: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
-    if (!this.voucherContractAddress()) {
-      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng Voucher NFT!' };
-    }
-    return this.runContractWriteTx(
-      this.voucherContractAddress(),
-      CAFE_VOUCHER_NFT_ABI,
-      'addOwners',
-      [newOwners]
-    );
-  }
-
-  /**
-   * Xóa các Owner trên Smart Contract Voucher NFT
-   */
-  public async removeVoucherOwnersOnChain(ownersToRemove: string[]): Promise<{ txHash: string; success: boolean; error?: string }> {
-    if (!this.voucherContractAddress()) {
-      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng Voucher NFT!' };
-    }
-    return this.runContractWriteTx(
-      this.voucherContractAddress(),
-      CAFE_VOUCHER_NFT_ABI,
-      'removeOwners',
-      [ownersToRemove]
-    );
-  }
-
-  // ==========================================
-  // HỆ THỐNG ĐIỂM THƯỞNG $CAFE & MARKETPLACE
-  // ==========================================
-
-  /**
-   * Lấy số dư CafeToken ($CAFE) của một ví khách hàng
-   */
-  public async getCafeTokenBalance(account: string): Promise<string> {
-    if (!this.loyaltyTokenContractAddress()) return '0.00';
-    try {
-      const activeProvider = new JsonRpcProvider(this.rpcUrl());
-      const contract = new Contract(this.loyaltyTokenContractAddress(), CAFE_TOKEN_ABI, activeProvider);
-      const balanceObj = await contract['balanceOf'](account);
-      return parseFloat(formatEther(balanceObj)).toFixed(2);
-    } catch (e) {
-      console.error('Lỗi lấy số dư token $CAFE:', e);
-      return '0.00';
-    }
-  }
-
-  /**
-   * Truy vấn danh sách các loại voucher đổi bằng điểm từ VoucherShop contract
-   */
-  public async getVoucherTypesFromShop(): Promise<any[]> {
-    if (!this.voucherShopContractAddress()) return [];
-    try {
-      const activeProvider = new JsonRpcProvider(this.rpcUrl());
-      const contract = new Contract(this.voucherShopContractAddress(), VOUCHER_SHOP_ABI, activeProvider);
-      const rawTypes = await contract['getVoucherTypes']();
-      return rawTypes.map((v: any) => ({
-        id: Number(v.id),
-        discountAmount: Number(v.discountAmount),
-        minOrderAmount: Number(v.minOrderAmount),
-        priceInCafeToken: parseFloat(formatEther(v.priceInCafeToken)),
-        tokenURI: v.tokenURI,
-        isActive: v.isActive
-      }));
-    } catch (e) {
-      console.error('Lỗi lấy danh sách voucher types từ Shop:', e);
-      return [];
-    }
-  }
-
-  /**
-   * Đổi điểm lấy Voucher NFT tại Voucher Shop của quán
-   */
-  public async buyVoucherFromShop(voucherTypeId: number, priceInCafeToken: string): Promise<{ txHash: string; success: boolean; error?: string }> {
-    if (!this.voucherShopContractAddress()) {
-      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng Voucher Shop!' };
-    }
-    if (!this.loyaltyTokenContractAddress()) {
-      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng token $CAFE!' };
-    }
-
-    try {
-      // 1. Phê duyệt (Approve) cho VoucherShop contract chi tiêu token $CAFE
-      const approveAmount = parseEther(priceInCafeToken);
-      const approveResult = await this.runContractWriteTx(
-        this.loyaltyTokenContractAddress(),
-        CAFE_TOKEN_ABI,
-        'approve',
-        [this.voucherShopContractAddress(), approveAmount]
-      );
-
-      if (!approveResult.success) {
-        return { txHash: '', success: false, error: 'Phê duyệt chi tiêu token thất bại: ' + approveResult.error };
-      }
-
-      // 2. Chờ phê duyệt được xác nhận rồi gọi hàm buyVoucher
-      return this.runContractWriteTx(
-        this.voucherShopContractAddress(),
-        VOUCHER_SHOP_ABI,
-        'buyVoucher',
-        [voucherTypeId]
-      );
-    } catch (err: any) {
-      return { txHash: '', success: false, error: err.message || 'Lỗi quy đổi voucher.' };
-    }
-  }
-
-  /**
-   * Truy vấn danh sách các voucher đang treo bán trên Marketplace
-   */
-  public async getActiveListingsFromMarket(): Promise<any[]> {
-    if (!this.voucherMarketplaceContractAddress()) return [];
-    try {
-      const activeProvider = new JsonRpcProvider(this.rpcUrl());
-      const contract = new Contract(this.voucherMarketplaceContractAddress(), VOUCHER_MARKETPLACE_ABI, activeProvider);
-      const rawListings = await contract['getActiveListings']();
-      
-      // Đọc metadata NFT Voucher song song để hiển thị đầy đủ thông tin
-      const nftContract = new Contract(this.voucherContractAddress(), CAFE_VOUCHER_NFT_ABI, activeProvider);
-      
-      const promises = rawListings.map(async (l: any) => {
-        const tokenId = Number(l.tokenId);
-        let discountAmount = 0;
-        let minOrderAmount = 0;
-        try {
-          const vInfo = await nftContract['vouchers'](tokenId);
-          discountAmount = Number(vInfo.discountAmount);
-          minOrderAmount = Number(vInfo.minOrderAmount);
-        } catch (e) {
-          // Bỏ qua lỗi nếu NFT đã bị thay đổi
-        }
-
-        return {
-          tokenId: tokenId,
-          seller: l.seller,
-          price: parseFloat(formatEther(l.price)),
-          discountAmount: discountAmount,
-          minOrderAmount: minOrderAmount,
-          isActive: l.isActive
-        };
-      });
-
-      return await Promise.all(promises);
-    } catch (e) {
-      console.error('Lỗi lấy danh sách listing từ Market:', e);
-      return [];
-    }
-  }
-
-  /**
-   * Ký gửi và Treo bán NFT Voucher lên Marketplace của khách hàng
-   */
-  public async listVoucherOnMarket(tokenId: number, priceInCafeToken: string): Promise<{ txHash: string; success: boolean; error?: string }> {
-    if (!this.voucherMarketplaceContractAddress()) {
-      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng Marketplace!' };
-    }
-    if (!this.voucherContractAddress()) {
-      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng Voucher NFT!' };
-    }
-
-    try {
-      // 1. Phê duyệt (Approve) NFT cho Marketplace contract
-      const approveResult = await this.runContractWriteTx(
-        this.voucherContractAddress(),
-        CAFE_VOUCHER_NFT_ABI,
-        'approve',
-        [this.voucherMarketplaceContractAddress(), tokenId]
-      );
-
-      if (!approveResult.success) {
-        return { txHash: '', success: false, error: 'Phê duyệt NFT thất bại: ' + approveResult.error };
-      }
-
-      // 2. Chờ approve hoàn tất, tiến hành list NFT
-      const priceWei = parseEther(priceInCafeToken);
-      return this.runContractWriteTx(
-        this.voucherMarketplaceContractAddress(),
-        VOUCHER_MARKETPLACE_ABI,
-        'listVoucher',
-        [tokenId, priceWei]
-      );
-    } catch (err: any) {
-      return { txHash: '', success: false, error: err.message || 'Lỗi treo bán NFT.' };
-    }
-  }
-
-  /**
-   * Mua Voucher NFT của khách hàng khác trên Marketplace
-   */
-  public async buyVoucherFromMarket(tokenId: number, priceInCafeToken: string): Promise<{ txHash: string; success: boolean; error?: string }> {
-    if (!this.voucherMarketplaceContractAddress()) {
-      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng Marketplace!' };
-    }
-    if (!this.loyaltyTokenContractAddress()) {
-      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng token $CAFE!' };
-    }
-
-    try {
-      // 1. Phê duyệt (Approve) cho Marketplace contract chi tiêu token $CAFE
-      const approveAmount = parseEther(priceInCafeToken);
-      const approveResult = await this.runContractWriteTx(
-        this.loyaltyTokenContractAddress(),
-        CAFE_TOKEN_ABI,
-        'approve',
-        [this.voucherMarketplaceContractAddress(), approveAmount]
-      );
-
-      if (!approveResult.success) {
-        return { txHash: '', success: false, error: 'Phê duyệt chi tiêu token thất bại: ' + approveResult.error };
-      }
-
-      // 2. Chờ approve được ghi nhận, gọi hàm buyVoucher
-      return this.runContractWriteTx(
-        this.voucherMarketplaceContractAddress(),
-        VOUCHER_MARKETPLACE_ABI,
-        'buyVoucher',
-        [tokenId]
-      );
-    } catch (err: any) {
-      return { txHash: '', success: false, error: err.message || 'Lỗi mua voucher.' };
-    }
-  }
-
-  /**
-   * Hủy treo bán NFT Voucher và thu hồi về ví cá nhân
-   */
-  public async cancelListingOnMarket(tokenId: number): Promise<{ txHash: string; success: boolean; error?: string }> {
-    if (!this.voucherMarketplaceContractAddress()) {
-      return { txHash: '', success: false, error: 'Chưa cấu hình hợp đồng Marketplace!' };
-    }
-    return this.runContractWriteTx(
-      this.voucherMarketplaceContractAddress(),
-      VOUCHER_MARKETPLACE_ABI,
-      'cancelListing',
-      [tokenId]
-    );
   }
 }
 

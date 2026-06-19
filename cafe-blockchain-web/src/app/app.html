@@ -42,7 +42,17 @@
         <app-web3-public-header></app-web3-public-header>
       }
 
-      <router-outlet></router-outlet>
+      @if (stateService.blockedFeatureInRoute()) {
+        <div class="flex-1 flex flex-col items-center justify-center p-6 bg-slate-50 dark:bg-slate-950">
+          <app-feature-blocked
+            [featureKey]="stateService.blockedFeatureInRoute()?.key ?? ''"
+            [featureName]="stateService.blockedFeatureInRoute()?.name ?? ''"
+            class="w-full max-w-lg block"
+          ></app-feature-blocked>
+        </div>
+      } @else {
+        <router-outlet></router-outlet>
+      }
     </main>
   </div>
 }

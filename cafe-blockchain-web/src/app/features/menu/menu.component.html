@@ -54,9 +54,6 @@
     }
   </app-page-header>
 
-  @if (!stateService.hasFeature('enable_menu')) {
-    <app-feature-blocked featureKey="enable_menu" featureName="Thực đơn"></app-feature-blocked>
-  } @else {
   @if (stateService.web3Service.walletConnected()) {
     @if (stateService.hasPermission('menu')) {
       @if (isProductsLoading()) {
@@ -1332,6 +1329,5 @@
     <app-web3-connect-prompt
       [title]="'Kết nối ví Web3 để quản lý Thực đơn món ăn'"
     ></app-web3-connect-prompt>
-  }
   }
 </div>

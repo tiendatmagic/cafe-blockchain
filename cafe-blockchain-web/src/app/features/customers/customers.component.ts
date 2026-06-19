@@ -14,7 +14,6 @@ import { CustomDatePickerComponent } from '@shared/components/custom-date-picker
 import { TableComponent, TableCellDirective, TableColumn } from '@shared/components/table/table.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
-import { FeatureBlockedComponent } from '@shared/components/feature-blocked/feature-blocked.component';
 
 @Component({
   selector: 'app-customers',
@@ -33,8 +32,7 @@ import { FeatureBlockedComponent } from '@shared/components/feature-blocked/feat
     TableComponent,
     TableCellDirective,
     IconComponent,
-    SkeletonLoaderComponent,
-    FeatureBlockedComponent
+    SkeletonLoaderComponent
   ],
   templateUrl: './customers.component.html'
 })
@@ -177,11 +175,7 @@ export class CustomersComponent implements OnInit {
     return Math.ceil(this.customerGroups().length / this.customerGroupItemsPerPage) || 1;
   });
 
-  ngOnInit() {
-    if (!this.stateService.hasFeature('enable_customers')) {
-      return;
-    }
-  }
+  ngOnInit() {}
 
   // Tải lại dữ liệu
   public refreshCustomers() {

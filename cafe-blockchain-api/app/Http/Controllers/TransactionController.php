@@ -9,6 +9,13 @@ use Illuminate\Support\Facades\Http;
 
 class TransactionController extends Controller
 {
+    protected $transactionRepository;
+
+    public function __construct(\App\Domain\Repositories\TransactionRepositoryInterface $transactionRepository)
+    {
+        $this->transactionRepository = $transactionRepository;
+    }
+
     /**
      * Lấy danh sách giao dịch thu chi của cửa hàng
      */
@@ -16,17 +23,10 @@ class TransactionController extends Controller
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
         
-        $query = Transaction::where('store_owner_address', $storeOwner);
+        $type = $request->query('type');
+        $category = $request->query('category');
 
-        if ($request->has('type') && in_array($request->type, ['thu', 'chi'])) {
-            $query->where('type', $request->type);
-        }
-
-        if ($request->has('category') && !empty($request->category)) {
-            $query->where('category', 'like', '%' . $request->category . '%');
-        }
-
-        $transactions = $query->orderBy('transaction_date', 'desc')->orderBy('id', 'desc')->get();
+        $transactions = $this->transactionRepository->getTransactions($storeOwner, $type, $category);
         
         return response()->json($transactions);
     }
@@ -49,7 +49,7 @@ class TransactionController extends Controller
             $shiftId = $activeShift->id;
         }
 
-        $transaction = Transaction::create([
+        $transaction = $this->transactionRepository->create([
             'type' => $validated['type'],
             'amount' => $validated['amount'],
             'category' => $validated['category'],
@@ -73,7 +73,11 @@ class TransactionController extends Controller
     public function update(StoreTransactionRequest $request, $id)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-        $transaction = Transaction::where('store_owner_address', $storeOwner)->findOrFail($id);
+        $transaction = $this->transactionRepository->find($id);
+
+        if (!$transaction || $transaction->store_owner_address !== $storeOwner) {
+            abort(404, 'Transaction not found.');
+        }
 
         // Chặn sửa nếu đã đồng bộ Blockchain thành công
         if ($transaction->blockchain_status === 'success') {
@@ -84,7 +88,7 @@ class TransactionController extends Controller
 
         $validated = $request->validated();
 
-        $transaction->update([
+        $this->transactionRepository->update($transaction, [
             'type' => $validated['type'],
             'amount' => $validated['amount'],
             'category' => $validated['category'],
@@ -105,7 +109,11 @@ class TransactionController extends Controller
     public function destroy(Request $request, $id)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-        $transaction = Transaction::where('store_owner_address', $storeOwner)->findOrFail($id);
+        $transaction = $this->transactionRepository->find($id);
+
+        if (!$transaction || $transaction->store_owner_address !== $storeOwner) {
+            abort(404, 'Transaction not found.');
+        }
 
         // Chặn xóa nếu đã đồng bộ Blockchain thành công
         if ($transaction->blockchain_status === 'success') {
@@ -114,7 +122,7 @@ class TransactionController extends Controller
             ], 400);
         }
 
-        $transaction->delete();
+        $this->transactionRepository->delete($transaction);
 
         return response()->json([
             'message' => 'Transaction deleted successfully.'
@@ -127,7 +135,11 @@ class TransactionController extends Controller
     public function syncBlockchain(Request $request, $id)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-        $transaction = Transaction::where('store_owner_address', $storeOwner)->findOrFail($id);
+        $transaction = $this->transactionRepository->find($id);
+
+        if (!$transaction || $transaction->store_owner_address !== $storeOwner) {
+            abort(404, 'Transaction not found.');
+        }
 
         // Xác thực chữ ký bảo mật HMAC chống can thiệp trực tiếp vào DB MySQL
         $expectedHash = $transaction->generateVerificationHash();
@@ -146,7 +158,8 @@ class TransactionController extends Controller
         $txHash = $validated['tx_hash'];
         
         // Ngăn chặn sử dụng lại tx_hash cho giao dịch khác
-        if (Transaction::where('tx_hash', $txHash)->where('id', '!=', $id)->exists()) {
+        $existingTx = $this->transactionRepository->findByTxHash($txHash);
+        if ($existingTx && $existingTx->id !== $transaction->id) {
             return response()->json(['message' => 'Transaction hash has already been used.'], 400);
         }
 
@@ -186,12 +199,11 @@ class TransactionController extends Controller
             }
         }
 
-        $transaction->tx_hash = $txHash;
-        $transaction->blockchain_status = $validated['blockchain_status'];
-        if (isset($validated['chain_id'])) {
-            $transaction->chain_id = $validated['chain_id'];
-        }
-        $transaction->save();
+        $this->transactionRepository->update($transaction, [
+            'tx_hash' => $txHash,
+            'blockchain_status' => $validated['blockchain_status'],
+            'chain_id' => $validated['chain_id'] ?? $transaction->chain_id
+        ]);
 
         return response()->json([
             'message' => 'Blockchain sync updated successfully.',

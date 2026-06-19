@@ -13,7 +13,6 @@ import { CustomSelectComponent } from '@shared/components/custom-select/custom-s
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
-import { FeatureBlockedComponent } from '@shared/components/feature-blocked/feature-blocked.component';
 
 @Component({
   selector: 'app-tables',
@@ -30,8 +29,7 @@ import { FeatureBlockedComponent } from '@shared/components/feature-blocked/feat
     CustomSelectComponent,
     IconComponent,
     TabGroupComponent,
-    SkeletonLoaderComponent,
-    FeatureBlockedComponent
+    SkeletonLoaderComponent
   ],
   templateUrl: './tables.component.html'
 })
@@ -110,9 +108,6 @@ export class TablesComponent implements OnInit {
   });
 
   ngOnInit() {
-    if (!this.stateService.hasFeature('enable_tables')) {
-      return;
-    }
   }
 
   // Tải lại dữ liệu khu vực & bàn

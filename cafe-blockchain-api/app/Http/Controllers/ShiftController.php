@@ -12,10 +12,14 @@ use Illuminate\Support\Facades\DB;
 class ShiftController extends Controller
 {
     protected $reconciliationService;
+    protected $shiftRepository;
 
-    public function __construct(ShiftReconciliationService $reconciliationService)
-    {
+    public function __construct(
+        ShiftReconciliationService $reconciliationService,
+        \App\Domain\Repositories\ShiftRepositoryInterface $shiftRepository
+    ) {
         $this->reconciliationService = $reconciliationService;
+        $this->shiftRepository = $shiftRepository;
     }
 
     /**
@@ -24,10 +28,7 @@ class ShiftController extends Controller
     public function current(Request $request)
     {
         $user = $request->user();
-        $shift = Shift::where('user_id', $user->id)
-            ->where('status', 'open')
-            ->with('user')
-            ->first();
+        $shift = $this->shiftRepository->findActiveByUserId($user->id);
 
         return response()->json($shift);
     }
@@ -43,9 +44,7 @@ class ShiftController extends Controller
         $validated = $request->validated();
 
         // Kiểm tra xem nhân viên này có ca trực nào đang mở không
-        $existingShift = Shift::where('user_id', $user->id)
-            ->where('status', 'open')
-            ->first();
+        $existingShift = $this->shiftRepository->findActiveByUserId($user->id);
 
         if ($existingShift) {
             return response()->json([
@@ -53,7 +52,7 @@ class ShiftController extends Controller
             ], 400);
         }
 
-        $shift = Shift::create([
+        $shift = $this->shiftRepository->create([
             'store_owner_address' => $storeOwner,
             'user_id' => $user->id,
             'start_time' => now(),
@@ -73,9 +72,7 @@ class ShiftController extends Controller
     public function close(CloseShiftRequest $request)
     {
         $user = $request->user();
-        $shift = Shift::where('user_id', $user->id)
-            ->where('status', 'open')
-            ->first();
+        $shift = $this->shiftRepository->findActiveByUserId($user->id);
 
         if (!$shift) {
             return response()->json([
@@ -91,7 +88,7 @@ class ShiftController extends Controller
             $recon = $this->reconciliationService->calculateReconciliation($shift);
             $actualCash = $validated['actual_cash'];
 
-            $shift->update([
+            $this->shiftRepository->update($shift, [
                 'end_time' => now(),
                 'actual_cash' => $actualCash,
                 'expected_cash' => $recon['expected_cash'],
@@ -127,10 +124,7 @@ class ShiftController extends Controller
     public function summary(Request $request)
     {
         $user = $request->user();
-        $shift = Shift::where('user_id', $user->id)
-            ->where('status', 'open')
-            ->with('user')
-            ->first();
+        $shift = $this->shiftRepository->findActiveByUserId($user->id);
 
         if (!$shift) {
             return response()->json(null);
@@ -154,16 +148,15 @@ class ShiftController extends Controller
         $user = $request->user();
         $storeOwner = strtolower($user->store_owner_address ?: $user->wallet_address);
         
-        $query = Shift::where('store_owner_address', $storeOwner)->with('user');
-
         // Phân quyền bảo mật: Nếu là nhân viên thông thường (không có quyền quản lý nhân sự staffs hoặc báo cáo reports)
         // thì chỉ cho phép họ nhìn thấy lịch sử ca trực của chính mình.
         $permissions = $user->role ? $user->role->permissions : null;
+        $userId = null;
         if ($permissions !== null && !($permissions['staffs'] ?? false) && !($permissions['reports'] ?? false)) {
-            $query->where('user_id', $user->id);
+            $userId = $user->id;
         }
 
-        $shifts = $query->orderBy('start_time', 'desc')->get();
+        $shifts = $this->shiftRepository->getHistory($storeOwner, $userId);
 
         return response()->json($shifts);
     }

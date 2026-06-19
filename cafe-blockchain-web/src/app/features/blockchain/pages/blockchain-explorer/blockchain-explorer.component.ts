@@ -210,13 +210,13 @@ export class BlockchainExplorerComponent implements OnInit {
    * Kích hoạt chế độ Offline Fallback
    */
   public useOfflineFallback() {
-    this.rpcUrl.set('https://bsc-testnet-rpc.publicnode.com');
-    this.posContractAddress.set('0xB35E2987932C7D6499f93d8CE5ac90CF43DD8c38');
-    this.financeContractAddress.set('0x7988500670EC631F7be36eD91E367760f380d6Af');
-    this.voucherContractAddress.set('0xc6828e46E100B248173e28a33e8D92662Cd1A8c7');
+    this.rpcUrl.set('');
+    this.posContractAddress.set('');
+    this.financeContractAddress.set('');
+    this.voucherContractAddress.set('');
     this.menuRegistryContractAddress.set('');
-    this.explorerUrl.set('https://testnet.bscscan.com');
-    this.chainId.set('97');
+    this.explorerUrl.set('');
+    this.chainId.set('');
     this.storeName.set('Mạng BSC Testnet (Fallback)');
     this.connectionStatus.set('offline_fallback');
 
