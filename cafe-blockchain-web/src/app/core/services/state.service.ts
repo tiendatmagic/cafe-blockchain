@@ -388,6 +388,14 @@ export class StateService {
                 this.web3Service.updateConfig(settings);
               }
               this.currentShift.set(res.shift || null);
+              if (res.shift && res.shift.status === 'open') {
+                this.apiService.getShiftSummary().subscribe({
+                  next: (sum) => this.shiftSummary.set(sum),
+                  error: (err) => console.error('[StateService] Lỗi tải summary ca trực ban đầu:', err)
+                });
+              } else {
+                this.shiftSummary.set(null);
+              }
               
               // Nạp dữ liệu cho tab hiện tại
               this.reloadCurrentTab();
@@ -1178,7 +1186,21 @@ export class StateService {
     this.apiService.getCurrentShift().subscribe({
       next: (res) => {
         this.currentShift.set(res || null);
-        if (onSuccess) onSuccess(res || null);
+        if (res && res.status === 'open') {
+          this.apiService.getShiftSummary().subscribe({
+            next: (sum) => {
+              this.shiftSummary.set(sum || null);
+              if (onSuccess) onSuccess(res || null);
+            },
+            error: (err) => {
+              console.error('Lỗi tải summary ca trực khi refresh:', err);
+              if (onSuccess) onSuccess(res || null);
+            }
+          });
+        } else {
+          this.shiftSummary.set(null);
+          if (onSuccess) onSuccess(res || null);
+        }
       },
       error: (err) => {
         console.error('Lỗi tải ca trực hiện tại:', err);

@@ -95,7 +95,7 @@
                 <app-icon name="clock" class="h-5.5 w-5.5 text-emerald-500" [strokeWidth]="2.5"></app-icon>
               </div>
               <div class="min-w-0">
-                <p class="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-wider">Ca trực hiện tại</p>
+                <p class="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-wider">Ca trực #{{ stateService.currentShift().id }}</p>
                 <h3 class="text-slate-800 dark:text-slate-100 font-extrabold text-sm sm:text-base leading-tight mt-0.5 truncate">
                   {{ stateService.currentShift().user?.name || 'Đang mở ca trực' }}
                 </h3>
@@ -127,9 +127,9 @@
               </p>
             </div>
             <div>
-              <p class="text-[10px] text-slate-400 uppercase">Mã ca trực</p>
-              <p class="text-slate-700 dark:text-slate-300 font-mono mt-0.5">
-                #{{ stateService.currentShift().id }}
+              <p class="text-[10px] text-slate-400 uppercase">Tiền trong két (dự kiến)</p>
+              <p class="text-emerald-600 dark:text-emerald-400 font-black mt-0.5">
+                {{ stateService.shiftExpectedCash() | vnd }}
               </p>
             </div>
           </div>
@@ -833,32 +833,41 @@
                 <span>Hoạt động Voucher NFT</span>
               </h4>
 
-              <div class="grid grid-cols-3 gap-3">
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <!-- Minted -->
                 <div
-                  class="p-3 bg-purple-500/5 border border-purple-500/10 rounded-2xl flex flex-col items-center justify-center text-center"
+                  class="p-2 sm:p-3 bg-purple-500/5 border border-purple-500/10 rounded-2xl flex flex-col items-center justify-center text-center"
                 >
                   <span class="text-[9px] font-black text-slate-400 uppercase">Đã Mint</span>
-                  <span class="text-lg font-black text-purple-600 dark:text-purple-400 mt-1">{{
+                  <span class="text-base sm:text-lg font-black text-purple-600 dark:text-purple-400 mt-1">{{
                     dashboardData()?.voucher_activity?.total_minted
+                  }}</span>
+                </div>
+                <!-- Circulating -->
+                <div
+                  class="p-2 sm:p-3 bg-blue-500/5 border border-blue-500/10 rounded-2xl flex flex-col items-center justify-center text-center"
+                >
+                  <span class="text-[9px] font-black text-slate-400 uppercase">Lưu hành</span>
+                  <span class="text-base sm:text-lg font-black text-blue-500 mt-1">{{
+                    (dashboardData()?.voucher_activity?.total_minted || 0) - (dashboardData()?.voucher_activity?.used || 0)
                   }}</span>
                 </div>
                 <!-- Used -->
                 <div
-                  class="p-3 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl flex flex-col items-center justify-center text-center"
+                  class="p-2 sm:p-3 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl flex flex-col items-center justify-center text-center"
                 >
-                  <span class="text-[9px] font-black text-slate-400 uppercase">Sử dụng</span>
-                  <span class="text-lg font-black text-emerald-500 mt-1">{{
+                  <span class="text-[9px] font-black text-slate-400 uppercase">Đã dùng</span>
+                  <span class="text-base sm:text-lg font-black text-emerald-500 mt-1">{{
                     dashboardData()?.voucher_activity?.used
                   }}</span>
                 </div>
                 <!-- Saved Money -->
                 <div
-                  class="p-3 bg-blue-500/5 border border-blue-500/10 rounded-2xl flex flex-col items-center justify-center text-center"
+                  class="p-2 sm:p-3 bg-amber-500/5 border border-amber-500/10 rounded-2xl flex flex-col items-center justify-center text-center"
                 >
                   <span class="text-[9px] font-black text-slate-400 uppercase">Giảm giá</span>
                   <span
-                    class="text-xs font-black text-blue-500 mt-2 truncate w-full"
+                    class="text-xs sm:text-sm font-black text-amber-500 mt-2 truncate w-full"
                     title="{{ dashboardData()?.voucher_activity?.total_discount | number }}đ"
                   >
                     {{ dashboardData()?.voucher_activity?.total_discount | number }}đ
