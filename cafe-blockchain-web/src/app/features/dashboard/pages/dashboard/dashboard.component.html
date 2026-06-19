@@ -20,6 +20,58 @@
 
   @if (web3Service.walletConnected()) {
     @if (stateService.hasPermission('dashboard')) {
+    <!-- Card chào mừng & thông tin gói cước -->
+    <div class="app-card p-4 sm:p-5 mb-4">
+      <div class="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <!-- Phần chào mừng -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-[var(--dynamic-primary)]/10 dark:bg-[var(--dynamic-primary)]/20 flex items-center justify-center shrink-0">
+            <app-icon name="home" class="h-5.5 w-5.5 text-[var(--dynamic-primary)]" [strokeWidth]="2.5"></app-icon>
+          </div>
+          <div>
+            <p class="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-wider">Xin chào</p>
+            <h3 class="text-slate-800 dark:text-slate-100 font-extrabold text-base sm:text-lg leading-tight mt-0.5">{{ settings().store_name }}</h3>
+          </div>
+        </div>
+
+        <!-- Thông tin gói cước -->
+        <div class="flex flex-col sm:items-end gap-1.5">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-slate-500 dark:text-slate-400 text-xs font-semibold">Gói của bạn:</span>
+            @if (stateService.subscriptionPlanCode() === 'free') {
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-500 text-white text-[11px] font-black uppercase tracking-wide shadow-sm">
+                <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                {{ stateService.subscriptionPlanCode() }}
+              </span>
+            } @else {
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500 text-white text-[11px] font-black uppercase tracking-wide shadow-sm">
+                <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                {{ stateService.subscriptionPlanCode() }}
+              </span>
+            }
+          </div>
+
+          <!-- Ngày hết hạn -->
+          @if (stateService.subscriptionDaysLeft() <= 7 && stateService.subscriptionDaysLeft() > 0) {
+            <!-- Cảnh báo sắp hết hạn -->
+            <div class="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400">
+              <app-icon name="warning" class="h-3 w-3 shrink-0 animate-pulse" [strokeWidth]="2.5"></app-icon>
+              <span class="text-[11px] font-bold">Hết hạn sau {{ stateService.subscriptionDaysLeft() }} ngày!</span>
+            </div>
+          } @else if (stateService.subscriptionDaysLeft() === 0) {
+            <div class="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400">
+              <app-icon name="warning-solid" [solid]="true" class="h-3 w-3 shrink-0" ></app-icon>
+              <span class="text-[11px] font-bold">Gói đã hết hạn!</span>
+            </div>
+          } @else {
+            <span class="text-slate-500 dark:text-slate-400 text-xs font-semibold">
+              Hạn dùng: <span class="text-slate-700 dark:text-slate-300 font-bold">{{ stateService.subscriptionDaysLeft() }} ngày còn lại</span>
+            </span>
+          }
+        </div>
+      </div>
+    </div>
+
     <!-- Bộ lọc thời gian Dashboard -->
     <div
       class="app-card flex flex-col md:flex-row md:items-center justify-between gap-4 p-4"
@@ -48,6 +100,7 @@
     </div>
 
     @if (isDashboardLoading()) {
+
       <app-skeleton-loader type="dashboard"></app-skeleton-loader>
     } @else {
       <div class="space-y-6">
