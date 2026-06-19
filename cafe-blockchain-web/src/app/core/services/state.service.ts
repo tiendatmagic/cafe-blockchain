@@ -259,6 +259,7 @@ export class StateService {
   private isInitialSyncDone = false;
   private isSettingsFetching = false;
   private lastSettingsLoadTimestamp = 0;
+  private skipNextSubscriptionSync = false;
   
   public get lastCustomersLoadTimestamp() { return this.customerStore.lastCustomersLoadTimestamp; }
   public set lastCustomersLoadTimestamp(val: number) { this.customerStore.lastCustomersLoadTimestamp = val; }
@@ -365,9 +366,7 @@ export class StateService {
                   has_synced_menu: '0',
                   ...res.settings
                 };
-                this.settingStore.settings.set(settings);
-                this.settingStore.applyAndCacheDynamicColors(settings.primary_color, settings.secondary_color);
-                this.web3Service.updateConfig(settings);
+                this.settingStore.updateSettingsCache(settings);
               }
               this.currentShift.set(res.shift || null);
               if (res.shift && res.shift.status === 'open') {
@@ -379,11 +378,15 @@ export class StateService {
                 this.shiftSummary.set(null);
               }
               
-              // Nạp dữ liệu cho tab hiện tại
-              this.reloadCurrentTab();
+              // Nạp dữ liệu cho tab hiện tại với force = true khi ví vừa kết nối
+              this.reloadCurrentTab(true);
               
-              // Đồng bộ thông tin gói cước mới nhất từ DB
-              this.syncSubscriptionFromBackend();
+              // Đồng bộ thông tin gói cước mới nhất từ DB (bỏ qua nếu vừa verify signature thành công)
+              if (this.skipNextSubscriptionSync) {
+                this.skipNextSubscriptionSync = false;
+              } else {
+                this.syncSubscriptionFromBackend();
+              }
               
               // Tắt loading khởi tạo
               this.isInitialLoading.set(false);
@@ -789,8 +792,8 @@ export class StateService {
     this.cartStore.cancelEditOrder((msg, type) => this.showToast(msg, type));
   }
 
-  public reloadCurrentTab() {
-    this.setTabState(this.activeTab());
+  public reloadCurrentTab(force: boolean = false) {
+    this.setTabState(this.activeTab(), force);
   }
 
   private syncTabWithUrl(url: string) {
@@ -815,7 +818,7 @@ export class StateService {
     }
   }
 
-  private setTabState(tab: string) {
+  private setTabState(tab: string, force: boolean = false) {
     const isNewTab = this.activeTab() !== tab;
     if (isNewTab) {
       this.activeTab.set(tab);
@@ -823,7 +826,7 @@ export class StateService {
     }
 
     if (tab === 'dashboard') {
-      this.refreshDashboard();
+      this.refreshDashboard(force);
     } else if (tab === 'pos') {
       if (this.categoriesList().length === 0) {
         this.refreshProducts();
@@ -1071,6 +1074,7 @@ export class StateService {
                       this.planFeatures.set(null);
                     }
                   }
+                  this.skipNextSubscriptionSync = true;
                   this.web3Service.walletConnected.set(true);
                   this.showToast('Kết nối và xác thực ví thành công!', 'success');
                   this.isWalletModalOpen.set(false);
@@ -1092,11 +1096,7 @@ export class StateService {
                     this.dashboardEndDate.set(formatDateStr(today));
                   }
 
-                  this.loadSettings();
-
-                  if (this.router.url.includes('/dashboard')) {
-                    this.refreshDashboard(true);
-                  } else {
+                  if (!this.router.url.includes('/dashboard')) {
                     this.router.navigate(['/dashboard']);
                   }
                 }
@@ -1191,13 +1191,11 @@ export class StateService {
                 this.planFeatures.set(null);
               }
             }
+            this.skipNextSubscriptionSync = true;
             this.web3Service.walletConnected.set(true);
             this.showToast('Kết nối và xác thực ví thành công!', 'success');
             this.isWalletModalOpen.set(false);
-            this.loadSettings();
-            if (this.router.url.includes('/dashboard')) {
-              this.refreshDashboard(true);
-            } else {
+            if (!this.router.url.includes('/dashboard')) {
               this.router.navigate(['/dashboard']);
             }
           }

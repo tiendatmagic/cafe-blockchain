@@ -33,6 +33,16 @@ export class SettingStore {
   private lastSettingsLoadTimestamp = 0;
 
   /**
+   * Cập nhật cache cài đặt thủ công (sử dụng khi tải từ effect bên ngoài)
+   */
+  public updateSettingsCache(settings: any) {
+    this.settings.set(settings);
+    this.lastSettingsLoadTimestamp = Date.now();
+    this.applyAndCacheDynamicColors(settings.primary_color, settings.secondary_color);
+    this.web3Service.updateConfig(settings);
+  }
+
+  /**
    * Tải cấu hình từ backend
    */
   public loadSettings(hasSettingsPermission: boolean) {
@@ -64,10 +74,7 @@ export class SettingStore {
           has_synced_menu: '0',
           ...res
         };
-        this.settings.set(updated);
-        this.lastSettingsLoadTimestamp = Date.now();
-        this.applyAndCacheDynamicColors(updated.primary_color, updated.secondary_color);
-        this.web3Service.updateConfig(updated);
+        this.updateSettingsCache(updated);
         this.isSettingsLoading.set(false);
         this.isSettingsFetching = false;
       },
