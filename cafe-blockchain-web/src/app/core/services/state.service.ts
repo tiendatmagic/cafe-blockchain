@@ -346,7 +346,7 @@ export class StateService {
                 return of(null);
               }))
             : of(null);
-          const shift$ = this.hasPermission('shifts') 
+          const shift$ = (this.hasPermission('shifts') && this.hasFeature('enable_shifts'))
             ? this.apiService.getCurrentShift().pipe(catchError((err) => {
                 console.warn('[StateService] Lỗi tải ca trực hiện tại:', err);
                 return of(null);
@@ -887,15 +887,19 @@ export class StateService {
 
   // --- Quản lý Ca trực ---
   public refreshCurrentShift(onSuccess?: (shift: any) => void) {
-    this.shiftStore.refreshCurrentShift(this.hasPermission('shifts'), onSuccess);
+    this.shiftStore.refreshCurrentShift(
+      this.hasPermission('shifts') && this.hasFeature('enable_shifts'),
+      onSuccess
+    );
   }
 
   public refreshShifts() {
-    this.shiftStore.refreshShifts(this.hasPermission('shifts'));
+    this.shiftStore.refreshShifts(this.hasPermission('shifts') && this.hasFeature('enable_shifts'));
   }
 
   public openShift(initialCash: number, onSuccess?: () => void) {
     if (!this.web3Service.walletConnected()) return;
+    if (!this.hasFeature('enable_shifts')) return;
     if (this.isLoading()) return;
     this.isLoading.set(true);
     this.shiftStore.openShift(initialCash, {
@@ -913,6 +917,7 @@ export class StateService {
 
   public closeShift(actualCash: number, note?: string, onSuccess?: () => void) {
     if (!this.web3Service.walletConnected()) return;
+    if (!this.hasFeature('enable_shifts')) return;
     if (this.isLoading()) return;
     this.isLoading.set(true);
     this.shiftStore.closeShift(actualCash, note, {
@@ -946,6 +951,7 @@ export class StateService {
   }
 
   public openStartShiftModal() {
+    if (!this.hasFeature('enable_shifts')) return;
     this.shiftStore.initialCashInput.set(0);
     this.shiftStore.isStartShiftModalOpen.set(true);
   }
@@ -960,6 +966,7 @@ export class StateService {
   }
 
   public openCloseShiftModal() {
+    if (!this.hasFeature('enable_shifts')) return;
     this.shiftStore.isShiftSummaryLoading.set(true);
     this.shiftStore.closeShiftNote.set('');
     this.shiftStore.isCloseShiftModalOpen.set(true);
