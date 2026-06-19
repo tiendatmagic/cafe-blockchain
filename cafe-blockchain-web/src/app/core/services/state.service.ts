@@ -1803,6 +1803,15 @@ export class StateService {
   public triggerUpgradeModal(featureKey: string, featureName: string) {
     this.lockedFeatureKey.set(featureKey);
     this.lockedFeatureName.set(featureName);
+
+    // Tắt các modal cũ trước đó
+    this.isWalletModalOpen.set(false);
+    this.isWaitingForSignature.set(false);
+    this.isSendTokenModalOpen.set(false);
+    this.isCloseShiftModalOpen.set(false);
+    this.isStartShiftModalOpen.set(false);
+    this.isMobileMenuOpen.set(false);
+
     this.upgradeModalStep.set(1);
     this.isUpgradeModalOpen.set(true);
   }
@@ -1811,6 +1820,15 @@ export class StateService {
   public triggerUpgradeModalDirectly(featureKey: string, featureName: string) {
     this.lockedFeatureKey.set(featureKey);
     this.lockedFeatureName.set(featureName);
+
+    // Tắt các modal cũ trước đó
+    this.isWalletModalOpen.set(false);
+    this.isWaitingForSignature.set(false);
+    this.isSendTokenModalOpen.set(false);
+    this.isCloseShiftModalOpen.set(false);
+    this.isStartShiftModalOpen.set(false);
+    this.isMobileMenuOpen.set(false);
+
     this.upgradeModalStep.set(2);
     this.isUpgradeModalOpen.set(true);
   }

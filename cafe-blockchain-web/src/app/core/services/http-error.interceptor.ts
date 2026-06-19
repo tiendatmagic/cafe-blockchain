@@ -70,12 +70,32 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
           if (!isStorefrontDetails) {
             const errorMsg = error.error?.message || error.error?.error || error.message || 'Lỗi kết nối máy chủ!';
             
-            // Không hiển thị Toast đỏ đối với lỗi khóa tính năng/giới hạn của request GET chạy ngầm
-            const isFeatureOrLimitError = errorMsg.includes('This feature is not unlocked') || 
-                                          errorMsg.includes('subscription plan has reached the maximum limit');
-            const isGetRequest = req.method === 'GET';
+            const isFeatureError = errorMsg.includes('This feature is not unlocked');
+            const isLimitError = errorMsg.includes('subscription plan has reached the maximum limit');
 
-            if (!(isGetRequest && isFeatureOrLimitError)) {
+            if (isFeatureError) {
+              const featureKey = error.error?.feature || '';
+              const featureNamesMap: Record<string, string> = {
+                'enable_dashboard': 'Tổng quan',
+                'enable_pos': 'Bán hàng POS',
+                'enable_orders': 'Đơn hàng',
+                'enable_tables': 'Quản lý sơ đồ bàn',
+                'enable_shifts': 'Ca làm việc',
+                'enable_menu': 'Quản lý Thực đơn',
+                'enable_inventory': 'Kho hàng',
+                'enable_customers': 'Khách hàng',
+                'enable_debts': 'Sổ nợ',
+                'enable_financials': 'Thu chi tài chính',
+                'enable_reports': 'Báo cáo',
+                'enable_staffs': 'Nhân viên'
+              };
+              const featureName = featureNamesMap[featureKey] || 'premium';
+              stateService.triggerUpgradeModal(featureKey, featureName);
+            }
+
+            // Chỉ hiển thị Toast đỏ khi không phải lỗi khóa tính năng (đã hiện modal) và (không phải request GET bị dính limit)
+            const isGetRequest = req.method === 'GET';
+            if (!isFeatureError && !(isGetRequest && isLimitError)) {
               stateService.errorMessage.set(errorMsg);
               
               // Xóa message sau 4 giây để ẩn Toast
