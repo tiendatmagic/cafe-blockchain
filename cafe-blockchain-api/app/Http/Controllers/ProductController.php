@@ -73,6 +73,24 @@ class ProductController extends Controller
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
         
+        // Kiểm tra giới hạn sản phẩm tối đa của gói cước
+        $owner = \App\Domain\Entities\User::where('wallet_address', $storeOwner)->first();
+        if ($owner) {
+            $plan = \App\Domain\Entities\SubscriptionPlan::where('code', $owner->plan_code ?: 'free')->first();
+            if ($plan && isset($plan->features['max_products'])) {
+                $maxProducts = (int)$plan->features['max_products'];
+                if ($maxProducts >= 0) {
+                    $currentProductsCount = Product::where('store_owner_address', $storeOwner)->count();
+                    if ($currentProductsCount >= $maxProducts) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => "Gói cước của bạn đã đạt giới hạn tối đa {$maxProducts} sản phẩm. Vui lòng nâng cấp gói cước để tiếp tục."
+                        ], 403);
+                    }
+                }
+            }
+        }
+        
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'sku' => 'nullable|string|max:255',

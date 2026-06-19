@@ -155,11 +155,11 @@
                 <div class="flex flex-col gap-1 text-xs font-semibold">
                   <div>
                     <span class="text-slate-400 mr-1.5">Sản phẩm:</span>
-                    <span class="font-extrabold text-slate-700 dark:text-slate-350">{{ row.features?.max_products === -1 ? 'Không giới hạn' : row.features?.max_products }}</span>
+                    <span class="font-extrabold text-slate-700 dark:text-slate-350">{{ row.features?.max_products < 0 ? 'Không giới hạn' : row.features?.max_products }}</span>
                   </div>
                   <div>
                     <span class="text-slate-400 mr-1.5">Nhân viên:</span>
-                    <span class="font-extrabold text-slate-700 dark:text-slate-350">{{ row.features?.max_staffs === -1 ? 'Không giới hạn' : row.features?.max_staffs }}</span>
+                    <span class="font-extrabold text-slate-700 dark:text-slate-350">{{ row.features?.max_staffs < 0 ? 'Không giới hạn' : row.features?.max_staffs }}</span>
                   </div>
                 </div>
               </ng-template>

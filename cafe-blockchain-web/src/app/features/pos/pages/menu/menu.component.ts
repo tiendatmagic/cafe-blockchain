@@ -233,7 +233,7 @@ export class MenuComponent implements OnInit, OnDestroy {
 
   public readonly isProductLimitReached = computed(() => {
     const maxProducts = this.stateService.getFeatureLimit('max_products');
-    return maxProducts !== -1 && this.products().length >= maxProducts;
+    return maxProducts >= 0 && this.products().length >= maxProducts;
   });
 
   // Cập nhật giá trị một trường trong menuForm
@@ -255,7 +255,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   // Mở modal thêm món
   public openAddMenuModal() {
     const maxProducts = this.stateService.getFeatureLimit('max_products');
-    if (maxProducts !== -1 && this.products().length >= maxProducts) {
+    if (maxProducts >= 0 && this.products().length >= maxProducts) {
       this.stateService.showToast(`Gói cước hiện tại chỉ hỗ trợ tối đa ${maxProducts} sản phẩm/nguyên vật liệu. Vui lòng nâng cấp gói cước!`, 'error');
       return;
     }
@@ -409,7 +409,7 @@ export class MenuComponent implements OnInit, OnDestroy {
     this.isProductSaving.set(true);
     if (this.menuModalType() === 'add') {
       const maxProducts = this.stateService.getFeatureLimit('max_products');
-      if (maxProducts !== -1 && this.products().length >= maxProducts) {
+      if (maxProducts >= 0 && this.products().length >= maxProducts) {
         this.stateService.showToast(`Gói cước hiện tại chỉ hỗ trợ tối đa ${maxProducts} sản phẩm/nguyên vật liệu. Vui lòng nâng cấp gói cước!`, 'error');
         this.isProductSaving.set(false);
         return;
