@@ -24,8 +24,8 @@ class EnsureIsSuperAdmin
 
         $walletAddress = strtolower($user->wallet_address);
         
-        // Lấy danh sách ví Super Admin từ env
-        $superAdminEnv = env('SUPER_ADMIN_ADDRESSES', '');
+        // Lấy danh sách ví Super Admin từ cấu hình
+        $superAdminEnv = config('auth.super_admin_addresses', '');
         $superAdmins = array_map('trim', explode(',', $superAdminEnv));
         $superAdmins = array_map('strtolower', array_filter($superAdmins));
 

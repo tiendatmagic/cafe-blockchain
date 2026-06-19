@@ -114,4 +114,16 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Super Admin Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Define the Web3 wallet addresses that have super administrator privileges.
+    | Separated by commas.
+    |
+    */
+    'super_admin_addresses' => env('SUPER_ADMIN_ADDRESSES', ''),
+
 ];
+

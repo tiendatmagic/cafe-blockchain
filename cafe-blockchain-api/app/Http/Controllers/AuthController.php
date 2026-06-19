@@ -131,7 +131,7 @@ class AuthController extends Controller
             $planFeatures = $plan ? $plan->features : null;
 
             // Kiểm tra xem có phải là Super Admin không
-            $superAdminEnv = env('SUPER_ADMIN_ADDRESSES', '');
+            $superAdminEnv = config('auth.super_admin_addresses', '');
             $superAdmins = array_map('trim', explode(',', $superAdminEnv));
             $superAdmins = array_map('strtolower', array_filter($superAdmins));
             $isSuperAdmin = in_array(strtolower($address), $superAdmins);
