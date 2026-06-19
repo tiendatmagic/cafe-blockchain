@@ -248,6 +248,13 @@ export class Web3Service {
     // Đánh dấu hoàn tất giai đoạn khởi tạo AppKit sau 2 giây để tránh race condition lúc F5
     setTimeout(() => {
       this.isAppKitInitializing = false;
+      // Nếu sau khi khởi tạo AppKit xong mà ví không thực sự kết nối, nhưng DApp vẫn đang ở trạng thái connected (do restore từ localStorage)
+      // thì tức là ví đã thực sự bị ngắt kết nối phía ngoài, ta cần reset và đăng xuất.
+      if (!this.appKitIsConnected && this.walletConnected()) {
+        console.log('[Web3] AppKit initialization finished and wallet is not connected. Resetting state.');
+        this.resetWalletState(true);
+        this.emitAccountChange('');
+      }
     }, 2000);
 
     // Định kỳ 30 giây cập nhật tình trạng mạng lưới blockchain và phí Gas
@@ -270,12 +277,24 @@ export class Web3Service {
         return;
       }
 
-      // Tạo provider tạm thời để test connection và get gas price
-      const tempProvider = new JsonRpcProvider(rpc);
-      const feeData = await tempProvider.getFeeData();
+      // Thay vì dùng JsonRpcProvider của Ethers (gây ra nhiều request handshake ngầm), 
+      // ta gửi duy nhất 1 HTTP request POST JSON-RPC lấy gas price để test kết nối RPC.
+      const response = await fetch(rpc, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'eth_gasPrice',
+          params: [],
+          id: 1
+        })
+      });
+      const resData = await response.json();
       
-      if (feeData && feeData.gasPrice) {
-        const gwei = Number(feeData.gasPrice) / 1e9;
+      if (resData && resData.result) {
+        const gasPriceHex = resData.result;
+        const gasPriceWei = BigInt(gasPriceHex);
+        const gwei = Number(gasPriceWei) / 1e9;
         this.gasPriceGwei.set(gwei.toFixed(1));
         this.networkStatus.set('Hoạt động');
       } else {
@@ -359,8 +378,11 @@ export class Web3Service {
             this.resetWalletState(true);
             this.emitAccountChange('');
           } else {
-            // Trong lúc khởi tạo (F5), chỉ tạm thời reset state ví của DApp, giữ nguyên localStorage
-            this.resetWalletState(false);
+            // Trong lúc khởi tạo (F5), chỉ tạm thời reset state ví của DApp nếu không có phiên đăng nhập hợp lệ trong localStorage
+            const savedAddress = localStorage.getItem('auth_address');
+            if (!savedAddress || !this.hasValidAuthToken(savedAddress)) {
+              this.resetWalletState(false);
+            }
           }
         }
       });
