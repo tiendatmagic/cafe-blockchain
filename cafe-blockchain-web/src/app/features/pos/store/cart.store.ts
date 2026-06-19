@@ -15,26 +15,6 @@ export class CartStore {
   public readonly editingOrderId = signal<number | null>(null);
   public readonly isOrderSubmitting = signal<boolean>(false);
 
-  // Bộ lọc sản phẩm tại POS
-  public readonly posCategoryFilter = signal<string>('Tất cả');
-  public readonly posSearchQuery = signal<string>('');
-  public readonly posMinPrice = signal<number | null>(null);
-  public readonly posMaxPrice = signal<number | null>(null);
-  public readonly posMinVariantPrice = signal<number | null>(null);
-  public readonly posMaxVariantPrice = signal<number | null>(null);
-  public readonly posFilterStatus = signal<string>('all'); // 'all' | 'active' | 'inactive'
-
-  // Phân trang sản phẩm POS
-  public readonly posItemsPerPage = 20;
-  public readonly posCurrentPage = signal<number>(1);
-  public readonly posProductsList = signal<any[]>([]);
-  public readonly posTotalPages = signal<number>(1);
-  public readonly posTotalItems = signal<number>(0);
-
-  // Bộ nhớ đệm cache sản phẩm POS
-  public readonly posProductsCache = new Map<string, { data: any[], totalPages: number, totalItems: number, timestamp: number }>();
-  public readonly cacheTTL = 5 * 60 * 1000;
-
   // Computed properties
   public readonly cartTotal = computed(() => {
     return this.cart().reduce((sum, item) => {
@@ -43,29 +23,12 @@ export class CartStore {
     }, 0);
   });
 
-  public readonly paginatedPosProducts = computed(() => this.posProductsList());
-
   // Methods
   public clearCart() {
     this.cart.set([]);
     this.tableNumber.set('');
     this.paymentMethod.set('cash');
     this.posSelectedCustomer.set(null);
-  }
-
-  public clearPosProductsCache() {
-    this.posProductsCache.clear();
-  }
-
-  public resetPosFilters(loadProductsCallback: () => void) {
-    this.posMinPrice.set(null);
-    this.posMaxPrice.set(null);
-    this.posMinVariantPrice.set(null);
-    this.posMaxVariantPrice.set(null);
-    this.posFilterStatus.set('all');
-    this.posCategoryFilter.set('Tất cả');
-    this.posCurrentPage.set(1);
-    loadProductsCallback();
   }
 
   public editOrder(order: any, productsList: any[], showToastCallback: (msg: string, type: 'success' | 'error') => void) {

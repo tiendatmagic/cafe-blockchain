@@ -11,6 +11,12 @@ import { DebtStore } from '@features/debts/store/debt.store';
 import { InventoryStore } from '@features/inventory/store/inventory.store';
 import { CustomerStore } from '@features/customers/store/customer.store';
 import { CartStore } from '@features/pos/store/cart.store';
+import { PriceStore } from '@features/blockchain/store/price.store';
+import { ProductStore } from '@features/menu/store/product.store';
+import { TransactionStore } from '@features/financials/store/transaction.store';
+import { TableStore } from '@features/tables/store/table.store';
+import { StaffStore } from '@features/staffs/store/staff.store';
+import { DashboardStore } from '@features/dashboard/store/dashboard.store';
 
 export interface FeatureConfig {
   key: string;
@@ -71,7 +77,12 @@ export class StateService {
   private readonly inventoryStore = inject(InventoryStore);
   private readonly customerStore = inject(CustomerStore);
   private readonly cartStore = inject(CartStore);
-  private readonly colorStorageKey = 'dapp_dynamic_colors';
+  private readonly priceStore = inject(PriceStore);
+  private readonly productStore = inject(ProductStore);
+  private readonly transactionStore = inject(TransactionStore);
+  private readonly tableStore = inject(TableStore);
+  private readonly staffStore = inject(StaffStore);
+  private readonly dashboardStore = inject(DashboardStore);
 
   // Trạng thái UI toàn cục
   public readonly activeTab = signal<string>('dashboard');
@@ -147,13 +158,13 @@ export class StateService {
 
   // Trạng thái Loading
   public readonly isLoading = signal<boolean>(false);
-  public readonly isDashboardLoading = signal<boolean>(false);
-  public readonly isProductsLoading = signal<boolean>(false);
+  public readonly isDashboardLoading = this.dashboardStore.isDashboardLoading;
+  public readonly isProductsLoading = this.productStore.isProductsLoading;
   public readonly isOrdersLoading = this.orderStore.isOrdersLoading;
   public readonly isCustomersLoading = this.customerStore.isCustomersLoading;
-  public readonly isTransactionsLoading = signal<boolean>(false);
+  public readonly isTransactionsLoading = this.transactionStore.isTransactionsLoading;
   public readonly isInventoryLoading = this.inventoryStore.isInventoryLoading;
-  public readonly isTablesLoading = signal<boolean>(false);
+  public readonly isTablesLoading = this.tableStore.isTablesLoading;
   public readonly isSettingsLoading = this.settingStore.isSettingsLoading;
   public readonly isDebtsLoading = this.debtStore.isDebtsLoading;
   public readonly isShiftsLoading = this.shiftStore.isShiftsLoading;
@@ -181,174 +192,81 @@ export class StateService {
   public readonly shifts = this.shiftStore.shifts;
   public readonly shiftDurationString = this.shiftStore.shiftDurationString;
 
+  // Tín hiệu Tỷ giá Coin (Ủy quyền sang PriceStore)
+  public readonly coingeckoPrices = this.priceStore.coingeckoPrices;
+  public readonly nativeTokenPriceVND = this.priceStore.nativeTokenPriceVND;
+  public readonly usdtPriceVND = this.priceStore.usdtPriceVND;
+
   // Thông điệp Toast
   public readonly successMessage = signal<string>('');
   public readonly errorMessage = signal<string>('');
 
-  // Dữ liệu toàn cục tải từ Backend
-  public readonly dashboardStartDate = signal<string>('');
-  public readonly dashboardEndDate = signal<string>('');
-  public readonly dashboardData = signal<any>(null);
-  public readonly products = signal<any[]>([]);
+  // Dữ liệu toàn cục tải từ Backend (Ủy quyền sang các Store chuyên biệt)
+  public readonly dashboardStartDate = this.dashboardStore.dashboardStartDate;
+  public readonly dashboardEndDate = this.dashboardStore.dashboardEndDate;
+  public readonly dashboardData = this.dashboardStore.dashboardData;
+  public readonly products = this.productStore.products;
   public readonly orders = this.orderStore.orders;
-  public readonly categoriesList = signal<any[]>([]);
+  public readonly categoriesList = this.productStore.categoriesList;
   public readonly customers = this.customerStore.customers;
   public readonly customerGroups = this.customerStore.customerGroups;
-  public readonly transactions = signal<any[]>([]);
+  public readonly transactions = this.transactionStore.transactions;
   public readonly inventoryRecords = this.inventoryStore.inventoryRecords;
-  public readonly areas = signal<any[]>([]);
-  public readonly diningTables = signal<any[]>([]);
+  public readonly areas = this.tableStore.areas;
+  public readonly diningTables = this.tableStore.diningTables;
   public readonly debts = this.debtStore.debts;
 
-  // Dữ liệu phương thức thanh toán (đặt ở service để cache tồn tại xuyên vòng đời component)
+  // Dữ liệu phương thức thanh toán
   public readonly paymentMethodsList = signal<any[]>([]);
   public readonly paymentMethodsTotal = signal<number>(0);
   public lastPaymentMethodsLoadTimestamp = 0;
-  public lastDashboardLoadTimestamp = 0;
-  private lastDashboardStartDate = '';
-  private lastDashboardEndDate = '';
+  
+  public get lastDashboardLoadTimestamp() { return this.dashboardStore.lastDashboardLoadTimestamp; }
+  public set lastDashboardLoadTimestamp(val: number) { this.dashboardStore.lastDashboardLoadTimestamp = val; }
 
   public readonly settings = this.settingStore.settings;
 
-  // Trạng thái POS (Giỏ hàng) và Lọc
+  // Trạng thái POS (Giỏ hàng) và Lọc (Ủy quyền kết hợp CartStore và ProductStore)
   public readonly cart = this.cartStore.cart;
   public readonly cartTotal = this.cartStore.cartTotal;
   public readonly tableNumber = this.cartStore.tableNumber;
   public readonly paymentMethod = this.cartStore.paymentMethod;
-  public readonly posCategoryFilter = this.cartStore.posCategoryFilter;
-  public readonly posSearchQuery = this.cartStore.posSearchQuery;
-  public readonly posMinPrice = this.cartStore.posMinPrice;
-  public readonly posMaxPrice = this.cartStore.posMaxPrice;
-  public readonly posMinVariantPrice = this.cartStore.posMinVariantPrice;
-  public readonly posMaxVariantPrice = this.cartStore.posMaxVariantPrice;
-  public readonly posFilterStatus = this.cartStore.posFilterStatus;
+  public readonly posCategoryFilter = this.productStore.posCategoryFilter;
+  public readonly posSearchQuery = this.productStore.posSearchQuery;
+  public readonly posMinPrice = this.productStore.posMinPrice;
+  public readonly posMaxPrice = this.productStore.posMaxPrice;
+  public readonly posMinVariantPrice = this.productStore.posMinVariantPrice;
+  public readonly posMaxVariantPrice = this.productStore.posMaxVariantPrice;
+  public readonly posFilterStatus = this.productStore.posFilterStatus;
   public readonly posSelectedCustomer = this.cartStore.posSelectedCustomer;
   public readonly editingOrderId = this.cartStore.editingOrderId;
   public readonly isOrderSubmitting = this.cartStore.isOrderSubmitting;
 
   // Phân trang sản phẩm ở trang Bán hàng POS
-  public readonly posItemsPerPage = this.cartStore.posItemsPerPage;
-  public readonly posCurrentPage = this.cartStore.posCurrentPage;
-  public readonly posProductsList = this.cartStore.posProductsList;
-  public readonly paginatedPosProducts = this.cartStore.paginatedPosProducts;
-  public readonly posTotalPages = this.cartStore.posTotalPages;
-  public readonly posTotalItems = this.cartStore.posTotalItems;
+  public readonly posItemsPerPage = this.productStore.posItemsPerPage;
+  public readonly posCurrentPage = this.productStore.posCurrentPage;
+  public readonly posProductsList = this.productStore.posProductsList;
+  public readonly paginatedPosProducts = this.productStore.paginatedPosProducts;
+  public readonly posTotalPages = this.productStore.posTotalPages;
+  public readonly posTotalItems = this.productStore.posTotalItems;
 
   // Bộ nhớ đệm Cache cho sản phẩm POS
-  public get posProductsCache() { return this.cartStore.posProductsCache; }
-  public get cacheTTL() { return this.cartStore.cacheTTL; }
+  public get posProductsCache() { return this.productStore.posProductsCache; }
+  public get cacheTTL() { return this.productStore.cacheTTL; }
+  
   private isInitialSyncDone = false;
   private isSettingsFetching = false;
   private lastSettingsLoadTimestamp = 0;
+  
   public get lastCustomersLoadTimestamp() { return this.customerStore.lastCustomersLoadTimestamp; }
   public set lastCustomersLoadTimestamp(val: number) { this.customerStore.lastCustomersLoadTimestamp = val; }
+  
   private searchSubject = new Subject<string>();
   private searchSubscription?: Subscription;
   private routerSubscription?: Subscription;
   public readonly cancelRequests$ = new Subject<void>();
 
-  // Giá VND của các coin từ CoinGecko (hoặc fallback mặc định)
-  public readonly coingeckoPrices = signal<{
-    tether: number;
-    binancecoin: number;
-    ethereum: number;
-    'polygon-ecosystem-token': number;
-    'avalanche-2': number;
-  }>({
-    tether: 25420,
-    binancecoin: 15240000,
-    ethereum: 92450000,
-    'polygon-ecosystem-token': 12800,
-    'avalanche-2': 890000
-  });
-
-  // Tự động nhận diện Token giá VND
-  public readonly nativeTokenPriceVND = computed(() => {
-    const symbol = this.web3Service.nativeTokenSymbol();
-    const prices = this.coingeckoPrices();
-    switch (symbol) {
-      case 'ETH':
-        return prices.ethereum || 92450000;
-      case 'BNB':
-        return prices.binancecoin || 15240000;
-      case 'MATIC':
-      case 'POL':
-        return prices['polygon-ecosystem-token'] || 12800;
-      case 'AVAX':
-        return prices['avalanche-2'] || 890000;
-      default:
-        return prices.ethereum || 92450000;
-    }
-  });
-
-  // Tỷ giá USDT/VND
-  public readonly usdtPriceVND = computed(() => {
-    return this.coingeckoPrices().tether || 25420;
-  });
-
-  // Tải giá coin thực tế từ CoinGecko có cache
-  public loadCoinPrices() {
-    const cacheKey = 'coin_prices_cache';
-    const cacheTTL = 10 * 60 * 1000; // 10 phút
-    const now = Date.now();
-
-    if (typeof window !== 'undefined') {
-      const cached = localStorage.getItem(cacheKey);
-      if (cached) {
-        try {
-          const parsed = JSON.parse(cached);
-          if (parsed && parsed.timestamp && now - parsed.timestamp < cacheTTL) {
-            this.coingeckoPrices.set(parsed.prices);
-            return;
-          }
-        } catch (e) {
-          console.error('[Prices] Error parsing cache:', e);
-        }
-      }
-    }
-
-    const url = 'https://api.coingecko.com/api/v3/simple/price?ids=binancecoin,ethereum,tether,polygon-ecosystem-token,avalanche-2&vs_currencies=vnd';
-
-    fetch(url)
-      .then(res => res.json())
-      .then(data => {
-        if (data) {
-          const newPrices = {
-            tether: data.tether?.vnd || this.coingeckoPrices().tether,
-            binancecoin: data.binancecoin?.vnd || this.coingeckoPrices().binancecoin,
-            ethereum: data.ethereum?.vnd || this.coingeckoPrices().ethereum,
-            'polygon-ecosystem-token': data['polygon-ecosystem-token']?.vnd || this.coingeckoPrices()['polygon-ecosystem-token'],
-            'avalanche-2': data['avalanche-2']?.vnd || this.coingeckoPrices()['avalanche-2']
-          };
-          this.coingeckoPrices.set(newPrices);
-
-          if (typeof window !== 'undefined') {
-            localStorage.setItem(cacheKey, JSON.stringify({
-              prices: newPrices,
-              timestamp: now
-            }));
-          }
-        }
-      })
-      .catch(err => {
-        console.warn('[Prices] CoinGecko API error, fallback to cache or defaults:', err);
-        if (typeof window !== 'undefined') {
-          const cached = localStorage.getItem(cacheKey);
-          if (cached) {
-            try {
-              const parsed = JSON.parse(cached);
-              this.coingeckoPrices.set(parsed.prices);
-            } catch (e) {}
-          }
-        }
-      });
-  }
-
-
   constructor() {
-    if (typeof window !== 'undefined') {
-      (window as any)._stateServiceInstances = ((window as any)._stateServiceInstances || 0) + 1;
-    }
     this.initTheme();
     
     // Khôi phục vai trò, quyền và gói cước từ localStorage
@@ -383,14 +301,15 @@ export class StateService {
         }
       }
     }
+    
     // Gọi tải cấu hình public và menu storefront ban đầu khi chưa kết nối ví
     if (!this.web3Service.walletConnected()) {
       this.loadPublicSettingsAndMenu();
     }
     if (typeof window !== 'undefined') {
-      this.loadCoinPrices();
+      this.priceStore.loadCoinPrices();
       setInterval(() => {
-        this.loadCoinPrices();
+        this.priceStore.loadCoinPrices();
       }, 10 * 60 * 1000);
     }
 
@@ -399,7 +318,7 @@ export class StateService {
       const page = this.posCurrentPage();
       const category = this.posCategoryFilter();
       if (this.activeTab() === 'pos') {
-        this.loadPosProducts();
+        this.productStore.loadPosProducts();
       }
     }, { allowSignalWrites: true });
 
@@ -461,7 +380,7 @@ export class StateService {
               // Nạp dữ liệu cho tab hiện tại
               this.reloadCurrentTab();
               
-              // Đồng bộ thông tin gói cước mới nhất từ DB (phòng trường hợp admin đổi gói sau khi đăng nhập)
+              // Đồng bộ thông tin gói cước mới nhất từ DB
               this.syncSubscriptionFromBackend();
               
               // Tắt loading khởi tạo
@@ -483,7 +402,7 @@ export class StateService {
     ).subscribe((val) => {
       this.posSearchQuery.set(val);
       this.posCurrentPage.set(1);
-      this.loadPosProducts();
+      this.productStore.loadPosProducts();
     });
 
     // Lắng nghe sự kiện thay đổi route để cập nhật activeTab và tự động refresh dữ liệu tương ứng
@@ -494,7 +413,7 @@ export class StateService {
       this.syncTabWithUrl(event.urlAfterRedirects || event.url);
     });
 
-    // Cơ chế fallback đồng bộ tab ban đầu nếu routerSubscription bỏ lỡ sự kiện NavigationEnd ban đầu
+    // Cơ chế fallback đồng bộ tab ban đầu
     setTimeout(() => {
       if (!this.isInitialSyncDone) {
         this.isInitialSyncDone = true;
@@ -508,7 +427,6 @@ export class StateService {
     });
   }
 
-  // Hủy đăng ký khi service bị destroy (thường Injectable root không destroy nhưng viết cho chuẩn)
   public destroy() {
     if (this.searchSubscription) {
       this.searchSubscription.unsubscribe();
@@ -536,7 +454,7 @@ export class StateService {
   private initTheme() {
     if (typeof window === 'undefined') return;
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'auto' | null;
-    this.applyCachedDynamicColors();
+    this.settingStore.applyCachedDynamicColors();
 
     if (savedTheme === 'auto') {
       this.themeMode.set('auto');
@@ -592,10 +510,6 @@ export class StateService {
     this.settingStore.applyAndCacheDynamicColors(primary, secondary);
   }
 
-  private applyCachedDynamicColors() {
-    this.settingStore.applyCachedDynamicColors();
-  }
-
   // Tải toàn bộ dữ liệu từ Laravel Backend
   public loadAllData() {
     const connectedAddress = this.web3Service.currentAccount();
@@ -630,11 +544,11 @@ export class StateService {
             ...res.settings
           };
           this.settingStore.settings.set(settings);
-          this.applyAndCacheDynamicColors(settings.primary_color, settings.secondary_color);
+          this.settingStore.applyAndCacheDynamicColors(settings.primary_color, settings.secondary_color);
           this.web3Service.updateConfig(settings);
         }
         this.refreshTablesAndAreas();
-        this.loadPosProducts();
+        this.productStore.loadPosProducts();
         this.isLoading.set(false);
       },
       error: (err) => {
@@ -645,27 +559,16 @@ export class StateService {
     });
   }
 
+  // Tải giá coin thực tế từ CoinGecko
+  public loadCoinPrices() {
+    this.priceStore.loadCoinPrices();
+  }
+
   // Refresh danh sách thực đơn
   public refreshProducts() {
-    if (!this.web3Service.walletConnected()) return;
-    if (!this.hasPermission('pos') && !this.hasPermission('menu') && !this.hasPermission('inventory')) return;
-    if (this.isProductsLoading()) return;
-    this.isProductsLoading.set(true);
-    forkJoin({
-      products: this.apiService.getProducts(),
-      categories: this.apiService.getCategories()
-    }).subscribe({
-      next: (res) => {
-        this.products.set(res.products);
-        this.categoriesList.set(res.categories || []);
-        this.isProductsLoading.set(false);
-        this.loadPosProducts();
-      },
-      error: (err) => {
-        console.error('Lỗi refresh sản phẩm & danh mục:', err);
-        this.isProductsLoading.set(false);
-      }
-    });
+    this.productStore.refreshProducts(
+      this.hasPermission('pos') || this.hasPermission('menu') || this.hasPermission('inventory')
+    );
   }
 
   // Refresh danh sách đơn hàng
@@ -677,35 +580,8 @@ export class StateService {
 
   // Refresh dữ liệu dashboard
   public refreshDashboard(force: boolean = false) {
-    if (!this.web3Service.walletConnected()) return;
-    if (!this.hasPermission('dashboard')) return;
-
-    const now = Date.now();
-    const isFilterSame = this.dashboardStartDate() === this.lastDashboardStartDate && 
-                         this.dashboardEndDate() === this.lastDashboardEndDate;
-
-    // Nếu không ép buộc tải lại, đã có dữ liệu, trùng bộ lọc ngày và chưa hết hạn 5 phút
-    if (!force && this.dashboardData() && isFilterSame && (now - this.lastDashboardLoadTimestamp < 5 * 60 * 1000)) {
-      return;
-    }
-
-    if (this.isDashboardLoading()) return;
-    this.isDashboardLoading.set(true);
-    this.apiService.getDashboard(this.dashboardStartDate(), this.dashboardEndDate()).subscribe({
-      next: (res) => {
-        this.dashboardData.set(res);
-        this.lastDashboardLoadTimestamp = Date.now();
-        this.lastDashboardStartDate = this.dashboardStartDate();
-        this.lastDashboardEndDate = this.dashboardEndDate();
-        this.isDashboardLoading.set(false);
-      },
-      error: (err) => {
-        console.error('Lỗi refresh dashboard:', err);
-        this.isDashboardLoading.set(false);
-      }
-    });
+    this.dashboardStore.refreshDashboard(this.hasPermission('dashboard'), force);
   }
-
 
   // Tải cấu hình public và menu storefront khi chưa kết nối ví
   public loadPublicSettingsAndMenu() {
@@ -722,7 +598,7 @@ export class StateService {
           this.settingStore.applyAndCacheDynamicColors(settings.primary_color, settings.secondary_color);
           this.web3Service.updateConfig(settings);
 
-          // Nếu có website_slug, tải menu storefront công khai để hiển thị lên POS
+          // Nếu có website_slug, tải menu storefront công khai để hiển thị
           if (settings.website_slug) {
             this.apiService.getPublicStoreBySlug(settings.website_slug).subscribe({
               next: (storeRes) => {
@@ -730,11 +606,11 @@ export class StateService {
                   const publicProducts = storeRes.products || [];
                   const publicCategories = storeRes.categories || [];
                   
-                  // Chỉ gán nếu ví chưa kết nối (tránh ghi đè dữ liệu thật sau khi đăng nhập)
+                  // Chỉ gán nếu ví chưa kết nối
                   if (!this.web3Service.walletConnected()) {
                     this.products.set(publicProducts);
                     this.categoriesList.set(publicCategories);
-                    this.loadPosProducts();
+                    this.productStore.loadPosProducts();
                   }
                 }
                 this.isInitialLoading.set(false);
@@ -758,10 +634,9 @@ export class StateService {
     });
   }
 
-  // Refresh cấu hình + đồng thời sync thông tin subscription mới nhất từ backend
+  // Refresh cấu hình + đồng thời sync thông tin subscription từ backend
   public loadSettings() {
     this.settingStore.loadSettings(this.hasPermission('settings'));
-    // Sync thông tin gói cước mới nhất từ backend mỗi khi load settings
     if (this.web3Service.walletConnected()) {
       this.syncSubscriptionFromBackend();
     }
@@ -794,7 +669,7 @@ export class StateService {
             }
           }
 
-          // Cập nhật localStorage để đồng bộ
+          // Cập nhật localStorage
           if (typeof window !== 'undefined') {
             localStorage.setItem('auth_subscription_plan_code', planCode);
             if (expiresAt) {
@@ -807,13 +682,12 @@ export class StateService {
         }
       },
       error: (err) => {
-        // Không làm gì nếu lỗi (silent - không cần toast)
         console.warn('[StateService] Không thể sync thông tin gói cước:', err?.status);
       }
     });
   }
 
-  // Refresh danh sách khách hàng (có cache 5 phút)
+  // Refresh danh sách khách hàng
   public refreshCustomers(force: boolean = false) {
     this.customerStore.refreshCustomers(
       this.hasPermission('pos') || this.hasPermission('customers') || this.hasPermission('reports'),
@@ -823,20 +697,7 @@ export class StateService {
 
   // Refresh danh sách giao dịch tài chính
   public refreshTransactions(typeFilter: string = 'all') {
-    if (!this.web3Service.walletConnected()) return;
-    if (!this.hasPermission('financials')) return;
-    if (this.isTransactionsLoading()) return;
-    this.isTransactionsLoading.set(true);
-    this.apiService.getTransactions(typeFilter).subscribe({
-      next: (res) => {
-        this.transactions.set(res || []);
-        this.isTransactionsLoading.set(false);
-      },
-      error: (err) => {
-        console.error('Lỗi tải thu chi:', err);
-        this.isTransactionsLoading.set(false);
-      }
-    });
+    this.transactionStore.refreshTransactions(this.hasPermission('financials'), typeFilter);
   }
 
   // Refresh danh sách phiếu kho
@@ -846,24 +707,7 @@ export class StateService {
 
   // Refresh sơ đồ bàn ăn và khu vực
   public refreshTablesAndAreas() {
-    if (!this.web3Service.walletConnected()) return;
-    if (!this.hasPermission('pos') && !this.hasPermission('tables')) return;
-    if (this.isTablesLoading()) return;
-    this.isTablesLoading.set(true);
-    forkJoin({
-      areas: this.apiService.getAreas(),
-      tables: this.apiService.getDiningTables()
-    }).subscribe({
-      next: (res) => {
-        this.areas.set(res.areas || []);
-        this.diningTables.set(res.tables || []);
-        this.isTablesLoading.set(false);
-      },
-      error: (err) => {
-        console.error('Lỗi tải sơ đồ bàn/khu vực:', err);
-        this.isTablesLoading.set(false);
-      }
-    });
+    this.tableStore.refreshTablesAndAreas(this.hasPermission('pos') || this.hasPermission('tables'));
   }
 
   // Ngắt kết nối ví
@@ -871,7 +715,6 @@ export class StateService {
     this.web3Service.disconnectWallet();
     this.apiService.removeToken();
     
-    // Gọi API đăng xuất để xóa cookie HttpOnly phía backend
     this.apiService.logout().subscribe({
       next: () => {},
       error: (err) => console.warn('[Auth] Không thể xóa phiên làm việc phía backend:', err)
@@ -903,92 +746,17 @@ export class StateService {
     }
   }
 
-  // Tải sản phẩm POS có phân trang và Lọc trực tiếp ở Client-side (Không gọi API)
+  // Tải sản phẩm POS (Ủy quyền sang ProductStore)
   public loadPosProducts() {
-    // Lấy toàn bộ danh sách sản phẩm đã tải trong State
-    let list = this.products();
-
-    // 1. Lọc theo danh mục (Category)
-    const category = this.posCategoryFilter();
-    if (category && category !== 'Tất cả') {
-      list = list.filter(p => 
-        (p.categories && p.categories.some((c: any) => c.name === category)) ||
-        p.category?.category_name === category || 
-        p.category_name === category
-      );
-    }
-
-    // 2. Lọc theo từ khóa tìm kiếm (Search Query) - không phân biệt hoa thường
-    const search = this.posSearchQuery().trim().toLowerCase();
-    if (search) {
-      list = list.filter(p => 
-        p.name.toLowerCase().includes(search) || 
-        p.sku?.toLowerCase().includes(search) ||
-        p.barcode?.toLowerCase().includes(search) ||
-        p.category?.category_name?.toLowerCase().includes(search)
-      );
-    }
-
-    // 3. Lọc theo khoảng giá sản phẩm chính
-    const minPrice = this.posMinPrice();
-    if (minPrice !== null && minPrice !== undefined) {
-      list = list.filter(p => p.price >= minPrice);
-    }
-    const maxPrice = this.posMaxPrice();
-    if (maxPrice !== null && maxPrice !== undefined) {
-      list = list.filter(p => p.price <= maxPrice);
-    }
-
-    // 4. Lọc theo khoảng giá biến thể sản phẩm
-    const minVarPrice = this.posMinVariantPrice();
-    const maxVarPrice = this.posMaxVariantPrice();
-    if (minVarPrice !== null || maxVarPrice !== null) {
-      list = list.filter(p => 
-        p.variants && p.variants.length > 0 && p.variants.some((v: any) => {
-          const matchMin = minVarPrice === null || minVarPrice === undefined || v.price >= minVarPrice;
-          const matchMax = maxVarPrice === null || maxVarPrice === undefined || v.price <= maxVarPrice;
-          return matchMin && matchMax;
-        })
-      );
-    }
-
-    // 5. Lọc theo trạng thái bật/tắt (Đang bán/Ngừng bán)
-    const statusFilter = this.posFilterStatus();
-    if (statusFilter === 'active') {
-      list = list.filter(p => p.status === true || Number(p.status) === 1);
-    } else if (statusFilter === 'inactive') {
-      list = list.filter(p => p.status === false || Number(p.status) === 0);
-    }
-
-    // Cập nhật tổng số sản phẩm sau khi lọc
-    const totalItems = list.length;
-    this.posTotalItems.set(totalItems);
-
-    // Tính toán tổng số trang
-    const limit = this.posItemsPerPage;
-    const totalPages = Math.ceil(totalItems / limit) || 1;
-    this.posTotalPages.set(totalPages);
-
-    // 6. Phân trang danh sách sản phẩm
-    let page = this.posCurrentPage();
-    // Đảm bảo số trang hiện tại không vượt quá tổng số trang sau khi lọc
-    if (page > totalPages) {
-      page = totalPages;
-      this.posCurrentPage.set(totalPages);
-    }
-    const startIndex = (page - 1) * limit;
-    const paginatedList = list.slice(startIndex, startIndex + limit);
-
-    // Cập nhật danh sách hiển thị
-    this.posProductsList.set(paginatedList);
+    this.productStore.loadPosProducts();
   }
 
   public resetPosFilters() {
-    this.cartStore.resetPosFilters(() => this.loadPosProducts());
+    this.productStore.resetPosFilters();
   }
 
   public clearPosProductsCache() {
-    this.cartStore.clearPosProductsCache();
+    this.productStore.clearPosProductsCache();
   }
 
   public toggleTheme() {
@@ -1006,7 +774,7 @@ export class StateService {
     this.searchSubject.next(query);
   }
 
-  // Quản lý giỏ hàng và chỉnh sửa đơn hàng POS toàn cục
+  // Quản lý giỏ hàng POS
   public clearCart() {
     this.cartStore.clearCart();
   }
@@ -1024,7 +792,7 @@ export class StateService {
   }
 
   private syncTabWithUrl(url: string) {
-    const cleanUrl = url.split('?')[0]; // bỏ qua query params nếu có
+    const cleanUrl = url.split('?')[0];
     let tab = '';
     if (cleanUrl.includes('/dashboard')) tab = 'dashboard';
     else if (cleanUrl.includes('/pos')) tab = 'pos';
@@ -1041,11 +809,9 @@ export class StateService {
     else if (cleanUrl.includes('/shifts')) tab = 'shifts';
 
     if (tab) {
-      // Nếu đã kết nối ví và không phải Super Admin -> kiểm duyệt gói cước trước
       if (this.web3Service.walletConnected() && !this.isSuperAdmin()) {
         const config = this.getFeatureConfigByTab(tab);
         if (config && !this.hasFeature(config.key)) {
-          // Bật modal chặn & nâng cấp
           this.triggerUpgradeModal(config.key, config.name);
         }
       }
@@ -1060,15 +826,14 @@ export class StateService {
       this.isMobileMenuOpen.set(false);
     }
 
-    // Refresh dữ liệu tương ứng khi đổi tab hoặc khi load trang lần đầu
     if (tab === 'dashboard') {
       this.refreshDashboard();
     } else if (tab === 'pos') {
       if (this.categoriesList().length === 0) {
         this.refreshProducts();
       }
-      this.loadPosProducts();
-      this.refreshTablesAndAreas(); // Tải sơ đồ bàn cho POS
+      this.productStore.loadPosProducts();
+      this.refreshTablesAndAreas();
       this.refreshCurrentShift();
     } else if (tab === 'orders') {
       this.refreshOrders();
@@ -1101,56 +866,23 @@ export class StateService {
   }
 
   // Trạng thái dữ liệu nhân viên và vai trò
-  public readonly staffs = signal<any[]>([]);
-  public readonly roles = signal<any[]>([]);
-  public readonly isStaffsLoading = signal<boolean>(false);
+  public readonly staffs = this.staffStore.staffs;
+  public readonly roles = this.staffStore.roles;
+  public readonly isStaffsLoading = this.staffStore.isStaffsLoading;
 
   // Refresh danh sách nhân viên và vai trò
   public refreshStaffsAndRoles() {
-    if (!this.web3Service.walletConnected()) return;
-    if (!this.hasPermission('staffs')) return;
-    if (this.isStaffsLoading()) return;
-    this.isStaffsLoading.set(true);
-
-    forkJoin({
-      staffs: this.apiService.getStaffs(),
-      roles: this.apiService.getRoles()
-    }).subscribe({
-      next: (res) => {
-        this.staffs.set(res.staffs || []);
-        this.roles.set(res.roles || []);
-        this.isStaffsLoading.set(false);
-      },
-      error: (err) => {
-        console.error('Lỗi tải nhân viên & vai trò:', err);
-        this.isStaffsLoading.set(false);
-      }
-    });
+    this.staffStore.refreshStaffsAndRoles(this.hasPermission('staffs'));
   }
 
-  // Khôi phục vai trò mặc định của hệ thống
+  // Khôi phục vai trò mặc định
   public resetDefaultRoles() {
-    if (this.isStaffsLoading()) return;
-    this.isStaffsLoading.set(true);
-
-    this.apiService.resetDefaultRoles().subscribe({
-      next: (res) => {
-        this.isStaffsLoading.set(false);
-        this.showToast('Khôi phục vai trò mặc định thành công', 'success');
-        this.refreshStaffsAndRoles();
-      },
-      error: (err) => {
-        console.error('Lỗi khôi phục vai trò mặc định:', err);
-        this.isStaffsLoading.set(false);
-        this.showToast(err.error?.message || 'Không thể khôi phục vai trò mặc định', 'error');
-      }
-    });
+    this.staffStore.resetDefaultRoles((msg, type) => this.showToast(msg, type));
   }
 
   // Kiểm tra quyền truy cập module
   public hasPermission(module: string): boolean {
     const permissions = this.currentUserPermissions();
-    // Nếu permissions là null, đây là Chủ cửa hàng (Admin) -> full quyền
     if (permissions === null) {
       return true;
     }
@@ -1260,9 +992,7 @@ export class StateService {
     });
   }
 
-
-
-  // Kết nối và Yêu cầu Ký ví Web3 Auth cho Admin
+  // Kết nối và Yêu cầu Ký ví Web3 Auth
   public async connectWalletAndSign() {
     const isConnected = await this.web3Service.connectWallet();
     if (isConnected) {
@@ -1358,8 +1088,6 @@ export class StateService {
 
                   this.loadSettings();
 
-                  // Sau khi đăng nhập thành công: luôn chuyển về dashboard để tải dữ liệu,
-                  // trừ khi người dùng đang ở dashboard thì chỉ refresh dữ liệu
                   if (this.router.url.includes('/dashboard')) {
                     this.refreshDashboard(true);
                   } else {
@@ -1389,7 +1117,7 @@ export class StateService {
     }
   }
 
-  // Ký lại xác thực khi bấm nút "Ký ngay" trên banner
+  // Ký lại xác thực khi bấm nút "Ký ngay"
   public async retrySign() {
     if (!this.pendingNonceMessage || !this.pendingAddress) return;
     try {
@@ -1485,7 +1213,7 @@ export class StateService {
     this.showToast('Đã hủy xác thực ví.', 'error');
   }
 
-  // Xử lý khi tài khoản ví Web3 thay đổi
+  // Xử lý khi tài khoản ví thay đổi
   public handleAccountSwitch(newAccount: string) {
     this.apiService.removeToken();
     this.apiService.logout().subscribe({
@@ -1514,7 +1242,7 @@ export class StateService {
     }
   }
 
-  // Sao chép địa chỉ ví vào clipboard
+  // Sao chép địa chỉ ví
   public copyAddress(customAddress?: string) {
     const address = customAddress || this.web3Service.currentAccount();
     if (!address) return;
@@ -1560,14 +1288,11 @@ export class StateService {
   }
 
   public hasFeature(featureKey: string): boolean {
-    // Nếu chưa kết nối ví, mặc định cho phép mọi tính năng đi qua (giao diện sẽ tự động nhắc kết nối ví)
     if (!this.web3Service.walletConnected()) {
       return true;
     }
 
     let features = this.planFeatures();
-    
-    // Nếu features là string (do sync hoặc storage lưu dạng JSON string) thì parse
     if (features && typeof features === 'string') {
       try {
         features = JSON.parse(features);
@@ -1576,12 +1301,10 @@ export class StateService {
       }
     }
     
-    // Nếu có data features từ DB thì ưu tiên dùng
     if (features && features[featureKey] !== undefined) {
       return !!features[featureKey];
     }
 
-    // Nếu chưa load kịp hoặc thiếu key, dùng fallback từ DEFAULT_PLAN_FEATURES
     const planCode = this.subscriptionPlanCode() || 'free';
     const defaultFeatures = DEFAULT_PLAN_FEATURES[planCode];
     if (defaultFeatures && defaultFeatures[featureKey] !== undefined) {
@@ -1593,7 +1316,6 @@ export class StateService {
 
   public getFeatureLimit(featureKey: string): number {
     let features = this.planFeatures();
-    
     if (features && typeof features === 'string') {
       try {
         features = JSON.parse(features);
@@ -1606,7 +1328,6 @@ export class StateService {
       return Number(features[featureKey]);
     }
 
-    // Fallback từ DEFAULT_PLAN_FEATURES
     const planCode = this.subscriptionPlanCode() || 'free';
     const defaultFeatures = DEFAULT_PLAN_FEATURES[planCode];
     if (defaultFeatures && defaultFeatures[featureKey] !== undefined) {
@@ -1624,12 +1345,11 @@ export class StateService {
     return FEATURE_CONFIGS.find(cfg => cfg.tab === tab);
   }
 
-  // Kích hoạt mở modal blocked & nâng cấp tính năng gói cước
+  // Kích hoạt mở modal blocked & nâng cấp tính năng
   public triggerUpgradeModal(featureKey: string, featureName: string) {
     this.lockedFeatureKey.set(featureKey);
     this.lockedFeatureName.set(featureName);
 
-    // Tắt các modal cũ trước đó
     this.isWalletModalOpen.set(false);
     this.isWaitingForSignature.set(false);
     this.isSendTokenModalOpen.set(false);
@@ -1641,12 +1361,11 @@ export class StateService {
     this.isUpgradeModalOpen.set(true);
   }
 
-  // Mở trực tiếp step 2 nâng cấp gói cước (Pricing/Thanh toán)
+  // Mở trực tiếp step 2 nâng cấp
   public triggerUpgradeModalDirectly(featureKey: string, featureName: string) {
     this.lockedFeatureKey.set(featureKey);
     this.lockedFeatureName.set(featureName);
 
-    // Tắt các modal cũ trước đó
     this.isWalletModalOpen.set(false);
     this.isWaitingForSignature.set(false);
     this.isSendTokenModalOpen.set(false);

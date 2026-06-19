@@ -1,0 +1,76 @@
+<!-- TOAST NOTIFICATIONS (RICH AESTHETICS - PREMIUM WHITE BACKDROP WITH PROGRESS BAR) -->
+<div
+  class="fixed bottom-5 right-5 z-[9999] flex flex-col gap-3 pointer-events-none max-w-sm w-full px-4 sm:px-0"
+>
+  <!-- Success Toast -->
+  @if (successMessage()) {
+    <div
+      class="toast-animate pointer-events-auto relative flex items-start gap-3 bg-white/95 dark:bg-slate-900/95 text-slate-800 dark:text-slate-200 px-4.5 py-4 rounded-2xl shadow-[0_15px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_15px_30px_rgba(0,0,0,0.3)] border border-slate-100 dark:border-slate-800/80 backdrop-blur-md overflow-hidden w-full group"
+    >
+      <!-- Icon Success Tròn Xanh Lá -->
+      <div
+        class="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/20"
+      >
+        <app-icon name="check" class="h-3.5 w-3.5" strokeWidth="3" />
+      </div>
+
+      <!-- Content -->
+      <div class="flex-1 pr-6 pt-0.5">
+        <p
+          class="text-sm font-semibold leading-snug tracking-tight text-slate-700 dark:text-slate-200"
+        >
+          {{ successMessage() }}
+        </p>
+      </div>
+
+      <!-- Close Button -->
+      <button
+        (click)="stateService.successMessage.set('')"
+        class="absolute top-3.5 right-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors p-0.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50"
+      >
+        <app-icon name="close" class="h-3.5 w-3.5" strokeWidth="2.5" />
+      </button>
+
+      <!-- Progress Bar phía dưới -->
+      <div class="absolute bottom-0 left-0 right-0 h-1 bg-emerald-100 dark:bg-emerald-950/40">
+        <div class="toast-progress-success h-full bg-emerald-500 rounded-r-full"></div>
+      </div>
+    </div>
+  }
+
+  <!-- Error Toast -->
+  @if (errorMessage()) {
+    <div
+      class="toast-animate pointer-events-auto relative flex items-start gap-3 bg-white/95 dark:bg-slate-900/95 text-slate-800 dark:text-slate-200 px-4.5 py-4 rounded-2xl shadow-[0_15px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_15px_30px_rgba(0,0,0,0.3)] border border-slate-100 dark:border-slate-800/80 backdrop-blur-md overflow-hidden w-full group"
+    >
+      <!-- Icon Error Tròn Đỏ -->
+      <div
+        class="flex-shrink-0 w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center shadow-md shadow-rose-500/20"
+      >
+        <app-icon name="close" class="h-3.5 w-3.5" strokeWidth="3" />
+      </div>
+
+      <!-- Content -->
+      <div class="flex-1 pr-6 pt-0.5">
+        <p
+          class="text-sm font-semibold leading-snug tracking-tight text-slate-700 dark:text-slate-200"
+        >
+          {{ errorMessage() }}
+        </p>
+      </div>
+
+      <!-- Close Button -->
+      <button
+        (click)="stateService.errorMessage.set('')"
+        class="absolute top-3.5 right-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors p-0.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50"
+      >
+        <app-icon name="close" class="h-3.5 w-3.5" strokeWidth="2.5" />
+      </button>
+
+      <!-- Progress Bar phía dưới -->
+      <div class="absolute bottom-0 left-0 right-0 h-1 bg-rose-100 dark:bg-rose-950/40">
+        <div class="toast-progress-error h-full bg-rose-500 rounded-r-full"></div>
+      </div>
+    </div>
+  }
+</div>
