@@ -79,22 +79,20 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
 
             if (isFeatureError && !isStorefront) {
               const featureKey = error.error?.feature || '';
-              const featureNamesMap: Record<string, string> = {
-                'enable_dashboard': 'Tổng quan',
-                'enable_pos': 'Bán hàng POS',
-                'enable_orders': 'Đơn hàng',
-                'enable_tables': 'Quản lý sơ đồ bàn',
-                'enable_shifts': 'Ca làm việc',
-                'enable_menu': 'Quản lý Thực đơn',
-                'enable_inventory': 'Kho hàng',
-                'enable_customers': 'Khách hàng',
-                'enable_debts': 'Sổ nợ',
-                'enable_financials': 'Thu chi tài chính',
-                'enable_reports': 'Báo cáo',
-                'enable_staffs': 'Nhân viên'
-              };
-              const featureName = featureNamesMap[featureKey] || 'premium';
-              stateService.triggerUpgradeModal(featureKey, featureName);
+              const config = stateService.getFeatureConfig(featureKey);
+              
+              // Xác định xem request có phải là GET chạy ngầm ở background không
+              const isGetRequest = req.method === 'GET';
+              const isCurrentlyOnTargetRoute = config && router.url.includes('/' + config.tab);
+              
+              // Chỉ tự động hiển thị modal chặn nâng cấp nếu:
+              // 1. Người dùng thao tác ghi dữ liệu chủ động (POST, PUT, DELETE) và bị chặn.
+              // 2. Hoặc người dùng đang ở đúng trang của tính năng bị chặn đó (VD: ở trang /shifts và API GET bị chặn).
+              const shouldTriggerModal = !isGetRequest || isCurrentlyOnTargetRoute;
+
+              if (shouldTriggerModal && config) {
+                stateService.triggerUpgradeModal(config.key, config.name);
+              }
             }
 
             // Chỉ hiển thị Toast đỏ khi không phải lỗi khóa tính năng (đã hiện modal) và (không phải request GET bị dính limit)

@@ -7,6 +7,51 @@ import { debounceTime, distinctUntilChanged, filter, catchError } from 'rxjs/ope
 import { OrderStore } from '@features/pos/store/order.store';
 import { SettingStore } from '@features/settings/store/setting.store';
 
+export interface FeatureConfig {
+  key: string;
+  tab: string;
+  name: string;
+}
+
+export const FEATURE_CONFIGS: FeatureConfig[] = [
+  { key: 'enable_dashboard', tab: 'dashboard', name: 'Tổng quan' },
+  { key: 'enable_pos', tab: 'pos', name: 'Bán hàng POS' },
+  { key: 'enable_orders', tab: 'orders', name: 'Đơn hàng' },
+  { key: 'enable_tables', tab: 'tables', name: 'Sơ đồ bàn' },
+  { key: 'enable_shifts', tab: 'shifts', name: 'Ca làm việc' },
+  { key: 'enable_menu', tab: 'menu', name: 'Quản lý Thực đơn' },
+  { key: 'enable_inventory', tab: 'inventory', name: 'Kho hàng' },
+  { key: 'enable_customers', tab: 'customers', name: 'Khách hàng' },
+  { key: 'enable_debts', tab: 'debts', name: 'Sổ nợ' },
+  { key: 'enable_financials', tab: 'financials', name: 'Thu chi tài chính' },
+  { key: 'enable_reports', tab: 'reports', name: 'Báo cáo' },
+  { key: 'enable_staffs', tab: 'staffs', name: 'Nhân viên' }
+];
+
+export const DEFAULT_PLAN_FEATURES: Record<string, Record<string, any>> = {
+  'free': {
+    'enable_dashboard': true,
+    'enable_pos': true,
+    'enable_orders': true,
+    'enable_tables': true,
+    'enable_shifts': false,
+    'enable_menu': true,
+    'enable_inventory': false,
+    'enable_customers': true,
+    'enable_debts': false,
+    'enable_financials': false,
+    'enable_reports': false,
+    'enable_excel_export': false,
+    'enable_storefront': false,
+    'enable_staffs': true,
+    'max_products': 20,
+    'max_staffs': 2,
+    'max_customers': 50,
+    'max_transactions': 100,
+    'max_debts': 10
+  }
+};
+
 @Injectable({
   providedIn: 'root'
 })
@@ -1083,24 +1128,10 @@ export class StateService {
     if (tab) {
       // Nếu đã kết nối ví và không phải Super Admin -> kiểm duyệt gói cước trước
       if (this.web3Service.walletConnected() && !this.isSuperAdmin()) {
-        const tabFeatures: { [key: string]: { feature: string, name: string } } = {
-          'dashboard': { feature: 'enable_dashboard', name: 'Tổng quan' },
-          'pos': { feature: 'enable_pos', name: 'Bán hàng POS' },
-          'orders': { feature: 'enable_orders', name: 'Đơn hàng' },
-          'tables': { feature: 'enable_tables', name: 'Sơ đồ bàn' },
-          'shifts': { feature: 'enable_shifts', name: 'Ca làm việc' },
-          'menu': { feature: 'enable_menu', name: 'Thực đơn' },
-          'inventory': { feature: 'enable_inventory', name: 'Kho hàng' },
-          'customers': { feature: 'enable_customers', name: 'Khách hàng' },
-          'debts': { feature: 'enable_debts', name: 'Sổ nợ' },
-          'financials': { feature: 'enable_financials', name: 'Thu chi tài chính' },
-          'reports': { feature: 'enable_reports', name: 'Báo cáo' },
-          'staffs': { feature: 'enable_staffs', name: 'Nhân viên' }
-        };
-        const config = tabFeatures[tab];
-        if (config && !this.hasFeature(config.feature)) {
+        const config = this.getFeatureConfigByTab(tab);
+        if (config && !this.hasFeature(config.key)) {
           // Bật modal chặn & nâng cấp
-          this.triggerUpgradeModal(config.feature, config.name);
+          this.triggerUpgradeModal(config.key, config.name);
         }
       }
       this.setTabState(tab);
@@ -1718,47 +1749,19 @@ export class StateService {
       }
     }
     
-    if (!features) {
-      // Fallback an toàn dựa trên plan_code nếu chưa tải kịp object features
-      const isFree = this.subscriptionPlanCode() === 'free';
-      if (isFree) {
-        const premiumFeatures = [
-          'enable_inventory', 
-          'enable_debts', 
-          'enable_financials', 
-          'enable_storefront', 
-          'enable_reports', 
-          'enable_excel_export',
-          'enable_shifts'
-        ];
-        if (premiumFeatures.includes(featureKey)) {
-          return false;
-        }
-      }
-      return true;
+    // Nếu có data features từ DB thì ưu tiên dùng
+    if (features && features[featureKey] !== undefined) {
+      return !!features[featureKey];
     }
 
-    if (features[featureKey] === undefined) {
-      // Fallback nếu trường tính năng mới chưa tồn tại trong cấu hình gói cước cũ
-      const isFree = this.subscriptionPlanCode() === 'free';
-      if (isFree) {
-        const premiumFeatures = [
-          'enable_inventory', 
-          'enable_debts', 
-          'enable_financials', 
-          'enable_storefront', 
-          'enable_reports', 
-          'enable_excel_export',
-          'enable_shifts'
-        ];
-        if (premiumFeatures.includes(featureKey)) {
-          return false;
-        }
-      }
-      return true;
+    // Nếu chưa load kịp hoặc thiếu key, dùng fallback từ DEFAULT_PLAN_FEATURES
+    const planCode = this.subscriptionPlanCode() || 'free';
+    const defaultFeatures = DEFAULT_PLAN_FEATURES[planCode];
+    if (defaultFeatures && defaultFeatures[featureKey] !== undefined) {
+      return !!defaultFeatures[featureKey];
     }
 
-    return !!features[featureKey];
+    return true;
   }
 
   public getFeatureLimit(featureKey: string): number {
@@ -1772,31 +1775,26 @@ export class StateService {
       }
     }
     
-    if (!features) {
-      const isFree = this.subscriptionPlanCode() === 'free';
-      if (isFree) {
-        if (featureKey === 'max_products') return 20;
-        if (featureKey === 'max_staffs') return 2;
-        if (featureKey === 'max_customers') return 50;
-        if (featureKey === 'max_transactions') return 100;
-        if (featureKey === 'max_debts') return 10;
-      }
-      return -1;
+    if (features && features[featureKey] !== undefined) {
+      return Number(features[featureKey]);
     }
 
-    if (features[featureKey] === undefined) {
-      const isFree = this.subscriptionPlanCode() === 'free';
-      if (isFree) {
-        if (featureKey === 'max_products') return 20;
-        if (featureKey === 'max_staffs') return 2;
-        if (featureKey === 'max_customers') return 50;
-        if (featureKey === 'max_transactions') return 100;
-        if (featureKey === 'max_debts') return 10;
-      }
-      return -1;
+    // Fallback từ DEFAULT_PLAN_FEATURES
+    const planCode = this.subscriptionPlanCode() || 'free';
+    const defaultFeatures = DEFAULT_PLAN_FEATURES[planCode];
+    if (defaultFeatures && defaultFeatures[featureKey] !== undefined) {
+      return Number(defaultFeatures[featureKey]);
     }
 
-    return Number(features[featureKey]);
+    return -1;
+  }
+
+  public getFeatureConfig(featureKey: string): FeatureConfig | undefined {
+    return FEATURE_CONFIGS.find(cfg => cfg.key === featureKey);
+  }
+
+  public getFeatureConfigByTab(tab: string): FeatureConfig | undefined {
+    return FEATURE_CONFIGS.find(cfg => cfg.tab === tab);
   }
 
   // Kích hoạt mở modal blocked & nâng cấp tính năng gói cước
