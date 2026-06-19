@@ -392,6 +392,9 @@ export class StateService {
               // Nạp dữ liệu cho tab hiện tại
               this.reloadCurrentTab();
               
+              // Đồng bộ thông tin gói cước mới nhất từ DB (phòng trường hợp admin đổi gói sau khi đăng nhập)
+              this.syncSubscriptionFromBackend();
+              
               // Tắt loading khởi tạo
               this.isInitialLoading.set(false);
             },
@@ -672,9 +675,59 @@ export class StateService {
     });
   }
 
-  // Refresh cấu hình
+  // Refresh cấu hình + đồng thời sync thông tin subscription mới nhất từ backend
   public loadSettings() {
     this.settingStore.loadSettings(this.hasPermission('settings'));
+    // Sync thông tin gói cước mới nhất từ backend mỗi khi load settings
+    if (this.web3Service.walletConnected()) {
+      this.syncSubscriptionFromBackend();
+    }
+  }
+
+  // Đồng bộ thông tin subscription từ backend (gọi /auth/me)
+  private syncSubscriptionFromBackend() {
+    this.apiService.getMe().subscribe({
+      next: (res) => {
+        if (res?.subscription) {
+          const sub = res.subscription;
+          const planCode = sub.plan_code || 'free';
+          const expiresAt = sub.subscription_expires_at || null;
+          const status = sub.subscription_status || 'active';
+
+          // Cập nhật signals
+          this.subscriptionPlanCode.set(planCode);
+          this.subscriptionExpiresAt.set(expiresAt);
+          this.subscriptionStatus.set(status);
+
+          if (sub.features) {
+            this.planFeatures.set(sub.features);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('auth_plan_features', JSON.stringify(sub.features));
+            }
+          } else {
+            this.planFeatures.set(null);
+            if (typeof window !== 'undefined') {
+              localStorage.removeItem('auth_plan_features');
+            }
+          }
+
+          // Cập nhật localStorage để đồng bộ
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('auth_subscription_plan_code', planCode);
+            if (expiresAt) {
+              localStorage.setItem('auth_subscription_expires_at', expiresAt);
+            } else {
+              localStorage.removeItem('auth_subscription_expires_at');
+            }
+            localStorage.setItem('auth_subscription_status', status);
+          }
+        }
+      },
+      error: (err) => {
+        // Không làm gì nếu lỗi (silent - không cần toast)
+        console.warn('[StateService] Không thể sync thông tin gói cước:', err?.status);
+      }
+    });
   }
 
   // Refresh danh sách khách hàng (có cache 5 phút)

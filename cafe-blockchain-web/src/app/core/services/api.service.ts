@@ -66,6 +66,13 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/auth/remove-cashier`, { cashier_address: address }, { headers: this.getHeaders() });
   }
 
+  /**
+   * Lấy thông tin subscription hiện tại của user đang đăng nhập (để sync sau khi admin đổi gói)
+   */
+  public getMe(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/auth/me`, { headers: this.getHeaders() });
+  }
+
   // 1. Dashboard API
   public getDashboard(startDate?: string, endDate?: string): Observable<any> {
     let params = new HttpParams();

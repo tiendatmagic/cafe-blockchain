@@ -40,6 +40,8 @@ Route::post('/orders/claim-points', [\App\Http\Controllers\ClaimController::clas
 // Protected routes (require valid Sanctum token)
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
+    Route::get('/auth/me', [AuthController::class, 'me']); // Lấy thông tin subscription hiện tại
+
 
     // Super Admin Routes (Bypass CheckSubscription)
     Route::middleware(\App\Http\Middleware\EnsureIsSuperAdmin::class)->prefix('admin')->group(function () {

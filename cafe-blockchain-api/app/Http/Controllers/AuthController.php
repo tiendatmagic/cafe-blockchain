@@ -156,6 +156,43 @@ class AuthController extends Controller
     }
 
     /**
+     * Lấy thông tin subscription hiện tại của người dùng đang đăng nhập
+     */
+    public function me(Request $request)
+    {
+        $user = $request->user();
+        $address = strtolower($user->wallet_address);
+
+        // Lấy thông tin gói cước dựa trên chủ quán
+        $ownerAddress = strtolower($user->store_owner_address ?: $user->wallet_address);
+        $owner = User::where('wallet_address', $ownerAddress)->first();
+
+        $planCode = $owner ? ($owner->plan_code ?: 'free') : 'free';
+        $planExpiresAt = $owner ? $owner->subscription_expires_at : null;
+        $planStatus = $owner ? ($owner->subscription_status ?: 'active') : 'active';
+
+        $plan = \App\Domain\Entities\SubscriptionPlan::where('code', $planCode)->first();
+        $planFeatures = $plan ? $plan->features : null;
+
+        // Kiểm tra xem có phải là Super Admin không
+        $superAdminEnv = config('auth.super_admin_addresses', '');
+        $superAdmins = array_map('trim', explode(',', $superAdminEnv));
+        $superAdmins = array_map('strtolower', array_filter($superAdmins));
+        $isSuperAdmin = in_array($address, $superAdmins);
+
+        return response()->json([
+            'address' => $address,
+            'is_super_admin' => $isSuperAdmin,
+            'subscription' => [
+                'plan_code' => $planCode,
+                'subscription_expires_at' => $planExpiresAt,
+                'subscription_status' => $planStatus,
+                'features' => $planFeatures
+            ]
+        ]);
+    }
+
+    /**
      * Đăng xuất, vô hiệu hóa token hiện tại và xóa cookie
      */
     public function logout(Request $request)
