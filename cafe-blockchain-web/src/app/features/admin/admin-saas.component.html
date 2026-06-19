@@ -47,7 +47,7 @@
 
     <!-- Content Sections -->
     @if (isDataLoading()) {
-      <app-skeleton-loader type="reports"></app-skeleton-loader>
+      <app-skeleton-loader type="table" [cols]="7" [rows]="5"></app-skeleton-loader>
     } @else {
       
       <!-- Tab 1: Tenants List -->
@@ -55,7 +55,13 @@
         <div class="app-card p-0 overflow-hidden">
           <app-table 
             [columns]="tenantColumns" 
-            [data]="filteredTenants()">
+            [data]="paginatedTenants()"
+            [totalItems]="filteredTenants().length"
+            [itemsPerPage]="tenantItemsPerPage"
+            [currentPage]="tenantCurrentPage()"
+            [showPagination]="true"
+            [itemName]="'cửa hàng'"
+            (pageChange)="tenantCurrentPage.set($event)">
             
             <ng-template appCell="store_name" let-row>
               <div class="font-extrabold text-slate-800 dark:text-slate-200 text-sm sm:text-base">{{ row.store_name }}</div>
@@ -141,14 +147,20 @@
           <div class="app-card p-0 overflow-hidden">
             <app-table 
               [columns]="planColumns" 
-              [data]="plans()">
+              [data]="paginatedPlans()"
+              [totalItems]="plans().length"
+              [itemsPerPage]="planItemsPerPage"
+              [currentPage]="planCurrentPage()"
+              [showPagination]="true"
+              [itemName]="'gói cước'"
+              (pageChange)="planCurrentPage.set($event)">
               
               <ng-template appCell="code" let-row>
                 <div class="font-mono text-purple-650 dark:text-purple-400 font-bold pl-6 text-xs">{{ row.code }}</div>
               </ng-template>
 
               <ng-template appCell="name" let-row>
-                <div class="text-slate-800 dark:text-slate-200 text-sm sm:text-base font-extrabold">{{ row.name }}</div>
+                <div class="text-slate-800 dark:text-slate-200 text-sm font-bold">{{ row.name }}</div>
               </ng-template>
 
               <ng-template appCell="limits" let-row>

@@ -88,6 +88,25 @@ export class AdminSaaSComponent implements OnInit {
 
   public readonly searchQuery = signal<string>('');
 
+  // Phân trang
+  public readonly tenantCurrentPage = signal<number>(1);
+  public readonly tenantItemsPerPage = 10;
+  public readonly planCurrentPage = signal<number>(1);
+  public readonly planItemsPerPage = 10;
+
+  // Computed signals phân trang Client-side
+  public readonly paginatedTenants = computed(() => {
+    const list = this.filteredTenants();
+    const startIndex = (this.tenantCurrentPage() - 1) * this.tenantItemsPerPage;
+    return list.slice(startIndex, startIndex + this.tenantItemsPerPage);
+  });
+
+  public readonly paginatedPlans = computed(() => {
+    const list = this.plans();
+    const startIndex = (this.planCurrentPage() - 1) * this.planItemsPerPage;
+    return list.slice(startIndex, startIndex + this.planItemsPerPage);
+  });
+
   // Forms
   public subscriptionForm!: FormGroup;
   public readonly isSubscriptionModalOpen = signal<boolean>(false);
@@ -187,6 +206,8 @@ export class AdminSaaSComponent implements OnInit {
   public setSubTab(tab: 'tenants' | 'plans') {
     this.activeSubTab.set(tab);
     this.searchQuery.set('');
+    this.tenantCurrentPage.set(1);
+    this.planCurrentPage.set(1);
 
     // Cập nhật query parameter tab trên URL
     this.router.navigate([], {
@@ -198,6 +219,7 @@ export class AdminSaaSComponent implements OnInit {
 
   public onSearchQueryChange(query: string) {
     this.searchQuery.set(query);
+    this.tenantCurrentPage.set(1);
   }
 
   // Load toàn bộ dữ liệu quản trị
@@ -216,6 +238,8 @@ export class AdminSaaSComponent implements OnInit {
       next: (res) => {
         this.tenants.set(res.tenants || []);
         this.plans.set(res.plans || []);
+        this.tenantCurrentPage.set(1);
+        this.planCurrentPage.set(1);
         this.tokenCleanupDays.set(res.settings?.token_cleanup_days ?? 7);
         this.isDataLoading.set(false);
       },
