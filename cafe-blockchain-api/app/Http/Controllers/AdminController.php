@@ -340,6 +340,31 @@ class AdminController extends Controller
         $serverIp = request()->server('SERVER_ADDR')
             ?? (function_exists('gethostbyname') ? gethostbyname(gethostname()) : 'N/A');
 
+        // Tính dung lượng ứng dụng (Cache 24 giờ để tránh ảnh hưởng hiệu năng)
+        $appSize = \Cache::remember('system_app_size', 86400, function () {
+            try {
+                $size = 0;
+                $its = new \RecursiveIteratorIterator(
+                    new \RecursiveDirectoryIterator(base_path(), \FilesystemIterator::SKIP_DOTS)
+                );
+                foreach ($its as $file) {
+                    $size += $file->getSize();
+                }
+                return number_format($size / 1024 / 1024, 2, ',', '.') . ' MB';
+            } catch (\Throwable $e) {
+                return 'N/A';
+            }
+        });
+
+        // Lấy số lượng kết nối tối đa của Database
+        $maxConnections = 'N/A';
+        try {
+            $rowVar = DB::selectOne("SHOW VARIABLES LIKE 'max_connections'");
+            if ($rowVar) {
+                $maxConnections = $rowVar->Value ?? $rowVar->value ?? 'N/A';
+            }
+        } catch (\Throwable $e) {}
+
         return response()->json([
             'system_env' => [
                 'app_name'         => config('app.name'),
@@ -347,6 +372,7 @@ class AdminController extends Controller
                 'php_version'      => PHP_VERSION,
                 'timezone'         => config('app.timezone'),
                 'server_ip'        => $serverIp,
+                'app_size'         => $appSize,
                 'debug_mode'       => (bool) config('app.debug'),
                 'storage_writable' => is_writable(storage_path()),
                 'cache_writable'   => is_writable(storage_path('framework/cache')),
@@ -377,11 +403,12 @@ class AdminController extends Controller
                 'ext_json'         => extension_loaded('json'),
             ],
             'database_info' => [
-                'driver'    => $dbDriver,
-                'name'      => $dbConfig['database'] ?? 'N/A',
-                'version'   => $dbVersion,
-                'charset'   => $dbConfig['charset'] ?? 'utf8mb4',
-                'collation' => $dbConfig['collation'] ?? 'utf8mb4_unicode_ci',
+                'driver'          => $dbDriver,
+                'name'            => $dbConfig['database'] ?? 'N/A',
+                'version'         => $dbVersion,
+                'max_connections' => $maxConnections,
+                'charset'         => $dbConfig['charset'] ?? 'utf8mb4',
+                'collation'       => $dbConfig['collation'] ?? 'utf8mb4_unicode_ci',
             ],
             'php_config' => [
                 'post_max_size'      => ini_get('post_max_size'),

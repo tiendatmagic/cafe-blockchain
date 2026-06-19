@@ -484,9 +484,13 @@
                     <span class="text-slate-500 font-medium">Múi giờ hệ thống</span>
                     <span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.system_env?.timezone }}</span>
                   </div>
-                  <div class="flex items-center justify-between px-5 py-2.5 text-sm gap-2">
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm">
+                    <span class="text-slate-500 font-medium">Dung lượng ứng dụng</span>
+                    <span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.system_env?.app_size }}</span>
+                  </div>
+                  <div class="flex items-center justify-between pl-5 pr-7 py-2.5 text-sm gap-2">
                     <span class="text-slate-500 shrink-0 font-medium">IP Máy chủ</span>
-                    <div class="flex items-center gap-1.5">
+                    <div class="flex items-center gap-1.5 shrink-0">
                       <span class="font-mono font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.system_env?.server_ip }}</span>
                       <button (click)="stateService.copyAddress(systemInfo()?.system_env?.server_ip)" class="p-0.5 text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition" title="Sao chép IP">
                         <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
@@ -567,6 +571,7 @@
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">Trình kết nối</span><span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.database_info?.driver }}</span></div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">Tên Database</span><span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.database_info?.name }}</span></div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-550 font-medium">Phiên bản DB</span><span class="font-mono text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-200/30 dark:border-slate-700/30 leading-none">{{ systemInfo()?.database_info?.version }}</span></div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">Số kết nối tối đa</span><span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.database_info?.max_connections }}</span></div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">Bảng mã kết nối</span><span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.database_info?.charset }}</span></div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">Đối chiếu kết nối</span><span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.database_info?.collation }}</span></div>
                 </div>
@@ -585,6 +590,7 @@
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">Số lượng biến nhập tối đa</span><span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.php_config?.max_input_vars }}</span></div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">Múi giờ cấu hình</span><span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.php_config?.date_timezone }}</span></div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">Hiển thị lỗi</span><span [ngClass]="systemInfo()?.php_config?.display_errors ? 'text-rose-500' : 'text-emerald-500'" class="font-extrabold">{{ systemInfo()?.php_config?.display_errors ? 'Bật (On)' : 'Tắt (Off)' }}</span></div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">Cấp độ báo lỗi</span><span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.php_config?.error_reporting }}</span></div>
                 </div>
               </div>
 
