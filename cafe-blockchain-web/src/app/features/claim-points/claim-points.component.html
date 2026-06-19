@@ -46,7 +46,7 @@
             <p class="text-xs text-slate-400 dark:text-slate-500 mb-3">Vui lòng kết nối ví Web3 để kiểm tra số dư và bắt đầu tích điểm.</p>
             <button 
               (click)="connectWallet()" 
-              class="w-full h-11 flex items-center justify-center gap-2 rounded-[15px] text-sm font-extrabold text-white bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer">
+              class="btn-primary btn-full hover:scale-[1.02]">
               <!-- Wallet Icon SVG -->
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
@@ -121,7 +121,7 @@
             <button 
               type="submit" 
               [disabled]="isClaiming()" 
-              class="w-full h-12 flex items-center justify-center gap-2 rounded-[15px] text-sm font-extrabold text-white bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] shadow-md hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none transition-all duration-200 cursor-pointer">
+              class="btn-primary btn-full hover:scale-[1.01]">
               @if (isClaiming()) {
                 <!-- Loading Spinner SVG -->
                 <svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">

@@ -1,16 +1,24 @@
 <div class="space-y-6 p-4 sm:p-6 max-w-[1530px] mx-auto">
   <!-- BANNER TÍNH NĂNG CHƯA MỞ KHÓA (Premium Glassmorphism) -->
-  <div class="app-card bg-white/60 dark:bg-slate-900/60 backdrop-blur-md shadow-lg flex flex-col items-center justify-center min-h-[500px] p-8 text-center max-w-2xl mx-auto my-10 animate-in fade-in zoom-in-95 duration-300">
-    <div class="w-20 h-20 rounded-full bg-rose-100 dark:bg-rose-950/40 flex items-center justify-center text-rose-500 mb-6 shadow-inner animate-pulse">
+  <div
+    class="app-card bg-white/60 dark:bg-slate-900/60 backdrop-blur-md shadow-lg flex flex-col items-center justify-center min-h-[500px] p-8 text-center max-w-2xl mx-auto my-10 animate-in fade-in zoom-in-95 duration-300"
+  >
+    <div
+      class="w-20 h-20 rounded-full bg-rose-100 dark:bg-rose-950/40 flex items-center justify-center text-rose-500 mb-6 shadow-inner animate-pulse"
+    >
       <app-icon name="warning" class="h-10 w-10 text-rose-500" strokeWidth="1.8" />
     </div>
-    <h4 class="text-xl font-extrabold text-slate-800 dark:text-white tracking-tight mb-3">Tính năng chưa mở khóa</h4>
+    <h4 class="text-xl font-extrabold text-slate-800 dark:text-white tracking-tight mb-3">
+      Tính năng chưa mở khóa
+    </h4>
     <p class="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-8 leading-relaxed">
-      Bạn đang ở gói <span class="text-rose-500 font-extrabold">{{ currentPlanName }}</span>, vui lòng nâng cấp để được sử dụng tính năng <span class="text-purple-600 dark:text-purple-400 font-black">{{ featureName }}</span> này.
+      Bạn đang ở gói <span class="text-rose-500 font-extrabold">{{ currentPlanName }}</span
+      >, vui lòng nâng cấp để được sử dụng tính năng
+      <span class="text-purple-600 dark:text-purple-400 font-black">{{ featureName }}</span> này.
     </p>
     <button
       (click)="upgradeNow()"
-      class="flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] text-white font-extrabold text-xs shadow-lg shadow-[var(--dynamic-primary)]/25 hover:shadow-[var(--dynamic-primary)]/40 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer animate-pulse"
+      class="btn-primary hover:scale-[1.02] gap-2"
     >
       <app-icon name="link-chain" class="h-4.5 w-4.5" strokeWidth="2.5" />
       <span>NÂNG CẤP NGAY</span>

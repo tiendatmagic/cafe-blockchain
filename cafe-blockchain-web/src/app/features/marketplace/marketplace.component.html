@@ -162,7 +162,7 @@
                       <button
                         (click)="exchangeVoucher(v)"
                         [disabled]="isActionPending() || parseFloat(cafeTokenBalance()) < v.priceInCafeToken"
-                        class="h-9 px-4 rounded-[10px] text-xs font-extrabold text-white bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] hover:scale-[1.04] active:scale-[0.97] disabled:opacity-35 disabled:pointer-events-none transition-all duration-200 cursor-pointer shadow-sm shadow-[var(--dynamic-primary)]/15">
+                        class="btn-primary btn-sm hover:scale-[1.04]">
                         Đổi ngay
                       </button>
                     </div>
@@ -240,7 +240,7 @@
                       <button
                         (click)="purchaseFromMarket(l)"
                         [disabled]="isActionPending() || parseFloat(cafeTokenBalance()) < l.price"
-                        class="h-9 px-4 rounded-[10px] text-xs font-extrabold text-white bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] hover:scale-[1.04] active:scale-[0.97] disabled:opacity-35 disabled:pointer-events-none transition-all duration-200 cursor-pointer shadow-sm shadow-[var(--dynamic-primary)]/15">
+                        class="btn-primary btn-sm hover:scale-[1.04]">
                         Mua NFT
                       </button>
                     }
@@ -269,7 +269,7 @@
               <p class="text-sm text-slate-400 dark:text-slate-500 mt-1.5 text-center max-w-sm">Bạn chưa sở hữu voucher NFT nào. Hãy đổi điểm $CAFE hoặc mua trên chợ!</p>
               <button 
                 (click)="onTabChange('shop')"
-                class="mt-5 h-10 px-6 rounded-[10px] text-xs font-extrabold text-white bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] hover:scale-[1.03] active:scale-[0.97] transition-all duration-200 cursor-pointer shadow-sm shadow-[var(--dynamic-primary)]/15">
+                class="btn-primary mt-5 hover:scale-[1.03]">
                 Khám phá Shop
               </button>
             </div>
@@ -322,7 +322,7 @@
                     } @else {
                       <button
                         (click)="openListModal(my.tokenId)"
-                        class="h-9 px-5 rounded-[10px] text-xs font-extrabold text-white bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] hover:scale-[1.04] active:scale-[0.97] transition-all duration-200 cursor-pointer shadow-sm shadow-[var(--dynamic-primary)]/15">
+                        class="btn-primary btn-sm hover:scale-[1.04]">
                         Bán Voucher
                       </button>
                     }
@@ -398,7 +398,7 @@
             </button>
             <button 
               (click)="submitListing()" 
-              class="flex-1 h-10 rounded-[10px] text-xs font-extrabold text-white bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer shadow-sm shadow-[var(--dynamic-primary)]/15">
+              class="btn-primary flex-1 hover:scale-[1.02]">
               Treo bán
             </button>
           </div>
