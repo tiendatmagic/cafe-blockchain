@@ -177,6 +177,32 @@ export class AdminSaaSComponent implements OnInit {
       }));
   }
 
+  // Định dạng ngày hôm nay (YYYY-MM-DD) làm minDate
+  public get todayStr(): string {
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = today.getMonth() + 1;
+    const d = today.getDate();
+    return `${y}-${m < 10 ? '0' + m : m}-${d < 10 ? '0' + d : d}`;
+  }
+
+  // Hàm chọn nhanh thời hạn (đơn vị: tháng hoặc ngày)
+  public setSubscriptionDuration(value: number, unit: 'days' | 'months' = 'months') {
+    const today = new Date();
+    if (unit === 'months') {
+      today.setMonth(today.getMonth() + value);
+    } else {
+      today.setDate(today.getDate() + value);
+    }
+    const y = today.getFullYear();
+    const m = today.getMonth() + 1;
+    const d = today.getDate();
+    const dateStr = `${y}-${m < 10 ? '0' + m : m}-${d < 10 ? '0' + d : d}`;
+    this.subscriptionForm.patchValue({
+      subscription_expires_at: dateStr
+    });
+  }
+
   // Khử dấu tiếng Việt
   private removeSign(str: string): string {
     if (!str) return '';
@@ -227,8 +253,15 @@ export class AdminSaaSComponent implements OnInit {
   private initForms() {
     this.subscriptionForm = this.fb.group({
       plan_code: ['free', [Validators.required]],
-      subscription_expires_at: [null],
+      subscription_expires_at: [null, [Validators.required]],
       subscription_status: ['active', [Validators.required]]
+    });
+
+    // Tự động set 7 ngày nếu admin đổi gói cước sang gói 'free'
+    this.subscriptionForm.get('plan_code')?.valueChanges.subscribe(planCode => {
+      if (planCode === 'free') {
+        this.setSubscriptionDuration(7, 'days');
+      }
     });
 
     this.planForm = this.fb.group({
@@ -305,7 +338,7 @@ export class AdminSaaSComponent implements OnInit {
     // Format ngày hết hạn thành YYYY-MM-DD để input date hiển thị đúng
     let dateStr = null;
     if (tenant.subscription_expires_at) {
-      dateStr = tenant.subscription_expires_at.split('T')[0];
+      dateStr = tenant.subscription_expires_at.split(/[T ]/)[0];
     }
 
     this.subscriptionForm.patchValue({

@@ -632,13 +632,56 @@
 
       <!-- Expires At DatePicker -->
       <div class="space-y-2">
-        <label class="block text-sm font-bold text-slate-400 uppercase tracking-wide">Ngày hết hạn (Nếu có)</label>
+        <label class="block text-sm font-bold text-slate-400 uppercase tracking-wide">Ngày hết hạn</label>
         <app-custom-date-picker
           [selectedDate]="subscriptionForm.get('subscription_expires_at')?.value"
           (selectedDateChange)="subscriptionForm.get('subscription_expires_at')?.setValue($event)"
+          [minDate]="todayStr"
           placeholder="Chọn ngày hết hạn">
         </app-custom-date-picker>
-        <p class="text-[11px] text-purple-600/75 dark:text-purple-400/75 mt-1 block italic font-semibold">Bỏ trống nếu muốn gia hạn thời gian vô hạn cho cửa hàng này.</p>
+
+        <!-- Nút chọn nhanh thời hạn -->
+        <div class="flex flex-wrap gap-2 mt-2">
+          <button
+            type="button"
+            (click)="setSubscriptionDuration(7, 'days')"
+            class="px-2 py-1 rounded bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-900/40 text-purple-600 dark:text-purple-400 text-xs font-bold transition active:scale-95 cursor-pointer"
+          >
+            7 ngày
+          </button>
+          <button
+            type="button"
+            (click)="setSubscriptionDuration(1)"
+            class="px-2 py-1 rounded bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-900/40 text-purple-600 dark:text-purple-400 text-xs font-bold transition active:scale-95 cursor-pointer"
+          >
+            1 tháng
+          </button>
+          <button
+            type="button"
+            (click)="setSubscriptionDuration(3)"
+            class="px-2 py-1 rounded bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-900/40 text-purple-600 dark:text-purple-400 text-xs font-bold transition active:scale-95 cursor-pointer"
+          >
+            3 tháng
+          </button>
+          <button
+            type="button"
+            (click)="setSubscriptionDuration(6)"
+            class="px-2 py-1 rounded bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-900/40 text-purple-600 dark:text-purple-400 text-xs font-bold transition active:scale-95 cursor-pointer"
+          >
+            6 tháng
+          </button>
+          <button
+            type="button"
+            (click)="setSubscriptionDuration(12)"
+            class="px-2 py-1 rounded bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-900/40 text-purple-600 dark:text-purple-400 text-xs font-bold transition active:scale-95 cursor-pointer"
+          >
+            1 năm
+          </button>
+        </div>
+
+        @if (subscriptionForm.get('subscription_expires_at')?.touched && subscriptionForm.get('subscription_expires_at')?.invalid) {
+          <span class="text-xs text-rose-500 block mt-1">Ngày hết hạn là bắt buộc, không được bỏ trống.</span>
+        }
       </div>
 
       <!-- Subscription Status -->

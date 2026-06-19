@@ -40,8 +40,10 @@ export class CustomDatePickerComponent implements OnInit, OnChanges, OnDestroy {
 
   // Định dạng ngày hiển thị DD/MM/YYYY dưới dạng hàm thông thường để luôn cập nhật chính xác
   public displayValue(): string {
-    const val = this.selectedDate;
+    let val = this.selectedDate;
     if (!val) return '';
+    // Loại bỏ phần thời gian nếu có (khoảng trắng hoặc chữ T)
+    val = val.split(/[T ]/)[0];
     const parts = val.split('-');
     if (parts.length === 3) {
       return `${parts[2]}/${parts[1]}/${parts[0]}`;
@@ -62,7 +64,9 @@ export class CustomDatePickerComponent implements OnInit, OnChanges, OnDestroy {
   // Khởi tạo lịch từ giá trị ngày đang chọn
   private initCalendarFromValue(): void {
     if (this.selectedDate) {
-      const parts = this.selectedDate.split('-');
+      let val = this.selectedDate;
+      val = val.split(/[T ]/)[0];
+      const parts = val.split('-');
       if (parts.length === 3) {
         const y = parseInt(parts[0], 10);
         const m = parseInt(parts[1], 10) - 1; // 0-11
@@ -152,8 +156,10 @@ export class CustomDatePickerComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private checkIsDisabled(dateStr: string): boolean {
-    if (this.minDate && dateStr < this.minDate) return true;
-    if (this.maxDate && dateStr > this.maxDate) return true;
+    const min = this.minDate ? this.minDate.split(/[T ]/)[0] : '';
+    const max = this.maxDate ? this.maxDate.split(/[T ]/)[0] : '';
+    if (min && dateStr < min) return true;
+    if (max && dateStr > max) return true;
     return false;
   }
 

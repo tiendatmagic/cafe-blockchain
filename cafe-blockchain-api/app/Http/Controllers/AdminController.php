@@ -52,7 +52,7 @@ class AdminController extends Controller
     {
         $validated = $request->validate([
             'plan_code' => 'required|string|exists:subscription_plans,code',
-            'subscription_expires_at' => 'nullable|date',
+            'subscription_expires_at' => 'required|date',
             'subscription_status' => 'required|string|in:active,suspended',
         ]);
 
