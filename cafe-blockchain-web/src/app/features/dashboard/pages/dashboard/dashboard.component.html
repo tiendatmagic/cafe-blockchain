@@ -21,9 +21,9 @@
   @if (web3Service.walletConnected()) {
     @if (stateService.hasPermission('dashboard')) {
     <!-- Grid Card chào mừng & Ca trực đang hoạt động -->
-    <div class="grid grid-cols-1 gap-4 mb-4" [class.lg:grid-cols-3]="stateService.currentShift()">
+    <div class="grid grid-cols-1 gap-4 mb-4" [class.lg:grid-cols-3]="stateService.currentShift() && stateService.currentShift().id">
       <!-- Card chào mừng & thông tin gói cước -->
-      <div class="app-card p-4 sm:p-5 flex flex-col justify-between" [class.lg:col-span-2]="stateService.currentShift()">
+      <div class="app-card p-4 sm:p-5 flex flex-col justify-between" [class.lg:col-span-2]="stateService.currentShift() && stateService.currentShift().id">
         <div class="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 h-full">
           <!-- Phần chào mừng -->
           <div class="flex items-center gap-3">
@@ -87,7 +87,7 @@
       </div>
 
       <!-- Card ca trực hiện tại -->
-      @if (stateService.currentShift()) {
+      @if (stateService.currentShift() && stateService.currentShift().id) {
         <div class="app-card p-4 sm:p-5 flex flex-col justify-between border border-emerald-500/10 dark:border-emerald-500/5">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
