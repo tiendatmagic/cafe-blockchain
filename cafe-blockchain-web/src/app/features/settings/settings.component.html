@@ -1013,7 +1013,7 @@
                   labelKey="name"
                   placeholder="Tùy chỉnh (Custom EVM)"
                   [disabled]="
-                    settings().chain_id !== '' ||
+                    (settings().contract_address !== '' && settings().has_synced_orders) ||
                     !web3Service.walletConnected() ||
                     !web3Service.isOwnerContract()
                   "
@@ -1045,7 +1045,7 @@
                     [ngModel]="configForm().chain_id"
                     (ngModelChange)="updateConfigForm('chain_id', $event)"
                     [disabled]="
-                      settings().chain_id !== '' ||
+                      (settings().contract_address !== '' && settings().has_synced_orders) ||
                       !web3Service.walletConnected() ||
                       !web3Service.isOwnerContract()
                     "

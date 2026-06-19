@@ -19,21 +19,22 @@ class SettingController extends Controller
     {
         $settings = Setting::where('store_owner_address', $storeOwner)->pluck('value', 'key')->all();
 
+        // Các settings mặc định an toàn — KHÔNG bao gồm địa chỉ contract (chỉ điền khi người dùng chủ động deploy/cấu hình)
         $defaultSettings = [
             'store_name' => 'Cafe Web3 POS',
             'primary_color' => '#7c3aed',
             'secondary_color' => '#c084fc',
-            'contract_address' => '0xC6b3fc5a2E5Aba0e5a0B6eD8FaCD412A76dC5D2A',
-            'finance_contract_address' => '0x7988500670EC631F7be36eD91E367760f380d6Af',
-            'voucher_contract_address' => '0xc6828e46E100B248173e28a33e8D92662Cd1A8c7',
+            'contract_address' => '',
+            'finance_contract_address' => '',
+            'voucher_contract_address' => '',
             'menu_registry_contract_address' => '',
             'loyalty_token_contract_address' => '',
             'voucher_shop_contract_address' => '',
             'voucher_marketplace_contract_address' => '',
             'relayer_private_key' => '',
-            'rpc_url' => 'https://bsc-testnet.rpc.sentio.xyz',
-            'chain_id' => '97',
-            'explorer_url' => 'https://testnet.bscscan.com',
+            'rpc_url' => '',
+            'chain_id' => '',
+            'explorer_url' => '',
             'explorer_api_key' => '',
             'default_print_size' => '80mm',
             'voucher_gift_min_amount' => '100000',
@@ -54,22 +55,51 @@ class SettingController extends Controller
         ];
 
         if (empty($settings)) {
-            foreach ($defaultSettings as $key => $value) {
-                Setting::setForStore($key, $value, $storeOwner);
+            // Chủ quán mới: chỉ lưu các settings thiết yếu (không lưu tất cả để tiết kiệm DB)
+            $essentialKeys = ['store_name', 'primary_color', 'secondary_color', 'rpc_url', 'chain_id', 'explorer_url', 'default_print_size'];
+            foreach ($essentialKeys as $key) {
+                Setting::setForStore($key, $defaultSettings[$key], $storeOwner);
             }
             $settings = Setting::where('store_owner_address', $storeOwner)->pluck('value', 'key')->all();
         } else {
-            // Đảm bảo tất cả các key mặc định đều tồn tại trong database
+            // Đảm bảo các key thiết yếu tồn tại, bỏ qua contract address (không ghi đè bằng rỗng nếu đã có)
+            $safeDefaultKeys = [
+                'store_name',
+                'primary_color',
+                'secondary_color',
+                'rpc_url',
+                'chain_id',
+                'explorer_url',
+                'default_print_size',
+                'voucher_gift_min_amount',
+                'voucher_discount_amount',
+                'voucher_use_min_amount',
+                'show_crypto_payment',
+                'voucher_enabled',
+                'has_synced_menu',
+                'store_status',
+                'shipping_fee_flat_enabled',
+                'shipping_fee_flat_amount',
+                'shipping_fee_free_enabled',
+                'shipping_fee_free_min_amount'
+            ];
             $changed = false;
-            foreach ($defaultSettings as $key => $defaultValue) {
+            foreach ($safeDefaultKeys as $key) {
                 if (!isset($settings[$key])) {
-                    Setting::setForStore($key, $defaultValue, $storeOwner);
-                    $settings[$key] = $defaultValue;
+                    Setting::setForStore($key, $defaultSettings[$key], $storeOwner);
+                    $settings[$key] = $defaultSettings[$key];
                     $changed = true;
                 }
             }
             if ($changed) {
                 $settings = Setting::where('store_owner_address', $storeOwner)->pluck('value', 'key')->all();
+            }
+        }
+
+        // Đảm bảo tất cả các key có giá trị fallback khi trả về (không lưu vào DB)
+        foreach ($defaultSettings as $key => $defaultValue) {
+            if (!isset($settings[$key])) {
+                $settings[$key] = $defaultValue;
             }
         }
 
@@ -241,7 +271,7 @@ class SettingController extends Controller
                             }
                         } else {
                             return response()->json([
-                                    'message' => 'RPC Endpoint did not return a valid Chain ID.'
+                                'message' => 'RPC Endpoint did not return a valid Chain ID.'
                             ], 400);
                         }
                     } else {
