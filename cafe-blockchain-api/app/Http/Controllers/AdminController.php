@@ -88,6 +88,8 @@ class AdminController extends Controller
             'code' => 'required|string|regex:/^[a-z0-9_-]+$/|unique:subscription_plans,code',
             'name' => 'required|string|max:255',
             'is_active' => 'required|boolean',
+            'price_per_month' => 'required|numeric|min:0',
+            'price_per_year' => 'required|numeric|min:0',
             'features' => 'required|array',
             'features.max_products' => 'required|integer',
             'features.max_staffs' => 'required|integer',
@@ -114,6 +116,8 @@ class AdminController extends Controller
             'code' => $validated['code'],
             'name' => $validated['name'],
             'is_active' => $validated['is_active'],
+            'price_per_month' => $validated['price_per_month'],
+            'price_per_year' => $validated['price_per_year'],
             'features' => $validated['features']
         ]);
 
@@ -134,6 +138,8 @@ class AdminController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'is_active' => 'required|boolean',
+            'price_per_month' => 'required|numeric|min:0',
+            'price_per_year' => 'required|numeric|min:0',
             'features' => 'required|array',
             'features.max_products' => 'required|integer',
             'features.max_staffs' => 'required|integer',
@@ -158,6 +164,8 @@ class AdminController extends Controller
 
         $plan->name = $validated['name'];
         $plan->is_active = $validated['is_active'];
+        $plan->price_per_month = $validated['price_per_month'];
+        $plan->price_per_year = $validated['price_per_year'];
         $plan->features = $validated['features'];
         $plan->save();
 
@@ -211,6 +219,8 @@ class AdminController extends Controller
                 'code'      => 'free',
                 'name'      => 'Gói Dùng thử (Free)',
                 'is_active' => true,
+                'price_per_month' => 0,
+                'price_per_year' => 0,
                 'features'  => json_encode([
                     'max_products'        => 20,
                     'max_staffs'          => 2,
@@ -221,7 +231,7 @@ class AdminController extends Controller
                     'enable_pos'          => true,
                     'enable_orders'       => true,
                     'enable_tables'       => true,
-                    'enable_shifts'       => true,
+                    'enable_shifts'       => false,
                     'enable_menu'         => true,
                     'enable_inventory'    => false,
                     'enable_customers'    => true,
@@ -237,6 +247,8 @@ class AdminController extends Controller
                 'code'      => 'pro',
                 'name'      => 'Gói Chuyên nghiệp (Pro)',
                 'is_active' => true,
+                'price_per_month' => 150000,
+                'price_per_year' => 1500000,
                 'features'  => json_encode([
                     'max_products'        => 500,
                     'max_staffs'          => 10,
@@ -263,6 +275,8 @@ class AdminController extends Controller
                 'code'      => 'ultra',
                 'name'      => 'Gói Vô hạn (Ultra)',
                 'is_active' => true,
+                'price_per_month' => 300000,
+                'price_per_year' => 3000000,
                 'features'  => json_encode([
                     'max_products'        => -1,
                     'max_staffs'          => -1,

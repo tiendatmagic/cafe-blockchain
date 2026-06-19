@@ -17,6 +17,15 @@ export class SidebarComponent {
 
   public readonly isChainDropdownOpen = signal<boolean>(false);
 
+  public handleTabClick(featureKey: string, name: string, event: Event) {
+    if (!this.stateService.hasFeature(featureKey)) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.stateService.isMobileMenuOpen.set(false);
+      this.stateService.triggerUpgradeModal(featureKey, name);
+    }
+  }
+
   public handleMobileShiftClick() {
     if (this.stateService.currentShift() && this.stateService.currentShift().id) {
       this.stateService.openCloseShiftModal();

@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed, OnInit, effect, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { StateService } from '@core/services/state.service';
 import { ApiService } from '@core/services/api.service';
 import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prompt/web3-connect-prompt.component';
@@ -43,6 +43,7 @@ import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-g
 export class DebtsComponent implements OnInit {
   public readonly stateService = inject(StateService);
   private readonly apiService = inject(ApiService);
+  private readonly router = inject(Router);
   public readonly Number = Number;
 
   constructor() {
@@ -125,6 +126,12 @@ export class DebtsComponent implements OnInit {
   }
 
   public ngOnInit() {
+    if (!this.stateService.hasFeature('enable_debts')) {
+      this.stateService.triggerUpgradeModal('enable_debts', 'Sổ nợ');
+      this.router.navigate(['/dashboard']);
+      return;
+    }
+
     // Nạp danh sách khách hàng nếu chưa có để dùng cho modal chọn khách hàng
     if (this.customers().length === 0 && this.web3Service.walletConnected()) {
       this.stateService.refreshCustomers();

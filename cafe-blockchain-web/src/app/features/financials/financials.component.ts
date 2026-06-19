@@ -1,9 +1,9 @@
 import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prompt/web3-connect-prompt.component';
 import { AccessRestrictedComponent } from '@shared/components/access-restricted/access-restricted.component';
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { StateService } from '@core/services/state.service';
 import { ApiService } from '@core/services/api.service';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
@@ -35,9 +35,18 @@ import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skel
   ],
   templateUrl: './financials.component.html'
 })
-export class FinancialsComponent {
+export class FinancialsComponent implements OnInit {
   public readonly stateService = inject(StateService);
   private readonly apiService = inject(ApiService);
+  private readonly router = inject(Router);
+
+  ngOnInit() {
+    if (!this.stateService.hasFeature('enable_financials')) {
+      this.stateService.triggerUpgradeModal('enable_financials', 'Thu chi tài chính');
+      this.router.navigate(['/dashboard']);
+      return;
+    }
+  }
 
   public readonly transactionTypePresets: TabOption[] = [
     { value: 'all', label: 'Tất cả' },

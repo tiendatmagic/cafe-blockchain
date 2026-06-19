@@ -1,6 +1,8 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { StateService } from '@core/services/state.service';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
@@ -37,6 +39,7 @@ import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skel
 })
 export class ShiftsComponent implements OnInit {
   public readonly stateService = inject(StateService);
+  private readonly router = inject(Router);
   public readonly datePresets = DATE_FILTER_OPTIONS;
 
   public readonly shiftColumns: TableColumn[] = [
@@ -83,6 +86,12 @@ export class ShiftsComponent implements OnInit {
   }
 
   ngOnInit() {
+    if (!this.stateService.hasFeature('enable_shifts')) {
+      this.stateService.triggerUpgradeModal('enable_shifts', 'Quản lý ca làm việc');
+      this.router.navigate(['/dashboard']);
+      return;
+    }
+
     this.setDatePreset('7days');
     if (this.web3Service.walletConnected()) {
       this.stateService.refreshShifts();

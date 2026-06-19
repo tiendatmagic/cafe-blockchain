@@ -12,11 +12,15 @@ class SubscriptionPlan extends Model
         'code',
         'name',
         'is_active',
+        'price_per_month',
+        'price_per_year',
         'features',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'price_per_month' => 'double',
+        'price_per_year' => 'double',
         'features' => 'array',
     ];
 }

@@ -73,6 +73,20 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/auth/me`, { headers: this.getHeaders() });
   }
 
+  /**
+   * Lấy danh sách các gói cước đang hoạt động
+   */
+  public getPublicPlans(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/auth/subscription/plans`, { headers: this.getHeaders() });
+  }
+
+  /**
+   * Nâng cấp gói cước cho cửa hàng qua Web3
+   */
+  public updateTenantSubscriptionUpgrade(data: { plan_code: string, duration_months: number, tx_hash: string }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/auth/subscription/upgrade`, data, { headers: this.getHeaders() });
+  }
+
   // 1. Dashboard API
   public getDashboard(startDate?: string, endDate?: string): Observable<any> {
     let params = new HttpParams();

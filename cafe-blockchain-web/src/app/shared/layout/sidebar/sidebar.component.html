@@ -23,7 +23,8 @@
   <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto">
     @if (stateService.hasPermission('dashboard')) {
       <button
-        routerLink="/dashboard"
+        [routerLink]="stateService.hasFeature('enable_dashboard') ? '/dashboard' : null"
+        (click)="handleTabClick('enable_dashboard', 'Tổng quan', $event)"
         routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
         [routerLinkActiveOptions]="{ exact: true }"
         class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
@@ -38,7 +39,8 @@
 
     @if (stateService.hasPermission('pos')) {
       <button
-        routerLink="/pos"
+        [routerLink]="stateService.hasFeature('enable_pos') ? '/pos' : null"
+        (click)="handleTabClick('enable_pos', 'Bán hàng POS', $event)"
         routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
         class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
       >
@@ -49,7 +51,8 @@
 
     @if (stateService.hasPermission('orders')) {
       <button
-        routerLink="/orders"
+        [routerLink]="stateService.hasFeature('enable_orders') ? '/orders' : null"
+        (click)="handleTabClick('enable_orders', 'Đơn hàng', $event)"
         routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
         class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
       >
@@ -63,7 +66,8 @@
 
     @if (stateService.hasPermission('tables')) {
       <button
-        routerLink="/tables"
+        [routerLink]="stateService.hasFeature('enable_tables') ? '/tables' : null"
+        (click)="handleTabClick('enable_tables', 'Quản lý sơ đồ bàn', $event)"
         routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
         class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
       >
@@ -77,7 +81,8 @@
 
     @if (stateService.hasPermission('shifts')) {
       <button
-        routerLink="/shifts"
+        [routerLink]="stateService.hasFeature('enable_shifts') ? '/shifts' : null"
+        (click)="handleTabClick('enable_shifts', 'Ca làm việc', $event)"
         routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
         class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
       >
@@ -92,7 +97,8 @@
 
     @if (stateService.hasPermission('menu')) {
       <button
-        routerLink="/menu"
+        [routerLink]="stateService.hasFeature('enable_menu') ? '/menu' : null"
+        (click)="handleTabClick('enable_menu', 'Quản lý Thực đơn', $event)"
         routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
         class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
       >
@@ -103,7 +109,8 @@
 
     @if (stateService.hasPermission('inventory')) {
       <button
-        routerLink="/inventory"
+        [routerLink]="stateService.hasFeature('enable_inventory') ? '/inventory' : null"
+        (click)="handleTabClick('enable_inventory', 'Kho hàng', $event)"
         routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
         class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
       >
@@ -117,7 +124,8 @@
 
     @if (stateService.hasPermission('customers')) {
       <button
-        routerLink="/customers"
+        [routerLink]="stateService.hasFeature('enable_customers') ? '/customers' : null"
+        (click)="handleTabClick('enable_customers', 'Khách hàng', $event)"
         routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
         class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
       >
@@ -131,7 +139,8 @@
 
     @if (stateService.hasPermission('debts')) {
       <button
-        routerLink="/debts"
+        [routerLink]="stateService.hasFeature('enable_debts') ? '/debts' : null"
+        (click)="handleTabClick('enable_debts', 'Sổ nợ', $event)"
         routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
         class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
       >
@@ -145,7 +154,8 @@
 
     @if (stateService.hasPermission('financials')) {
       <button
-        routerLink="/financials"
+        [routerLink]="stateService.hasFeature('enable_financials') ? '/financials' : null"
+        (click)="handleTabClick('enable_financials', 'Thu chi tài chính', $event)"
         routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
         class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
       >
@@ -159,7 +169,8 @@
 
     @if (stateService.hasPermission('reports')) {
       <button
-        routerLink="/reports"
+        [routerLink]="stateService.hasFeature('enable_reports') ? '/reports' : null"
+        (click)="handleTabClick('enable_reports', 'Báo cáo', $event)"
         routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
         class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
       >
@@ -188,7 +199,8 @@
 
     @if (stateService.hasPermission('staffs')) {
       <button
-        routerLink="/staffs"
+        [routerLink]="stateService.hasFeature('enable_staffs') ? '/staffs' : null"
+        (click)="handleTabClick('enable_staffs', 'Nhân viên', $event)"
         routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
         class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
       >
@@ -470,10 +482,10 @@
       <nav class="flex-1 space-y-2 overflow-y-auto pr-1">
         @if (stateService.hasPermission('dashboard')) {
           <button
-            routerLink="/dashboard"
+            [routerLink]="stateService.hasFeature('enable_dashboard') ? '/dashboard' : null"
+            (click)="handleTabClick('enable_dashboard', 'Tổng quan', $event); isMobileMenuOpen.set(false)"
             routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-bold"
             [routerLinkActiveOptions]="{ exact: true }"
-            (click)="isMobileMenuOpen.set(false)"
             class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
           >
             <app-icon name="dashboard" class="h-5 w-5 shrink-0" />
@@ -483,9 +495,9 @@
 
         @if (stateService.hasPermission('pos')) {
           <button
-            routerLink="/pos"
+            [routerLink]="stateService.hasFeature('enable_pos') ? '/pos' : null"
+            (click)="handleTabClick('enable_pos', 'Bán hàng POS', $event); isMobileMenuOpen.set(false)"
             routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-bold"
-            (click)="isMobileMenuOpen.set(false)"
             class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
           >
             <app-icon name="pos" class="h-5 w-5 shrink-0" />
@@ -495,9 +507,9 @@
 
         @if (stateService.hasPermission('orders')) {
           <button
-            routerLink="/orders"
+            [routerLink]="stateService.hasFeature('enable_orders') ? '/orders' : null"
+            (click)="handleTabClick('enable_orders', 'Đơn hàng', $event); isMobileMenuOpen.set(false)"
             routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-bold"
-            (click)="isMobileMenuOpen.set(false)"
             class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
           >
             <app-icon name="orders" class="h-5 w-5 shrink-0" />
@@ -507,9 +519,9 @@
 
         @if (stateService.hasPermission('tables')) {
           <button
-            routerLink="/tables"
+            [routerLink]="stateService.hasFeature('enable_tables') ? '/tables' : null"
+            (click)="handleTabClick('enable_tables', 'Quản lý sơ đồ bàn', $event); isMobileMenuOpen.set(false)"
             routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-bold"
-            (click)="isMobileMenuOpen.set(false)"
             class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
           >
             <app-icon name="tables" class="h-5 w-5 shrink-0" />
@@ -519,9 +531,9 @@
 
         @if (stateService.hasPermission('shifts')) {
           <button
-            routerLink="/shifts"
+            [routerLink]="stateService.hasFeature('enable_shifts') ? '/shifts' : null"
+            (click)="handleTabClick('enable_shifts', 'Ca làm việc', $event); isMobileMenuOpen.set(false)"
             routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-bold"
-            (click)="isMobileMenuOpen.set(false)"
             class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
           >
             <app-icon name="clock" class="h-5 w-5 shrink-0" strokeWidth="2.2" />
@@ -531,9 +543,9 @@
 
         @if (stateService.hasPermission('menu')) {
           <button
-            routerLink="/menu"
+            [routerLink]="stateService.hasFeature('enable_menu') ? '/menu' : null"
+            (click)="handleTabClick('enable_menu', 'Quản lý Thực đơn', $event); isMobileMenuOpen.set(false)"
             routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-bold"
-            (click)="isMobileMenuOpen.set(false)"
             class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
           >
             <app-icon name="menu" class="h-5 w-5 shrink-0" />
@@ -543,9 +555,9 @@
 
         @if (stateService.hasPermission('inventory')) {
           <button
-            routerLink="/inventory"
+            [routerLink]="stateService.hasFeature('enable_inventory') ? '/inventory' : null"
+            (click)="handleTabClick('enable_inventory', 'Kho hàng', $event); isMobileMenuOpen.set(false)"
             routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-bold"
-            (click)="isMobileMenuOpen.set(false)"
             class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
           >
             <app-icon name="inventory" class="h-5 w-5 shrink-0" />
@@ -555,9 +567,9 @@
 
         @if (stateService.hasPermission('customers')) {
           <button
-            routerLink="/customers"
+            [routerLink]="stateService.hasFeature('enable_customers') ? '/customers' : null"
+            (click)="handleTabClick('enable_customers', 'Khách hàng', $event); isMobileMenuOpen.set(false)"
             routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-bold"
-            (click)="isMobileMenuOpen.set(false)"
             class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
           >
             <app-icon name="customers" class="h-5 w-5 shrink-0" />
@@ -567,9 +579,9 @@
 
         @if (stateService.hasPermission('debts')) {
           <button
-            routerLink="/debts"
+            [routerLink]="stateService.hasFeature('enable_debts') ? '/debts' : null"
+            (click)="handleTabClick('enable_debts', 'Sổ nợ', $event); isMobileMenuOpen.set(false)"
             routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-bold"
-            (click)="isMobileMenuOpen.set(false)"
             class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
           >
             <app-icon name="debts" class="h-5 w-5 shrink-0" />
@@ -579,9 +591,9 @@
 
         @if (stateService.hasPermission('financials')) {
           <button
-            routerLink="/financials"
+            [routerLink]="stateService.hasFeature('enable_financials') ? '/financials' : null"
+            (click)="handleTabClick('enable_financials', 'Thu chi tài chính', $event); isMobileMenuOpen.set(false)"
             routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-bold"
-            (click)="isMobileMenuOpen.set(false)"
             class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
           >
             <app-icon name="financials" class="h-5 w-5 shrink-0" />
@@ -591,9 +603,9 @@
 
         @if (stateService.hasPermission('reports')) {
           <button
-            routerLink="/reports"
+            [routerLink]="stateService.hasFeature('enable_reports') ? '/reports' : null"
+            (click)="handleTabClick('enable_reports', 'Báo cáo', $event); isMobileMenuOpen.set(false)"
             routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-bold"
-            (click)="isMobileMenuOpen.set(false)"
             class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
           >
             <app-icon name="reports" class="h-5 w-5 shrink-0" />
@@ -618,9 +630,9 @@
 
         @if (stateService.hasPermission('staffs')) {
           <button
-            routerLink="/staffs"
+            [routerLink]="stateService.hasFeature('enable_staffs') ? '/staffs' : null"
+            (click)="handleTabClick('enable_staffs', 'Nhân viên', $event); isMobileMenuOpen.set(false)"
             routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-bold"
-            (click)="isMobileMenuOpen.set(false)"
             class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
           >
             <app-icon name="staffs" class="h-5 w-5 shrink-0" />

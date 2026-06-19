@@ -6,6 +6,7 @@ use App\Domain\Entities\User;
 use App\Domain\Entities\Staff;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use kornrunner\Keccak;
 use Elliptic\EC;
@@ -187,6 +188,87 @@ class AuthController extends Controller
                 'plan_code' => $planCode,
                 'subscription_expires_at' => $planExpiresAt,
                 'subscription_status' => $planStatus,
+                'features' => $planFeatures
+            ]
+        ]);
+    }
+
+    /**
+     * Lấy danh sách các gói cước đang hoạt động cho người dùng
+     */
+    public function getPublicPlans()
+    {
+        $plans = \App\Domain\Entities\SubscriptionPlan::where('is_active', true)
+            ->orderBy('price_per_month', 'asc')
+            ->get();
+        return response()->json($plans);
+    }
+
+    /**
+     * Nâng cấp gói cước cho cửa hàng qua Web3
+     */
+    public function upgradeSubscription(Request $request)
+    {
+        $validated = $request->validate([
+            'plan_code' => 'required|string|exists:subscription_plans,code',
+            'duration_months' => 'required|integer|in:1,3,6,12',
+            'tx_hash' => 'required|string',
+        ]);
+
+        $user = $request->user();
+        
+        // Chỉ cho phép chủ cửa hàng nâng cấp (store_owner_address là null)
+        if ($user->store_owner_address !== null) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Chỉ chủ cửa hàng mới có quyền thực hiện nâng cấp gói cước.'
+            ], 403);
+        }
+
+        $planCode = $validated['plan_code'];
+        $months = (int)$validated['duration_months'];
+
+        // Tính toán hạn sử dụng mới
+        $currentExpiresAt = $user->subscription_expires_at;
+        
+        if ($currentExpiresAt && now()->lessThan($currentExpiresAt)) {
+            // Nếu chưa hết hạn, cộng nối tiếp vào ngày hết hạn cũ
+            $newExpiresAt = \Carbon\Carbon::parse($currentExpiresAt)->addMonths($months);
+        } else {
+            // Nếu đã hết hạn hoặc chưa có, tính từ hôm nay
+            $newExpiresAt = now()->addMonths($months);
+        }
+
+        // Cập nhật thông tin của User
+        $user->plan_code = $planCode;
+        $user->subscription_expires_at = $newExpiresAt;
+        $user->subscription_status = 'active';
+        $user->save();
+
+        // Ghi log giao dịch nâng cấp
+        DB::table('system_settings')->updateOrInsert(
+            ['key' => 'last_upgrade_tx_' . strtolower($user->wallet_address)],
+            [
+                'value' => json_encode([
+                    'plan_code' => $planCode,
+                    'months' => $months,
+                    'tx_hash' => $validated['tx_hash'],
+                    'timestamp' => now()->toIso8601String()
+                ]),
+                'updated_at' => now()
+            ]
+        );
+
+        $plan = \App\Domain\Entities\SubscriptionPlan::where('code', $planCode)->first();
+        $planFeatures = $plan ? $plan->features : null;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Nâng cấp gói cước thành công!',
+            'subscription' => [
+                'plan_code' => $planCode,
+                'subscription_expires_at' => $newExpiresAt->toIso8601String(),
+                'subscription_status' => 'active',
                 'features' => $planFeatures
             ]
         ]);

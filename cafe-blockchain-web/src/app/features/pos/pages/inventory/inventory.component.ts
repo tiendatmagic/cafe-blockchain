@@ -1,6 +1,7 @@
 import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prompt/web3-connect-prompt.component';
 import { AccessRestrictedComponent } from '@shared/components/access-restricted/access-restricted.component';
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -37,9 +38,18 @@ import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skel
   ],
   templateUrl: './inventory.component.html'
 })
-export class InventoryComponent {
+export class InventoryComponent implements OnInit {
   public readonly stateService = inject(StateService);
   private readonly apiService = inject(ApiService);
+  private readonly router = inject(Router);
+
+  ngOnInit() {
+    if (!this.stateService.hasFeature('enable_inventory')) {
+      this.stateService.triggerUpgradeModal('enable_inventory', 'Kho hàng');
+      this.router.navigate(['/dashboard']);
+      return;
+    }
+  }
 
   // Bộ lọc, phân trang kho
   public readonly inventoryTypeFilter = signal<string>('all');

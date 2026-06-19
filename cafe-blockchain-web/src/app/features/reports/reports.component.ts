@@ -3,6 +3,7 @@ import { AccessRestrictedComponent } from '@shared/components/access-restricted/
 import { Component, inject, signal, computed, OnInit, effect, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ApiService } from '@core/services/api.service';
 import { StateService } from '@core/services/state.service';
 import * as XLSX from 'xlsx';
@@ -42,6 +43,7 @@ export class ReportsComponent implements OnInit {
   public readonly datePresets = DATE_FILTER_OPTIONS;
   private readonly apiService = inject(ApiService);
   public readonly stateService = inject(StateService);
+  private readonly router = inject(Router);
 
   public readonly reportTabOptions: TabOption[] = [
     { value: 'products', label: 'Báo cáo bán hàng theo món' },
@@ -112,6 +114,11 @@ export class ReportsComponent implements OnInit {
   }
 
   public ngOnInit() {
+    if (!this.stateService.hasFeature('enable_reports')) {
+      this.stateService.triggerUpgradeModal('enable_reports', 'Báo cáo');
+      this.router.navigate(['/dashboard']);
+      return;
+    }
     this.setDatePreset('7days');
   }
 

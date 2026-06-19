@@ -1,5 +1,5 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { BrowserProvider, Contract, ContractFactory, JsonRpcProvider, formatEther, parseEther } from 'ethers';
+import { BrowserProvider, Contract, ContractFactory, JsonRpcProvider, formatEther, parseEther, parseUnits } from 'ethers';
 import { CAFE_WEB3_POS_ABI } from './contract-abi';
 import { CAFE_WEB3_POS_BYTECODE } from './contract-bytecode';
 import { CAFE_WEB3_FINANCE_ABI } from './finance-contract-abi';
@@ -876,6 +876,86 @@ export class Web3Service {
       };
     } catch (err: any) {
       console.error('Lỗi gửi native token:', err);
+      return {
+        txHash: '',
+        success: false,
+        error: err.reason || err.message || 'Giao dịch bị từ chối hoặc lỗi chuỗi.'
+      };
+    }
+  }
+
+  /**
+   * Lấy địa chỉ USDT contract theo chainId
+   */
+  public getUSDTAddressByChainId(chainId: string | number): string {
+    const id = chainId.toString().trim();
+    switch (id) {
+      case '1': // Ethereum Mainnet
+        return '0xdAC17F958D2ee523a2206206994597C13D831ec7';
+      case '11155111': // Sepolia Testnet
+        return '0xaA8E23Fb1079EA71e0a56F48a2AA51851D8433D0';
+      case '56': // BSC Mainnet
+        return '0x55d398326f99059fF775485246999027B3197955';
+      case '97': // BSC Testnet
+        return '0x337610d27c682E347C9cD60BD4b3b107C9d34dDd';
+      case '137': // Polygon Mainnet
+        return '0xc2132D05D31c914a87C6611C10748AEb04B58e8F';
+      default:
+        return '0x337610d27c682E347C9cD60BD4b3b107C9d34dDd';
+    }
+  }
+
+  /**
+   * Lấy decimals của USDT theo chainId
+   */
+  public getUSDTDecimalsByChainId(chainId: string | number): number {
+    const id = chainId.toString().trim();
+    if (id === '1' || id === '137') return 6;
+    return 18;
+  }
+
+  /**
+   * Gửi USDT tới một địa chỉ
+   */
+  public async sendUSDT(
+    recipientAddress: string,
+    amount: string
+  ): Promise<{ txHash: string; success: boolean; error?: string }> {
+    if (!this.walletConnected() || !this.currentAccount()) {
+      return { txHash: '', success: false, error: 'Chưa kết nối ví Web3!' };
+    }
+
+    this.provider = this.getBrowserProvider();
+    if (!this.provider) {
+      return { txHash: '', success: false, error: 'Không tìm thấy provider ví!' };
+    }
+
+    try {
+      const signer = await this.provider.getSigner();
+      const chainId = this.chainId() || this.configuredChainId();
+      const usdtAddress = this.getUSDTAddressByChainId(chainId);
+      const decimals = this.getUSDTDecimalsByChainId(chainId);
+
+      const abi = [
+        'function transfer(address to, uint256 amount) public returns (bool)'
+      ];
+      const contract = new Contract(usdtAddress, abi, signer);
+      const parsedAmount = parseUnits(amount, decimals);
+      
+      const tx = await contract['transfer'](recipientAddress, parsedAmount);
+      
+      tx.wait().then(() => {
+        if (this.currentAccount()) {
+          this.updateBalanceAndStatus(this.currentAccount());
+        }
+      }).catch((e: any) => console.error('Lỗi cập nhật số dư sau giao dịch USDT:', e));
+
+      return {
+        txHash: tx.hash,
+        success: true
+      };
+    } catch (err: any) {
+      console.error('Lỗi gửi USDT:', err);
       return {
         txHash: '',
         success: false,

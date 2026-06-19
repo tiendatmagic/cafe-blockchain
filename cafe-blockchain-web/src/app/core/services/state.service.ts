@@ -49,6 +49,11 @@ export class StateService {
   public readonly subscriptionStatus = signal<string>('active');
   public readonly planFeatures = signal<any>(null);
 
+  // Trạng thái modal chặn và nâng cấp gói cước
+  public readonly isUpgradeModalOpen = signal<boolean>(false);
+  public readonly lockedFeatureKey = signal<string>('');
+  public readonly lockedFeatureName = signal<string>('');
+
   // Computed signal to calculate the remaining trial days for free plan
   public readonly freeTrialDaysLeft = computed(() => {
     if (this.subscriptionPlanCode() !== 'free') return 0;
@@ -1051,30 +1056,49 @@ export class StateService {
 
   private syncTabWithUrl(url: string) {
     const cleanUrl = url.split('?')[0]; // bỏ qua query params nếu có
-    if (cleanUrl.includes('/dashboard')) {
-      this.setTabState('dashboard');
-    } else if (cleanUrl.includes('/pos')) {
-      this.setTabState('pos');
-    } else if (cleanUrl.includes('/menu')) {
-      this.setTabState('menu');
-    } else if (cleanUrl.includes('/orders')) {
-      this.setTabState('orders');
-    } else if (cleanUrl.includes('/settings')) {
-      this.setTabState('settings');
-    } else if (cleanUrl.includes('/customers')) {
-      this.setTabState('customers');
-    } else if (cleanUrl.includes('/financials')) {
-      this.setTabState('financials');
-    } else if (cleanUrl.includes('/inventory')) {
-      this.setTabState('inventory');
-    } else if (cleanUrl.includes('/tables')) {
-      this.setTabState('tables');
-    } else if (cleanUrl.includes('/debts')) {
-      this.setTabState('debts');
-    } else if (cleanUrl.includes('/staffs')) {
-      this.setTabState('staffs');
-    } else if (cleanUrl.includes('/reports')) {
-      this.setTabState('reports');
+    let tab = '';
+    if (cleanUrl.includes('/dashboard')) tab = 'dashboard';
+    else if (cleanUrl.includes('/pos')) tab = 'pos';
+    else if (cleanUrl.includes('/menu')) tab = 'menu';
+    else if (cleanUrl.includes('/orders')) tab = 'orders';
+    else if (cleanUrl.includes('/settings')) tab = 'settings';
+    else if (cleanUrl.includes('/customers')) tab = 'customers';
+    else if (cleanUrl.includes('/financials')) tab = 'financials';
+    else if (cleanUrl.includes('/inventory')) tab = 'inventory';
+    else if (cleanUrl.includes('/tables')) tab = 'tables';
+    else if (cleanUrl.includes('/debts')) tab = 'debts';
+    else if (cleanUrl.includes('/staffs')) tab = 'staffs';
+    else if (cleanUrl.includes('/reports')) tab = 'reports';
+
+    if (tab) {
+      // Nếu đã kết nối ví và không phải Super Admin -> kiểm duyệt gói cước trước
+      if (this.web3Service.walletConnected() && !this.isSuperAdmin()) {
+        const tabFeatures: { [key: string]: { feature: string, name: string } } = {
+          'dashboard': { feature: 'enable_dashboard', name: 'Tổng quan' },
+          'pos': { feature: 'enable_pos', name: 'Bán hàng POS' },
+          'orders': { feature: 'enable_orders', name: 'Đơn hàng' },
+          'tables': { feature: 'enable_tables', name: 'Sơ đồ bàn' },
+          'shifts': { feature: 'enable_shifts', name: 'Ca làm việc' },
+          'menu': { feature: 'enable_menu', name: 'Thực đơn' },
+          'inventory': { feature: 'enable_inventory', name: 'Kho hàng' },
+          'customers': { feature: 'enable_customers', name: 'Khách hàng' },
+          'debts': { feature: 'enable_debts', name: 'Sổ nợ' },
+          'financials': { feature: 'enable_financials', name: 'Thu chi tài chính' },
+          'reports': { feature: 'enable_reports', name: 'Báo cáo' },
+          'staffs': { feature: 'enable_staffs', name: 'Nhân viên' }
+        };
+        const config = tabFeatures[tab];
+        if (config && !this.hasFeature(config.feature)) {
+          // Bật modal chặn & nâng cấp
+          this.triggerUpgradeModal(config.feature, config.name);
+          // Redirect về dashboard nếu người dùng đang cố truy cập trực tiếp
+          if (tab !== 'dashboard') {
+            this.router.navigate(['/dashboard']);
+            return;
+          }
+        }
+      }
+      this.setTabState(tab);
     }
   }
 
@@ -1187,21 +1211,6 @@ export class StateService {
 
   // Kiểm tra quyền truy cập module
   public hasPermission(module: string): boolean {
-    // 1. Kiểm tra giới hạn tính năng theo gói cước trước
-    if (module === 'dashboard' && !this.hasFeature('enable_dashboard')) return false;
-    if (module === 'pos' && !this.hasFeature('enable_pos')) return false;
-    if (module === 'orders' && !this.hasFeature('enable_orders')) return false;
-    if (module === 'tables' && !this.hasFeature('enable_tables')) return false;
-    if (module === 'shifts' && !this.hasFeature('enable_shifts')) return false;
-    if (module === 'menu' && !this.hasFeature('enable_menu')) return false;
-    if (module === 'inventory' && !this.hasFeature('enable_inventory')) return false;
-    if (module === 'customers' && !this.hasFeature('enable_customers')) return false;
-    if (module === 'debts' && !this.hasFeature('enable_debts')) return false;
-    if (module === 'financials' && !this.hasFeature('enable_financials')) return false;
-    if (module === 'reports' && !this.hasFeature('enable_reports')) return false;
-    if (module === 'staffs' && !this.hasFeature('enable_staffs')) return false;
-
-    // 2. Tiếp theo kiểm tra vai trò người dùng
     const permissions = this.currentUserPermissions();
     // Nếu permissions là null, đây là Chủ cửa hàng (Admin) -> full quyền
     if (permissions === null) {
@@ -1687,12 +1696,7 @@ export class StateService {
     }
   }
 
-  // Kiểm tra xem tính năng có được mở khóa cho gói cước hiện tại của quán không
   public hasFeature(featureKey: string): boolean {
-    if (this.isSuperAdmin()) {
-      return true;
-    }
-    
     let features = this.planFeatures();
     
     // Nếu features là string (do sync hoặc storage lưu dạng JSON string) thì parse
@@ -1714,7 +1718,8 @@ export class StateService {
           'enable_financials', 
           'enable_storefront', 
           'enable_reports', 
-          'enable_excel_export'
+          'enable_excel_export',
+          'enable_shifts'
         ];
         if (premiumFeatures.includes(featureKey)) {
           return false;
@@ -1733,7 +1738,8 @@ export class StateService {
           'enable_financials', 
           'enable_storefront', 
           'enable_reports', 
-          'enable_excel_export'
+          'enable_excel_export',
+          'enable_shifts'
         ];
         if (premiumFeatures.includes(featureKey)) {
           return false;
@@ -1745,12 +1751,7 @@ export class StateService {
     return !!features[featureKey];
   }
 
-  // Lấy giới hạn tối đa theo gói cước (ví dụ: max_products, max_staffs)
   public getFeatureLimit(featureKey: string): number {
-    if (this.isSuperAdmin()) {
-      return -1; // Không giới hạn
-    }
-    
     let features = this.planFeatures();
     
     if (features && typeof features === 'string') {
@@ -1786,6 +1787,13 @@ export class StateService {
     }
 
     return Number(features[featureKey]);
+  }
+
+  // Kích hoạt mở modal blocked & nâng cấp tính năng gói cước
+  public triggerUpgradeModal(featureKey: string, featureName: string) {
+    this.lockedFeatureKey.set(featureKey);
+    this.lockedFeatureName.set(featureName);
+    this.isUpgradeModalOpen.set(true);
   }
 
   // Chuyển đổi mạng (Chain) trên ví Web3

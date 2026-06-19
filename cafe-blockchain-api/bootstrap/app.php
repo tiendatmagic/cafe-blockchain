@@ -26,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Đăng ký middleware alias để kiểm tra quyền truy cập module
         $middleware->alias([
             'permission' => \App\Http\Middleware\CheckPermission::class,
+            'feature'    => \App\Http\Middleware\CheckFeature::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

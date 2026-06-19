@@ -41,6 +41,8 @@ Route::post('/orders/claim-points', [\App\Http\Controllers\ClaimController::clas
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/me', [AuthController::class, 'me']); // Lấy thông tin subscription hiện tại
+    Route::get('/auth/subscription/plans', [AuthController::class, 'getPublicPlans']); // Lấy danh sách gói cước để nâng cấp
+    Route::post('/auth/subscription/upgrade', [AuthController::class, 'upgradeSubscription']);
 
 
     // Super Admin Routes (Bypass CheckSubscription)
@@ -136,11 +138,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/customers/{id}', [CustomerController::class, 'destroy'])->middleware('permission:customers');
 
         // Debts (Sổ nợ) API
-        Route::get('/debts', [\App\Http\Controllers\DebtController::class, 'index'])->middleware('permission:debts');
-        Route::get('/debts/customer/{id}', [\App\Http\Controllers\DebtController::class, 'show'])->middleware('permission:debts');
-        Route::post('/debts', [\App\Http\Controllers\DebtController::class, 'store'])->middleware('permission:debts');
-        Route::post('/debts/payment', [\App\Http\Controllers\DebtController::class, 'storePayment'])->middleware('permission:debts');
-        Route::delete('/debts/{id}', [\App\Http\Controllers\DebtController::class, 'destroy'])->middleware('permission:debts');
+        Route::middleware('feature:enable_debts')->group(function () {
+            Route::get('/debts', [\App\Http\Controllers\DebtController::class, 'index'])->middleware('permission:debts');
+            Route::get('/debts/customer/{id}', [\App\Http\Controllers\DebtController::class, 'show'])->middleware('permission:debts');
+            Route::post('/debts', [\App\Http\Controllers\DebtController::class, 'store'])->middleware('permission:debts');
+            Route::post('/debts/payment', [\App\Http\Controllers\DebtController::class, 'storePayment'])->middleware('permission:debts');
+            Route::delete('/debts/{id}', [\App\Http\Controllers\DebtController::class, 'destroy'])->middleware('permission:debts');
+        });
 
         // Customer Groups API
         Route::get('/customer-groups', [CustomerGroupController::class, 'index'])->middleware('permission:customers');
@@ -149,16 +153,20 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/customer-groups/{id}', [CustomerGroupController::class, 'destroy'])->middleware('permission:customers');
 
         // Transactions (Thu Chi) API
-        Route::get('/transactions', [TransactionController::class, 'index'])->middleware('permission:financials');
-        Route::post('/transactions', [TransactionController::class, 'store'])->middleware('permission:financials');
-        Route::put('/transactions/{id}', [TransactionController::class, 'update'])->middleware('permission:financials');
-        Route::delete('/transactions/{id}', [TransactionController::class, 'destroy'])->middleware('permission:financials');
-        Route::put('/transactions/{id}/sync', [TransactionController::class, 'syncBlockchain'])->middleware(RequireOwner::class);
+        Route::middleware('feature:enable_financials')->group(function () {
+            Route::get('/transactions', [TransactionController::class, 'index'])->middleware('permission:financials');
+            Route::post('/transactions', [TransactionController::class, 'store'])->middleware('permission:financials');
+            Route::put('/transactions/{id}', [TransactionController::class, 'update'])->middleware('permission:financials');
+            Route::delete('/transactions/{id}', [TransactionController::class, 'destroy'])->middleware('permission:financials');
+            Route::put('/transactions/{id}/sync', [TransactionController::class, 'syncBlockchain'])->middleware(RequireOwner::class);
+        });
 
         // Inventory (Kho hàng) API
-        Route::get('/inventory', [InventoryController::class, 'index'])->middleware('permission:inventory');
-        Route::post('/inventory', [InventoryController::class, 'store'])->middleware('permission:inventory');
-        Route::delete('/inventory/{id}', [InventoryController::class, 'destroy'])->middleware('permission:inventory');
+        Route::middleware('feature:enable_inventory')->group(function () {
+            Route::get('/inventory', [InventoryController::class, 'index'])->middleware('permission:inventory');
+            Route::post('/inventory', [InventoryController::class, 'store'])->middleware('permission:inventory');
+            Route::delete('/inventory/{id}', [InventoryController::class, 'destroy'])->middleware('permission:inventory');
+        });
 
         // Areas (Khu vực) API
         Route::get('/areas', [AreaController::class, 'index'])->middleware('permission:pos|tables');
@@ -174,11 +182,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/dining-tables/{id}', [DiningTableController::class, 'destroy'])->middleware('permission:tables');
 
         // Shifts API (Ca làm việc & Két tiền)
-        Route::get('/shifts/current', [ShiftController::class, 'current']);
-        Route::get('/shifts/current/summary', [ShiftController::class, 'summary']);
-        Route::post('/shifts/open', [ShiftController::class, 'open']);
-        Route::post('/shifts/close', [ShiftController::class, 'close']);
-        Route::get('/shifts', [ShiftController::class, 'index'])->middleware('permission:staffs|reports|shifts');
+        Route::middleware('feature:enable_shifts')->group(function () {
+            Route::get('/shifts/current', [ShiftController::class, 'current']);
+            Route::get('/shifts/current/summary', [ShiftController::class, 'summary']);
+            Route::post('/shifts/open', [ShiftController::class, 'open']);
+            Route::post('/shifts/close', [ShiftController::class, 'close']);
+            Route::get('/shifts', [ShiftController::class, 'index'])->middleware('permission:staffs|reports|shifts');
+        });
 
         // Staffs & Roles API
         Route::get('/staffs', [StaffController::class, 'index'])->middleware('permission:staffs');
@@ -193,7 +203,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Owner-only routes
         Route::middleware(RequireOwner::class)->group(function () {
-            Route::get('/reports', [ReportController::class, 'index']);
+            Route::get('/reports', [ReportController::class, 'index'])->middleware('feature:enable_reports');
             Route::post('/products', [ProductController::class, 'store']);
             Route::put('/products/{id}', [ProductController::class, 'update']);
             Route::delete('/products/{id}', [ProductController::class, 'destroy']);

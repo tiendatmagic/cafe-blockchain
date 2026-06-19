@@ -16,6 +16,7 @@ import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 import { forkJoin } from 'rxjs';
+import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
 
 @Component({
   selector: 'app-admin-saas',
@@ -36,7 +37,8 @@ import { forkJoin } from 'rxjs';
     ModalComponent,
     IconComponent,
     TabGroupComponent,
-    SkeletonLoaderComponent
+    SkeletonLoaderComponent,
+    VNDCurrencyPipe
   ],
   templateUrl: './admin-saas.component.html',
   styles: [`
@@ -69,6 +71,7 @@ export class AdminSaaSComponent implements OnInit {
   public readonly planColumns: TableColumn[] = [
     { key: 'code', header: 'Mã gói', sortable: false, class: 'pl-6 whitespace-nowrap font-mono text-xs' },
     { key: 'name', header: 'Tên gói cước', sortable: false, class: 'whitespace-nowrap font-bold' },
+    { key: 'prices', header: 'Giá cước', sortable: false, class: 'whitespace-nowrap' },
     { key: 'limits', header: 'Giới hạn (Sản phẩm / Nhân viên)', sortable: false, class: 'whitespace-nowrap' },
     { key: 'features', header: 'Tính năng hỗ trợ', sortable: false, class: 'whitespace-nowrap max-w-sm truncate' },
     { key: 'is_active', header: 'Trạng thái', sortable: false, class: 'whitespace-nowrap' },
@@ -268,6 +271,8 @@ export class AdminSaaSComponent implements OnInit {
       code: ['', [Validators.required, Validators.pattern(/^[a-z0-9_-]+$/)]],
       name: ['', [Validators.required, Validators.maxLength(255)]],
       is_active: [true, [Validators.required]],
+      price_per_month: [0, [Validators.required, Validators.min(0)]],
+      price_per_year: [0, [Validators.required, Validators.min(0)]],
       features: this.fb.group({
         max_products: [20, [Validators.required]],
         max_staffs: [2, [Validators.required]],
@@ -400,6 +405,8 @@ export class AdminSaaSComponent implements OnInit {
     this.planForm.get('code')?.enable();
     this.planForm.patchValue({
       is_active: true,
+      price_per_month: 0,
+      price_per_year: 0,
       features: {
         max_products: 20,
         max_staffs: 2,
@@ -436,6 +443,8 @@ export class AdminSaaSComponent implements OnInit {
       code: plan.code,
       name: plan.name,
       is_active: plan.is_active,
+      price_per_month: plan.price_per_month ?? 0,
+      price_per_year: plan.price_per_year ?? 0,
       features: {
         max_products: plan.features?.max_products ?? 20,
         max_staffs: plan.features?.max_staffs ?? 2,

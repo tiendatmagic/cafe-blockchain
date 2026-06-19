@@ -169,6 +169,13 @@
               <div class="text-slate-800 dark:text-slate-200 text-sm font-semibold">{{ row.name }}</div>
             </ng-template>
 
+            <ng-template appCell="prices" let-row>
+              <div class="text-xs font-semibold text-slate-700 dark:text-slate-350">
+                <div>Tháng: <span class="font-extrabold text-[var(--dynamic-primary)]">{{ row.price_per_month | vnd }}</span></div>
+                <div class="mt-1">Năm: <span class="font-extrabold text-[var(--dynamic-primary)]">{{ row.price_per_year | vnd }}</span></div>
+              </div>
+            </ng-template>
+
             <ng-template appCell="limits" let-row>
               <div class="flex flex-col gap-1 text-xs font-semibold">
                 <div>
@@ -795,6 +802,32 @@
             labelKey="label"
             formControlName="is_active">
           </app-custom-select>
+        </div>
+
+        <!-- Prices -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="space-y-2">
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wide">Giá / tháng (VND)</label>
+            <input 
+              type="number" 
+              formControlName="price_per_month" 
+              placeholder="0"
+              class="form-input" />
+            @if (planForm.get('price_per_month')?.touched && planForm.get('price_per_month')?.invalid) {
+              <span class="text-xs text-rose-500">Giá theo tháng không hợp lệ.</span>
+            }
+          </div>
+          <div class="space-y-2">
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wide">Giá / năm (VND)</label>
+            <input 
+              type="number" 
+              formControlName="price_per_year" 
+              placeholder="0"
+              class="form-input" />
+            @if (planForm.get('price_per_year')?.touched && planForm.get('price_per_year')?.invalid) {
+              <span class="text-xs text-rose-500">Giá theo năm không hợp lệ.</span>
+            }
+          </div>
         </div>
 
         <!-- Limits (Giới hạn số lượng) -->
