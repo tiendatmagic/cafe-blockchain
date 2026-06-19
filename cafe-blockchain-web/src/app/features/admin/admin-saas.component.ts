@@ -95,6 +95,17 @@ export class AdminSaaSComponent implements OnInit {
   public readonly tokenCleanupDays = signal<number>(7);
 
   public readonly searchQuery = signal<string>('');
+  public readonly tenantPlanFilter = signal<string>('all');
+  public readonly tenantStatusFilter = signal<string>('all');
+
+  // Computed signal cho danh sách chọn bộ lọc gói cước (kết hợp các gói thực tế từ DB)
+  public readonly planFilterOptions = computed(() => {
+    const list = this.plans().map(p => ({
+      value: p.code,
+      label: p.name
+    }));
+    return [{ value: 'all', label: 'Tất cả gói cước' }, ...list];
+  });
 
   // Phân trang
   public readonly tenantCurrentPage = signal<number>(1);
@@ -219,6 +230,20 @@ export class AdminSaaSComponent implements OnInit {
   // Lọc Tenants
   public readonly filteredTenants = computed(() => {
     let list = this.tenants();
+
+    // 1. Lọc theo gói cước
+    const planFilter = this.tenantPlanFilter();
+    if (planFilter !== 'all') {
+      list = list.filter(t => t.plan_code === planFilter);
+    }
+
+    // 2. Lọc theo trạng thái
+    const statusFilter = this.tenantStatusFilter();
+    if (statusFilter !== 'all') {
+      list = list.filter(t => t.subscription_status === statusFilter);
+    }
+
+    // 3. Lọc theo từ khóa tìm kiếm
     const search = this.searchQuery().trim().toLowerCase();
     if (search) {
       const searchClean = this.removeSign(search);
@@ -255,6 +280,7 @@ export class AdminSaaSComponent implements OnInit {
 
   private initForms() {
     this.subscriptionForm = this.fb.group({
+      store_name: ['', [Validators.required, Validators.maxLength(255)]],
       plan_code: ['free', [Validators.required]],
       subscription_expires_at: [null, [Validators.required]],
       subscription_status: ['active', [Validators.required]]
@@ -300,6 +326,8 @@ export class AdminSaaSComponent implements OnInit {
   public setSubTab(tab: 'tenants' | 'plans' | 'system' | 'sysinfo') {
     this.activeSubTab.set(tab);
     this.searchQuery.set('');
+    this.tenantPlanFilter.set('all');
+    this.tenantStatusFilter.set('all');
     this.tenantCurrentPage.set(1);
     this.planCurrentPage.set(1);
 
@@ -318,6 +346,16 @@ export class AdminSaaSComponent implements OnInit {
 
   public onSearchQueryChange(query: string) {
     this.searchQuery.set(query);
+    this.tenantCurrentPage.set(1);
+  }
+
+  public onTenantPlanFilterChange(value: string) {
+    this.tenantPlanFilter.set(value);
+    this.tenantCurrentPage.set(1);
+  }
+
+  public onTenantStatusFilterChange(value: string) {
+    this.tenantStatusFilter.set(value);
     this.tenantCurrentPage.set(1);
   }
 
@@ -361,6 +399,7 @@ export class AdminSaaSComponent implements OnInit {
     }
 
     this.subscriptionForm.patchValue({
+      store_name: tenant.store_name || '',
       plan_code: tenant.plan_code || 'free',
       subscription_expires_at: dateStr,
       subscription_status: tenant.subscription_status || 'active'

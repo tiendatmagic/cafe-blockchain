@@ -54,6 +54,7 @@ class AdminController extends Controller
             'plan_code' => 'required|string|exists:subscription_plans,code',
             'subscription_expires_at' => 'required|date|after_or_equal:today',
             'subscription_status' => 'required|string|in:active,suspended',
+            'store_name' => 'required|string|max:255',
         ]);
 
         $tenant = User::whereNull('store_owner_address')->findOrFail($id);
@@ -62,6 +63,11 @@ class AdminController extends Controller
         $tenant->subscription_expires_at = $validated['subscription_expires_at'];
         $tenant->subscription_status = $validated['subscription_status'];
         $tenant->save();
+
+        // Cập nhật tên cửa hàng vào bảng settings và xóa cache website storefront
+        $wallet = strtolower($tenant->wallet_address);
+        \App\Domain\Entities\Setting::setForStore('store_name', $validated['store_name'], $wallet);
+        \App\Domain\Entities\Setting::clearStorefrontCache($wallet);
 
         return response()->json([
             'success' => true,
