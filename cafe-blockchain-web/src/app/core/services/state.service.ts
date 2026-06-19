@@ -1078,6 +1078,7 @@ export class StateService {
     else if (cleanUrl.includes('/debts')) tab = 'debts';
     else if (cleanUrl.includes('/staffs')) tab = 'staffs';
     else if (cleanUrl.includes('/reports')) tab = 'reports';
+    else if (cleanUrl.includes('/shifts')) tab = 'shifts';
 
     if (tab) {
       // Nếu đã kết nối ví và không phải Super Admin -> kiểm duyệt gói cước trước
@@ -1100,11 +1101,6 @@ export class StateService {
         if (config && !this.hasFeature(config.feature)) {
           // Bật modal chặn & nâng cấp
           this.triggerUpgradeModal(config.feature, config.name);
-          // Redirect về dashboard nếu người dùng đang cố truy cập trực tiếp
-          if (tab !== 'dashboard') {
-            this.router.navigate(['/dashboard']);
-            return;
-          }
         }
       }
       this.setTabState(tab);

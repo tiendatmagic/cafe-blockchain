@@ -1,6 +1,6 @@
-import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
+import { HttpInterceptorFn, HttpErrorResponse, HttpResponse, HttpEvent } from '@angular/common/http';
 import { inject, Injector } from '@angular/core';
-import { catchError, takeUntil } from 'rxjs/operators';
+import { catchError, map, takeUntil } from 'rxjs/operators';
 import { throwError } from 'rxjs';
 import { StateService } from './state.service';
 import { Router } from '@angular/router';
@@ -29,6 +29,21 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     // Tự động hủy request này nếu nhận được tín hiệu hủy
     takeUntil(stateService.cancelRequests$),
+    map((event: HttpEvent<any>) => {
+      if (isBackendApi && event instanceof HttpResponse) {
+        const body = event.body;
+        if (body && body.success === false) {
+          // Chủ động ném lỗi HttpErrorResponse để chuyển sang luồng bắt lỗi catchError bên dưới
+          throw new HttpErrorResponse({
+            error: body,
+            status: 400,
+            statusText: 'Bad Request',
+            url: req.url
+          });
+        }
+      }
+      return event;
+    }),
     catchError((error: any) => {
       if (error instanceof HttpErrorResponse) {
         // Xử lý lỗi 503 bảo trì hệ thống hoặc lỗi status 0 (CORS block/mất kết nối) từ API backend
