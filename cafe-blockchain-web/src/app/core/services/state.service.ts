@@ -49,6 +49,24 @@ export class StateService {
   public readonly subscriptionStatus = signal<string>('active');
   public readonly planFeatures = signal<any>(null);
 
+  // Computed signal to calculate the remaining trial days for free plan
+  public readonly freeTrialDaysLeft = computed(() => {
+    if (this.subscriptionPlanCode() !== 'free') return 0;
+    const expiresAt = this.subscriptionExpiresAt();
+    if (!expiresAt) return 0;
+    try {
+      const expires = new Date(expiresAt);
+      const today = new Date();
+      expires.setHours(0, 0, 0, 0);
+      today.setHours(0, 0, 0, 0);
+      const diffTime = expires.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays > 0 ? diffDays : 0;
+    } catch (e) {
+      return 0;
+    }
+  });
+
   // Trạng thái Loading
   public readonly isLoading = signal<boolean>(false);
   public readonly isDashboardLoading = signal<boolean>(false);

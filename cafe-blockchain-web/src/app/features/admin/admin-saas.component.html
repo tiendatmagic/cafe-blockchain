@@ -3,7 +3,7 @@
     title="Quản trị hệ thống" 
     description="Quản lý các cửa hàng đăng ký, gia hạn thuê bao, phân chia tính năng gói cước và dọn dẹp hệ thống."
   >
-    <app-icon icon name="settings" class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" strokeWidth="2.5" />
+    <app-icon icon name="server" class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" strokeWidth="2.5" />
   </app-page-header>
   
   @if (!stateService.web3Service.walletConnected()) {
@@ -139,7 +139,7 @@
               <div class="flex justify-end gap-2 pr-6">
                 <button 
                   (click)="openEditSubscription(row)"
-                  class="btn-secondary"
+                  class="btn-secondary btn-sm"
                   title="Thay đổi gói thuê bao">
                   <span>Sửa</span>
                 </button>
@@ -214,21 +214,21 @@
               <div class="flex justify-end gap-2 pr-6">
                 <button 
                   (click)="openEditPlan(row)"
-                  class="btn-secondary"
+                  class="btn-secondary btn-sm"
                   title="Chỉnh sửa cấu hình gói cước">
                   <span>Sửa</span>
                 </button>
                 @if (row.code !== 'free') {
                   <button 
                     (click)="triggerDeletePlan(row)"
-                    class="btn-danger-light"
+                    class="btn-danger-light btn-sm"
                     title="Xóa gói cước (nếu không có cửa hàng nào đang sử dụng)">
                     <span>Xóa</span>
                   </button>
                 } @else {
                   <button 
                     disabled
-                    class="btn-cancel cursor-not-allowed opacity-40"
+                    class="btn-cancel btn-sm cursor-not-allowed opacity-40"
                     title="Gói 'free' là gói mặc định hệ thống, không thể xóa">
                     <span>Xóa</span>
                   </button>
@@ -425,12 +425,12 @@
                 @for (pkg of paginatedPackages(); track pkg.name) {
                   <div class="flex items-start gap-4 px-6 py-3.5 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
                     <div class="min-w-[220px] shrink-0">
-                      <span class="text-sm font-mono font-bold text-purple-650 dark:text-purple-400 block sm:inline">{{ pkg.name }}</span>
-                      <span class="inline-flex ml-2 items-center rounded px-1.5 py-0.5 text-sm font-bold bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400">{{ pkg.version }}</span>
+                      <span class="text-xs font-mono font-bold text-purple-650 dark:text-purple-400 block sm:inline">{{ pkg.name }}</span>
+                      <span class="inline-flex ml-1.5 items-center rounded px-1.5 py-0.5 text-[11px] font-bold bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 font-mono">{{ pkg.version }}</span>
                     </div>
-                    <div class="flex flex-wrap gap-1.5 min-w-0">
+                    <div class="flex flex-wrap gap-1 min-w-0">
                       @for (dep of pkg.require; track dep) {
-                        <span class="inline-flex items-center rounded px-1.5 py-0.5 text-sm font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">{{ dep }}</span>
+                        <span class="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200/50 dark:border-slate-700/50 font-mono">{{ dep }}</span>
                       }
                     </div>
                   </div>
@@ -473,12 +473,12 @@
                     <span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.system_env?.app_name }}</span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
-                    <span class="text-slate-500 font-medium">Phiên bản Laravel</span>
-                    <span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.system_env?.laravel_version }}</span>
+                    <span class="text-slate-550 font-medium">Phiên bản Laravel</span>
+                    <span class="font-mono text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-200/30 dark:border-slate-700/30 leading-none">{{ systemInfo()?.system_env?.laravel_version }}</span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
-                    <span class="text-slate-500 font-medium">Phiên bản PHP</span>
-                    <span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.system_env?.php_version }}</span>
+                    <span class="text-slate-550 font-medium">Phiên bản PHP</span>
+                    <span class="font-mono text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-200/30 dark:border-slate-700/30 leading-none">{{ systemInfo()?.system_env?.php_version }}</span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Múi giờ hệ thống</span>
@@ -566,7 +566,7 @@
                 <div class="divide-y divide-slate-50 dark:divide-slate-800/40">
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">Trình kết nối</span><span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.database_info?.driver }}</span></div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">Tên Database</span><span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.database_info?.name }}</span></div>
-                  <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">Phiên bản DB</span><span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.database_info?.version }}</span></div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-550 font-medium">Phiên bản DB</span><span class="font-mono text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-200/30 dark:border-slate-700/30 leading-none">{{ systemInfo()?.database_info?.version }}</span></div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">Bảng mã kết nối</span><span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.database_info?.charset }}</span></div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">Đối chiếu kết nối</span><span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.database_info?.collation }}</span></div>
                 </div>

@@ -176,7 +176,7 @@
         routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
         class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
       >
-        <app-icon name="settings" class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform" />
+        <app-icon name="server" class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform" />
         <span>Quản trị hệ thống</span>
       </button>
     }
@@ -317,6 +317,9 @@
         >
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
           <span>{{ web3Service.shortAddress() }}</span>
+          <span class="text-[9px] font-black text-purple-600 dark:text-purple-400 px-1 bg-purple-100 dark:bg-purple-500/10 rounded uppercase tracking-wide shrink-0">
+            {{ stateService.subscriptionPlanCode() }}
+          </span>
         </button>
       } @else {
         <button
@@ -545,7 +548,7 @@
             (click)="isMobileMenuOpen.set(false)"
             class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
           >
-            <app-icon name="settings" class="h-5 w-5 shrink-0" />
+            <app-icon name="server" class="h-5 w-5 shrink-0" />
             <span>Quản trị hệ thống</span>
           </button>
         }
@@ -560,9 +563,19 @@
             class="flex flex-col gap-2 p-3 rounded-2xl bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200/30 dark:border-purple-800/30"
           >
             <div class="flex items-center justify-between text-xs">
-              <span class="text-slate-500 dark:text-slate-400 font-bold"
-                >Ví: {{ web3Service.shortAddress() }}</span
-              >
+              <div class="flex flex-col items-start leading-none">
+                <span class="text-slate-550 dark:text-slate-400 font-bold"
+                  >Ví: {{ web3Service.shortAddress() }}</span
+                >
+                <span class="text-[10px] font-black text-slate-400 dark:text-slate-500 mt-1.5 uppercase tracking-wide">
+                  Gói: {{ stateService.subscriptionPlanCode() }}
+                  @if (stateService.subscriptionPlanCode() === 'free') {
+                    <span class="text-[9px] text-rose-500 lowercase font-medium">
+                      (thử nghiệm {{ stateService.freeTrialDaysLeft() }} ngày)
+                    </span>
+                  }
+                </span>
+              </div>
               <span
                 class="text-purple-600 dark:text-purple-400 font-black flex items-center gap-1.5"
                 >{{ web3Service.walletBalance() }} {{ web3Service.nativeTokenSymbol() }}

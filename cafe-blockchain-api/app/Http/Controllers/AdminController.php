@@ -65,7 +65,7 @@ class AdminController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Cập nhật thuê bao quán thành công.',
+            'message' => 'Tenant subscription updated successfully.',
             'tenant' => $tenant
         ]);
     }
@@ -105,7 +105,7 @@ class AdminController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Tạo gói cước mới thành công.',
+            'message' => 'New subscription plan created successfully.',
             'plan' => $plan
         ], 201);
     }
@@ -135,7 +135,7 @@ class AdminController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Cập nhật gói cước thành công.',
+            'message' => 'Subscription plan updated successfully.',
             'plan' => $plan
         ]);
     }
@@ -151,7 +151,7 @@ class AdminController extends Controller
         if ($plan->code === 'free') {
             return response()->json([
                 'success' => false,
-                'message' => 'Không thể xóa gói cước hệ thống mặc định (free).'
+                'message' => 'Cannot delete default system subscription plan (free).'
             ], 400);
         }
 
@@ -160,7 +160,7 @@ class AdminController extends Controller
         if ($inUse) {
             return response()->json([
                 'success' => false,
-                'message' => 'Không thể xóa gói cước này vì đang có cửa hàng sử dụng.'
+                'message' => 'Cannot delete this subscription plan because it is currently in use by stores.'
             ], 400);
         }
 
@@ -168,7 +168,7 @@ class AdminController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Xóa gói cước thành công.'
+            'message' => 'Subscription plan deleted successfully.'
         ]);
     }
 
@@ -229,7 +229,7 @@ class AdminController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Đã khôi phục 3 gói cước mặc định (free, pro, ultra) về trạng thái ban đầu thành công.',
+            'message' => 'Default subscription plans (free, pro, ultra) restored successfully.',
         ]);
     }
 
@@ -273,7 +273,7 @@ class AdminController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Cập nhật cấu hình hệ thống thành công.'
+            'message' => 'System configuration updated successfully.'
         ]);
     }
 
@@ -301,7 +301,7 @@ class AdminController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => "Đã dọn dẹp thành công {$deletedCount} token cũ hết hạn khỏi cơ sở dữ liệu."
+            'message' => "Successfully cleaned up {$deletedCount} expired tokens from database."
         ]);
     }
 
@@ -315,7 +315,7 @@ class AdminController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => "Đã xóa toàn bộ {$deletedCount} token đăng nhập của hệ thống. Tất cả tài khoản đã bị đăng xuất."
+            'message' => "Successfully cleared all {$deletedCount} login tokens. All accounts logged out."
         ]);
     }
 
@@ -404,7 +404,7 @@ class AdminController extends Controller
         $jsonFile = base_path('composer.json');
 
         if (!file_exists($jsonFile)) {
-            return response()->json(['packages' => [], 'message' => 'composer.json không tìm thấy.']);
+            return response()->json(['packages' => [], 'message' => 'composer.json not found.']);
         }
 
         $data = json_decode(file_get_contents($jsonFile), true);
@@ -444,21 +444,21 @@ class AdminController extends Controller
     public function clearViews()
     {
         \Artisan::call('view:clear');
-        return response()->json(['success' => true, 'message' => 'Đã xóa compiled views thành công.']);
+        return response()->json(['success' => true, 'message' => 'Compiled views cleared successfully.']);
     }
 
     /** Xóa config cache */
     public function clearConfig()
     {
         \Artisan::call('config:clear');
-        return response()->json(['success' => true, 'message' => 'Đã xóa config cache thành công.']);
+        return response()->json(['success' => true, 'message' => 'Config cache cleared successfully.']);
     }
 
     /** Xóa route cache */
     public function clearRoutes()
     {
         \Artisan::call('route:clear');
-        return response()->json(['success' => true, 'message' => 'Đã xóa route cache thành công.']);
+        return response()->json(['success' => true, 'message' => 'Route cache cleared successfully.']);
     }
 
     /** Xóa toàn bộ file .log trong storage/logs */
@@ -476,7 +476,7 @@ class AdminController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => "Đã xóa {$deleted} file log trong storage/logs thành công.",
+            'message' => "Successfully deleted {$deleted} log files in storage/logs.",
         ]);
     }
 
@@ -484,14 +484,14 @@ class AdminController extends Controller
     public function optimize()
     {
         \Artisan::call('optimize');
-        return response()->json(['success' => true, 'message' => 'Tối ưu hóa hệ thống thành công.']);
+        return response()->json(['success' => true, 'message' => 'System optimization completed successfully.']);
     }
 
     /** Xóa toàn bộ optimization cache */
     public function clearOptimize()
     {
         \Artisan::call('optimize:clear');
-        return response()->json(['success' => true, 'message' => 'Đã xóa cache tối ưu hóa thành công.']);
+        return response()->json(['success' => true, 'message' => 'Optimization cache cleared successfully.']);
     }
 }
 

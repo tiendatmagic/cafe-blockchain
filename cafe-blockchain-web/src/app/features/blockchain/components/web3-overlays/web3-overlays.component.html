@@ -175,6 +175,19 @@
                 >{{ web3Service.walletBalance() }} {{ web3Service.nativeTokenSymbol() }}</span
               >
             </div>
+            <div class="flex items-center justify-between animate-in slide-in-from-top-1 duration-150">
+              <span>Gói hiện tại:</span>
+              <span
+                class="font-extrabold leading-none px-2.5 py-0.5 rounded-lg text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border border-slate-200/30 dark:border-slate-700/30 uppercase tracking-wider"
+              >
+                {{ stateService.subscriptionPlanCode() }}
+                @if (stateService.subscriptionPlanCode() === 'free') {
+                  <span class="text-[11px] text-rose-500 lowercase font-medium ml-1">
+                    (Dùng thử còn {{ stateService.freeTrialDaysLeft() }} ngày)
+                  </span>
+                }
+              </span>
+            </div>
           </div>
         </div>
 
