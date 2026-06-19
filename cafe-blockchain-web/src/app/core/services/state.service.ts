@@ -6,6 +6,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { debounceTime, distinctUntilChanged, filter, catchError } from 'rxjs/operators';
 import { OrderStore } from '@features/pos/store/order.store';
 import { SettingStore } from '@features/settings/store/setting.store';
+import { ShiftStore } from '@features/shifts/store/shift.store';
 
 export interface FeatureConfig {
   key: string;
@@ -61,6 +62,7 @@ export class StateService {
   private readonly router = inject(Router);
   private readonly orderStore = inject(OrderStore);
   private readonly settingStore = inject(SettingStore);
+  private readonly shiftStore = inject(ShiftStore);
   private readonly colorStorageKey = 'dapp_dynamic_colors';
 
   // Trạng thái UI toàn cục
@@ -146,37 +148,30 @@ export class StateService {
   public readonly isTablesLoading = signal<boolean>(false);
   public readonly isSettingsLoading = this.settingStore.isSettingsLoading;
   public readonly isDebtsLoading = signal<boolean>(false);
-  public readonly isShiftsLoading = signal<boolean>(false);
-  public readonly currentShift = signal<any>(null);
+  public readonly isShiftsLoading = this.shiftStore.isShiftsLoading;
+  public readonly currentShift = this.shiftStore.currentShift;
   
   // --- Quản lý ca trực (Trạng thái và logic dùng chung) ---
-  public readonly isCloseShiftModalOpen = signal<boolean>(false);
-  public readonly isShiftSummaryLoading = signal<boolean>(false);
-  public readonly shiftSummary = signal<any>(null);
-  public readonly actualCashInput = signal<number>(0);
-  public readonly actualCashFormatted = computed(() => {
-    const val = this.actualCashInput();
-    return val > 0 ? val.toLocaleString('en-US') : '';
-  });
-  public readonly closeShiftNote = signal<string>('');
+  public readonly isCloseShiftModalOpen = this.shiftStore.isCloseShiftModalOpen;
+  public readonly isShiftSummaryLoading = this.shiftStore.isShiftSummaryLoading;
+  public readonly shiftSummary = this.shiftStore.shiftSummary;
+  public readonly actualCashInput = this.shiftStore.actualCashInput;
+  public readonly actualCashFormatted = this.shiftStore.actualCashFormatted;
+  public readonly closeShiftNote = this.shiftStore.closeShiftNote;
 
-  public readonly isStartShiftModalOpen = signal<boolean>(false);
-  public readonly initialCashInput = signal<number>(0);
-  public readonly initialCashFormatted = computed(() => {
-    const val = this.initialCashInput();
-    return val > 0 ? val.toLocaleString('en-US') : '';
-  });
+  public readonly isStartShiftModalOpen = this.shiftStore.isStartShiftModalOpen;
+  public readonly initialCashInput = this.shiftStore.initialCashInput;
+  public readonly initialCashFormatted = this.shiftStore.initialCashFormatted;
 
-  public readonly shiftFiatRevenue = computed(() => this.shiftSummary()?.payment_revenues?.cash ?? 0);
-  public readonly shiftBankTransferRevenue = computed(() => this.shiftSummary()?.payment_revenues?.bank_transfer ?? 0);
-  public readonly shiftCryptoRevenue = computed(() => this.shiftSummary()?.payment_revenues?.crypto ?? 0);
-  public readonly shiftEWalletRevenue = computed(() => this.shiftSummary()?.payment_revenues?.e_wallet ?? 0);
-  public readonly shiftFiatExpenses = computed(() => this.shiftSummary()?.payment_expenses?.cash ?? 0);
-  public readonly shiftExpectedCash = computed(() => this.shiftSummary()?.expected_cash ?? 0);
+  public readonly shiftFiatRevenue = this.shiftStore.shiftFiatRevenue;
+  public readonly shiftBankTransferRevenue = this.shiftStore.shiftBankTransferRevenue;
+  public readonly shiftCryptoRevenue = this.shiftStore.shiftCryptoRevenue;
+  public readonly shiftEWalletRevenue = this.shiftStore.shiftEWalletRevenue;
+  public readonly shiftFiatExpenses = this.shiftStore.shiftFiatExpenses;
+  public readonly shiftExpectedCash = this.shiftStore.shiftExpectedCash;
   
-  public readonly shifts = signal<any[]>([]);
-  public readonly shiftDurationString = signal<string>('00:00:00');
-  private shiftTimerInterval: any = null;
+  public readonly shifts = this.shiftStore.shifts;
+  public readonly shiftDurationString = this.shiftStore.shiftDurationString;
 
   // Thông điệp Toast
   public readonly successMessage = signal<string>('');
@@ -408,9 +403,9 @@ export class StateService {
     effect(() => {
       const shift = this.currentShift();
       if (shift && shift.start_time) {
-        this.startShiftTimer(shift.start_time);
+        this.shiftStore.startShiftTimer(shift.start_time);
       } else {
-        this.stopShiftTimer();
+        this.shiftStore.stopShiftTimer();
       }
     }, { allowSignalWrites: true });
 
@@ -1257,64 +1252,25 @@ export class StateService {
 
   // --- Quản lý Ca trực ---
   public refreshCurrentShift(onSuccess?: (shift: any) => void) {
-    if (!this.web3Service.walletConnected()) return;
-    if (!this.hasPermission('shifts')) return;
-    this.apiService.getCurrentShift().subscribe({
-      next: (res) => {
-        this.currentShift.set(res || null);
-        if (res && res.status === 'open') {
-          this.apiService.getShiftSummary().subscribe({
-            next: (sum) => {
-              this.shiftSummary.set(sum || null);
-              if (onSuccess) onSuccess(res || null);
-            },
-            error: (err) => {
-              console.error('Lỗi tải summary ca trực khi refresh:', err);
-              if (onSuccess) onSuccess(res || null);
-            }
-          });
-        } else {
-          this.shiftSummary.set(null);
-          if (onSuccess) onSuccess(res || null);
-        }
-      },
-      error: (err) => {
-        console.error('Lỗi tải ca trực hiện tại:', err);
-      }
-    });
+    this.shiftStore.refreshCurrentShift(this.hasPermission('shifts'), onSuccess);
   }
 
   public refreshShifts() {
-    if (!this.web3Service.walletConnected()) return;
-    if (!this.hasPermission('shifts')) return;
-    if (this.isShiftsLoading()) return;
-    this.isShiftsLoading.set(true);
-    this.apiService.getShifts().subscribe({
-      next: (res) => {
-        this.shifts.set(res || []);
-        this.isShiftsLoading.set(false);
-      },
-      error: (err) => {
-        console.error('Lỗi tải danh sách ca làm việc:', err);
-        this.isShiftsLoading.set(false);
-      }
-    });
+    this.shiftStore.refreshShifts(this.hasPermission('shifts'));
   }
 
   public openShift(initialCash: number, onSuccess?: () => void) {
     if (!this.web3Service.walletConnected()) return;
     if (this.isLoading()) return;
     this.isLoading.set(true);
-    this.apiService.openShift(initialCash).subscribe({
-      next: (res) => {
+    this.shiftStore.openShift(initialCash, {
+      onSuccess: (res) => {
         this.isLoading.set(false);
-        this.currentShift.set(res.data || res.shift || res);
         this.showToast('Vào ca làm việc thành công', 'success');
         if (onSuccess) onSuccess();
       },
-      error: (err) => {
+      onError: (err) => {
         this.isLoading.set(false);
-        console.error('Lỗi mở ca:', err);
         this.showToast(err.error?.message || 'Không thể mở ca làm việc', 'error');
       }
     });
@@ -1324,17 +1280,15 @@ export class StateService {
     if (!this.web3Service.walletConnected()) return;
     if (this.isLoading()) return;
     this.isLoading.set(true);
-    this.apiService.closeShift(actualCash, note).subscribe({
-      next: (res) => {
+    this.shiftStore.closeShift(actualCash, note, {
+      onSuccess: (res) => {
         this.isLoading.set(false);
-        this.currentShift.set(null);
         this.showToast('Kết thúc ca trực thành công', 'success');
         if (onSuccess) onSuccess();
         this.refreshShifts();
       },
-      error: (err) => {
+      onError: (err) => {
         this.isLoading.set(false);
-        console.error('Lỗi kết ca:', err);
         this.showToast(err.error?.message || 'Không thể kết thúc ca làm việc', 'error');
       }
     });
@@ -1344,7 +1298,7 @@ export class StateService {
     const inputVal = event.target.value;
     const cleanVal = inputVal.replace(/[^0-9]/g, '');
     const numVal = Number(cleanVal) || 0;
-    this.actualCashInput.set(numVal);
+    this.shiftStore.actualCashInput.set(numVal);
     event.target.value = numVal > 0 ? numVal.toLocaleString('en-US') : '';
   }
 
@@ -1352,88 +1306,54 @@ export class StateService {
     const inputVal = event.target.value;
     const cleanVal = inputVal.replace(/[^0-9]/g, '');
     const numVal = Number(cleanVal) || 0;
-    this.initialCashInput.set(numVal);
+    this.shiftStore.initialCashInput.set(numVal);
     event.target.value = numVal > 0 ? numVal.toLocaleString('en-US') : '';
   }
 
   public openStartShiftModal() {
-    this.initialCashInput.set(0);
-    this.isStartShiftModalOpen.set(true);
+    this.shiftStore.initialCashInput.set(0);
+    this.shiftStore.isStartShiftModalOpen.set(true);
   }
 
   public confirmStartShift() {
     if (this.isLoading()) return;
-    const cash = this.initialCashInput();
+    const cash = this.shiftStore.initialCashInput();
     this.openShift(cash, () => {
-      this.isStartShiftModalOpen.set(false);
-      this.initialCashInput.set(0);
+      this.shiftStore.isStartShiftModalOpen.set(false);
+      this.shiftStore.initialCashInput.set(0);
     });
   }
 
   public openCloseShiftModal() {
-    this.isShiftSummaryLoading.set(true);
-    this.closeShiftNote.set('');
-    this.isCloseShiftModalOpen.set(true);
+    this.shiftStore.isShiftSummaryLoading.set(true);
+    this.shiftStore.closeShiftNote.set('');
+    this.shiftStore.isCloseShiftModalOpen.set(true);
 
     this.apiService.getShiftSummary().subscribe({
       next: (res) => {
-        this.shiftSummary.set(res);
+        this.shiftStore.shiftSummary.set(res);
         const expected = res?.expected_cash ?? 0;
-        this.actualCashInput.set(expected);
-        this.isShiftSummaryLoading.set(false);
+        this.shiftStore.actualCashInput.set(expected);
+        this.shiftStore.isShiftSummaryLoading.set(false);
       },
       error: (err) => {
         console.error('Lỗi tải thống kê ca trực:', err);
-        this.isShiftSummaryLoading.set(false);
+        this.shiftStore.isShiftSummaryLoading.set(false);
       }
     });
   }
 
   public confirmCloseShift() {
     if (this.isLoading()) return;
-    const actual = this.actualCashInput();
-    const note = this.closeShiftNote();
+    const actual = this.shiftStore.actualCashInput();
+    const note = this.shiftStore.closeShiftNote();
     this.closeShift(actual, note, () => {
-      this.isCloseShiftModalOpen.set(false);
-      this.shiftSummary.set(null);
+      this.shiftStore.isCloseShiftModalOpen.set(false);
+      this.shiftStore.shiftSummary.set(null);
     });
   }
 
-  private startShiftTimer(startTimeIso: string) {
-    this.stopShiftTimer();
-    this.updateShiftDuration(startTimeIso);
-    if (typeof window !== 'undefined') {
-      this.shiftTimerInterval = setInterval(() => {
-        this.updateShiftDuration(startTimeIso);
-      }, 1000);
-    }
-  }
 
-  private stopShiftTimer() {
-    if (this.shiftTimerInterval) {
-      clearInterval(this.shiftTimerInterval);
-      this.shiftTimerInterval = null;
-    }
-    this.shiftDurationString.set('00:00:00');
-  }
-
-  private updateShiftDuration(startTimeIso: string) {
-    const start = new Date(startTimeIso).getTime();
-    if (isNaN(start)) {
-      this.shiftDurationString.set('00:00:00');
-      return;
-    }
-    const now = Date.now();
-    const diff = Math.max(0, now - start); // ms
-
-    const totalSecs = Math.floor(diff / 1000);
-    const hours = Math.floor(totalSecs / 3600);
-    const minutes = Math.floor((totalSecs % 3600) / 60);
-    const seconds = totalSecs % 60;
-
-    const pad = (num: number) => String(num).padStart(2, '0');
-    this.shiftDurationString.set(`${pad(hours)}:${pad(minutes)}:${pad(seconds)}`);
-  }
 
   // Kết nối và Yêu cầu Ký ví Web3 Auth cho Admin
   public async connectWalletAndSign() {
