@@ -623,6 +623,8 @@
         <label class="block text-sm font-bold text-slate-400 uppercase tracking-wide">Gói cước phân bổ</label>
         <app-custom-select 
           [options]="planOptions" 
+          valueKey="value"
+          labelKey="label"
           formControlName="plan_code">
         </app-custom-select>
       </div>
@@ -635,7 +637,7 @@
           (selectedDateChange)="subscriptionForm.get('subscription_expires_at')?.setValue($event)"
           placeholder="Chọn ngày hết hạn">
         </app-custom-date-picker>
-        <p class="text-slate-450 text-2xs">Bỏ trống nếu muốn gia hạn thời gian vô hạn cho cửa hàng này.</p>
+        <p class="text-[11px] text-purple-600/75 dark:text-purple-400/75 mt-1 block italic font-semibold">Bỏ trống nếu muốn gia hạn thời gian vô hạn cho cửa hàng này.</p>
       </div>
 
       <!-- Subscription Status -->
@@ -646,6 +648,8 @@
             { value: 'active', label: 'Hoạt động (Active)' },
             { value: 'suspended', label: 'Bị khóa / Đình chỉ (Suspended)' }
           ]" 
+          valueKey="value"
+          labelKey="label"
           formControlName="subscription_status">
         </app-custom-select>
       </div>
@@ -715,6 +719,8 @@
           { value: true, label: 'Cho phép sử dụng (Active)' },
           { value: false, label: 'Tạm ẩn gói (Inactive)' }
         ]" 
+        valueKey="value"
+        labelKey="label"
         formControlName="is_active">
       </app-custom-select>
     </div>
@@ -726,13 +732,13 @@
       <div class="space-y-1.5">
         <label class="block text-sm font-bold text-slate-700 dark:text-slate-300">Số lượng sản phẩm tối đa</label>
         <input type="number" formControlName="max_products" class="form-input" />
-        <p class="text-slate-450 text-2xs">Nhập -1 nếu muốn cho phép tạo không giới hạn sản phẩm.</p>
+        <p class="text-[11px] text-purple-600/75 dark:text-purple-400/75 mt-1 block italic font-semibold">Nhập -1 nếu muốn cho phép tạo không giới hạn sản phẩm.</p>
       </div>
 
       <div class="space-y-1.5">
         <label class="block text-sm font-bold text-slate-700 dark:text-slate-300">Số lượng nhân viên tối đa</label>
         <input type="number" formControlName="max_staffs" class="form-input" />
-        <p class="text-slate-450 text-2xs">Nhập -1 nếu muốn cho phép tạo không giới hạn nhân viên.</p>
+        <p class="text-[11px] text-purple-600/75 dark:text-purple-400/75 mt-1 block italic font-semibold">Nhập -1 nếu muốn cho phép tạo không giới hạn nhân viên.</p>
       </div>
 
       <div class="space-y-3 pt-2">
