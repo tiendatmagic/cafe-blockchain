@@ -12,24 +12,30 @@
       <div actions class="flex items-center gap-2 shrink-0">
         @if (activeSubTab() === 'staffs') {
           <button
+            app-button
+            variant="primary"
             (click)="openAddStaff()"
-            class="btn btn-primary flex items-center gap-2"
+            class="flex items-center gap-2"
           >
             <app-icon name="plus" class="h-4.5 w-4.5" strokeWidth="2.5" />
             <span>Thêm nhân viên</span>
           </button>
         } @else {
           <button
+            app-button
+            variant="secondary"
             (click)="confirmResetRolesOpen.set(true)"
-            class="btn btn-secondary flex items-center gap-2"
+            class="flex items-center gap-2"
           >
             <app-icon name="sync" class="h-4.5 w-4.5" strokeWidth="2" />
             <span>Khôi phục mặc định</span>
           </button>
           
           <button
+            app-button
+            variant="primary"
             (click)="openAddRole()"
-            class="btn btn-primary flex items-center gap-2"
+            class="flex items-center gap-2"
           >
             <app-icon name="plus" class="h-4.5 w-4.5" strokeWidth="2.5" />
             <span>Thêm vai trò</span>
@@ -123,14 +129,18 @@
           <ng-template appCell="actions" let-row>
             <div class="flex items-center justify-end gap-1.5 whitespace-nowrap">
               <button
+                app-button
+                variant="secondary"
+                size="sm"
                 (click)="openEditStaff(row)"
-                class="btn btn-secondary btn-sm"
               >
                 Sửa
               </button>
               <button
+                app-button
+                variant="danger-light"
+                size="sm"
                 (click)="triggerDeleteStaff(row)"
-                class="btn btn-danger-light btn-sm"
               >
                 Xóa
               </button>
@@ -171,14 +181,18 @@
           <ng-template appCell="actions" let-row>
             <div class="flex items-center justify-end gap-1.5 whitespace-nowrap">
               <button
+                app-button
+                variant="secondary"
+                size="sm"
                 (click)="openEditRole(row)"
-                class="btn btn-secondary btn-sm"
               >
                 Phân quyền
               </button>
               <button
+                app-button
+                variant="danger-light"
+                size="sm"
                 (click)="triggerDeleteRole(row)"
-                class="btn btn-danger-light btn-sm"
               >
                 Xóa
               </button>
@@ -276,20 +290,24 @@
         <!-- Modal Footer Actions -->
         <div class="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800/60 mt-5">
           <button
+            app-button
+            variant="cancel"
             type="button"
             (click)="isStaffFormOpen.set(false)"
-            class="btn btn-cancel flex-1"
-            [disabled]="isSavingStaff()"
+            class="flex-1"
           >
             Hủy
           </button>
           <button
+            app-button
+            variant="primary"
             type="button"
             (click)="saveStaff()"
-            class="btn btn-primary flex-1"
-            [disabled]="isSavingStaff() || (!editingStaff() && isStaffLimitReached())"
+            class="flex-1"
+            [loading]="isSavingStaff()"
+            [disabled]="!editingStaff() && isStaffLimitReached()"
           >
-            {{ isSavingStaff() ? 'Đang lưu...' : 'Lưu thông tin' }}
+            Lưu thông tin
           </button>
         </div>
       </form>
@@ -324,21 +342,13 @@
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto pr-1 no-scrollbar" formGroupName="permissions">
             @for (mod of modules; track mod.key) {
-              <label class="flex items-start gap-3.5 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/10 cursor-pointer transition-all active:scale-[0.995]">
-                <input
-                  type="checkbox"
+              <div class="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/10 transition-all active:scale-[0.995]">
+                <app-custom-checkbox
                   [formControlName]="mod.key"
-                  class="mt-1 h-4 w-4 rounded border-slate-300 text-[var(--dynamic-primary)] focus:ring-[var(--dynamic-primary)] transition-all cursor-pointer accent-[var(--dynamic-primary)]"
-                />
-                <div class="space-y-0.5">
-                  <div class="text-xs sm:text-sm font-extrabold text-slate-800 dark:text-white leading-tight">
-                    {{ mod.name }}
-                  </div>
-                  <div class="text-[11px] text-slate-400 leading-normal">
-                    {{ mod.desc }}
-                  </div>
-                </div>
-              </label>
+                  [label]="mod.name"
+                  [description]="mod.desc">
+                </app-custom-checkbox>
+              </div>
             }
           </div>
         </div>
@@ -346,20 +356,23 @@
         <!-- Modal Footer Actions -->
         <div class="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800/60 mt-5">
           <button
+            app-button
+            variant="cancel"
             type="button"
             (click)="isRoleFormOpen.set(false)"
-            class="btn btn-cancel flex-1"
-            [disabled]="isSavingRole()"
+            class="flex-1"
           >
             Hủy
           </button>
           <button
+            app-button
+            variant="primary"
             type="button"
             (click)="saveRole()"
-            class="btn btn-primary flex-1"
-            [disabled]="isSavingRole()"
+            class="flex-1"
+            [loading]="isSavingRole()"
           >
-            {{ isSavingRole() ? 'Đang lưu...' : 'Lưu vai trò' }}
+            Lưu vai trò
           </button>
         </div>
       </form>

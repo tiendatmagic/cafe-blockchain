@@ -17,6 +17,8 @@ import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
+import { ButtonComponent } from '@shared/components/button/button.component';
+import { CustomCheckboxComponent } from '@shared/components/custom-checkbox/custom-checkbox.component';
 
 @Component({
   selector: 'app-menu',
@@ -36,7 +38,9 @@ import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skel
     CustomSelectComponent,
     IconComponent,
     TabGroupComponent,
-    SkeletonLoaderComponent
+    SkeletonLoaderComponent,
+    ButtonComponent,
+    CustomCheckboxComponent
   ],
   templateUrl: './menu.component.html'
 })

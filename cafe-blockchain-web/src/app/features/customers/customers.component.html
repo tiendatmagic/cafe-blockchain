@@ -13,7 +13,11 @@
 
     @if (stateService.web3Service.walletConnected()) {
       <div class="flex items-center gap-3 shrink-0 flex-wrap">
-        <button (click)="openAddCustomerGroupModal()" class="btn-secondary">
+        <button
+          app-button
+          variant="secondary"
+          (click)="openAddCustomerGroupModal()"
+        >
           <span>+ Tạo Nhóm mới</span>
         </button>
 
@@ -282,10 +286,22 @@
               <!-- Custom cell cho cột thao tác -->
               <ng-template appCell="actions" let-row>
                 <div class="flex items-center justify-end gap-2">
-                  <button (click)="openEditCustomerModal(row)" class="btn-secondary btn-sm">
+                  <button
+                    app-button
+                    variant="secondary"
+                    size="sm"
+                    (click)="openEditCustomerModal(row)"
+                  >
                     Sửa
                   </button>
-                  <button (click)="deleteCustomer(row)" class="btn-danger-light btn-sm">Xóa</button>
+                  <button
+                    app-button
+                    variant="danger-light"
+                    size="sm"
+                    (click)="deleteCustomer(row)"
+                  >
+                    Xóa
+                  </button>
                 </div>
               </ng-template>
             </app-table>
@@ -327,14 +343,18 @@
                         class="flex items-center gap-2 pt-2.5 border-t border-slate-200/40 dark:border-slate-800/40 justify-end"
                       >
                         <button
+                          app-button
+                          variant="secondary"
+                          size="sm"
                           (click)="openEditCustomerGroupModal(group)"
-                          class="btn-secondary btn-sm"
                         >
                           Sửa
                         </button>
                         <button
+                          app-button
+                          variant="danger-light"
+                          size="sm"
                           (click)="deleteCustomerGroup(group)"
-                          class="btn-danger-light btn-sm"
                         >
                           Xóa
                         </button>
@@ -744,19 +764,13 @@
                     </div>
                   }
                   @for (g of customerGroups(); track g.id) {
-                    <label
-                      class="flex items-center gap-2 px-2 py-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl cursor-pointer transition-all"
-                    >
-                      <input
-                        type="checkbox"
+                    <div class="px-2 py-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                      <app-custom-checkbox
                         [checked]="customerForm().group_ids.includes(g.id)"
-                        (change)="toggleCustomerFormGroup(g.id)"
-                        class="rounded border-slate-300 dark:border-slate-700 text-purple-600 focus:ring-purple-500 w-4 h-4"
-                      />
-                      <span class="text-xs font-bold text-slate-700 dark:text-slate-300">{{
-                        g.name
-                      }}</span>
-                    </label>
+                        (checkedChange)="toggleCustomerFormGroup(g.id)"
+                        [label]="g.name"
+                      ></app-custom-checkbox>
+                    </div>
                   }
                 </div>
               </div>
@@ -765,22 +779,21 @@
             <!-- Footer Buttons -->
             <div class="flex gap-3 pt-3.5 border-t border-slate-100 dark:border-slate-800 shrink-0">
               <button
+                app-button
+                variant="cancel"
                 (click)="closeCustomerModal()"
                 [disabled]="isCustomerSaving()"
-                class="btn-cancel flex-1"
+                class="flex-1"
               >
                 Hủy bỏ
               </button>
               <button
+                app-button
+                variant="primary"
                 (click)="saveCustomer()"
-                [disabled]="isCustomerSaving()"
-                class="btn-primary flex-1"
+                [loading]="isCustomerSaving()"
+                class="flex-1"
               >
-                @if (isCustomerSaving()) {
-                  <div
-                    class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                  ></div>
-                }
                 <span>Lưu lại</span>
               </button>
             </div>
@@ -832,22 +845,21 @@
             <!-- Footer Buttons -->
             <div class="flex gap-3 pt-2">
               <button
+                app-button
+                variant="cancel"
                 (click)="closeCustomerGroupModal()"
                 [disabled]="isCustomerGroupSaving()"
-                class="btn-cancel flex-1"
+                class="flex-1"
               >
                 Hủy
               </button>
               <button
+                app-button
+                variant="primary"
                 (click)="saveCustomerGroup()"
-                [disabled]="isCustomerGroupSaving()"
-                class="btn-primary flex-1"
+                [loading]="isCustomerGroupSaving()"
+                class="flex-1"
               >
-                @if (isCustomerGroupSaving()) {
-                  <div
-                    class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                  ></div>
-                }
                 <span>Lưu</span>
               </button>
             </div>

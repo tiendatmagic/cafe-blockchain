@@ -14,6 +14,8 @@ import { CustomDatePickerComponent } from '@shared/components/custom-date-picker
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
+import { ButtonComponent } from '@shared/components/button/button.component';
+import { CustomCheckboxComponent } from '@shared/components/custom-checkbox/custom-checkbox.component';
 
 @Component({
   selector: 'app-financials',
@@ -31,7 +33,9 @@ import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skel
     CustomDatePickerComponent,
     IconComponent,
     TabGroupComponent,
-    SkeletonLoaderComponent
+    SkeletonLoaderComponent,
+    ButtonComponent,
+    CustomCheckboxComponent
   ],
   templateUrl: './financials.component.html'
 })

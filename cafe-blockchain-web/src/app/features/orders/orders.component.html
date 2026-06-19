@@ -11,7 +11,11 @@
       strokeWidth="2.5"
     />
     @if (stateService.web3Service.walletConnected()) {
-      <button (click)="refreshOrders()" class="btn-secondary">
+      <button
+        app-button
+        variant="secondary"
+        (click)="refreshOrders()"
+      >
         <app-icon name="refresh" class="h-4 w-4 shrink-0" strokeWidth="2" />
         <span>Làm mới</span>
       </button>
@@ -53,17 +57,14 @@
               </div>
             </div>
             <button
+              app-button
+              variant="secondary"
               (click)="syncAllUnsyncedOrders()"
-              [disabled]="blockchainSyncLoading() || isOrderStatusUpdating()"
-              class="w-full sm:w-auto px-4.5 py-2.5 rounded-xl bg-[var(--dynamic-secondary)]/10 hover:bg-[var(--dynamic-secondary)]/20 border border-[var(--dynamic-secondary)]/20 text-[var(--dynamic-secondary)] text-xs font-black hover:scale-[1.02] active:scale-[0.95] transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0 flex items-center justify-center gap-1.5"
+              [loading]="blockchainSyncLoading()"
+              [disabled]="isOrderStatusUpdating()"
+              class="w-full sm:w-auto shrink-0 flex items-center justify-center gap-1.5"
             >
-              @if (blockchainSyncLoading()) {
-                <div
-                  class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                ></div>
-              } @else {
-                <app-icon name="sync" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
-              }
+              <app-icon name="sync" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
               <span>Đồng bộ nhanh tất cả</span>
             </button>
           </div>
@@ -245,9 +246,12 @@
                 </div>
               } @else {
                 <button
-                  [disabled]="blockchainSyncLoading() || !web3Service.walletConnected()"
+                  app-button
+                  variant="primary"
+                  size="sm"
+                  [disabled]="!web3Service.walletConnected()"
+                  [loading]="blockchainSyncLoading()"
                   (click)="syncToBlockchain(row)"
-                  class="btn-primary btn-sm"
                 >
                   <app-icon name="cloud-upload" class="h-3.5 w-3.5 shrink-0" strokeWidth="2" />
                   <span>Đồng bộ Blockchain</span>
@@ -261,9 +265,23 @@
           <!-- Custom cell cho cột thao tác -->
           <ng-template appCell="actions" let-row>
             <div class="flex items-center justify-end gap-2.5">
-              <button (click)="viewOrderDetail(row)" class="btn-cancel btn-sm">Chi tiết</button>
+              <button
+                app-button
+                variant="cancel"
+                size="sm"
+                (click)="viewOrderDetail(row)"
+              >
+                Chi tiết
+              </button>
               @if (row.status === 'pending' && row.blockchain_status === 'none') {
-                <button (click)="editOrder(row)" class="btn-secondary btn-sm">Sửa</button>
+                <button
+                  app-button
+                  variant="secondary"
+                  size="sm"
+                  (click)="editOrder(row)"
+                >
+                  Sửa
+                </button>
               }
             </div>
           </ng-template>
@@ -482,75 +500,58 @@
                       selectedOrderDetails()?.status === 'preparing'
                     ) {
                       <div
-                        class="flex items-center gap-2 pb-1 bg-slate-50/20 dark:bg-slate-950/10 p-2 rounded-xl border border-slate-100/50 dark:border-slate-800/30"
+                        class="flex items-center gap-2 pb-1 bg-slate-50/20 dark:bg-slate-950/10 p-2.5 rounded-xl border border-slate-100/50 dark:border-slate-800/30"
                       >
-                        <input
-                          type="checkbox"
-                          id="autoSyncOnComplete"
-                          [ngModel]="isAutoSyncOnCompleteChecked()"
-                          (ngModelChange)="isAutoSyncOnCompleteChecked.set($event)"
+                        <app-custom-checkbox
+                          [checked]="isAutoSyncOnCompleteChecked()"
+                          (checkedChange)="isAutoSyncOnCompleteChecked.set($event)"
                           [disabled]="isOrderStatusUpdating() || blockchainSyncLoading()"
-                          class="rounded border-slate-300 dark:border-slate-800 text-[var(--dynamic-primary)] focus:ring-[var(--dynamic-primary)]/30 h-4.5 w-4.5 transition-all active:scale-95 disabled:opacity-50"
-                        />
-                        <label
-                          for="autoSyncOnComplete"
-                          class="text-xs font-bold text-slate-500 dark:text-slate-400 cursor-pointer flex items-center gap-1.5"
                         >
-                          <span>Đồng bộ Blockchain lập tức</span>
-                          <span
-                            class="text-[10px] bg-purple-100 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 px-1.5 py-0.5 rounded border border-purple-200/50 dark:border-purple-800/30 uppercase tracking-wide font-black"
-                            >Web3</span
-                          >
-                        </label>
+                          <span class="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                            <span>Đồng bộ Blockchain lập tức</span>
+                            <span
+                              class="text-[10px] bg-purple-100 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 px-1.5 py-0.5 rounded border border-purple-200/50 dark:border-purple-800/30 uppercase tracking-wide font-black"
+                              >Web3</span
+                            >
+                          </span>
+                        </app-custom-checkbox>
                       </div>
                     }
 
                     @if (selectedOrderDetails()?.status === 'pending') {
                       <div class="grid grid-cols-3 gap-2">
                         <button
+                          app-button
+                          variant="danger"
                           (click)="updateStatus(selectedOrderDetails().id, 'cancelled')"
-                          [disabled]="isOrderStatusUpdating() || !web3Service.walletConnected()"
-                          class="btn-danger"
+                          [loading]="isOrderStatusUpdating()"
+                          [disabled]="!web3Service.walletConnected()"
                         >
-                          @if (isOrderStatusUpdating()) {
-                            <div
-                              class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                            ></div>
-                          } @else {
-                            <app-icon name="close" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
-                          }
+                          <app-icon name="close" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
                           <span>HỦY ĐƠN</span>
                         </button>
                         <button
+                          app-button
+                          variant="info"
                           (click)="updateStatus(selectedOrderDetails().id, 'preparing')"
-                          [disabled]="isOrderStatusUpdating() || !web3Service.walletConnected()"
-                          class="btn-info"
+                          [loading]="isOrderStatusUpdating()"
+                          [disabled]="!web3Service.walletConnected()"
                         >
-                          @if (isOrderStatusUpdating()) {
-                            <div
-                              class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                            ></div>
-                          } @else {
-                            <app-icon name="clock" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
-                          }
+                          <app-icon name="clock" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
                           <span>CHUẨN BỊ</span>
                         </button>
                         <button
+                          app-button
+                          variant="success"
                           (click)="updateStatus(selectedOrderDetails().id, 'completed')"
-                          [disabled]="isOrderStatusUpdating() || !web3Service.walletConnected()"
-                          class="btn-success"
+                          [loading]="isOrderStatusUpdating()"
+                          [disabled]="!web3Service.walletConnected()"
                         >
-                          @if (isOrderStatusUpdating()) {
-                            <div
-                              class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                            ></div>
-                          } @else {
-                            <app-icon
-                              name="check-circle"
-                              class="h-3.5 w-3.5 shrink-0"
-                              strokeWidth="2.5"
-                            />
-                          }
+                          <app-icon
+                            name="check-circle"
+                            class="h-3.5 w-3.5 shrink-0"
+                            strokeWidth="2.5"
+                          />
                           <span>HOÀN THÀNH</span>
                         </button>
                       </div>
@@ -559,35 +560,27 @@
                     @if (selectedOrderDetails()?.status === 'preparing') {
                       <div class="grid grid-cols-2 gap-2">
                         <button
+                          app-button
+                          variant="danger"
                           (click)="updateStatus(selectedOrderDetails().id, 'cancelled')"
-                          [disabled]="isOrderStatusUpdating() || !web3Service.walletConnected()"
-                          class="btn-danger"
+                          [loading]="isOrderStatusUpdating()"
+                          [disabled]="!web3Service.walletConnected()"
                         >
-                          @if (isOrderStatusUpdating()) {
-                            <div
-                              class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                            ></div>
-                          } @else {
-                            <app-icon name="close" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
-                          }
+                          <app-icon name="close" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
                           <span>HỦY ĐƠN</span>
                         </button>
                         <button
+                          app-button
+                          variant="success"
                           (click)="updateStatus(selectedOrderDetails().id, 'completed')"
-                          [disabled]="isOrderStatusUpdating() || !web3Service.walletConnected()"
-                          class="btn-success"
+                          [loading]="isOrderStatusUpdating()"
+                          [disabled]="!web3Service.walletConnected()"
                         >
-                          @if (isOrderStatusUpdating()) {
-                            <div
-                              class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                            ></div>
-                          } @else {
-                            <app-icon
-                              name="check-circle"
-                              class="h-3.5 w-3.5 shrink-0"
-                              strokeWidth="2.5"
-                            />
-                          }
+                          <app-icon
+                            name="check-circle"
+                            class="h-3.5 w-3.5 shrink-0"
+                            strokeWidth="2.5"
+                          />
                           <span>HOÀN THÀNH</span>
                         </button>
                       </div>
@@ -625,13 +618,16 @@
                         </div>
                       } @else {
                         <button
-                          [disabled]="blockchainSyncLoading() || !web3Service.walletConnected()"
+                          app-button
+                          variant="primary"
+                          [loading]="blockchainSyncLoading()"
+                          [disabled]="!web3Service.walletConnected()"
                           (click)="syncToBlockchain(selectedOrderDetails())"
-                          class="w-full py-2.5 bg-[var(--dynamic-primary)] hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-md shadow-[var(--dynamic-primary)]/10 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+                          class="w-full flex items-center justify-center gap-1.5 shadow-md shadow-[var(--dynamic-primary)]/10"
                         >
                           <app-icon
                             name="shield-check"
-                            class="h-4 w-4 shrink-0 text-white"
+                            class="h-4 w-4 shrink-0"
                             strokeWidth="2.5"
                           />
                           <span>Ghi nhận bằng chứng lên Blockchain</span>
@@ -653,21 +649,18 @@
                         selectedOrderDetails()?.customer?.wallet_address)
                     ) {
                       <button
+                        app-button
+                        variant="primary"
+                        size="sm"
                         (click)="mintVoucherManual(selectedOrderDetails())"
-                        [disabled]="isMintingVoucherManual()"
-                        class="btn-primary btn-full btn-sm hover:scale-[1.01]"
+                        [loading]="isMintingVoucherManual()"
+                        class="w-full hover:scale-[1.01]"
                       >
-                        @if (isMintingVoucherManual()) {
-                          <div
-                            class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                          ></div>
-                        } @else {
-                          <app-icon
-                            name="gift"
-                            class="h-4 w-4 shrink-0 text-white"
-                            strokeWidth="2.5"
-                          />
-                        }
+                        <app-icon
+                          name="gift"
+                          class="h-4 w-4 shrink-0"
+                          strokeWidth="2.5"
+                        />
                         <span>
                           {{
                             selectedOrderDetails()?.status === 'cancelled'
@@ -680,8 +673,10 @@
 
                     @if (selectedOrderDetails()?.status === 'completed') {
                       <button
+                        app-button
+                        variant="danger-light"
                         (click)="triggerCancelExplanation(selectedOrderDetails())"
-                        class="btn-danger-light btn-full"
+                        class="w-full"
                       >
                         <app-icon name="trash" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
                         <span>YÊU CẦU HỦY ĐƠN HÀNG</span>
@@ -689,18 +684,22 @@
                     }
 
                     <button
+                      app-button
+                      variant="info"
                       (click)="printOrder(selectedOrderDetails())"
                       [disabled]="isOrderStatusUpdating() || blockchainSyncLoading()"
-                      class="btn-info btn-full"
+                      class="w-full"
                     >
                       <app-icon name="print" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
                       <span>IN HÓA ĐƠN</span>
                     </button>
 
                     <button
+                      app-button
+                      variant="cancel"
                       (click)="closeOrderDetail()"
                       [disabled]="isOrderStatusUpdating()"
-                      class="btn-cancel btn-full"
+                      class="w-full"
                     >
                       Đóng cửa sổ
                     </button>
@@ -912,8 +911,10 @@
             <!-- Action -->
             <div class="flex gap-3">
               <button
+                app-button
+                variant="cancel"
                 (click)="isCancelExplanationOpen.set(false)"
-                class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-all"
+                class="flex-1"
               >
                 Đóng cửa sổ
               </button>

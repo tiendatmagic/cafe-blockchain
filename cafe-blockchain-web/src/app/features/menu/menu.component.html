@@ -25,27 +25,22 @@
         <!-- Đồng bộ thực đơn lên Blockchain -->
         @if (web3Service.walletConnected() && web3Service.menuRegistryContractAddress()) {
           <button
+            app-button
+            variant="secondary"
             (click)="syncMenuToBlockchain()"
-            [disabled]="isMenuSyncing()"
-            class="btn-secondary"
+            [loading]="isMenuSyncing()"
           >
-            @if (isMenuSyncing()) {
-              <div
-                class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
-              ></div>
-              <span>Đang đồng bộ...</span>
-            } @else {
-              <app-icon name="sync" class="h-4 w-4 shrink-0" strokeWidth="2" />
-              <span>Đồng bộ Blockchain</span>
-            }
+            <app-icon name="sync" class="h-4 w-4 shrink-0" strokeWidth="2" />
+            <span>Đồng bộ Blockchain</span>
           </button>
         }
 
         <!-- Thêm món mới -->
         <button
+          app-button
+          variant="primary"
           (click)="openAddMenuModal()"
           [disabled]="!web3Service.walletConnected()"
-          class="btn-primary"
         >
           <app-icon name="plus" class="h-4 w-4 shrink-0" strokeWidth="2" />
           <span>Thêm món mới</span>
@@ -187,9 +182,12 @@
                 <!-- Nút hành động -->
                 <div class="flex gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/60">
                   <button
+                    app-button
+                    variant="secondary"
+                    size="sm"
                     type="button"
                     (click)="isFilterPanelOpen.set(false)"
-                    class="flex-1 btn-secondary btn-sm h-9 text-xs"
+                    class="flex-1 h-9 text-xs"
                   >
                     Đóng
                   </button>
@@ -310,19 +308,22 @@
                         <div class="flex items-center justify-end gap-2.5">
                           <!-- Nút Sửa -->
                           <button
+                            app-button
+                            variant="secondary"
+                            size="sm"
                             (click)="openEditMenuModal(p)"
                             [disabled]="!web3Service.walletConnected()"
-                            class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[var(--dynamic-primary)]/10 hover:bg-[var(--dynamic-primary)]/20 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] text-xs font-extrabold transition-all hover:scale-[1.03] active:scale-[0.97] border border-[var(--dynamic-primary)]/10 dark:border-[var(--dynamic-secondary)]/10 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <app-icon name="pen" class="h-3.5 w-3.5" strokeWidth="2" />
                             <span>Sửa</span>
                           </button>
 
-                          <!-- Nút Xóa -->
                           <button
+                            app-button
+                            variant="danger-light"
+                            size="sm"
                             (click)="deleteProduct(p.id)"
                             [disabled]="!web3Service.walletConnected()"
-                            class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-950/60 text-rose-600 dark:text-rose-400 text-xs font-extrabold transition-all hover:scale-[1.03] active:scale-[0.97] border border-rose-200/20 dark:border-rose-800/20 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <app-icon name="trash" class="h-3.5 w-3.5" strokeWidth="2" />
                             <span>Xóa</span>
@@ -438,19 +439,22 @@
                     >
                       <!-- Nút Sửa -->
                       <button
+                        app-button
+                        variant="secondary"
                         (click)="openEditMenuModal(p)"
                         [disabled]="!web3Service.walletConnected()"
-                        class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[var(--dynamic-primary)]/10 hover:bg-[var(--dynamic-primary)]/20 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] text-sm font-extrabold transition-all hover:scale-[1.02] active:scale-[0.98] border border-[var(--dynamic-primary)]/10 dark:border-[var(--dynamic-secondary)]/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="flex-1"
                       >
                         <app-icon name="pen" class="h-4 w-4" strokeWidth="2" />
                         <span>Sửa</span>
                       </button>
 
-                      <!-- Nút Xóa -->
                       <button
+                        app-button
+                        variant="danger-light"
                         (click)="deleteProduct(p.id)"
                         [disabled]="!web3Service.walletConnected()"
-                        class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-950/60 text-rose-600 dark:text-rose-400 text-sm font-extrabold transition-all hover:scale-[1.02] active:scale-[0.98] border border-rose-200/20 dark:border-rose-800/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="flex-1"
                       >
                         <app-icon name="trash" class="h-4 w-4" strokeWidth="2" />
                         <span>Xóa</span>
@@ -494,9 +498,10 @@
               </h4>
               <!-- Nút thêm danh mục -->
               <button
+                app-button
+                variant="primary"
                 (click)="openAddCategoryModal()"
                 [disabled]="!web3Service.walletConnected()"
-                class="flex items-center gap-1.5 px-4.5 py-2.5 bg-[var(--dynamic-primary)] hover:opacity-90 text-white font-bold rounded-xl text-sm shadow-md shadow-[var(--dynamic-primary)]/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <app-icon name="plus" class="h-4 w-4" strokeWidth="2.5" />
                 <span>Thêm danh mục mới</span>
@@ -519,19 +524,21 @@
                     >{{ cat.name }}</span
                   >
                   <div class="flex items-center gap-2 shrink-0">
-                    <!-- Sửa -->
                     <button
+                      app-button
+                      variant="secondary"
+                      size="sm"
                       (click)="editCategory(cat)"
                       [disabled]="!web3Service.walletConnected()"
-                      class="px-3.5 py-2 text-xs font-bold text-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/10 hover:bg-[var(--dynamic-primary)]/20 dark:text-[var(--dynamic-secondary)] dark:hover:bg-[var(--dynamic-primary)]/30 rounded-xl border border-[var(--dynamic-primary)]/10 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Sửa
                     </button>
-                    <!-- Xóa -->
                     <button
+                      app-button
+                      variant="danger-light"
+                      size="sm"
                       (click)="deleteCategory(cat.id)"
                       [disabled]="!web3Service.walletConnected()"
-                      class="px-3.5 py-2 text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-400 dark:hover:bg-rose-950/80 rounded-xl border border-rose-200/10 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Xóa
                     </button>
@@ -573,17 +580,18 @@
 
                   <!-- Nút làm mới -->
                   <button
+                    app-button
+                    variant="secondary"
+                    size="sm"
                     (click)="loadMenuSyncLogs()"
-                    [disabled]="isMenuSyncLogsLoading()"
-                    class="btn-secondary btn-sm"
+                    [loading]="isMenuSyncLogsLoading()"
                   >
                     <app-icon
                       name="sync"
                       class="h-3.5 w-3.5"
-                      [class.animate-spin]="isMenuSyncLogsLoading()"
                       strokeWidth="2.5"
                     />
-                    <span>{{ isMenuSyncLogsLoading() ? 'Đang tải...' : 'Làm mới' }}</span>
+                    <span>Làm mới</span>
                   </button>
                 </div>
 
@@ -951,19 +959,13 @@
               class="grid grid-cols-2 gap-2 p-3 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 max-h-36 overflow-y-auto animate-in duration-200"
             >
               @for (cat of categoriesList(); track cat.id) {
-                <label
-                  class="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/60 cursor-pointer transition-all"
-                >
-                  <input
-                    type="checkbox"
+                <div class="px-2 py-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all">
+                  <app-custom-checkbox
                     [checked]="isCategorySelected(cat.id)"
-                    (change)="toggleFormCategory(cat.id)"
-                    class="rounded border-slate-300 dark:border-slate-700 text-purple-600 focus:ring-purple-500 w-4 h-4"
-                  />
-                  <span class="text-xs font-bold text-slate-700 dark:text-slate-300">{{
-                    cat.name
-                  }}</span>
-                </label>
+                    (checkedChange)="toggleFormCategory(cat.id)"
+                    [label]="cat.name"
+                  ></app-custom-checkbox>
+                </div>
               }
             </div>
           </div>
@@ -1165,22 +1167,22 @@
         <!-- Actions -->
         <div class="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800 shrink-0 mt-5">
           <button
+            app-button
+            variant="cancel"
             (click)="closeMenuModal()"
             [disabled]="isProductSaving()"
-            class="btn-cancel flex-1"
+            class="flex-1"
           >
             Hủy bỏ
           </button>
           <button
+            app-button
+            variant="primary"
             (click)="saveProduct()"
-            [disabled]="isProductSaving() || (menuModalType() === 'add' && isProductLimitReached())"
-            class="btn-primary flex-1 shadow-md"
+            [loading]="isProductSaving()"
+            [disabled]="menuModalType() === 'add' && isProductLimitReached()"
+            class="flex-1 shadow-md"
           >
-            @if (isProductSaving()) {
-              <div
-                class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
-              ></div>
-            }
             <span>Lưu thông tin</span>
           </button>
         </div>
@@ -1208,22 +1210,21 @@
 
           <div class="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
             <button
+              app-button
+              variant="cancel"
               (click)="closeCategoryModal()"
               [disabled]="isCategoryLoading()"
-              class="btn-cancel flex-1"
+              class="flex-1"
             >
               Hủy bỏ
             </button>
             <button
+              app-button
+              variant="primary"
               (click)="saveCategory()"
-              [disabled]="isCategoryLoading()"
-              class="btn-primary flex-1 shadow-md"
+              [loading]="isCategoryLoading()"
+              class="flex-1 shadow-md"
             >
-              @if (isCategoryLoading()) {
-                <div
-                  class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                ></div>
-              }
               <span>Lưu lại</span>
             </button>
           </div>
@@ -1302,22 +1303,35 @@
             <span class="text-xs font-semibold text-slate-400"
               >Hoặc tải ảnh chụp mã vạch lên để quét cục bộ:</span
             >
-            <label
-              class="btn btn-secondary btn-sm flex items-center gap-2 cursor-pointer w-full justify-center"
+            <button
+              app-button
+              variant="secondary"
+              size="sm"
+              type="button"
+              (click)="barcodeFileInput.click()"
+              class="flex items-center gap-2 w-full justify-center"
             >
               <app-icon name="upload" class="h-4 w-4" strokeWidth="2" />
               <span>Chọn ảnh mã vạch</span>
-              <input
-                type="file"
-                accept="image/*"
-                class="hidden"
-                (change)="onBarcodeFileSelected($event)"
-              />
-            </label>
+            </button>
+            <input
+              #barcodeFileInput
+              type="file"
+              accept="image/*"
+              class="hidden"
+              (change)="onBarcodeFileSelected($event)"
+            />
           </div>
 
           <div class="pt-2">
-            <button (click)="stopBarcodeScan()" class="btn btn-cancel w-full">Hủy quét</button>
+            <button
+              app-button
+              variant="cancel"
+              (click)="stopBarcodeScan()"
+              class="w-full"
+            >
+              Hủy quét
+            </button>
           </div>
         </div>
       </app-modal>

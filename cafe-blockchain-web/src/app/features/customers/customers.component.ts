@@ -14,6 +14,8 @@ import { CustomDatePickerComponent } from '@shared/components/custom-date-picker
 import { TableComponent, TableCellDirective, TableColumn } from '@shared/components/table/table.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
+import { ButtonComponent } from '@shared/components/button/button.component';
+import { CustomCheckboxComponent } from '@shared/components/custom-checkbox/custom-checkbox.component';
 
 @Component({
   selector: 'app-customers',
@@ -32,7 +34,9 @@ import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skel
     TableComponent,
     TableCellDirective,
     IconComponent,
-    SkeletonLoaderComponent
+    SkeletonLoaderComponent,
+    ButtonComponent,
+    CustomCheckboxComponent
   ],
   templateUrl: './customers.component.html'
 })
