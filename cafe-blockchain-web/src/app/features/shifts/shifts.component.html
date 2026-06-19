@@ -59,9 +59,11 @@
               </div>
 
               <button
+                app-button
                 type="button"
+                variant="danger"
                 (click)="openCloseShiftModal()"
-                class="btn-danger w-full lg:w-auto hover:scale-[1.01]"
+                class="w-full lg:w-auto hover:scale-[1.01]"
               >
                 <app-icon name="logout" class="h-4.5 w-4.5" strokeWidth="2.5" />
                 <span>Kết thúc ca & Đối soát két</span>
@@ -86,9 +88,11 @@
                 </div>
               </div>
               <button
+                app-button
                 type="button"
+                variant="primary"
                 (click)="openStartShiftModal()"
-                class="btn-primary w-full sm:w-auto hover:scale-[1.01]"
+                class="w-full sm:w-auto hover:scale-[1.01]"
               >
                 <app-icon name="lock-open" class="h-4.5 w-4.5" strokeWidth="2.5" />
                 <span>Khai báo két & Vào ca</span>
@@ -285,16 +289,22 @@
         <ng-template appCell="actions" let-row>
           <div class="flex items-center justify-end gap-2">
             <button
+              app-button
               type="button"
+              variant="cancel"
+              size="sm"
               (click)="viewShiftDetail(row)"
-              class="btn-cancel btn-sm whitespace-nowrap"
+              class="whitespace-nowrap"
             >
               Chi tiết
             </button>
             <button
+              app-button
               type="button"
+              variant="cancel"
+              size="sm"
               (click)="printShiftReceipt(row)"
-              class="btn-cancel btn-sm flex items-center justify-center gap-1 hover:scale-[1.01] whitespace-nowrap"
+              class="hover:scale-[1.01] whitespace-nowrap"
               title="In phiếu ca trực"
             >
               <app-icon name="print" class="h-3.5 w-3.5" strokeWidth="2.5" />
@@ -462,9 +472,11 @@
 
                   <div class="pt-2 flex flex-col sm:flex-row gap-2">
                     <button
+                      app-button
                       type="button"
+                      variant="primary"
                       (click)="printShiftReceipt(selectedShiftDetails())"
-                      class="btn-primary flex-1 flex items-center justify-center gap-1.5"
+                      class="flex-1"
                     >
                       <app-icon
                         name="print"
@@ -474,9 +486,11 @@
                       <span>IN PHIẾU CA TRỰC</span>
                     </button>
                     <button
+                      app-button
                       type="button"
+                      variant="cancel"
                       (click)="closeShiftDetail()"
-                      class="flex-1 btn-cancel px-5"
+                      class="flex-1"
                     >
                       Đóng cửa sổ
                     </button>

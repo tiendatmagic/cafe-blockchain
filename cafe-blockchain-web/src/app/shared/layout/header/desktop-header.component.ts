@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { StateService } from '@core/services/state.service';
 import { Web3Service } from '@core/services/web3.service';
 import { IconComponent } from '@shared/components/icon/icon.component';
+import { ButtonComponent } from '@shared/components/button/button.component';
 
 @Component({
   selector: 'app-desktop-header',
   standalone: true,
-  imports: [CommonModule, IconComponent],
+  imports: [CommonModule, IconComponent, ButtonComponent],
   templateUrl: './desktop-header.component.html'
 })
 export class DesktopHeaderComponent {

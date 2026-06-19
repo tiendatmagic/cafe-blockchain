@@ -56,10 +56,12 @@
         <!-- Nút Lọc POS -->
         <div class="relative shrink-0">
           <button
+            app-button
+            [variant]="isFilterPanelOpen() ? 'primary' : 'secondary'"
+            size="sm"
             type="button"
             (click)="isFilterPanelOpen.set(!isFilterPanelOpen())"
-            [class]="isFilterPanelOpen() ? 'bg-[var(--color-primary)] text-white shadow-md shadow-[var(--color-primary)]/20' : 'bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800'"
-            class="h-10.5 px-3 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition-all active:scale-[0.98]"
+            class="h-10.5 px-3"
             title="Lọc nâng cao"
           >
             <app-icon name="filter" class="h-4 w-4" [strokeWidth]="2" />
@@ -75,8 +77,13 @@
               class="absolute right-0 mt-2 z-40 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-4.5 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200 text-left"
             >
               <!-- Header -->
-              <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800/60">
-                <span class="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider">Bộ lọc POS</span>
+              <div
+                class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800/60"
+              >
+                <span
+                  class="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider"
+                  >Bộ lọc POS</span
+                >
                 <button
                   type="button"
                   (click)="stateService.resetPosFilters(); isFilterPanelOpen.set(false)"
@@ -88,20 +95,27 @@
 
               <!-- Lọc giá sản phẩm chính -->
               <div class="space-y-1.5">
-                <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wide">Khoảng giá món</label>
+                <label
+                  class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wide"
+                  >Khoảng giá món</label
+                >
                 <div class="grid grid-cols-2 gap-2">
                   <input
                     type="number"
                     placeholder="Từ đ"
                     [ngModel]="stateService.posMinPrice()"
-                    (ngModelChange)="stateService.posMinPrice.set($event); stateService.loadPosProducts()"
+                    (ngModelChange)="
+                      stateService.posMinPrice.set($event); stateService.loadPosProducts()
+                    "
                     class="form-input-sm"
                   />
                   <input
                     type="number"
                     placeholder="Đến đ"
                     [ngModel]="stateService.posMaxPrice()"
-                    (ngModelChange)="stateService.posMaxPrice.set($event); stateService.loadPosProducts()"
+                    (ngModelChange)="
+                      stateService.posMaxPrice.set($event); stateService.loadPosProducts()
+                    "
                     class="form-input-sm"
                   />
                 </div>
@@ -109,20 +123,27 @@
 
               <!-- Lọc giá biến thể -->
               <div class="space-y-1.5">
-                <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wide">Giá biến thể (Size)</label>
+                <label
+                  class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wide"
+                  >Giá biến thể (Size)</label
+                >
                 <div class="grid grid-cols-2 gap-2">
                   <input
                     type="number"
                     placeholder="Từ đ"
                     [ngModel]="stateService.posMinVariantPrice()"
-                    (ngModelChange)="stateService.posMinVariantPrice.set($event); stateService.loadPosProducts()"
+                    (ngModelChange)="
+                      stateService.posMinVariantPrice.set($event); stateService.loadPosProducts()
+                    "
                     class="form-input-sm"
                   />
                   <input
                     type="number"
                     placeholder="Đến đ"
                     [ngModel]="stateService.posMaxVariantPrice()"
-                    (ngModelChange)="stateService.posMaxVariantPrice.set($event); stateService.loadPosProducts()"
+                    (ngModelChange)="
+                      stateService.posMaxVariantPrice.set($event); stateService.loadPosProducts()
+                    "
                     class="form-input-sm"
                   />
                 </div>
@@ -130,19 +151,29 @@
 
               <!-- Lọc Trạng thái Bán -->
               <div class="space-y-1.5">
-                <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wide">Trạng thái bán</label>
+                <label
+                  class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wide"
+                  >Trạng thái bán</label
+                >
                 <div class="flex gap-2">
-                  @for (opt of [
-                    { value: 'all', label: 'Tất cả' },
-                    { value: 'active', label: 'Đang bán' },
-                    { value: 'inactive', label: 'Ngừng bán' }
-                  ]; track opt.value) {
+                  @for (
+                    opt of [
+                      { value: 'all', label: 'Tất cả' },
+                      { value: 'active', label: 'Đang bán' },
+                      { value: 'inactive', label: 'Ngừng bán' },
+                    ];
+                    track opt.value
+                  ) {
                     <button
                       type="button"
-                      (click)="stateService.posFilterStatus.set(opt.value); stateService.loadPosProducts()"
-                      [class]="stateService.posFilterStatus() === opt.value
-                        ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)] border-[var(--color-primary)] font-bold'
-                        : 'bg-slate-50 dark:bg-slate-950/40 text-slate-500 border-slate-200/60 dark:border-slate-800/80'"
+                      (click)="
+                        stateService.posFilterStatus.set(opt.value); stateService.loadPosProducts()
+                      "
+                      [class]="
+                        stateService.posFilterStatus() === opt.value
+                          ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)] border-[var(--color-primary)] font-bold'
+                          : 'bg-slate-50 dark:bg-slate-950/40 text-slate-500 border-slate-200/60 dark:border-slate-800/80'
+                      "
                       class="flex-1 py-1 px-2 text-[10px] rounded-lg border text-center transition-all"
                     >
                       {{ opt.label }}
@@ -154,9 +185,12 @@
               <!-- Nút hành động -->
               <div class="flex gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/60">
                 <button
+                  app-button
+                  variant="secondary"
+                  size="sm"
                   type="button"
                   (click)="isFilterPanelOpen.set(false)"
-                  class="flex-1 btn-secondary btn-sm h-9 text-xs"
+                  class="flex-1 h-9"
                 >
                   Đóng
                 </button>
@@ -186,957 +220,973 @@
         ></app-mini-buttons>
 
         <div class="space-y-6">
-        <!-- Grid Danh sách món ăn/đồ uống -->
-        @if (paginatedPosProducts().length === 0) {
-          <div class="app-card flex flex-col items-center justify-center py-20 text-center gap-3">
-            <app-icon
-              name="archive"
-              class="h-12 w-12 text-slate-300 dark:text-slate-700"
-              strokeWidth="2"
-            />
-            <h5 class="text-sm font-bold text-slate-700 dark:text-slate-300">
-              Không tìm thấy món tương ứng!
-            </h5>
-            <p class="text-xs text-slate-400">
-              Vui lòng tìm kiếm từ khác hoặc thêm món mới trong Quản lý Thực đơn.
-            </p>
-          </div>
-        } @else {
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4.5">
-            @for (p of paginatedPosProducts(); track p.id) {
-              <div
-                (click)="web3Service.walletConnected() ? addToCart(p) : null"
-                [class.cursor-default]="!web3Service.walletConnected()"
-                [class.app-card]="!web3Service.walletConnected()"
-                [class.app-card-interactive]="web3Service.walletConnected()"
-                class="group p-0 overflow-hidden flex flex-col h-full"
-              >
-                <!-- Hình ảnh món ăn có overlay mờ -->
-                <div
-                  class="relative h-40 w-full bg-slate-100 dark:bg-slate-800 overflow-hidden shrink-0"
-                >
-                  <img
-                    [src]="getProductImage(p.image)"
-                    (error)="handleImageError($event)"
-                    [alt]="p.name"
-                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div
-                    class="absolute inset-0 bg-slate-950/5 group-hover:bg-slate-950/0 transition-all"
-                  ></div>
-                  <!-- Hiển thị toàn bộ các badge danh mục Nhiều-Nhiều của sản phẩm -->
-                  <div class="absolute top-3 left-3 flex flex-wrap gap-1 max-w-[calc(100%-24px)]">
-                    @for (cat of p.categories; track cat.id) {
-                      <span
-                        class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm text-purple-600 dark:text-purple-400 text-[10px] font-extrabold px-2 py-0.5 rounded-xl shadow-sm border border-purple-200/10 dark:border-purple-800/10"
-                      >
-                        {{ cat.name }}
-                      </span>
-                    }
-                  </div>
-                </div>
-
-                <!-- Informative card content -->
-                <div class="p-4.5 flex-1 flex flex-col justify-between gap-3">
-                  <div class="space-y-1">
-                    <h5
-                      class="font-extrabold text-slate-800 dark:text-white text-[14px] sm:text-base leading-tight group-hover:text-purple-600 transition-colors"
-                    >
-                      {{ p.name }}
-                    </h5>
-                    @if (p.short_description) {
-                      <p
-                        class="text-xs text-slate-400 dark:text-slate-500 font-medium line-clamp-2 mt-0.5 leading-relaxed"
-                      >
-                        {{ p.short_description }}
-                      </p>
-                    }
-                  </div>
-                  <div class="flex items-center justify-between">
-                    <span class="font-black text-slate-900 dark:text-white text-base">
-                      {{ getProductPriceDisplay(p) }}đ
-                      @if (p.unit) {
-                        <span class="text-xs font-semibold text-slate-400">/ {{ p.unit }}</span>
-                      }
-                    </span>
-                    @if (web3Service.walletConnected()) {
-                      <div class="btn-add-cart">+</div>
-                    }
-                  </div>
-                </div>
-              </div>
-            }
-          </div>
-
-          <!-- Phân trang Bán hàng POS -->
-          @if (posTotalItems() > posItemsPerPage) {
-            <app-pagination
-              [currentPage]="posCurrentPage()"
-              [totalPages]="posTotalPages()"
-              [totalItems]="posTotalItems()"
-              [itemsPerPage]="posItemsPerPage"
-              itemName="món"
-              (pageChange)="posCurrentPage.set($event)"
-            ></app-pagination>
-          }
-        }
-      </div>
-    </div>
-
-    <!-- CỘT 3: GIỎ HÀNG & THANH TOÁN (RIGHT) -->
-    <div
-      class="xl:col-span-2 app-card flex flex-col h-auto xl:h-[calc(100vh-115px)] min-h-[400px] xl:min-h-[600px] xl:sticky xl:top-[50px]"
-    >
-      @if (web3Service.walletConnected()) {
-        @if (stateService.hasPermission('pos')) {
-          @if (stateService.currentShift() && stateService.currentShift().id) {
-            <div
-              class="flex items-center justify-between pb-4 border-b border-slate-200/60 dark:border-slate-800/60"
-            >
-              <h4
-                class="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2"
-              >
-                <app-icon name="cart" class="h-5 w-5 text-slate-500 shrink-0" strokeWidth="2" />
-                <span>Giỏ hàng bán hàng</span>
-              </h4>
-              @if (cart().length > 0) {
-                <button
-                  (click)="clearCart()"
-                  class="text-xs font-bold text-rose-500 hover:underline"
-                >
-                  Xóa tất cả
-                </button>
-              }
+          <!-- Grid Danh sách món ăn/đồ uống -->
+          @if (paginatedPosProducts().length === 0) {
+            <div class="app-card flex flex-col items-center justify-center py-20 text-center gap-3">
+              <app-icon
+                name="archive"
+                class="h-12 w-12 text-slate-300 dark:text-slate-700"
+                strokeWidth="2"
+              />
+              <h5 class="text-sm font-bold text-slate-700 dark:text-slate-300">
+                Không tìm thấy món tương ứng!
+              </h5>
+              <p class="text-xs text-slate-400">
+                Vui lòng tìm kiếm từ khác hoặc thêm món mới trong Quản lý Thực đơn.
+              </p>
             </div>
-
-            <!-- Ô Tìm kiếm và Chọn Khách hàng (Tối ưu sang trọng) -->
-            <div
-              class="py-3 border-b border-slate-200/50 dark:border-slate-800/80 relative shrink-0"
-            >
-              <!-- Trường hợp CHƯA CHỌN KHÁCH HÀNG: Hiển thị ô input search -->
-              @if (!posSelectedCustomer()) {
-                <div class="relative">
-                  <input
-                    type="text"
-                    [ngModel]="posCustomerSearchQuery()"
-                    (ngModelChange)="onCustomerSearchChange($event)"
-                    placeholder="Tìm họ tên, số điện thoại hoặc email khách..."
-                    class="w-full search-input pr-8"
-                  />
-                  <app-icon
-                    name="search"
-                    class="absolute left-3 top-3 h-4 w-4 text-slate-400"
-                    strokeWidth="2.5"
-                  />
-                  @if (isCustomerSearching()) {
-                    <span
-                      class="absolute right-3.5 top-3 w-4 h-4 rounded-full border-2 border-slate-200 border-t-purple-650 animate-spin"
-                    ></span>
-                  } @else if (posCustomerSearchQuery()) {
-                    <button
-                      type="button"
-                      (click)="onCustomerSearchChange(''); isCustomerDropdownOpen.set(false)"
-                      class="absolute right-3.5 top-2.5 text-slate-400 hover:text-slate-650 flex items-center justify-center p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
-                      title="Xóa tìm kiếm"
-                    >
-                      <app-icon name="close" class="h-3.5 w-3.5" strokeWidth="2.5" />
-                    </button>
-                  }
-                </div>
-
-                <!-- Dropdown Kết quả tìm kiếm khách hàng tải từ máy chủ -->
-                @if (isCustomerDropdownOpen() && posCustomerSearchQuery().trim() !== '') {
-                  <!-- Click-outside overlay to close -->
-                  <div (click)="isCustomerDropdownOpen.set(false)" class="fixed inset-0 z-20"></div>
-
-                  <div
-                    class="absolute top-full left-0 right-0 mt-1 z-30 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 max-h-52 overflow-y-auto no-scrollbar animate-in fade-in slide-in-from-top-1 duration-150"
-                  >
-                    @if (isCustomerSearching()) {
-                      <div
-                        class="p-4.5 text-center text-xs text-slate-400 font-bold flex items-center justify-center gap-2"
-                      >
-                        <div
-                          class="w-3.5 h-3.5 rounded-full border-2 border-slate-200 border-t-purple-650 animate-spin"
-                        ></div>
-                        <span>Đang tìm kiếm khách hàng...</span>
-                      </div>
-                    } @else if (posSearchedCustomers().length > 0) {
-                      @for (c of posSearchedCustomers(); track c.id) {
-                        @if (c.is_pending_wallet) {
-                          <!-- Trạng thái đang chờ nhập đủ ký tự ví EVM -->
-                          <div
-                            class="w-full px-4 py-3 text-left text-xs text-slate-500 dark:text-slate-400 font-bold flex flex-col gap-1.5 cursor-default"
-                          >
-                            <div class="flex items-center gap-2">
-                              <span class="text-base shrink-0"
-                                ><app-icon
-                                  name="wallet"
-                                  class="h-4 w-4 shrink-0 inline-block"
-                                  strokeWidth="2"
-                              /></span>
-                              <span
-                                class="font-extrabold text-slate-600 dark:text-slate-300 text-xs"
-                                >{{ c.name }}</span
-                              >
-                            </div>
-                            <div
-                              class="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden"
-                            >
-                              <div
-                                class="bg-purple-500 h-1.5 rounded-full transition-all duration-300"
-                                [style.width.%]="
-                                  (posCustomerSearchQuery().trim().length / 42) * 100
-                                "
-                              ></div>
-                            </div>
-                            <span class="text-[10px] text-slate-400 font-semibold"
-                              >Nhập đủ 42 ký tự ví EVM (bắt đầu 0x...) để tìm kiếm</span
-                            >
-                          </div>
-                        } @else {
-                          <button
-                            type="button"
-                            (click)="selectCustomerForOrder(c)"
-                            class="w-full px-4 py-2.5 text-left text-xs hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200 font-bold flex items-center justify-between border-b border-slate-100/50 dark:border-slate-800/40 last:border-b-0"
-                          >
-                            <div class="flex flex-col min-w-0 pr-2">
-                              @if (c.is_auto_create) {
-                                <span
-                                  class="font-extrabold text-purple-600 dark:text-purple-400 text-xs truncate"
-                                  ><app-icon
-                                    name="sparkles"
-                                    class="h-4 w-4 shrink-0 inline-block"
-                                    strokeWidth="2"
-                                  />
-                                  {{ c.name }}</span
-                                >
-                                <span class="text-[10px] text-slate-400 font-bold truncate"
-                                  >Ví: {{ c.wallet_address.substring(0, 8) }}...{{
-                                    c.wallet_address.substring(34)
-                                  }}</span
-                                >
-                                <span
-                                  class="text-xs text-slate-500 dark:text-slate-400 font-semibold"
-                                  >Tự động tạo hồ sơ off-chain</span
-                                >
-                              } @else {
-                                <span
-                                  class="font-extrabold text-slate-800 dark:text-white text-xs truncate"
-                                  >{{ c.name }}</span
-                                >
-                                @if (c.company_name) {
-                                  <span
-                                    class="text-[10px] text-slate-400 dark:text-slate-500 font-bold truncate"
-                                    ><app-icon
-                                      name="building"
-                                      class="h-4.5 w-4.5 text-slate-400 dark:text-slate-500 shrink-0 inline-block"
-                                      strokeWidth="2"
-                                    />
-                                    {{ c.company_name }}</span
-                                  >
-                                }
-                                <span class="text-xs text-slate-400 font-semibold">{{
-                                  c.phone || 'Không có SĐT'
-                                }}</span>
-                              }
-                            </div>
-                            <span
-                              [class]="
-                                c.is_auto_create
-                                  ? 'bg-purple-600 text-white font-black'
-                                  : 'bg-purple-500/10 text-purple-600 dark:text-purple-400 font-black'
-                              "
-                              class="text-[10px] px-1.5 py-0.5 rounded uppercase shrink-0"
-                            >
-                              {{ c.customer_code }}
-                            </span>
-                          </button>
-                        }
-                      }
-                    } @else {
-                      <div class="p-3 text-center text-xs text-slate-400 font-bold">
-                        Không tìm thấy khách hàng!
-                      </div>
-                    }
-                  </div>
-                }
-              } @else {
-                <!-- Trường hợp ĐẠ CHỌN KHÁCH HÀNG: Hiển thị Thẻ thông tin khách hàng cực đẹp -->
-                <div
-                  class="flex items-center justify-between p-2.5 rounded-xl bg-purple-500/5 dark:bg-purple-500/10 border border-purple-500/20 dark:border-purple-500/30 animate-in zoom-in duration-150"
-                >
-                  <div class="flex items-center gap-2.5 min-w-0">
-                    <div
-                      class="w-8 h-8 rounded-xl bg-purple-600 text-white flex items-center justify-center font-extrabold text-xs shrink-0 shadow-sm"
-                    >
-                      {{ posSelectedCustomer().name.charAt(0).toUpperCase() }}
-                    </div>
-                    <div class="flex flex-col min-w-0">
-                      <div class="flex items-center gap-1.5">
-                        <span
-                          class="text-xs font-black text-slate-800 dark:text-white truncate leading-tight"
-                        >
-                          {{ posSelectedCustomer().name }}
-                        </span>
-                        <span
-                          class="text-[8px] bg-purple-600 text-white px-1.5 py-0.2 rounded font-black uppercase shrink-0 tracking-wider"
-                        >
-                          {{ posSelectedCustomer().customer_code }}
-                        </span>
-                      </div>
-                      <span
-                        class="text-xs text-slate-500 dark:text-slate-400 font-bold leading-none mt-0.5"
-                      >
-                        {{ posSelectedCustomer().phone || 'Không có SĐT' }}
-                      </span>
-                      @if (posSelectedCustomer().wallet_address) {
-                        <span
-                          class="text-[10px] text-purple-600 dark:text-purple-400 font-bold leading-none mt-1.5 truncate"
-                          [title]="posSelectedCustomer().wallet_address"
-                        >
-                          Ví: {{ posSelectedCustomer().wallet_address.substring(0, 8) }}...{{
-                            posSelectedCustomer().wallet_address.substring(34)
-                          }}
-                        </span>
-                      }
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    (click)="deselectCustomer()"
-                    class="w-6 h-6 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-500 hover:border-rose-200 dark:hover:bg-rose-950/20 dark:hover:text-rose-400 flex items-center justify-center transition-all shadow-sm active:scale-90 shrink-0"
-                    title="Hủy chọn khách hàng"
-                  >
-                    <app-icon name="close" class="h-3.5 w-3.5" strokeWidth="2.5" />
-                  </button>
-                </div>
-              }
-            </div>
-
-            <!-- Vùng cuộn chính của Giỏ hàng (Voucher & Món ăn) -->
-            <div class="flex-1 overflow-y-auto py-4 space-y-4 pr-1 no-scrollbar-on-scroll">
-              <!-- Nhập ID NFT Voucher thủ công -->
-              @if (posSelectedCustomer() && posSelectedCustomer()?.wallet_address) {
-                <div
-                  class="p-3 bg-purple-500/5 dark:bg-purple-500/10 border border-purple-500/20 dark:border-purple-500/30 rounded-2xl space-y-2 animate-in slide-in-from-top-1 duration-150 shrink-0"
-                >
-                  <label
-                    class="text-[10px] font-black text-purple-600 dark:text-purple-400 uppercase tracking-wider block"
-                  >
-                    Áp dụng NFT Voucher theo ID
-                  </label>
-                  <div class="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Nhập ID NFT (ví dụ: 12)"
-                      [ngModel]="nftVoucherInputId()"
-                      (ngModelChange)="nftVoucherInputId.set($event)"
-                      class="flex-1 form-input-sm"
-                    />
-                    <button
-                      type="button"
-                      (click)="applyNftVoucherById()"
-                      [disabled]="isNftVoucherLoading() || !nftVoucherInputId().trim()"
-                      class="btn-primary btn-sm shrink-0"
-                    >
-                      @if (isNftVoucherLoading()) {
-                        <div
-                          class="w-3 h-3 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                        ></div>
-                      }
-                      <span>Áp dụng</span>
-                    </button>
-                  </div>
-                </div>
-              }
-
-              <!-- Hiển thị Voucher NFT Khả Dụng -->
-              @if (posSelectedCustomer() && posActiveVouchers().length > 0) {
-                <div class="space-y-2 animate-in fade-in slide-in-from-top-1 duration-150 shrink-0">
-                  <div
-                    class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center justify-between"
-                  >
-                    <span>Voucher NFT khả dụng ({{ posActiveVouchers().length }})</span>
-                    @if (posSelectedVoucher()) {
-                      <button
-                        type="button"
-                        (click)="posSelectedVoucher.set(null)"
-                        class="text-[10px] text-rose-500 font-bold hover:underline"
-                      >
-                        Hủy áp dụng
-                      </button>
-                    }
-                  </div>
-                  <div class="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto no-scrollbar pr-1">
-                    @for (voucher of posActiveVouchers(); track voucher.code) {
-                      <div
-                        (click)="selectVoucher(voucher)"
-                        [class]="
-                          posSelectedVoucher()?.code === voucher.code
-                            ? 'bg-purple-500/10 dark:bg-purple-500/20 border-purple-500 dark:border-purple-400 text-purple-600 dark:text-purple-400'
-                            : cartTotal() < voucher.min_order_amount
-                              ? 'opacity-50 cursor-not-allowed bg-slate-50 dark:bg-slate-950 border-slate-200/50 dark:border-slate-800/50 text-slate-400 dark:text-slate-600'
-                              : 'bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800/60 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
-                        "
-                        class="flex items-center justify-between px-3 py-2.5 rounded-xl border border-dashed text-xs font-bold cursor-pointer transition-all duration-200 active:scale-[0.98] select-none"
-                      >
-                        <div class="flex items-center gap-2">
-                          <div class="flex flex-col">
-                            <span
-                              class="font-extrabold text-xs uppercase tracking-wide leading-tight flex items-center gap-1.5"
-                            >
-                              {{ formatVoucherCode(voucher.code) }}
-                              @if (voucher.isNft) {
-                                <span
-                                  class="text-[8px] bg-purple-500/20 text-purple-600 dark:text-purple-400 px-1.5 py-0.5 rounded font-black border border-purple-500/25"
-                                  >NFT #{{ voucher.tokenId }}</span
-                                >
-                              }
-                            </span>
-                            <span
-                              class="text-[10px] font-bold text-slate-400 dark:text-slate-500 mt-0.5 flex flex-wrap items-center gap-x-1"
-                            >
-                              <span>Đơn tối thiểu: {{ voucher.min_order_amount | vnd }}</span>
-                              @if (voucher.expired_at) {
-                                <span>•</span>
-                                <span class="text-rose-500 dark:text-rose-400 font-bold"
-                                  >Hạn dùng: {{ voucher.expired_at | date: 'dd/MM/yyyy' }}</span
-                                >
-                              }
-                            </span>
-                          </div>
-                        </div>
-                        <div class="flex items-center gap-1.5 shrink-0">
-                          <span class="font-black text-purple-600 dark:text-purple-400"
-                            >-{{ voucher.discount_amount | vnd }}</span
-                          >
-                          @if (posSelectedVoucher()?.code === voucher.code) {
-                            <span
-                              class="w-4 h-4 rounded-full bg-purple-600 dark:bg-purple-500 text-white flex items-center justify-center shrink-0"
-                            >
-                              <app-icon
-                                name="check"
-                                class="h-2.5 w-2.5 text-white"
-                                strokeWidth="3"
-                              />
-                            </span>
-                          }
-                        </div>
-                      </div>
-                    }
-                  </div>
-                </div>
-              }
-
-              <!-- Tiêu đề phân đoạn Món đã chọn -->
-              @if (cart().length > 0) {
-                <div
-                  class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider pt-2 border-t border-slate-100 dark:border-slate-800/40 shrink-0"
-                >
-                  Món đã chọn ({{ posTotalQuantity() }})
-                </div>
-              }
-
-              <!-- Danh sách món đã chọn thực tế -->
-              <div class="space-y-3">
-                @if (cart().length === 0) {
-                  <div class="flex flex-col items-center justify-center py-10 text-center gap-3">
-                    <app-icon
-                      name="coffee"
-                      class="h-10 w-10 text-slate-300 dark:text-slate-700"
-                      strokeWidth="2"
-                    />
-                    <span class="text-xs font-bold text-slate-400">Giỏ hàng trống!</span>
-                    <span class="text-xs text-slate-400/80 px-4"
-                      >Hãy chọn món ngon từ thực đơn bên trái để ghi nhận hóa đơn.</span
-                    >
-                  </div>
-                } @else {
-                  @for (
-                    item of cart();
-                    track item.product.id + '_' + (item.variant?.id || 'default')
-                  ) {
-                    <div
-                      class="flex flex-col gap-2 p-3 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-900/60 group animate-in fade-in slide-in-from-top-1 duration-150"
-                    >
-                      <div class="flex items-center justify-between gap-3">
-                        <div class="flex-1 min-w-0">
-                          <div class="flex items-center gap-1.5 flex-wrap">
-                            <h6
-                              class="text-sm font-bold text-slate-800 dark:text-white line-clamp-2 whitespace-normal leading-tight"
-                            >
-                              {{ item.product.name }}
-                            </h6>
-                            @if (item.variant) {
-                              <span
-                                class="text-xs bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-extrabold px-1.5 py-0.5 rounded-md uppercase tracking-wider shrink-0"
-                                >{{ item.variant.variant_name }}</span
-                              >
-                            }
-                          </div>
-                          <span class="text-xs text-slate-400 font-bold"
-                            >{{
-                              (item.variant ? item.variant.price : item.product.price) | number
-                            }}đ
-                            @if (item.product.unit) {
-                              <span> / {{ item.product.unit }}</span>
-                            }
-                          </span>
-                        </div>
-                        <div class="flex items-center gap-2 shrink-0">
-                          <button
-                            (click)="removeFromCart(item.product.id, item.variant?.id)"
-                            class="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-rose-50 hover:text-rose-500 flex items-center justify-center text-sm font-bold transition-all"
-                          >
-                            -
-                          </button>
-                          <span
-                            class="text-sm font-extrabold text-slate-800 dark:text-white min-w-5 text-center"
-                            >{{ item.quantity }}</span
-                          >
-                          <button
-                            (click)="increaseQuantity(item.product.id, item.variant?.id)"
-                            class="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-[var(--dynamic-primary)] hover:text-white flex items-center justify-center text-sm font-bold transition-all hover:scale-105 active:scale-95"
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-
-                      <!-- Ô Nhập Ghi chú dưới sản phẩm (Theo thiết kế Sổ Bán Hàng) -->
-                      <div class="pt-1.5 border-t border-slate-200/40 dark:border-slate-900/60">
-                        <div class="relative">
-                          <input
-                            type="text"
-                            [ngModel]="item.note"
-                            (ngModelChange)="
-                              updateItemNote(item.product.id, item.variant?.id, $event)
-                            "
-                            placeholder="Nhập ghi chú cho món..."
-                            class="w-full form-input-sm bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  }
-                }
-              </div>
-            </div>
-
-            <!-- Cấu hình chi tiết hóa đơn đặt món -->
-            @if (cart().length > 0) {
-              <div
-                class="pt-4 border-t border-slate-200/60 dark:border-slate-800/60 space-y-4 shrink-0 bg-white dark:bg-slate-900 transition-colors duration-300"
-              >
-                <!-- Số bàn và Phương thức thanh toán -->
-                <div
-                  class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2 gap-3.5 relative"
-                >
-                  <!-- Dropdown Chọn bàn ăn -->
-                  <div class="space-y-1.5 relative">
-                    <label class="text-xs font-bold text-slate-400">Chọn bàn ăn</label>
-                    <button
-                      type="button"
-                      (click)="toggleTableDropdown()"
-                      class="w-full px-2.5 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-xs sm:text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white flex items-center justify-between font-semibold transition-all hover:bg-slate-100/50 dark:hover:bg-slate-900/50"
-                    >
-                      <span class="whitespace-nowrap">
-                        @if (!tableNumber()) {
-                          Mang về
-                        } @else {
-                          Bàn {{ tableNumber() }}
-                        }
-                      </span>
-                      <app-icon
-                        name="chevron-down"
-                        class="text-slate-400 transition-transform duration-200 shrink-0 ml-2 h-3.5 w-3.5"
-                        [class.rotate-180]="isTableDropdownOpen()"
-                        strokeWidth="2.5"
-                      />
-                    </button>
-
-                    <!-- Overlay click-outside để đóng dropdown -->
-                    @if (isTableDropdownOpen()) {
-                      <div
-                        (click)="isTableDropdownOpen.set(false)"
-                        class="fixed inset-0 z-20"
-                      ></div>
-
-                      <!-- Dropdown Menu nổi lên trên bóng bẩy -->
-                      <div
-                        class="absolute bottom-full mb-2 right-0 left-0 z-30 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl shadow-xl py-1.5 max-h-64 overflow-y-auto no-scrollbar transition-all animate-in fade-in slide-in-from-bottom-2 duration-150"
-                      >
-                        <button
-                          type="button"
-                          (click)="selectTable('')"
-                          [class.bg-purple-50]="!tableNumber()"
-                          [class.dark:bg-purple-950/40]="!tableNumber()"
-                          class="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200 font-semibold flex items-center gap-2 transition-colors"
-                        >
-                          Mang về
-                        </button>
-
-                        @for (area of areas(); track area.id) {
-                          <div
-                            class="px-4 py-1.5 text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider bg-slate-50/50 dark:bg-slate-950/40 border-y border-slate-100/50 dark:border-slate-800/40 my-1"
-                          >
-                            {{ area.name }}
-                          </div>
-                          @for (tb of diningTables(); track tb.id) {
-                            @if (tb.area_id === area.id) {
-                              <button
-                                type="button"
-                                (click)="selectTable(tb.name)"
-                                [class.bg-purple-50]="tableNumber() === tb.name"
-                                [class.dark:bg-purple-950/40]="tableNumber() === tb.name"
-                                class="w-full px-5 py-2 text-left text-xs hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-300 font-bold flex items-center justify-between transition-colors"
-                              >
-                                <span>Bàn {{ tb.name }}</span>
-                                <span
-                                  [class]="
-                                    tb.status === 'using'
-                                      ? 'bg-amber-500/10 text-amber-500'
-                                      : 'bg-emerald-500/10 text-emerald-500'
-                                  "
-                                  class="px-1.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wide"
-                                >
-                                  {{ tb.status === 'using' ? 'Sử dụng' : 'Trống' }}
-                                </span>
-                              </button>
-                            }
-                          }
-                        }
-                      </div>
-                    }
-                  </div>
-
-                  <!-- Custom Dropdown Thanh toán -->
-                  <div class="space-y-1.5 relative">
-                    <label class="text-xs font-bold text-slate-400">Thanh toán</label>
-                    <button
-                      type="button"
-                      (click)="togglePaymentDropdown()"
-                      class="w-full px-2.5 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-xs sm:text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white flex items-center justify-between font-semibold transition-all hover:bg-slate-100/50 dark:hover:bg-slate-900/50"
-                    >
-                      <span class="flex items-center gap-1 whitespace-nowrap min-w-0">
-                        @if (paymentMethod() === 'cash') {
-                          <app-icon
-                            name="financials"
-                            class="h-3.5 w-3.5 shrink-0 inline-block mr-1.5 text-slate-500"
-                            strokeWidth="2"
-                          />
-                          <span>Tiền mặt</span>
-                        } @else if (paymentMethod() === 'bank_transfer') {
-                          <app-icon
-                            name="building"
-                            class="h-3.5 w-3.5 shrink-0 inline-block mr-1.5 text-slate-500"
-                            strokeWidth="2"
-                          />
-                          <span>Chuyển khoản</span>
-                        } @else if (paymentMethod() === 'crypto') {
-                          <app-icon
-                            name="blockchain"
-                            class="h-3.5 w-3.5 shrink-0 inline-block mr-1.5 text-slate-500"
-                            strokeWidth="2"
-                          />
-                          <span>Crypto</span>
-                        } @else if (paymentMethod() === 'e_wallet') {
-                          <app-icon
-                            name="wallet"
-                            class="h-3.5 w-3.5 shrink-0 inline-block mr-1.5 text-slate-500"
-                            strokeWidth="2"
-                          />
-                          <span>Ví điện tử</span>
-                        } @else if (paymentMethod() === 'debt') {
-                          <app-icon
-                            name="debts"
-                            class="h-3.5 w-3.5 shrink-0 inline-block mr-1.5 text-slate-500"
-                            strokeWidth="2"
-                          />
-                          <span>Ghi nợ</span>
-                        }
-                      </span>
-                      <app-icon
-                        name="chevron-down"
-                        class="text-slate-400 transition-transform duration-200 shrink-0 ml-2 h-3.5 w-3.5"
-                        [class.rotate-180]="isPaymentDropdownOpen()"
-                        strokeWidth="2.5"
-                      />
-                    </button>
-
-                    <!-- Overlay click-outside để đóng dropdown -->
-                    @if (isPaymentDropdownOpen()) {
-                      <div
-                        (click)="isPaymentDropdownOpen.set(false)"
-                        class="fixed inset-0 z-20"
-                      ></div>
-
-                      <!-- Dropdown Menu nổi lên trên bóng bẩy -->
-                      <div
-                        class="absolute bottom-full mb-2 right-0 left-0 z-30 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl shadow-xl py-1.5 transition-all animate-in fade-in slide-in-from-bottom-2 duration-150"
-                      >
-                        <button
-                          type="button"
-                          (click)="selectPaymentMethod('cash')"
-                          [class.bg-purple-50]="paymentMethod() === 'cash'"
-                          [class.dark:bg-purple-950/40]="paymentMethod() === 'cash'"
-                          class="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200 font-semibold flex items-center gap-2 transition-colors"
-                        >
-                          Tiền mặt
-                        </button>
-                        <button
-                          type="button"
-                          (click)="selectPaymentMethod('bank_transfer')"
-                          [class.bg-purple-50]="paymentMethod() === 'bank_transfer'"
-                          [class.dark:bg-purple-950/40]="paymentMethod() === 'bank_transfer'"
-                          class="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200 font-semibold flex items-center gap-2 transition-colors"
-                        >
-                          Chuyển khoản
-                        </button>
-                        <button
-                          type="button"
-                          (click)="selectPaymentMethod('e_wallet')"
-                          [class.bg-purple-50]="paymentMethod() === 'e_wallet'"
-                          [class.dark:bg-purple-950/40]="paymentMethod() === 'e_wallet'"
-                          class="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200 font-semibold flex items-center gap-2 transition-colors"
-                        >
-                          Ví điện tử
-                        </button>
-                        <button
-                          type="button"
-                          (click)="selectPaymentMethod('debt')"
-                          [class.bg-purple-50]="paymentMethod() === 'debt'"
-                          [class.dark:bg-purple-950/40]="paymentMethod() === 'debt'"
-                          class="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200 font-semibold flex items-center gap-2 transition-colors"
-                        >
-                          Ghi nợ
-                        </button>
-                        @if (settings().show_crypto_payment === '1') {
-                          <button
-                            type="button"
-                            (click)="selectPaymentMethod('crypto')"
-                            [class.bg-purple-50]="paymentMethod() === 'crypto'"
-                            [class.dark:bg-purple-950/40]="paymentMethod() === 'crypto'"
-                            class="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200 font-semibold flex items-center gap-2 transition-colors"
-                          >
-                            Crypto
-                          </button>
-                        }
-                      </div>
-                    }
-                  </div>
-                </div>
-
-                <!-- Cảnh báo thiếu khách hàng khi ghi nợ -->
-                @if (paymentMethod() === 'debt' && !posSelectedCustomer()) {
-                  <div
-                    class="mt-2.5 p-2.5 rounded-xl bg-[var(--dynamic-primary)]/10 border border-[var(--dynamic-primary)]/20 text-[var(--dynamic-primary)] text-xs font-semibold flex items-start gap-1.5 animate-pulse"
-                  >
-                    <app-icon name="warning" class="h-4 w-4 shrink-0 mt-0.5" strokeWidth="2" />
-                    <span
-                      >Vui lòng chọn hoặc tìm kiếm khách hàng trước khi chọn phương thức Ghi
-                      nợ.</span
-                    >
-                  </div>
-                }
-
-                <!-- Chuyển đổi chế độ thanh toán POS đã được di chuyển lên Header -->
-
-                <!-- Tính tổng tiền -->
-                <div class="space-y-1.5 py-1">
-                  @if (posSelectedVoucher()) {
-                    <div
-                      class="flex items-center justify-between text-xs font-bold text-slate-500 dark:text-slate-400"
-                    >
-                      <span>Tạm tính</span>
-                      <span>{{ cartTotal() | vnd }}</span>
-                    </div>
-                    <div
-                      class="flex items-center justify-between text-xs font-bold text-emerald-600 dark:text-emerald-400"
-                    >
-                      <span class="flex items-center gap-1">
-                        <span>Giảm giá voucher</span>
-                        <span
-                          class="text-xs uppercase bg-emerald-100 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded font-extrabold"
-                        >
-                          {{ formatVoucherCode(posSelectedVoucher().code) }}
-                          @if (posSelectedVoucher().isNft) {
-                            <span
-                              class="text-[10px] font-black text-emerald-700 dark:text-emerald-300 ml-1"
-                              >#{{ posSelectedVoucher().tokenId }}</span
-                            >
-                          }
-                        </span>
-                      </span>
-                      <span>-{{ posSelectedVoucher().discount_amount | vnd }}</span>
-                    </div>
-                  }
-                  <div
-                    class="flex items-center justify-between pt-1 border-t border-dashed border-slate-200/50 dark:border-slate-800/50"
-                  >
-                    <span class="text-xs font-extrabold text-slate-500">TỔNG CỘNG HÓA ĐƠN</span>
-                    <span class="text-xl font-black text-purple-600 dark:text-purple-400">
-                      {{ posFinalTotal() | vnd }}
-                    </span>
-                  </div>
-                </div>
-
-                <!-- Nút Hủy chỉnh sửa đơn hàng -->
-                @if (editingOrderId()) {
-                  <button (click)="cancelEditOrder()" class="btn-cancel w-full mb-3.5">
-                    <app-icon name="close" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
-                    <span>Hủy chỉnh sửa đơn hàng</span>
-                  </button>
-                }
-
-                <button
-                  (click)="handlePosOrderClick()"
-                  [disabled]="isOrderSubmitting() || !web3Service.walletConnected()"
-                  class="btn-primary w-full"
-                >
-                  @if (isOrderSubmitting()) {
-                    <div
-                      class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                    ></div>
-                    <span>{{
-                      editingOrderId() ? 'Đang cập nhật đơn...' : 'Đang ghi nhận đơn hàng...'
-                    }}</span>
-                  } @else {
-                    <app-icon name="bolt" class="h-4 w-4 shrink-0" strokeWidth="2" />
-                    <span>{{
-                      editingOrderId() ? 'Cập nhật đơn hàng' : 'Ghi nhận & Đặt đơn hàng'
-                    }}</span>
-                  }
-                </button>
-              </div>
-            }
           } @else {
-            <!-- GIAO DIỆN BẮT BUỘC MỞ CA TRỰC (SHIFT GUARD) -->
-            <div class="flex-1 flex flex-col justify-center py-6 px-4 text-center space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4.5">
+              @for (p of paginatedPosProducts(); track p.id) {
+                <div
+                  (click)="web3Service.walletConnected() ? addToCart(p) : null"
+                  [class.cursor-default]="!web3Service.walletConnected()"
+                  [class.app-card]="!web3Service.walletConnected()"
+                  [class.app-card-interactive]="web3Service.walletConnected()"
+                  class="group p-0 overflow-hidden flex flex-col h-full"
+                >
+                  <!-- Hình ảnh món ăn có overlay mờ -->
+                  <div
+                    class="relative h-40 w-full bg-slate-100 dark:bg-slate-800 overflow-hidden shrink-0"
+                  >
+                    <img
+                      [src]="getProductImage(p.image)"
+                      (error)="handleImageError($event)"
+                      [alt]="p.name"
+                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div
+                      class="absolute inset-0 bg-slate-950/5 group-hover:bg-slate-950/0 transition-all"
+                    ></div>
+                    <!-- Hiển thị toàn bộ các badge danh mục Nhiều-Nhiều của sản phẩm -->
+                    <div class="absolute top-3 left-3 flex flex-wrap gap-1 max-w-[calc(100%-24px)]">
+                      @for (cat of p.categories; track cat.id) {
+                        <span
+                          class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm text-purple-600 dark:text-purple-400 text-[10px] font-extrabold px-2 py-0.5 rounded-xl shadow-sm border border-purple-200/10 dark:border-purple-800/10"
+                        >
+                          {{ cat.name }}
+                        </span>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Informative card content -->
+                  <div class="p-4.5 flex-1 flex flex-col justify-between gap-3">
+                    <div class="space-y-1">
+                      <h5
+                        class="font-extrabold text-slate-800 dark:text-white text-[14px] sm:text-base leading-tight group-hover:text-purple-600 transition-colors"
+                      >
+                        {{ p.name }}
+                      </h5>
+                      @if (p.short_description) {
+                        <p
+                          class="text-xs text-slate-400 dark:text-slate-500 font-medium line-clamp-2 mt-0.5 leading-relaxed"
+                        >
+                          {{ p.short_description }}
+                        </p>
+                      }
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="font-black text-slate-900 dark:text-white text-base">
+                        {{ getProductPriceDisplay(p) }}đ
+                        @if (p.unit) {
+                          <span class="text-xs font-semibold text-slate-400">/ {{ p.unit }}</span>
+                        }
+                      </span>
+                      @if (web3Service.walletConnected()) {
+                        <div class="btn-add-cart">+</div>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Phân trang Bán hàng POS -->
+            @if (posTotalItems() > posItemsPerPage) {
+              <app-pagination
+                [currentPage]="posCurrentPage()"
+                [totalPages]="posTotalPages()"
+                [totalItems]="posTotalItems()"
+                [itemsPerPage]="posItemsPerPage"
+                itemName="món"
+                (pageChange)="posCurrentPage.set($event)"
+              ></app-pagination>
+            }
+          }
+        </div>
+      </div>
+
+      <!-- CỘT 3: GIỎ HÀNG & THANH TOÁN (RIGHT) -->
+      <div
+        class="xl:col-span-2 app-card flex flex-col h-auto xl:h-[calc(100vh-115px)] min-h-[400px] xl:min-h-[600px] xl:sticky xl:top-[50px]"
+      >
+        @if (web3Service.walletConnected()) {
+          @if (stateService.hasPermission('pos')) {
+            @if (stateService.currentShift() && stateService.currentShift().id) {
               <div
-                class="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500/20 to-purple-500/10 flex items-center justify-center mx-auto animate-pulse"
+                class="flex items-center justify-between pb-4 border-b border-slate-200/60 dark:border-slate-800/60"
               >
-                <app-icon
-                  name="lock"
-                  class="h-8 w-8 text-purple-600 dark:text-purple-400"
-                  strokeWidth="2"
-                />
-              </div>
-              <div class="space-y-2">
-                <h4 class="text-base font-extrabold text-slate-800 dark:text-white">
-                  Bắt đầu ca làm việc mới
+                <h4
+                  class="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2"
+                >
+                  <app-icon name="cart" class="h-5 w-5 text-slate-500 shrink-0" strokeWidth="2" />
+                  <span>Giỏ hàng bán hàng</span>
                 </h4>
-                <p class="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
-                  Bạn chưa mở ca trực. Vui lòng khai báo số tiền mặt ban đầu trong két để bắt đầu
-                  ghi nhận doanh thu và bán hàng POS.
-                </p>
+                @if (cart().length > 0) {
+                  <button
+                    (click)="clearCart()"
+                    class="text-xs font-bold text-rose-500 hover:underline"
+                  >
+                    Xóa tất cả
+                  </button>
+                }
               </div>
 
-              <div class="space-y-4 text-left">
-                <div class="space-y-1.5 relative">
-                  <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1"
-                    >Số tiền mặt đầu ca (két tiền)</label
-                  >
+              <!-- Ô Tìm kiếm và Chọn Khách hàng (Tối ưu sang trọng) -->
+              <div
+                class="py-3 border-b border-slate-200/50 dark:border-slate-800/80 relative shrink-0"
+              >
+                <!-- Trường hợp CHƯA CHỌN KHÁCH HÀNG: Hiển thị ô input search -->
+                @if (!posSelectedCustomer()) {
                   <div class="relative">
                     <input
                       type="text"
-                      [value]="initialCashFormatted()"
-                      (input)="onInitialCashInput($event)"
-                      placeholder="Nhập số tiền mặt (Ví dụ: 1,000,000)"
-                      class="form-input pr-12 text-base font-extrabold text-[var(--dynamic-primary)]"
+                      [ngModel]="posCustomerSearchQuery()"
+                      (ngModelChange)="onCustomerSearchChange($event)"
+                      placeholder="Tìm họ tên, số điện thoại hoặc email khách..."
+                      class="w-full search-input pr-8"
                     />
-                    <span
-                      class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400"
-                      >đ</span
-                    >
+                    <app-icon
+                      name="search"
+                      class="absolute left-3 top-3 h-4 w-4 text-slate-400"
+                      strokeWidth="2.5"
+                    />
+                    @if (isCustomerSearching()) {
+                      <span
+                        class="absolute right-3.5 top-3 w-4 h-4 rounded-full border-2 border-slate-200 border-t-purple-650 animate-spin"
+                      ></span>
+                    } @else if (posCustomerSearchQuery()) {
+                      <button
+                        type="button"
+                        (click)="onCustomerSearchChange(''); isCustomerDropdownOpen.set(false)"
+                        class="absolute right-3.5 top-2.5 text-slate-400 hover:text-slate-650 flex items-center justify-center p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
+                        title="Xóa tìm kiếm"
+                      >
+                        <app-icon name="close" class="h-3.5 w-3.5" strokeWidth="2.5" />
+                      </button>
+                    }
                   </div>
-                </div>
 
-                <!-- Gợi ý nhanh số tiền đầu ca -->
-                <div class="flex flex-wrap gap-2 pt-1">
-                  <button
-                    type="button"
-                    (click)="initialCashInput.set(0)"
-                    class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-850 dark:hover:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-400 transition-all"
-                  >
-                    Két trống
-                  </button>
-                  <button
-                    type="button"
-                    (click)="initialCashInput.set(500000)"
-                    class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-850 dark:hover:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-400 transition-all"
-                  >
-                    500K
-                  </button>
-                  <button
-                    type="button"
-                    (click)="initialCashInput.set(1000000)"
-                    class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-850 dark:hover:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-400 transition-all"
-                  >
-                    1 Triệu
-                  </button>
-                  <button
-                    type="button"
-                    (click)="initialCashInput.set(2000000)"
-                    class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-850 dark:hover:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-400 transition-all"
-                  >
-                    2 Triệu
-                  </button>
-                </div>
+                  <!-- Dropdown Kết quả tìm kiếm khách hàng tải từ máy chủ -->
+                  @if (isCustomerDropdownOpen() && posCustomerSearchQuery().trim() !== '') {
+                    <!-- Click-outside overlay to close -->
+                    <div
+                      (click)="isCustomerDropdownOpen.set(false)"
+                      class="fixed inset-0 z-20"
+                    ></div>
 
-                <button
-                  type="button"
-                  (click)="startShift()"
-                  [disabled]="stateService.isLoading()"
-                  class="w-full btn-primary h-12 text-sm shadow-lg shadow-[var(--color-primary)]/20 flex items-center justify-center gap-1.5"
-                >
-                  @if (stateService.isLoading()) {
-                    <div class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"></div>
-                    <span>Đang mở ca...</span>
-                  } @else {
-                    <app-icon name="lock-open" class="h-4 w-4 shrink-0" strokeWidth="2" />
-                    <span>Mở ca & Bắt đầu bán hàng</span>
+                    <div
+                      class="absolute top-full left-0 right-0 mt-1 z-30 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 max-h-52 overflow-y-auto no-scrollbar animate-in fade-in slide-in-from-top-1 duration-150"
+                    >
+                      @if (isCustomerSearching()) {
+                        <div
+                          class="p-4.5 text-center text-xs text-slate-400 font-bold flex items-center justify-center gap-2"
+                        >
+                          <div
+                            class="w-3.5 h-3.5 rounded-full border-2 border-slate-200 border-t-purple-650 animate-spin"
+                          ></div>
+                          <span>Đang tìm kiếm khách hàng...</span>
+                        </div>
+                      } @else if (posSearchedCustomers().length > 0) {
+                        @for (c of posSearchedCustomers(); track c.id) {
+                          @if (c.is_pending_wallet) {
+                            <!-- Trạng thái đang chờ nhập đủ ký tự ví EVM -->
+                            <div
+                              class="w-full px-4 py-3 text-left text-xs text-slate-500 dark:text-slate-400 font-bold flex flex-col gap-1.5 cursor-default"
+                            >
+                              <div class="flex items-center gap-2">
+                                <span class="text-base shrink-0"
+                                  ><app-icon
+                                    name="wallet"
+                                    class="h-4 w-4 shrink-0 inline-block"
+                                    strokeWidth="2"
+                                /></span>
+                                <span
+                                  class="font-extrabold text-slate-600 dark:text-slate-300 text-xs"
+                                  >{{ c.name }}</span
+                                >
+                              </div>
+                              <div
+                                class="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden"
+                              >
+                                <div
+                                  class="bg-purple-500 h-1.5 rounded-full transition-all duration-300"
+                                  [style.width.%]="
+                                    (posCustomerSearchQuery().trim().length / 42) * 100
+                                  "
+                                ></div>
+                              </div>
+                              <span class="text-[10px] text-slate-400 font-semibold"
+                                >Nhập đủ 42 ký tự ví EVM (bắt đầu 0x...) để tìm kiếm</span
+                              >
+                            </div>
+                          } @else {
+                            <button
+                              type="button"
+                              (click)="selectCustomerForOrder(c)"
+                              class="w-full px-4 py-2.5 text-left text-xs hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200 font-bold flex items-center justify-between border-b border-slate-100/50 dark:border-slate-800/40 last:border-b-0"
+                            >
+                              <div class="flex flex-col min-w-0 pr-2">
+                                @if (c.is_auto_create) {
+                                  <span
+                                    class="font-extrabold text-purple-600 dark:text-purple-400 text-xs truncate"
+                                    ><app-icon
+                                      name="sparkles"
+                                      class="h-4 w-4 shrink-0 inline-block"
+                                      strokeWidth="2"
+                                    />
+                                    {{ c.name }}</span
+                                  >
+                                  <span class="text-[10px] text-slate-400 font-bold truncate"
+                                    >Ví: {{ c.wallet_address.substring(0, 8) }}...{{
+                                      c.wallet_address.substring(34)
+                                    }}</span
+                                  >
+                                  <span
+                                    class="text-xs text-slate-500 dark:text-slate-400 font-semibold"
+                                    >Tự động tạo hồ sơ off-chain</span
+                                  >
+                                } @else {
+                                  <span
+                                    class="font-extrabold text-slate-800 dark:text-white text-xs truncate"
+                                    >{{ c.name }}</span
+                                  >
+                                  @if (c.company_name) {
+                                    <span
+                                      class="text-[10px] text-slate-400 dark:text-slate-500 font-bold truncate"
+                                      ><app-icon
+                                        name="building"
+                                        class="h-4.5 w-4.5 text-slate-400 dark:text-slate-500 shrink-0 inline-block"
+                                        strokeWidth="2"
+                                      />
+                                      {{ c.company_name }}</span
+                                    >
+                                  }
+                                  <span class="text-xs text-slate-400 font-semibold">{{
+                                    c.phone || 'Không có SĐT'
+                                  }}</span>
+                                }
+                              </div>
+                              <span
+                                [class]="
+                                  c.is_auto_create
+                                    ? 'bg-purple-600 text-white font-black'
+                                    : 'bg-purple-500/10 text-purple-600 dark:text-purple-400 font-black'
+                                "
+                                class="text-[10px] px-1.5 py-0.5 rounded uppercase shrink-0"
+                              >
+                                {{ c.customer_code }}
+                              </span>
+                            </button>
+                          }
+                        }
+                      } @else {
+                        <div class="p-3 text-center text-xs text-slate-400 font-bold">
+                          Không tìm thấy khách hàng!
+                        </div>
+                      }
+                    </div>
                   }
-                </button>
+                } @else {
+                  <!-- Trường hợp ĐẠ CHỌN KHÁCH HÀNG: Hiển thị Thẻ thông tin khách hàng cực đẹp -->
+                  <div
+                    class="flex items-center justify-between p-2.5 rounded-xl bg-purple-500/5 dark:bg-purple-500/10 border border-purple-500/20 dark:border-purple-500/30 animate-in zoom-in duration-150"
+                  >
+                    <div class="flex items-center gap-2.5 min-w-0">
+                      <div
+                        class="w-8 h-8 rounded-xl bg-purple-600 text-white flex items-center justify-center font-extrabold text-xs shrink-0 shadow-sm"
+                      >
+                        {{ posSelectedCustomer().name.charAt(0).toUpperCase() }}
+                      </div>
+                      <div class="flex flex-col min-w-0">
+                        <div class="flex items-center gap-1.5">
+                          <span
+                            class="text-xs font-black text-slate-800 dark:text-white truncate leading-tight"
+                          >
+                            {{ posSelectedCustomer().name }}
+                          </span>
+                          <span
+                            class="text-[8px] bg-purple-600 text-white px-1.5 py-0.2 rounded font-black uppercase shrink-0 tracking-wider"
+                          >
+                            {{ posSelectedCustomer().customer_code }}
+                          </span>
+                        </div>
+                        <span
+                          class="text-xs text-slate-500 dark:text-slate-400 font-bold leading-none mt-0.5"
+                        >
+                          {{ posSelectedCustomer().phone || 'Không có SĐT' }}
+                        </span>
+                        @if (posSelectedCustomer().wallet_address) {
+                          <span
+                            class="text-[10px] text-purple-600 dark:text-purple-400 font-bold leading-none mt-1.5 truncate"
+                            [title]="posSelectedCustomer().wallet_address"
+                          >
+                            Ví: {{ posSelectedCustomer().wallet_address.substring(0, 8) }}...{{
+                              posSelectedCustomer().wallet_address.substring(34)
+                            }}
+                          </span>
+                        }
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      (click)="deselectCustomer()"
+                      class="w-6 h-6 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-500 hover:border-rose-200 dark:hover:bg-rose-950/20 dark:hover:text-rose-400 flex items-center justify-center transition-all shadow-sm active:scale-90 shrink-0"
+                      title="Hủy chọn khách hàng"
+                    >
+                      <app-icon name="close" class="h-3.5 w-3.5" strokeWidth="2.5" />
+                    </button>
+                  </div>
+                }
               </div>
+
+              <!-- Vùng cuộn chính của Giỏ hàng (Voucher & Món ăn) -->
+              <div class="flex-1 overflow-y-auto py-4 space-y-4 pr-1 no-scrollbar-on-scroll">
+                <!-- Nhập ID NFT Voucher thủ công -->
+                @if (posSelectedCustomer() && posSelectedCustomer()?.wallet_address) {
+                  <div
+                    class="p-3 bg-purple-500/5 dark:bg-purple-500/10 border border-purple-500/20 dark:border-purple-500/30 rounded-2xl space-y-2 animate-in slide-in-from-top-1 duration-150 shrink-0"
+                  >
+                    <label
+                      class="text-[10px] font-black text-purple-600 dark:text-purple-400 uppercase tracking-wider block"
+                    >
+                      Áp dụng NFT Voucher theo ID
+                    </label>
+                    <div class="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Nhập ID NFT (ví dụ: 12)"
+                        [ngModel]="nftVoucherInputId()"
+                        (ngModelChange)="nftVoucherInputId.set($event)"
+                        class="flex-1 form-input-sm"
+                      />
+                      <button
+                        app-button
+                        variant="primary"
+                        size="sm"
+                        type="button"
+                        (click)="applyNftVoucherById()"
+                        [loading]="isNftVoucherLoading()"
+                        [disabled]="!nftVoucherInputId().trim()"
+                        class="shrink-0"
+                      >
+                        <span>Áp dụng</span>
+                      </button>
+                    </div>
+                  </div>
+                }
+
+                <!-- Hiển thị Voucher NFT Khả Dụng -->
+                @if (posSelectedCustomer() && posActiveVouchers().length > 0) {
+                  <div
+                    class="space-y-2 animate-in fade-in slide-in-from-top-1 duration-150 shrink-0"
+                  >
+                    <div
+                      class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center justify-between"
+                    >
+                      <span>Voucher NFT khả dụng ({{ posActiveVouchers().length }})</span>
+                      @if (posSelectedVoucher()) {
+                        <button
+                          type="button"
+                          (click)="posSelectedVoucher.set(null)"
+                          class="text-[10px] text-rose-500 font-bold hover:underline"
+                        >
+                          Hủy áp dụng
+                        </button>
+                      }
+                    </div>
+                    <div class="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto no-scrollbar pr-1">
+                      @for (voucher of posActiveVouchers(); track voucher.code) {
+                        <div
+                          (click)="selectVoucher(voucher)"
+                          [class]="
+                            posSelectedVoucher()?.code === voucher.code
+                              ? 'bg-purple-500/10 dark:bg-purple-500/20 border-purple-500 dark:border-purple-400 text-purple-600 dark:text-purple-400'
+                              : cartTotal() < voucher.min_order_amount
+                                ? 'opacity-50 cursor-not-allowed bg-slate-50 dark:bg-slate-950 border-slate-200/50 dark:border-slate-800/50 text-slate-400 dark:text-slate-600'
+                                : 'bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800/60 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
+                          "
+                          class="flex items-center justify-between px-3 py-2.5 rounded-xl border border-dashed text-xs font-bold cursor-pointer transition-all duration-200 active:scale-[0.98] select-none"
+                        >
+                          <div class="flex items-center gap-2">
+                            <div class="flex flex-col">
+                              <span
+                                class="font-extrabold text-xs uppercase tracking-wide leading-tight flex items-center gap-1.5"
+                              >
+                                {{ formatVoucherCode(voucher.code) }}
+                                @if (voucher.isNft) {
+                                  <span
+                                    class="text-[8px] bg-purple-500/20 text-purple-600 dark:text-purple-400 px-1.5 py-0.5 rounded font-black border border-purple-500/25"
+                                    >NFT #{{ voucher.tokenId }}</span
+                                  >
+                                }
+                              </span>
+                              <span
+                                class="text-[10px] font-bold text-slate-400 dark:text-slate-500 mt-0.5 flex flex-wrap items-center gap-x-1"
+                              >
+                                <span>Đơn tối thiểu: {{ voucher.min_order_amount | vnd }}</span>
+                                @if (voucher.expired_at) {
+                                  <span>•</span>
+                                  <span class="text-rose-500 dark:text-rose-400 font-bold"
+                                    >Hạn dùng: {{ voucher.expired_at | date: 'dd/MM/yyyy' }}</span
+                                  >
+                                }
+                              </span>
+                            </div>
+                          </div>
+                          <div class="flex items-center gap-1.5 shrink-0">
+                            <span class="font-black text-purple-600 dark:text-purple-400"
+                              >-{{ voucher.discount_amount | vnd }}</span
+                            >
+                            @if (posSelectedVoucher()?.code === voucher.code) {
+                              <span
+                                class="w-4 h-4 rounded-full bg-purple-600 dark:bg-purple-500 text-white flex items-center justify-center shrink-0"
+                              >
+                                <app-icon
+                                  name="check"
+                                  class="h-2.5 w-2.5 text-white"
+                                  strokeWidth="3"
+                                />
+                              </span>
+                            }
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+
+                <!-- Tiêu đề phân đoạn Món đã chọn -->
+                @if (cart().length > 0) {
+                  <div
+                    class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider pt-2 border-t border-slate-100 dark:border-slate-800/40 shrink-0"
+                  >
+                    Món đã chọn ({{ posTotalQuantity() }})
+                  </div>
+                }
+
+                <!-- Danh sách món đã chọn thực tế -->
+                <div class="space-y-3">
+                  @if (cart().length === 0) {
+                    <div class="flex flex-col items-center justify-center py-10 text-center gap-3">
+                      <app-icon
+                        name="coffee"
+                        class="h-10 w-10 text-slate-300 dark:text-slate-700"
+                        strokeWidth="2"
+                      />
+                      <span class="text-xs font-bold text-slate-400">Giỏ hàng trống!</span>
+                      <span class="text-xs text-slate-400/80 px-4"
+                        >Hãy chọn món ngon từ thực đơn bên trái để ghi nhận hóa đơn.</span
+                      >
+                    </div>
+                  } @else {
+                    @for (
+                      item of cart();
+                      track item.product.id + '_' + (item.variant?.id || 'default')
+                    ) {
+                      <div
+                        class="flex flex-col gap-2 p-3 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-900/60 group animate-in fade-in slide-in-from-top-1 duration-150"
+                      >
+                        <div class="flex items-center justify-between gap-3">
+                          <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                              <h6
+                                class="text-sm font-bold text-slate-800 dark:text-white line-clamp-2 whitespace-normal leading-tight"
+                              >
+                                {{ item.product.name }}
+                              </h6>
+                              @if (item.variant) {
+                                <span
+                                  class="text-xs bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-extrabold px-1.5 py-0.5 rounded-md uppercase tracking-wider shrink-0"
+                                  >{{ item.variant.variant_name }}</span
+                                >
+                              }
+                            </div>
+                            <span class="text-xs text-slate-400 font-bold"
+                              >{{
+                                (item.variant ? item.variant.price : item.product.price) | number
+                              }}đ
+                              @if (item.product.unit) {
+                                <span> / {{ item.product.unit }}</span>
+                              }
+                            </span>
+                          </div>
+                          <div class="flex items-center gap-2 shrink-0">
+                            <button
+                              (click)="removeFromCart(item.product.id, item.variant?.id)"
+                              class="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-rose-50 hover:text-rose-500 flex items-center justify-center text-sm font-bold transition-all"
+                            >
+                              -
+                            </button>
+                            <span
+                              class="text-sm font-extrabold text-slate-800 dark:text-white min-w-5 text-center"
+                              >{{ item.quantity }}</span
+                            >
+                            <button
+                              (click)="increaseQuantity(item.product.id, item.variant?.id)"
+                              class="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-[var(--dynamic-primary)] hover:text-white flex items-center justify-center text-sm font-bold transition-all hover:scale-105 active:scale-95"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+
+                        <!-- Ô Nhập Ghi chú dưới sản phẩm (Theo thiết kế Sổ Bán Hàng) -->
+                        <div class="pt-1.5 border-t border-slate-200/40 dark:border-slate-900/60">
+                          <div class="relative">
+                            <input
+                              type="text"
+                              [ngModel]="item.note"
+                              (ngModelChange)="
+                                updateItemNote(item.product.id, item.variant?.id, $event)
+                              "
+                              placeholder="Nhập ghi chú cho món..."
+                              class="w-full form-input-sm bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    }
+                  }
+                </div>
+              </div>
+
+              <!-- Cấu hình chi tiết hóa đơn đặt món -->
+              @if (cart().length > 0) {
+                <div
+                  class="pt-4 border-t border-slate-200/60 dark:border-slate-800/60 space-y-4 shrink-0 bg-white dark:bg-slate-900 transition-colors duration-300"
+                >
+                  <!-- Số bàn và Phương thức thanh toán -->
+                  <div
+                    class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2 gap-3.5 relative"
+                  >
+                    <!-- Dropdown Chọn bàn ăn -->
+                    <div class="space-y-1.5 relative">
+                      <label class="text-xs font-bold text-slate-400">Chọn bàn ăn</label>
+                      <button
+                        type="button"
+                        (click)="toggleTableDropdown()"
+                        class="w-full px-2.5 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-xs sm:text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white flex items-center justify-between font-semibold transition-all hover:bg-slate-100/50 dark:hover:bg-slate-900/50"
+                      >
+                        <span class="whitespace-nowrap">
+                          @if (!tableNumber()) {
+                            Mang về
+                          } @else {
+                            Bàn {{ tableNumber() }}
+                          }
+                        </span>
+                        <app-icon
+                          name="chevron-down"
+                          class="text-slate-400 transition-transform duration-200 shrink-0 ml-2 h-3.5 w-3.5"
+                          [class.rotate-180]="isTableDropdownOpen()"
+                          strokeWidth="2.5"
+                        />
+                      </button>
+
+                      <!-- Overlay click-outside để đóng dropdown -->
+                      @if (isTableDropdownOpen()) {
+                        <div
+                          (click)="isTableDropdownOpen.set(false)"
+                          class="fixed inset-0 z-20"
+                        ></div>
+
+                        <!-- Dropdown Menu nổi lên trên bóng bẩy -->
+                        <div
+                          class="absolute bottom-full mb-2 right-0 left-0 z-30 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl shadow-xl py-1.5 max-h-64 overflow-y-auto no-scrollbar transition-all animate-in fade-in slide-in-from-bottom-2 duration-150"
+                        >
+                          <button
+                            type="button"
+                            (click)="selectTable('')"
+                            [class.bg-purple-50]="!tableNumber()"
+                            [class.dark:bg-purple-950/40]="!tableNumber()"
+                            class="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200 font-semibold flex items-center gap-2 transition-colors"
+                          >
+                            Mang về
+                          </button>
+
+                          @for (area of areas(); track area.id) {
+                            <div
+                              class="px-4 py-1.5 text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider bg-slate-50/50 dark:bg-slate-950/40 border-y border-slate-100/50 dark:border-slate-800/40 my-1"
+                            >
+                              {{ area.name }}
+                            </div>
+                            @for (tb of diningTables(); track tb.id) {
+                              @if (tb.area_id === area.id) {
+                                <button
+                                  type="button"
+                                  (click)="selectTable(tb.name)"
+                                  [class.bg-purple-50]="tableNumber() === tb.name"
+                                  [class.dark:bg-purple-950/40]="tableNumber() === tb.name"
+                                  class="w-full px-5 py-2 text-left text-xs hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-300 font-bold flex items-center justify-between transition-colors"
+                                >
+                                  <span>Bàn {{ tb.name }}</span>
+                                  <span
+                                    [class]="
+                                      tb.status === 'using'
+                                        ? 'bg-amber-500/10 text-amber-500'
+                                        : 'bg-emerald-500/10 text-emerald-500'
+                                    "
+                                    class="px-1.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wide"
+                                  >
+                                    {{ tb.status === 'using' ? 'Sử dụng' : 'Trống' }}
+                                  </span>
+                                </button>
+                              }
+                            }
+                          }
+                        </div>
+                      }
+                    </div>
+
+                    <!-- Custom Dropdown Thanh toán -->
+                    <div class="space-y-1.5 relative">
+                      <label class="text-xs font-bold text-slate-400">Thanh toán</label>
+                      <button
+                        type="button"
+                        (click)="togglePaymentDropdown()"
+                        class="w-full px-2.5 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200/80 dark:border-slate-800/80 text-xs sm:text-sm focus:outline-none focus:border-[var(--dynamic-primary)] text-slate-800 dark:text-white flex items-center justify-between font-semibold transition-all hover:bg-slate-100/50 dark:hover:bg-slate-900/50"
+                      >
+                        <span class="flex items-center gap-1 whitespace-nowrap min-w-0">
+                          @if (paymentMethod() === 'cash') {
+                            <app-icon
+                              name="financials"
+                              class="h-3.5 w-3.5 shrink-0 inline-block mr-1.5 text-slate-500"
+                              strokeWidth="2"
+                            />
+                            <span>Tiền mặt</span>
+                          } @else if (paymentMethod() === 'bank_transfer') {
+                            <app-icon
+                              name="building"
+                              class="h-3.5 w-3.5 shrink-0 inline-block mr-1.5 text-slate-500"
+                              strokeWidth="2"
+                            />
+                            <span>Chuyển khoản</span>
+                          } @else if (paymentMethod() === 'crypto') {
+                            <app-icon
+                              name="blockchain"
+                              class="h-3.5 w-3.5 shrink-0 inline-block mr-1.5 text-slate-500"
+                              strokeWidth="2"
+                            />
+                            <span>Crypto</span>
+                          } @else if (paymentMethod() === 'e_wallet') {
+                            <app-icon
+                              name="wallet"
+                              class="h-3.5 w-3.5 shrink-0 inline-block mr-1.5 text-slate-500"
+                              strokeWidth="2"
+                            />
+                            <span>Ví điện tử</span>
+                          } @else if (paymentMethod() === 'debt') {
+                            <app-icon
+                              name="debts"
+                              class="h-3.5 w-3.5 shrink-0 inline-block mr-1.5 text-slate-500"
+                              strokeWidth="2"
+                            />
+                            <span>Ghi nợ</span>
+                          }
+                        </span>
+                        <app-icon
+                          name="chevron-down"
+                          class="text-slate-400 transition-transform duration-200 shrink-0 ml-2 h-3.5 w-3.5"
+                          [class.rotate-180]="isPaymentDropdownOpen()"
+                          strokeWidth="2.5"
+                        />
+                      </button>
+
+                      <!-- Overlay click-outside để đóng dropdown -->
+                      @if (isPaymentDropdownOpen()) {
+                        <div
+                          (click)="isPaymentDropdownOpen.set(false)"
+                          class="fixed inset-0 z-20"
+                        ></div>
+
+                        <!-- Dropdown Menu nổi lên trên bóng bẩy -->
+                        <div
+                          class="absolute bottom-full mb-2 right-0 left-0 z-30 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl shadow-xl py-1.5 transition-all animate-in fade-in slide-in-from-bottom-2 duration-150"
+                        >
+                          <button
+                            type="button"
+                            (click)="selectPaymentMethod('cash')"
+                            [class.bg-purple-50]="paymentMethod() === 'cash'"
+                            [class.dark:bg-purple-950/40]="paymentMethod() === 'cash'"
+                            class="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200 font-semibold flex items-center gap-2 transition-colors"
+                          >
+                            Tiền mặt
+                          </button>
+                          <button
+                            type="button"
+                            (click)="selectPaymentMethod('bank_transfer')"
+                            [class.bg-purple-50]="paymentMethod() === 'bank_transfer'"
+                            [class.dark:bg-purple-950/40]="paymentMethod() === 'bank_transfer'"
+                            class="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200 font-semibold flex items-center gap-2 transition-colors"
+                          >
+                            Chuyển khoản
+                          </button>
+                          <button
+                            type="button"
+                            (click)="selectPaymentMethod('e_wallet')"
+                            [class.bg-purple-50]="paymentMethod() === 'e_wallet'"
+                            [class.dark:bg-purple-950/40]="paymentMethod() === 'e_wallet'"
+                            class="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200 font-semibold flex items-center gap-2 transition-colors"
+                          >
+                            Ví điện tử
+                          </button>
+                          <button
+                            type="button"
+                            (click)="selectPaymentMethod('debt')"
+                            [class.bg-purple-50]="paymentMethod() === 'debt'"
+                            [class.dark:bg-purple-950/40]="paymentMethod() === 'debt'"
+                            class="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200 font-semibold flex items-center gap-2 transition-colors"
+                          >
+                            Ghi nợ
+                          </button>
+                          @if (settings().show_crypto_payment === '1') {
+                            <button
+                              type="button"
+                              (click)="selectPaymentMethod('crypto')"
+                              [class.bg-purple-50]="paymentMethod() === 'crypto'"
+                              [class.dark:bg-purple-950/40]="paymentMethod() === 'crypto'"
+                              class="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200 font-semibold flex items-center gap-2 transition-colors"
+                            >
+                              Crypto
+                            </button>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Cảnh báo thiếu khách hàng khi ghi nợ -->
+                  @if (paymentMethod() === 'debt' && !posSelectedCustomer()) {
+                    <div
+                      class="mt-2.5 p-2.5 rounded-xl bg-[var(--dynamic-primary)]/10 border border-[var(--dynamic-primary)]/20 text-[var(--dynamic-primary)] text-xs font-semibold flex items-start gap-1.5 animate-pulse"
+                    >
+                      <app-icon name="warning" class="h-4 w-4 shrink-0 mt-0.5" strokeWidth="2" />
+                      <span
+                        >Vui lòng chọn hoặc tìm kiếm khách hàng trước khi chọn phương thức Ghi
+                        nợ.</span
+                      >
+                    </div>
+                  }
+
+                  <!-- Chuyển đổi chế độ thanh toán POS đã được di chuyển lên Header -->
+
+                  <!-- Tính tổng tiền -->
+                  <div class="space-y-1.5 py-1">
+                    @if (posSelectedVoucher()) {
+                      <div
+                        class="flex items-center justify-between text-xs font-bold text-slate-500 dark:text-slate-400"
+                      >
+                        <span>Tạm tính</span>
+                        <span>{{ cartTotal() | vnd }}</span>
+                      </div>
+                      <div
+                        class="flex items-center justify-between text-xs font-bold text-emerald-600 dark:text-emerald-400"
+                      >
+                        <span class="flex items-center gap-1">
+                          <span>Giảm giá voucher</span>
+                          <span
+                            class="text-xs uppercase bg-emerald-100 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded font-extrabold"
+                          >
+                            {{ formatVoucherCode(posSelectedVoucher().code) }}
+                            @if (posSelectedVoucher().isNft) {
+                              <span
+                                class="text-[10px] font-black text-emerald-700 dark:text-emerald-300 ml-1"
+                                >#{{ posSelectedVoucher().tokenId }}</span
+                              >
+                            }
+                          </span>
+                        </span>
+                        <span>-{{ posSelectedVoucher().discount_amount | vnd }}</span>
+                      </div>
+                    }
+                    <div
+                      class="flex items-center justify-between pt-1 border-t border-dashed border-slate-200/50 dark:border-slate-800/50"
+                    >
+                      <span class="text-xs font-extrabold text-slate-500">TỔNG CỘNG HÓA ĐƠN</span>
+                      <span class="text-xl font-black text-purple-600 dark:text-purple-400">
+                        {{ posFinalTotal() | vnd }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Nút Hủy chỉnh sửa đơn hàng -->
+                  @if (editingOrderId()) {
+                    <button
+                      app-button
+                      variant="cancel"
+                      (click)="cancelEditOrder()"
+                      class="w-full mb-3.5"
+                    >
+                      <app-icon name="close" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
+                      <span>Hủy chỉnh sửa đơn hàng</span>
+                    </button>
+                  }
+
+                  <button
+                    app-button
+                    variant="primary"
+                    (click)="handlePosOrderClick()"
+                    [loading]="isOrderSubmitting()"
+                    [disabled]="!web3Service.walletConnected()"
+                    class="w-full"
+                  >
+                    @if (!isOrderSubmitting()) {
+                      <app-icon name="bolt" class="h-4 w-4 shrink-0" strokeWidth="2" />
+                    }
+                    <span>{{
+                      isOrderSubmitting()
+                        ? (editingOrderId() ? 'Đang cập nhật đơn...' : 'Đang ghi nhận đơn hàng...')
+                        : (editingOrderId() ? 'Cập nhật đơn hàng' : 'Ghi nhận & Đặt đơn hàng')
+                    }}</span>
+                  </button>
+                </div>
+              }
+            } @else {
+              <!-- GIAO DIỆN BẮT BUỘC MỞ CA TRỰC (SHIFT GUARD) -->
+              <div class="flex-1 flex flex-col justify-center py-6 px-4 text-center space-y-6">
+                <div
+                  class="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500/20 to-purple-500/10 flex items-center justify-center mx-auto animate-pulse"
+                >
+                  <app-icon
+                    name="lock"
+                    class="h-8 w-8 text-purple-600 dark:text-purple-400"
+                    strokeWidth="2"
+                  />
+                </div>
+                <div class="space-y-2">
+                  <h4 class="text-base font-extrabold text-slate-800 dark:text-white">
+                    Bắt đầu ca làm việc mới
+                  </h4>
+                  <p class="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+                    Bạn chưa mở ca trực. Vui lòng khai báo số tiền mặt ban đầu trong két để bắt đầu
+                    ghi nhận doanh thu và bán hàng POS.
+                  </p>
+                </div>
+
+                <div class="space-y-4 text-left">
+                  <div class="space-y-1.5 relative">
+                    <label
+                      class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1"
+                      >Số tiền mặt đầu ca (két tiền)</label
+                    >
+                    <div class="relative">
+                      <input
+                        type="text"
+                        [value]="initialCashFormatted()"
+                        (input)="onInitialCashInput($event)"
+                        placeholder="Nhập số tiền mặt (Ví dụ: 1,000,000)"
+                        class="form-input pr-12 text-base font-extrabold text-[var(--dynamic-primary)]"
+                      />
+                      <span
+                        class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400"
+                        >đ</span
+                      >
+                    </div>
+                  </div>
+
+                  <!-- Gợi ý nhanh số tiền đầu ca -->
+                  <div class="flex flex-wrap gap-2 pt-1">
+                    <button
+                      type="button"
+                      (click)="initialCashInput.set(0)"
+                      class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-850 dark:hover:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-400 transition-all"
+                    >
+                      Két trống
+                    </button>
+                    <button
+                      type="button"
+                      (click)="initialCashInput.set(500000)"
+                      class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-850 dark:hover:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-400 transition-all"
+                    >
+                      500K
+                    </button>
+                    <button
+                      type="button"
+                      (click)="initialCashInput.set(1000000)"
+                      class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-850 dark:hover:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-400 transition-all"
+                    >
+                      1 Triệu
+                    </button>
+                    <button
+                      type="button"
+                      (click)="initialCashInput.set(2000000)"
+                      class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-850 dark:hover:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-400 transition-all"
+                    >
+                      2 Triệu
+                    </button>
+                  </div>
+
+                  <button
+                    app-button
+                    variant="primary"
+                    type="button"
+                    (click)="startShift()"
+                    [loading]="stateService.isLoading()"
+                    class="w-full h-12 shadow-lg shadow-[var(--color-primary)]/20"
+                  >
+                    @if (!stateService.isLoading()) {
+                      <app-icon name="lock-open" class="h-4 w-4 shrink-0" strokeWidth="2" />
+                    }
+                    <span>{{ stateService.isLoading() ? 'Đang mở ca...' : 'Mở ca & Bắt đầu bán hàng' }}</span>
+                  </button>
+                </div>
+              </div>
+            }
+          } @else {
+            <div class="flex-1 flex flex-col justify-center py-6 px-4 text-center">
+              <app-access-restricted pageName="Bán hàng POS"></app-access-restricted>
             </div>
           }
         } @else {
-          <div class="flex-1 flex flex-col justify-center py-6 px-4 text-center">
-            <app-access-restricted pageName="Bán hàng POS"></app-access-restricted>
+          <!-- BANNER KẾT NỐI VÍ TRỰC QUAN KHI CHƯA ĐĂNG NHẬP -->
+          <div
+            class="flex-1 flex flex-col items-center justify-center text-center p-6 gap-5 animate-in fade-in duration-300"
+          >
+            <div
+              class="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center"
+            >
+              <app-icon
+                name="wallet"
+                class="h-8 w-8 text-[var(--dynamic-primary)]"
+                strokeWidth="2"
+              />
+            </div>
+            <h4 class="text-base font-extrabold text-slate-800 dark:text-white">
+              Bán hàng POS bị khóa
+            </h4>
+            <p class="text-xs text-slate-400 leading-relaxed max-w-xs">
+              Vui lòng kết nối và ký xác thực ví Web3 (Metamask) để mở ca trực, chọn món và in hóa
+              đơn thanh toán cho khách hàng.
+            </p>
+            <button
+              app-button
+              variant="primary"
+              type="button"
+              (click)="connectWalletAndSign()"
+              [loading]="stateService.isCurrentlySigning()"
+              class="w-full h-12 shadow-lg shadow-purple-500/25 transition-all"
+            >
+              @if (!stateService.isCurrentlySigning()) {
+                <app-icon name="lock-open" class="h-4 w-4" strokeWidth="2.5" />
+              }
+              <span>{{ stateService.isCurrentlySigning() ? 'Đang xử lý...' : 'Kết nối ví & Đăng nhập' }}</span>
+            </button>
           </div>
         }
-      } @else {
-        <!-- BANNER KẾT NỐI VÍ TRỰC QUAN KHI CHƯA ĐĂNG NHẬP -->
-        <div
-          class="flex-1 flex flex-col items-center justify-center text-center p-6 gap-5 animate-in fade-in duration-300"
-        >
-          <div
-            class="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center"
-          >
-            <app-icon name="wallet" class="h-8 w-8 text-[var(--dynamic-primary)]" strokeWidth="2" />
-          </div>
-          <h4 class="text-base font-extrabold text-slate-800 dark:text-white">
-            Bán hàng POS bị khóa
-          </h4>
-          <p class="text-xs text-slate-400 leading-relaxed max-w-xs">
-            Vui lòng kết nối và ký xác thực ví Web3 (Metamask) để mở ca trực, chọn món và in hóa đơn
-            thanh toán cho khách hàng.
-          </p>
-          <button
-            type="button"
-            (click)="connectWalletAndSign()"
-            class="btn-primary w-full py-3 text-sm flex items-center justify-center gap-2 rounded-2xl shadow-lg shadow-purple-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all"
-          >
-            <app-icon name="lock-open" class="h-4 w-4" strokeWidth="2.5" />
-            <span>Kết nối ví & Đăng nhập</span>
-          </button>
-        </div>
-      }
+      </div>
     </div>
-  </div>
-}
+  }
 
   <!-- ==================== MODAL CHỌN SIZE SẢN PHẨM ==================== -->
   @if (isVariantSelectModalOpen()) {
@@ -1196,9 +1246,21 @@
 
         <!-- Action Buttons -->
         <div class="app-modal-footer">
-          <button (click)="closeVariantSelectModal()" class="btn-cancel flex-1">Hủy bỏ</button>
-          <button (click)="confirmVariantAndAddToCart()" class="btn-primary flex-1">
-            <span>Thêm vào giỏ</span>
+          <button
+            app-button
+            variant="cancel"
+            (click)="closeVariantSelectModal()"
+            class="flex-1"
+          >
+            Hủy bỏ
+          </button>
+          <button
+            app-button
+            variant="primary"
+            (click)="confirmVariantAndAddToCart()"
+            class="flex-1"
+          >
+            Thêm vào giỏ
           </button>
         </div>
       </div>
@@ -1455,15 +1517,22 @@
 
         <!-- Footer Actions -->
         <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex gap-3 shrink-0">
-          <button (click)="isPosConfirmModalOpen.set(false)" class="btn-cancel flex-1">
+          <button
+            app-button
+            variant="cancel"
+            (click)="isPosConfirmModalOpen.set(false)"
+            class="flex-1"
+          >
             Quay lại
           </button>
           <button
+            app-button
+            variant="success"
             (click)="confirmAndSubmitOrder()"
             [disabled]="posPaymentMethod() === 'debt' && !posSelectedCustomer()"
-            class="btn flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md shadow-emerald-500/15 hover:opacity-90 font-extrabold"
+            class="flex-1 font-extrabold"
           >
-            <span>Xác nhận</span>
+            Xác nhận
           </button>
         </div>
       </div>
@@ -1579,7 +1648,12 @@
         </div>
 
         <!-- Action buttons -->
-        <button (click)="showCancelSignConfirmModal.set(true)" class="btn-cancel w-full">
+        <button
+          app-button
+          variant="cancel"
+          (click)="showCancelSignConfirmModal.set(true)"
+          class="w-full"
+        >
           Hủy áp dụng
         </button>
       </div>
@@ -1614,10 +1688,22 @@
 
         <!-- Actions -->
         <div class="w-full flex gap-3 mt-6">
-          <button (click)="showCancelSignConfirmModal.set(false)" class="btn-cancel flex-1">
+          <button
+            app-button
+            variant="cancel"
+            (click)="showCancelSignConfirmModal.set(false)"
+            class="flex-1"
+          >
             Quay lại
           </button>
-          <button (click)="confirmCancelSign()" class="btn-danger flex-1">Xác nhận hủy</button>
+          <button
+            app-button
+            variant="danger"
+            (click)="confirmCancelSign()"
+            class="flex-1"
+          >
+            Xác nhận hủy
+          </button>
         </div>
       </div>
     </div>
@@ -1664,7 +1750,7 @@
           >Hoặc tải ảnh chụp mã vạch lên để quét cục bộ:</span
         >
         <label
-          class="btn btn-secondary btn-sm flex items-center gap-2 cursor-pointer w-full justify-center"
+          class="btn btn-secondary btn-md flex items-center gap-2 cursor-pointer w-full justify-center rounded-xl font-bold h-[42px]"
         >
           <app-icon name="upload" class="h-4 w-4" strokeWidth="2" />
           <span>Chọn ảnh mã vạch</span>
@@ -1678,7 +1764,14 @@
       </div>
 
       <div class="pt-2">
-        <button (click)="stopPosBarcodeScan()" class="btn btn-cancel w-full">Hủy quét</button>
+        <button
+          app-button
+          variant="cancel"
+          (click)="stopPosBarcodeScan()"
+          class="w-full"
+        >
+          Hủy quét
+        </button>
       </div>
     </div>
   </app-modal>

@@ -15,6 +15,7 @@ import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-g
 import { ShortAddressPipe } from '@shared/pipes/short-address.pipe';
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
+import { ButtonComponent } from '@shared/components/button/button.component';
 
 @Component({
   selector: 'app-shifts',
@@ -33,7 +34,8 @@ import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skel
     TabGroupComponent,
     ShortAddressPipe,
     VNDCurrencyPipe,
-    SkeletonLoaderComponent
+    SkeletonLoaderComponent,
+    ButtonComponent
   ],
   templateUrl: './shifts.component.html'
 })

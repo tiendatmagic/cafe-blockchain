@@ -17,8 +17,10 @@
       <span class="text-purple-600 dark:text-purple-400 font-black">{{ featureName }}</span> này.
     </p>
     <button
+      app-button
+      variant="primary"
       (click)="upgradeNow()"
-      class="btn-primary hover:scale-[1.02] gap-2"
+      class="hover:scale-[1.02] gap-2"
     >
       <app-icon name="link-chain" class="h-4.5 w-4.5" strokeWidth="2.5" />
       <span>NÂNG CẤP NGAY</span>

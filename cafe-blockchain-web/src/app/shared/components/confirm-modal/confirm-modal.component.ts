@@ -1,11 +1,12 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IconComponent } from '../icon/icon.component';
+import { ButtonComponent } from '../button/button.component';
 
 @Component({
   selector: 'app-confirm-modal',
   standalone: true,
-  imports: [CommonModule, IconComponent],
+  imports: [CommonModule, IconComponent, ButtonComponent],
   templateUrl: './confirm-modal.component.html'
 })
 export class ConfirmModalComponent {
@@ -28,5 +29,13 @@ export class ConfirmModalComponent {
   onCancel(): void {
     if (this.isSubmitting) return;
     this.cancel.emit();
+  }
+
+  get confirmVariant(): 'primary' | 'secondary' | 'success' | 'danger' | 'danger-light' | 'cancel' | 'info' {
+    if (this.confirmButtonClass.includes('danger')) return 'danger';
+    if (this.confirmButtonClass.includes('secondary')) return 'secondary';
+    if (this.confirmButtonClass.includes('success')) return 'success';
+    if (this.confirmButtonClass.includes('cancel')) return 'cancel';
+    return 'primary';
   }
 }

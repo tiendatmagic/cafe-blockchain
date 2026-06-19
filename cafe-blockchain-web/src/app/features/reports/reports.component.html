@@ -4,7 +4,12 @@
     title="Báo cáo hoạt động kinh doanh"
     description="Theo dõi kết quả tài chính, mặt hàng bán chạy và hiệu suất khách hàng thân thiết."
   >
-    <app-icon icon name="reports" class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" strokeWidth="2.5" />
+    <app-icon
+      icon
+      name="reports"
+      class="h-6.5 w-6.5 text-[var(--dynamic-primary)]"
+      strokeWidth="2.5"
+    />
   </app-page-header>
 
   @if (web3Service.walletConnected()) {
@@ -13,13 +18,23 @@
         <app-skeleton-loader type="reports"></app-skeleton-loader>
       } @else if (reportsError()) {
         <!-- Lỗi hiển thị -->
-        <div class="flex items-center gap-3 p-4 bg-[var(--dynamic-primary)]/10 border border-[var(--dynamic-primary)]/20 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] rounded-xl text-sm font-bold">
-          <span class="flex items-center gap-1.5"><app-icon name="warning" class="h-4 w-4 shrink-0 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] inline-block" strokeWidth="2" /><span>{{ reportsError() }}</span></span>
+        <div
+          class="flex items-center gap-3 p-4 bg-[var(--dynamic-primary)]/10 border border-[var(--dynamic-primary)]/20 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] rounded-xl text-sm font-bold"
+        >
+          <span class="flex items-center gap-1.5"
+            ><app-icon
+              name="warning"
+              class="h-4 w-4 shrink-0 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] inline-block"
+              strokeWidth="2"
+            /><span>{{ reportsError() }}</span></span
+          >
         </div>
       } @else {
         <!-- BÁO CÁO DỮ LIỆU THẬT -->
         <!-- Bộ lọc mốc thời gian cao cấp thật -->
-        <div class="app-card flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 mb-6">
+        <div
+          class="app-card flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 mb-6"
+        >
           <!-- Lọc nhanh presets -->
           <app-mini-buttons
             [options]="datePresets"
@@ -28,7 +43,10 @@
           ></app-mini-buttons>
 
           <!-- Date Range Picker Đẹp Mắt -->
-          <div *ngIf="activePreset() === 'custom'" class="flex items-center gap-4 flex-wrap w-full sm:w-auto">
+          <div
+            *ngIf="activePreset() === 'custom'"
+            class="flex items-center gap-4 flex-wrap w-full sm:w-auto"
+          >
             <app-custom-date-picker
               [(selectedDate)]="tempStartDate"
               (selectedDateChange)="onCustomDatesChange()"
@@ -49,28 +67,50 @@
           <!-- Doanh thu bán hàng -->
           <div class="app-card-interactive flex items-center justify-between group">
             <div class="space-y-1.5">
-              <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Doanh thu bán hàng</span>
+              <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block"
+                >Doanh thu bán hàng</span
+              >
               <h4 class="text-2xl font-black text-slate-800 dark:text-white leading-none">
                 {{ reportsData()?.financials?.revenue | number }}
                 <span class="text-xs font-bold text-slate-400">đ</span>
               </h4>
-              <span class="text-[10px] text-slate-400 font-medium">Hoạt động bán hàng POS & Web Store</span>
+              <span class="text-[10px] text-slate-400 font-medium"
+                >Hoạt động bán hàng POS & Web Store</span
+              >
             </div>
-            <div class="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0">
-              <app-icon name="financials" class="h-6 w-6 text-purple-650 dark:text-purple-400" strokeWidth="2" />
+            <div
+              class="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0"
+            >
+              <app-icon
+                name="financials"
+                class="h-6 w-6 text-purple-650 dark:text-purple-400"
+                strokeWidth="2"
+              />
             </div>
           </div>
 
           <!-- Giá vốn hàng bán -->
           <div class="app-card-interactive flex items-center justify-between group">
             <div class="space-y-1.5">
-              <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Giá vốn hàng bán (COGS)</span>
+              <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block"
+                >Giá vốn hàng bán (COGS)</span
+              >
               <h4 class="text-2xl font-black text-slate-800 dark:text-white leading-none">
                 {{ reportsData()?.financials?.cogs | vnd }}
               </h4>
-              <span class="text-[10px] text-slate-400 font-medium">Lợi nhuận gộp: <strong class="text-emerald-500 font-black">{{ reportsData()?.financials?.gross_profit | vnd }}</strong> <span class="text-[10px] text-slate-400 dark:text-slate-500 font-bold ml-1">(Biên: {{ getGrossProfitMargin() | number: '1.0-1' }}%)</span></span>
+              <span class="text-[10px] text-slate-400 font-medium"
+                >Lợi nhuận gộp:
+                <strong class="text-emerald-500 font-black">{{
+                  reportsData()?.financials?.gross_profit | vnd
+                }}</strong>
+                <span class="text-[10px] text-slate-400 dark:text-slate-500 font-bold ml-1"
+                  >(Biên: {{ getGrossProfitMargin() | number: '1.0-1' }}%)</span
+                ></span
+              >
             </div>
-            <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+            <div
+              class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0"
+            >
               <app-icon name="orders" class="h-6 w-6 text-amber-500" strokeWidth="2" />
             </div>
           </div>
@@ -78,13 +118,22 @@
           <!-- Chi phí vận hành & doanh thu khác -->
           <div class="app-card-interactive flex items-center justify-between group">
             <div class="space-y-1.5">
-              <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Chi phí & Thu nhập khác</span>
+              <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block"
+                >Chi phí & Thu nhập khác</span
+              >
               <h4 class="text-2xl font-black text-slate-800 dark:text-white leading-none">
                 {{ reportsData()?.financials?.expenses | vnd }}
               </h4>
-              <span class="text-[10px] text-slate-400 font-medium">Thu nhập khác: <strong class="text-purple-500 font-black">+{{ reportsData()?.financials?.other_income | vnd }}</strong></span>
+              <span class="text-[10px] text-slate-400 font-medium"
+                >Thu nhập khác:
+                <strong class="text-purple-500 font-black"
+                  >+{{ reportsData()?.financials?.other_income | vnd }}</strong
+                ></span
+              >
             </div>
-            <div class="w-12 h-12 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0">
+            <div
+              class="w-12 h-12 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0"
+            >
               <app-icon name="minus-circle" class="h-6 w-6 text-rose-500" strokeWidth="2" />
             </div>
           </div>
@@ -100,7 +149,9 @@
             class="app-card-interactive flex items-center justify-between group"
           >
             <div class="space-y-1.5">
-              <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Lợi nhuận ròng</span>
+              <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block"
+                >Lợi nhuận ròng</span
+              >
               <h4
                 [class.text-emerald-500]="reportsData()?.financials?.net_profit >= 0"
                 [class.text-rose-500]="reportsData()?.financials?.net_profit < 0"
@@ -109,7 +160,9 @@
                 {{ reportsData()?.financials?.net_profit | number }}
                 <span class="text-xs font-bold">đ</span>
               </h4>
-              <span class="text-[10px] text-slate-400 font-medium">Hiệu số thu chi (Tỷ suất ròng: {{ getNetProfitMargin() | number: '1.0-1' }}%)</span>
+              <span class="text-[10px] text-slate-400 font-medium"
+                >Hiệu số thu chi (Tỷ suất ròng: {{ getNetProfitMargin() | number: '1.0-1' }}%)</span
+              >
             </div>
             <div
               [class.bg-emerald-500/10]="reportsData()?.financials?.net_profit >= 0"
@@ -128,7 +181,9 @@
           <!-- Biểu đồ cột stacked: Doanh thu & Chi phí -->
           <div class="lg:col-span-2 app-card flex flex-col justify-between space-y-4">
             <div class="flex items-center justify-between shrink-0">
-              <h4 class="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
+              <h4
+                class="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2"
+              >
                 <app-icon name="reports" class="h-5 w-5 text-slate-500 shrink-0" strokeWidth="2" />
                 <span>Xu hướng thu chi</span>
               </h4>
@@ -145,9 +200,13 @@
             </div>
 
             <!-- Lưới vẽ SVG Bar Chart -->
-            <div class="relative w-full flex-1 flex items-end justify-between pt-6 pb-2 px-1 sm:px-2 min-h-[220px]">
+            <div
+              class="relative w-full flex-1 flex items-end justify-between pt-6 pb-2 px-1 sm:px-2 min-h-[220px]"
+            >
               <!-- Trục Y mờ -->
-              <div class="absolute inset-y-6 left-0 right-16 flex flex-col justify-between pointer-events-none">
+              <div
+                class="absolute inset-y-6 left-0 right-16 flex flex-col justify-between pointer-events-none"
+              >
                 <div class="border-t border-slate-100 dark:border-slate-800/60 w-full pt-0.5"></div>
                 <div class="border-t border-slate-100 dark:border-slate-800/60 w-full pt-0.5"></div>
                 <div class="border-t border-slate-100 dark:border-slate-800/60 w-full pt-0.5"></div>
@@ -155,37 +214,61 @@
               </div>
 
               <!-- Nhãn trục Y bên phải -->
-              <div class="absolute inset-y-6 right-0 w-16 flex flex-col justify-between pointer-events-none text-left text-[9px] text-slate-400 font-semibold pl-2 pt-0.5">
+              <div
+                class="absolute inset-y-6 right-0 w-16 flex flex-col justify-between pointer-events-none text-left text-[9px] text-slate-400 font-semibold pl-2 pt-0.5"
+              >
                 <div class="truncate">{{ getMaxChartValue() | vnd }}</div>
-                <div class="truncate">{{ (getMaxChartValue() / 2) | vnd }}</div>
-                <div class="truncate">{{ (getMaxChartValue() / 4) | vnd }}</div>
+                <div class="truncate">{{ getMaxChartValue() / 2 | vnd }}</div>
+                <div class="truncate">{{ getMaxChartValue() / 4 | vnd }}</div>
                 <div>0đ</div>
               </div>
 
               <!-- Cột Bar vẽ chi tiết -->
-              <div class="w-[calc(100%-64px)] h-52 flex items-end justify-around gap-2 z-10 overflow-x-auto no-scrollbar">
+              <div
+                class="w-[calc(100%-64px)] h-52 flex items-end justify-around gap-2 z-10 overflow-x-auto no-scrollbar"
+              >
                 @for (day of reportsData()?.trend_chart; track day.date) {
-                  <div class="flex-1 flex flex-col items-center gap-2 group cursor-pointer min-w-[30px] max-w-[60px]">
+                  <div
+                    class="flex-1 flex flex-col items-center gap-2 group cursor-pointer min-w-[30px] max-w-[60px]"
+                  >
                     <div class="relative w-full flex items-end justify-center gap-1 h-32">
                       <!-- Tooltip hover -->
-                      <div class="absolute -top-14 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 bg-slate-950 text-white dark:bg-white dark:text-slate-900 text-[10px] font-black p-2.5 rounded-xl shadow-xl transition-all duration-200 leading-normal whitespace-nowrap z-30 flex flex-col gap-0.5 border border-slate-800/10 dark:border-slate-200/10">
-                        <span class="text-slate-400 dark:text-slate-500 font-bold">Ngày: {{ day.date }}</span>
-                         <span class="text-purple-400 dark:text-purple-600">Doanh thu: {{ day.revenue | vnd }}</span>
-                        <span class="text-rose-400 dark:text-rose-600">Chi phí: {{ day.expense | vnd }}</span>
+                      <div
+                        class="absolute -top-14 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 bg-slate-950 text-white dark:bg-white dark:text-slate-900 text-[10px] font-black p-2.5 rounded-xl shadow-xl transition-all duration-200 leading-normal whitespace-nowrap z-30 flex flex-col gap-0.5 border border-slate-800/10 dark:border-slate-200/10"
+                      >
+                        <span class="text-slate-400 dark:text-slate-500 font-bold"
+                          >Ngày: {{ day.date }}</span
+                        >
+                        <span class="text-purple-400 dark:text-purple-600"
+                          >Doanh thu: {{ day.revenue | vnd }}</span
+                        >
+                        <span class="text-rose-400 dark:text-rose-600"
+                          >Chi phí: {{ day.expense | vnd }}</span
+                        >
                       </div>
 
                       <!-- Cột Doanh thu -->
                       <div
-                        [style.height.%]="day.revenue > 0 ? mathMin(100, (day.revenue / getMaxChartValue()) * 100) : 5"
+                        [style.height.%]="
+                          day.revenue > 0
+                            ? mathMin(100, (day.revenue / getMaxChartValue()) * 100)
+                            : 5
+                        "
                         class="w-1/2 bg-gradient-to-t from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] rounded-t shadow-sm transition-all duration-300"
                       ></div>
                       <!-- Cột Chi phí -->
                       <div
-                        [style.height.%]="day.expense > 0 ? mathMin(100, (day.expense / getMaxChartValue()) * 100) : 5"
+                        [style.height.%]="
+                          day.expense > 0
+                            ? mathMin(100, (day.expense / getMaxChartValue()) * 100)
+                            : 5
+                        "
                         class="w-1/2 bg-gradient-to-t from-rose-600 to-rose-400 rounded-t shadow-sm transition-all duration-300"
                       ></div>
                     </div>
-                    <span class="text-[9px] font-bold text-slate-400 group-hover:text-[var(--dynamic-primary)] transition-all whitespace-nowrap">
+                    <span
+                      class="text-[9px] font-bold text-slate-400 group-hover:text-[var(--dynamic-primary)] transition-all whitespace-nowrap"
+                    >
                       {{ day.day_name }}
                     </span>
                   </div>
@@ -197,7 +280,9 @@
           <!-- Biểu đồ tròn Doughnut: Cơ cấu thanh toán -->
           <div class="app-card flex flex-col justify-between space-y-4">
             <div class="space-y-1 shrink-0">
-              <h4 class="text-base font-extrabold text-slate-800 dark:text-white">Cơ cấu thanh toán</h4>
+              <h4 class="text-base font-extrabold text-slate-800 dark:text-white">
+                Cơ cấu thanh toán
+              </h4>
               <p class="text-xs text-slate-400">Tỷ lệ giá trị thanh toán qua các phương thức.</p>
             </div>
 
@@ -207,9 +292,15 @@
                 class="w-32 h-32 rounded-full shadow-inner relative flex items-center justify-center transition-all duration-500 hover:scale-105"
                 [style.background]="getConicGradient()"
               >
-                <div class="w-22 h-22 rounded-full bg-white dark:bg-slate-900 flex flex-col items-center justify-center shadow-md">
-                  <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider">Tổng thu</span>
-                  <span class="text-sm font-black text-slate-800 dark:text-white leading-none mt-0.5">
+                <div
+                  class="w-22 h-22 rounded-full bg-white dark:bg-slate-900 flex flex-col items-center justify-center shadow-md"
+                >
+                  <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider"
+                    >Tổng thu</span
+                  >
+                  <span
+                    class="text-sm font-black text-slate-800 dark:text-white leading-none mt-0.5"
+                  >
                     {{ reportsData()?.financials?.revenue | vnd }}
                   </span>
                 </div>
@@ -217,14 +308,20 @@
             </div>
 
             <!-- Chú thích Legend -->
-            <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-slate-800 shrink-0 text-xs font-bold">
+            <div
+              class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-slate-800 shrink-0 text-xs font-bold"
+            >
               <div class="flex items-center gap-2">
                 <span class="w-2.5 h-2.5 rounded bg-emerald-500 block"></span>
-                <span class="text-slate-500">Ngân hàng: {{ getPaymentPercentage('bank_transfer') }}%</span>
+                <span class="text-slate-500"
+                  >Ngân hàng: {{ getPaymentPercentage('bank_transfer') }}%</span
+                >
               </div>
               <div class="flex items-center gap-2">
                 <span class="w-2.5 h-2.5 rounded bg-pink-500 block"></span>
-                <span class="text-slate-500">Ví điện tử: {{ getPaymentPercentage('e_wallet') }}%</span>
+                <span class="text-slate-500"
+                  >Ví điện tử: {{ getPaymentPercentage('e_wallet') }}%</span
+                >
               </div>
               <div class="flex items-center gap-2">
                 <span class="w-2.5 h-2.5 rounded bg-amber-500 block"></span>
@@ -254,27 +351,35 @@
           <div *ngIf="activeTab() === 'products'" class="p-4 sm:p-6 space-y-4">
             <div class="flex justify-between items-center flex-wrap gap-3">
               <div class="space-y-0.5">
-                <h5 class="text-sm font-extrabold text-slate-800 dark:text-white">Thống kê tiêu thụ món ăn</h5>
-                <p class="text-xs text-slate-400">Bấm vào tiêu đề cột để thay đổi cách sắp xếp (bán chạy hoặc bán chậm)</p>
+                <h5 class="text-sm font-extrabold text-slate-800 dark:text-white">
+                  Thống kê tiêu thụ món ăn
+                </h5>
+                <p class="text-xs text-slate-400">
+                  Bấm vào tiêu đề cột để thay đổi cách sắp xếp (bán chạy hoặc bán chậm)
+                </p>
               </div>
-            @if (stateService.hasFeature('enable_excel_export')) {
-              <button
-                (click)="exportToExcel('products')"
-                class="px-3 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-black transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-1.5 shadow-sm"
-              >
-                <app-icon name="download" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
-                <span>Xuất Excel (XLSX)</span>
-              </button>
-            } @else {
-              <button
-                [disabled]="true"
-                class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 text-slate-400 dark:text-slate-500 text-xs font-black flex items-center gap-1.5 shadow-sm cursor-not-allowed opacity-60"
-                title="Tính năng này yêu cầu gói cước Pro hoặc Ultra"
-              >
-                <app-icon name="lock" class="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" strokeWidth="2.5" />
-                <span>Xuất Excel (PRO)</span>
-              </button>
-            }
+              @if (stateService.hasFeature('enable_excel_export')) {
+                <button
+                  (click)="exportToExcel('products')"
+                  class="px-3 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-black transition-all active:scale-95 flex items-center gap-1.5 shadow-sm"
+                >
+                  <app-icon name="download" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
+                  <span>Xuất Excel (XLSX)</span>
+                </button>
+              } @else {
+                <button
+                  [disabled]="true"
+                  class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 text-slate-400 dark:text-slate-500 text-xs font-black flex items-center gap-1.5 shadow-sm cursor-not-allowed opacity-60"
+                  title="Tính năng này yêu cầu gói cước Pro hoặc Ultra"
+                >
+                  <app-icon
+                    name="lock"
+                    class="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500"
+                    strokeWidth="2.5"
+                  />
+                  <span>Xuất Excel (PRO)</span>
+                </button>
+              }
             </div>
 
             <app-table
@@ -309,7 +414,9 @@
 
               <!-- Custom Cell cho cột Số lượng bán -->
               <ng-template appCell="total_quantity" let-row>
-                <span class="font-bold text-slate-800 dark:text-white">{{ row.total_quantity }}</span>
+                <span class="font-bold text-slate-800 dark:text-white">{{
+                  row.total_quantity
+                }}</span>
               </ng-template>
 
               <!-- Custom Cell cho cột Doanh số -->
@@ -333,27 +440,35 @@
           <div *ngIf="activeTab() === 'customers'" class="p-4 sm:p-6 space-y-4">
             <div class="flex justify-between items-center flex-wrap gap-3">
               <div class="space-y-0.5">
-                <h5 class="text-sm font-extrabold text-slate-800 dark:text-white">Thống kê chi tiêu khách hàng</h5>
-                <p class="text-xs text-slate-400">Bấm vào tiêu đề cột để thay đổi cách sắp xếp (chi tiêu nhiều hoặc ít)</p>
+                <h5 class="text-sm font-extrabold text-slate-800 dark:text-white">
+                  Thống kê chi tiêu khách hàng
+                </h5>
+                <p class="text-xs text-slate-400">
+                  Bấm vào tiêu đề cột để thay đổi cách sắp xếp (chi tiêu nhiều hoặc ít)
+                </p>
               </div>
-            @if (stateService.hasFeature('enable_excel_export')) {
-              <button
-                (click)="exportToExcel('customers')"
-                class="px-3 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-black transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-1.5 shadow-sm"
-              >
-                <app-icon name="download" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
-                <span>Xuất Excel (XLSX)</span>
-              </button>
-            } @else {
-              <button
-                [disabled]="true"
-                class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 text-slate-400 dark:text-slate-500 text-xs font-black flex items-center gap-1.5 shadow-sm cursor-not-allowed opacity-60"
-                title="Tính năng này yêu cầu gói cước Pro hoặc Ultra"
-              >
-                <app-icon name="lock" class="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" strokeWidth="2.5" />
-                <span>Xuất Excel (PRO)</span>
-              </button>
-            }
+              @if (stateService.hasFeature('enable_excel_export')) {
+                <button
+                  (click)="exportToExcel('customers')"
+                  class="px-3 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-black transition-all active:scale-95 flex items-center gap-1.5 shadow-sm"
+                >
+                  <app-icon name="download" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
+                  <span>Xuất Excel (XLSX)</span>
+                </button>
+              } @else {
+                <button
+                  [disabled]="true"
+                  class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 text-slate-400 dark:text-slate-500 text-xs font-black flex items-center gap-1.5 shadow-sm cursor-not-allowed opacity-60"
+                  title="Tính năng này yêu cầu gói cước Pro hoặc Ultra"
+                >
+                  <app-icon
+                    name="lock"
+                    class="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500"
+                    strokeWidth="2.5"
+                  />
+                  <span>Xuất Excel (PRO)</span>
+                </button>
+              }
             </div>
 
             <app-table
@@ -373,7 +488,9 @@
             >
               <!-- Custom Cell cho cột Tên khách hàng -->
               <ng-template appCell="customer_name" let-row>
-                <span class="font-extrabold text-slate-800 dark:text-white">{{ row.customer_name }}</span>
+                <span class="font-extrabold text-slate-800 dark:text-white">{{
+                  row.customer_name
+                }}</span>
               </ng-template>
 
               <!-- Custom Cell cho cột Số điện thoại -->
@@ -399,12 +516,16 @@
 
               <!-- Custom Cell cho cột Tổng chi tiêu -->
               <ng-template appCell="total_spent" let-row>
-                <span class="font-black text-slate-800 dark:text-white">{{ row.total_spent | vnd }}</span>
+                <span class="font-black text-slate-800 dark:text-white">{{
+                  row.total_spent | vnd
+                }}</span>
               </ng-template>
 
               <!-- Custom Cell cho cột Trung bình đơn -->
               <ng-template appCell="average_order_value" let-row>
-                <span class="font-bold text-purple-600 dark:text-purple-400">{{ row.average_order_value | vnd }}</span>
+                <span class="font-bold text-purple-600 dark:text-purple-400">{{
+                  row.average_order_value | vnd
+                }}</span>
               </ng-template>
             </app-table>
           </div>
@@ -414,6 +535,8 @@
       <app-access-restricted pageName="Báo cáo"></app-access-restricted>
     }
   } @else {
-    <app-web3-connect-prompt [title]="'Kết nối ví Web3 để xem Báo cáo chi tiết'"></app-web3-connect-prompt>
+    <app-web3-connect-prompt
+      [title]="'Kết nối ví Web3 để xem Báo cáo chi tiết'"
+    ></app-web3-connect-prompt>
   }
 </div>

@@ -17,6 +17,7 @@ import * as XLSX from 'xlsx';
 import { CustomDatePickerComponent } from '@shared/components/custom-date-picker/custom-date-picker.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
+import { ButtonComponent } from '@shared/components/button/button.component';
 
 @Component({
   selector: 'app-debts',
@@ -36,7 +37,8 @@ import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-g
     DrawerComponent,
     CustomDatePickerComponent,
     IconComponent,
-    TabGroupComponent
+    TabGroupComponent,
+    ButtonComponent
   ],
   templateUrl: './debts.component.html'
 })

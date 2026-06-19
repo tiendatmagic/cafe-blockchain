@@ -16,7 +16,12 @@
     ></app-icon>
 
     @if (web3Service.walletConnected()) {
-      <button (click)="loadAllData()" class="btn-secondary self-start sm:self-center">
+      <button
+        app-button
+        variant="secondary"
+        (click)="loadAllData()"
+        class="self-start sm:self-center"
+      >
         <app-icon name="sync" class="h-4 w-4" [strokeWidth]="2"></app-icon>
         <span>Làm mới</span>
       </button>

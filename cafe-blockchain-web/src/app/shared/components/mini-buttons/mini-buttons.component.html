@@ -1,19 +1,35 @@
-<div [class]="containerClass || (scrollable ? 'flex gap-2 overflow-x-auto pb-2 pr-1 no-scrollbar whitespace-nowrap' : 'flex items-center gap-1.5 flex-wrap')">
+<div
+  [class]="
+    containerClass ||
+    (scrollable
+      ? 'flex gap-2 overflow-x-auto pb-2 pr-1 no-scrollbar whitespace-nowrap'
+      : 'flex items-center gap-1.5 flex-wrap')
+  "
+>
   @for (opt of options; track opt.value) {
     <button
       type="button"
       (click)="onSelect(opt.value)"
-      [class]="buttonClass || 'px-3 py-1.5 rounded-xl text-xs font-bold transition-all hover:scale-[1.02] active:scale-95 whitespace-nowrap'"
-      [ngClass]="activeValue === opt.value
-        ? (activeClass || '')
-        : (inactiveClass || 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400')"
-      [style.background-color]="(activeValue === opt.value && !activeClass) ? 'var(--dynamic-primary)' : ''"
-      [style.color]="(activeValue === opt.value && !activeClass) ? 'white' : ''"
+      [class]="
+        buttonClass ||
+        'px-3 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95 whitespace-nowrap'
+      "
+      [ngClass]="
+        activeValue === opt.value
+          ? activeClass || ''
+          : inactiveClass || 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+      "
+      [style.background-color]="
+        activeValue === opt.value && !activeClass ? 'var(--dynamic-primary)' : ''
+      "
+      [style.color]="activeValue === opt.value && !activeClass ? 'white' : ''"
     >
       @if (showDot) {
         <span
           class="w-2.5 h-2.5 rounded-full shrink-0 inline-block mr-2"
-          [style.background-color]="activeValue === opt.value ? 'var(--dynamic-primary)' : 'transparent'"
+          [style.background-color]="
+            activeValue === opt.value ? 'var(--dynamic-primary)' : 'transparent'
+          "
         ></span>
       }
       {{ opt.label }}

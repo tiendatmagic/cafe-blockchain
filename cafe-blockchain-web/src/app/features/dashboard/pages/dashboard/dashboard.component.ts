@@ -13,6 +13,7 @@ import { PaginationComponent } from '@shared/components/pagination/pagination.co
 import { IconComponent } from '@shared/components/icon/icon.component';
 
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
+import { ButtonComponent } from '@shared/components/button/button.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -29,7 +30,8 @@ import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skel
     MiniButtonsComponent,
     PaginationComponent,
     IconComponent,
-    SkeletonLoaderComponent
+    SkeletonLoaderComponent,
+    ButtonComponent
   ],
   templateUrl: './dashboard.component.html'
 })

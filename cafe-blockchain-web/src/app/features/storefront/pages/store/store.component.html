@@ -43,7 +43,7 @@
           {{ errorMessage() || 'Đường dẫn liên kết không đúng hoặc cửa hàng đã ngừng hoạt động.' }}
         </p>
       </div>
-      <a routerLink="/" class="btn btn-primary text-xs uppercase tracking-wide">
+      <a app-button variant="primary" routerLink="/" class="text-xs uppercase tracking-wide">
         Về trang chủ POS
       </a>
     </div>
@@ -162,9 +162,7 @@
         <!-- DANH SÁCH SẢN PHẨM -->
         <main class="flex-1 w-full space-y-4">
           <!-- Ô tìm kiếm và Bộ lọc thực đơn (Tối ưu Responsive 2 hàng phẳng) -->
-          <div
-            class="app-card p-4.5 space-y-4"
-          >
+          <div class="app-card p-4.5 space-y-4">
             <!-- Hàng 1: Ô tìm kiếm và nút Lọc -->
             <div class="flex items-center gap-3 w-full">
               <div class="relative flex-1">
@@ -187,7 +185,11 @@
                 <button
                   type="button"
                   (click)="isFilterPanelOpen.set(!isFilterPanelOpen())"
-                  [class]="isFilterPanelOpen() ? 'bg-[var(--color-primary)] text-white shadow-md shadow-[var(--color-primary)]/20' : 'bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800'"
+                  [class]="
+                    isFilterPanelOpen()
+                      ? 'bg-[var(--color-primary)] text-white shadow-md shadow-[var(--color-primary)]/20'
+                      : 'bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800'
+                  "
                   class="h-10.5 px-3 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition-all active:scale-[0.98]"
                   title="Lọc nâng cao"
                 >
@@ -204,8 +206,13 @@
                     class="absolute right-0 mt-2 z-40 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-4.5 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200 text-left"
                   >
                     <!-- Header -->
-                    <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800/60">
-                      <span class="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider">Bộ lọc Thực đơn</span>
+                    <div
+                      class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800/60"
+                    >
+                      <span
+                        class="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider"
+                        >Bộ lọc Thực đơn</span
+                      >
                       <button
                         type="button"
                         (click)="resetStoreFilters(); isFilterPanelOpen.set(false)"
@@ -217,7 +224,10 @@
 
                     <!-- Lọc giá sản phẩm chính -->
                     <div class="space-y-1.5">
-                      <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wide">Khoảng giá món</label>
+                      <label
+                        class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wide"
+                        >Khoảng giá món</label
+                      >
                       <div class="grid grid-cols-2 gap-2">
                         <input
                           type="number"
@@ -238,7 +248,10 @@
 
                     <!-- Lọc giá biến thể -->
                     <div class="space-y-1.5">
-                      <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wide">Giá biến thể (Size)</label>
+                      <label
+                        class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wide"
+                        >Giá biến thể (Size)</label
+                      >
                       <div class="grid grid-cols-2 gap-2">
                         <input
                           type="number"
@@ -260,9 +273,12 @@
                     <!-- Nút hành động -->
                     <div class="flex gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/60">
                       <button
+                        app-button
+                        variant="secondary"
+                        size="sm"
                         type="button"
                         (click)="isFilterPanelOpen.set(false)"
-                        class="flex-1 btn-secondary btn-sm h-9 text-xs"
+                        class="flex-1 h-9 text-xs"
                       >
                         Đóng
                       </button>
@@ -542,7 +558,8 @@
               </span>
             </div>
             <div class="flex flex-col">
-              <span class="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase leading-none"
+              <span
+                class="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase leading-none"
                 >Tổng giỏ hàng</span
               >
               <span class="text-sm font-black text-emerald-600 dark:text-emerald-400 mt-0.5">
@@ -551,7 +568,7 @@
             </div>
           </div>
 
-          <button type="button" (click)="isCartOpen.set(true)" class="btn btn-primary">
+          <button app-button variant="primary" type="button" (click)="isCartOpen.set(true)">
             Đặt hàng ngay
           </button>
         </div>
@@ -759,7 +776,9 @@
                   "
                 >
                   <app-icon name="cash" class="w-6 h-6 shrink-0" [strokeWidth]="2"></app-icon>
-                  <span class="text-[11px] sm:text-xs uppercase mt-1.5 leading-tight">Tiền mặt (COD)</span>
+                  <span class="text-[11px] sm:text-xs uppercase mt-1.5 leading-tight"
+                    >Tiền mặt (COD)</span
+                  >
                 </div>
 
                 <!-- Chuyển khoản -->
@@ -773,7 +792,9 @@
                   "
                 >
                   <app-icon name="bank" class="w-6 h-6 shrink-0" [strokeWidth]="2"></app-icon>
-                  <span class="text-[11px] sm:text-xs uppercase mt-1.5 leading-tight">Chuyển khoản</span>
+                  <span class="text-[11px] sm:text-xs uppercase mt-1.5 leading-tight"
+                    >Chuyển khoản</span
+                  >
                 </div>
 
                 <!-- Ví điện tử -->
@@ -787,7 +808,9 @@
                   "
                 >
                   <app-icon name="wallet" class="w-6 h-6 shrink-0" [strokeWidth]="2"></app-icon>
-                  <span class="text-[11px] sm:text-xs uppercase mt-1.5 leading-tight">Ví điện tử</span>
+                  <span class="text-[11px] sm:text-xs uppercase mt-1.5 leading-tight"
+                    >Ví điện tử</span
+                  >
                 </div>
 
                 <!-- Crypto (nếu được bật) -->
@@ -801,42 +824,78 @@
                         : 'border-slate-200 dark:border-slate-800 text-slate-500 font-extrabold'
                     "
                   >
-                    <app-icon name="blockchain" class="w-6 h-6 shrink-0" [strokeWidth]="2"></app-icon>
-                    <span class="text-[11px] sm:text-xs uppercase mt-1.5 leading-tight">Crypto</span>
+                    <app-icon
+                      name="blockchain"
+                      class="w-6 h-6 shrink-0"
+                      [strokeWidth]="2"
+                    ></app-icon>
+                    <span class="text-[11px] sm:text-xs uppercase mt-1.5 leading-tight"
+                      >Crypto</span
+                    >
                   </div>
                 }
               </div>
 
               <!-- Lựa chọn tài khoản Chuyển khoản / Ví điện tử -->
-              @if (orderForm().payment_method === 'bank_transfer' || orderForm().payment_method === 'e_wallet') {
-                <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/60 space-y-4 animate-in fade-in duration-300">
+              @if (
+                orderForm().payment_method === 'bank_transfer' ||
+                orderForm().payment_method === 'e_wallet'
+              ) {
+                <div
+                  class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/60 space-y-4 animate-in fade-in duration-300"
+                >
                   <span class="text-xs font-black text-slate-400 uppercase tracking-wide block">
-                    {{ orderForm().payment_method === 'bank_transfer' ? 'Chọn tài khoản Ngân hàng' : 'Chọn Ví điện tử' }}
+                    {{
+                      orderForm().payment_method === 'bank_transfer'
+                        ? 'Chọn tài khoản Ngân hàng'
+                        : 'Chọn Ví điện tử'
+                    }}
                   </span>
 
                   <!-- Danh sách tài khoản -->
                   <div class="grid grid-cols-1 gap-2.5">
                     @for (pm of paymentMethods(); track pm.id) {
-                      @if ((orderForm().payment_method === 'bank_transfer' && pm.type === 'bank') || (orderForm().payment_method === 'e_wallet' && pm.type === 'wallet')) {
+                      @if (
+                        (orderForm().payment_method === 'bank_transfer' && pm.type === 'bank') ||
+                        (orderForm().payment_method === 'e_wallet' && pm.type === 'wallet')
+                      ) {
                         <div
                           (click)="selectStorePaymentMethod(pm.id)"
-                          [class]="'p-3.5 rounded-2xl border-2 flex items-center justify-between cursor-pointer transition-all ' +
+                          [class]="
+                            'p-3.5 rounded-2xl border-2 flex items-center justify-between cursor-pointer transition-all ' +
                             (orderForm().selected_payment_method_id === pm.id
                               ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5'
-                              : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700')"
+                              : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700')
+                          "
                         >
                           <div class="flex items-center gap-3">
-                            <div class="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0">
-                              <app-icon [name]="pm.type === 'bank' ? 'bank' : 'wallet'" class="w-5 h-5" [strokeWidth]="2"></app-icon>
+                            <div
+                              class="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0"
+                            >
+                              <app-icon
+                                [name]="pm.type === 'bank' ? 'bank' : 'wallet'"
+                                class="w-5 h-5"
+                                [strokeWidth]="2"
+                              ></app-icon>
                             </div>
                             <div>
-                              <span class="text-xs font-black text-slate-800 dark:text-white block">{{ pm.name }}</span>
-                              <span class="text-[10px] text-slate-500 dark:text-slate-400 font-bold block mt-0.5">{{ pm.account_holder }} - {{ pm.account_number }}</span>
+                              <span
+                                class="text-xs font-black text-slate-800 dark:text-white block"
+                                >{{ pm.name }}</span
+                              >
+                              <span
+                                class="text-[10px] text-slate-500 dark:text-slate-400 font-bold block mt-0.5"
+                                >{{ pm.account_holder }} - {{ pm.account_number }}</span
+                              >
                             </div>
                           </div>
                           @if (orderForm().selected_payment_method_id === pm.id) {
                             <div class="text-[var(--dynamic-primary)]">
-                              <app-icon name="check-circle" class="h-5 w-5" [strokeWidth]="2.5"></app-icon>
+                              <app-icon
+                                name="check-circle"
+                                class="h-5 w-5"
+                                [strokeWidth]="2.5"
+                              ></app-icon>
                             </div>
                           }
                         </div>
@@ -846,13 +905,23 @@
 
                   <!-- QR Code & Hướng dẫn chuyển khoản -->
                   @if (getSelectedPaymentMethod(); as selectedPM) {
-                    <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800/40 space-y-4 flex flex-col items-center text-center animate-in zoom-in-95 duration-200">
-                      <div class="text-[11px] font-bold text-slate-500 dark:text-slate-400 leading-relaxed">
-                        Vui lòng quét mã QR bên dưới để chuyển khoản số tiền <strong class="text-slate-800 dark:text-white">{{ cartTotalWithShipping() | vnd }}</strong> trước khi bấm đặt đơn!
+                    <div
+                      class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800/40 space-y-4 flex flex-col items-center text-center animate-in zoom-in-95 duration-200"
+                    >
+                      <div
+                        class="text-[11px] font-bold text-slate-500 dark:text-slate-400 leading-relaxed"
+                      >
+                        Vui lòng quét mã QR bên dưới để chuyển khoản số tiền
+                        <strong class="text-slate-800 dark:text-white">{{
+                          cartTotalWithShipping() | vnd
+                        }}</strong>
+                        trước khi bấm đặt đơn!
                       </div>
-                      
+
                       <!-- QR Image -->
-                      <div class="p-2.5 bg-white rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-md flex items-center justify-center w-48 h-48 shrink-0">
+                      <div
+                        class="p-2.5 bg-white rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-md flex items-center justify-center w-48 h-48 shrink-0"
+                      >
                         <img
                           [src]="getStoreQrUrl(selectedPM)"
                           alt="QR Code Chuyển Khoản"
@@ -870,19 +939,36 @@
                         <span>Tải ảnh QR</span>
                       </button>
 
-                      <div class="w-full text-left text-[11px] space-y-1 bg-white dark:bg-slate-950 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800/50">
+                      <div
+                        class="w-full text-left text-[11px] space-y-1 bg-white dark:bg-slate-950 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800/50"
+                      >
                         <div class="flex justify-between">
-                          <span class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Chủ tài khoản:</span>
-                          <span class="font-extrabold text-slate-800 dark:text-white uppercase">{{ selectedPM.account_holder }}</span>
+                          <span
+                            class="text-slate-400 font-bold uppercase tracking-wider text-[10px]"
+                            >Chủ tài khoản:</span
+                          >
+                          <span class="font-extrabold text-slate-800 dark:text-white uppercase">{{
+                            selectedPM.account_holder
+                          }}</span>
                         </div>
                         <div class="flex justify-between">
-                          <span class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Số tài khoản/SĐT:</span>
-                          <span class="font-bold text-slate-800 dark:text-white font-mono">{{ selectedPM.account_number }}</span>
+                          <span
+                            class="text-slate-400 font-bold uppercase tracking-wider text-[10px]"
+                            >Số tài khoản/SĐT:</span
+                          >
+                          <span class="font-bold text-slate-800 dark:text-white font-mono">{{
+                            selectedPM.account_number
+                          }}</span>
                         </div>
                         @if (selectedPM.type === 'bank') {
                           <div class="flex justify-between">
-                            <span class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Ngân hàng:</span>
-                            <span class="font-extrabold text-slate-800 dark:text-white">{{ selectedPM.name }} ({{ selectedPM.bank_code }})</span>
+                            <span
+                              class="text-slate-400 font-bold uppercase tracking-wider text-[10px]"
+                              >Ngân hàng:</span
+                            >
+                            <span class="font-extrabold text-slate-800 dark:text-white"
+                              >{{ selectedPM.name }} ({{ selectedPM.bank_code }})</span
+                            >
                           </div>
                         }
                       </div>
@@ -967,19 +1053,14 @@
             </div>
 
             <button
+              app-button
+              variant="primary"
               type="button"
               (click)="placeOrder()"
-              [disabled]="isSubmittingOrder()"
-              class="btn btn-primary btn-full text-sm uppercase tracking-wider"
+              [loading]="isSubmittingOrder()"
+              class="w-full text-sm uppercase tracking-wider"
             >
-              @if (isSubmittingOrder()) {
-                <div
-                  class="w-5 h-5 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                ></div>
-                <span>Đang xử lý đơn...</span>
-              } @else {
-                <span>XÁC NHẬN ĐẶT ĐƠN HÀNG</span>
-              }
+              XÁC NHẬN ĐẶT ĐƠN HÀNG
             </button>
           </div>
         </div>
@@ -1085,9 +1166,11 @@
               </div>
 
               <button
+                app-button
+                variant="primary"
                 type="button"
                 (click)="submitVariantSelection()"
-                class="btn btn-primary h-11 px-6 text-sm font-bold shadow-md shadow-[var(--dynamic-primary)]/20 hover:scale-[1.02] shrink-0"
+                class="h-11 px-6 text-sm font-bold shadow-md shadow-[var(--dynamic-primary)]/20 hover:scale-[1.02] shrink-0"
               >
                 Thêm vào giỏ
               </button>
@@ -1144,9 +1227,11 @@
 
             <div class="pt-2">
               <button
+                app-button
+                variant="primary"
                 type="button"
                 (click)="isOrderSuccess.set(false)"
-                class="btn btn-primary btn-full h-12 text-sm uppercase tracking-wider shadow-md shadow-[var(--dynamic-primary)]/20"
+                class="w-full h-12 text-sm uppercase tracking-wider shadow-md shadow-[var(--dynamic-primary)]/20"
               >
                 Tiếp tục mua hàng
               </button>
@@ -1188,9 +1273,11 @@
             <!-- Footer -->
             <div class="app-modal-footer justify-end">
               <button
+                app-button
+                variant="primary"
                 type="button"
                 (click)="alertModalMessage.set('')"
-                class="btn btn-primary h-11 px-6 text-sm font-bold shadow-md shadow-[var(--dynamic-primary)]/20 hover:scale-[1.02] shrink-0"
+                class="h-11 px-6 text-sm font-bold shadow-md shadow-[var(--dynamic-primary)]/20 hover:scale-[1.02] shrink-0"
               >
                 Đóng
               </button>

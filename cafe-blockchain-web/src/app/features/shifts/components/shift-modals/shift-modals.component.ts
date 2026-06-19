@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { StateService } from '@core/services/state.service';
 import { ModalComponent } from '@shared/components/modal/modal.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
+import { ButtonComponent } from '@shared/components/button/button.component';
 
 @Component({
   selector: 'app-shift-modals',
   standalone: true,
-  imports: [CommonModule, FormsModule, ModalComponent, IconComponent],
+  imports: [CommonModule, FormsModule, ModalComponent, IconComponent, ButtonComponent],
   templateUrl: './shift-modals.component.html'
 })
 export class ShiftModalsComponent {

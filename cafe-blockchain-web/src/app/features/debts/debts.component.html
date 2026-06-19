@@ -9,7 +9,7 @@
 
     <!-- Nút Lập phiếu nợ thủ công (Chỉ hiện khi ví đã kết nối) -->
     @if (web3Service.walletConnected()) {
-      <button (click)="openManualDebtModal()" class="btn-primary">
+      <button app-button variant="primary" (click)="openManualDebtModal()">
         <app-icon name="plus" class="h-4.5 w-4.5" [strokeWidth]="2.5"></app-icon>
         <span>Ghi nợ mới</span>
       </button>
@@ -206,23 +206,24 @@
                       <div class="flex items-center justify-center gap-2">
                         <!-- Nút Lịch sử -->
                         <button
+                          app-button
+                          variant="cancel"
+                          size="sm"
                           (click)="openHistoryDrawer(item)"
-                          class="btn-cancel btn-sm flex items-center gap-1"
+                          class="flex items-center gap-1"
                         >
                           <app-icon name="clock" class="h-3.5 w-3.5" [strokeWidth]="2.5"></app-icon>
                           <span>Lịch sử</span>
                         </button>
-
+ 
                         <!-- Nút Thu nợ -->
                         <button
+                          app-button
+                          variant="success"
+                          size="sm"
                           (click)="openPaymentModal(item)"
                           [disabled]="Number(item.debt_balance || 0) <= 0"
-                          [class]="
-                            Number(item.debt_balance || 0) > 0
-                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/15 hover:bg-emerald-500/20'
-                              : 'bg-slate-100 text-slate-400 dark:bg-slate-800/40 border-transparent'
-                          "
-                          class="btn-sm border flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                          class="flex items-center gap-1"
                         >
                           <app-icon name="check-circle" class="h-3.5 w-3.5" [strokeWidth]="2.5"></app-icon>
                           <span>Thu nợ</span>
@@ -371,20 +372,16 @@
 
       <!-- Action Buttons -->
       <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex gap-3 shrink-0">
-        <button (click)="closeManualDebtModal()" class="btn-cancel flex-1">Hủy bỏ</button>
+        <button app-button variant="cancel" (click)="closeManualDebtModal()" class="flex-1">Hủy bỏ</button>
         <button
+          app-button
+          variant="primary"
           (click)="saveManualDebt()"
-          [disabled]="isManualDebtSaving() || stateService.isLoading()"
-          class="btn-primary flex-1 shadow-md"
+          [loading]="isManualDebtSaving()"
+          [disabled]="stateService.isLoading()"
+          class="flex-1 shadow-md"
         >
-          @if (isManualDebtSaving()) {
-            <div
-              class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
-            ></div>
-            <span>Đang xử lý...</span>
-          } @else {
-            <span>Ghi nhận nợ</span>
-          }
+          <span>Ghi nhận nợ</span>
         </button>
       </div>
     </div>
@@ -552,20 +549,16 @@
 
       <!-- Action Buttons -->
       <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex gap-3 shrink-0">
-        <button (click)="closePaymentModal()" class="btn-cancel flex-1">Hủy bỏ</button>
+        <button app-button variant="cancel" (click)="closePaymentModal()" class="flex-1">Hủy bỏ</button>
         <button
+          app-button
+          variant="primary"
           (click)="savePayment()"
-          [disabled]="isPaymentSaving() || stateService.isLoading()"
-          class="btn-primary flex-1 shadow-md"
+          [loading]="isPaymentSaving()"
+          [disabled]="stateService.isLoading()"
+          class="flex-1 shadow-md"
         >
-          @if (isPaymentSaving()) {
-            <div
-              class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
-            ></div>
-            <span>Đang xử lý...</span>
-          } @else {
-            <span>Ghi nhận phiếu thu</span>
-          }
+          <span>Ghi nhận phiếu thu</span>
         </button>
       </div>
     </div>
@@ -595,9 +588,12 @@
 
     <!-- Nút In sao kê Excel -->
     <button
+      app-button
+      variant="success"
+      size="sm"
       (click)="exportStatementToExcel()"
       [disabled]="customerLogs().length === 0"
-      class="btn btn-sm bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+      class="shadow-sm flex items-center gap-1.5"
     >
       <app-icon name="download" class="h-4 w-4" [strokeWidth]="2.5"></app-icon>
       Xuất sao kê Excel
@@ -679,8 +675,11 @@
                 class="flex justify-end mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/40"
               >
                 <button
+                  app-button
+                  variant="danger-light"
+                  size="sm"
                   (click)="deleteDebtLog(log)"
-                  class="btn-danger-light btn-sm flex items-center gap-1"
+                  class="flex items-center gap-1"
                 >
                   <app-icon name="trash" class="h-3.5 w-3.5" [strokeWidth]="2"></app-icon>
                   Hủy bỏ

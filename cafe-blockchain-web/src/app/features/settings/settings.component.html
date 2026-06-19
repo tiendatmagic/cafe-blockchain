@@ -121,10 +121,12 @@
                     >Màu sắc giao diện DApp</span
                   >
                   <button
+                    app-button
+                    variant="secondary"
+                    size="sm"
                     type="button"
                     (click)="resetColorsToDefault()"
                     [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
-                    class="btn-secondary btn-sm"
                   >
                     <app-icon name="sync" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
                     <span>Về mặc định</span>
@@ -201,23 +203,18 @@
 
               <div class="pt-4">
                 <button
+                  app-button
+                  variant="primary"
                   (click)="saveConfig()"
+                  [loading]="isConfigSaving()"
                   [disabled]="
-                    isConfigSaving() ||
                     !web3Service.walletConnected() ||
                     !web3Service.isOwnerContract()
                   "
-                  class="btn-primary w-full shadow-lg"
+                  class="w-full shadow-lg"
                 >
-                  @if (isConfigSaving()) {
-                    <div
-                      class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                    ></div>
-                    <span>ĐANG LƯU CẤU HÌNH...</span>
-                  } @else {
-                    <app-icon name="download" class="h-4.5 w-4.5 shrink-0" strokeWidth="2.5" />
-                    <span>LƯU CẤU HÌNH HỆ THỐNG</span>
-                  }
+                  <app-icon name="download" class="h-4.5 w-4.5 shrink-0" strokeWidth="2.5" />
+                  <span>LƯU CẤU HÌNH HỆ THỐNG</span>
                 </button>
               </div>
             </div>
@@ -335,23 +332,18 @@
 
               <div class="pt-4">
                 <button
+                  app-button
+                  variant="primary"
                   (click)="saveConfig()"
+                  [loading]="isConfigSaving()"
                   [disabled]="
-                    isConfigSaving() ||
                     !web3Service.walletConnected() ||
                     !web3Service.isOwnerContract()
                   "
-                  class="btn-primary w-full shadow-lg"
+                  class="w-full shadow-lg"
                 >
-                  @if (isConfigSaving()) {
-                    <div
-                      class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                    ></div>
-                    <span>ĐANG LƯU CẤU HÌNH...</span>
-                  } @else {
-                    <app-icon name="save" class="h-4.5 w-4.5 shrink-0" strokeWidth="2.5" />
-                    <span>LƯU CẤU HÌNH HỆ THỐNG</span>
-                  }
+                  <app-icon name="save" class="h-4.5 w-4.5 shrink-0" strokeWidth="2.5" />
+                  <span>LƯU CẤU HÌNH HỆ THỐNG</span>
                 </button>
               </div>
             </div>
@@ -501,24 +493,20 @@
                     />
                     @if (!settings().voucher_contract_address) {
                       <button
+                        app-button
+                        variant="secondary"
+                        size="sm"
                         type="button"
+                        [loading]="isDeployingVoucher()"
                         [disabled]="
-                          isDeployingVoucher() ||
                           !web3Service.walletConnected() ||
                           !web3Service.isOwnerContract()
                         "
                         (click)="deployVoucherContract()"
-                        class="btn-secondary btn-sm h-[42px] w-full sm:w-auto shrink-0"
+                        class="h-[42px] w-full sm:w-auto shrink-0"
                       >
-                        @if (isDeployingVoucher()) {
-                          <div
-                            class="w-3.5 h-3.5 rounded-full border-2 border-[var(--dynamic-primary)]/30 border-t-[var(--dynamic-primary)] animate-spin"
-                          ></div>
-                          <span>Đang deploy...</span>
-                        } @else {
-                          <app-icon name="archive" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
-                          <span>Deploy NFT Voucher Contract</span>
-                        }
+                        <app-icon name="archive" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
+                        <span>Deploy NFT Voucher Contract</span>
                       </button>
                     }
                   </div>
@@ -570,23 +558,18 @@
 
               <div class="pt-4 border-t border-slate-100 dark:border-slate-800/60">
                 <button
+                  app-button
+                  variant="primary"
                   (click)="saveConfig()"
+                  [loading]="isConfigSaving()"
                   [disabled]="
-                    isConfigSaving() ||
                     !web3Service.walletConnected() ||
                     !web3Service.isOwnerContract()
                   "
-                  class="btn-primary w-full shadow-lg"
+                  class="w-full shadow-lg"
                 >
-                  @if (isConfigSaving()) {
-                    <div
-                      class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                    ></div>
-                    <span>ĐANG LƯU CẤU HÌNH...</span>
-                  } @else {
-                    <app-icon name="save" class="h-4.5 w-4.5 shrink-0" strokeWidth="2.5" />
-                    <span>LƯU CẤU HÌNH HỆ THỐNG</span>
-                  }
+                  <app-icon name="save" class="h-4.5 w-4.5 shrink-0" strokeWidth="2.5" />
+                  <span>LƯU CẤU HÌNH HỆ THỐNG</span>
                 </button>
               </div>
             </div>
@@ -673,24 +656,20 @@
                   />
                   @if (settings().contract_address === '' || !settings().has_synced_orders) {
                     <button
+                      app-button
+                      variant="secondary"
+                      size="sm"
                       type="button"
+                      [loading]="isDeploying()"
                       [disabled]="
-                        isDeploying() ||
                         !web3Service.walletConnected() ||
                         !web3Service.isOwnerContract()
                       "
                       (click)="deployNewContract()"
-                      class="btn-secondary btn-sm h-[42px] w-full sm:w-auto shrink-0"
+                      class="h-[42px] w-full sm:w-auto shrink-0"
                     >
-                      @if (isDeploying()) {
-                        <div
-                          class="w-3.5 h-3.5 rounded-full border-2 border-[var(--dynamic-primary)]/30 border-t-[var(--dynamic-primary)] animate-spin"
-                        ></div>
-                        <span>Đang deploy...</span>
-                      } @else {
-                        <app-icon name="cloud-upload" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
-                        <span>Deploy POS Contract</span>
-                      }
+                      <app-icon name="cloud-upload" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
+                      <span>Deploy POS Contract</span>
                     </button>
                   }
                 </div>
@@ -738,24 +717,20 @@
                     !settings().has_synced_transactions
                   ) {
                     <button
+                      app-button
+                      variant="secondary"
+                      size="sm"
                       type="button"
+                      [loading]="isDeployingFinance()"
                       [disabled]="
-                        isDeployingFinance() ||
                         !web3Service.walletConnected() ||
                         !web3Service.isOwnerContract()
                       "
                       (click)="deployFinanceContract()"
-                      class="btn-secondary btn-sm h-[42px] w-full sm:w-auto shrink-0"
+                      class="h-[42px] w-full sm:w-auto shrink-0"
                     >
-                      @if (isDeployingFinance()) {
-                        <div
-                          class="w-3.5 h-3.5 rounded-full border-2 border-[var(--dynamic-primary)]/30 border-t-[var(--dynamic-primary)] animate-spin"
-                        ></div>
-                        <span>Đang deploy...</span>
-                      } @else {
-                        <app-icon name="archive" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
-                        <span>Deploy Finance Contract</span>
-                      }
+                      <app-icon name="archive" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
+                      <span>Deploy Finance Contract</span>
                     </button>
                   }
                 </div>
@@ -806,24 +781,20 @@
                     settings().has_synced_menu !== '1'
                   ) {
                     <button
+                      app-button
+                      variant="secondary"
+                      size="sm"
                       type="button"
+                      [loading]="isDeployingMenuRegistry()"
                       [disabled]="
-                        isDeployingMenuRegistry() ||
                         !web3Service.walletConnected() ||
                         !web3Service.isOwnerContract()
                       "
                       (click)="deployMenuRegistryContract()"
-                      class="btn-secondary btn-sm h-[42px] w-full sm:w-auto shrink-0"
+                      class="h-[42px] w-full sm:w-auto shrink-0"
                     >
-                      @if (isDeployingMenuRegistry()) {
-                        <div
-                          class="w-3.5 h-3.5 rounded-full border-2 border-[var(--dynamic-primary)]/30 border-t-[var(--dynamic-primary)] animate-spin"
-                        ></div>
-                        <span>Đang deploy...</span>
-                      } @else {
-                        <app-icon name="archive" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
-                        <span>Deploy Menu Contract</span>
-                      }
+                      <app-icon name="archive" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
+                      <span>Deploy Menu Contract</span>
                     </button>
                   }
                 </div>
@@ -861,24 +832,20 @@
                   />
                   @if (settings().loyalty_token_contract_address === '' || !settings().loyalty_token_contract_address) {
                     <button
+                      app-button
+                      variant="secondary"
+                      size="sm"
                       type="button"
+                      [loading]="isDeployingLoyaltyToken()"
                       [disabled]="
-                        isDeployingLoyaltyToken() ||
                         !web3Service.walletConnected() ||
                         !web3Service.isOwnerContract()
                       "
                       (click)="deployLoyaltyTokenContract()"
-                      class="btn-secondary btn-sm h-[42px] w-full sm:w-auto shrink-0"
+                      class="h-[42px] w-full sm:w-auto shrink-0"
                     >
-                      @if (isDeployingLoyaltyToken()) {
-                        <div
-                          class="w-3.5 h-3.5 rounded-full border-2 border-[var(--dynamic-primary)]/30 border-t-[var(--dynamic-primary)] animate-spin"
-                        ></div>
-                        <span>Đang deploy...</span>
-                      } @else {
-                        <app-icon name="archive" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
-                        <span>Deploy $CAFE Token</span>
-                      }
+                      <app-icon name="archive" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
+                      <span>Deploy $CAFE Token</span>
                     </button>
                   }
                 </div>
@@ -916,27 +883,23 @@
                   />
                   @if (settings().voucher_shop_contract_address === '' || !settings().voucher_shop_contract_address) {
                     <button
+                      app-button
+                      variant="secondary"
+                      size="sm"
                       type="button"
+                      [loading]="isDeployingVoucherShop()"
                       [disabled]="
-                        isDeployingVoucherShop() ||
                         !web3Service.walletConnected() ||
                         !web3Service.isOwnerContract() ||
                         configForm().loyalty_token_contract_address === '' ||
                         configForm().voucher_contract_address === ''
                       "
                       (click)="deployVoucherShopContract()"
-                      class="btn-secondary btn-sm h-[42px] w-full sm:w-auto shrink-0"
+                      class="h-[42px] w-full sm:w-auto shrink-0"
                       [title]="(configForm().loyalty_token_contract_address === '' || configForm().voucher_contract_address === '') ? 'Vui lòng deploy $CAFE Token và NFT Voucher trước' : ''"
                     >
-                      @if (isDeployingVoucherShop()) {
-                        <div
-                          class="w-3.5 h-3.5 rounded-full border-2 border-[var(--dynamic-primary)]/30 border-t-[var(--dynamic-primary)] animate-spin"
-                        ></div>
-                        <span>Đang deploy...</span>
-                      } @else {
-                        <app-icon name="archive" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
-                        <span>Deploy Voucher Shop</span>
-                      }
+                      <app-icon name="archive" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
+                      <span>Deploy Voucher Shop</span>
                     </button>
                   }
                 </div>
@@ -974,27 +937,23 @@
                   />
                   @if (settings().voucher_marketplace_contract_address === '' || !settings().voucher_marketplace_contract_address) {
                     <button
+                      app-button
+                      variant="secondary"
+                      size="sm"
                       type="button"
+                      [loading]="isDeployingVoucherMarketplace()"
                       [disabled]="
-                        isDeployingVoucherMarketplace() ||
                         !web3Service.walletConnected() ||
                         !web3Service.isOwnerContract() ||
                         configForm().loyalty_token_contract_address === '' ||
                         configForm().voucher_contract_address === ''
                       "
                       (click)="deployVoucherMarketplaceContract()"
-                      class="btn-secondary btn-sm h-[42px] w-full sm:w-auto shrink-0"
+                      class="h-[42px] w-full sm:w-auto shrink-0"
                       [title]="(configForm().loyalty_token_contract_address === '' || configForm().voucher_contract_address === '') ? 'Vui lòng deploy $CAFE Token và NFT Voucher trước' : ''"
                     >
-                      @if (isDeployingVoucherMarketplace()) {
-                        <div
-                          class="w-3.5 h-3.5 rounded-full border-2 border-[var(--dynamic-primary)]/30 border-t-[var(--dynamic-primary)] animate-spin"
-                        ></div>
-                        <span>Đang deploy...</span>
-                      } @else {
-                        <app-icon name="archive" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
-                        <span>Deploy Marketplace</span>
-                      }
+                      <app-icon name="archive" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
+                      <span>Deploy Marketplace</span>
                     </button>
                   }
                 </div>
@@ -1091,23 +1050,18 @@
 
               <div class="pt-4">
                 <button
+                  app-button
+                  variant="primary"
                   (click)="saveConfig()"
+                  [loading]="isConfigSaving()"
                   [disabled]="
-                    isConfigSaving() ||
                     !web3Service.walletConnected() ||
                     !web3Service.isOwnerContract()
                   "
-                  class="btn-primary w-full shadow-lg"
+                  class="w-full shadow-lg"
                 >
-                  @if (isConfigSaving()) {
-                    <div
-                      class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                    ></div>
-                    <span>ĐANG LƯU KẾT NỐI...</span>
-                  } @else {
-                    <app-icon name="save" class="h-4.5 w-4.5 shrink-0" strokeWidth="2.5" />
-                    <span>LƯU KẾT NỐI BLOCKCHAIN</span>
-                  }
+                  <app-icon name="save" class="h-4.5 w-4.5 shrink-0" strokeWidth="2.5" />
+                  <span>LƯU KẾT NỐI BLOCKCHAIN</span>
                 </button>
               </div>
             </div>
@@ -1175,13 +1129,16 @@
                         class="form-input font-mono flex-1 min-w-0 bg-white dark:bg-slate-950"
                       />
                       <button
+                        app-button
+                        variant="primary"
+                        size="sm"
+                        [loading]="isOwnerActionLoading()"
                         [disabled]="
-                          isOwnerActionLoading() ||
                           !web3Service.walletConnected() ||
                           !web3Service.isOwnerContract()
                         "
                         (click)="addOwnerAddress()"
-                        class="btn-primary btn-sm h-[42px] shrink-0"
+                        class="h-[42px] shrink-0"
                       >
                         + Thêm ví mới
                       </button>
@@ -1236,9 +1193,11 @@
                           >
                           @if (owner.toLowerCase() !== web3Service.currentAccount().toLowerCase()) {
                             <button
-                              [disabled]="isOwnerActionLoading()"
+                              app-button
+                              variant="danger-light"
+                              size="sm"
+                              [loading]="isOwnerActionLoading()"
                               (click)="removeOwnerAddress(owner)"
-                              class="btn-danger-light btn-sm"
                             >
                               Xóa
                             </button>
@@ -1295,14 +1254,17 @@
                         class="form-input font-mono flex-1 min-w-0 bg-white dark:bg-slate-950"
                       />
                       <button
+                        app-button
+                        variant="primary"
+                        size="sm"
+                        [loading]="isFinanceOwnerActionLoading()"
                         [disabled]="
-                          isFinanceOwnerActionLoading() ||
                           settings().finance_contract_address === '' ||
                           !web3Service.walletConnected() ||
                           !web3Service.isOwnerContract()
                         "
                         (click)="addFinanceOwnerAddress()"
-                        class="btn-primary btn-sm h-[42px] shrink-0"
+                        class="h-[42px] shrink-0"
                       >
                         + Thêm ví
                       </button>
@@ -1363,9 +1325,11 @@
                           >
                           @if (owner.toLowerCase() !== web3Service.currentAccount().toLowerCase()) {
                             <button
-                              [disabled]="isFinanceOwnerActionLoading()"
+                              app-button
+                              variant="danger-light"
+                              size="sm"
+                              [loading]="isFinanceOwnerActionLoading()"
                               (click)="removeFinanceOwnerAddress(owner)"
-                              class="btn-danger-light btn-sm"
                             >
                               Xóa
                             </button>
@@ -1422,14 +1386,17 @@
                         class="form-input font-mono flex-1 min-w-0 bg-white dark:bg-slate-950"
                       />
                       <button
+                        app-button
+                        variant="primary"
+                        size="sm"
+                        [loading]="isVoucherOwnerActionLoading()"
                         [disabled]="
-                          isVoucherOwnerActionLoading() ||
                           settings().voucher_contract_address === '' ||
                           !web3Service.walletConnected() ||
                           !web3Service.isOwnerContract()
                         "
                         (click)="addVoucherOwnerAddress()"
-                        class="btn-primary btn-sm h-[42px] shrink-0"
+                        class="h-[42px] shrink-0"
                       >
                         + Thêm ví
                       </button>
@@ -1490,9 +1457,11 @@
                           >
                           @if (owner.toLowerCase() !== web3Service.currentAccount().toLowerCase()) {
                             <button
-                              [disabled]="isVoucherOwnerActionLoading()"
+                              app-button
+                              variant="danger-light"
+                              size="sm"
+                              [loading]="isVoucherOwnerActionLoading()"
                               (click)="removeVoucherOwnerAddress(owner)"
-                              class="btn-danger-light btn-sm"
                             >
                               Xóa
                             </button>
@@ -1549,14 +1518,17 @@
                         class="form-input font-mono flex-1 min-w-0 bg-white dark:bg-slate-950"
                       />
                       <button
+                        app-button
+                        variant="primary"
+                        size="sm"
+                        [loading]="isMenuOwnerActionLoading()"
                         [disabled]="
-                          isMenuOwnerActionLoading() ||
                           settings().menu_registry_contract_address === '' ||
                           !web3Service.walletConnected() ||
                           !web3Service.isOwnerContract()
                         "
                         (click)="addMenuOwnerAddress()"
-                        class="btn-primary btn-sm h-[42px] shrink-0"
+                        class="h-[42px] shrink-0"
                       >
                         + Thêm ví
                       </button>
@@ -1617,9 +1589,11 @@
                           >
                           @if (owner.toLowerCase() !== web3Service.currentAccount().toLowerCase()) {
                             <button
-                              [disabled]="isMenuOwnerActionLoading()"
+                              app-button
+                              variant="danger-light"
+                              size="sm"
+                              [loading]="isMenuOwnerActionLoading()"
                               (click)="removeMenuOwnerAddress(owner)"
-                              class="btn-danger-light btn-sm"
                             >
                               Xóa
                             </button>
@@ -1943,22 +1917,26 @@
 
                     <div class="flex items-center gap-2 shrink-0">
                       <button
+                        app-button
+                        variant="secondary"
+                        size="sm"
                         type="button"
                         (click)="selectAllCategories()"
                         [disabled]="
                           !web3Service.walletConnected() || !web3Service.isOwnerContract()
                         "
-                        class="btn-secondary btn-sm"
                       >
                         Chọn tất cả
                       </button>
                       <button
+                        app-button
+                        variant="danger-light"
+                        size="sm"
                         type="button"
                         (click)="clearAllCategories()"
                         [disabled]="
                           !web3Service.walletConnected() || !web3Service.isOwnerContract()
                         "
-                        class="btn-danger-light btn-sm"
                       >
                         Bỏ chọn hết
                       </button>
@@ -1990,23 +1968,11 @@
                               : '')
                           "
                         >
-                          <div
-                            [class]="
-                              'w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all shrink-0 ' +
-                              (isCategorySelected(category.id)
-                                ? 'bg-[var(--dynamic-primary)] border-[var(--dynamic-primary)] text-white'
-                                : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900')
-                            "
-                          >
-                            @if (isCategorySelected(category.id)) {
-                              <app-icon
-                                name="check"
-                                class="h-3.5 w-3.5"
-                                [solid]="true"
-                                viewBox="0 0 20 20"
-                              />
-                            }
-                          </div>
+                          <app-custom-checkbox
+                            [checked]="isCategorySelected(category.id)"
+                            [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                            class="pointer-events-none shrink-0"
+                          ></app-custom-checkbox>
                           <span class="text-xs font-bold leading-none truncate">{{
                             category.name
                           }}</span>
@@ -2019,23 +1985,18 @@
 
               <div class="pt-4">
                 <button
+                  app-button
+                  variant="primary"
                   (click)="saveConfig()"
+                  [loading]="isConfigSaving()"
                   [disabled]="
-                    isConfigSaving() ||
                     !web3Service.walletConnected() ||
                     !web3Service.isOwnerContract()
                   "
-                  class="btn-primary w-full shadow-lg"
+                  class="w-full shadow-lg"
                 >
-                  @if (isConfigSaving()) {
-                    <div
-                      class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                    ></div>
-                    <span>ĐANG LƯU CẤU HÌNH...</span>
-                  } @else {
-                    <app-icon name="save" class="h-4.5 w-4.5 shrink-0" strokeWidth="2.5" />
-                    <span>LƯU CẤU HÌNH HỆ THỐNG</span>
-                  }
+                  <app-icon name="save" class="h-4.5 w-4.5 shrink-0" strokeWidth="2.5" />
+                  <span>LƯU CẤU HÌNH HỆ THỐNG</span>
                 </button>
               </div>
             </div>

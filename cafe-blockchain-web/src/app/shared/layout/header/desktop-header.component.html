@@ -45,18 +45,14 @@
           >
             <div class="flex items-center gap-2.5">
               <div class="flex flex-col text-left">
-                <span class="text-xs font-bold text-slate-700 dark:text-slate-200"
-                  >USDT</span
-                >
+                <span class="text-xs font-bold text-slate-700 dark:text-slate-200">USDT</span>
                 <span
                   class="text-[10px] text-emerald-600 dark:text-emerald-400 font-extrabold uppercase leading-none mt-0.5"
                   >Mặc định</span
                 >
               </div>
             </div>
-            <span
-              class="text-xs font-black text-emerald-600 dark:text-emerald-400 font-mono"
-            >
+            <span class="text-xs font-black text-emerald-600 dark:text-emerald-400 font-mono">
               {{ stateService.usdtPriceVND() | number }}đ
             </span>
           </div>
@@ -95,9 +91,7 @@
           [class.text-[var(--dynamic-primary)]]="
             stateService.currentShift() && stateService.currentShift().id
           "
-          [class.text-slate-500]="
-            !(stateService.currentShift() && stateService.currentShift().id)
-          "
+          [class.text-slate-500]="!(stateService.currentShift() && stateService.currentShift().id)"
           [class.dark:text-slate-400]="
             !(stateService.currentShift() && stateService.currentShift().id)
           "
@@ -146,9 +140,12 @@
                   </span>
                 </div>
                 <button
+                  app-button
+                  variant="danger-light"
+                  size="sm"
                   type="button"
                   (click)="openCloseShiftModal()"
-                  class="btn-danger-light btn-sm w-full font-black flex items-center justify-center gap-1.5 cursor-pointer"
+                  class="w-full font-black flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <app-icon name="logout" class="h-3.5 w-3.5" strokeWidth="2.5" />
                   <span>Kết ca & Đối soát</span>
@@ -156,26 +153,19 @@
               </div>
             } @else if (stateService.hasPermission('shifts')) {
               <div class="space-y-3">
-                <div
-                  class="flex items-center gap-1.5 text-slate-455 font-bold justify-center py-1"
-                >
-                  <app-icon
-                    name="warning"
-                    class="h-4 w-4 text-slate-400"
-                    strokeWidth="2.5"
-                  />
+                <div class="flex items-center gap-1.5 text-slate-455 font-bold justify-center py-1">
+                  <app-icon name="warning" class="h-4 w-4 text-slate-400" strokeWidth="2.5" />
                   <span class="text-xs text-slate-400">Chưa vào ca trực</span>
                 </div>
                 <button
+                  app-button
+                  variant="primary"
+                  size="sm"
                   type="button"
                   (click)="openStartShiftModal()"
-                  class="btn-primary btn-sm w-full font-black flex items-center justify-center gap-1.5 text-white bg-[var(--dynamic-primary)] cursor-pointer"
+                  class="w-full font-black flex items-center justify-center gap-1.5 text-white bg-[var(--dynamic-primary)] cursor-pointer"
                 >
-                  <app-icon
-                    name="lock-open"
-                    class="h-3.5 w-3.5 text-white"
-                    strokeWidth="2.5"
-                  />
+                  <app-icon name="lock-open" class="h-3.5 w-3.5 text-white" strokeWidth="2.5" />
                   <span>Bắt đầu ca trực</span>
                 </button>
               </div>
@@ -248,17 +238,25 @@
       >
         <!-- Badge gói cước: absolute góc trên phải, không chiếm chỗ trong layout -->
         @if (stateService.subscriptionPlanCode() === 'free') {
-          <span class="absolute -top-2 -right-1 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wide bg-rose-100 text-rose-600 border border-rose-200 dark:bg-rose-950/50 dark:text-rose-400 dark:border-rose-900/40 shadow-sm">
+          <span
+            class="absolute -top-2 -right-1 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wide bg-rose-100 text-rose-600 border border-rose-200 dark:bg-rose-950/50 dark:text-rose-400 dark:border-rose-900/40 shadow-sm"
+          >
             <span>{{ stateService.subscriptionPlanCode() }}</span>
             @if (stateService.subscriptionDaysLeft() > 0) {
-              <span class="normal-case font-semibold opacity-85">· {{ stateService.subscriptionDaysLeft() }}d</span>
+              <span class="normal-case font-semibold opacity-85"
+                >· {{ stateService.subscriptionDaysLeft() }}d</span
+              >
             }
           </span>
         } @else {
-          <span class="absolute -top-2 -right-1 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wide bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-900/40 shadow-sm">
+          <span
+            class="absolute -top-2 -right-1 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wide bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-900/40 shadow-sm"
+          >
             <span>{{ stateService.subscriptionPlanCode() }}</span>
             @if (stateService.subscriptionDaysLeft() > 0) {
-              <span class="normal-case font-semibold opacity-85">· {{ stateService.subscriptionDaysLeft() }}d</span>
+              <span class="normal-case font-semibold opacity-85"
+                >· {{ stateService.subscriptionDaysLeft() }}d</span
+              >
             }
           </span>
         }
@@ -280,8 +278,10 @@
       </div>
     } @else {
       <button
+        app-button
+        variant="primary"
         (click)="stateService.connectWalletAndSign()"
-        class="btn-primary hover:scale-[1.02] gap-2"
+        class="gap-2"
       >
         <app-icon name="wallet" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
         <span>KẾT NỐI VÍ WEB3</span>

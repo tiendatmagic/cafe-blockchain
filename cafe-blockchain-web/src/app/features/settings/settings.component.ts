@@ -15,6 +15,8 @@ import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 import { TableComponent, TableCellDirective, TableColumn } from '@shared/components/table/table.component';
+import { ButtonComponent } from '@shared/components/button/button.component';
+import { CustomCheckboxComponent } from '@shared/components/custom-checkbox/custom-checkbox.component';
 
 @Component({
   selector: 'app-settings',
@@ -34,7 +36,9 @@ import { TableComponent, TableCellDirective, TableColumn } from '@shared/compone
     TabGroupComponent,
     SkeletonLoaderComponent,
     TableComponent,
-    TableCellDirective
+    TableCellDirective,
+    ButtonComponent,
+    CustomCheckboxComponent
   ],
   templateUrl: './settings.component.html'
 })

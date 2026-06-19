@@ -186,14 +186,18 @@
                   <td class="text-right whitespace-nowrap">
                     <div class="flex items-center justify-end gap-2.5">
                       <button
+                        app-button
+                        variant="secondary"
+                        size="sm"
                         (click)="viewInventoryRecordDetails(record)"
-                        class="btn-secondary btn-sm"
                       >
                         Chi tiết
                       </button>
                       <button
+                        app-button
+                        variant="danger-light"
+                        size="sm"
                         (click)="deleteInventoryRecord(record)"
-                        class="btn-danger-light btn-sm"
                       >
                         Xóa
                       </button>
@@ -517,23 +521,22 @@
       <!-- Footer Buttons -->
       <div class="flex gap-3 pt-3.5 border-t border-slate-100 dark:border-slate-800 shrink-0">
         <button
+          app-button
+          variant="cancel"
           (click)="closeInventoryModal()"
           [disabled]="isInventorySaving()"
-          class="btn-cancel flex-1"
+          class="flex-1"
         >
           Hủy bỏ
         </button>
         <button
+          app-button
+          variant="primary"
           (click)="saveInventoryRecord()"
-          [disabled]="isInventorySaving()"
-          class="btn-primary flex-1"
+          [loading]="isInventorySaving()"
+          class="flex-1"
         >
-          @if (isInventorySaving()) {
-            <div
-              class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
-            ></div>
-          }
-          <span>Lập phiếu kho</span>
+          Lập phiếu kho
         </button>
       </div>
     </div>
@@ -637,8 +640,10 @@
       <!-- Footer Buttons -->
       <div class="flex pt-3.5 border-t border-slate-100 dark:border-slate-800 shrink-0">
         <button
+          app-button
+          variant="cancel"
           (click)="closeInventoryDetailModal()"
-          class="btn-cancel w-full"
+          class="w-full"
         >
           Đóng cửa sổ
         </button>

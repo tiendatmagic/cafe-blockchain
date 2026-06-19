@@ -178,26 +178,23 @@
       <!-- Actions button -->
       <div class="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800 shrink-0 mt-5">
         <button
+          app-button
+          variant="cancel"
           type="button"
           (click)="stateService.isCloseShiftModalOpen.set(false)"
-          class="btn-cancel flex-1"
+          class="flex-1"
         >
           Quay lại
         </button>
         <button
+          app-button
+          variant="danger"
           type="button"
           (click)="stateService.confirmCloseShift()"
-          [disabled]="stateService.isLoading()"
-          class="btn-danger flex-1 font-black cursor-pointer"
+          [loading]="stateService.isLoading()"
+          class="flex-1 font-black cursor-pointer"
         >
-          @if (stateService.isLoading()) {
-            <div
-              class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
-            ></div>
-            <span>Đang đóng ca...</span>
-          } @else {
-            <span>Kết ca & Đối soát két</span>
-          }
+          <span>Kết ca & Đối soát két</span>
         </button>
       </div>
     }
@@ -283,27 +280,24 @@
     <!-- Actions button -->
     <div class="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800 shrink-0 mt-5">
       <button
+        app-button
+        variant="cancel"
         type="button"
         (click)="stateService.isStartShiftModalOpen.set(false)"
-        class="btn-cancel flex-1"
+        class="flex-1"
       >
         Hủy bỏ
       </button>
       <button
+        app-button
+        variant="primary"
         type="button"
         (click)="stateService.confirmStartShift()"
-        [disabled]="stateService.isLoading()"
-        class="btn-primary flex-1 font-black text-white flex items-center justify-center gap-1.5 bg-[var(--dynamic-primary)] cursor-pointer"
+        [loading]="stateService.isLoading()"
+        class="flex-1 font-black text-white flex items-center justify-center gap-1.5 bg-[var(--dynamic-primary)] cursor-pointer"
       >
-        @if (stateService.isLoading()) {
-          <div
-            class="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"
-          ></div>
-          <span>Đang mở ca...</span>
-        } @else {
-          <app-icon name="lock-open" class="h-4 w-4 shrink-0" strokeWidth="2" />
-          <span>Mở ca & Bắt đầu</span>
-        }
+        <app-icon name="lock-open" class="h-4 w-4 shrink-0" strokeWidth="2" />
+        <span>Mở ca & Bắt đầu</span>
       </button>
     </div>
   </div>

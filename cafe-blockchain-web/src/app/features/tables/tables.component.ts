@@ -13,6 +13,7 @@ import { CustomSelectComponent } from '@shared/components/custom-select/custom-s
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
+import { ButtonComponent } from '@shared/components/button/button.component';
 
 @Component({
   selector: 'app-tables',
@@ -29,7 +30,8 @@ import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skel
     CustomSelectComponent,
     IconComponent,
     TabGroupComponent,
-    SkeletonLoaderComponent
+    SkeletonLoaderComponent,
+    ButtonComponent
   ],
   templateUrl: './tables.component.html'
 })
