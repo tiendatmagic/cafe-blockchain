@@ -534,34 +534,46 @@ export class Web3Service {
    */
   private async updateBalanceAndStatus(account: string) {
     const provider = this.getBrowserProvider();
-    if (!provider) return;
+    if (!provider) {
+      // Không có provider nhưng chưa deploy contract → vẫn cho phép cấu hình
+      if (!this.contractAddress() || this.contractAddress().trim() === '') {
+        this.isOwnerContract.set(true);
+      }
+      return;
+    }
+
+    // 1. Lấy số dư (lỗi không block các bước sau)
     try {
-      // 1. Lấy số dư
       const balanceObj = await provider.getBalance(account);
       this.walletBalance.set(parseFloat(formatEther(balanceObj)).toFixed(4));
+    } catch (err) {
+      console.warn('Không thể lấy số dư ví:', err);
+    }
 
-      // 2. Lấy chainId
+    // 2. Lấy chainId (lỗi không block bước sau)
+    try {
       const network = await provider.getNetwork();
       this.chainId.set(network.chainId.toString());
-
-      // 3. Kiểm tra xem có phải Owner của Smart Contract không
-      if (!this.contractAddress() || this.contractAddress().trim() === '') {
-        // Nếu chưa deploy contract, bất kỳ ví nào đã kết nối đều được coi là Admin/Owner để cấu hình & deploy
-        this.isOwnerContract.set(true);
-      } else {
-        const contract = new Contract(this.contractAddress(), CAFE_WEB3_POS_ABI, provider);
-        try {
-          const isOwner = await contract['isOwner'](account);
-          this.isOwnerContract.set(isOwner);
-        } catch (e) {
-          console.warn('Smart Contract chua duoc deploy tren mang nay hoac loi dia chi:', e);
-          this.isOwnerContract.set(false);
-        }
-      }
     } catch (err) {
-      console.error('Loi cap nhat trang thai vi:', err);
+      console.warn('Không thể lấy chainId từ provider:', err);
+    }
+
+    // 3. Kiểm tra xem có phải Owner của Smart Contract không
+    if (!this.contractAddress() || this.contractAddress().trim() === '') {
+      // Chưa deploy contract → bất kỳ ví nào đã kết nối đều được coi là Admin/Owner để cấu hình & deploy
+      this.isOwnerContract.set(true);
+    } else {
+      try {
+        const contract = new Contract(this.contractAddress(), CAFE_WEB3_POS_ABI, provider);
+        const isOwner = await contract['isOwner'](account);
+        this.isOwnerContract.set(isOwner);
+      } catch (e) {
+        console.warn('Smart Contract chua duoc deploy tren mang nay hoac loi dia chi:', e);
+        this.isOwnerContract.set(false);
+      }
     }
   }
+
 
   public async connectWallet(): Promise<boolean> {
     this.walletError.set('');
