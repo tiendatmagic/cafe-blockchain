@@ -8,7 +8,12 @@
       '.'
     "
   >
-    <app-icon icon name="home" class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" [strokeWidth]="2.5"></app-icon>
+    <app-icon
+      icon
+      name="home"
+      class="h-6.5 w-6.5 text-[var(--dynamic-primary)]"
+      [strokeWidth]="2.5"
+    ></app-icon>
 
     @if (web3Service.walletConnected()) {
       <button (click)="loadAllData()" class="btn-secondary self-start sm:self-center">
@@ -20,865 +25,991 @@
 
   @if (web3Service.walletConnected()) {
     @if (stateService.hasPermission('dashboard')) {
-    <!-- Grid Card chào mừng & Ca trực đang hoạt động -->
-    <div class="grid grid-cols-1 gap-4 mb-4" [class.lg:grid-cols-3]="stateService.currentShift() && stateService.currentShift().id">
-      <!-- Card chào mừng & thông tin gói cước -->
-      <div class="app-card p-4 sm:p-5 flex flex-col justify-between" [class.lg:col-span-2]="stateService.currentShift() && stateService.currentShift().id">
-        <div class="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 h-full">
-          <!-- Phần chào mừng -->
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-[var(--dynamic-primary)]/10 dark:bg-[var(--dynamic-primary)]/20 flex items-center justify-center shrink-0">
-              <app-icon name="home" class="h-5.5 w-5.5 text-[var(--dynamic-primary)]" [strokeWidth]="2.5"></app-icon>
-            </div>
-            <div>
-              <p class="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-wider">Xin chào</p>
-              <h3 class="text-slate-800 dark:text-slate-100 font-extrabold text-base sm:text-lg leading-tight mt-0.5">{{ settings().store_name }}</h3>
-            </div>
-          </div>
-
-          <!-- Thông tin gói cước -->
-          <div class="flex flex-col sm:items-end gap-1.5">
-            <div class="flex items-center gap-2 flex-wrap">
-              <span class="text-slate-500 dark:text-slate-400 text-xs font-semibold">Gói của bạn:</span>
-              @if (stateService.subscriptionPlanCode() === 'free') {
-                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-500 text-white text-[11px] font-black uppercase tracking-wide shadow-sm">
-                  <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
-                  {{ stateService.subscriptionPlanCode() }}
-                </span>
-              } @else {
-                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500 text-white text-[11px] font-black uppercase tracking-wide shadow-sm">
-                  <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
-                  {{ stateService.subscriptionPlanCode() }}
-                </span>
-              }
-            </div>
-
-            <!-- Ngày hết hạn -->
-            @if (stateService.subscriptionDaysLeft() <= 7 && stateService.subscriptionDaysLeft() > 0) {
-              <!-- Cảnh báo sắp hết hạn -->
-              <div class="flex flex-col sm:items-end gap-1">
-                <div class="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400">
-                  <app-icon name="warning" class="h-3 w-3 shrink-0 animate-pulse" [strokeWidth]="2.5"></app-icon>
-                  <span class="text-[11px] font-bold">Hết hạn sau {{ stateService.subscriptionDaysLeft() }} ngày!</span>
-                </div>
-                <span class="text-[10px] text-rose-500 font-semibold">
-                  ({{ stateService.subscriptionExpiresAt() | date: 'HH:mm dd/MM/yyyy' }})
-                </span>
-              </div>
-            } @else if (stateService.subscriptionDaysLeft() === 0) {
-              <div class="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400">
-                <app-icon name="warning-solid" [solid]="true" class="h-3 w-3 shrink-0" ></app-icon>
-                <span class="text-[11px] font-bold">Gói đã hết hạn! ({{ stateService.subscriptionExpiresAt() | date: 'HH:mm dd/MM/yyyy' }})</span>
-              </div>
-            } @else {
-              <div class="flex flex-col sm:items-end gap-0.5 text-right">
-                <span class="text-slate-500 dark:text-slate-400 text-xs font-semibold">
-                  Hạn dùng: <span class="text-slate-700 dark:text-slate-300 font-extrabold">{{ stateService.subscriptionDaysLeft() }} ngày còn lại</span>
-                </span>
-                @if (stateService.subscriptionExpiresAt()) {
-                  <span class="text-slate-400 dark:text-slate-500 text-[10px] font-medium">
-                    Hết hạn: {{ stateService.subscriptionExpiresAt() | date: 'HH:mm dd/MM/yyyy' }}
-                  </span>
-                }
-              </div>
-            }
-          </div>
-        </div>
-      </div>
-
-      <!-- Card ca trực hiện tại -->
-      @if (stateService.currentShift() && stateService.currentShift().id) {
-        <div class="app-card p-4 sm:p-5 flex flex-col justify-between border border-emerald-500/10 dark:border-emerald-500/5">
-          <div class="flex items-center justify-between">
+      <!-- Grid Card chào mừng & Ca trực đang hoạt động -->
+      <div
+        class="grid grid-cols-1 gap-4 mb-4"
+        [class.lg:grid-cols-3]="stateService.currentShift() && stateService.currentShift().id"
+      >
+        <!-- Card chào mừng & thông tin gói cước -->
+        <div
+          class="app-card p-4 sm:p-5 flex flex-col justify-between"
+          [class.lg:col-span-2]="stateService.currentShift() && stateService.currentShift().id"
+        >
+          <div
+            class="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 h-full"
+          >
+            <!-- Phần chào mừng -->
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 flex items-center justify-center shrink-0">
-                <app-icon name="clock" class="h-5.5 w-5.5 text-emerald-500" [strokeWidth]="2.5"></app-icon>
+              <div
+                class="w-10 h-10 rounded-xl bg-[var(--dynamic-primary)]/10 dark:bg-[var(--dynamic-primary)]/20 flex items-center justify-center shrink-0"
+              >
+                <app-icon
+                  name="home"
+                  class="h-5.5 w-5.5 text-[var(--dynamic-primary)]"
+                  [strokeWidth]="2.5"
+                ></app-icon>
               </div>
-              <div class="min-w-0">
-                <p class="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-wider">Ca trực #{{ stateService.currentShift().id }}</p>
-                <h3 class="text-slate-800 dark:text-slate-100 font-extrabold text-sm sm:text-base leading-tight mt-0.5 truncate">
-                  {{ stateService.currentShift().user?.name || 'Đang mở ca trực' }}
+              <div>
+                <p
+                  class="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-wider"
+                >
+                  Xin chào
+                </p>
+                <h3
+                  class="text-slate-800 dark:text-slate-100 font-extrabold text-base sm:text-lg leading-tight mt-0.5"
+                >
+                  {{ settings().store_name }}
                 </h3>
               </div>
             </div>
-            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold shrink-0">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
-              Đang trực
-            </span>
-          </div>
 
-          <div class="grid grid-cols-2 gap-4 mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800/60 text-xs font-semibold text-slate-500 dark:text-slate-400">
-            <div>
-              <p class="text-[10px] text-slate-400 uppercase">Bắt đầu lúc</p>
-              <p class="text-slate-700 dark:text-slate-300 font-bold mt-0.5">
-                {{ stateService.currentShift().start_time | date: 'HH:mm' }}
-              </p>
-            </div>
-            <div>
-              <p class="text-[10px] text-slate-400 uppercase">Thời gian trực</p>
-              <p class="text-slate-700 dark:text-slate-300 font-bold mt-0.5">
-                {{ stateService.shiftDurationString() }}
-              </p>
-            </div>
-            <div>
-              <p class="text-[10px] text-slate-400 uppercase">Tiền đầu ca</p>
-              <p class="text-slate-700 dark:text-slate-300 font-bold mt-0.5">
-                {{ stateService.currentShift().initial_cash | vnd }}
-              </p>
-            </div>
-            <div>
-              <p class="text-[10px] text-slate-400 uppercase">Tiền trong két (dự kiến)</p>
-              <p class="text-emerald-600 dark:text-emerald-400 font-black mt-0.5">
-                {{ stateService.shiftExpectedCash() | vnd }}
-              </p>
-            </div>
-          </div>
-        </div>
-      }
-    </div>
-
-    <!-- Bộ lọc thời gian Dashboard -->
-    <div
-      class="app-card flex flex-col md:flex-row md:items-center justify-between gap-4 p-4"
-    >
-      <app-mini-buttons
-        [options]="datePresets"
-        [activeValue]="activeDatePreset"
-        (valueChange)="setDatePreset($event)"
-      ></app-mini-buttons>
-
-      <!-- Ô chọn ngày tùy chỉnh -->
-      <div *ngIf="activeDatePreset === 'custom'" class="flex items-center gap-4 flex-wrap w-full sm:w-auto">
-        <app-custom-date-picker
-          [(selectedDate)]="tempStartDate"
-          (selectedDateChange)="onCustomDatesChange()"
-          placeholder="Từ ngày"
-          class="w-full sm:w-44"
-        ></app-custom-date-picker>
-        <app-custom-date-picker
-          [(selectedDate)]="tempEndDate"
-          (selectedDateChange)="onCustomDatesChange()"
-          placeholder="Đến ngày"
-          class="w-full sm:w-44"
-        ></app-custom-date-picker>
-      </div>
-    </div>
-
-    @if (isDashboardLoading()) {
-
-      <app-skeleton-loader type="dashboard"></app-skeleton-loader>
-    } @else {
-      <div class="space-y-6">
-        <!-- Grid 4 thẻ thống kê số liệu thật -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-          <!-- Doanh thu hôm nay -->
-          <div
-            class="app-card-interactive flex items-center justify-between group"
-          >
-            <div class="space-y-2">
-              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
-                >Doanh thu hôm nay</span
-              >
-              <h4 class="text-2xl font-black text-slate-800 dark:text-white">
-                {{ dashboardData()?.today_revenue || 0 | vnd }}
-              </h4>
-              <div class="flex flex-wrap items-center gap-2 text-xs font-bold">
-                <span class="text-emerald-500 flex items-center gap-1">
-                  ↗ {{ dashboardData()?.today_orders_count || 0 }} đơn mới
-                </span>
-                @if (dashboardData()?.today_revenue_growth !== undefined) {
+            <!-- Thông tin gói cước -->
+            <div class="flex flex-col sm:items-end gap-1.5">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-slate-500 dark:text-slate-400 text-xs font-semibold"
+                  >Gói của bạn:</span
+                >
+                @if (stateService.subscriptionPlanCode() === 'free') {
                   <span
-                    [class.text-emerald-500]="dashboardData()?.today_revenue_growth >= 0"
-                    [class.text-rose-500]="dashboardData()?.today_revenue_growth < 0"
-                    class="flex items-center gap-0.5 shrink-0"
+                    class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-500 text-white text-[11px] font-black uppercase tracking-wide shadow-sm"
                   >
-                    {{ dashboardData()?.today_revenue_growth >= 0 ? '↗' : '↘' }}
-                    {{ dashboardData()?.today_revenue_growth >= 0 ? '+' : '' }}{{ dashboardData()?.today_revenue_growth }}%
+                    <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                    {{ stateService.subscriptionPlanCode() }}
+                  </span>
+                } @else {
+                  <span
+                    class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500 text-white text-[11px] font-black uppercase tracking-wide shadow-sm"
+                  >
+                    <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                    {{ stateService.subscriptionPlanCode() }}
                   </span>
                 }
               </div>
-            </div>
-            <div
-              class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center"
-            >
-              <app-icon name="financials" class="h-6 w-6 text-amber-500" [strokeWidth]="2"></app-icon>
-            </div>
-          </div>
 
-          <!-- Tổng doanh thu -->
-          <div
-            class="app-card-interactive flex items-center justify-between group"
-          >
-            <div class="space-y-2">
-              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
-                >Tổng doanh thu</span
-              >
-              <h4 class="text-2xl font-black text-slate-800 dark:text-white">
-                {{ dashboardData()?.total_revenue || 0 | vnd }}
-              </h4>
-              <div class="flex flex-wrap items-center gap-2 text-xs font-bold">
-                <span class="text-slate-500">
-                  {{ dashboardData()?.total_orders_count || 0 }} đơn đã bán
-                </span>
-                @if (dashboardData()?.period_revenue_growth !== undefined) {
-                  <span
-                    [class.text-emerald-500]="dashboardData()?.period_revenue_growth >= 0"
-                    [class.text-rose-500]="dashboardData()?.period_revenue_growth < 0"
-                    class="flex items-center gap-0.5 shrink-0"
+              <!-- Ngày hết hạn -->
+              @if (
+                stateService.subscriptionDaysLeft() <= 7 && stateService.subscriptionDaysLeft() > 0
+              ) {
+                <!-- Cảnh báo sắp hết hạn -->
+                <div class="flex flex-col sm:items-end gap-1">
+                  <div
+                    class="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400"
                   >
-                    {{ dashboardData()?.period_revenue_growth >= 0 ? '↗' : '↘' }}
-                    {{ dashboardData()?.period_revenue_growth >= 0 ? '+' : '' }}{{ dashboardData()?.period_revenue_growth }}%
-                  </span>
-                }
-              </div>
-            </div>
-            <div
-              class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center"
-            >
-              <app-icon name="trending-up" class="h-6 w-6 text-emerald-500" [strokeWidth]="2"></app-icon>
-            </div>
-          </div>
-
-          <!-- Doanh thu Web3 (tích lũy blockchain) -->
-          <div
-            class="app-card-interactive flex items-center justify-between group"
-          >
-            <div class="space-y-2">
-              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
-                >Doanh thu Web3</span
-              >
-              <h4 class="text-xl font-extrabold text-purple-600 dark:text-purple-400 leading-snug">
-                {{ ((dashboardData()?.web3_revenue || 0) / nativeTokenPriceVND()).toFixed(5) }}
-                <span class="text-xs">{{ web3Service.nativeTokenSymbol() }}</span>
-              </h4>
-              <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                {{ dashboardData()?.web3_revenue || 0 | vnd }} tương đương
-              </span>
-            </div>
-            <div
-              class="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-500 flex items-center justify-center"
-            >
-              <app-icon name="ethereum" class="h-6 w-6 text-purple-500" [strokeWidth]="2"></app-icon>
-            </div>
-          </div>
-
-          <!-- Đơn chờ Web3 -->
-          <div
-            class="app-card-interactive flex items-center justify-between group"
-          >
-            <div class="space-y-2">
-              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
-                >Đơn chờ Web3</span
-              >
-              <h4 class="text-2xl font-black text-rose-500">
-                {{ dashboardData()?.pending_web3_count || 0 }}
-                <span class="text-xs font-bold text-slate-400">đơn</span>
-              </h4>
-              <span class="text-xs font-medium text-slate-500 dark:text-slate-400"
-                >Đang đợi xác nhận trên chuỗi</span
-              >
-            </div>
-            <div
-              class="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center"
-            >
-              <app-icon name="clock" class="h-6 w-6 text-rose-500" [strokeWidth]="2"></app-icon>
-            </div>
-          </div>
-        </div>
-
-        <!-- Biểu đồ & Giao dịch Blockchain mới nhất -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <!-- Cột trái: Biểu đồ doanh thu tuần này -->
-          <div
-            class="app-card h-[380px] flex flex-col justify-between space-y-4"
-          >
-            <div class="flex items-center justify-between shrink-0">
-              <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                <app-icon name="reports" class="h-5 w-5 text-slate-500 shrink-0" [strokeWidth]="2"></app-icon>
-                <span>Xu hướng doanh thu</span>
-              </h4>
-              <span
-                class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider"
-                >Tổng doanh thu</span
-              >
-            </div>
-
-            <!-- Vẽ biểu đồ bằng các cột Stacked Bar -->
-            <div
-              class="relative w-full flex-1 flex items-end justify-between pt-6 pb-2 px-1 sm:px-2 min-h-0"
-            >
-              <!-- Trục Y lưới mờ -->
-              <div
-                class="absolute inset-y-6 left-0 right-16 flex flex-col justify-between pointer-events-none"
-              >
-                <div class="border-t border-slate-100 dark:border-slate-800/60 w-full pt-0.5"></div>
-                <div class="border-t border-slate-100 dark:border-slate-800/60 w-full pt-0.5"></div>
-                <div class="border-t border-slate-100 dark:border-slate-800/60 w-full pt-0.5"></div>
-                <div class="border-t border-slate-200 dark:border-slate-800 w-full pt-0.5"></div>
-              </div>
-
-              <!-- Nhãn trục Y bên phải không bị che -->
-              <div
-                class="absolute inset-y-6 right-0 w-16 flex flex-col justify-between pointer-events-none text-left text-[9px] text-slate-400 font-semibold pl-2 pt-0.5"
-              >
-                <div class="truncate">{{ getMaxRevenue() | vnd }}</div>
-                <div class="truncate">{{ getMaxRevenue() / 2 | vnd }}</div>
-                <div class="truncate">{{ getMaxRevenue() / 4 | vnd }}</div>
-                <div>0đ</div>
-              </div>
-
-              <!-- Các Cột biểu đồ vẽ bằng stacked columns -->
-              <div class="w-[calc(100%-64px)] h-36 flex items-end justify-between gap-1 z-10">
-                @for (item of dashboardData()?.weekly_chart; track item.date) {
-                  <div class="flex-1 flex flex-col items-center gap-2 group cursor-pointer min-w-0">
-                    <div class="relative w-full flex items-end justify-center h-24">
-                      <!-- Tooltip khi hover cột -->
-                      <div
-                        class="absolute -top-10 scale-0 group-hover:scale-100 bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-[10px] font-black px-2.5 py-1.5 rounded-xl shadow-lg transition-all duration-200 whitespace-nowrap z-30"
-                      >
-                        <span>{{ item.revenue | vnd }}</span>
-                      </div>
-
-                      <!-- Cột bar thể hiện tổng doanh thu -->
-                      <div
-                        [style.height.%]="
-                          item.revenue > 0
-                            ? mathMin(100, (item.revenue / getMaxRevenue()) * 100)
-                            : 5
-                        "
-                        class="w-full rounded-t-lg overflow-hidden bg-gradient-to-t from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] hover:opacity-90 shadow-md transition-all duration-300"
-                      >
-                      </div>
-                    </div>
-                    <span
-                      class="text-[10px] font-bold text-slate-500 dark:text-slate-400 group-hover:text-purple-600 group-hover:font-extrabold transition-all"
-                      >{{ item.day_name }}</span
+                    <app-icon
+                      name="warning"
+                      class="h-3 w-3 shrink-0 animate-pulse"
+                      [strokeWidth]="2.5"
+                    ></app-icon>
+                    <span class="text-[11px] font-bold"
+                      >Hết hạn sau {{ stateService.subscriptionDaysLeft() }} ngày!</span
                     >
                   </div>
-                }
-              </div>
-            </div>
-          </div>
-
-          <!-- Cột giữa (MỚI): Cơ cấu thanh toán (Doughnut Chart) -->
-          <div
-            class="app-card h-[380px] flex flex-col justify-between space-y-4"
-          >
-            <div class="space-y-1 shrink-0">
-              <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                <app-icon name="clock" class="h-5 w-5 text-slate-500 shrink-0" [strokeWidth]="2"></app-icon>
-                <span>Cơ cấu thanh toán</span>
-              </h4>
-              <p class="text-xs text-slate-500 dark:text-slate-400 leading-none">
-                Tỷ lệ doanh thu theo các kênh thanh toán.
-              </p>
-            </div>
-
-            <!-- Doughnut Chart Rendered with CSS conic-gradient -->
-            <div class="flex-1 flex items-center justify-center my-2 min-h-0">
-              <div
-                class="w-32 h-32 rounded-full shadow-inner relative flex items-center justify-center transition-all duration-500 hover:scale-105"
-                [style.background]="getConicGradient()"
-              >
-                <!-- Center circle to make it a Doughnut Chart -->
+                  <span class="text-[10px] text-rose-500 font-semibold">
+                    ({{ stateService.subscriptionExpiresAt() | date: 'HH:mm dd/MM/yyyy' }})
+                  </span>
+                </div>
+              } @else if (stateService.subscriptionDaysLeft() === 0) {
                 <div
-                  class="w-22 h-22 rounded-full bg-white dark:bg-slate-900 flex flex-col items-center justify-center shadow-md transition-colors duration-300"
+                  class="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400"
                 >
-                  <span
-                    class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider"
-                    >Tổng Đơn</span
-                  >
-                  <span
-                    class="text-base font-black text-slate-800 dark:text-white leading-none mt-0.5"
-                    >{{ getTotalPaymentOrders() }}</span
-                  >
-                  <span class="text-[9px] font-bold text-slate-500 dark:text-slate-400 mt-1">{{
-                    getTotalRevenue() | vnd
-                  }}</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Chú thích Legend chi tiết bên dưới -->
-            <div
-              class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 shrink-0"
-            >
-              <!-- Bank Transfer -->
-              <div class="flex flex-col items-center text-center">
-                <div class="flex items-center gap-1">
-                  <span
-                    class="w-1.5 h-1.5 rounded-full shrink-0"
-                    style="background-color: #10b981"
-                  ></span>
-                  <span class="text-[9px] font-black text-slate-500 dark:text-slate-400"
-                    >Ngân hàng</span
-                  >
-                </div>
-                <span
-                  class="text-xs font-black text-slate-800 dark:text-white leading-tight mt-0.5"
-                >
-                  {{ getPaymentMethodPercentage('bank_transfer') }}%
-                </span>
-                <span
-                  class="text-[9px] font-semibold text-slate-400 dark:text-slate-500 leading-none"
-                >
-                  {{ getPaymentMethodCount('bank_transfer') }} đơn
-                </span>
-              </div>
-
-              <!-- E-wallet -->
-              <div class="flex flex-col items-center text-center">
-                <div class="flex items-center gap-1">
-                  <span
-                    class="w-1.5 h-1.5 rounded-full shrink-0"
-                    style="background-color: #ec4899"
-                  ></span>
-                  <span class="text-[9px] font-black text-slate-500 dark:text-slate-400"
-                    >Ví điện tử</span
-                  >
-                </div>
-                <span
-                  class="text-xs font-black text-slate-800 dark:text-white leading-tight mt-0.5"
-                >
-                  {{ getPaymentMethodPercentage('e_wallet') }}%
-                </span>
-                <span
-                  class="text-[9px] font-semibold text-slate-400 dark:text-slate-500 leading-none"
-                >
-                  {{ getPaymentMethodCount('e_wallet') }} đơn
-                </span>
-              </div>
-
-              <!-- Cash -->
-              <div class="flex flex-col items-center text-center">
-                <div class="flex items-center gap-1">
-                  <span
-                    class="w-1.5 h-1.5 rounded-full shrink-0"
-                    style="background-color: #f59e0b"
-                  ></span>
-                  <span class="text-[9px] font-black text-slate-500 dark:text-slate-400"
-                    >Tiền mặt</span
-                  >
-                </div>
-                <span
-                  class="text-xs font-black text-slate-800 dark:text-white leading-tight mt-0.5"
-                >
-                  {{ getPaymentMethodPercentage('cash') }}%
-                </span>
-                <span
-                  class="text-[9px] font-semibold text-slate-400 dark:text-slate-500 leading-none"
-                >
-                  {{ getPaymentMethodCount('cash') }} đơn
-                </span>
-              </div>
-
-              <!-- Crypto -->
-              <div class="flex flex-col items-center text-center">
-                <div class="flex items-center gap-1">
-                  <span
-                    class="w-1.5 h-1.5 rounded-full shrink-0"
-                    style="background-color: #7c3aed"
-                  ></span>
-                  <span class="text-[9px] font-black text-slate-500 dark:text-slate-400"
-                    >Crypto</span
-                  >
-                </div>
-                <span
-                  class="text-xs font-black text-slate-800 dark:text-white leading-tight mt-0.5"
-                >
-                  {{ getPaymentMethodPercentage('crypto') }}%
-                </span>
-                <span
-                  class="text-[9px] font-semibold text-slate-400 dark:text-slate-500 leading-none"
-                >
-                  {{ getPaymentMethodCount('crypto') }} đơn
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Cột phải: Giao dịch Blockchain mới nhất -->
-          <div
-            class="app-card h-[380px] flex flex-col justify-between space-y-4"
-          >
-            <div class="flex items-start justify-between gap-2 shrink-0">
-              <div class="space-y-1">
-                <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                  <app-icon name="shield-check" class="h-5 w-5 text-slate-500 shrink-0" [strokeWidth]="2"></app-icon>
-                  <span>Giao dịch Blockchain</span>
-                </h4>
-                <p class="text-xs text-slate-500 dark:text-slate-400 leading-none">
-                  Các hóa đơn Web3 được sync lên EVM.
-                </p>
-              </div>
-
-              <!-- Trạng thái mạng lưới & Gas Price -->
-              <div class="flex flex-col items-end gap-1 shrink-0 text-right">
-                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold"
-                  [class.bg-emerald-500/10]="web3Service.networkStatus() === 'Hoạt động'"
-                  [class.text-emerald-600]="web3Service.networkStatus() === 'Hoạt động'"
-                  [class.dark:text-emerald-400]="web3Service.networkStatus() === 'Hoạt động'"
-                  [class.bg-rose-500/10]="web3Service.networkStatus() === 'Mất kết nối'"
-                  [class.text-rose-600]="web3Service.networkStatus() === 'Mất kết nối'"
-                  [class.dark:text-rose-400]="web3Service.networkStatus() === 'Mất kết nối'"
-                  [class.bg-slate-100]="web3Service.networkStatus() !== 'Hoạt động' && web3Service.networkStatus() !== 'Mất kết nối'"
-                  [class.text-slate-600]="web3Service.networkStatus() !== 'Hoạt động' && web3Service.networkStatus() !== 'Mất kết nối'"
-                >
-                  <span class="w-1.5 h-1.5 rounded-full"
-                    [class.bg-emerald-500]="web3Service.networkStatus() === 'Hoạt động'"
-                    [class.animate-pulse]="web3Service.networkStatus() === 'Hoạt động'"
-                    [class.bg-rose-500]="web3Service.networkStatus() === 'Mất kết nối'"
-                    [class.bg-slate-400]="web3Service.networkStatus() !== 'Hoạt động' && web3Service.networkStatus() !== 'Mất kết nối'"
-                  ></span>
-                  {{ web3Service.networkStatus() }}
-                </span>
-                <span class="text-[9px] text-slate-400 font-semibold" *ngIf="web3Service.gasPriceGwei() !== '—'">
-                  Gas: <strong class="text-slate-600 dark:text-slate-300">{{ web3Service.gasPriceGwei() }}</strong> Gwei
-                </span>
-              </div>
-            </div>
-
-            <div class="flex-1 overflow-y-auto pr-1 space-y-3 min-h-0">
-              @if (dashboardData()?.latest_blockchain_transactions?.length === 0) {
-                <div
-                  class="flex flex-col items-center justify-center py-10 text-center gap-2 h-full"
-                >
-                  <app-icon name="orders" class="h-8 w-8 text-slate-300 dark:text-slate-700" [strokeWidth]="2"></app-icon>
-                  <span class="text-[10px] font-semibold text-slate-400"
-                    >Chưa có giao dịch blockchain nào.</span
+                  <app-icon name="warning-solid" [solid]="true" class="h-3 w-3 shrink-0"></app-icon>
+                  <span class="text-[11px] font-bold"
+                    >Gói đã hết hạn! ({{
+                      stateService.subscriptionExpiresAt() | date: 'HH:mm dd/MM/yyyy'
+                    }})</span
                   >
                 </div>
               } @else {
-                @for (tx of dashboardData()?.latest_blockchain_transactions; track tx.id) {
-                  <div
-                    class="p-3 rounded-2xl bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-900/60 flex flex-col gap-1.5"
-                  >
-                    <div class="flex items-center justify-between text-[11px]">
-                      <span class="font-extrabold text-slate-700 dark:text-slate-300"
-                        >Đơn #{{ tx.id }}</span
-                      >
-                      <span class="font-black text-purple-600 dark:text-purple-400 leading-none">
-                        {{ tx.total_amount | vnd }}
-                      </span>
-                    </div>
-                    <div class="flex items-center justify-between text-[10px] gap-2">
-                      <a
-                        [href]="getTxExplorerLink(tx.tx_hash, tx.chain_id)"
-                        target="_blank"
-                        class="text-blue-500 hover:underline font-semibold font-mono truncate max-w-[120px]"
-                      >
-                        tx: {{ tx.tx_hash | appShortAddress: 6 : 6 }} ↗
-                      </a>
-                      @if (tx.blockchain_status === 'success') {
-                        <span
-                          class="bg-emerald-500/10 text-emerald-500 text-[10px] font-extrabold px-2 py-0.5 rounded-full"
-                          >Thành công</span
-                        >
-                      } @else {
-                        <span
-                          class="bg-amber-500/10 text-amber-500 text-[10px] font-extrabold px-2 py-0.5 rounded-full animate-pulse"
-                          >Chờ xác nhận</span
-                        >
-                      }
-                    </div>
-                  </div>
-                }
+                <div class="flex flex-col sm:items-end gap-0.5 text-right">
+                  <span class="text-slate-500 dark:text-slate-400 text-xs font-semibold">
+                    Hạn dùng:
+                    <span class="text-slate-700 dark:text-slate-300 font-extrabold"
+                      >{{ stateService.subscriptionDaysLeft() }} ngày còn lại</span
+                    >
+                  </span>
+                  @if (stateService.subscriptionExpiresAt()) {
+                    <span class="text-slate-400 dark:text-slate-500 text-[10px] font-medium">
+                      Hết hạn: {{ stateService.subscriptionExpiresAt() | date: 'HH:mm dd/MM/yyyy' }}
+                    </span>
+                  }
+                </div>
               }
             </div>
           </div>
         </div>
 
-        <!-- Hàng mới: Top 5 Bán Chạy, Tồn Kho Thấp & Trạng Thái Bàn Ăn, Voucher NFT -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <!-- Cột trái + giữa (lg:col-span-2): Sản phẩm bán chạy & Cảnh báo tồn kho -->
-          <div class="lg:col-span-2 space-y-6">
-            <!-- Widget Top 5 Bán Chạy -->
-            <div
-              class="app-card space-y-4"
-            >
-              <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                <app-icon name="bolt" [solid]="true" class="h-5 w-5 text-amber-500"></app-icon>
-                <span>Sản phẩm bán chạy nhất trong kỳ</span>
-              </h4>
+        <!-- Card ca trực hiện tại -->
+        @if (stateService.currentShift() && stateService.currentShift().id) {
+          <div
+            class="app-card p-4 sm:p-5 flex flex-col justify-between border border-emerald-500/10 dark:border-emerald-500/5"
+          >
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-10 h-10 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 flex items-center justify-center shrink-0"
+                >
+                  <app-icon
+                    name="clock"
+                    class="h-5.5 w-5.5 text-emerald-500"
+                    [strokeWidth]="2.5"
+                  ></app-icon>
+                </div>
+                <div class="min-w-0">
+                  <p
+                    class="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-wider"
+                  >
+                    Ca trực #{{ stateService.currentShift().id }}
+                  </p>
+                  <h3
+                    class="text-slate-800 dark:text-slate-100 font-extrabold text-sm sm:text-base leading-tight mt-0.5 truncate"
+                  >
+                    {{ stateService.currentShift().user?.name || 'Đang mở ca trực' }}
+                  </h3>
+                </div>
+              </div>
+              <span
+                class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold shrink-0"
+              >
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                Đang trực
+              </span>
+            </div>
 
-              <div class="overflow-hidden">
-                @if (
-                  !dashboardData()?.best_sellers || dashboardData()?.best_sellers?.length === 0
-                ) {
-                  <div class="flex flex-col items-center justify-center py-10 text-center gap-2">
-                    <span class="text-xs text-slate-400"
-                      >Không có dữ liệu sản phẩm bán chạy trong khoảng thời gian này.</span
+            <div
+              class="grid grid-cols-2 gap-4 mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800/60 text-xs font-semibold text-slate-500 dark:text-slate-400"
+            >
+              <div>
+                <p class="text-[10px] text-slate-400 uppercase">Bắt đầu lúc</p>
+                <p class="text-slate-700 dark:text-slate-300 font-bold mt-0.5">
+                  {{ stateService.currentShift().start_time | date: 'HH:mm' }}
+                </p>
+              </div>
+              <div>
+                <p class="text-[10px] text-slate-400 uppercase">Thời gian trực</p>
+                <p class="text-slate-700 dark:text-slate-300 font-bold mt-0.5">
+                  {{ stateService.shiftDurationString() }}
+                </p>
+              </div>
+              <div>
+                <p class="text-[10px] text-slate-400 uppercase">Tiền đầu ca</p>
+                <p class="text-slate-700 dark:text-slate-300 font-bold mt-0.5">
+                  {{ stateService.currentShift().initial_cash | vnd }}
+                </p>
+              </div>
+              <div>
+                <p class="text-[10px] text-slate-400 uppercase">Tiền trong két (dự kiến)</p>
+                <p class="text-emerald-600 dark:text-emerald-400 font-black mt-0.5">
+                  {{ stateService.shiftExpectedCash() | vnd }}
+                </p>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Bộ lọc thời gian Dashboard -->
+      <div class="app-card flex flex-col md:flex-row md:items-center justify-between gap-4 p-4">
+        <app-mini-buttons
+          [options]="datePresets"
+          [activeValue]="activeDatePreset"
+          (valueChange)="setDatePreset($event)"
+        ></app-mini-buttons>
+
+        <!-- Ô chọn ngày tùy chỉnh -->
+        <div
+          *ngIf="activeDatePreset === 'custom'"
+          class="flex items-center gap-4 flex-wrap w-full sm:w-auto"
+        >
+          <app-custom-date-picker
+            [(selectedDate)]="tempStartDate"
+            (selectedDateChange)="onCustomDatesChange()"
+            placeholder="Từ ngày"
+            class="w-full sm:w-44"
+          ></app-custom-date-picker>
+          <app-custom-date-picker
+            [(selectedDate)]="tempEndDate"
+            (selectedDateChange)="onCustomDatesChange()"
+            placeholder="Đến ngày"
+            class="w-full sm:w-44"
+          ></app-custom-date-picker>
+        </div>
+      </div>
+
+      @if (isDashboardLoading()) {
+        <app-skeleton-loader type="dashboard"></app-skeleton-loader>
+      } @else {
+        <div class="space-y-6">
+          <!-- Grid 4 thẻ thống kê số liệu thật -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+            <!-- Doanh thu hôm nay -->
+            <div class="app-card-interactive flex items-center justify-between group">
+              <div class="space-y-2">
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
+                  >Doanh thu hôm nay</span
+                >
+                <h4 class="text-2xl font-black text-slate-800 dark:text-white">
+                  {{ dashboardData()?.today_revenue || 0 | vnd }}
+                </h4>
+                <div class="flex flex-wrap items-center gap-2 text-xs font-bold">
+                  <span class="text-emerald-500 flex items-center gap-1">
+                    ↗ {{ dashboardData()?.today_orders_count || 0 }} đơn mới
+                  </span>
+                  @if (dashboardData()?.today_revenue_growth !== undefined) {
+                    <span
+                      [class.text-emerald-500]="dashboardData()?.today_revenue_growth >= 0"
+                      [class.text-rose-500]="dashboardData()?.today_revenue_growth < 0"
+                      class="flex items-center gap-0.5 shrink-0"
                     >
-                  </div>
-                } @else {
-                  <div class="space-y-4">
-                    @for (prod of dashboardData()?.best_sellers; track $index) {
-                      <div class="space-y-1">
-                        <div class="flex items-center justify-between text-xs font-bold">
-                          <span class="text-slate-700 dark:text-slate-300">
-                            {{ prod.name }}
-                            @if (prod.variant_name) {
-                              <span class="text-slate-400 font-normal"
-                                >({{ prod.variant_name }})</span
-                              >
-                            }
-                          </span>
-                          <div class="flex items-center gap-3 text-slate-500">
-                            <span
-                              >Đã bán:
-                              <strong class="text-slate-800 dark:text-white font-extrabold">{{
-                                prod.total_quantity
-                              }}</strong>
-                              ly/phần</span
-                            >
-                            <span class="text-[var(--dynamic-primary)]"
-                              >{{ prod.total_revenue | number }}đ</span
-                            >
-                          </div>
-                        </div>
-                        <!-- Progress bar thể hiện tương đối số lượng bán -->
-                        <div
-                          class="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden"
-                        >
-                          <div
-                            class="h-full bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] rounded-full transition-all duration-500"
-                            [style.width.%]="
-                              mathMin(
-                                100,
-                                (prod.total_quantity /
-                                  dashboardData().best_sellers[0].total_quantity) *
-                                  100
-                              )
-                            "
-                          ></div>
-                        </div>
-                      </div>
-                    }
-                  </div>
-                }
+                      {{ dashboardData()?.today_revenue_growth >= 0 ? '↗' : '↘' }}
+                      {{ dashboardData()?.today_revenue_growth >= 0 ? '+' : ''
+                      }}{{ dashboardData()?.today_revenue_growth }}%
+                    </span>
+                  }
+                </div>
+              </div>
+              <div
+                class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center"
+              >
+                <app-icon
+                  name="financials"
+                  class="h-6 w-6 text-amber-500"
+                  [strokeWidth]="2"
+                ></app-icon>
               </div>
             </div>
 
-            <!-- Widget Cảnh Báo Tồn Kho Thấp -->
-            <div
-              class="app-card space-y-4"
-            >
-              <div class="flex items-start justify-between gap-2">
-                <h4
-                  class="text-base sm:text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2 flex-1 min-w-0"
+            <!-- Tổng doanh thu -->
+            <div class="app-card-interactive flex items-center justify-between group">
+              <div class="space-y-2">
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
+                  >Tổng doanh thu</span
                 >
-                  <app-icon name="warning-solid" [solid]="true" class="h-5 w-5 text-rose-500 animate-pulse shrink-0"></app-icon>
-                  <span class="leading-tight"
-                    >Cảnh báo tồn kho thấp
-                    <span class="text-slate-400 font-semibold">(≤ 10)</span></span
-                  >
+                <h4 class="text-2xl font-black text-slate-800 dark:text-white">
+                  {{ dashboardData()?.total_revenue || 0 | vnd }}
                 </h4>
-                @if (getLowStockTotalCount() > 0) {
-                  <span
-                    class="text-[10px] font-black px-2.5 py-1 bg-rose-500/10 text-rose-500 rounded-full shrink-0"
-                  >
-                    {{ getLowStockTotalCount() }} mục
+                <div class="flex flex-wrap items-center gap-2 text-xs font-bold">
+                  <span class="text-slate-500">
+                    {{ dashboardData()?.total_orders_count || 0 }} đơn đã bán
                   </span>
-                }
+                  @if (dashboardData()?.period_revenue_growth !== undefined) {
+                    <span
+                      [class.text-emerald-500]="dashboardData()?.period_revenue_growth >= 0"
+                      [class.text-rose-500]="dashboardData()?.period_revenue_growth < 0"
+                      class="flex items-center gap-0.5 shrink-0"
+                    >
+                      {{ dashboardData()?.period_revenue_growth >= 0 ? '↗' : '↘' }}
+                      {{ dashboardData()?.period_revenue_growth >= 0 ? '+' : ''
+                      }}{{ dashboardData()?.period_revenue_growth }}%
+                    </span>
+                  }
+                </div>
+              </div>
+              <div
+                class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center"
+              >
+                <app-icon
+                  name="trending-up"
+                  class="h-6 w-6 text-emerald-500"
+                  [strokeWidth]="2"
+                ></app-icon>
+              </div>
+            </div>
+
+            <!-- Doanh thu Web3 (tích lũy blockchain) -->
+            <div class="app-card-interactive flex items-center justify-between group">
+              <div class="space-y-2">
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
+                  >Doanh thu Web3</span
+                >
+                <h4
+                  class="text-xl font-extrabold text-purple-600 dark:text-purple-400 leading-snug"
+                >
+                  {{ ((dashboardData()?.web3_revenue || 0) / nativeTokenPriceVND()).toFixed(5) }}
+                  <span class="text-xs">{{ web3Service.nativeTokenSymbol() }}</span>
+                </h4>
+                <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  {{ dashboardData()?.web3_revenue || 0 | vnd }} tương đương
+                </span>
+              </div>
+              <div
+                class="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-500 flex items-center justify-center"
+              >
+                <app-icon
+                  name="ethereum"
+                  class="h-6 w-6 text-purple-500"
+                  [strokeWidth]="2"
+                ></app-icon>
+              </div>
+            </div>
+
+            <!-- Đơn chờ Web3 -->
+            <div class="app-card-interactive flex items-center justify-between group">
+              <div class="space-y-2">
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
+                  >Đơn chờ Web3</span
+                >
+                <h4 class="text-2xl font-black text-rose-500">
+                  {{ dashboardData()?.pending_web3_count || 0 }}
+                  <span class="text-xs font-bold text-slate-400">đơn</span>
+                </h4>
+                <span class="text-xs font-medium text-slate-500 dark:text-slate-400"
+                  >Đang đợi xác nhận trên chuỗi</span
+                >
+              </div>
+              <div
+                class="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center"
+              >
+                <app-icon name="clock" class="h-6 w-6 text-rose-500" [strokeWidth]="2"></app-icon>
+              </div>
+            </div>
+          </div>
+
+          <!-- Biểu đồ & Giao dịch Blockchain mới nhất -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Cột trái: Biểu đồ doanh thu tuần này -->
+            <div class="app-card h-[380px] flex flex-col justify-between space-y-4">
+              <div class="flex items-center justify-between shrink-0">
+                <h4
+                  class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2"
+                >
+                  <app-icon
+                    name="reports"
+                    class="h-5 w-5 text-slate-500 shrink-0"
+                    [strokeWidth]="2"
+                  ></app-icon>
+                  <span>Xu hướng doanh thu</span>
+                </h4>
+                <span
+                  class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider"
+                  >Tổng doanh thu</span
+                >
               </div>
 
-              <div class="overflow-x-auto">
-                @if (
-                  !dashboardData()?.low_stock_alerts ||
-                  dashboardData()?.low_stock_alerts?.length === 0
-                ) {
+              <!-- Vẽ biểu đồ bằng các cột Stacked Bar -->
+              <div
+                class="relative w-full flex-1 flex items-end justify-between pt-6 pb-2 px-1 sm:px-2 min-h-0"
+              >
+                <!-- Trục Y lưới mờ -->
+                <div
+                  class="absolute inset-y-6 left-0 right-16 flex flex-col justify-between pointer-events-none"
+                >
                   <div
-                    class="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-2xl text-xs font-bold"
+                    class="border-t border-slate-100 dark:border-slate-800/60 w-full pt-0.5"
+                  ></div>
+                  <div
+                    class="border-t border-slate-100 dark:border-slate-800/60 w-full pt-0.5"
+                  ></div>
+                  <div
+                    class="border-t border-slate-100 dark:border-slate-800/60 w-full pt-0.5"
+                  ></div>
+                  <div class="border-t border-slate-200 dark:border-slate-800 w-full pt-0.5"></div>
+                </div>
+
+                <!-- Nhãn trục Y bên phải không bị che -->
+                <div
+                  class="absolute inset-y-6 right-0 w-16 flex flex-col justify-between pointer-events-none text-left text-[9px] text-slate-400 font-semibold pl-2 pt-0.5"
+                >
+                  <div class="truncate">{{ getMaxRevenue() | vnd }}</div>
+                  <div class="truncate">{{ getMaxRevenue() / 2 | vnd }}</div>
+                  <div class="truncate">{{ getMaxRevenue() / 4 | vnd }}</div>
+                  <div>0đ</div>
+                </div>
+
+                <!-- Các Cột biểu đồ vẽ bằng stacked columns -->
+                <div class="w-[calc(100%-64px)] h-36 flex items-end justify-between gap-1 z-10">
+                  @for (item of dashboardData()?.weekly_chart; track item.date) {
+                    <div
+                      class="flex-1 flex flex-col items-center gap-2 group cursor-pointer min-w-0"
+                    >
+                      <div class="relative w-full flex items-end justify-center h-24">
+                        <!-- Tooltip khi hover cột -->
+                        <div
+                          class="absolute -top-10 scale-0 group-hover:scale-100 bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-[10px] font-black px-2.5 py-1.5 rounded-xl shadow-lg transition-all duration-200 whitespace-nowrap z-30"
+                        >
+                          <span>{{ item.revenue | vnd }}</span>
+                        </div>
+
+                        <!-- Cột bar thể hiện tổng doanh thu -->
+                        <div
+                          [style.height.%]="
+                            item.revenue > 0
+                              ? mathMin(100, (item.revenue / getMaxRevenue()) * 100)
+                              : 5
+                          "
+                          class="w-full rounded-t-lg overflow-hidden bg-gradient-to-t from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] hover:opacity-90 shadow-md transition-all duration-300"
+                        ></div>
+                      </div>
+                      <span
+                        class="text-[10px] font-bold text-slate-500 dark:text-slate-400 group-hover:text-purple-600 group-hover:font-extrabold transition-all"
+                        >{{ item.day_name }}</span
+                      >
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- Cột giữa (MỚI): Cơ cấu thanh toán (Doughnut Chart) -->
+            <div class="app-card h-[380px] flex flex-col justify-between space-y-4">
+              <div class="space-y-1 shrink-0">
+                <h4
+                  class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2"
+                >
+                  <app-icon
+                    name="clock"
+                    class="h-5 w-5 text-slate-500 shrink-0"
+                    [strokeWidth]="2"
+                  ></app-icon>
+                  <span>Cơ cấu thanh toán</span>
+                </h4>
+                <p class="text-xs text-slate-500 dark:text-slate-400 leading-none">
+                  Tỷ lệ doanh thu theo các kênh thanh toán.
+                </p>
+              </div>
+
+              <!-- Doughnut Chart Rendered with CSS conic-gradient -->
+              <div class="flex-1 flex items-center justify-center my-2 min-h-0">
+                <div
+                  class="w-32 h-32 rounded-full shadow-inner relative flex items-center justify-center transition-all duration-500 hover:scale-105"
+                  [style.background]="getConicGradient()"
+                >
+                  <!-- Center circle to make it a Doughnut Chart -->
+                  <div
+                    class="w-22 h-22 rounded-full bg-white dark:bg-slate-900 flex flex-col items-center justify-center shadow-md transition-colors duration-300"
                   >
-                    <app-icon name="check-circle" class="h-4.5 w-4.5 text-emerald-500 shrink-0" [strokeWidth]="2.5"></app-icon>
-                    <span>Tất cả sản phẩm đều đủ lượng tồn kho. Không có cảnh báo!</span>
+                    <span
+                      class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider"
+                      >Tổng Đơn</span
+                    >
+                    <span
+                      class="text-base font-black text-slate-800 dark:text-white leading-none mt-0.5"
+                      >{{ getTotalPaymentOrders() }}</span
+                    >
+                    <span class="text-[9px] font-bold text-slate-500 dark:text-slate-400 mt-1">{{
+                      getTotalRevenue() | vnd
+                    }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Chú thích Legend chi tiết bên dưới -->
+              <div
+                class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 shrink-0"
+              >
+                <!-- Bank Transfer -->
+                <div class="flex flex-col items-center text-center">
+                  <div class="flex items-center gap-1">
+                    <span
+                      class="w-1.5 h-1.5 rounded-full shrink-0"
+                      style="background-color: #10b981"
+                    ></span>
+                    <span class="text-[9px] font-black text-slate-500 dark:text-slate-400"
+                      >Ngân hàng</span
+                    >
+                  </div>
+                  <span
+                    class="text-xs font-black text-slate-800 dark:text-white leading-tight mt-0.5"
+                  >
+                    {{ getPaymentMethodPercentage('bank_transfer') }}%
+                  </span>
+                  <span
+                    class="text-[9px] font-semibold text-slate-400 dark:text-slate-500 leading-none"
+                  >
+                    {{ getPaymentMethodCount('bank_transfer') }} đơn
+                  </span>
+                </div>
+
+                <!-- E-wallet -->
+                <div class="flex flex-col items-center text-center">
+                  <div class="flex items-center gap-1">
+                    <span
+                      class="w-1.5 h-1.5 rounded-full shrink-0"
+                      style="background-color: #ec4899"
+                    ></span>
+                    <span class="text-[9px] font-black text-slate-500 dark:text-slate-400"
+                      >Ví điện tử</span
+                    >
+                  </div>
+                  <span
+                    class="text-xs font-black text-slate-800 dark:text-white leading-tight mt-0.5"
+                  >
+                    {{ getPaymentMethodPercentage('e_wallet') }}%
+                  </span>
+                  <span
+                    class="text-[9px] font-semibold text-slate-400 dark:text-slate-500 leading-none"
+                  >
+                    {{ getPaymentMethodCount('e_wallet') }} đơn
+                  </span>
+                </div>
+
+                <!-- Cash -->
+                <div class="flex flex-col items-center text-center">
+                  <div class="flex items-center gap-1">
+                    <span
+                      class="w-1.5 h-1.5 rounded-full shrink-0"
+                      style="background-color: #f59e0b"
+                    ></span>
+                    <span class="text-[9px] font-black text-slate-500 dark:text-slate-400"
+                      >Tiền mặt</span
+                    >
+                  </div>
+                  <span
+                    class="text-xs font-black text-slate-800 dark:text-white leading-tight mt-0.5"
+                  >
+                    {{ getPaymentMethodPercentage('cash') }}%
+                  </span>
+                  <span
+                    class="text-[9px] font-semibold text-slate-400 dark:text-slate-500 leading-none"
+                  >
+                    {{ getPaymentMethodCount('cash') }} đơn
+                  </span>
+                </div>
+
+                <!-- Crypto -->
+                <div class="flex flex-col items-center text-center">
+                  <div class="flex items-center gap-1">
+                    <span
+                      class="w-1.5 h-1.5 rounded-full shrink-0"
+                      style="background-color: #7c3aed"
+                    ></span>
+                    <span class="text-[9px] font-black text-slate-500 dark:text-slate-400"
+                      >Crypto</span
+                    >
+                  </div>
+                  <span
+                    class="text-xs font-black text-slate-800 dark:text-white leading-tight mt-0.5"
+                  >
+                    {{ getPaymentMethodPercentage('crypto') }}%
+                  </span>
+                  <span
+                    class="text-[9px] font-semibold text-slate-400 dark:text-slate-500 leading-none"
+                  >
+                    {{ getPaymentMethodCount('crypto') }} đơn
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cột phải: Giao dịch Blockchain mới nhất -->
+            <div class="app-card h-[380px] flex flex-col justify-between space-y-4">
+              <div class="flex items-start justify-between gap-2 shrink-0">
+                <div class="space-y-1">
+                  <h4
+                    class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2"
+                  >
+                    <app-icon
+                      name="shield-check"
+                      class="h-5 w-5 text-slate-500 shrink-0"
+                      [strokeWidth]="2"
+                    ></app-icon>
+                    <span>Giao dịch Blockchain</span>
+                  </h4>
+                  <p class="text-xs text-slate-500 dark:text-slate-400 leading-none">
+                    Các hóa đơn Web3 được sync lên EVM.
+                  </p>
+                </div>
+
+                <!-- Trạng thái mạng lưới & Gas Price -->
+                <div class="flex flex-col items-end gap-1 shrink-0 text-right">
+                  <span
+                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold"
+                    [class.bg-emerald-500/10]="web3Service.networkStatus() === 'Hoạt động'"
+                    [class.text-emerald-600]="web3Service.networkStatus() === 'Hoạt động'"
+                    [class.dark:text-emerald-400]="web3Service.networkStatus() === 'Hoạt động'"
+                    [class.bg-rose-500/10]="web3Service.networkStatus() === 'Mất kết nối'"
+                    [class.text-rose-600]="web3Service.networkStatus() === 'Mất kết nối'"
+                    [class.dark:text-rose-400]="web3Service.networkStatus() === 'Mất kết nối'"
+                    [class.bg-slate-100]="
+                      web3Service.networkStatus() !== 'Hoạt động' &&
+                      web3Service.networkStatus() !== 'Mất kết nối'
+                    "
+                    [class.text-slate-600]="
+                      web3Service.networkStatus() !== 'Hoạt động' &&
+                      web3Service.networkStatus() !== 'Mất kết nối'
+                    "
+                  >
+                    <span
+                      class="w-1.5 h-1.5 rounded-full"
+                      [class.bg-emerald-500]="web3Service.networkStatus() === 'Hoạt động'"
+                      [class.animate-pulse]="web3Service.networkStatus() === 'Hoạt động'"
+                      [class.bg-rose-500]="web3Service.networkStatus() === 'Mất kết nối'"
+                      [class.bg-slate-400]="
+                        web3Service.networkStatus() !== 'Hoạt động' &&
+                        web3Service.networkStatus() !== 'Mất kết nối'
+                      "
+                    ></span>
+                    {{ web3Service.networkStatus() }}
+                  </span>
+                  <span
+                    class="text-[9px] text-slate-400 font-semibold"
+                    *ngIf="web3Service.gasPriceGwei() !== '—'"
+                  >
+                    Gas:
+                    <strong class="text-slate-600 dark:text-slate-300">{{
+                      web3Service.gasPriceGwei()
+                    }}</strong>
+                    Gwei
+                  </span>
+                </div>
+              </div>
+
+              <div class="flex-1 overflow-y-auto pr-1 space-y-3 min-h-0">
+                @if (dashboardData()?.latest_blockchain_transactions?.length === 0) {
+                  <div
+                    class="flex flex-col items-center justify-center py-10 text-center gap-2 h-full"
+                  >
+                    <app-icon
+                      name="orders"
+                      class="h-8 w-8 text-slate-300 dark:text-slate-700"
+                      [strokeWidth]="2"
+                    ></app-icon>
+                    <span class="text-[10px] font-semibold text-slate-400"
+                      >Chưa có giao dịch blockchain nào.</span
+                    >
                   </div>
                 } @else {
-                  <table class="app-table-sm">
-                    <thead>
-                      <tr>
-                        <th class="w-24 sm:w-28">SKU</th>
-                        <th>TÊN SẢN PHẨM</th>
-                        <th class="text-right whitespace-nowrap">TỒN KHO</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      @for (alert of getLowStockPaged(); track $index) {
-                        <tr>
-                          <td
-                            class="font-mono text-[10px] sm:text-xs text-slate-500 w-24 sm:w-28"
+                  @for (tx of dashboardData()?.latest_blockchain_transactions; track tx.id) {
+                    <div
+                      class="p-3 rounded-2xl bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-900/60 flex flex-col gap-1.5"
+                    >
+                      <div class="flex items-center justify-between text-[11px]">
+                        <span class="font-extrabold text-slate-700 dark:text-slate-300"
+                          >Đơn #{{ tx.id }}</span
+                        >
+                        <span class="font-black text-purple-600 dark:text-purple-400 leading-none">
+                          {{ tx.total_amount | vnd }}
+                        </span>
+                      </div>
+                      <div class="flex items-center justify-between text-[10px] gap-2">
+                        <a
+                          [href]="getTxExplorerLink(tx.tx_hash, tx.chain_id)"
+                          target="_blank"
+                          class="text-blue-500 hover:underline font-semibold font-mono truncate max-w-[120px]"
+                        >
+                          tx: {{ tx.tx_hash | appShortAddress: 6 : 6 }} ↗
+                        </a>
+                        @if (tx.blockchain_status === 'success') {
+                          <span
+                            class="bg-emerald-500/10 text-emerald-500 text-[10px] font-extrabold px-2 py-0.5 rounded-full"
+                            >Thành công</span
                           >
-                            {{ alert.sku || '—' }}
-                          </td>
-                          <td class="max-w-0">
-                            <div class="truncate">
-                              {{ alert.product_name }}
-                              @if (alert.variant_name) {
-                                <span class="text-slate-400 font-normal"
-                                  >({{ alert.variant_name }})</span
-                                >
-                              }
-                            </div>
-                          </td>
-                          <td class="text-right whitespace-nowrap">
-                            <span
-                              [class.bg-rose-500/10]="alert.stock <= 5"
-                              [class.text-rose-500]="alert.stock <= 5"
-                              [class.bg-amber-500/10]="alert.stock > 5"
-                              [class.text-amber-500]="alert.stock > 5"
-                              class="px-2 py-0.5 rounded-full font-black text-[10px]"
-                            >
-                              {{ alert.stock }}
-                            </span>
-                          </td>
-                        </tr>
-                      }
-                    </tbody>
-                  </table>
-
-                  <!-- Footer phân trang -->
-                  @if (getLowStockTotalCount() > lowStockPageSize) {
-                    <app-pagination
-                      [currentPage]="lowStockCurrentPage"
-                      [totalPages]="getLowStockTotalPages()"
-                      [totalItems]="getLowStockTotalCount()"
-                      [itemsPerPage]="lowStockPageSize"
-                      itemName="mục"
-                      (pageChange)="goToLowStockPage($event)"
-                    ></app-pagination>
+                        } @else {
+                          <span
+                            class="bg-amber-500/10 text-amber-500 text-[10px] font-extrabold px-2 py-0.5 rounded-full animate-pulse"
+                            >Chờ xác nhận</span
+                          >
+                        }
+                      </div>
+                    </div>
                   }
                 }
               </div>
             </div>
           </div>
 
-          <!-- Cột phải (lg:col-span-1): Trạng thái bàn ăn & Thống kê Voucher NFT -->
-          <div class="space-y-6">
-            <!-- Widget Trạng thái Bàn Ăn -->
-            <div
-              class="app-card flex flex-col justify-between h-[300px]"
-            >
-              <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                <app-icon name="table-bar" [solid]="true" class="h-5 w-5 text-indigo-500"></app-icon>
-                <span>Trạng thái bàn ăn</span>
-              </h4>
+          <!-- Hàng mới: Top 5 Bán Chạy, Tồn Kho Thấp & Trạng Thái Bàn Ăn, Voucher NFT -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Cột trái + giữa (lg:col-span-2): Sản phẩm bán chạy & Cảnh báo tồn kho -->
+            <div class="lg:col-span-2 space-y-6">
+              <!-- Widget Top 5 Bán Chạy -->
+              <div class="app-card space-y-4">
+                <h4
+                  class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2"
+                >
+                  <app-icon name="bolt" [solid]="true" class="h-5 w-5 text-amber-500"></app-icon>
+                  <span>Sản phẩm bán chạy nhất trong kỳ</span>
+                </h4>
 
-              <div class="flex-1 flex items-center justify-center gap-6">
-                <!-- Ring Chart đại diện bàn đang dùng/trống -->
-                <div class="relative w-28 h-28 flex items-center justify-center">
-                  <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                    <!-- Vòng nền trống -->
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="40"
-                      stroke="currentColor"
-                      stroke-width="8"
-                      class="text-slate-100 dark:text-slate-800"
-                      fill="none"
-                    />
-                    <!-- Vòng phần trăm đang sử dụng -->
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="40"
-                      stroke="currentColor"
-                      stroke-width="8"
-                      class="text-[var(--dynamic-primary)]"
-                      fill="none"
-                      [attr.stroke-dasharray]="251.2"
-                      [attr.stroke-dashoffset]="
-                        dashboardData()?.tables_occupancy?.total > 0
-                          ? 251.2 -
-                            (251.2 * dashboardData()?.tables_occupancy?.occupied) /
-                              dashboardData()?.tables_occupancy?.total
-                          : 251.2
-                      "
-                    />
-                  </svg>
-                  <div class="absolute flex flex-col items-center justify-center">
-                    <span class="text-sm font-black text-slate-800 dark:text-white">
-                      {{ dashboardData()?.tables_occupancy?.occupied }}/{{
-                        dashboardData()?.tables_occupancy?.total
-                      }}
+                <div class="overflow-hidden">
+                  @if (
+                    !dashboardData()?.best_sellers || dashboardData()?.best_sellers?.length === 0
+                  ) {
+                    <div class="flex flex-col items-center justify-center py-10 text-center gap-2">
+                      <span class="text-xs text-slate-400"
+                        >Không có dữ liệu sản phẩm bán chạy trong khoảng thời gian này.</span
+                      >
+                    </div>
+                  } @else {
+                    <div class="space-y-4">
+                      @for (prod of dashboardData()?.best_sellers; track $index) {
+                        <div class="space-y-1">
+                          <div class="flex items-center justify-between text-xs font-bold">
+                            <span class="text-slate-700 dark:text-slate-300">
+                              {{ prod.name }}
+                              @if (prod.variant_name) {
+                                <span class="text-slate-400 font-normal"
+                                  >({{ prod.variant_name }})</span
+                                >
+                              }
+                            </span>
+                            <div class="flex items-center gap-3 text-slate-500">
+                              <span
+                                >Đã bán:
+                                <strong class="text-slate-800 dark:text-white font-extrabold">{{
+                                  prod.total_quantity
+                                }}</strong>
+                                ly/phần</span
+                              >
+                              <span class="text-[var(--dynamic-primary)]"
+                                >{{ prod.total_revenue | number }}đ</span
+                              >
+                            </div>
+                          </div>
+                          <!-- Progress bar thể hiện tương đối số lượng bán -->
+                          <div
+                            class="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden"
+                          >
+                            <div
+                              class="h-full bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] rounded-full transition-all duration-500"
+                              [style.width.%]="
+                                mathMin(
+                                  100,
+                                  (prod.total_quantity /
+                                    dashboardData().best_sellers[0].total_quantity) *
+                                    100
+                                )
+                              "
+                            ></div>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Widget Cảnh Báo Tồn Kho Thấp -->
+              <div class="app-card space-y-4">
+                <div class="flex items-start justify-between gap-2">
+                  <h4
+                    class="text-base sm:text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2 flex-1 min-w-0"
+                  >
+                    <app-icon
+                      name="warning-solid"
+                      [solid]="true"
+                      class="h-5 w-5 text-rose-500 animate-pulse shrink-0"
+                    ></app-icon>
+                    <span class="leading-tight"
+                      >Cảnh báo tồn kho thấp
+                      <span class="text-slate-400 font-semibold">(≤ 10)</span></span
+                    >
+                  </h4>
+                  @if (getLowStockTotalCount() > 0) {
+                    <span
+                      class="text-[10px] font-black px-2.5 py-1 bg-rose-500/10 text-rose-500 rounded-full shrink-0"
+                    >
+                      {{ getLowStockTotalCount() }} mục
                     </span>
-                    <span class="text-[9px] font-bold text-slate-400 uppercase">Bàn dùng</span>
-                  </div>
+                  }
                 </div>
 
-                <!-- Chú thích chi tiết -->
-                <div class="space-y-2 text-xs font-bold">
-                  <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-[var(--dynamic-primary)]"></span>
-                    <span class="text-slate-700 dark:text-slate-300"
-                      >Đang có khách: {{ dashboardData()?.tables_occupancy?.occupied }}</span
+                <div class="overflow-x-auto">
+                  @if (
+                    !dashboardData()?.low_stock_alerts ||
+                    dashboardData()?.low_stock_alerts?.length === 0
+                  ) {
+                    <div
+                      class="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-2xl text-xs font-bold"
                     >
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-slate-200 dark:bg-slate-800"></span>
-                    <span class="text-slate-500"
-                      >Bàn trống: {{ dashboardData()?.tables_occupancy?.vacant }}</span
-                    >
-                  </div>
+                      <app-icon
+                        name="check-circle"
+                        class="h-4.5 w-4.5 text-emerald-500 shrink-0"
+                        [strokeWidth]="2.5"
+                      ></app-icon>
+                      <span>Tất cả sản phẩm đều đủ lượng tồn kho. Không có cảnh báo!</span>
+                    </div>
+                  } @else {
+                    <table class="app-table-sm">
+                      <thead>
+                        <tr>
+                          <th class="w-24 sm:w-28">SKU</th>
+                          <th>TÊN SẢN PHẨM</th>
+                          <th class="text-right whitespace-nowrap">TỒN KHO</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (alert of getLowStockPaged(); track $index) {
+                          <tr>
+                            <td
+                              class="font-mono text-[10px] sm:text-xs text-slate-500 w-24 sm:w-28"
+                            >
+                              {{ alert.sku || '—' }}
+                            </td>
+                            <td class="max-w-0">
+                              <div class="truncate">
+                                {{ alert.product_name }}
+                                @if (alert.variant_name) {
+                                  <span class="text-slate-400 font-normal"
+                                    >({{ alert.variant_name }})</span
+                                  >
+                                }
+                              </div>
+                            </td>
+                            <td class="text-right whitespace-nowrap">
+                              <span
+                                [class.bg-rose-500/10]="alert.stock <= 5"
+                                [class.text-rose-500]="alert.stock <= 5"
+                                [class.bg-amber-500/10]="alert.stock > 5"
+                                [class.text-amber-500]="alert.stock > 5"
+                                class="px-2 py-0.5 rounded-full font-black text-[10px]"
+                              >
+                                {{ alert.stock }}
+                              </span>
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+
+                    <!-- Footer phân trang -->
+                    @if (getLowStockTotalCount() > lowStockPageSize) {
+                      <app-pagination
+                        [currentPage]="lowStockCurrentPage"
+                        [totalPages]="getLowStockTotalPages()"
+                        [totalItems]="getLowStockTotalCount()"
+                        [itemsPerPage]="lowStockPageSize"
+                        itemName="mục"
+                        (pageChange)="goToLowStockPage($event)"
+                      ></app-pagination>
+                    }
+                  }
                 </div>
               </div>
             </div>
 
-            <!-- Widget Thống kê Voucher NFT -->
-            <div
-              class="app-card space-y-4"
-            >
-              <h4 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                <app-icon name="ticket" class="h-5 w-5 text-purple-500"></app-icon>
-                <span>Hoạt động Voucher NFT</span>
-              </h4>
+            <!-- Cột phải (lg:col-span-1): Trạng thái bàn ăn & Thống kê Voucher NFT -->
+            <div class="space-y-6">
+              <!-- Widget Trạng thái Bàn Ăn -->
+              <div class="app-card flex flex-col justify-between h-[300px]">
+                <h4
+                  class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2"
+                >
+                  <app-icon
+                    name="table-bar"
+                    [solid]="true"
+                    class="h-5 w-5 text-indigo-500"
+                  ></app-icon>
+                  <span>Trạng thái bàn ăn</span>
+                </h4>
 
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <!-- Minted -->
-                <div
-                  class="p-2 sm:p-3 bg-purple-500/5 border border-purple-500/10 rounded-2xl flex flex-col items-center justify-center text-center"
-                >
-                  <span class="text-[9px] font-black text-slate-400 uppercase">Đã Mint</span>
-                  <span class="text-base sm:text-lg font-black text-purple-600 dark:text-purple-400 mt-1">{{
-                    dashboardData()?.voucher_activity?.total_minted
-                  }}</span>
+                <div class="flex-1 flex items-center justify-center gap-6">
+                  <!-- Ring Chart đại diện bàn đang dùng/trống -->
+                  <div class="relative w-28 h-28 flex items-center justify-center">
+                    <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                      <!-- Vòng nền trống -->
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="40"
+                        stroke="currentColor"
+                        stroke-width="8"
+                        class="text-slate-100 dark:text-slate-800"
+                        fill="none"
+                      />
+                      <!-- Vòng phần trăm đang sử dụng -->
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="40"
+                        stroke="currentColor"
+                        stroke-width="8"
+                        class="text-[var(--dynamic-primary)]"
+                        fill="none"
+                        [attr.stroke-dasharray]="251.2"
+                        [attr.stroke-dashoffset]="
+                          dashboardData()?.tables_occupancy?.total > 0
+                            ? 251.2 -
+                              (251.2 * dashboardData()?.tables_occupancy?.occupied) /
+                                dashboardData()?.tables_occupancy?.total
+                            : 251.2
+                        "
+                      />
+                    </svg>
+                    <div class="absolute flex flex-col items-center justify-center">
+                      <span class="text-sm font-black text-slate-800 dark:text-white">
+                        {{ dashboardData()?.tables_occupancy?.occupied }}/{{
+                          dashboardData()?.tables_occupancy?.total
+                        }}
+                      </span>
+                      <span class="text-[9px] font-bold text-slate-400 uppercase">Bàn dùng</span>
+                    </div>
+                  </div>
+
+                  <!-- Chú thích chi tiết -->
+                  <div class="space-y-2 text-xs font-bold">
+                    <div class="flex items-center gap-2">
+                      <span class="w-2.5 h-2.5 rounded-full bg-[var(--dynamic-primary)]"></span>
+                      <span class="text-slate-700 dark:text-slate-300"
+                        >Đang có khách: {{ dashboardData()?.tables_occupancy?.occupied }}</span
+                      >
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="w-2.5 h-2.5 rounded-full bg-slate-200 dark:bg-slate-800"></span>
+                      <span class="text-slate-500"
+                        >Bàn trống: {{ dashboardData()?.tables_occupancy?.vacant }}</span
+                      >
+                    </div>
+                  </div>
                 </div>
-                <!-- Circulating -->
-                <div
-                  class="p-2 sm:p-3 bg-blue-500/5 border border-blue-500/10 rounded-2xl flex flex-col items-center justify-center text-center"
+              </div>
+
+              <!-- Widget Thống kê Voucher NFT -->
+              <div class="app-card space-y-4">
+                <h4
+                  class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2"
                 >
-                  <span class="text-[9px] font-black text-slate-400 uppercase">Lưu hành</span>
-                  <span class="text-base sm:text-lg font-black text-blue-500 mt-1">{{
-                    (dashboardData()?.voucher_activity?.total_minted || 0) - (dashboardData()?.voucher_activity?.used || 0)
-                  }}</span>
-                </div>
-                <!-- Used -->
-                <div
-                  class="p-2 sm:p-3 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl flex flex-col items-center justify-center text-center"
-                >
-                  <span class="text-[9px] font-black text-slate-400 uppercase">Đã dùng</span>
-                  <span class="text-base sm:text-lg font-black text-emerald-500 mt-1">{{
-                    dashboardData()?.voucher_activity?.used
-                  }}</span>
-                </div>
-                <!-- Saved Money -->
-                <div
-                  class="p-2 sm:p-3 bg-amber-500/5 border border-amber-500/10 rounded-2xl flex flex-col items-center justify-center text-center"
-                >
-                  <span class="text-[9px] font-black text-slate-400 uppercase">Giảm giá</span>
-                  <span
-                    class="text-xs sm:text-sm font-black text-amber-500 mt-2 truncate w-full"
-                    title="{{ dashboardData()?.voucher_activity?.total_discount | number }}đ"
+                  <app-icon name="ticket" class="h-5 w-5 text-purple-500"></app-icon>
+                  <span>Hoạt động Voucher NFT</span>
+                </h4>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-2 2xl:grid-cols-4 gap-3">
+                  <!-- Minted -->
+                  <div
+                    class="p-2 sm:p-3 bg-purple-500/5 border border-purple-500/10 rounded-2xl flex flex-col items-center justify-center text-center"
                   >
-                    {{ dashboardData()?.voucher_activity?.total_discount | number }}đ
-                  </span>
+                    <span class="text-[9px] font-black text-slate-400 uppercase">Đã Mint</span>
+                    <span
+                      class="text-base sm:text-lg font-black text-purple-600 dark:text-purple-400 mt-1"
+                      >{{ dashboardData()?.voucher_activity?.total_minted }}</span
+                    >
+                  </div>
+                  <!-- Circulating -->
+                  <div
+                    class="p-2 sm:p-3 bg-blue-500/5 border border-blue-500/10 rounded-2xl flex flex-col items-center justify-center text-center"
+                  >
+                    <span class="text-[9px] font-black text-slate-400 uppercase">Lưu hành</span>
+                    <span class="text-base sm:text-lg font-black text-blue-500 mt-1">{{
+                      (dashboardData()?.voucher_activity?.total_minted || 0) -
+                        (dashboardData()?.voucher_activity?.used || 0)
+                    }}</span>
+                  </div>
+                  <!-- Used -->
+                  <div
+                    class="p-2 sm:p-3 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl flex flex-col items-center justify-center text-center"
+                  >
+                    <span class="text-[9px] font-black text-slate-400 uppercase">Đã dùng</span>
+                    <span class="text-base sm:text-lg font-black text-emerald-500 mt-1">{{
+                      dashboardData()?.voucher_activity?.used
+                    }}</span>
+                  </div>
+                  <!-- Saved Money -->
+                  <div
+                    class="p-2 sm:p-3 bg-amber-500/5 border border-amber-500/10 rounded-2xl flex flex-col items-center justify-center text-center"
+                  >
+                    <span class="text-[9px] font-black text-slate-400 uppercase">Giảm giá</span>
+                    <span
+                      class="text-xs sm:text-sm font-black text-amber-500 mt-2 truncate w-full"
+                      title="{{ dashboardData()?.voucher_activity?.total_discount | number }}đ"
+                    >
+                      {{ dashboardData()?.voucher_activity?.total_discount | number }}đ
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    }
+      }
     } @else {
       <app-access-restricted pageName="Tổng quan"></app-access-restricted>
     }
