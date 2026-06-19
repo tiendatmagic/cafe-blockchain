@@ -1187,6 +1187,21 @@ export class StateService {
 
   // Kiểm tra quyền truy cập module
   public hasPermission(module: string): boolean {
+    // 1. Kiểm tra giới hạn tính năng theo gói cước trước
+    if (module === 'dashboard' && !this.hasFeature('enable_dashboard')) return false;
+    if (module === 'pos' && !this.hasFeature('enable_pos')) return false;
+    if (module === 'orders' && !this.hasFeature('enable_orders')) return false;
+    if (module === 'tables' && !this.hasFeature('enable_tables')) return false;
+    if (module === 'shifts' && !this.hasFeature('enable_shifts')) return false;
+    if (module === 'menu' && !this.hasFeature('enable_menu')) return false;
+    if (module === 'inventory' && !this.hasFeature('enable_inventory')) return false;
+    if (module === 'customers' && !this.hasFeature('enable_customers')) return false;
+    if (module === 'debts' && !this.hasFeature('enable_debts')) return false;
+    if (module === 'financials' && !this.hasFeature('enable_financials')) return false;
+    if (module === 'reports' && !this.hasFeature('enable_reports')) return false;
+    if (module === 'staffs' && !this.hasFeature('enable_staffs')) return false;
+
+    // 2. Tiếp theo kiểm tra vai trò người dùng
     const permissions = this.currentUserPermissions();
     // Nếu permissions là null, đây là Chủ cửa hàng (Admin) -> full quyền
     if (permissions === null) {

@@ -179,22 +179,46 @@
                   <span class="text-slate-400 mr-1.5">Nhân viên:</span>
                   <span class="font-extrabold text-slate-700 dark:text-slate-350">{{ row.features?.max_staffs < 0 ? 'Không giới hạn' : row.features?.max_staffs }}</span>
                 </div>
+                <div>
+                  <span class="text-slate-400 mr-1.5">Khách hàng:</span>
+                  <span class="font-extrabold text-slate-700 dark:text-slate-350">{{ row.features?.max_customers < 0 ? 'Không giới hạn' : (row.features?.max_customers ?? 50) }}</span>
+                </div>
+                <div>
+                  <span class="text-slate-400 mr-1.5">Thu chi:</span>
+                  <span class="font-extrabold text-slate-700 dark:text-slate-350">{{ row.features?.max_transactions < 0 ? 'Không giới hạn' : (row.features?.max_transactions ?? 100) }}</span>
+                </div>
+                <div>
+                  <span class="text-slate-400 mr-1.5">Ghi nợ:</span>
+                  <span class="font-extrabold text-slate-700 dark:text-slate-350">{{ row.features?.max_debts < 0 ? 'Không giới hạn' : (row.features?.max_debts ?? 10) }}</span>
+                </div>
               </div>
             </ng-template>
 
             <ng-template appCell="features" let-row>
               <div class="flex flex-wrap gap-1.5 max-w-sm">
-                <span class="inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold"
+                <span class="inline-flex items-center rounded px-2 py-0.5 text-[10px] font-bold"
                   [ngClass]="row.features?.enable_storefront ? 'bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700'">
                   Web Store
                 </span>
-                <span class="inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold"
+                <span class="inline-flex items-center rounded px-2 py-0.5 text-[10px] font-bold"
                   [ngClass]="row.features?.enable_reports ? 'bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700'">
                   Báo cáo
                 </span>
-                <span class="inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold"
+                <span class="inline-flex items-center rounded px-2 py-0.5 text-[10px] font-bold"
                   [ngClass]="row.features?.enable_excel_export ? 'bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700'">
                   Xuất Excel
+                </span>
+                <span class="inline-flex items-center rounded px-2 py-0.5 text-[10px] font-bold"
+                  [ngClass]="row.features?.enable_inventory ? 'bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700'">
+                  Kho hàng
+                </span>
+                <span class="inline-flex items-center rounded px-2 py-0.5 text-[10px] font-bold"
+                  [ngClass]="row.features?.enable_debts ? 'bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700'">
+                  Sổ nợ
+                </span>
+                <span class="inline-flex items-center rounded px-2 py-0.5 text-[10px] font-bold"
+                  [ngClass]="row.features?.enable_financials ? 'bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700'">
+                  Thu chi
                 </span>
               </div>
             </ng-template>
@@ -772,40 +796,157 @@
     <div formGroupName="features" class="space-y-5 p-4 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-slate-100 dark:border-slate-800/60">
       <h4 class="text-sm font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800/60 pb-2 mb-3">Feature Flagging (Giới hạn tính năng)</h4>
 
-      <div class="space-y-1.5">
-        <label class="block text-sm font-bold text-slate-700 dark:text-slate-300">Số lượng sản phẩm tối đa</label>
-        <input type="number" formControlName="max_products" class="form-input" />
-        <p class="text-[11px] text-purple-600/75 dark:text-purple-400/75 mt-1 block italic font-semibold">Nhập -1 nếu muốn cho phép tạo không giới hạn sản phẩm.</p>
+      <!-- Limit Settings -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="space-y-1.5">
+          <label class="block text-sm font-bold text-slate-700 dark:text-slate-300">Số lượng sản phẩm tối đa</label>
+          <input type="number" formControlName="max_products" class="form-input" />
+          <p class="text-[10px] text-slate-400 block italic">Nhập -1 để không giới hạn sản phẩm.</p>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="block text-sm font-bold text-slate-700 dark:text-slate-300">Số lượng nhân viên tối đa</label>
+          <input type="number" formControlName="max_staffs" class="form-input" />
+          <p class="text-[10px] text-slate-400 block italic">Nhập -1 để không giới hạn nhân viên.</p>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="block text-sm font-bold text-slate-700 dark:text-slate-300">Số lượng khách hàng tối đa</label>
+          <input type="number" formControlName="max_customers" class="form-input" />
+          <p class="text-[10px] text-slate-400 block italic">Nhập -1 để không giới hạn khách hàng.</p>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="block text-sm font-bold text-slate-700 dark:text-slate-300">Số lượng thu chi tối đa</label>
+          <input type="number" formControlName="max_transactions" class="form-input" />
+          <p class="text-[10px] text-slate-400 block italic">Nhập -1 để không giới hạn thu chi.</p>
+        </div>
+
+        <div class="space-y-1.5 md:col-span-2">
+          <label class="block text-sm font-bold text-slate-700 dark:text-slate-300">Số lượng ghi nợ tối đa</label>
+          <input type="number" formControlName="max_debts" class="form-input" />
+          <p class="text-[10px] text-slate-400 block italic">Nhập -1 để không giới hạn lượt ghi nợ.</p>
+        </div>
       </div>
 
-      <div class="space-y-1.5">
-        <label class="block text-sm font-bold text-slate-700 dark:text-slate-300">Số lượng nhân viên tối đa</label>
-        <input type="number" formControlName="max_staffs" class="form-input" />
-        <p class="text-[11px] text-purple-600/75 dark:text-purple-400/75 mt-1 block italic font-semibold">Nhập -1 nếu muốn cho phép tạo không giới hạn nhân viên.</p>
-      </div>
+      <!-- Feature Toggles -->
+      <div class="border-t border-slate-200/60 dark:border-slate-800/60 pt-4">
+        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">Bật/tắt phân hệ tính năng</label>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" formControlName="enable_dashboard" class="h-4.5 w-4.5 rounded border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-slate-50 dark:focus:ring-offset-slate-900 mt-0.5" />
+            <div class="text-xs sm:text-sm">
+              <p class="font-extrabold text-slate-800 dark:text-slate-200">Tổng quan (Dashboard)</p>
+              <p class="text-2xs text-slate-400">Xem biểu đồ thống kê doanh thu, lãi lỗ, ca trực.</p>
+            </div>
+          </label>
 
-      <div class="space-y-3 pt-2">
-        <label class="flex items-center gap-3 cursor-pointer">
-          <input type="checkbox" formControlName="enable_storefront" class="h-4.5 w-4.5 rounded border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-slate-50 dark:focus:ring-offset-slate-900" />
-          <div class="text-xs sm:text-sm">
-            <p class="font-extrabold text-slate-800 dark:text-slate-200">Kích hoạt Website Cửa hàng (Storefront)</p>
-            <p class="text-2xs text-slate-400">Cho phép bán hàng trực tuyến và tự động đẩy đơn hàng POS.</p>
-          </div>
-        </label>
-        <label class="flex items-center gap-3 cursor-pointer">
-          <input type="checkbox" formControlName="enable_reports" class="h-4.5 w-4.5 rounded border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-slate-50 dark:focus:ring-offset-slate-900" />
-          <div class="text-xs sm:text-sm">
-            <p class="font-extrabold text-slate-800 dark:text-slate-200">Kích hoạt phân hệ Báo cáo doanh thu & Lãi lỗ</p>
-            <p class="text-2xs text-slate-400">Cho phép chủ quán xem thống kê chi tiết tình hình tài chính.</p>
-          </div>
-        </label>
-        <label class="flex items-center gap-3 cursor-pointer">
-          <input type="checkbox" formControlName="enable_excel_export" class="h-4.5 w-4.5 rounded border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-slate-50 dark:focus:ring-offset-slate-900" />
-          <div class="text-xs sm:text-sm">
-            <p class="font-extrabold text-slate-800 dark:text-slate-200">Cho phép xuất file dữ liệu Excel (.xlsx)</p>
-            <p class="text-2xs text-slate-400">Mở chức năng tải báo cáo dạng tệp Excel nhị phân Unicode.</p>
-          </div>
-        </label>
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" formControlName="enable_pos" class="h-4.5 w-4.5 rounded border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-slate-50 dark:focus:ring-offset-slate-900 mt-0.5" />
+            <div class="text-xs sm:text-sm">
+              <p class="font-extrabold text-slate-800 dark:text-slate-200">Bán hàng POS</p>
+              <p class="text-2xs text-slate-400">Giao diện POS ghi đơn hàng, in bill và thanh toán.</p>
+            </div>
+          </label>
+
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" formControlName="enable_orders" class="h-4.5 w-4.5 rounded border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-slate-50 dark:focus:ring-offset-slate-900 mt-0.5" />
+            <div class="text-xs sm:text-sm">
+              <p class="font-extrabold text-slate-800 dark:text-slate-200">Đơn hàng</p>
+              <p class="text-2xs text-slate-400">Quản lý danh sách lịch sử đơn hàng và đồng bộ blockchain.</p>
+            </div>
+          </label>
+
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" formControlName="enable_tables" class="h-4.5 w-4.5 rounded border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-slate-50 dark:focus:ring-offset-slate-900 mt-0.5" />
+            <div class="text-xs sm:text-sm">
+              <p class="font-extrabold text-slate-800 dark:text-slate-200">Sơ đồ bàn</p>
+              <p class="text-2xs text-slate-400">Quản lý sơ đồ bàn và khu vực bàn ăn.</p>
+            </div>
+          </label>
+
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" formControlName="enable_shifts" class="h-4.5 w-4.5 rounded border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-slate-50 dark:focus:ring-offset-slate-900 mt-0.5" />
+            <div class="text-xs sm:text-sm">
+              <p class="font-extrabold text-slate-800 dark:text-slate-200">Ca làm việc</p>
+              <p class="text-2xs text-slate-400">Nhân viên khai báo mở ca và kết ca đối soát tiền mặt.</p>
+            </div>
+          </label>
+
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" formControlName="enable_menu" class="h-4.5 w-4.5 rounded border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-slate-50 dark:focus:ring-offset-slate-900 mt-0.5" />
+            <div class="text-xs sm:text-sm">
+              <p class="font-extrabold text-slate-800 dark:text-slate-200">Quản lý Thực đơn</p>
+              <p class="text-2xs text-slate-400">Quản lý danh sách danh mục, món ăn và định lượng.</p>
+            </div>
+          </label>
+
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" formControlName="enable_inventory" class="h-4.5 w-4.5 rounded border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-slate-50 dark:focus:ring-offset-slate-900 mt-0.5" />
+            <div class="text-xs sm:text-sm">
+              <p class="font-extrabold text-slate-800 dark:text-slate-200">Kho hàng</p>
+              <p class="text-2xs text-slate-400">Phiếu nhập kho, xuất kho và kiểm kê nguyên vật liệu.</p>
+            </div>
+          </label>
+
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" formControlName="enable_customers" class="h-4.5 w-4.5 rounded border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-slate-50 dark:focus:ring-offset-slate-900 mt-0.5" />
+            <div class="text-xs sm:text-sm">
+              <p class="font-extrabold text-slate-800 dark:text-slate-200">Khách hàng</p>
+              <p class="text-2xs text-slate-400">Xem và sửa thông tin khách hàng, phân nhóm đối tác.</p>
+            </div>
+          </label>
+
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" formControlName="enable_debts" class="h-4.5 w-4.5 rounded border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-slate-50 dark:focus:ring-offset-slate-900 mt-0.5" />
+            <div class="text-xs sm:text-sm">
+              <p class="font-extrabold text-slate-800 dark:text-slate-200">Sổ nợ</p>
+              <p class="text-2xs text-slate-400">Theo dõi công nợ, thu hồi nợ và xóa nợ cho khách.</p>
+            </div>
+          </label>
+
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" formControlName="enable_financials" class="h-4.5 w-4.5 rounded border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-slate-50 dark:focus:ring-offset-slate-900 mt-0.5" />
+            <div class="text-xs sm:text-sm">
+              <p class="font-extrabold text-slate-800 dark:text-slate-200">Thu chi tài chính</p>
+              <p class="text-2xs text-slate-400">Lập phiếu thu chi tiền mặt và dòng tiền on-chain.</p>
+            </div>
+          </label>
+
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" formControlName="enable_reports" class="h-4.5 w-4.5 rounded border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-slate-50 dark:focus:ring-offset-slate-900 mt-0.5" />
+            <div class="text-xs sm:text-sm">
+              <p class="font-extrabold text-slate-800 dark:text-slate-200">Báo cáo</p>
+              <p class="text-2xs text-slate-400">Xem thống kê lãi lỗ, xuất Excel doanh thu chi tiết.</p>
+            </div>
+          </label>
+
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" formControlName="enable_staffs" class="h-4.5 w-4.5 rounded border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-slate-50 dark:focus:ring-offset-slate-900 mt-0.5" />
+            <div class="text-xs sm:text-sm">
+              <p class="font-extrabold text-slate-800 dark:text-slate-200">Nhân viên</p>
+              <p class="text-2xs text-slate-400">Thêm nhân viên và phân quyền truy cập hệ thống.</p>
+            </div>
+          </label>
+
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" formControlName="enable_storefront" class="h-4.5 w-4.5 rounded border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-slate-50 dark:focus:ring-offset-slate-900 mt-0.5" />
+            <div class="text-xs sm:text-sm">
+              <p class="font-extrabold text-slate-800 dark:text-slate-200">Website Cửa hàng (Storefront)</p>
+              <p class="text-2xs text-slate-400">Bán hàng trực tuyến, tự động đẩy đơn POS.</p>
+            </div>
+          </label>
+
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" formControlName="enable_excel_export" class="h-4.5 w-4.5 rounded border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-slate-50 dark:focus:ring-offset-slate-900 mt-0.5" />
+            <div class="text-xs sm:text-sm">
+              <p class="font-extrabold text-slate-800 dark:text-slate-200">Xuất file Excel (.xlsx)</p>
+              <p class="text-2xs text-slate-400">Cho phép tải báo cáo dạng file Excel nhị phân.</p>
+            </div>
+          </label>
+
+        </div>
       </div>
     </div>
 

@@ -46,6 +46,24 @@ class TransactionController extends Controller
             'transaction_date' => 'required|date',
         ]);
 
+        // Kiểm tra giới hạn số lượng thu chi tối đa của gói cước
+        $owner = \App\Domain\Entities\User::where('wallet_address', $storeOwner)->first();
+        if ($owner) {
+            $plan = \App\Domain\Entities\SubscriptionPlan::where('code', $owner->plan_code ?: 'free')->first();
+            if ($plan && isset($plan->features['max_transactions'])) {
+                $maxTransactions = (int)$plan->features['max_transactions'];
+                if ($maxTransactions >= 0) {
+                    $currentTransactionsCount = Transaction::where('store_owner_address', $storeOwner)->count();
+                    if ($currentTransactionsCount >= $maxTransactions) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => "Gói cước của bạn đã đạt giới hạn tối đa {$maxTransactions} giao dịch thu chi. Vui lòng nâng cấp gói cước để tiếp tục."
+                        ], 403);
+                    }
+                }
+            }
+        }
+
         // Tự động tìm ca trực đang mở của nhân viên hiện tại
         $shiftId = null;
         $activeShift = \App\Domain\Entities\Shift::where('user_id', $request->user()->id)
