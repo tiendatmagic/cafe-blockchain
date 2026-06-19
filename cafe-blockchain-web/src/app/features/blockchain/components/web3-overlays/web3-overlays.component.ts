@@ -20,7 +20,6 @@ export class Web3OverlaysComponent {
   private readonly router = inject(Router);
 
   // Quản lý các bước nâng cấp gói cước
-  public readonly upgradeStep = signal<number>(1); // 1: Modal chặn, 2: Modal pricing/thanh toán
   public readonly plans = signal<any[]>([]);
   public readonly isPlansLoading = signal<boolean>(false);
   public readonly selectedPlan = signal<any>(null);
@@ -55,7 +54,7 @@ export class Web3OverlaysComponent {
    * Chuyển sang bước 2 (Modal Pricing) và load danh sách các gói
    */
   public handleUpgradeNowClick() {
-    this.upgradeStep.set(2);
+    this.stateService.upgradeModalStep.set(2);
     this.loadPlans();
   }
 
@@ -110,7 +109,7 @@ export class Web3OverlaysComponent {
    */
   public closeUpgradeModal() {
     this.stateService.isUpgradeModalOpen.set(false);
-    this.upgradeStep.set(1);
+    this.stateService.upgradeModalStep.set(1);
     this.selectedPlan.set(null);
     this.durationMonths.set(1);
     this.isUpgrading.set(false);

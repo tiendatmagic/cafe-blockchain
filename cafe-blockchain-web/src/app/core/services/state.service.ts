@@ -51,6 +51,7 @@ export class StateService {
 
   // Trạng thái modal chặn và nâng cấp gói cước
   public readonly isUpgradeModalOpen = signal<boolean>(false);
+  public readonly upgradeModalStep = signal<number>(1);
   public readonly lockedFeatureKey = signal<string>('');
   public readonly lockedFeatureName = signal<string>('');
 
@@ -1793,6 +1794,15 @@ export class StateService {
   public triggerUpgradeModal(featureKey: string, featureName: string) {
     this.lockedFeatureKey.set(featureKey);
     this.lockedFeatureName.set(featureName);
+    this.upgradeModalStep.set(1);
+    this.isUpgradeModalOpen.set(true);
+  }
+
+  // Mở trực tiếp step 2 nâng cấp gói cước (Pricing/Thanh toán)
+  public triggerUpgradeModalDirectly(featureKey: string, featureName: string) {
+    this.lockedFeatureKey.set(featureKey);
+    this.lockedFeatureName.set(featureName);
+    this.upgradeModalStep.set(2);
     this.isUpgradeModalOpen.set(true);
   }
 

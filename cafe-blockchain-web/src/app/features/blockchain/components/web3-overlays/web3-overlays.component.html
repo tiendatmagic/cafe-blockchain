@@ -373,11 +373,11 @@
 
     <div
       class="relative bg-white dark:bg-slate-900 w-full rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800/60 overflow-hidden transform transition-all duration-300 animate-in fade-in zoom-in-95 duration-200"
-      [class.max-w-md]="upgradeStep() === 1"
-      [class.max-w-2xl]="upgradeStep() === 2"
+      [class.max-w-md]="stateService.upgradeModalStep() === 1"
+      [class.max-w-2xl]="stateService.upgradeModalStep() === 2"
     >
       <!-- STEP 1: MODAL CHẶN THÔNG BÁO TÍNH NĂNG CHƯA MỞ KHÓA -->
-      @if (upgradeStep() === 1) {
+      @if (stateService.upgradeModalStep() === 1) {
         <div class="p-6 text-center">
           <div class="w-14 h-14 mx-auto rounded-full bg-rose-100 dark:bg-rose-950/40 flex items-center justify-center text-rose-500 mb-4 animate-pulse">
             <app-icon name="warning" class="h-7 w-7" strokeWidth="2.5" />
@@ -409,13 +409,13 @@
       }
 
       <!-- STEP 2: FORM PRICING VÀ THANH TOÁN WEB3 -->
-      @if (upgradeStep() === 2) {
+      @if (stateService.upgradeModalStep() === 2) {
         <div class="p-6">
           <!-- Header -->
           <div class="flex items-center justify-between mb-5 border-b border-slate-100 dark:border-slate-800/60 pb-4">
             <div class="flex items-center gap-2">
               <button
-                (click)="upgradeStep.set(1)"
+                (click)="stateService.upgradeModalStep.set(1)"
                 [disabled]="isUpgrading()"
                 class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
                 title="Quay lại"

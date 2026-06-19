@@ -1,5 +1,6 @@
 import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prompt/web3-connect-prompt.component';
 import { AccessRestrictedComponent } from '@shared/components/access-restricted/access-restricted.component';
+import { FeatureBlockedComponent } from '@shared/components/feature-blocked/feature-blocked.component';
 import { Component, inject, signal, computed, OnInit, effect, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -26,6 +27,7 @@ import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-g
     FormsModule,
     Web3ConnectPromptComponent,
     AccessRestrictedComponent,
+    FeatureBlockedComponent,
     SkeletonLoaderComponent,
     ShortAddressPipe,
     PageHeaderComponent,
@@ -115,8 +117,6 @@ export class ReportsComponent implements OnInit {
 
   public ngOnInit() {
     if (!this.stateService.hasFeature('enable_reports')) {
-      this.stateService.triggerUpgradeModal('enable_reports', 'Báo cáo');
-      this.router.navigate(['/dashboard']);
       return;
     }
     this.setDatePreset('7days');

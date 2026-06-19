@@ -17,7 +17,10 @@
   </app-page-header>
 
   <!-- Banner Kết nối ví Web3 nếu chưa đăng nhập -->
-  @if (!web3Service.walletConnected()) {
+  @if (!stateService.hasFeature('enable_debts')) {
+    <app-feature-blocked featureKey="enable_debts" featureName="Sổ nợ"></app-feature-blocked>
+  } @else {
+    @if (!web3Service.walletConnected()) {
     <app-web3-connect-prompt
       title="Sổ nợ khách hàng"
       description="Vui lòng kết nối ví Web3 để truy cập dữ liệu công nợ, lịch sử giao dịch nợ/trả nợ của khách hàng và đồng bộ dòng tiền vào sổ quỹ."
@@ -249,6 +252,7 @@
     }
   } @else {
     <app-access-restricted pageName="Sổ nợ"></app-access-restricted>
+    }
   }
 }
 </div>

@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -14,6 +14,7 @@ import { CustomDatePickerComponent } from '@shared/components/custom-date-picker
 import { TableComponent, TableCellDirective, TableColumn } from '@shared/components/table/table.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
+import { FeatureBlockedComponent } from '@shared/components/feature-blocked/feature-blocked.component';
 
 @Component({
   selector: 'app-customers',
@@ -32,11 +33,12 @@ import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skel
     TableComponent,
     TableCellDirective,
     IconComponent,
-    SkeletonLoaderComponent
+    SkeletonLoaderComponent,
+    FeatureBlockedComponent
   ],
   templateUrl: './customers.component.html'
 })
-export class CustomersComponent {
+export class CustomersComponent implements OnInit {
   public readonly customerColumns: TableColumn[] = [
     { key: 'customer_code', header: 'Mã khách', sortable: false, class: 'font-bold whitespace-nowrap' },
     { key: 'name', header: 'Tên khách hàng / Doanh nghiệp', sortable: false, class: 'font-extrabold text-slate-800 dark:text-white whitespace-nowrap' },
@@ -174,6 +176,12 @@ export class CustomersComponent {
   public readonly customerGroupTotalPages = computed(() => {
     return Math.ceil(this.customerGroups().length / this.customerGroupItemsPerPage) || 1;
   });
+
+  ngOnInit() {
+    if (!this.stateService.hasFeature('enable_customers')) {
+      return;
+    }
+  }
 
   // Tải lại dữ liệu
   public refreshCustomers() {

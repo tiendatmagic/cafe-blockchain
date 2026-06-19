@@ -6,6 +6,7 @@ import { StateService } from '@core/services/state.service';
 import { ApiService } from '@core/services/api.service';
 import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prompt/web3-connect-prompt.component';
 import { AccessRestrictedComponent } from '@shared/components/access-restricted/access-restricted.component';
+import { FeatureBlockedComponent } from '@shared/components/feature-blocked/feature-blocked.component';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
 import { ShortAddressPipe } from '@shared/pipes/short-address.pipe';
@@ -27,6 +28,7 @@ import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-g
     RouterModule,
     Web3ConnectPromptComponent,
     AccessRestrictedComponent,
+    FeatureBlockedComponent,
     SkeletonLoaderComponent,
     PaginationComponent,
     ShortAddressPipe,
@@ -127,8 +129,6 @@ export class DebtsComponent implements OnInit {
 
   public ngOnInit() {
     if (!this.stateService.hasFeature('enable_debts')) {
-      this.stateService.triggerUpgradeModal('enable_debts', 'Sổ nợ');
-      this.router.navigate(['/dashboard']);
       return;
     }
 

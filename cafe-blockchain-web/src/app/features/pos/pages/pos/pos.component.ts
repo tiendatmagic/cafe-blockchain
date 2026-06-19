@@ -1,4 +1,5 @@
 import { AccessRestrictedComponent } from '@shared/components/access-restricted/access-restricted.component';
+import { FeatureBlockedComponent } from '@shared/components/feature-blocked/feature-blocked.component';
 import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -26,6 +27,7 @@ import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skel
     FormsModule,
     RouterModule,
     AccessRestrictedComponent,
+    FeatureBlockedComponent,
     PaginationComponent,
     PageHeaderComponent,
     VNDCurrencyPipe,
@@ -146,6 +148,9 @@ export class PosComponent implements OnInit, OnDestroy {
   }
 
   public ngOnInit() {
+    if (!this.stateService.hasFeature('enable_pos')) {
+      return;
+    }
     this.customerSearchSubscription = this.customerSearchSubject.pipe(
       debounceTime(300),
       distinctUntilChanged()

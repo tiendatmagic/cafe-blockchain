@@ -86,30 +86,36 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/vouchers/cancel-sign', [\App\Http\Controllers\VoucherController::class, 'cancelSign']);
         Route::get('/vouchers/check-signature/{orderCode}', [\App\Http\Controllers\VoucherController::class, 'checkSignature']);
 
-        // Products API
-        Route::get('/products', [ProductController::class, 'index'])->middleware('permission:pos|menu|inventory');
-        
-        // Categories API
-        Route::get('/categories', [CategoryController::class, 'index'])->middleware('permission:pos|menu|inventory');
+        // Products & Categories read API (Thực đơn)
+        Route::middleware('feature:enable_menu')->group(function () {
+            Route::get('/products', [ProductController::class, 'index'])->middleware('permission:pos|menu|inventory');
+            Route::get('/categories', [CategoryController::class, 'index'])->middleware('permission:pos|menu|inventory');
+        });
 
-        // Orders API
-        Route::get('/orders', [OrderController::class, 'index'])->middleware('permission:pos|orders');
-        Route::get('/orders/{id}', [OrderController::class, 'show'])->middleware('permission:pos|orders');
-        Route::post('/orders', [OrderController::class, 'store'])->middleware('permission:pos'); // Tạo đơn ở POS
-        Route::put('/orders/{id}', [OrderController::class, 'update'])->middleware('permission:pos|orders');
-        Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus'])->middleware(RequireOwner::class);
-        Route::put('/orders/{id}/sync', [OrderController::class, 'syncBlockchain'])->middleware(RequireOwner::class);
-        Route::post('/orders/{id}/mint-voucher-manual', [OrderController::class, 'mintVoucherManual'])->middleware(RequireOwner::class);
-
-        // API Versioning V1 & V2 cho Orders
-        Route::prefix('v1')->group(function () {
+        // Orders (Đơn hàng & POS) API
+        Route::middleware('feature:enable_orders')->group(function () {
             Route::get('/orders', [OrderController::class, 'index'])->middleware('permission:pos|orders');
             Route::get('/orders/{id}', [OrderController::class, 'show'])->middleware('permission:pos|orders');
-            Route::post('/orders', [OrderController::class, 'store'])->middleware('permission:pos');
             Route::put('/orders/{id}', [OrderController::class, 'update'])->middleware('permission:pos|orders');
             Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus'])->middleware(RequireOwner::class);
             Route::put('/orders/{id}/sync', [OrderController::class, 'syncBlockchain'])->middleware(RequireOwner::class);
             Route::post('/orders/{id}/mint-voucher-manual', [OrderController::class, 'mintVoucherManual'])->middleware(RequireOwner::class);
+        });
+
+        // API tạo đơn hàng POS mới
+        Route::post('/orders', [OrderController::class, 'store'])->middleware(['permission:pos', 'feature:enable_pos']);
+
+        // API Versioning V1 & V2 cho Orders
+        Route::prefix('v1')->group(function () {
+            Route::middleware('feature:enable_orders')->group(function () {
+                Route::get('/orders', [OrderController::class, 'index'])->middleware('permission:pos|orders');
+                Route::get('/orders/{id}', [OrderController::class, 'show'])->middleware('permission:pos|orders');
+                Route::put('/orders/{id}', [OrderController::class, 'update'])->middleware('permission:pos|orders');
+                Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus'])->middleware(RequireOwner::class);
+                Route::put('/orders/{id}/sync', [OrderController::class, 'syncBlockchain'])->middleware(RequireOwner::class);
+                Route::post('/orders/{id}/mint-voucher-manual', [OrderController::class, 'mintVoucherManual'])->middleware(RequireOwner::class);
+            });
+            Route::post('/orders', [OrderController::class, 'store'])->middleware(['permission:pos', 'feature:enable_pos']);
         });
 
         Route::prefix('v2')->group(function () {
@@ -131,11 +137,19 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/menu-sync-logs', [MenuSyncController::class, 'index'])->middleware('permission:settings|menu');
         Route::post('/menu-sync-logs', [MenuSyncController::class, 'store'])->middleware('permission:settings|menu');
 
-        // Customers API
-        Route::get('/customers', [CustomerController::class, 'index'])->middleware('permission:pos|customers|reports');
-        Route::post('/customers', [CustomerController::class, 'store'])->middleware(['permission:pos|customers', 'limit:customers']);
-        Route::put('/customers/{id}', [CustomerController::class, 'update'])->middleware('permission:pos|customers');
-        Route::delete('/customers/{id}', [CustomerController::class, 'destroy'])->middleware('permission:customers');
+        // Customers (Khách hàng) API
+        Route::middleware('feature:enable_customers')->group(function () {
+            Route::get('/customers', [CustomerController::class, 'index'])->middleware('permission:pos|customers|reports');
+            Route::post('/customers', [CustomerController::class, 'store'])->middleware(['permission:pos|customers', 'limit:customers']);
+            Route::put('/customers/{id}', [CustomerController::class, 'update'])->middleware('permission:pos|customers');
+            Route::delete('/customers/{id}', [CustomerController::class, 'destroy'])->middleware('permission:customers');
+
+            // Customer Groups API
+            Route::get('/customer-groups', [CustomerGroupController::class, 'index'])->middleware('permission:customers');
+            Route::post('/customer-groups', [CustomerGroupController::class, 'store'])->middleware('permission:customers');
+            Route::put('/customer-groups/{id}', [CustomerGroupController::class, 'update'])->middleware('permission:customers');
+            Route::delete('/customer-groups/{id}', [CustomerGroupController::class, 'destroy'])->middleware('permission:customers');
+        });
 
         // Debts (Sổ nợ) API
         Route::middleware('feature:enable_debts')->group(function () {
@@ -145,12 +159,6 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/debts/payment', [\App\Http\Controllers\DebtController::class, 'storePayment'])->middleware('permission:debts');
             Route::delete('/debts/{id}', [\App\Http\Controllers\DebtController::class, 'destroy'])->middleware('permission:debts');
         });
-
-        // Customer Groups API
-        Route::get('/customer-groups', [CustomerGroupController::class, 'index'])->middleware('permission:customers');
-        Route::post('/customer-groups', [CustomerGroupController::class, 'store'])->middleware('permission:customers');
-        Route::put('/customer-groups/{id}', [CustomerGroupController::class, 'update'])->middleware('permission:customers');
-        Route::delete('/customer-groups/{id}', [CustomerGroupController::class, 'destroy'])->middleware('permission:customers');
 
         // Transactions (Thu Chi) API
         Route::middleware('feature:enable_financials')->group(function () {
@@ -168,18 +176,21 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::delete('/inventory/{id}', [InventoryController::class, 'destroy'])->middleware('permission:inventory');
         });
 
-        // Areas (Khu vực) API
-        Route::get('/areas', [AreaController::class, 'index'])->middleware('permission:pos|tables');
-        Route::post('/areas', [AreaController::class, 'store'])->middleware('permission:tables');
-        Route::put('/areas/{id}', [AreaController::class, 'update'])->middleware('permission:tables');
-        Route::delete('/areas/{id}', [AreaController::class, 'destroy'])->middleware('permission:tables');
+        // Areas & Dining Tables (Sơ đồ bàn) API
+        Route::middleware('feature:enable_tables')->group(function () {
+            // Areas (Khu vực) API
+            Route::get('/areas', [AreaController::class, 'index'])->middleware('permission:pos|tables');
+            Route::post('/areas', [AreaController::class, 'store'])->middleware('permission:tables');
+            Route::put('/areas/{id}', [AreaController::class, 'update'])->middleware('permission:tables');
+            Route::delete('/areas/{id}', [AreaController::class, 'destroy'])->middleware('permission:tables');
 
-        // Dining Tables (Bàn ăn) API
-        Route::get('/dining-tables', [DiningTableController::class, 'index'])->middleware('permission:pos|tables');
-        Route::post('/dining-tables', [DiningTableController::class, 'store'])->middleware('permission:tables');
-        Route::put('/dining-tables/{id}', [DiningTableController::class, 'update'])->middleware('permission:tables');
-        Route::put('/dining-tables/{id}/status', [DiningTableController::class, 'updateStatus'])->middleware('permission:pos|tables');
-        Route::delete('/dining-tables/{id}', [DiningTableController::class, 'destroy'])->middleware('permission:tables');
+            // Dining Tables (Bàn ăn) API
+            Route::get('/dining-tables', [DiningTableController::class, 'index'])->middleware('permission:pos|tables');
+            Route::post('/dining-tables', [DiningTableController::class, 'store'])->middleware('permission:tables');
+            Route::put('/dining-tables/{id}', [DiningTableController::class, 'update'])->middleware('permission:tables');
+            Route::put('/dining-tables/{id}/status', [DiningTableController::class, 'updateStatus'])->middleware('permission:pos|tables');
+            Route::delete('/dining-tables/{id}', [DiningTableController::class, 'destroy'])->middleware('permission:tables');
+        });
 
         // Shifts API (Ca làm việc & Két tiền)
         Route::middleware('feature:enable_shifts')->group(function () {
@@ -190,31 +201,36 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/shifts', [ShiftController::class, 'index'])->middleware('permission:staffs|reports|shifts');
         });
 
-        // Staffs & Roles API
-        Route::get('/staffs', [StaffController::class, 'index'])->middleware('permission:staffs');
-        Route::post('/staffs', [StaffController::class, 'store'])->middleware(['permission:staffs', 'limit:staffs']);
-        Route::put('/staffs/{id}', [StaffController::class, 'update'])->middleware('permission:staffs');
-        Route::delete('/staffs/{id}', [StaffController::class, 'destroy'])->middleware('permission:staffs');
-        Route::get('/roles', [StaffController::class, 'indexRoles'])->middleware('permission:staffs');
-        Route::post('/roles', [StaffController::class, 'storeRole'])->middleware('permission:staffs');
-        Route::post('/roles/reset-default', [StaffController::class, 'resetDefaultRoles'])->middleware('permission:staffs');
-        Route::put('/roles/{id}', [StaffController::class, 'updateRole'])->middleware('permission:staffs');
-        Route::delete('/roles/{id}', [StaffController::class, 'destroyRole'])->middleware('permission:staffs');
+        // Staffs & Roles (Nhân viên) API
+        Route::middleware('feature:enable_staffs')->group(function () {
+            Route::get('/staffs', [StaffController::class, 'index'])->middleware('permission:staffs');
+            Route::post('/staffs', [StaffController::class, 'store'])->middleware(['permission:staffs', 'limit:staffs']);
+            Route::put('/staffs/{id}', [StaffController::class, 'update'])->middleware('permission:staffs');
+            Route::delete('/staffs/{id}', [StaffController::class, 'destroy'])->middleware('permission:staffs');
+            Route::get('/roles', [StaffController::class, 'indexRoles'])->middleware('permission:staffs');
+            Route::post('/roles', [StaffController::class, 'storeRole'])->middleware('permission:staffs');
+            Route::post('/roles/reset-default', [StaffController::class, 'resetDefaultRoles'])->middleware('permission:staffs');
+            Route::put('/roles/{id}', [StaffController::class, 'updateRole'])->middleware('permission:staffs');
+            Route::delete('/roles/{id}', [StaffController::class, 'destroyRole'])->middleware('permission:staffs');
+        });
 
         // Owner-only routes
         Route::middleware(RequireOwner::class)->group(function () {
             Route::get('/reports', [ReportController::class, 'index'])->middleware('feature:enable_reports');
-            Route::post('/products', [ProductController::class, 'store'])->middleware('limit:products');
-            Route::put('/products/{id}', [ProductController::class, 'update']);
-            Route::delete('/products/{id}', [ProductController::class, 'destroy']);
-
-            Route::post('/categories', [CategoryController::class, 'store']);
-            Route::put('/categories/{id}', [CategoryController::class, 'update']);
-            Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
-
-            Route::post('/settings', [SettingController::class, 'store']);
             Route::post('/auth/register-cashier', [AuthController::class, 'registerCashier']);
             Route::post('/auth/remove-cashier', [AuthController::class, 'removeCashier']);
+            Route::post('/settings', [SettingController::class, 'store']);
+
+            // Thực đơn (Menu)
+            Route::middleware('feature:enable_menu')->group(function () {
+                Route::post('/products', [ProductController::class, 'store'])->middleware('limit:products');
+                Route::put('/products/{id}', [ProductController::class, 'update']);
+                Route::delete('/products/{id}', [ProductController::class, 'destroy']);
+
+                Route::post('/categories', [CategoryController::class, 'store']);
+                Route::put('/categories/{id}', [CategoryController::class, 'update']);
+                Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
+            });
         });
     });
 });

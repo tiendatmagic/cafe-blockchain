@@ -39,6 +39,9 @@
     }
   </app-page-header>
 
+  @if (!stateService.hasFeature('enable_staffs')) {
+    <app-feature-blocked featureKey="enable_staffs" featureName="Nhân viên"></app-feature-blocked>
+  } @else {
   @if (stateService.web3Service.walletConnected()) {
     @if (stateService.hasPermission('staffs')) {
     
@@ -399,5 +402,6 @@
         description="Bạn cần kết nối ví Web3 để truy cập danh sách nhân viên và quản lý cấu hình phân quyền của quán."
       ></app-web3-connect-prompt>
     </div>
+  }
   }
 </div>

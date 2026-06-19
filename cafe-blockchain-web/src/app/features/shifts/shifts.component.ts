@@ -15,6 +15,7 @@ import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-g
 import { ShortAddressPipe } from '@shared/pipes/short-address.pipe';
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
+import { FeatureBlockedComponent } from '@shared/components/feature-blocked/feature-blocked.component';
 
 @Component({
   selector: 'app-shifts',
@@ -33,7 +34,8 @@ import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skel
     TabGroupComponent,
     ShortAddressPipe,
     VNDCurrencyPipe,
-    SkeletonLoaderComponent
+    SkeletonLoaderComponent,
+    FeatureBlockedComponent
   ],
   templateUrl: './shifts.component.html'
 })
@@ -87,8 +89,6 @@ export class ShiftsComponent implements OnInit {
 
   ngOnInit() {
     if (!this.stateService.hasFeature('enable_shifts')) {
-      this.stateService.triggerUpgradeModal('enable_shifts', 'Quản lý ca làm việc');
-      this.router.navigate(['/dashboard']);
       return;
     }
 

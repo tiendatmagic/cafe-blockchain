@@ -90,6 +90,9 @@
     }
   </app-page-header>
 
+  @if (!stateService.hasFeature('enable_customers')) {
+    <app-feature-blocked featureKey="enable_customers" featureName="Khách hàng"></app-feature-blocked>
+  } @else {
   @if (stateService.web3Service.walletConnected()) {
     @if (stateService.hasPermission('customers')) {
       @if (isCustomersLoading()) {
@@ -893,5 +896,6 @@
     <app-web3-connect-prompt
       [title]="'Kết nối ví Web3 để quản lý Khách hàng'"
     ></app-web3-connect-prompt>
+  }
   }
 </div>

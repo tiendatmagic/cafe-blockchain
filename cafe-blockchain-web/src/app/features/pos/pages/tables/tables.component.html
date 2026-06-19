@@ -31,6 +31,9 @@
     }
   </app-page-header>
 
+  @if (!stateService.hasFeature('enable_tables')) {
+    <app-feature-blocked featureKey="enable_tables" featureName="Sơ đồ bàn"></app-feature-blocked>
+  } @else {
   @if (stateService.web3Service.walletConnected()) {
     @if (stateService.hasPermission('tables')) {
       @if (isTablesLoading()) {
@@ -372,5 +375,6 @@
     }
 } @else {
   <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý Sơ đồ bàn'"></app-web3-connect-prompt>
+}
 }
 </div>

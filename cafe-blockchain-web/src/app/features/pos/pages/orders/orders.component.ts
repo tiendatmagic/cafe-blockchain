@@ -12,6 +12,7 @@ import { TableComponent, TableCellDirective, TableColumn } from '@shared/compone
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
+import { FeatureBlockedComponent } from '@shared/components/feature-blocked/feature-blocked.component';
 
 @Component({
   selector: 'app-orders',
@@ -28,7 +29,8 @@ import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skel
     TableCellDirective,
     IconComponent,
     TabGroupComponent,
-    SkeletonLoaderComponent
+    SkeletonLoaderComponent,
+    FeatureBlockedComponent
   ],
   templateUrl: './orders.component.html'
 })
@@ -87,6 +89,9 @@ export class OrdersComponent implements OnInit {
   public get settings() { return this.stateService.settings; }
   
   ngOnInit() {
+    if (!this.stateService.hasFeature('enable_orders')) {
+      return;
+    }
     this.refreshOrders();
   }
 

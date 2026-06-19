@@ -17,6 +17,7 @@ import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
+import { FeatureBlockedComponent } from '@shared/components/feature-blocked/feature-blocked.component';
 
 @Component({
   selector: 'app-menu',
@@ -36,7 +37,8 @@ import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skel
     CustomSelectComponent,
     IconComponent,
     TabGroupComponent,
-    SkeletonLoaderComponent
+    SkeletonLoaderComponent,
+    FeatureBlockedComponent
   ],
   templateUrl: './menu.component.html'
 })
@@ -668,6 +670,9 @@ export class MenuComponent implements OnInit, OnDestroy {
   }
 
   public ngOnInit() {
+    if (!this.stateService.hasFeature('enable_menu')) {
+      return;
+    }
     this.checkMenuRegistryOwnerPermission();
     this.loadMenuSyncLogs();
 

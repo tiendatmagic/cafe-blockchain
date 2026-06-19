@@ -73,7 +73,10 @@
   </app-page-header>
 
 
-  @if (stateService.web3Service.walletConnected()) {
+  @if (!stateService.hasFeature('enable_financials')) {
+    <app-feature-blocked featureKey="enable_financials" featureName="Thu chi tài chính"></app-feature-blocked>
+  } @else {
+    @if (stateService.web3Service.walletConnected()) {
     @if (stateService.hasPermission('financials')) {
     @if (isTransactionsLoading()) {
       <app-skeleton-loader type="financials"></app-skeleton-loader>
@@ -765,5 +768,6 @@
     }
   } @else {
     <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý Thu chi tài chính'"></app-web3-connect-prompt>
+    }
   }
 </div>

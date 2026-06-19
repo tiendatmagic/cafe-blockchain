@@ -12,7 +12,10 @@
     />
   </app-page-header>
 
-  @if (web3Service.walletConnected()) {
+  @if (!stateService.hasFeature('enable_shifts')) {
+    <app-feature-blocked featureKey="enable_shifts" featureName="Ca làm việc"></app-feature-blocked>
+  } @else {
+    @if (web3Service.walletConnected()) {
     @if (stateService.hasPermission('shifts')) {
       <!-- WIDGET CA TRỰC ĐANG HOẠT ĐỘNG / CHƯA VÀO CA SKELETON -->
       @if (stateService.isShiftsLoading()) {
@@ -653,5 +656,6 @@
     <app-web3-connect-prompt
       [title]="'Kết nối ví Web3 để quản lý ca làm việc'"
     ></app-web3-connect-prompt>
+    }
   }
 </div>

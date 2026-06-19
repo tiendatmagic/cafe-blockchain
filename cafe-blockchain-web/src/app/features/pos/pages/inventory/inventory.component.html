@@ -75,7 +75,10 @@
     }
   </app-page-header>
 
-  @if (stateService.web3Service.walletConnected()) {
+  @if (!stateService.hasFeature('enable_inventory')) {
+    <app-feature-blocked featureKey="enable_inventory" featureName="Kho hàng"></app-feature-blocked>
+  } @else {
+    @if (stateService.web3Service.walletConnected()) {
     @if (stateService.hasPermission('inventory')) {
     @if (isInventoryLoading()) {
       <app-skeleton-loader type="inventory"></app-skeleton-loader>
@@ -663,5 +666,6 @@
     }
 } @else {
   <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý Kho hàng'"></app-web3-connect-prompt>
+  }
 }
 </div>
