@@ -18,6 +18,7 @@ import { TableComponent, TableCellDirective, TableColumn } from '@shared/compone
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { CustomCheckboxComponent } from '@shared/components/custom-checkbox/custom-checkbox.component';
 import { CardComponent } from '@shared/components/card/card.component';
+import { BadgeComponent } from '@shared/components/badge/badge.component';
 
 @Component({
   selector: 'app-settings',
@@ -40,7 +41,8 @@ import { CardComponent } from '@shared/components/card/card.component';
     TableCellDirective,
     ButtonComponent,
     CustomCheckboxComponent,
-    CardComponent
+    CardComponent,
+    BadgeComponent
   ],
   templateUrl: './settings.component.html'
 })

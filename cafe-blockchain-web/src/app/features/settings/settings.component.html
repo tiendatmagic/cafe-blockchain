@@ -471,15 +471,9 @@
                       settings().voucher_contract_address === '' ||
                       !settings().voucher_contract_address
                     ) {
-                      <span
-                        class="bg-rose-500/10 text-rose-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse"
-                        >Chưa Deploy</span
-                      >
+                      <app-badge variant="danger" size="sm" rounded="full" [pulse]="true">Chưa Deploy</app-badge>
                     } @else {
-                      <span
-                        class="bg-emerald-500/10 text-emerald-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider"
-                        >Đã Cấu Hình</span
-                      >
+                      <app-badge variant="success" size="sm" rounded="full">Đã Cấu Hình</app-badge>
                     }
                   </div>
                   <div class="flex flex-col sm:flex-row gap-2">
@@ -519,15 +513,9 @@
                       >Khóa ví nóng Relayer (Private Key)</span
                     >
                     @if (!configForm().has_relayer_private_key) {
-                      <span
-                        class="bg-rose-500/10 text-rose-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider"
-                        >Chưa Cấu Hình</span
-                      >
+                      <app-badge variant="danger" size="sm" rounded="full">Chưa Cấu Hình</app-badge>
                     } @else {
-                      <span
-                        class="bg-emerald-500/10 text-emerald-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider"
-                        >Đã Cấu Hình</span
-                      >
+                      <app-badge variant="success" size="sm" rounded="full">Đã Cấu Hình</app-badge>
                     }
                   </div>
                   <div class="flex flex-col sm:flex-row gap-2">
@@ -625,20 +613,11 @@
                     >Địa chỉ Smart Contract POS (0x...)</span
                   >
                   @if (settings().contract_address === '') {
-                    <span
-                      class="bg-rose-500/10 text-rose-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse"
-                      >Chưa Deploy</span
-                    >
+                    <app-badge variant="danger" size="sm" rounded="full" [pulse]="true">Chưa Deploy</app-badge>
                   } @else if (!settings().has_synced_orders) {
-                    <span
-                      class="bg-amber-500/10 text-amber-600 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse"
-                      >Chưa sử dụng (Có thể sửa)</span
-                    >
+                    <app-badge variant="warning" size="sm" rounded="full" [pulse]="true">Chưa sử dụng (Có thể sửa)</app-badge>
                   } @else {
-                    <span
-                      class="bg-emerald-500/10 text-emerald-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider"
-                      >Đã khóa vĩnh viễn</span
-                    >
+                    <app-badge variant="success" size="sm" rounded="full">Đã khóa vĩnh viễn</app-badge>
                   }
                 </div>
                 <div class="flex flex-col sm:flex-row gap-2">
@@ -682,20 +661,11 @@
                     >Địa chỉ Smart Contract Tài chính (0x...)</span
                   >
                   @if (settings().finance_contract_address === '') {
-                    <span
-                      class="bg-rose-500/10 text-rose-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse"
-                      >Chưa Deploy</span
-                    >
+                    <app-badge variant="danger" size="sm" rounded="full" [pulse]="true">Chưa Deploy</app-badge>
                   } @else if (!settings().has_synced_transactions) {
-                    <span
-                      class="bg-amber-500/10 text-amber-600 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse"
-                      >Chưa sử dụng (Có thể sửa)</span
-                    >
+                    <app-badge variant="warning" size="sm" rounded="full" [pulse]="true">Chưa sử dụng (Có thể sửa)</app-badge>
                   } @else {
-                    <span
-                      class="bg-emerald-500/10 text-emerald-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider"
-                      >Đã khóa vĩnh viễn</span
-                    >
+                    <app-badge variant="success" size="sm" rounded="full">Đã khóa vĩnh viễn</app-badge>
                   }
                 </div>
                 <div class="flex flex-col sm:flex-row gap-2">
@@ -746,20 +716,11 @@
                     settings().menu_registry_contract_address === '' ||
                     !settings().menu_registry_contract_address
                   ) {
-                    <span
-                      class="bg-rose-500/10 text-rose-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse"
-                      >Chưa Deploy</span
-                    >
+                    <app-badge variant="danger" size="sm" rounded="full" [pulse]="true">Chưa Deploy</app-badge>
                   } @else if (settings().has_synced_menu !== '1') {
-                    <span
-                      class="bg-amber-500/10 text-amber-600 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse"
-                      >Chưa sử dụng (Có thể sửa)</span
-                    >
+                    <app-badge variant="warning" size="sm" rounded="full" [pulse]="true">Chưa sử dụng (Có thể sửa)</app-badge>
                   } @else {
-                    <span
-                      class="bg-emerald-500/10 text-emerald-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider"
-                      >Đã khóa vĩnh viễn</span
-                    >
+                    <app-badge variant="success" size="sm" rounded="full">Đã khóa vĩnh viễn</app-badge>
                   }
                 </div>
                 <div class="flex flex-col sm:flex-row gap-2">
@@ -807,15 +768,9 @@
                     >Địa chỉ Smart Contract Token Điểm Tích Lũy ($CAFE) (0x...)</span
                   >
                   @if (settings().loyalty_token_contract_address === '' || !settings().loyalty_token_contract_address) {
-                    <span
-                      class="bg-rose-500/10 text-rose-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse"
-                      >Chưa Deploy</span
-                    >
+                    <app-badge variant="danger" size="sm" rounded="full" [pulse]="true">Chưa Deploy</app-badge>
                   } @else {
-                    <span
-                      class="bg-emerald-500/10 text-emerald-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider"
-                      >Đã cấu hình</span
-                    >
+                    <app-badge variant="success" size="sm" rounded="full">Đã cấu hình</app-badge>
                   }
                 </div>
                 <div class="flex flex-col sm:flex-row gap-2">
@@ -858,15 +813,9 @@
                     >Địa chỉ Smart Contract Voucher Shop (0x...)</span
                   >
                   @if (settings().voucher_shop_contract_address === '' || !settings().voucher_shop_contract_address) {
-                    <span
-                      class="bg-rose-500/10 text-rose-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse"
-                      >Chưa Deploy</span
-                    >
+                    <app-badge variant="danger" size="sm" rounded="full" [pulse]="true">Chưa Deploy</app-badge>
                   } @else {
-                    <span
-                      class="bg-emerald-500/10 text-emerald-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider"
-                      >Đã cấu hình</span
-                    >
+                    <app-badge variant="success" size="sm" rounded="full">Đã cấu hình</app-badge>
                   }
                 </div>
                 <div class="flex flex-col sm:flex-row gap-2">
@@ -912,15 +861,9 @@
                     >Địa chỉ Smart Contract Voucher Marketplace (0x...)</span
                   >
                   @if (settings().voucher_marketplace_contract_address === '' || !settings().voucher_marketplace_contract_address) {
-                    <span
-                      class="bg-rose-500/10 text-rose-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse"
-                      >Chưa Deploy</span
-                    >
+                    <app-badge variant="danger" size="sm" rounded="full" [pulse]="true">Chưa Deploy</app-badge>
                   } @else {
-                    <span
-                      class="bg-emerald-500/10 text-emerald-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider"
-                      >Đã cấu hình</span
-                    >
+                    <app-badge variant="success" size="sm" rounded="full">Đã cấu hình</app-badge>
                   }
                 </div>
                 <div class="flex flex-col sm:flex-row gap-2">
@@ -1202,10 +1145,7 @@
                               Xóa
                             </button>
                           } @else {
-                            <span
-                              class="text-xs bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-extrabold px-2 py-0.5 rounded-lg shrink-0 uppercase tracking-wider"
-                              >Bạn</span
-                            >
+                            <app-badge variant="neutral" size="sm">Bạn</app-badge>
                           }
                         </div>
                       }
@@ -1334,10 +1274,7 @@
                               Xóa
                             </button>
                           } @else {
-                            <span
-                              class="text-xs bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-extrabold px-2 py-0.5 rounded-lg shrink-0 uppercase tracking-wider"
-                              >Bạn</span
-                            >
+                            <app-badge variant="neutral" size="sm">Bạn</app-badge>
                           }
                         </div>
                       }
@@ -1466,10 +1403,7 @@
                               Xóa
                             </button>
                           } @else {
-                            <span
-                              class="text-xs bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-extrabold px-2 py-0.5 rounded-lg shrink-0 uppercase tracking-wider"
-                              >Bạn</span
-                            >
+                            <app-badge variant="neutral" size="sm">Bạn</app-badge>
                           }
                         </div>
                       }
@@ -1598,10 +1532,7 @@
                               Xóa
                             </button>
                           } @else {
-                            <span
-                              class="text-xs bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-extrabold px-2 py-0.5 rounded-lg shrink-0 uppercase tracking-wider"
-                              >Bạn</span
-                            >
+                            <app-badge variant="neutral" size="sm">Bạn</app-badge>
                           }
                         </div>
                       }
@@ -1876,17 +1807,13 @@
                             class="text-[10px] sm:text-xs text-white/80 font-bold truncate drop-shadow-sm leading-none mt-1"
                           >
                             @if (configForm().store_status === '1') {
-                              <span
-                                class="inline-flex items-center gap-1 bg-emerald-500/80 text-white text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider"
-                              >
+                              <app-badge variant="success" size="sm" class="!bg-emerald-500/90 !text-white border-none uppercase text-[9px]">
                                 Đang mở cửa
-                              </span>
+                              </app-badge>
                             } @else {
-                              <span
-                                class="inline-flex items-center gap-1 bg-slate-500/80 text-white text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider"
-                              >
+                              <app-badge variant="neutral" size="sm" class="!bg-slate-500/90 !text-white border-none uppercase text-[9px]">
                                 Tạm đóng
-                              </span>
+                              </app-badge>
                             }
                             <span class="ml-2 font-mono"
                               >/store/{{ configForm().website_slug || 'slug' }}</span

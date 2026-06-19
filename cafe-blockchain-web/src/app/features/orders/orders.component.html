@@ -162,15 +162,9 @@
 
           <!-- Custom cell cho cột hình thức -->
           <ng-template appCell="payment_method" let-row>
-            <span
-              [class]="
-                row.payment_method === 'crypto'
-                  ? 'text-purple-600 bg-purple-50 dark:bg-purple-950/40 dark:text-purple-400 px-2 py-0.5 rounded-lg'
-                  : 'text-slate-600 bg-slate-100 dark:bg-slate-800 dark:text-slate-400 px-2 py-0.5 rounded-lg'
-              "
-            >
+            <app-badge [variant]="row.payment_method === 'crypto' ? 'info' : 'neutral'" size="sm">
               {{ getPaymentMethodText(row.payment_method) }}
-            </span>
+            </app-badge>
           </ng-template>
 
           <!-- Custom cell cho cột thời gian -->
@@ -183,32 +177,18 @@
           <!-- Custom cell cho cột trạng thái đơn -->
           <ng-template appCell="status" let-row>
             @if (row.is_verified === false) {
-              <span
-                class="bg-rose-500/15 text-rose-600 text-xs font-extrabold px-2.5 py-1 rounded-xl border border-rose-500/20 shadow-sm animate-pulse flex items-center gap-1 w-max"
-              >
-                <app-icon name="warning" class="h-4 w-4 text-amber-500 shrink-0" strokeWidth="2" />
+              <app-badge variant="danger" [pulse]="true">
+                <app-icon name="warning" class="h-4 w-4 text-amber-500 shrink-0 mr-1" strokeWidth="2" />
                 <span>DB bị can thiệp!</span>
-              </span>
+              </app-badge>
             } @else if (row.status === 'completed') {
-              <span
-                class="bg-emerald-500/10 text-emerald-500 text-xs font-extrabold px-2.5 py-1 rounded-xl"
-                >Thành công</span
-              >
+              <app-badge variant="success">Thành công</app-badge>
             } @else if (row.status === 'cancelled') {
-              <span
-                class="bg-rose-500/10 text-rose-500 text-xs font-extrabold px-2.5 py-1 rounded-xl"
-                >Đã hủy</span
-              >
+              <app-badge variant="danger">Đã hủy</app-badge>
             } @else if (row.status === 'preparing') {
-              <span
-                class="bg-blue-500/10 text-blue-500 text-xs font-extrabold px-2.5 py-1 rounded-xl animate-pulse"
-                >Đang chuẩn bị</span
-              >
+              <app-badge variant="info" [pulse]="true">Đang chuẩn bị</app-badge>
             } @else {
-              <span
-                class="bg-amber-500/10 text-amber-500 text-xs font-extrabold px-2.5 py-1 rounded-xl animate-pulse"
-                >Chờ xác nhận</span
-              >
+              <app-badge variant="warning" [pulse]="true">Chờ xác nhận</app-badge>
             }
           </ng-template>
 
@@ -231,16 +211,14 @@
             } @else if (row.status === 'completed' && row.blockchain_status !== 'failed') {
               @if (row.is_verified === false) {
                 <div class="flex flex-col gap-1 items-start">
-                  <span
-                    class="px-2 py-0.5 rounded-lg bg-red-500/10 text-red-500 font-bold text-xs flex items-center gap-1 border border-red-500/15 shadow-sm animate-pulse"
-                  >
+                  <app-badge variant="danger" size="sm" [pulse]="true">
                     <app-icon
                       name="warning"
-                      class="h-4 w-4 text-amber-500 shrink-0"
+                      class="h-4 w-4 text-amber-500 shrink-0 mr-1"
                       [strokeWidth]="2"
                     />
                     <span>Dữ liệu bị thay đổi!</span>
-                  </span>
+                  </app-badge>
                   <button [disabled]="true" class="btn-cancel btn-sm">
                     <span>Bị khóa đồng bộ</span>
                   </button>
@@ -511,10 +489,7 @@
                         >
                           <span class="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                             <span>Đồng bộ Blockchain lập tức</span>
-                            <span
-                              class="text-[10px] bg-purple-100 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 px-1.5 py-0.5 rounded border border-purple-200/50 dark:border-purple-800/30 uppercase tracking-wide font-black"
-                              >Web3</span
-                            >
+                            <app-badge variant="info" size="sm" rounded="sm">Web3</app-badge>
                           </span>
                         </app-custom-checkbox>
                       </div>
@@ -731,10 +706,9 @@
                                 >{{ item.quantity }}x {{ item.product?.name }}</span
                               >
                               @if (item.variant) {
-                                <span
-                                  class="text-[10px] bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0"
-                                  >{{ item.variant.variant_name }}</span
-                                >
+                                <app-badge variant="info" size="sm" rounded="sm" class="shrink-0">
+                                  {{ item.variant.variant_name }}
+                                </app-badge>
                               }
                             </div>
                             <span class="font-black text-slate-800 dark:text-white font-mono">{{
@@ -777,11 +751,9 @@
                             selectedOrderDetails()?.voucher_nft_token_id !== null &&
                             selectedOrderDetails()?.voucher_nft_token_id !== undefined
                           ) {
-                            <span
-                              class="text-[10px] bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider font-mono border border-purple-200/20"
-                            >
+                            <app-badge variant="info" size="sm" rounded="sm" class="font-mono">
                               NFT Voucher #{{ selectedOrderDetails()?.voucher_nft_token_id }}
-                            </span>
+                            </app-badge>
                           }
                         </span>
                         <span class="font-mono"

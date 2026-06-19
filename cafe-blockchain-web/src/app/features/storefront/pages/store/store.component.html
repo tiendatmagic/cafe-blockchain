@@ -379,11 +379,14 @@
                         class="absolute top-3 left-3 flex flex-wrap gap-1 max-w-[calc(100%-48px)]"
                       >
                         @for (cat of product.categories; track cat.id) {
-                          <span
-                            class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm text-[var(--dynamic-primary)] text-[10px] font-extrabold px-2 py-0.5 rounded-xl shadow-sm border border-[var(--dynamic-primary)]/10"
+                          <app-badge
+                            variant="primary"
+                            size="sm"
+                            rounded="xl"
+                            class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm shadow-sm"
                           >
                             {{ cat.name }}
-                          </span>
+                          </app-badge>
                         }
                       </div>
                     </div>
@@ -487,11 +490,13 @@
                           <!-- Badges danh mục -->
                           <div class="flex flex-wrap gap-1">
                             @for (cat of product.categories; track cat.id) {
-                              <span
-                                class="bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] text-[9px] font-extrabold px-1.5 py-0.5 rounded-md border border-[var(--dynamic-primary)]/10"
+                              <app-badge
+                                variant="primary"
+                                size="sm"
+                                rounded="md"
                               >
                                 {{ cat.name }}
-                              </span>
+                              </app-badge>
                             }
                           </div>
                         </div>
@@ -626,11 +631,14 @@
                         {{ item.product.name }}
                       </h4>
                       @if (item.variant) {
-                        <span
-                          class="text-[10px] bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] px-2 py-0.5 rounded-md font-bold mt-1 inline-block"
+                        <app-badge
+                          variant="primary"
+                          size="sm"
+                          rounded="md"
+                          class="mt-1"
                         >
                           {{ item.variant.variant_name }}
-                        </span>
+                        </app-badge>
                       }
                       <!-- Ô nhập ghi chú cho từng món tương tự POS thu ngân -->
                       <div class="mt-1.5 relative">
@@ -726,20 +734,28 @@
               />
             </div>
 
-            <!-- Địa chỉ giao hàng -->
+            <!-- Địa chỉ giao hàng / Số bàn -->
             <div class="space-y-1.5">
               <label
                 class="text-xs sm:text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-wide block"
-                >Địa chỉ giao hàng <span class="text-rose-500">*</span></label
               >
+                {{ isQrTable() ? 'Bàn ăn của bạn' : 'Địa chỉ giao hàng' }}
+                <span class="text-rose-500">*</span>
+              </label>
               <input
                 type="text"
                 [ngModel]="orderForm().table_number"
                 (ngModelChange)="orderForm.update((f) => ({ ...f, table_number: $event }))"
-                placeholder="Nhập địa chỉ giao hàng của bạn (bắt buộc)"
+                [placeholder]="isQrTable() ? '' : 'Nhập địa chỉ giao hàng của bạn (bắt buộc)'"
                 class="form-input"
+                [disabled]="isQrTable()"
                 required
               />
+              @if (isQrTable()) {
+                <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold block mt-1">
+                  ✓ Hệ thống tự động nhận diện bàn ăn qua mã QR.
+                </span>
+              }
             </div>
 
             <!-- Ghi chú chung -->
@@ -1223,11 +1239,14 @@
               <span class="text-lg font-black text-[var(--dynamic-primary)] font-mono block mt-1">
                 {{ lastOrderCode() }}
               </span>
-              <span
-                class="text-[9px] bg-amber-500/10 text-amber-600 dark:text-amber-400 font-black px-2.5 py-0.5 rounded-full mt-2 inline-block uppercase tracking-wider"
+              <app-badge
+                variant="warning"
+                size="sm"
+                rounded="full"
+                class="mt-2 uppercase tracking-wider"
               >
                 Chờ quán duyệt
-              </span>
+              </app-badge>
             </div>
 
             <div class="pt-2">

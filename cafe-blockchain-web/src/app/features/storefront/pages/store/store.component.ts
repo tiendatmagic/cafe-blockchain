@@ -14,6 +14,7 @@ import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { CardComponent } from '@shared/components/card/card.component';
+import { BadgeComponent } from '@shared/components/badge/badge.component';
 
 
 interface CartItem {
@@ -26,7 +27,7 @@ interface CartItem {
 @Component({
   selector: 'app-store',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, PaginationComponent, VNDCurrencyPipe, ThemeToggleComponent, DrawerComponent, Web3ConnectPromptComponent, IconComponent, TabGroupComponent, ButtonComponent, CardComponent],
+  imports: [CommonModule, FormsModule, RouterModule, PaginationComponent, VNDCurrencyPipe, ThemeToggleComponent, DrawerComponent, Web3ConnectPromptComponent, IconComponent, TabGroupComponent, ButtonComponent, CardComponent, BadgeComponent],
   templateUrl: './store.component.html',
   styleUrls: []
 })
@@ -84,6 +85,7 @@ export class StoreComponent implements OnInit {
     selected_payment_method_id: null
   });
   public readonly isSubmittingOrder = signal<boolean>(false);
+  public readonly isQrTable = signal<boolean>(false);
 
   // Computed values
   public readonly categoryOptions = computed(() => {
@@ -214,6 +216,17 @@ export class StoreComponent implements OnInit {
         this.isError.set(true);
         this.errorMessage.set('Đường dẫn không hợp lệ!');
         this.isLoading.set(false);
+      }
+    });
+
+    // Đọc query parameters (ví dụ: table từ QR code)
+    this.route.queryParams.subscribe(params => {
+      const table = params['table'];
+      if (table) {
+        this.orderForm.update(f => ({ ...f, table_number: table }));
+        this.isQrTable.set(true);
+      } else {
+        this.isQrTable.set(false);
       }
     });
 

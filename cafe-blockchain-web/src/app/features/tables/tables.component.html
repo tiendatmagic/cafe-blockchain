@@ -1,6 +1,9 @@
 <div class="space-y-6 p-4 sm:p-6 max-w-[1530px] mx-auto">
   <!-- Header tiêu đề tab -->
-  <app-page-header title="Quản lý sơ đồ bàn" description="Thiết lập sơ đồ khu vực và bàn ăn cho quán. In mã QR gọi món trực tuyến và quản lý trạng thái trực quan.">
+  <app-page-header
+    title="Quản lý sơ đồ bàn"
+    description="Thiết lập sơ đồ khu vực và bàn ăn cho quán. In mã QR gọi món trực tuyến và quản lý trạng thái trực quan."
+  >
     <app-icon
       icon
       name="tables"
@@ -9,26 +12,25 @@
     />
     @if (stateService.web3Service.walletConnected()) {
       <div class="flex items-center gap-3 shrink-0 flex-wrap">
-      <button
-        (click)="openAddAreaModal()"
-        class="px-4.5 py-2.5 bg-[var(--dynamic-secondary)]/10 hover:bg-[var(--dynamic-secondary)]/20 border border-[var(--dynamic-secondary)]/20 text-[var(--dynamic-secondary)] font-bold rounded-xl text-sm transition-all flex items-center gap-1.5"
-      >
-        <span>+ Thêm Khu vực</span>
-      </button>
+        <button
+          app-button
+          variant="secondary"
+          (click)="openAddAreaModal()"
+          class="hover:scale-[1.02]"
+        >
+          <app-icon name="plus" class="h-4.5 w-4.5 shrink-0" strokeWidth="2.5" />
+          <span>Thêm Khu vực</span>
+        </button>
 
-      <button
-        app-button
-        variant="primary"
-        (click)="openAddTableModal()"
-        class="hover:scale-[1.02]"
-      >
-        <app-icon
-          name="plus"
-          class="h-4.5 w-4.5 shrink-0"
-          strokeWidth="2.5"
-        />
-        <span>Thêm Bàn ăn</span>
-      </button>
+        <button
+          app-button
+          variant="primary"
+          (click)="openAddTableModal()"
+          class="hover:scale-[1.02]"
+        >
+          <app-icon name="plus" class="h-4.5 w-4.5 shrink-0" strokeWidth="2.5" />
+          <span>Thêm Bàn ăn</span>
+        </button>
       </div>
     }
   </app-page-header>
@@ -38,351 +40,568 @@
       @if (isTablesLoading()) {
         <app-skeleton-loader type="tables"></app-skeleton-loader>
       } @else {
-        <!-- THANH BỘ LỌC SƠ ĐỒ BÀN (KHU VỰC VÀ TRẠNG THÁI) -->
-        <div app-card class="flex flex-col sm:flex-row gap-5 justify-between items-start sm:items-center">
-          <div class="flex flex-col gap-1.5">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Chọn khu vực để xem</span>
-            <app-tab-group
-              [options]="areaFilterOptions()"
-              [activeValue]="activeAreaFilter()"
-              (valueChange)="activeAreaFilter.set($event)"
-              [flex]="false"
-            ></app-tab-group>
-          </div>
-
-          <!-- Lọc trạng thái bàn -->
-          <div class="flex flex-col gap-1.5">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Trạng thái bàn</span>
-            <app-tab-group
-              [options]="tableStatusFilterOptions"
-              [activeValue]="tableStatusFilter()"
-              (valueChange)="tableStatusFilter.set($event)"
-            ></app-tab-group>
-          </div>
-        </div>
-
-        <div class="space-y-6 pt-4">
-          <!-- SƠ ĐỒ LƯỚI BÀN ĂN (RICH AESTHETICS GRID) -->
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
-            @if (filteredDiningTables().length === 0) {
-              <div app-card class="col-span-full py-16 text-center flex flex-col items-center justify-center gap-3">
-                <app-icon
-                  name="archive"
-                  class="h-10 w-10 text-slate-300 dark:text-slate-700"
-                  strokeWidth="2"
-                />
-                <span class="text-xs font-bold text-slate-400">Không tìm thấy bàn nào phù hợp với bộ lọc hiện tại.</span>
-              </div>
-            }
-            @for (table of filteredDiningTables(); track table.id) {
+        <div class="flex flex-col md:flex-row gap-6 items-start">
+          <!-- CỘT TRÁI: QUẢN LÝ VÀ LỌC KHU VỰC -->
+          <div class="w-full md:w-64 lg:w-72 md:shrink-0 space-y-4">
+            <div app-card class="p-4 space-y-4">
               <div
-                app-card
-                [interactive]="true"
-                class="relative group overflow-hidden flex flex-col justify-between p-4.5"
-                [class]="
-                  table.status === 'using'
-                    ? 'border-amber-400 dark:border-amber-900/60 bg-amber-500/[0.02]'
-                    : ''
-                "
+                class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-3 flex-wrap gap-2"
               >
-                <div class="flex items-start justify-between">
-                  <!-- Tên bàn và Khu vực -->
-                  <div class="flex flex-col min-w-0">
-                    <span class="font-black text-slate-800 dark:text-white text-base truncate">{{ table.name }}</span>
-                    <span class="text-xs text-slate-400 font-bold tracking-wide truncate mt-0.5">{{ table.area?.name || 'Khu vực khác' }}</span>
-                  </div>
-
-                  <!-- Badge Trạng thái -->
-                  <span
-                    class="w-2.5 h-2.5 rounded-full shrink-0 animate-pulse"
-                    [class]="
-                      table.status === 'using'
-                        ? 'bg-amber-500 shadow-md shadow-amber-500/20'
-                        : 'bg-emerald-500 shadow-md shadow-emerald-500/20'
-                    "
-                  ></span>
-                </div>
-
-                <!-- QR code mockup ở giữa thẻ bàn -->
-                <div class="py-4.5 flex items-center justify-center">
-                  <div
-                    class="w-16 h-16 bg-slate-100 dark:bg-slate-950 p-1.5 rounded-xl border border-slate-200/50 dark:border-slate-800/50 relative group/qr flex items-center justify-center cursor-pointer hover:border-purple-500 transition-colors"
-                    title="In QR bàn"
-                  >
-                    <!-- Vẽ QR mockup bằng SVG -->
-                    <app-icon
-                      name="qr-code"
-                      class="w-full h-full text-slate-800 dark:text-slate-300"
-                      [solid]="true"
-                    />
-                    <div
-                      class="absolute inset-0 bg-[var(--color-primary)]/90 text-white font-extrabold text-[8px] tracking-widest flex items-center justify-center opacity-0 group-hover/qr:opacity-100 rounded-xl transition-opacity uppercase leading-none"
-                    >
-                      In QR
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 2 Nút hành động Direct -->
-                <div
-                  class="flex gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-800/60 w-full justify-between items-center text-xs shrink-0"
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block"
+                  >Khu vực quán</span
                 >
-                  <button
-                    (click)="toggleTableStatusDirect(table)"
-                    [disabled]="isUpdatingTableStatus()"
-                    [class]="
-                      table.status === 'using'
-                        ? 'text-amber-600 hover:text-amber-700'
-                        : 'text-emerald-600 hover:text-emerald-700'
-                    "
-                    class="font-extrabold tracking-wide hover:underline text-xs disabled:opacity-50"
-                  >
-                    {{ table.status === 'using' ? 'Trống bàn' : 'Mở bàn' }}
-                  </button>
-                  <div class="flex items-center gap-2">
-                    <button
-                      app-button
-                      variant="secondary"
-                      size="sm"
-                      (click)="openEditTableModal(table)"
-                    >
-                      Sửa
-                    </button>
-                    <button
-                      app-button
-                      variant="danger-light"
-                      size="sm"
-                      (click)="deleteTable(table)"
-                    >
-                      Xóa
-                    </button>
-                  </div>
+                <app-badge variant="primary"> {{ areas().length }} khu vực </app-badge>
+              </div>
+
+              <!-- Nút Thêm khu vực nhanh -->
+              <button
+                app-button
+                variant="primary"
+                size="sm"
+                (click)="openAddAreaModal()"
+                class="btn-full"
+              >
+                <app-icon name="plus" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
+                <span>Thêm Khu vực</span>
+              </button>
+
+              <!-- Danh sách khu vực dạng nút dọc -->
+              <div
+                class="space-y-1.5 max-h-[300px] md:max-h-[500px] overflow-y-auto pr-1 no-scrollbar"
+              >
+                <!-- Tùy chọn Tất cả khu vực -->
+                <div
+                  (click)="activeAreaFilter.set('all')"
+                  [class]="
+                    activeAreaFilter() === 'all'
+                      ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)] border-[var(--color-primary)]/30 dark:border-[var(--color-primary)]/30 font-bold'
+                      : 'hover:bg-slate-50 dark:hover:bg-slate-950 border border-slate-100 dark:border-slate-900/60 text-slate-700 dark:text-slate-300 font-semibold'
+                  "
+                  class="flex items-center justify-between p-3 rounded-xl border text-xs cursor-pointer transition-all active:scale-[0.99]"
+                >
+                  <span>Tất cả khu vực</span>
+                  <app-badge variant="neutral" size="sm">
+                    {{ diningTables().length }}
+                  </app-badge>
                 </div>
-              </div>
-            }
-          </div>
 
-          <!-- WIDGET QUẢN LÝ KHU VỰC ĐỘNG DÀNH CHO ADMIN (FULL WIDTH) -->
-          <div class="mt-8 pt-6 border-t border-slate-200/60 dark:border-slate-800/60">
-            <div app-card class="space-y-4">
-              <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-4 flex-wrap gap-3">
-                <h4 class="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
-                  <app-icon
-                    name="archive"
-                    class="h-5 w-5 text-slate-500"
-                    strokeWidth="2"
-                  />
-                  <span>Quản lý danh sách Khu vực</span>
-                  <span class="text-xs font-bold text-[var(--color-primary)] bg-[var(--color-primary)]/10 dark:bg-[var(--color-primary)]/20 dark:text-[var(--color-secondary)] px-2.5 py-1 rounded-xl">
-                    {{ areas().length }} khu vực
-                  </span>
-                </h4>
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-                @if (areas().length === 0) {
-                  <div class="col-span-full text-center py-6 text-xs text-slate-400 italic">
-                    Chưa có khu vực nào được thiết lập.
-                  </div>
-                }
+                <!-- Danh sách các khu vực cụ thể -->
                 @for (area of areas(); track area.id) {
-                  <div class="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-900/60">
-                    <span class="text-sm font-extrabold text-slate-700 dark:text-slate-300 truncate pr-2">
-                      {{ area.name }}
-                    </span>
-                    <div class="flex items-center gap-2 shrink-0">
+                  <div
+                    (click)="activeAreaFilter.set(area.id.toString())"
+                    [class]="
+                      activeAreaFilter() === area.id.toString()
+                        ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)] border-[var(--color-primary)]/30 dark:border-[var(--color-primary)]/30 font-bold'
+                        : 'hover:bg-slate-50 dark:hover:bg-slate-950 border border-slate-100 dark:border-slate-900/60 text-slate-700 dark:text-slate-300 font-semibold'
+                    "
+                    class="flex items-center justify-between p-3 rounded-xl border text-xs cursor-pointer transition-all active:scale-[0.99] group/area"
+                  >
+                    <span class="truncate pr-2">{{ area.name }}</span>
+
+                    <div class="flex items-center gap-1 shrink-0">
+                      <!-- Nút Sửa / Xóa khu vực (Chỉ hiện khi hover hoặc gọn gàng) -->
                       <button
-                        app-button
-                        variant="secondary"
-                        size="sm"
-                        (click)="openEditAreaModal(area)"
+                        (click)="openEditAreaModal(area); $event.stopPropagation()"
+                        class="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors opacity-0 group-hover/area:opacity-100"
+                        title="Sửa khu vực"
                       >
-                        Sửa
+                        <app-icon name="edit" class="w-3.5 h-3.5" strokeWidth="2.5" />
                       </button>
                       <button
-                        app-button
-                        variant="danger-light"
-                        size="sm"
-                        (click)="deleteArea(area)"
+                        (click)="deleteArea(area); $event.stopPropagation()"
+                        class="p-1 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors opacity-0 group-hover/area:opacity-100"
+                        title="Xóa khu vực"
                       >
-                        Xóa
+                        <app-icon name="trash" class="w-3.5 h-3.5" />
                       </button>
+                      <app-badge variant="neutral" size="sm" class="group-hover/area:hidden">
+                        {{ area.tables_count || 0 }}
+                      </app-badge>
                     </div>
                   </div>
                 }
               </div>
             </div>
           </div>
+
+          <!-- CỘT PHẢI: LỌC TRẠNG THÁI VÀ LƯỚI BÀN ĂN -->
+          <div class="flex-1 w-full space-y-4">
+            <!-- Thanh bộ lọc trạng thái và tìm kiếm/lọc -->
+            <div
+              app-card
+              class="flex flex-col sm:flex-row gap-5 justify-between items-stretch sm:items-end"
+            >
+              <!-- Lọc trạng thái bàn ăn -->
+              <div class="flex flex-col gap-1.5 w-full sm:w-auto">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider"
+                  >Trạng thái</span
+                >
+                <app-tab-group
+                  [options]="tableStatusFilterOptions"
+                  [activeValue]="tableStatusFilter()"
+                  (valueChange)="tableStatusFilter.set($event)"
+                  containerClass="w-full sm:w-auto"
+                ></app-tab-group>
+              </div>
+
+              <!-- Tìm kiếm & Lọc bàn ăn -->
+              <div class="flex flex-col gap-1.5 w-full sm:w-72 shrink-0">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider"
+                  >Tìm kiếm bàn ăn</span
+                >
+                <div class="flex items-center gap-2 w-full">
+                  <div class="relative flex-1">
+                    <input
+                      type="text"
+                      [ngModel]="tableSearchQuery()"
+                      (ngModelChange)="tableSearchQuery.set($event)"
+                      placeholder="Tìm bàn ăn..."
+                      class="w-full search-input"
+                    />
+                    <app-icon
+                      name="search"
+                      class="absolute left-3 top-3.5 h-4 w-4 text-slate-400"
+                      strokeWidth="2.5"
+                    />
+                  </div>
+                  <button
+                    app-button
+                    variant="primary"
+                    (click)="triggerFilter()"
+                    class="hover:scale-[1.02] flex items-center gap-1.5 shrink-0"
+                  >
+                    <app-icon name="filter" class="h-4.5 w-4.5 shrink-0" strokeWidth="2.5" />
+                    <span>Lọc</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- SƠ ĐỒ LƯỚI BÀN ĂN (RICH AESTHETICS GRID) -->
+            <div
+              class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-4"
+            >
+              @if (filteredDiningTables().length === 0) {
+                <div
+                  app-card
+                  class="col-span-full py-16 text-center flex flex-col items-center justify-center gap-3 w-full"
+                >
+                  <app-icon
+                    name="archive"
+                    class="h-10 w-10 text-slate-300 dark:text-slate-700"
+                    strokeWidth="2"
+                  />
+                  <span class="text-xs font-bold text-slate-400"
+                    >Không tìm thấy bàn nào phù hợp với bộ lọc hiện tại.</span
+                  >
+                </div>
+              }
+              @for (table of filteredDiningTables(); track table.id) {
+                <div
+                  app-card
+                  [interactive]="true"
+                  class="relative flex flex-col justify-between p-4.5 group/table"
+                  [class]="
+                    table.status === 'using'
+                      ? 'border-amber-400/80 dark:border-amber-900/60 bg-amber-500/[0.01]'
+                      : 'border-slate-200/50 dark:border-slate-800/50'
+                  "
+                >
+                  <div class="flex items-start justify-between">
+                    <!-- Tên bàn và Khu vực -->
+                    <div class="flex flex-col min-w-0">
+                      <span class="font-black text-slate-800 dark:text-white text-base truncate">{{
+                        table.name
+                      }}</span>
+                      <span
+                        class="text-xs text-slate-400 font-bold tracking-wide truncate mt-0.5"
+                        >{{ table.area?.name || 'Khu vực khác' }}</span
+                      >
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                      <!-- Badge Trạng thái -->
+                      <span
+                        class="w-2.5 h-2.5 rounded-full shrink-0 animate-pulse"
+                        [class]="
+                          table.status === 'using'
+                            ? 'bg-amber-500 shadow-md shadow-amber-500/20'
+                            : 'bg-emerald-500 shadow-md shadow-emerald-500/20'
+                        "
+                      ></span>
+
+                      <!-- Nút menu ba chấm đứng -->
+                      <div class="relative shrink-0">
+                        <button
+                          (click)="toggleDropdown(table.id, $event)"
+                          class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        >
+                          <app-icon name="dots-vertical" class="w-4 h-4" strokeWidth="3" />
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        @if (activeDropdownTableId() === table.id) {
+                          <div
+                            (click)="activeDropdownTableId.set(null)"
+                            class="fixed inset-0 z-30"
+                          ></div>
+                          <div
+                            class="absolute right-0 mt-1 w-44 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 rounded-xl shadow-lg py-1.5 z-40 animate-in fade-in slide-in-from-top-2 duration-150 text-left"
+                          >
+                            <button
+                              (click)="openQrModal(table)"
+                              class="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2"
+                            >
+                              <app-icon name="qr-code" class="w-4 h-4 text-slate-400" />
+                              <span>Xem mã QR</span>
+                            </button>
+                            <button
+                              (click)="downloadTableQrCode(table); activeDropdownTableId.set(null)"
+                              class="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2"
+                            >
+                              <app-icon name="download" class="w-4 h-4 text-slate-400" />
+                              <span>Tải ảnh QR</span>
+                            </button>
+                            <button
+                              (click)="
+                                toggleTableStatusDirect(table); activeDropdownTableId.set(null)
+                              "
+                              class="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2"
+                            >
+                              <app-icon
+                                [name]="table.status === 'using' ? 'home' : 'check-circle'"
+                                class="w-4 h-4 text-slate-400"
+                              />
+                              <span>{{
+                                table.status === 'using'
+                                  ? 'Đổi sang bàn trống'
+                                  : 'Đổi sang đang dùng'
+                              }}</span>
+                            </button>
+                            <button
+                              (click)="openEditTableModal(table); activeDropdownTableId.set(null)"
+                              class="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2"
+                            >
+                              <app-icon
+                                name="edit"
+                                class="w-4 h-4 text-slate-400"
+                                strokeWidth="2.5"
+                              />
+                              <span>Sửa tên bàn</span>
+                            </button>
+                            <div
+                              class="border-t border-slate-100 dark:border-slate-800/80 my-1"
+                            ></div>
+                            <button
+                              (click)="deleteTable(table); activeDropdownTableId.set(null)"
+                              class="w-full text-left px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 flex items-center gap-2"
+                            >
+                              <app-icon name="trash" class="w-4 h-4" />
+                              <span>Xóa bàn ăn</span>
+                            </button>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- QR code mockup ở giữa thẻ bàn (Hover để xem mã QR thật) -->
+                  <div class="py-4.5 flex items-center justify-center">
+                    <div
+                      (click)="openQrModal(table)"
+                      class="w-16 h-16 bg-slate-100 dark:bg-slate-950 p-1.5 rounded-xl border border-slate-200/50 dark:border-slate-800/50 relative group/qr flex items-center justify-center cursor-pointer hover:border-purple-500 transition-colors"
+                      title="Xem QR code của bàn"
+                    >
+                      <app-icon
+                        name="qr-code"
+                        class="w-full h-full text-slate-800 dark:text-slate-300"
+                        [solid]="true"
+                      />
+                      <div
+                        class="absolute inset-0 bg-[var(--color-primary)]/90 text-white font-extrabold text-[8px] tracking-widest flex items-center justify-center opacity-0 group-hover/qr:opacity-100 rounded-xl transition-opacity uppercase leading-none"
+                      >
+                        Xem QR
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Nút hành động chính (Mở bàn / Bán hàng) -->
+                  <div
+                    class="pt-2 border-t border-slate-100 dark:border-slate-800/60 w-full shrink-0"
+                  >
+                    @if (table.status === 'using') {
+                      <button
+                        app-button
+                        variant="primary"
+                        size="sm"
+                        (click)="openPosForTable(table)"
+                        class="w-full justify-center text-xs font-black shadow-md shadow-[var(--color-primary)]/10"
+                      >
+                        Bán hàng & Thanh toán
+                      </button>
+                    } @else {
+                      <button
+                        app-button
+                        variant="secondary"
+                        size="sm"
+                        (click)="openPosForTable(table)"
+                        class="w-full justify-center text-xs font-extrabold border-[var(--color-primary)]/15 text-[var(--color-primary)] bg-[var(--color-primary)]/5"
+                      >
+                        Mở bàn phục vụ
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
         </div>
       }
 
-<!-- ==================== MODALS PHÒNG BÀN ==================== -->
+      <!-- ==================== MODALS PHÒNG BÀN ==================== -->
 
-<!-- Modal Khu vực -->
-<app-modal
-  [isOpen]="isAreaModalOpen()"
-  [title]="areaModalType() === 'add' ? 'Thêm khu vực mới' : 'Cập nhật khu vực'"
-  (close)="closeAreaModal()"
-  size="sm"
->
-  <!-- Body Form -->
-  <div class="space-y-4">
-    <div class="space-y-1.5">
-      <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-        >Tên khu vực <span class="text-rose-500">*</span></label
+      <!-- Modal Khu vực -->
+      <app-modal
+        [isOpen]="isAreaModalOpen()"
+        [title]="areaModalType() === 'add' ? 'Thêm khu vực mới' : 'Cập nhật khu vực'"
+        (close)="closeAreaModal()"
+        size="sm"
       >
-      <input
-        type="text"
-        [(ngModel)]="areaForm().name"
-        placeholder="Ví dụ: Tầng 1, Sân vườn, VIP Room..."
-        class="form-input"
-      />
-    </div>
-  </div>
+        <!-- Body Form -->
+        <div class="space-y-4">
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+              >Tên khu vực <span class="text-rose-500">*</span></label
+            >
+            <input
+              type="text"
+              [(ngModel)]="areaForm().name"
+              placeholder="Ví dụ: Tầng 1, Sân vườn, VIP Room..."
+              class="form-input"
+            />
+          </div>
+        </div>
 
-  <!-- Footer Buttons -->
-  <div class="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800/60 mt-5">
-    <button
-      app-button
-      variant="cancel"
-      (click)="closeAreaModal()"
-      [disabled]="isAreaSaving()"
-      class="flex-1"
-    >
-      Hủy
-    </button>
-    <button
-      app-button
-      variant="primary"
-      [loading]="isAreaSaving()"
-      (click)="saveArea()"
-      [disabled]="isAreaSaving()"
-      class="flex-1"
-    >
-      <span>Lưu khu vực</span>
-    </button>
-  </div>
-</app-modal>
+        <!-- Footer Buttons -->
+        <div class="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800/60 mt-5">
+          <button
+            app-button
+            variant="cancel"
+            (click)="closeAreaModal()"
+            [disabled]="isAreaSaving()"
+            class="flex-1"
+          >
+            Hủy
+          </button>
+          <button
+            app-button
+            variant="primary"
+            [loading]="isAreaSaving()"
+            (click)="saveArea()"
+            [disabled]="isAreaSaving()"
+            class="flex-1"
+          >
+            <span>Lưu khu vực</span>
+          </button>
+        </div>
+      </app-modal>
 
-<!-- Modal Bàn ăn -->
-<app-modal
-  [isOpen]="isTableModalOpen()"
-  [title]="tableModalType() === 'add' ? 'Thêm bàn ăn mới' : 'Cập nhật bàn ăn'"
-  (close)="closeTableModal()"
-  size="sm"
->
-  <!-- Body Form -->
-  <div class="space-y-4">
-    <!-- Tên bàn ăn -->
-    <div class="space-y-1.5">
-      <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-        >Tên bàn ăn <span class="text-rose-500">*</span></label
+      <!-- Modal Bàn ăn -->
+      <app-modal
+        [isOpen]="isTableModalOpen()"
+        [title]="tableModalType() === 'add' ? 'Thêm bàn ăn mới' : 'Cập nhật bàn ăn'"
+        (close)="closeTableModal()"
+        size="sm"
       >
-      <input
-        type="text"
-        [(ngModel)]="tableForm().name"
-        placeholder="Ví dụ: Bàn 01, Bàn Ngoài trời..."
-        class="form-input"
-      />
-    </div>
+        <!-- Body Form -->
+        <div class="space-y-4">
+          <!-- Tên bàn ăn -->
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+              >Tên bàn ăn <span class="text-rose-500">*</span></label
+            >
+            <input
+              type="text"
+              [(ngModel)]="tableForm().name"
+              placeholder="Ví dụ: Bàn 01, Bàn Ngoài trời..."
+              class="form-input"
+            />
+          </div>
 
-    <!-- Chọn khu vực -->
-    <div class="space-y-1.5">
-      <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-        >Chọn khu vực trực thuộc <span class="text-rose-500">*</span></label
+          <!-- Chọn khu vực -->
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+              >Chọn khu vực trực thuộc <span class="text-rose-500">*</span></label
+            >
+            <app-custom-select
+              [(value)]="tableForm().area_id"
+              [options]="tableAreaOptions()"
+              valueKey="id"
+              labelKey="name"
+              placeholder="-- Chọn khu vực --"
+            ></app-custom-select>
+          </div>
+
+          <!-- Trạng thái mặc định -->
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+              >Trạng thái bàn</label
+            >
+            <app-custom-select
+              [(value)]="tableForm().status"
+              [options]="[
+                { value: 'empty', label: 'Bàn trống (Trống)' },
+                { value: 'using', label: 'Đang sử dụng (Bận)' },
+              ]"
+              valueKey="value"
+              labelKey="label"
+            ></app-custom-select>
+          </div>
+        </div>
+
+        <!-- Footer Buttons -->
+        <div class="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800/60 mt-5">
+          <button
+            app-button
+            variant="cancel"
+            (click)="closeTableModal()"
+            [disabled]="isTableSaving()"
+            class="flex-1"
+          >
+            Hủy
+          </button>
+          <button
+            app-button
+            variant="primary"
+            [loading]="isTableSaving()"
+            (click)="saveTable()"
+            [disabled]="isTableSaving()"
+            class="flex-1"
+          >
+            <span>Lưu bàn ăn</span>
+          </button>
+        </div>
+      </app-modal>
+
+      <!-- Modal Xác nhận Xóa Khu vực -->
+      <app-confirm-modal
+        [isOpen]="isDeleteAreaConfirmOpen()"
+        title="Xác nhận xóa khu vực"
+        [confirmText]="'Xác nhận xóa'"
+        [isSubmitting]="stateService.isLoading()"
+        (confirm)="confirmDeleteArea()"
+        (cancel)="isDeleteAreaConfirmOpen.set(false)"
       >
-      <app-custom-select
-        [(value)]="tableForm().area_id"
-        [options]="tableAreaOptions()"
-        valueKey="id"
-        labelKey="name"
-        placeholder="-- Chọn khu vực --"
-      ></app-custom-select>
-    </div>
+        <p class="text-xs text-slate-400 dark:text-slate-500 font-semibold leading-relaxed">
+          Bạn có chắc chắn muốn xóa khu vực
+          <strong class="text-slate-800 dark:text-white">{{ deletingArea()?.name }}</strong> thuộc
+          quán
+          <strong class="text-[var(--dynamic-primary)]">{{
+            stateService.settings().store_name
+          }}</strong
+          >? Tất cả các bàn trong khu vực cũng sẽ bị xóa vĩnh viễn khỏi hệ thống.
+        </p>
+      </app-confirm-modal>
 
-    <!-- Trạng thái mặc định -->
-    <div class="space-y-1.5">
-      <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-        >Trạng thái bàn</label
+      <!-- Modal Xác nhận Xóa Bàn ăn -->
+      <app-confirm-modal
+        [isOpen]="isDeleteTableConfirmOpen()"
+        title="Xác nhận xóa bàn ăn"
+        [confirmText]="'Xác nhận xóa'"
+        [isSubmitting]="stateService.isLoading()"
+        (confirm)="confirmDeleteTable()"
+        (cancel)="isDeleteTableConfirmOpen.set(false)"
       >
-      <app-custom-select
-        [(value)]="tableForm().status"
-        [options]="[
-          { value: 'empty', label: 'Bàn trống (Trống)' },
-          { value: 'using', label: 'Đang sử dụng (Bận)' }
-        ]"
-        valueKey="value"
-        labelKey="label"
-      ></app-custom-select>
-    </div>
-  </div>
+        <p class="text-xs text-slate-400 dark:text-slate-500 font-semibold leading-relaxed">
+          Bạn có chắc chắn muốn xóa bàn ăn
+          <strong class="text-slate-800 dark:text-white">{{ deletingTable()?.name }}</strong>
+          thuộc quán
+          <strong class="text-[var(--dynamic-primary)]">{{
+            stateService.settings().store_name
+          }}</strong>
+          khỏi hệ thống? Hành động này không thể hoàn tác.
+        </p>
+      </app-confirm-modal>
 
-  <!-- Footer Buttons -->
-  <div class="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800/60 mt-5">
-    <button
-      app-button
-      variant="cancel"
-      (click)="closeTableModal()"
-      [disabled]="isTableSaving()"
-      class="flex-1"
-    >
-      Hủy
-    </button>
-    <button
-      app-button
-      variant="primary"
-      [loading]="isTableSaving()"
-      (click)="saveTable()"
-      [disabled]="isTableSaving()"
-      class="flex-1"
-    >
-      <span>Lưu bàn ăn</span>
-    </button>
-  </div>
-</app-modal>
+      <!-- Modal hiển thị QR Code thật để In/Tải -->
+      <app-modal
+        [isOpen]="isQrModalOpen()"
+        [title]="'Mã QR Gọi món trực tuyến - ' + (selectedTableForQr()?.name || '')"
+        (close)="closeQrModal()"
+        size="sm"
+      >
+        <div class="flex flex-col items-center justify-center p-6 space-y-6">
+          <!-- QR Code Container có logo ở giữa -->
+          <div
+            class="relative bg-white p-4.5 rounded-[15px] shadow-lg border border-slate-100/80 flex items-center justify-center w-64 h-64"
+          >
+            @if (selectedTableForQr()) {
+              <img
+                [src]="getDiningTableQrUrl(selectedTableForQr())"
+                [alt]="'QR Code ' + selectedTableForQr()?.name"
+                class="w-full h-full object-contain rounded-xl"
+              />
 
-<!-- Modal Xác nhận Xóa Khu vực -->
-<app-confirm-modal
-  [isOpen]="isDeleteAreaConfirmOpen()"
-  title="Xác nhận xóa khu vực"
-  [confirmText]="'Xác nhận xóa'"
-  [isSubmitting]="stateService.isLoading()"
-  (confirm)="confirmDeleteArea()"
-  (cancel)="isDeleteAreaConfirmOpen.set(false)"
->
-  <p class="text-xs text-slate-400 dark:text-slate-500 font-semibold leading-relaxed">
-    Bạn có chắc chắn muốn xóa khu vực
-    <strong class="text-slate-800 dark:text-white">{{ deletingArea()?.name }}</strong> thuộc
-    quán
-    <strong class="text-[var(--dynamic-primary)]">{{
-      stateService.settings().store_name
-    }}</strong>? Tất cả các bàn trong khu vực cũng sẽ bị xóa vĩnh viễn khỏi hệ thống.
-  </p>
-</app-confirm-modal>
+              <!-- Logo quán ở giữa mã QR dạng Web3 sang trọng -->
+              <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div
+                  class="w-11.5 h-11.5 rounded-xl bg-white p-1 shadow-md border border-slate-150 flex items-center justify-center overflow-hidden"
+                >
+                  @if (stateService.settings()?.website_avatar_image) {
+                    <img
+                      [src]="stateService.settings()?.website_avatar_image"
+                      class="w-full h-full object-cover rounded-lg"
+                    />
+                  } @else {
+                    <div
+                      class="w-full h-full rounded-lg text-white font-black text-xs flex items-center justify-center uppercase"
+                      [style.background-color]="stateService.settings()?.primary_color || '#7c3aed'"
+                    >
+                      {{ (stateService.settings()?.store_name || 'C').charAt(0).toUpperCase() }}
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
 
-<!-- Modal Xác nhận Xóa Bàn ăn -->
-<app-confirm-modal
-  [isOpen]="isDeleteTableConfirmOpen()"
-  title="Xác nhận xóa bàn ăn"
-  [confirmText]="'Xác nhận xóa'"
-  [isSubmitting]="stateService.isLoading()"
-  (confirm)="confirmDeleteTable()"
-  (cancel)="isDeleteTableConfirmOpen.set(false)"
->
-  <p class="text-xs text-slate-400 dark:text-slate-500 font-semibold leading-relaxed">
-    Bạn có chắc chắn muốn xóa bàn ăn
-    <strong class="text-slate-800 dark:text-white">{{ deletingTable()?.name }}</strong>
-    thuộc quán
-    <strong class="text-[var(--dynamic-primary)]">{{
-      stateService.settings().store_name
-    }}</strong>
-    khỏi hệ thống? Hành động này không thể hoàn tác.
-  </p>
-</app-confirm-modal>
+          <div class="text-center space-y-2">
+            <span
+              class="text-xs font-extrabold text-slate-800 dark:text-white uppercase tracking-wider block"
+            >
+              Quét để gọi món trực tuyến
+            </span>
+            <p
+              class="text-[10px] text-slate-400 dark:text-slate-500 font-semibold leading-relaxed max-w-[240px]"
+            >
+              Mã QR này chứa liên kết đến Website storefront của quán và định danh riêng cho
+              <strong>{{ selectedTableForQr()?.name }}</strong
+              >.
+            </p>
+          </div>
+
+          <!-- Nút tải ảnh và Đóng -->
+          <div class="flex gap-3 w-full pt-2">
+            <button app-button variant="secondary" (click)="closeQrModal()" class="flex-1">
+              Đóng
+            </button>
+            <button
+              app-button
+              variant="primary"
+              (click)="downloadTableQrCode(selectedTableForQr())"
+              class="flex-1"
+            >
+              Tải ảnh QR
+            </button>
+          </div>
+        </div>
+      </app-modal>
     } @else {
       <app-access-restricted pageName="Quản lý sơ đồ bàn"></app-access-restricted>
     }
-} @else {
-  <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý Sơ đồ bàn'"></app-web3-connect-prompt>
-}
+  } @else {
+    <app-web3-connect-prompt
+      [title]="'Kết nối ví Web3 để quản lý Sơ đồ bàn'"
+    ></app-web3-connect-prompt>
+  }
 </div>

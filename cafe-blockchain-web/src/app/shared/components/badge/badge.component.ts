@@ -1,0 +1,96 @@
+import { Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+@Component({
+  selector: 'app-badge, [app-badge]',
+  standalone: true,
+  imports: [CommonModule],
+  template: `<ng-content></ng-content>`,
+  host: {
+    '[class]': 'hostClasses',
+    '[class.animate-pulse]': 'pulse',
+    '[class.cursor-pointer]': 'interactive',
+    '[class.hover:opacity-85]': 'interactive',
+    '[class.active:scale-95]': 'interactive',
+    '[class.transition-all]': 'interactive'
+  },
+  styles: [`
+    :host {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800; /* mặc định font font-black hoặc font-bold rất đậm */
+      line-height: 1;
+    }
+  `]
+})
+export class BadgeComponent {
+  @Input() variant: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info' | 'neutral' = 'primary';
+  @Input() size: 'sm' | 'md' | 'lg' = 'md';
+  @Input() rounded: 'sm' | 'md' | 'lg' | 'xl' | 'full' = 'xl';
+  @Input() pulse = false;
+  @Input() interactive = false;
+
+  get hostClasses(): string {
+    const classes: string[] = ['select-none'];
+
+    // Variant classes
+    switch (this.variant) {
+      case 'primary':
+        classes.push('bg-[var(--color-primary)]/10 text-[var(--color-primary)] dark:bg-[var(--color-primary)]/20 dark:text-[var(--color-secondary)] border border-[var(--color-primary)]/10');
+        break;
+      case 'secondary':
+        classes.push('bg-[var(--color-secondary)]/10 text-[var(--color-secondary)] border border-[var(--color-secondary)]/15');
+        break;
+      case 'success':
+        classes.push('bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/15');
+        break;
+      case 'warning':
+        classes.push('bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/15');
+        break;
+      case 'danger':
+        classes.push('bg-rose-500/10 text-rose-500 border border-rose-500/15');
+        break;
+      case 'info':
+        classes.push('bg-purple-100 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-200/50 dark:border-purple-800/30');
+        break;
+      case 'neutral':
+        classes.push('bg-slate-150/80 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200/50 dark:border-slate-700/50');
+        break;
+    }
+
+    // Size classes
+    switch (this.size) {
+      case 'sm':
+        classes.push('text-[10px] px-1.5 py-0.5');
+        break;
+      case 'md':
+        classes.push('text-xs px-2.5 py-0.5');
+        break;
+      case 'lg':
+        classes.push('text-sm px-3 py-1');
+        break;
+    }
+
+    // Rounded classes
+    switch (this.rounded) {
+      case 'sm':
+        classes.push('rounded-sm');
+        break;
+      case 'md':
+        classes.push('rounded-md');
+        break;
+      case 'lg':
+        classes.push('rounded-lg');
+        break;
+      case 'xl':
+        classes.push('rounded-xl');
+        break;
+      case 'full':
+        classes.push('rounded-full');
+        break;
+    }
+
+    return classes.join(' ');
+  }
+}
