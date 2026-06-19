@@ -171,7 +171,7 @@ export class StateService {
   public readonly isDebtsLoading = this.debtStore.isDebtsLoading;
   public readonly isShiftsLoading = this.shiftStore.isShiftsLoading;
   public readonly currentShift = this.shiftStore.currentShift;
-  
+
   // --- Quản lý ca trực (Trạng thái và logic dùng chung) ---
   public readonly isCloseShiftModalOpen = this.shiftStore.isCloseShiftModalOpen;
   public readonly isShiftSummaryLoading = this.shiftStore.isShiftSummaryLoading;
@@ -190,7 +190,7 @@ export class StateService {
   public readonly shiftEWalletRevenue = this.shiftStore.shiftEWalletRevenue;
   public readonly shiftFiatExpenses = this.shiftStore.shiftFiatExpenses;
   public readonly shiftExpectedCash = this.shiftStore.shiftExpectedCash;
-  
+
   public readonly shifts = this.shiftStore.shifts;
   public readonly shiftDurationString = this.shiftStore.shiftDurationString;
 
@@ -222,7 +222,7 @@ export class StateService {
   public readonly paymentMethodsList = signal<any[]>([]);
   public readonly paymentMethodsTotal = signal<number>(0);
   public lastPaymentMethodsLoadTimestamp = 0;
-  
+
   public get lastDashboardLoadTimestamp() { return this.dashboardStore.lastDashboardLoadTimestamp; }
   public set lastDashboardLoadTimestamp(val: number) { this.dashboardStore.lastDashboardLoadTimestamp = val; }
 
@@ -255,15 +255,15 @@ export class StateService {
   // Bộ nhớ đệm Cache cho sản phẩm POS
   public get posProductsCache() { return this.productStore.posProductsCache; }
   public get cacheTTL() { return this.productStore.cacheTTL; }
-  
+
   private isInitialSyncDone = false;
   private isSettingsFetching = false;
   private lastSettingsLoadTimestamp = 0;
   private skipNextSubscriptionSync = false;
-  
+
   public get lastCustomersLoadTimestamp() { return this.customerStore.lastCustomersLoadTimestamp; }
   public set lastCustomersLoadTimestamp(val: number) { this.customerStore.lastCustomersLoadTimestamp = val; }
-  
+
   private searchSubject = new Subject<string>();
   private searchSubscription?: Subscription;
   private routerSubscription?: Subscription;
@@ -271,7 +271,7 @@ export class StateService {
 
   constructor() {
     this.initTheme();
-    
+
     // Khôi phục vai trò, quyền và gói cước từ localStorage
     if (typeof window !== 'undefined') {
       const savedRole = localStorage.getItem('auth_role');
@@ -304,7 +304,7 @@ export class StateService {
         }
       }
     }
-    
+
     // Gọi tải cấu hình public và menu storefront ban đầu khi chưa kết nối ví
     if (!this.web3Service.walletConnected()) {
       this.loadPublicSettingsAndMenu();
@@ -343,15 +343,15 @@ export class StateService {
 
           const settings$ = this.hasPermission('settings')
             ? this.apiService.getSettings().pipe(catchError((err) => {
-                console.warn('[StateService] Không có quyền tải settings hoặc lỗi settings:', err);
-                return of(null);
-              }))
+              console.warn('[StateService] Không có quyền tải settings hoặc lỗi settings:', err);
+              return of(null);
+            }))
             : of(null);
           const shift$ = (this.hasPermission('shifts') && this.hasFeature('enable_shifts'))
             ? this.apiService.getCurrentShift().pipe(catchError((err) => {
-                console.warn('[StateService] Lỗi tải ca trực hiện tại:', err);
-                return of(null);
-              }))
+              console.warn('[StateService] Lỗi tải ca trực hiện tại:', err);
+              return of(null);
+            }))
             : of(null);
 
           forkJoin({
@@ -377,17 +377,17 @@ export class StateService {
               } else {
                 this.shiftSummary.set(null);
               }
-              
+
               // Nạp dữ liệu cho tab hiện tại với force = true khi ví vừa kết nối
               this.reloadCurrentTab(true);
-              
+
               // Đồng bộ thông tin gói cước mới nhất từ DB (bỏ qua nếu vừa verify signature thành công)
               if (this.skipNextSubscriptionSync) {
                 this.skipNextSubscriptionSync = false;
               } else {
                 this.syncSubscriptionFromBackend();
               }
-              
+
               // Tắt loading khởi tạo
               this.isInitialLoading.set(false);
             },
@@ -610,7 +610,7 @@ export class StateService {
                 if (storeRes) {
                   const publicProducts = storeRes.products || [];
                   const publicCategories = storeRes.categories || [];
-                  
+
                   // Chỉ gán nếu ví chưa kết nối
                   if (!this.web3Service.walletConnected()) {
                     this.products.set(publicProducts);
@@ -719,9 +719,9 @@ export class StateService {
   public disconnectWalletAndClose(message?: string, isError = false) {
     this.web3Service.disconnectWallet();
     this.apiService.removeToken();
-    
+
     this.apiService.logout().subscribe({
-      next: () => {},
+      next: () => { },
       error: (err) => console.warn('[Auth] Không thể xóa phiên làm việc phía backend:', err)
     });
 
@@ -968,17 +968,30 @@ export class StateService {
     });
   }
 
+  private lastShiftSummaryLoadedTime = 0;
+
   public openCloseShiftModal() {
     if (!this.hasFeature('enable_shifts')) return;
-    this.shiftStore.isShiftSummaryLoading.set(true);
+
+    if (this.shiftStore.isShiftSummaryLoading()) return;
+
     this.shiftStore.closeShiftNote.set('');
     this.shiftStore.isCloseShiftModalOpen.set(true);
 
+    const now = Date.now();
+    if (this.shiftStore.shiftSummary() && (now - this.lastShiftSummaryLoadedTime < 5000)) {
+      const expected = this.shiftStore.shiftSummary()?.expected_cash ?? 0;
+      this.shiftStore.actualCashInput.set(expected);
+      return;
+    }
+
+    this.shiftStore.isShiftSummaryLoading.set(true);
     this.apiService.getShiftSummary().subscribe({
       next: (res) => {
         this.shiftStore.shiftSummary.set(res);
         const expected = res?.expected_cash ?? 0;
         this.shiftStore.actualCashInput.set(expected);
+        this.lastShiftSummaryLoadedTime = Date.now();
         this.shiftStore.isShiftSummaryLoading.set(false);
       },
       error: (err) => {
@@ -1050,11 +1063,11 @@ export class StateService {
                       localStorage.setItem('auth_subscription_plan_code', sub.plan_code || 'free');
                       localStorage.setItem('auth_subscription_expires_at', sub.subscription_expires_at || '');
                       localStorage.setItem('auth_subscription_status', sub.subscription_status || 'active');
-                      
+
                       this.subscriptionPlanCode.set(sub.plan_code || 'free');
                       this.subscriptionExpiresAt.set(sub.subscription_expires_at || null);
                       this.subscriptionStatus.set(sub.subscription_status || 'active');
-                      
+
                       if (sub.features) {
                         localStorage.setItem('auth_plan_features', JSON.stringify(sub.features));
                         this.planFeatures.set(sub.features);
@@ -1067,7 +1080,7 @@ export class StateService {
                       localStorage.removeItem('auth_subscription_expires_at');
                       localStorage.removeItem('auth_subscription_status');
                       localStorage.removeItem('auth_plan_features');
-                      
+
                       this.subscriptionPlanCode.set('free');
                       this.subscriptionExpiresAt.set(null);
                       this.subscriptionStatus.set('active');
@@ -1167,11 +1180,11 @@ export class StateService {
                 localStorage.setItem('auth_subscription_plan_code', sub.plan_code || 'free');
                 localStorage.setItem('auth_subscription_expires_at', sub.subscription_expires_at || '');
                 localStorage.setItem('auth_subscription_status', sub.subscription_status || 'active');
-                
+
                 this.subscriptionPlanCode.set(sub.plan_code || 'free');
                 this.subscriptionExpiresAt.set(sub.subscription_expires_at || null);
                 this.subscriptionStatus.set(sub.subscription_status || 'active');
-                
+
                 if (sub.features) {
                   localStorage.setItem('auth_plan_features', JSON.stringify(sub.features));
                   this.planFeatures.set(sub.features);
@@ -1184,7 +1197,7 @@ export class StateService {
                 localStorage.removeItem('auth_subscription_expires_at');
                 localStorage.removeItem('auth_subscription_status');
                 localStorage.removeItem('auth_plan_features');
-                
+
                 this.subscriptionPlanCode.set('free');
                 this.subscriptionExpiresAt.set(null);
                 this.subscriptionStatus.set('active');
@@ -1229,7 +1242,7 @@ export class StateService {
   public handleAccountSwitch(newAccount: string) {
     this.apiService.removeToken();
     this.apiService.logout().subscribe({
-      next: () => {},
+      next: () => { },
       error: (err) => console.warn('[Auth] Không thể xóa phiên làm việc khi chuyển đổi tài khoản:', err)
     });
 
@@ -1312,7 +1325,7 @@ export class StateService {
         features = null;
       }
     }
-    
+
     if (features && features[featureKey] !== undefined) {
       return !!features[featureKey];
     }
@@ -1335,7 +1348,7 @@ export class StateService {
         features = null;
       }
     }
-    
+
     if (features && features[featureKey] !== undefined) {
       return Number(features[featureKey]);
     }
