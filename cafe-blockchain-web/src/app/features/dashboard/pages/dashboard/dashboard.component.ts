@@ -66,7 +66,7 @@ export class DashboardComponent implements OnInit {
   }
 
   public loadAllData() {
-    this.stateService.refreshDashboard();
+    this.stateService.refreshDashboard(true);
     this.stateService.loadSettings();
     this.stateService.refreshCurrentShift();
   }
@@ -217,7 +217,7 @@ export class DashboardComponent implements OnInit {
       this.tempEndDate = end;
       this.stateService.dashboardStartDate.set(start);
       this.stateService.dashboardEndDate.set(end);
-      this.stateService.refreshDashboard();
+      this.stateService.refreshDashboard(true);
     }
   }
 
@@ -225,7 +225,7 @@ export class DashboardComponent implements OnInit {
     if (this.tempStartDate && this.tempEndDate) {
       this.stateService.dashboardStartDate.set(this.tempStartDate);
       this.stateService.dashboardEndDate.set(this.tempEndDate);
-      this.stateService.refreshDashboard();
+      this.stateService.refreshDashboard(true);
     }
   }
 

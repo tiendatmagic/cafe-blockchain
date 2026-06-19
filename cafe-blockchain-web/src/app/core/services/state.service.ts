@@ -150,6 +150,9 @@ export class StateService {
   public readonly paymentMethodsList = signal<any[]>([]);
   public readonly paymentMethodsTotal = signal<number>(0);
   public lastPaymentMethodsLoadTimestamp = 0;
+  public lastDashboardLoadTimestamp = 0;
+  private lastDashboardStartDate = '';
+  private lastDashboardEndDate = '';
 
   public readonly settings = this.settingStore.settings;
 
@@ -615,14 +618,27 @@ export class StateService {
   }
 
   // Refresh dữ liệu dashboard
-  public refreshDashboard() {
+  public refreshDashboard(force: boolean = false) {
     if (!this.web3Service.walletConnected()) return;
     if (!this.hasPermission('dashboard')) return;
+
+    const now = Date.now();
+    const isFilterSame = this.dashboardStartDate() === this.lastDashboardStartDate && 
+                         this.dashboardEndDate() === this.lastDashboardEndDate;
+
+    // Nếu không ép buộc tải lại, đã có dữ liệu, trùng bộ lọc ngày và chưa hết hạn 5 phút
+    if (!force && this.dashboardData() && isFilterSame && (now - this.lastDashboardLoadTimestamp < 5 * 60 * 1000)) {
+      return;
+    }
+
     if (this.isDashboardLoading()) return;
     this.isDashboardLoading.set(true);
     this.apiService.getDashboard(this.dashboardStartDate(), this.dashboardEndDate()).subscribe({
       next: (res) => {
         this.dashboardData.set(res);
+        this.lastDashboardLoadTimestamp = Date.now();
+        this.lastDashboardStartDate = this.dashboardStartDate();
+        this.lastDashboardEndDate = this.dashboardEndDate();
         this.isDashboardLoading.set(false);
       },
       error: (err) => {
@@ -1458,7 +1474,7 @@ export class StateService {
                   // Sau khi đăng nhập thành công: luôn chuyển về dashboard để tải dữ liệu,
                   // trừ khi người dùng đang ở dashboard thì chỉ refresh dữ liệu
                   if (this.router.url.includes('/dashboard')) {
-                    this.refreshDashboard();
+                    this.refreshDashboard(true);
                   } else {
                     this.router.navigate(['/dashboard']);
                   }
@@ -1553,7 +1569,7 @@ export class StateService {
             this.isWalletModalOpen.set(false);
             this.loadSettings();
             if (this.router.url.includes('/dashboard')) {
-              this.refreshDashboard();
+              this.refreshDashboard(true);
             } else {
               this.router.navigate(['/dashboard']);
             }
