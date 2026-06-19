@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Entities\Transaction;
+use App\Http\Requests\StoreTransactionRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -33,18 +34,11 @@ class TransactionController extends Controller
     /**
      * Tạo giao dịch thu chi mới
      */
-    public function store(Request $request)
+    public function store(StoreTransactionRequest $request)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
 
-        $validated = $request->validate([
-            'type' => 'required|string|in:thu,chi',
-            'amount' => 'required|numeric|min:0.01',
-            'category' => 'required|string|max:100',
-            'payment_method' => 'nullable|string|in:cash,bank_transfer',
-            'description' => 'nullable|string|max:500',
-            'transaction_date' => 'required|date',
-        ]);
+        $validated = $request->validated();
 
         // Tự động tìm ca trực đang mở của nhân viên hiện tại
         $shiftId = null;
@@ -76,7 +70,7 @@ class TransactionController extends Controller
     /**
      * Cập nhật thông tin giao dịch thu chi
      */
-    public function update(Request $request, $id)
+    public function update(StoreTransactionRequest $request, $id)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
         $transaction = Transaction::where('store_owner_address', $storeOwner)->findOrFail($id);
@@ -88,14 +82,7 @@ class TransactionController extends Controller
             ], 400);
         }
 
-        $validated = $request->validate([
-            'type' => 'required|string|in:thu,chi',
-            'amount' => 'required|numeric|min:0.01',
-            'category' => 'required|string|max:100',
-            'payment_method' => 'nullable|string|in:cash,bank_transfer',
-            'description' => 'nullable|string|max:500',
-            'transaction_date' => 'required|date',
-        ]);
+        $validated = $request->validated();
 
         $transaction->update([
             'type' => $validated['type'],

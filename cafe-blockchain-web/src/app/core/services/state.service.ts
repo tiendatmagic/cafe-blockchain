@@ -7,6 +7,10 @@ import { debounceTime, distinctUntilChanged, filter, catchError } from 'rxjs/ope
 import { OrderStore } from '@features/pos/store/order.store';
 import { SettingStore } from '@features/settings/store/setting.store';
 import { ShiftStore } from '@features/shifts/store/shift.store';
+import { DebtStore } from '@features/debts/store/debt.store';
+import { InventoryStore } from '@features/inventory/store/inventory.store';
+import { CustomerStore } from '@features/customers/store/customer.store';
+import { CartStore } from '@features/pos/store/cart.store';
 
 export interface FeatureConfig {
   key: string;
@@ -63,6 +67,10 @@ export class StateService {
   private readonly orderStore = inject(OrderStore);
   private readonly settingStore = inject(SettingStore);
   private readonly shiftStore = inject(ShiftStore);
+  private readonly debtStore = inject(DebtStore);
+  private readonly inventoryStore = inject(InventoryStore);
+  private readonly customerStore = inject(CustomerStore);
+  private readonly cartStore = inject(CartStore);
   private readonly colorStorageKey = 'dapp_dynamic_colors';
 
   // Trạng thái UI toàn cục
@@ -142,12 +150,12 @@ export class StateService {
   public readonly isDashboardLoading = signal<boolean>(false);
   public readonly isProductsLoading = signal<boolean>(false);
   public readonly isOrdersLoading = this.orderStore.isOrdersLoading;
-  public readonly isCustomersLoading = signal<boolean>(false);
+  public readonly isCustomersLoading = this.customerStore.isCustomersLoading;
   public readonly isTransactionsLoading = signal<boolean>(false);
-  public readonly isInventoryLoading = signal<boolean>(false);
+  public readonly isInventoryLoading = this.inventoryStore.isInventoryLoading;
   public readonly isTablesLoading = signal<boolean>(false);
   public readonly isSettingsLoading = this.settingStore.isSettingsLoading;
-  public readonly isDebtsLoading = signal<boolean>(false);
+  public readonly isDebtsLoading = this.debtStore.isDebtsLoading;
   public readonly isShiftsLoading = this.shiftStore.isShiftsLoading;
   public readonly currentShift = this.shiftStore.currentShift;
   
@@ -184,13 +192,13 @@ export class StateService {
   public readonly products = signal<any[]>([]);
   public readonly orders = this.orderStore.orders;
   public readonly categoriesList = signal<any[]>([]);
-  public readonly customers = signal<any[]>([]);
-  public readonly customerGroups = signal<any[]>([]);
+  public readonly customers = this.customerStore.customers;
+  public readonly customerGroups = this.customerStore.customerGroups;
   public readonly transactions = signal<any[]>([]);
-  public readonly inventoryRecords = signal<any[]>([]);
+  public readonly inventoryRecords = this.inventoryStore.inventoryRecords;
   public readonly areas = signal<any[]>([]);
   public readonly diningTables = signal<any[]>([]);
-  public readonly debts = signal<any[]>([]);
+  public readonly debts = this.debtStore.debts;
 
   // Dữ liệu phương thức thanh toán (đặt ở service để cache tồn tại xuyên vòng đời component)
   public readonly paymentMethodsList = signal<any[]>([]);
@@ -202,42 +210,38 @@ export class StateService {
 
   public readonly settings = this.settingStore.settings;
 
-  // Trạng thái POS (Giỏ hàng)
-  public readonly cart = signal<{ product: any, variant: any | null, quantity: number, note?: string }[]>([]);
-  public readonly cartTotal = computed(() => {
-    return this.cart().reduce((sum, item) => {
-      const price = item.variant ? item.variant.price : item.product.price;
-      return sum + (price * item.quantity);
-    }, 0);
-  });
-  public readonly tableNumber = signal<string>('');
-  public readonly paymentMethod = signal<string>('cash');
-  public readonly posCategoryFilter = signal<string>('Tất cả');
-  public readonly posSearchQuery = signal<string>('');
-  public readonly posMinPrice = signal<number | null>(null);
-  public readonly posMaxPrice = signal<number | null>(null);
-  public readonly posMinVariantPrice = signal<number | null>(null);
-  public readonly posMaxVariantPrice = signal<number | null>(null);
-  public readonly posFilterStatus = signal<string>('all'); // 'all' | 'active' | 'inactive'
-  public readonly posSelectedCustomer = signal<any | null>(null);
-  public readonly editingOrderId = signal<number | null>(null);
-  public readonly isOrderSubmitting = signal<boolean>(false);
+  // Trạng thái POS (Giỏ hàng) và Lọc
+  public readonly cart = this.cartStore.cart;
+  public readonly cartTotal = this.cartStore.cartTotal;
+  public readonly tableNumber = this.cartStore.tableNumber;
+  public readonly paymentMethod = this.cartStore.paymentMethod;
+  public readonly posCategoryFilter = this.cartStore.posCategoryFilter;
+  public readonly posSearchQuery = this.cartStore.posSearchQuery;
+  public readonly posMinPrice = this.cartStore.posMinPrice;
+  public readonly posMaxPrice = this.cartStore.posMaxPrice;
+  public readonly posMinVariantPrice = this.cartStore.posMinVariantPrice;
+  public readonly posMaxVariantPrice = this.cartStore.posMaxVariantPrice;
+  public readonly posFilterStatus = this.cartStore.posFilterStatus;
+  public readonly posSelectedCustomer = this.cartStore.posSelectedCustomer;
+  public readonly editingOrderId = this.cartStore.editingOrderId;
+  public readonly isOrderSubmitting = this.cartStore.isOrderSubmitting;
 
   // Phân trang sản phẩm ở trang Bán hàng POS
-  public readonly posItemsPerPage = 20;
-  public readonly posCurrentPage = signal<number>(1);
-  public readonly posProductsList = signal<any[]>([]);
-  public readonly paginatedPosProducts = computed(() => this.posProductsList());
-  public readonly posTotalPages = signal<number>(1);
-  public readonly posTotalItems = signal<number>(0);
+  public readonly posItemsPerPage = this.cartStore.posItemsPerPage;
+  public readonly posCurrentPage = this.cartStore.posCurrentPage;
+  public readonly posProductsList = this.cartStore.posProductsList;
+  public readonly paginatedPosProducts = this.cartStore.paginatedPosProducts;
+  public readonly posTotalPages = this.cartStore.posTotalPages;
+  public readonly posTotalItems = this.cartStore.posTotalItems;
 
   // Bộ nhớ đệm Cache cho sản phẩm POS
-  private posProductsCache = new Map<string, { data: any[], totalPages: number, totalItems: number, timestamp: number }>();
-  private readonly cacheTTL = 5 * 60 * 1000; // 5 phút (ms)
+  public get posProductsCache() { return this.cartStore.posProductsCache; }
+  public get cacheTTL() { return this.cartStore.cacheTTL; }
   private isInitialSyncDone = false;
   private isSettingsFetching = false;
   private lastSettingsLoadTimestamp = 0;
-  private lastCustomersLoadTimestamp = 0;
+  public get lastCustomersLoadTimestamp() { return this.customerStore.lastCustomersLoadTimestamp; }
+  public set lastCustomersLoadTimestamp(val: number) { this.customerStore.lastCustomersLoadTimestamp = val; }
   private searchSubject = new Subject<string>();
   private searchSubscription?: Subscription;
   private routerSubscription?: Subscription;
@@ -811,32 +815,10 @@ export class StateService {
 
   // Refresh danh sách khách hàng (có cache 5 phút)
   public refreshCustomers(force: boolean = false) {
-    if (!this.web3Service.walletConnected()) return;
-    if (!this.hasPermission('pos') && !this.hasPermission('customers') && !this.hasPermission('reports')) return;
-    
-    const now = Date.now();
-    // Nếu không force và đã có dữ liệu và chưa hết hạn 5 phút
-    if (!force && this.customers().length > 0 && (now - this.lastCustomersLoadTimestamp < 5 * 60 * 1000)) {
-      return;
-    }
-
-    if (this.isCustomersLoading()) return;
-    this.isCustomersLoading.set(true);
-    forkJoin({
-      customers: this.apiService.getCustomers(),
-      groups: this.apiService.getCustomerGroups()
-    }).subscribe({
-      next: (res) => {
-        this.customers.set(res.customers || []);
-        this.customerGroups.set(res.groups || []);
-        this.lastCustomersLoadTimestamp = Date.now();
-        this.isCustomersLoading.set(false);
-      },
-      error: (err) => {
-        console.error('Lỗi tải khách hàng:', err);
-        this.isCustomersLoading.set(false);
-      }
-    });
+    this.customerStore.refreshCustomers(
+      this.hasPermission('pos') || this.hasPermission('customers') || this.hasPermission('reports'),
+      force
+    );
   }
 
   // Refresh danh sách giao dịch tài chính
@@ -859,20 +841,7 @@ export class StateService {
 
   // Refresh danh sách phiếu kho
   public refreshInventory(typeFilter: string = 'all') {
-    if (!this.web3Service.walletConnected()) return;
-    if (!this.hasPermission('inventory')) return;
-    if (this.isInventoryLoading()) return;
-    this.isInventoryLoading.set(true);
-    this.apiService.getInventoryRecords(typeFilter).subscribe({
-      next: (res) => {
-        this.inventoryRecords.set(res || []);
-        this.isInventoryLoading.set(false);
-      },
-      error: (err) => {
-        console.error('Lỗi tải kho hàng:', err);
-        this.isInventoryLoading.set(false);
-      }
-    });
+    this.inventoryStore.refreshInventory(this.hasPermission('inventory'), typeFilter);
   }
 
   // Refresh sơ đồ bàn ăn và khu vực
@@ -1015,18 +984,11 @@ export class StateService {
   }
 
   public resetPosFilters() {
-    this.posMinPrice.set(null);
-    this.posMaxPrice.set(null);
-    this.posMinVariantPrice.set(null);
-    this.posMaxVariantPrice.set(null);
-    this.posFilterStatus.set('all');
-    this.posCategoryFilter.set('Tất cả');
-    this.posCurrentPage.set(1);
-    this.loadPosProducts();
+    this.cartStore.resetPosFilters(() => this.loadPosProducts());
   }
 
   public clearPosProductsCache() {
-    this.posProductsCache.clear();
+    this.cartStore.clearPosProductsCache();
   }
 
   public toggleTheme() {
@@ -1046,57 +1008,15 @@ export class StateService {
 
   // Quản lý giỏ hàng và chỉnh sửa đơn hàng POS toàn cục
   public clearCart() {
-    this.cart.set([]);
-    this.tableNumber.set('');
-    this.paymentMethod.set('cash');
-    this.posSelectedCustomer.set(null);
+    this.cartStore.clearCart();
   }
 
   public editOrder(order: any) {
-    if (!order) return;
-
-    this.isOrderSubmitting.set(true);
-    
-    // Nạp lại khách hàng của đơn hàng cũ
-    this.posSelectedCustomer.set(order.customer || null);
-
-    // Tái cấu trúc giỏ hàng từ order items
-    const loadedCart: { product: any, variant: any | null, quantity: number, note?: string }[] = [];
-    const productsList = this.products();
-
-    order.items.forEach((item: any) => {
-      const product = productsList.find(p => Number(p.id) === Number(item.product_id));
-      if (product) {
-        let variant: any = null;
-        if (item.product_variant_id && product.variants) {
-          variant = product.variants.find((v: any) => Number(v.id) === Number(item.product_variant_id)) || null;
-        }
-        loadedCart.push({
-          product,
-          variant,
-          quantity: Number(item.quantity) || 1,
-          note: item.note || ''
-        });
-      }
-    });
-
-    this.cart.set(loadedCart);
-    this.tableNumber.set(order.table_number || '');
-    this.paymentMethod.set(order.payment_method || 'cash');
-    this.editingOrderId.set(order.id);
-
-    // Chuyển hướng sang POS bằng Angular Router
-    this.router.navigate(['/pos']);
-
-    this.showToast(`Đang chỉnh sửa đơn hàng ${order.order_code || ('#' + order.id)}`, 'success');
-    this.isOrderSubmitting.set(false);
+    this.cartStore.editOrder(order, this.products(), (msg, type) => this.showToast(msg, type));
   }
 
   public cancelEditOrder() {
-    this.clearCart();
-    this.editingOrderId.set(null);
-    this.router.navigate(['/orders']);
-    this.showToast('Đã hủy chỉnh sửa đơn hàng', 'success');
+    this.cartStore.cancelEditOrder((msg, type) => this.showToast(msg, type));
   }
 
   public reloadCurrentTab() {
@@ -1177,20 +1097,7 @@ export class StateService {
 
   // Refresh danh sách nợ khách hàng
   public refreshDebts(searchFilter: string = '', statusFilter: string = 'all') {
-    if (!this.web3Service.walletConnected()) return;
-    if (!this.hasPermission('debts')) return;
-    if (this.isDebtsLoading()) return;
-    this.isDebtsLoading.set(true);
-    this.apiService.getDebts(searchFilter, statusFilter).subscribe({
-      next: (res) => {
-        this.debts.set(res || []);
-        this.isDebtsLoading.set(false);
-      },
-      error: (err) => {
-        console.error('Lỗi tải danh sách nợ:', err);
-        this.isDebtsLoading.set(false);
-      }
-    });
+    this.debtStore.refreshDebts(this.hasPermission('debts'), searchFilter, statusFilter);
   }
 
   // Trạng thái dữ liệu nhân viên và vai trò

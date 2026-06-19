@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Domain\Entities\Customer;
 use App\Domain\Entities\DebtLog;
 use App\Domain\Entities\Transaction;
+use App\Http\Requests\StoreDebtRequest;
+use App\Http\Requests\StoreDebtPaymentRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -68,16 +70,11 @@ class DebtController extends Controller
     /**
      * Ghi nợ thủ công (nợ phát sinh ngoài POS)
      */
-    public function store(Request $request)
+    public function store(StoreDebtRequest $request)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
 
-        $validated = $request->validate([
-            'customer_id' => 'required|integer|exists:customers,id',
-            'amount' => 'required|numeric|min:0.01',
-            'note' => 'nullable|string|max:500',
-            'recorded_at' => 'required|date',
-        ]);
+        $validated = $request->validated();
 
         $customer = Customer::where('store_owner_address', $storeOwner)->findOrFail($validated['customer_id']);
 
@@ -105,17 +102,11 @@ class DebtController extends Controller
     /**
      * Thu nợ khách hàng (Trả nợ bớt)
      */
-    public function storePayment(Request $request)
+    public function storePayment(StoreDebtPaymentRequest $request)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
 
-        $validated = $request->validate([
-            'customer_id' => 'required|integer|exists:customers,id',
-            'amount' => 'required|numeric|min:0.01',
-            'payment_method' => 'required|string|in:cash,bank_transfer,crypto,e_wallet',
-            'note' => 'nullable|string|max:500',
-            'recorded_at' => 'required|date',
-        ]);
+        $validated = $request->validated();
 
         $customer = Customer::where('store_owner_address', $storeOwner)->findOrFail($validated['customer_id']);
 

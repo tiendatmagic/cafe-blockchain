@@ -3,13 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Entities\Shift;
-use App\Infrastructure\Persistence\Eloquent\OrderModel as Order;
-use App\Domain\Entities\Transaction;
+use App\Http\Requests\OpenShiftRequest;
+use App\Http\Requests\CloseShiftRequest;
+use App\Application\Services\ShiftReconciliationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ShiftController extends Controller
 {
+    protected $reconciliationService;
+
+    public function __construct(ShiftReconciliationService $reconciliationService)
+    {
+        $this->reconciliationService = $reconciliationService;
+    }
+
     /**
      * Lấy thông tin ca làm việc hiện tại của nhân viên đang đăng nhập
      */
@@ -27,14 +35,12 @@ class ShiftController extends Controller
     /**
      * Mở ca trực mới
      */
-    public function open(Request $request)
+    public function open(OpenShiftRequest $request)
     {
         $user = $request->user();
         $storeOwner = strtolower($user->store_owner_address ?: $user->wallet_address);
 
-        $validated = $request->validate([
-            'initial_cash' => 'required|numeric|min:0',
-        ]);
+        $validated = $request->validated();
 
         // Kiểm tra xem nhân viên này có ca trực nào đang mở không
         $existingShift = Shift::where('user_id', $user->id)
@@ -64,7 +70,7 @@ class ShiftController extends Controller
     /**
      * Kết thúc ca trực, tính toán chênh lệch két tiền mặt và đối soát
      */
-    public function close(Request $request)
+    public function close(CloseShiftRequest $request)
     {
         $user = $request->user();
         $shift = Shift::where('user_id', $user->id)
@@ -77,78 +83,24 @@ class ShiftController extends Controller
             ], 404);
         }
 
-        $validated = $request->validate([
-            'actual_cash' => 'required|numeric|min:0',
-            'note' => 'nullable|string|max:1000',
-        ]);
+        $validated = $request->validated();
 
         try {
             DB::beginTransaction();
 
-            // 1. Tính tổng doanh thu theo từng phương thức thanh toán
-            $totalFiatRevenue = (float)Order::where('shift_id', $shift->id)
-                ->where('status', 'completed')
-                ->where('payment_method', 'cash')
-                ->sum('total_amount');
-
-            $totalBankTransferRevenue = (float)Order::where('shift_id', $shift->id)
-                ->where('status', 'completed')
-                ->where('payment_method', 'bank_transfer')
-                ->sum('total_amount');
-
-            $totalCryptoRevenue = (float)Order::where('shift_id', $shift->id)
-                ->where('status', 'completed')
-                ->where('payment_method', 'crypto')
-                ->sum('total_amount');
-
-            $totalEWalletRevenue = (float)Order::where('shift_id', $shift->id)
-                ->where('status', 'completed')
-                ->where('payment_method', 'e_wallet')
-                ->sum('total_amount');
-
-            $totalDebtRevenue = (float)Order::where('shift_id', $shift->id)
-                ->where('status', 'completed')
-                ->where('payment_method', 'debt')
-                ->sum('total_amount');
-
-            $paymentRevenues = [
-                'cash' => $totalFiatRevenue,
-                'bank_transfer' => $totalBankTransferRevenue,
-                'crypto' => $totalCryptoRevenue,
-                'e_wallet' => $totalEWalletRevenue,
-                'debt' => $totalDebtRevenue
-            ];
-
-            // 2. Tính chi phí theo từng phương thức thanh toán
-            $totalFiatExpenses = (float)Transaction::where('shift_id', $shift->id)
-                ->where('type', 'chi')
-                ->where('payment_method', 'cash')
-                ->sum('amount');
-
-            $totalBankExpenses = (float)Transaction::where('shift_id', $shift->id)
-                ->where('type', 'chi')
-                ->where('payment_method', 'bank_transfer')
-                ->sum('amount');
-
-            $paymentExpenses = [
-                'cash' => $totalFiatExpenses,
-                'bank_transfer' => $totalBankExpenses
-            ];
-
-            // 3. Tính số tiền mặt lý thuyết trong két (chỉ liên quan tiền mặt vật lý)
-            $expectedCash = $shift->initial_cash + $totalFiatRevenue - $totalFiatExpenses;
+            $recon = $this->reconciliationService->calculateReconciliation($shift);
             $actualCash = $validated['actual_cash'];
 
             $shift->update([
                 'end_time' => now(),
                 'actual_cash' => $actualCash,
-                'expected_cash' => $expectedCash,
-                'total_fiat_revenue' => $totalFiatRevenue,
-                'total_bank_transfer_revenue' => $totalBankTransferRevenue,
-                'total_crypto_revenue' => $totalCryptoRevenue,
-                'total_fiat_expenses' => $totalFiatExpenses,
-                'payment_revenues' => $paymentRevenues,
-                'payment_expenses' => $paymentExpenses,
+                'expected_cash' => $recon['expected_cash'],
+                'total_fiat_revenue' => $recon['total_fiat_revenue'],
+                'total_bank_transfer_revenue' => $recon['total_bank_transfer_revenue'],
+                'total_crypto_revenue' => $recon['total_crypto_revenue'],
+                'total_fiat_expenses' => $recon['total_fiat_expenses'],
+                'payment_revenues' => $recon['payment_revenues'],
+                'payment_expenses' => $recon['payment_expenses'],
                 'status' => 'closed',
                 'note' => $validated['note'] ?? null,
             ]);
@@ -158,7 +110,7 @@ class ShiftController extends Controller
             return response()->json([
                 'message' => 'Shift closed and drawer reconciled successfully!',
                 'data' => $shift,
-                'difference' => $actualCash - $expectedCash
+                'difference' => $actualCash - $recon['expected_cash']
             ]);
 
         } catch (\Exception $e) {
@@ -184,57 +136,13 @@ class ShiftController extends Controller
             return response()->json(null);
         }
 
-        $totalFiatRevenue = (float)Order::where('shift_id', $shift->id)
-            ->where('status', 'completed')
-            ->where('payment_method', 'cash')
-            ->sum('total_amount');
-
-        $totalBankTransferRevenue = (float)Order::where('shift_id', $shift->id)
-            ->where('status', 'completed')
-            ->where('payment_method', 'bank_transfer')
-            ->sum('total_amount');
-
-        $totalCryptoRevenue = (float)Order::where('shift_id', $shift->id)
-            ->where('status', 'completed')
-            ->where('payment_method', 'crypto')
-            ->sum('total_amount');
-
-        $totalEWalletRevenue = (float)Order::where('shift_id', $shift->id)
-            ->where('status', 'completed')
-            ->where('payment_method', 'e_wallet')
-            ->sum('total_amount');
-
-        $totalDebtRevenue = (float)Order::where('shift_id', $shift->id)
-            ->where('status', 'completed')
-            ->where('payment_method', 'debt')
-            ->sum('total_amount');
-
-        $totalFiatExpenses = (float)Transaction::where('shift_id', $shift->id)
-            ->where('type', 'chi')
-            ->where('payment_method', 'cash')
-            ->sum('amount');
-
-        $totalBankExpenses = (float)Transaction::where('shift_id', $shift->id)
-            ->where('type', 'chi')
-            ->where('payment_method', 'bank_transfer')
-            ->sum('amount');
-
-        $expectedCash = (float)$shift->initial_cash + $totalFiatRevenue - $totalFiatExpenses;
+        $recon = $this->reconciliationService->calculateReconciliation($shift);
 
         return response()->json([
             'shift'                      => $shift,
-            'payment_revenues'           => [
-                'cash' => $totalFiatRevenue,
-                'bank_transfer' => $totalBankTransferRevenue,
-                'crypto' => $totalCryptoRevenue,
-                'e_wallet' => $totalEWalletRevenue,
-                'debt' => $totalDebtRevenue
-            ],
-            'payment_expenses'           => [
-                'cash' => $totalFiatExpenses,
-                'bank_transfer' => $totalBankExpenses
-            ],
-            'expected_cash'              => $expectedCash,
+            'payment_revenues'           => $recon['payment_revenues'],
+            'payment_expenses'           => $recon['payment_expenses'],
+            'expected_cash'              => $recon['expected_cash'],
         ]);
     }
 
