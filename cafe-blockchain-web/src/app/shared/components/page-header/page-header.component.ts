@@ -10,4 +10,6 @@ import { CommonModule } from '@angular/common';
 export class PageHeaderComponent {
   @Input() title = '';
   @Input() description = '';
+  @Input() containerClass = 'flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6';
 }
+

@@ -3,6 +3,7 @@
   <app-page-header
     title="Bán hàng POS"
     description="Chọn các món đồ uống và món ăn ngon miệng từ thực đơn và tạo hóa đơn bán hàng."
+    containerClass="flex flex-col lg:flex-col xl:flex-row xl:items-center justify-between gap-4 mb-6"
   >
     <app-icon icon name="pos" class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" strokeWidth="2.5" />
 
@@ -205,9 +206,33 @@
   @if (isProductsLoading()) {
     <app-skeleton-loader type="pos"></app-skeleton-loader>
   } @else {
-    <div class="grid grid-cols-1 xl:grid-cols-6 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-6 gap-6">
       <!-- CỘT 1 & 2: THỰC ĐƠN (LEFT) -->
-      <div class="xl:col-span-4 space-y-6">
+            <!-- BANNER TRẠNG THÁI TRÊN MOBILE (KHI CHƯA SẴN SÀNG BÁN HÀNG) -->
+      @if (!web3Service.walletConnected() || !stateService.hasPermission('pos') || !stateService.currentShift() || !stateService.currentShift().id) {
+        <div app-card class="lg:hidden p-6 mb-6">
+          @if (!web3Service.walletConnected()) {
+            <ng-container *ngTemplateOutlet="walletConnectTemplate"></ng-container>
+          } @else if (!stateService.hasPermission('pos')) {
+            <ng-container *ngTemplateOutlet="accessRestrictedTemplate"></ng-container>
+          } @else {
+            <ng-container *ngTemplateOutlet="startShiftTemplate"></ng-container>
+          }
+        </div>
+      }
+            <!-- BANNER TRẠNG THÁI TRÊN MOBILE (KHI CHƯA SẴN SÀNG BÁN HÀNG) -->
+      @if (!web3Service.walletConnected() || !stateService.hasPermission('pos') || !stateService.currentShift() || !stateService.currentShift().id) {
+        <div app-card class="lg:hidden p-6 mb-6">
+          @if (!web3Service.walletConnected()) {
+            <ng-container *ngTemplateOutlet="walletConnectTemplate"></ng-container>
+          } @else if (!stateService.hasPermission('pos')) {
+            <ng-container *ngTemplateOutlet="accessRestrictedTemplate"></ng-container>
+          } @else {
+            <ng-container *ngTemplateOutlet="startShiftTemplate"></ng-container>
+          }
+        </div>
+      }
+      <div class="lg:col-span-4 space-y-6">
         <!-- Danh mục trượt mượt mà (Horizontal scrolling) -->
         <app-mini-buttons
           [options]="categoryOptions()"
@@ -236,7 +261,7 @@
               </p>
             </div>
           } @else {
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4.5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4.5">
               @for (p of paginatedPosProducts(); track p.id) {
                 <div
                   app-card
@@ -317,15 +342,698 @@
         </div>
       </div>
 
-      <!-- CỘT 3: GIỎ HÀNG & THANH TOÁN (RIGHT) -->
+            <!-- CỘT 3: GIỎ HÀNG & THANH TOÁN TĨNH (DESKTOP) -->
       <div
         app-card
-        class="xl:col-span-2 flex flex-col h-auto xl:h-[calc(100vh-115px)] min-h-[400px] xl:min-h-[600px] xl:sticky xl:top-[50px]"
+        class="hidden lg:flex lg:col-span-2 flex-col h-auto lg:h-[calc(100vh-115px)] min-h-[500px] lg:sticky lg:top-[50px] p-6"
       >
         @if (web3Service.walletConnected()) {
           @if (stateService.hasPermission('pos')) {
             @if (stateService.currentShift() && stateService.currentShift().id) {
+              <ng-container *ngTemplateOutlet="cartContentTemplate"></ng-container>
+            } @else {
+              <ng-container *ngTemplateOutlet="startShiftTemplate"></ng-container>
+            }
+          } @else {
+            <ng-container *ngTemplateOutlet="accessRestrictedTemplate"></ng-container>
+          }
+        } @else {
+          <ng-container *ngTemplateOutlet="walletConnectTemplate"></ng-container>
+        }
+      </div>
+  </div>
+  }
+
+  <!-- ==================== MODAL CHỌN SIZE SẢN PHẨM ==================== -->
+  @if (isVariantSelectModalOpen()) {
+    <div class="app-modal-overlay">
+      <!-- Backdrop overlay -->
+      <div (click)="closeVariantSelectModal()" class="app-modal-backdrop"></div>
+
+      <!-- Modal Content -->
+      <div class="app-modal-content animate-in fade-in zoom-in duration-200">
+        <!-- Header -->
+        <div class="app-modal-header">
+          <h4 class="app-modal-title">Chọn size: {{ activeSelectingProduct()?.name }}</h4>
+          <button (click)="closeVariantSelectModal()" class="app-modal-close">
+            <app-icon name="close" class="h-5 w-5" strokeWidth="2.5" />
+          </button>
+        </div>
+
+        <!-- Content (Các biến thể) -->
+        <div class="app-modal-body">
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+            >Kích thước khả dụng</span
+          >
+          <div class="space-y-2">
+            @for (variant of activeSelectingProduct()?.variants; track variant.id) {
+              <button
+                (click)="selectVariantForCart(variant)"
+                [class]="
+                  selectedVariantForCart()?.id === variant.id
+                    ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)]'
+                    : 'border-slate-200 dark:border-slate-800 hover:border-purple-300 dark:hover:border-purple-900 bg-slate-50/50 dark:bg-slate-950/20 text-slate-700 dark:text-slate-300'
+                "
+                class="w-full flex items-center justify-between p-4 rounded-2xl border-2 font-bold text-left transition-all active:scale-[0.98]"
+              >
+                <div class="flex items-center gap-3">
+                  <!-- Custom Radio Circle -->
+                  <div
+                    [class]="
+                      selectedVariantForCart()?.id === variant.id
+                        ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]'
+                        : 'border-slate-300 dark:border-slate-700'
+                    "
+                    class="w-4 h-4 rounded-full border border-2 flex items-center justify-center transition-all shrink-0"
+                  >
+                    @if (selectedVariantForCart()?.id === variant.id) {
+                      <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+                    }
+                  </div>
+                  <span class="text-sm font-bold">{{ variant.variant_name }}</span>
+                </div>
+                <span class="text-sm font-extrabold text-[var(--dynamic-primary)]"
+                  >{{ variant.price | number: '1.0-0' }}đ</span
+                >
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="app-modal-footer">
+          <button
+            app-button
+            variant="cancel"
+            (click)="closeVariantSelectModal()"
+            class="flex-1"
+          >
+            Hủy bỏ
+          </button>
+          <button
+            app-button
+            variant="primary"
+            (click)="confirmVariantAndAddToCart()"
+            class="flex-1"
+          >
+            Thêm vào giỏ
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ==================== MODAL XÁC NHẬN THANH TOÁN POS ==================== -->
+  @if (isPosConfirmModalOpen()) {
+    <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <!-- Backdrop overlay -->
+      <div (click)="isPosConfirmModalOpen.set(false)" class="fixed inset-0 bg-black/40"></div>
+
+      <!-- Modal Content -->
+      <div
+        app-card
+        class="relative max-w-md w-full max-h-[90vh] flex flex-col text-slate-800 dark:text-slate-200"
+      >
+        <!-- Header -->
+        <div
+          class="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-800 shrink-0"
+        >
+          <h4
+            class="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2"
+          >
+            <span>Xác nhận thanh toán</span>
+            <span
+              class="px-2 py-0.5 text-xs bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-lg font-black uppercase tracking-wide"
+            >
+              {{ tableNumber() ? 'Bàn ' + tableNumber() : 'Mang về' }}
+            </span>
+          </h4>
+          <button
+            (click)="isPosConfirmModalOpen.set(false)"
+            class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors"
+          >
+            <app-icon name="close" class="h-5 w-5" strokeWidth="2.5" />
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="flex-1 overflow-y-auto py-4 space-y-4 no-scrollbar">
+          <!-- Tổng sản phẩm -->
+          <div
+            class="flex justify-between items-center text-sm font-semibold text-slate-500 dark:text-slate-400"
+          >
+            <span>Tổng {{ posTotalQuantity() }} sản phẩm</span>
+            <span class="font-bold text-slate-700 dark:text-slate-300">{{
+              cartTotal() | vnd
+            }}</span>
+          </div>
+
+          @if (posSelectedVoucher()) {
+            <!-- Voucher giảm giá -->
+            <div
+              class="flex justify-between items-center text-sm font-semibold text-emerald-600 dark:text-emerald-400 animate-in fade-in duration-150"
+            >
+              <span class="flex items-center gap-1">
+                <span>Voucher giảm giá</span>
+                <span
+                  class="text-[10px] uppercase bg-emerald-100 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded font-black"
+                >
+                  {{ formatVoucherCode(posSelectedVoucher().code) }}
+                  @if (posSelectedVoucher().isNft) {
+                    <span class="text-[10px] font-black text-emerald-700 dark:text-emerald-300 ml-1"
+                      >#{{ posSelectedVoucher().tokenId }}</span
+                    >
+                  }
+                </span>
+              </span>
+              <span class="font-bold">-{{ posSelectedVoucher().discount_amount | vnd }}</span>
+            </div>
+          }
+
+          <hr class="border-slate-100 dark:border-slate-800" />
+
+          <!-- Tổng cộng -->
+          <div class="flex justify-between items-center">
+            <span class="text-sm font-extrabold text-slate-700 dark:text-slate-300">Tổng cộng</span>
+            <span class="text-2xl font-black text-rose-500 dark:text-rose-400">
+              {{ posFinalTotal() | vnd }}
+            </span>
+          </div>
+
+          <!-- Khách đã đưa -->
+          <div class="space-y-1.5" [class.opacity-55]="posPaymentMethod() === 'debt'">
+            <label
+              class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block"
+            >
+              Khách đã đưa
+            </label>
+            <div
+              class="relative rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 overflow-hidden focus-within:border-purple-500/50 transition-all"
+            >
+              <input
+                type="text"
+                inputmode="numeric"
+                [disabled]="posPaymentMethod() === 'debt'"
+                [value]="posPaymentMethod() === 'debt' ? '0' : customerCashGivenFormatted()"
+                (input)="onCustomerCashGivenInput($event)"
+                class="w-full pl-4 pr-12 py-3 bg-transparent text-lg font-black text-blue-600 dark:text-blue-400 focus:outline-none disabled:cursor-not-allowed"
+                placeholder="0"
+              />
+              <span
+                class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400"
+                >đ</span
+              >
+            </div>
+          </div>
+
+          <!-- Tiền thừa -->
+          <div class="flex flex-col pt-1">
+            <span
+              class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider"
+            >
+              {{
+                posPaymentMethod() === 'debt'
+                  ? 'Số tiền ghi nợ (Chờ trả sau)'
+                  : 'Tiền thừa trả khách'
+              }}
+            </span>
+            <span
+              class="text-lg font-black"
+              [class]="
+                posPaymentMethod() === 'debt'
+                  ? 'text-[var(--dynamic-primary)]'
+                  : 'text-emerald-500 dark:text-emerald-400'
+              "
+            >
+              {{ (posPaymentMethod() === 'debt' ? posFinalTotal() : posCashReturn()) | vnd }}
+            </span>
+          </div>
+
+          <hr class="border-slate-100 dark:border-slate-800" />
+
+          <!-- Phương thức thanh toán -->
+          <div class="space-y-1.5">
+            <label
+              class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block"
+            >
+              Phương thức thanh toán
+            </label>
+            <div
+              [class]="
+                settings().show_crypto_payment === '1'
+                  ? 'grid grid-cols-2 sm:grid-cols-5 gap-2'
+                  : 'grid grid-cols-2 sm:grid-cols-4 gap-2'
+              "
+            >
+              <button
+                type="button"
+                (click)="posPaymentMethod.set('cash')"
+                [class]="
+                  posPaymentMethod() === 'cash'
+                    ? 'border-purple-500/50 bg-purple-500/5 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 font-extrabold'
+                    : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                "
+                class="py-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all"
+              >
+                Tiền mặt
+              </button>
+              <button
+                type="button"
+                (click)="posPaymentMethod.set('bank_transfer')"
+                [class]="
+                  posPaymentMethod() === 'bank_transfer'
+                    ? 'border-purple-500/50 bg-purple-500/5 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 font-extrabold'
+                    : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                "
+                class="py-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all"
+              >
+                Ngân hàng
+              </button>
+              <button
+                type="button"
+                (click)="posPaymentMethod.set('e_wallet')"
+                [class]="
+                  posPaymentMethod() === 'e_wallet'
+                    ? 'border-purple-500/50 bg-purple-500/5 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 font-extrabold'
+                    : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                "
+                class="py-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all"
+              >
+                Ví điện tử
+              </button>
+              <button
+                type="button"
+                (click)="posPaymentMethod.set('debt'); customerCashGiven.set(0)"
+                [class]="
+                  posPaymentMethod() === 'debt'
+                    ? 'border-purple-500/50 bg-purple-500/5 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 font-extrabold'
+                    : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                "
+                class="py-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all"
+              >
+                Ghi nợ
+              </button>
+              @if (settings().show_crypto_payment === '1') {
+                <button
+                  type="button"
+                  (click)="posPaymentMethod.set('crypto')"
+                  [class]="
+                    posPaymentMethod() === 'crypto'
+                      ? 'border-purple-500/50 bg-purple-500/5 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 font-extrabold'
+                      : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                  "
+                  class="py-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all"
+                >
+                  Crypto
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- Gợi ý số tiền nhanh (ẩn khi ghi nợ) -->
+          @if (posPaymentMethod() !== 'debt') {
+            <div class="space-y-1.5 animate-in fade-in duration-200">
+              <label
+                class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block"
+              >
+                Gợi ý nhanh số tiền khách đưa
+              </label>
+              <div class="grid grid-cols-4 gap-1.5">
+                @for (
+                  amount of [50000, 100000, 200000, 300000, 400000, 500000, 600000, 700000];
+                  track amount
+                ) {
+                  <button
+                    type="button"
+                    (click)="selectCashGivenQuick(amount)"
+                    class="py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-all border border-transparent hover:border-slate-300 dark:hover:border-slate-700"
+                  >
+                    {{
+                      amount >= 1000000
+                        ? amount / 1000000 + 'M'
+                        : amount >= 1000
+                          ? amount / 1000 + 'k'
+                          : (amount | number)
+                    }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Cảnh báo thiếu khách hàng khi ghi nợ trong modal -->
+          @if (posPaymentMethod() === 'debt' && !posSelectedCustomer()) {
+            <div
+              class="p-2.5 rounded-xl bg-[var(--dynamic-primary)]/10 border border-[var(--dynamic-primary)]/20 text-[var(--dynamic-primary)] text-xs font-semibold flex items-start gap-1.5 animate-pulse"
+            >
+              <app-icon name="warning" class="h-4 w-4 shrink-0 mt-0.5" strokeWidth="2" />
+              <span>Bắt buộc chọn khách hàng khi ghi nợ!</span>
+            </div>
+          }
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex gap-3 shrink-0">
+          <button
+            app-button
+            variant="cancel"
+            (click)="isPosConfirmModalOpen.set(false)"
+            class="flex-1"
+          >
+            Quay lại
+          </button>
+          <button
+            app-button
+            variant="success"
+            (click)="confirmAndSubmitOrder()"
+            [disabled]="posPaymentMethod() === 'debt' && !posSelectedCustomer()"
+            class="flex-1 font-extrabold"
+          >
+            Xác nhận
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ==================== MODAL QUÉT QR KÝ SỐ VOUCHER NFT ==================== -->
+  @if (showSignQrModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <!-- Backdrop overlay (Không cho phép đóng khi click ngoài card) -->
+      <div class="fixed inset-0 bg-black/40"></div>
+
+      <!-- Modal Content -->
+      <div
+        app-card
+        class="relative max-w-sm w-full text-slate-800 dark:text-slate-200 flex flex-col items-center text-center"
+      >
+        <!-- Icon & Title -->
+        <div
+          class="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center text-2xl mb-3 shrink-0"
+        >
+          <app-icon name="shield-check" class="h-4 w-4 shrink-0 inline-block" strokeWidth="2" />
+        </div>
+        <h4 class="text-lg font-extrabold text-slate-800 dark:text-white">Ký số NFT Voucher</h4>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 px-2">
+          Khách hàng quét mã QR dưới đây bằng điện thoại di động để kết nối ví và ký xác thực sử
+          dụng Voucher NFT.
+        </p>
+
+        <!-- QR Code Image -->
+        <div
+          class="my-5 p-3 bg-white dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-inner flex items-center justify-center w-64 h-64 relative group transition-colors duration-300"
+        >
+          @if (signQrCodeUrl()) {
+            <img
+              [src]="signQrCodeUrl()"
+              alt="Mã QR Ký số"
+              class="w-full h-full object-contain rounded-xl dark:invert transition-all duration-300"
+            />
+          } @else {
+            <div class="flex flex-col items-center justify-center text-slate-400 gap-2">
               <div
+                class="w-8 h-8 rounded-full border-3 border-purple-500/20 border-t-purple-500 animate-spin"
+              ></div>
+              <span class="text-xs font-bold">Đang tạo mã QR...</span>
+            </div>
+          }
+        </div>
+
+        <!-- Đường link ký số và nút copy -->
+        @if (signLink()) {
+          <div class="w-full mb-5 px-1">
+            <label
+              class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block text-left mb-1.5"
+            >
+              Đường link ký số
+            </label>
+            <div class="flex gap-2">
+              <input
+                type="text"
+                readonly
+                [value]="signLink()"
+                class="flex-1 form-input-sm truncate text-slate-600 dark:text-slate-300"
+              />
+              <button
+                type="button"
+                (click)="copySignLink()"
+                class="btn-primary btn-sm shrink-0"
+                title="Sao chép liên kết"
+              >
+                <app-icon name="copy" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
+                <span>Copy</span>
+              </button>
+              <a
+                [href]="signLink()"
+                target="_blank"
+                class="btn btn-sm shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                title="Mở liên kết ký số"
+              >
+                <app-icon name="external-link" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
+                <span>Mở link</span>
+              </a>
+            </div>
+          </div>
+        }
+
+        <!-- Order details summary -->
+        <div
+          class="w-full bg-slate-50 dark:bg-slate-950/50 rounded-2xl p-3 border border-slate-100 dark:border-slate-800 text-left mb-5 space-y-1.5"
+        >
+          <div class="flex justify-between items-center text-xs font-bold">
+            <span class="text-slate-400">Mã đơn hàng:</span>
+            <span class="text-slate-700 dark:text-slate-300 font-extrabold">{{
+              signOrderCode()
+            }}</span>
+          </div>
+          <div class="flex justify-between items-center text-xs font-bold">
+            <span class="text-slate-400">Token ID NFT:</span>
+            <span class="text-purple-600 dark:text-purple-400 font-extrabold"
+              >#{{ signTokenId() }}</span
+            >
+          </div>
+          <div
+            class="flex justify-between items-center text-xs font-bold pt-1.5 border-t border-slate-200/50 dark:border-slate-800/50"
+          >
+            <span class="text-slate-400">Trạng thái POS:</span>
+            <span
+              class="text-purple-600 dark:text-purple-400 font-extrabold flex items-center gap-1.5"
+            >
+              <span class="w-2 h-2 rounded-full bg-purple-500 animate-ping"></span>
+              Đang chờ quét và ký...
+            </span>
+          </div>
+        </div>
+
+        <!-- Action buttons -->
+        <button
+          app-button
+          variant="cancel"
+          (click)="showCancelSignConfirmModal.set(true)"
+          class="w-full"
+        >
+          Hủy áp dụng
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- ==================== MODAL XÁC NHẬN HỦY KÝ SỐ VOUCHER NFT ==================== -->
+  @if (showCancelSignConfirmModal()) {
+    <div class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      <!-- Backdrop overlay (Không cho phép đóng khi click ngoài) -->
+      <div class="fixed inset-0 bg-black/40"></div>
+
+      <!-- Modal Content -->
+      <div
+        app-card
+        class="relative max-w-sm w-full text-slate-800 dark:text-slate-200 flex flex-col items-center text-center"
+      >
+        <!-- Warning Icon -->
+        <div
+          class="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center text-2xl mb-3 shrink-0"
+        >
+          <app-icon
+            name="warning"
+            class="h-4 w-4 shrink-0 text-amber-500 inline-block"
+            strokeWidth="2"
+          />
+        </div>
+        <h4 class="text-base font-black text-slate-800 dark:text-white">Hủy yêu cầu ký số?</h4>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 px-3 leading-relaxed">
+          Bạn có chắc chắn muốn hủy yêu cầu ký số Voucher NFT cho hóa đơn này không? Dữ liệu đơn
+          hàng tạm thời sẽ bị xóa bỏ hoàn toàn.
+        </p>
+
+        <!-- Actions -->
+        <div class="w-full flex gap-3 mt-6">
+          <button
+            app-button
+            variant="cancel"
+            (click)="showCancelSignConfirmModal.set(false)"
+            class="flex-1"
+          >
+            Quay lại
+          </button>
+          <button
+            app-button
+            variant="danger"
+            (click)="confirmCancelSign()"
+            class="flex-1"
+          >
+            Xác nhận hủy
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ==================== MODAL QUÉT MÃ VẠCH BẰNG CAMERA TẠI POS ==================== -->
+  <app-modal
+    [isOpen]="isBarcodeScannerOpen()"
+    title="Quét mã vạch sản phẩm"
+    (close)="stopPosBarcodeScan()"
+    size="sm"
+  >
+    <div class="space-y-4 text-center">
+      <p class="text-xs text-slate-400">
+        Đưa mã vạch của sản phẩm vào trước camera để tự động thêm vào giỏ hàng.
+      </p>
+      <div
+        class="relative w-full aspect-video bg-slate-950 rounded-[15px] overflow-hidden border border-slate-200/10"
+      >
+        <div id="pos-barcode-scanner-reader" class="w-full h-full"></div>
+        @if (isScannerLoading()) {
+          <div
+            class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/90 text-white space-y-3 z-10"
+          >
+            <div
+              class="w-8 h-8 rounded-full border-4 border-white/30 border-t-white animate-spin"
+            ></div>
+            <span class="text-xs font-medium">Đang khởi tạo camera...</span>
+          </div>
+        }
+      </div>
+      @if (scannerError()) {
+        <div
+          class="text-xs text-rose-500 bg-rose-50 dark:bg-rose-950/20 p-3 rounded-xl border border-rose-200/20"
+        >
+          {{ scannerError() }}
+        </div>
+      }
+
+      <div
+        class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/60 flex flex-col items-center gap-2"
+      >
+        <span class="text-xs font-semibold text-slate-400"
+          >Hoặc tải ảnh chụp mã vạch lên để quét cục bộ:</span
+        >
+        <label
+          class="btn btn-secondary btn-md flex items-center gap-2 cursor-pointer w-full justify-center rounded-xl font-bold h-[42px]"
+        >
+          <app-icon name="upload" class="h-4 w-4" strokeWidth="2" />
+          <span>Chọn ảnh mã vạch</span>
+          <input
+            type="file"
+            accept="image/*"
+            class="hidden"
+            (change)="onPosBarcodeFileSelected($event)"
+          />
+        </label>
+      </div>
+
+      <div class="pt-2">
+        <button
+          app-button
+          variant="cancel"
+          (click)="stopPosBarcodeScan()"
+          class="w-full"
+        >
+          Hủy quét
+        </button>
+      </div>
+    </div>
+  </app-modal>
+  <!-- ==================== DRAWER GIỎ HÀNG DI ĐỘNG (MOBILE CART DRAWER) ==================== -->
+  <div
+    class="fixed inset-0 z-50 transition-opacity duration-300 lg:hidden"
+    [class.opacity-100]="isMobileCartOpen()"
+    [class.pointer-events-auto]="isMobileCartOpen()"
+    [class.opacity-0]="!isMobileCartOpen()"
+    [class.pointer-events-none]="!isMobileCartOpen()"
+  >
+    <!-- Backdrop overlay tối màu, thống nhất bg-black/40 và không làm mờ nền theo design.md mục 6.2 -->
+    <div
+      (click)="isMobileCartOpen.set(false)"
+      class="absolute inset-0 bg-black/40 transition-opacity"
+    ></div>
+
+    <!-- Panel nội dung Drawer -->
+    <div
+      class="absolute right-0 top-0 bottom-0 w-full sm:w-[450px] bg-white dark:bg-slate-900 shadow-2xl flex flex-col transition-transform duration-300 ease-out transform p-4.5"
+      [class.translate-x-0]="isMobileCartOpen()"
+      [class.translate-x-full]="!isMobileCartOpen()"
+    >
+      <!-- Header Drawer di động -->
+      <div
+        class="flex items-center justify-between pb-3.5 border-b border-slate-200 dark:border-slate-800 shrink-0"
+      >
+        <h4
+          class="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2"
+        >
+          <app-icon name="cart" class="h-5 w-5 text-slate-500 shrink-0" strokeWidth="2" />
+          <span>Giỏ hàng bán hàng</span>
+        </h4>
+        <button
+          type="button"
+          (click)="isMobileCartOpen.set(false)"
+          class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-850 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center transition-colors active:scale-95 shrink-0"
+          title="Đóng giỏ hàng"
+        >
+          <app-icon name="close" class="h-4.5 w-4.5" strokeWidth="2.5" />
+        </button>
+      </div>
+
+      <!-- Vùng nội dung giỏ hàng trích xuất -->
+      <div class="flex-1 flex flex-col min-h-0 overflow-y-auto no-scrollbar pt-3">
+        <ng-container *ngTemplateOutlet="cartContentTemplate"></ng-container>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Bottom Bar tổng hợp giỏ hàng trên di động -->
+  @if (web3Service.walletConnected() && stateService.hasPermission('pos') && stateService.currentShift() && stateService.currentShift().id && cart().length > 0) {
+    <div
+      class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200/80 dark:border-slate-800/80 p-4 shadow-[0_-8px_30px_rgb(0,0,0,0.08)] flex items-center justify-between animate-in slide-in-from-bottom duration-300"
+    >
+      <div class="flex flex-col gap-0.5">
+        <span
+          class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none"
+        >
+          Tạm tính ({{ posTotalQuantity() }} món)
+        </span>
+        <span class="text-lg font-black text-purple-600 dark:text-purple-400 leading-tight">
+          {{ posFinalTotal() | vnd }}
+        </span>
+      </div>
+      <button
+        app-button
+        variant="primary"
+        type="button"
+        (click)="isMobileCartOpen.set(true)"
+        class="px-5 h-11 shadow-md shadow-[var(--color-primary)]/20 active:scale-95 transition-all"
+      >
+        <app-icon name="cart" class="h-4.5 w-4.5" strokeWidth="2.5" />
+        <span>Xem giỏ hàng</span>
+      </button>
+    </div>
+  }
+
+  <!-- ==================== TEMPLATES DÙNG CHUNG CHO POS ==================== -->
+  
+  <!-- 1. Template Giỏ hàng thực tế -->
+  <ng-template #cartContentTemplate>
+    <div
                 class="flex items-center justify-between pb-4 border-b border-slate-200/60 dark:border-slate-800/60"
               >
                 <h4
@@ -1053,8 +1761,11 @@
                   </button>
                 </div>
               }
-            } @else {
-              <!-- GIAO DIỆN BẮT BUỘC MỞ CA TRỰC (SHIFT GUARD) -->
+  </ng-template>
+
+  <!-- 2. Template Form mở ca làm việc -->
+  <ng-template #startShiftTemplate>
+    <!-- GIAO DIỆN BẮT BUỘC MỞ CA TRỰC (SHIFT GUARD) -->
               <div class="flex-1 flex flex-col justify-center py-6 px-4 text-center space-y-6">
                 <div
                   class="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500/20 to-purple-500/10 flex items-center justify-center mx-auto animate-pulse"
@@ -1143,14 +1854,19 @@
                   </button>
                 </div>
               </div>
-            }
-          } @else {
-            <div class="flex-1 flex flex-col justify-center py-6 px-4 text-center">
+            
+  </ng-template>
+
+  <!-- 3. Template Banner hạn chế quyền truy cập -->
+  <ng-template #accessRestrictedTemplate>
+    <div class="flex-1 flex flex-col justify-center py-6 px-4 text-center">
               <app-access-restricted pageName="Bán hàng POS"></app-access-restricted>
             </div>
-          }
-        } @else {
-          <!-- BANNER KẾT NỐI VÍ TRỰC QUAN KHI CHƯA ĐĂNG NHẬP -->
+  </ng-template>
+
+  <!-- 4. Template Banner kết nối ví Web3 -->
+  <ng-template #walletConnectTemplate>
+    <!-- BANNER KẾT NỐI VÍ TRỰC QUAN KHI CHƯA ĐĂNG NHẬP -->
           <div
             class="flex-1 flex flex-col items-center justify-center text-center p-6 gap-5 animate-in fade-in duration-300"
           >
@@ -1184,599 +1900,5 @@
               <span>{{ stateService.isCurrentlySigning() ? 'Đang xử lý...' : 'Kết nối ví & Đăng nhập' }}</span>
             </button>
           </div>
-        }
-      </div>
-    </div>
-  }
-
-  <!-- ==================== MODAL CHỌN SIZE SẢN PHẨM ==================== -->
-  @if (isVariantSelectModalOpen()) {
-    <div class="app-modal-overlay">
-      <!-- Backdrop overlay -->
-      <div (click)="closeVariantSelectModal()" class="app-modal-backdrop"></div>
-
-      <!-- Modal Content -->
-      <div class="app-modal-content animate-in fade-in zoom-in duration-200">
-        <!-- Header -->
-        <div class="app-modal-header">
-          <h4 class="app-modal-title">Chọn size: {{ activeSelectingProduct()?.name }}</h4>
-          <button (click)="closeVariantSelectModal()" class="app-modal-close">
-            <app-icon name="close" class="h-5 w-5" strokeWidth="2.5" />
-          </button>
-        </div>
-
-        <!-- Content (Các biến thể) -->
-        <div class="app-modal-body">
-          <span class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-            >Kích thước khả dụng</span
-          >
-          <div class="space-y-2">
-            @for (variant of activeSelectingProduct()?.variants; track variant.id) {
-              <button
-                (click)="selectVariantForCart(variant)"
-                [class]="
-                  selectedVariantForCart()?.id === variant.id
-                    ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)]'
-                    : 'border-slate-200 dark:border-slate-800 hover:border-purple-300 dark:hover:border-purple-900 bg-slate-50/50 dark:bg-slate-950/20 text-slate-700 dark:text-slate-300'
-                "
-                class="w-full flex items-center justify-between p-4 rounded-2xl border-2 font-bold text-left transition-all active:scale-[0.98]"
-              >
-                <div class="flex items-center gap-3">
-                  <!-- Custom Radio Circle -->
-                  <div
-                    [class]="
-                      selectedVariantForCart()?.id === variant.id
-                        ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]'
-                        : 'border-slate-300 dark:border-slate-700'
-                    "
-                    class="w-4 h-4 rounded-full border border-2 flex items-center justify-center transition-all shrink-0"
-                  >
-                    @if (selectedVariantForCart()?.id === variant.id) {
-                      <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
-                    }
-                  </div>
-                  <span class="text-sm font-bold">{{ variant.variant_name }}</span>
-                </div>
-                <span class="text-sm font-extrabold text-[var(--dynamic-primary)]"
-                  >{{ variant.price | number: '1.0-0' }}đ</span
-                >
-              </button>
-            }
-          </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="app-modal-footer">
-          <button
-            app-button
-            variant="cancel"
-            (click)="closeVariantSelectModal()"
-            class="flex-1"
-          >
-            Hủy bỏ
-          </button>
-          <button
-            app-button
-            variant="primary"
-            (click)="confirmVariantAndAddToCart()"
-            class="flex-1"
-          >
-            Thêm vào giỏ
-          </button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- ==================== MODAL XÁC NHẬN THANH TOÁN POS ==================== -->
-  @if (isPosConfirmModalOpen()) {
-    <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <!-- Backdrop overlay -->
-      <div (click)="isPosConfirmModalOpen.set(false)" class="fixed inset-0 bg-black/40"></div>
-
-      <!-- Modal Content -->
-      <div
-        app-card
-        class="relative max-w-md w-full max-h-[90vh] flex flex-col text-slate-800 dark:text-slate-200"
-      >
-        <!-- Header -->
-        <div
-          class="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-800 shrink-0"
-        >
-          <h4
-            class="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2"
-          >
-            <span>Xác nhận thanh toán</span>
-            <span
-              class="px-2 py-0.5 text-xs bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-lg font-black uppercase tracking-wide"
-            >
-              {{ tableNumber() ? 'Bàn ' + tableNumber() : 'Mang về' }}
-            </span>
-          </h4>
-          <button
-            (click)="isPosConfirmModalOpen.set(false)"
-            class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors"
-          >
-            <app-icon name="close" class="h-5 w-5" strokeWidth="2.5" />
-          </button>
-        </div>
-
-        <!-- Body -->
-        <div class="flex-1 overflow-y-auto py-4 space-y-4 no-scrollbar">
-          <!-- Tổng sản phẩm -->
-          <div
-            class="flex justify-between items-center text-sm font-semibold text-slate-500 dark:text-slate-400"
-          >
-            <span>Tổng {{ posTotalQuantity() }} sản phẩm</span>
-            <span class="font-bold text-slate-700 dark:text-slate-300">{{
-              cartTotal() | vnd
-            }}</span>
-          </div>
-
-          @if (posSelectedVoucher()) {
-            <!-- Voucher giảm giá -->
-            <div
-              class="flex justify-between items-center text-sm font-semibold text-emerald-600 dark:text-emerald-400 animate-in fade-in duration-150"
-            >
-              <span class="flex items-center gap-1">
-                <span>Voucher giảm giá</span>
-                <span
-                  class="text-[10px] uppercase bg-emerald-100 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded font-black"
-                >
-                  {{ formatVoucherCode(posSelectedVoucher().code) }}
-                  @if (posSelectedVoucher().isNft) {
-                    <span class="text-[10px] font-black text-emerald-700 dark:text-emerald-300 ml-1"
-                      >#{{ posSelectedVoucher().tokenId }}</span
-                    >
-                  }
-                </span>
-              </span>
-              <span class="font-bold">-{{ posSelectedVoucher().discount_amount | vnd }}</span>
-            </div>
-          }
-
-          <hr class="border-slate-100 dark:border-slate-800" />
-
-          <!-- Tổng cộng -->
-          <div class="flex justify-between items-center">
-            <span class="text-sm font-extrabold text-slate-700 dark:text-slate-300">Tổng cộng</span>
-            <span class="text-2xl font-black text-rose-500 dark:text-rose-400">
-              {{ posFinalTotal() | vnd }}
-            </span>
-          </div>
-
-          <!-- Khách đã đưa -->
-          <div class="space-y-1.5" [class.opacity-55]="posPaymentMethod() === 'debt'">
-            <label
-              class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block"
-            >
-              Khách đã đưa
-            </label>
-            <div
-              class="relative rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 overflow-hidden focus-within:border-purple-500/50 transition-all"
-            >
-              <input
-                type="text"
-                inputmode="numeric"
-                [disabled]="posPaymentMethod() === 'debt'"
-                [value]="posPaymentMethod() === 'debt' ? '0' : customerCashGivenFormatted()"
-                (input)="onCustomerCashGivenInput($event)"
-                class="w-full pl-4 pr-12 py-3 bg-transparent text-lg font-black text-blue-600 dark:text-blue-400 focus:outline-none disabled:cursor-not-allowed"
-                placeholder="0"
-              />
-              <span
-                class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400"
-                >đ</span
-              >
-            </div>
-          </div>
-
-          <!-- Tiền thừa -->
-          <div class="flex flex-col pt-1">
-            <span
-              class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider"
-            >
-              {{
-                posPaymentMethod() === 'debt'
-                  ? 'Số tiền ghi nợ (Chờ trả sau)'
-                  : 'Tiền thừa trả khách'
-              }}
-            </span>
-            <span
-              class="text-lg font-black"
-              [class]="
-                posPaymentMethod() === 'debt'
-                  ? 'text-[var(--dynamic-primary)]'
-                  : 'text-emerald-500 dark:text-emerald-400'
-              "
-            >
-              {{ (posPaymentMethod() === 'debt' ? posFinalTotal() : posCashReturn()) | vnd }}
-            </span>
-          </div>
-
-          <hr class="border-slate-100 dark:border-slate-800" />
-
-          <!-- Phương thức thanh toán -->
-          <div class="space-y-1.5">
-            <label
-              class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block"
-            >
-              Phương thức thanh toán
-            </label>
-            <div
-              [class]="
-                settings().show_crypto_payment === '1'
-                  ? 'grid grid-cols-2 sm:grid-cols-5 gap-2'
-                  : 'grid grid-cols-2 sm:grid-cols-4 gap-2'
-              "
-            >
-              <button
-                type="button"
-                (click)="posPaymentMethod.set('cash')"
-                [class]="
-                  posPaymentMethod() === 'cash'
-                    ? 'border-purple-500/50 bg-purple-500/5 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 font-extrabold'
-                    : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                "
-                class="py-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all"
-              >
-                Tiền mặt
-              </button>
-              <button
-                type="button"
-                (click)="posPaymentMethod.set('bank_transfer')"
-                [class]="
-                  posPaymentMethod() === 'bank_transfer'
-                    ? 'border-purple-500/50 bg-purple-500/5 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 font-extrabold'
-                    : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                "
-                class="py-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all"
-              >
-                Ngân hàng
-              </button>
-              <button
-                type="button"
-                (click)="posPaymentMethod.set('e_wallet')"
-                [class]="
-                  posPaymentMethod() === 'e_wallet'
-                    ? 'border-purple-500/50 bg-purple-500/5 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 font-extrabold'
-                    : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                "
-                class="py-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all"
-              >
-                Ví điện tử
-              </button>
-              <button
-                type="button"
-                (click)="posPaymentMethod.set('debt'); customerCashGiven.set(0)"
-                [class]="
-                  posPaymentMethod() === 'debt'
-                    ? 'border-purple-500/50 bg-purple-500/5 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 font-extrabold'
-                    : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                "
-                class="py-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all"
-              >
-                Ghi nợ
-              </button>
-              @if (settings().show_crypto_payment === '1') {
-                <button
-                  type="button"
-                  (click)="posPaymentMethod.set('crypto')"
-                  [class]="
-                    posPaymentMethod() === 'crypto'
-                      ? 'border-purple-500/50 bg-purple-500/5 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 font-extrabold'
-                      : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                  "
-                  class="py-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all"
-                >
-                  Crypto
-                </button>
-              }
-            </div>
-          </div>
-
-          <!-- Gợi ý số tiền nhanh (ẩn khi ghi nợ) -->
-          @if (posPaymentMethod() !== 'debt') {
-            <div class="space-y-1.5 animate-in fade-in duration-200">
-              <label
-                class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block"
-              >
-                Gợi ý nhanh số tiền khách đưa
-              </label>
-              <div class="grid grid-cols-4 gap-1.5">
-                @for (
-                  amount of [50000, 100000, 200000, 300000, 400000, 500000, 600000, 700000];
-                  track amount
-                ) {
-                  <button
-                    type="button"
-                    (click)="selectCashGivenQuick(amount)"
-                    class="py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-all border border-transparent hover:border-slate-300 dark:hover:border-slate-700"
-                  >
-                    {{
-                      amount >= 1000000
-                        ? amount / 1000000 + 'M'
-                        : amount >= 1000
-                          ? amount / 1000 + 'k'
-                          : (amount | number)
-                    }}
-                  </button>
-                }
-              </div>
-            </div>
-          }
-
-          <!-- Cảnh báo thiếu khách hàng khi ghi nợ trong modal -->
-          @if (posPaymentMethod() === 'debt' && !posSelectedCustomer()) {
-            <div
-              class="p-2.5 rounded-xl bg-[var(--dynamic-primary)]/10 border border-[var(--dynamic-primary)]/20 text-[var(--dynamic-primary)] text-xs font-semibold flex items-start gap-1.5 animate-pulse"
-            >
-              <app-icon name="warning" class="h-4 w-4 shrink-0 mt-0.5" strokeWidth="2" />
-              <span>Bắt buộc chọn khách hàng khi ghi nợ!</span>
-            </div>
-          }
-        </div>
-
-        <!-- Footer Actions -->
-        <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex gap-3 shrink-0">
-          <button
-            app-button
-            variant="cancel"
-            (click)="isPosConfirmModalOpen.set(false)"
-            class="flex-1"
-          >
-            Quay lại
-          </button>
-          <button
-            app-button
-            variant="success"
-            (click)="confirmAndSubmitOrder()"
-            [disabled]="posPaymentMethod() === 'debt' && !posSelectedCustomer()"
-            class="flex-1 font-extrabold"
-          >
-            Xác nhận
-          </button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- ==================== MODAL QUÉT QR KÝ SỐ VOUCHER NFT ==================== -->
-  @if (showSignQrModal()) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <!-- Backdrop overlay (Không cho phép đóng khi click ngoài card) -->
-      <div class="fixed inset-0 bg-black/40"></div>
-
-      <!-- Modal Content -->
-      <div
-        app-card
-        class="relative max-w-sm w-full text-slate-800 dark:text-slate-200 flex flex-col items-center text-center"
-      >
-        <!-- Icon & Title -->
-        <div
-          class="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center text-2xl mb-3 shrink-0"
-        >
-          <app-icon name="shield-check" class="h-4 w-4 shrink-0 inline-block" strokeWidth="2" />
-        </div>
-        <h4 class="text-lg font-extrabold text-slate-800 dark:text-white">Ký số NFT Voucher</h4>
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 px-2">
-          Khách hàng quét mã QR dưới đây bằng điện thoại di động để kết nối ví và ký xác thực sử
-          dụng Voucher NFT.
-        </p>
-
-        <!-- QR Code Image -->
-        <div
-          class="my-5 p-3 bg-white dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-inner flex items-center justify-center w-64 h-64 relative group transition-colors duration-300"
-        >
-          @if (signQrCodeUrl()) {
-            <img
-              [src]="signQrCodeUrl()"
-              alt="Mã QR Ký số"
-              class="w-full h-full object-contain rounded-xl dark:invert transition-all duration-300"
-            />
-          } @else {
-            <div class="flex flex-col items-center justify-center text-slate-400 gap-2">
-              <div
-                class="w-8 h-8 rounded-full border-3 border-purple-500/20 border-t-purple-500 animate-spin"
-              ></div>
-              <span class="text-xs font-bold">Đang tạo mã QR...</span>
-            </div>
-          }
-        </div>
-
-        <!-- Đường link ký số và nút copy -->
-        @if (signLink()) {
-          <div class="w-full mb-5 px-1">
-            <label
-              class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block text-left mb-1.5"
-            >
-              Đường link ký số
-            </label>
-            <div class="flex gap-2">
-              <input
-                type="text"
-                readonly
-                [value]="signLink()"
-                class="flex-1 form-input-sm truncate text-slate-600 dark:text-slate-300"
-              />
-              <button
-                type="button"
-                (click)="copySignLink()"
-                class="btn-primary btn-sm shrink-0"
-                title="Sao chép liên kết"
-              >
-                <app-icon name="copy" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
-                <span>Copy</span>
-              </button>
-              <a
-                [href]="signLink()"
-                target="_blank"
-                class="btn btn-sm shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
-                title="Mở liên kết ký số"
-              >
-                <app-icon name="external-link" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
-                <span>Mở link</span>
-              </a>
-            </div>
-          </div>
-        }
-
-        <!-- Order details summary -->
-        <div
-          class="w-full bg-slate-50 dark:bg-slate-950/50 rounded-2xl p-3 border border-slate-100 dark:border-slate-800 text-left mb-5 space-y-1.5"
-        >
-          <div class="flex justify-between items-center text-xs font-bold">
-            <span class="text-slate-400">Mã đơn hàng:</span>
-            <span class="text-slate-700 dark:text-slate-300 font-extrabold">{{
-              signOrderCode()
-            }}</span>
-          </div>
-          <div class="flex justify-between items-center text-xs font-bold">
-            <span class="text-slate-400">Token ID NFT:</span>
-            <span class="text-purple-600 dark:text-purple-400 font-extrabold"
-              >#{{ signTokenId() }}</span
-            >
-          </div>
-          <div
-            class="flex justify-between items-center text-xs font-bold pt-1.5 border-t border-slate-200/50 dark:border-slate-800/50"
-          >
-            <span class="text-slate-400">Trạng thái POS:</span>
-            <span
-              class="text-purple-600 dark:text-purple-400 font-extrabold flex items-center gap-1.5"
-            >
-              <span class="w-2 h-2 rounded-full bg-purple-500 animate-ping"></span>
-              Đang chờ quét và ký...
-            </span>
-          </div>
-        </div>
-
-        <!-- Action buttons -->
-        <button
-          app-button
-          variant="cancel"
-          (click)="showCancelSignConfirmModal.set(true)"
-          class="w-full"
-        >
-          Hủy áp dụng
-        </button>
-      </div>
-    </div>
-  }
-
-  <!-- ==================== MODAL XÁC NHẬN HỦY KÝ SỐ VOUCHER NFT ==================== -->
-  @if (showCancelSignConfirmModal()) {
-    <div class="fixed inset-0 z-[60] flex items-center justify-center p-4">
-      <!-- Backdrop overlay (Không cho phép đóng khi click ngoài) -->
-      <div class="fixed inset-0 bg-black/40"></div>
-
-      <!-- Modal Content -->
-      <div
-        app-card
-        class="relative max-w-sm w-full text-slate-800 dark:text-slate-200 flex flex-col items-center text-center"
-      >
-        <!-- Warning Icon -->
-        <div
-          class="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center text-2xl mb-3 shrink-0"
-        >
-          <app-icon
-            name="warning"
-            class="h-4 w-4 shrink-0 text-amber-500 inline-block"
-            strokeWidth="2"
-          />
-        </div>
-        <h4 class="text-base font-black text-slate-800 dark:text-white">Hủy yêu cầu ký số?</h4>
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 px-3 leading-relaxed">
-          Bạn có chắc chắn muốn hủy yêu cầu ký số Voucher NFT cho hóa đơn này không? Dữ liệu đơn
-          hàng tạm thời sẽ bị xóa bỏ hoàn toàn.
-        </p>
-
-        <!-- Actions -->
-        <div class="w-full flex gap-3 mt-6">
-          <button
-            app-button
-            variant="cancel"
-            (click)="showCancelSignConfirmModal.set(false)"
-            class="flex-1"
-          >
-            Quay lại
-          </button>
-          <button
-            app-button
-            variant="danger"
-            (click)="confirmCancelSign()"
-            class="flex-1"
-          >
-            Xác nhận hủy
-          </button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- ==================== MODAL QUÉT MÃ VẠCH BẰNG CAMERA TẠI POS ==================== -->
-  <app-modal
-    [isOpen]="isBarcodeScannerOpen()"
-    title="Quét mã vạch sản phẩm"
-    (close)="stopPosBarcodeScan()"
-    size="sm"
-  >
-    <div class="space-y-4 text-center">
-      <p class="text-xs text-slate-400">
-        Đưa mã vạch của sản phẩm vào trước camera để tự động thêm vào giỏ hàng.
-      </p>
-      <div
-        class="relative w-full aspect-video bg-slate-950 rounded-[15px] overflow-hidden border border-slate-200/10"
-      >
-        <div id="pos-barcode-scanner-reader" class="w-full h-full"></div>
-        @if (isScannerLoading()) {
-          <div
-            class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/90 text-white space-y-3 z-10"
-          >
-            <div
-              class="w-8 h-8 rounded-full border-4 border-white/30 border-t-white animate-spin"
-            ></div>
-            <span class="text-xs font-medium">Đang khởi tạo camera...</span>
-          </div>
-        }
-      </div>
-      @if (scannerError()) {
-        <div
-          class="text-xs text-rose-500 bg-rose-50 dark:bg-rose-950/20 p-3 rounded-xl border border-rose-200/20"
-        >
-          {{ scannerError() }}
-        </div>
-      }
-
-      <div
-        class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/60 flex flex-col items-center gap-2"
-      >
-        <span class="text-xs font-semibold text-slate-400"
-          >Hoặc tải ảnh chụp mã vạch lên để quét cục bộ:</span
-        >
-        <label
-          class="btn btn-secondary btn-md flex items-center gap-2 cursor-pointer w-full justify-center rounded-xl font-bold h-[42px]"
-        >
-          <app-icon name="upload" class="h-4 w-4" strokeWidth="2" />
-          <span>Chọn ảnh mã vạch</span>
-          <input
-            type="file"
-            accept="image/*"
-            class="hidden"
-            (change)="onPosBarcodeFileSelected($event)"
-          />
-        </label>
-      </div>
-
-      <div class="pt-2">
-        <button
-          app-button
-          variant="cancel"
-          (click)="stopPosBarcodeScan()"
-          class="w-full"
-        >
-          Hủy quét
-        </button>
-      </div>
-    </div>
-  </app-modal>
+  </ng-template>
 </div>

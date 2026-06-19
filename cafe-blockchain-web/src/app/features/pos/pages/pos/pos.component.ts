@@ -83,6 +83,7 @@ export class PosComponent implements OnInit, OnDestroy {
   public readonly selectedVariantForCart = signal<any>(null);
   public readonly isVariantSelectModalOpen = signal<boolean>(false);
   public readonly isFilterPanelOpen = signal<boolean>(false);
+  public readonly isMobileCartOpen = signal<boolean>(false);
 
   // Trạng thái Tìm kiếm & Chọn Khách hàng tại POS
   public readonly posCustomerSearchQuery = signal<string>('');
@@ -386,10 +387,12 @@ export class PosComponent implements OnInit, OnDestroy {
   public clearCart() {
     this.stateService.clearCart();
     this.closeVariantSelectModal();
+    this.isMobileCartOpen.set(false);
   }
 
   public cancelEditOrder() {
     this.stateService.cancelEditOrder();
+    this.isMobileCartOpen.set(false);
   }
 
   public togglePaymentDropdown() {
@@ -827,6 +830,7 @@ export class PosComponent implements OnInit, OnDestroy {
             // POS thu ngân chỉ cần dọn dẹp giỏ hàng và tải lại danh sách đơn hàng
             this.stateService.clearCart();
             this.isOrderSubmitting.set(false);
+            this.isMobileCartOpen.set(false);
             this.stateService.refreshOrders();
             if (orderData.payment_method === 'debt') {
               this.stateService.refreshCustomers(true);
@@ -897,6 +901,7 @@ export class PosComponent implements OnInit, OnDestroy {
           this.stateService.clearCart();
           this.editingOrderId.set(null);
           this.isOrderSubmitting.set(false);
+          this.isMobileCartOpen.set(false);
           this.stateService.refreshOrders();
           if (orderData.payment_method === 'debt') {
             this.stateService.refreshCustomers(true);
