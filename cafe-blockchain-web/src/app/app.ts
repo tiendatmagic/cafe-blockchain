@@ -10,6 +10,7 @@ import { Web3OverlaysComponent } from '@features/blockchain/components/web3-over
 import { ShiftModalsComponent } from '@features/shifts/components/shift-modals/shift-modals.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { Web3PublicHeaderComponent } from '@features/marketplace/components/web3-public-header/web3-public-header.component';
+import { SubscriptionBlockedComponent } from './shared/components/subscription-blocked/subscription-blocked.component';
 
 @Component({
   selector: 'app-root',
@@ -23,7 +24,8 @@ import { Web3PublicHeaderComponent } from '@features/marketplace/components/web3
     Web3OverlaysComponent,
     ShiftModalsComponent,
     IconComponent,
-    Web3PublicHeaderComponent
+    Web3PublicHeaderComponent,
+    SubscriptionBlockedComponent
   ],
   templateUrl: './app.html',
   styleUrl: './app.css'
@@ -92,6 +94,20 @@ export class App implements OnInit, OnDestroy {
 
   public readonly isMaintenanceMode = computed(() => {
     return this.stateService.isMaintenance() && !this.isExplorerRoute();
+  });
+
+  public readonly isSubscriptionBlocked = computed(() => {
+    if (this.isPublicLayout) return false;
+    if (!this.web3Service.walletConnected()) return false;
+    if (this.stateService.isSuperAdmin()) return false;
+    
+    if (this.stateService.subscriptionStatus() === 'suspended') return true;
+    
+    const expiresAt = this.stateService.subscriptionExpiresAt();
+    if (expiresAt) {
+      return new Date().getTime() > new Date(expiresAt).getTime();
+    }
+    return false;
   });
 
   private routerSub?: any;

@@ -61,7 +61,15 @@ class AuthController extends Controller
             $staff = Staff::where('wallet_address', $address)->with('role')->first();
 
             // Find or create user
-            $user = User::firstOrCreate(['wallet_address' => $address]);
+            $user = User::where('wallet_address', $address)->first();
+            if (!$user) {
+                $user = new User();
+                $user->wallet_address = $address;
+                $user->plan_code = 'free';
+                $user->subscription_expires_at = now()->addDays(7);
+                $user->subscription_status = 'active';
+                $user->save();
+            }
 
             $roleName = 'Chủ cửa hàng';
             $permissions = null;
@@ -111,12 +119,36 @@ class AuthController extends Controller
                 $request->secure() ? 'None' : 'Lax'
             );
 
+            // Lấy thông tin gói cước (Dựa trên chủ quán)
+            $ownerAddress = strtolower($user->store_owner_address ?: $user->wallet_address);
+            $owner = User::where('wallet_address', $ownerAddress)->first();
+            
+            $planCode = $owner ? ($owner->plan_code ?: 'free') : 'free';
+            $planExpiresAt = $owner ? $owner->subscription_expires_at : null;
+            $planStatus = $owner ? ($owner->subscription_status ?: 'active') : 'active';
+            
+            $plan = \App\Domain\Entities\SubscriptionPlan::where('code', $planCode)->first();
+            $planFeatures = $plan ? $plan->features : null;
+
+            // Kiểm tra xem có phải là Super Admin không
+            $superAdminEnv = env('SUPER_ADMIN_ADDRESSES', '');
+            $superAdmins = array_map('trim', explode(',', $superAdminEnv));
+            $superAdmins = array_map('strtolower', array_filter($superAdmins));
+            $isSuperAdmin = in_array(strtolower($address), $superAdmins);
+
             return response()->json([
                 'success' => true,
                 'token' => $token,
                 'address' => $address,
                 'role' => $roleName,
-                'permissions' => $permissions
+                'permissions' => $permissions,
+                'is_super_admin' => $isSuperAdmin,
+                'subscription' => [
+                    'plan_code' => $planCode,
+                    'subscription_expires_at' => $planExpiresAt,
+                    'subscription_status' => $planStatus,
+                    'features' => $planFeatures
+                ]
             ])->withCookie($cookie)->withCookie($loggedCookie);
         }
 

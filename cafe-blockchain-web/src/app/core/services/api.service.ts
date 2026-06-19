@@ -483,5 +483,42 @@ export class ApiService {
   public deletePaymentMethod(id: number | string): Observable<any> {
     return this.http.delete(`${this.baseUrl}/payment-methods/${id}`, { headers: this.getHeaders() });
   }
+
+  // --- Super Admin SaaS APIs ---
+  public getAdminTenants(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/admin/tenants`, { headers: this.getHeaders() });
+  }
+
+  public updateTenantSubscription(id: number, data: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/admin/tenants/${id}/subscription`, data, { headers: this.getHeaders() });
+  }
+
+  public getAdminPlans(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/admin/plans`, { headers: this.getHeaders() });
+  }
+
+  public createAdminPlan(plan: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/admin/plans`, plan, { headers: this.getHeaders() });
+  }
+
+  public updateAdminPlan(id: number, plan: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/admin/plans/${id}`, plan, { headers: this.getHeaders() });
+  }
+
+  public deleteAdminPlan(id: number): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/admin/plans/${id}`, { headers: this.getHeaders() });
+  }
+
+  public getAdminSystemSettings(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/admin/system-settings`, { headers: this.getHeaders() });
+  }
+
+  public updateAdminSystemSettings(data: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/admin/system-settings`, data, { headers: this.getHeaders() });
+  }
+
+  public cleanTokens(): Observable<any> {
+    return this.http.post(`${this.baseUrl}/admin/clean-tokens`, {}, { headers: this.getHeaders() });
+  }
 }
 

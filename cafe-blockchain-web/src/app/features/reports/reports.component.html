@@ -257,6 +257,7 @@
                 <h5 class="text-sm font-extrabold text-slate-800 dark:text-white">Thống kê tiêu thụ món ăn</h5>
                 <p class="text-xs text-slate-400">Bấm vào tiêu đề cột để thay đổi cách sắp xếp (bán chạy hoặc bán chậm)</p>
               </div>
+            @if (stateService.hasFeature('enable_excel_export')) {
               <button
                 (click)="exportToExcel('products')"
                 class="px-3 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-black transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-1.5 shadow-sm"
@@ -264,6 +265,16 @@
                 <app-icon name="download" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
                 <span>Xuất Excel (XLSX)</span>
               </button>
+            } @else {
+              <button
+                [disabled]="true"
+                class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 text-slate-400 dark:text-slate-500 text-xs font-black flex items-center gap-1.5 shadow-sm cursor-not-allowed opacity-60"
+                title="Tính năng này yêu cầu gói cước Pro hoặc Ultra"
+              >
+                <app-icon name="lock" class="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" strokeWidth="2.5" />
+                <span>Xuất Excel (PRO)</span>
+              </button>
+            }
             </div>
 
             <app-table
@@ -325,6 +336,7 @@
                 <h5 class="text-sm font-extrabold text-slate-800 dark:text-white">Thống kê chi tiêu khách hàng</h5>
                 <p class="text-xs text-slate-400">Bấm vào tiêu đề cột để thay đổi cách sắp xếp (chi tiêu nhiều hoặc ít)</p>
               </div>
+            @if (stateService.hasFeature('enable_excel_export')) {
               <button
                 (click)="exportToExcel('customers')"
                 class="px-3 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-black transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-1.5 shadow-sm"
@@ -332,6 +344,16 @@
                 <app-icon name="download" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
                 <span>Xuất Excel (XLSX)</span>
               </button>
+            } @else {
+              <button
+                [disabled]="true"
+                class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 text-slate-400 dark:text-slate-500 text-xs font-black flex items-center gap-1.5 shadow-sm cursor-not-allowed opacity-60"
+                title="Tính năng này yêu cầu gói cước Pro hoặc Ultra"
+              >
+                <app-icon name="lock" class="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" strokeWidth="2.5" />
+                <span>Xuất Excel (PRO)</span>
+              </button>
+            }
             </div>
 
             <app-table

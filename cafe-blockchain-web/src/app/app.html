@@ -125,3 +125,8 @@
 
 <!-- CÁC MODAL QUẢN LÝ CA TRỰC -->
 <app-shift-modals></app-shift-modals>
+
+<!-- MÀN HÌNH KHÓA THUÊ BAO SAAS -->
+@if (isSubscriptionBlocked()) {
+  <app-subscription-blocked></app-subscription-blocked>
+}

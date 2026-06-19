@@ -19,6 +19,7 @@ export const routes: Routes = [
   { path: 'claim-points', loadComponent: () => import('@features/claim-points/claim-points.component').then(m => m.ClaimPointsComponent) },
   { path: 'marketplace', loadComponent: () => import('@features/marketplace/marketplace.component').then(m => m.MarketplaceComponent) },
   { path: 'store/:slug', loadComponent: () => import('@features/storefront/pages/store/store.component').then(m => m.StoreComponent) },
+  { path: 'admin', loadComponent: () => import('@features/admin/admin-saas.component').then(m => m.AdminSaaSComponent) },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   { path: '**', redirectTo: 'dashboard' }
 ];

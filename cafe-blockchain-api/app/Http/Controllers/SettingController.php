@@ -398,7 +398,7 @@ class SettingController extends Controller
             'y' => 'ý|ỳ|ỷ|ỹ|ỵ',
             'A' => 'Á|À|Ả|Ã|Ạ|Ă|Ắ|Ằ|Ẳ|Ẵ|Ặ|Â|Ấ|Ầ|Ẩ|Ẫ|Ậ',
             'D' => 'Đ',
-            'E' => 'É|È|Ẻ|Ẽ|Ẹ|Ê|Ế|Ề|Ể|Ễ|Ệ',
+            'E' => 'É|È|Ẻ|Ẹ|Ê|Ế|Ề|Ể|Ễ|Ệ',
             'I' => 'Í|Ì|Ỉ|Ĩ|Ị',
             'O' => 'Ó|Ò|Ỏ|Õ|Ọ|Ô|Ố|Ồ|Ổ|Ỗ|Ộ|Ơ|Ớ|Ờ|Ở|Ỡ|Ợ',
             'U' => 'Ú|Ù|Ủ|Ũ|Ụ|Ư|Ứ|Ừ|Ử|Ữ|Ự',
@@ -415,16 +415,41 @@ class SettingController extends Controller
      */
     public function getStoreDetailsBySlug(string $slug)
     {
+        $setting = Setting::where('key', 'website_slug')->where('value', $slug)->first();
+        if (!$setting) {
+            return response()->json(['message' => 'Store does not exist!'], 404);
+        }
+
+        $storeOwner = strtolower($setting->store_owner_address);
+
+        // Kiểm tra trạng thái thuê bao của chủ quán trước
+        $owner = \App\Domain\Entities\User::where('wallet_address', $storeOwner)->first();
+        if ($owner) {
+            // Bypass check nếu chủ quán là Super Admin
+            $superAdminEnv = env('SUPER_ADMIN_ADDRESSES', '');
+            $superAdmins = array_map('trim', explode(',', $superAdminEnv));
+            $superAdmins = array_map('strtolower', array_filter($superAdmins));
+            
+            if (!in_array($storeOwner, $superAdmins)) {
+                if ($owner->subscription_status === 'suspended') {
+                    return response()->json(['message' => 'Website cửa hàng này đã bị tạm dừng hoạt động.'], 403);
+                }
+
+                if ($owner->subscription_expires_at !== null && now()->greaterThan($owner->subscription_expires_at)) {
+                    return response()->json(['message' => 'Website cửa hàng này đã hết hạn dịch vụ.'], 403);
+                }
+
+                // Kiểm tra xem gói cước hiện tại có hỗ trợ storefront không
+                $plan = \App\Domain\Entities\SubscriptionPlan::where('code', $owner->plan_code ?: 'free')->first();
+                if ($plan && isset($plan->features['enable_storefront']) && !$plan->features['enable_storefront']) {
+                    return response()->json(['message' => 'Tính năng Website cửa hàng chưa được kích hoạt cho gói dịch vụ của quán.'], 403);
+                }
+            }
+        }
+
         $cacheKey = "store_details:{$slug}";
 
-        $storeData = Cache::remember($cacheKey, 86400, function () use ($slug) {
-            $setting = Setting::where('key', 'website_slug')->where('value', $slug)->first();
-            if (!$setting) {
-                return null;
-            }
-
-            $storeOwner = strtolower($setting->store_owner_address);
-
+        $storeData = Cache::remember($cacheKey, 86400, function () use ($slug, $storeOwner) {
             // Đảm bảo có settings đầy đủ
             $settings = $this->ensureDefaultSettings($storeOwner);
 

@@ -389,6 +389,11 @@ export class ReportsComponent implements OnInit {
 
   // --- Logic Xuất file Excel (.xlsx) bằng SheetJS ---
   public exportToExcel(type: 'products' | 'customers') {
+    if (!this.stateService.hasFeature('enable_excel_export')) {
+      this.stateService.showToast('Gói cước của bạn không hỗ trợ tính năng xuất báo cáo Excel. Vui lòng nâng cấp gói cước!', 'error');
+      return;
+    }
+
     const data = this.reportsData();
     if (!data) return;
 

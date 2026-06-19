@@ -134,6 +134,11 @@ export class StaffsComponent implements OnInit {
     return roles.slice(startIndex, startIndex + this.rolesPerPage);
   });
 
+  public readonly isStaffLimitReached = computed(() => {
+    const maxStaffs = this.stateService.getFeatureLimit('max_staffs');
+    return maxStaffs !== -1 && (this.stateService.staffs() || []).length >= maxStaffs;
+  });
+
   // Quản lý Nhân viên
   public staffForm!: FormGroup;
   public readonly isStaffFormOpen = signal<boolean>(false);
@@ -224,6 +229,11 @@ export class StaffsComponent implements OnInit {
 
   // Mở form thêm nhân viên
   public openAddStaff() {
+    const maxStaffs = this.stateService.getFeatureLimit('max_staffs');
+    if (maxStaffs !== -1 && (this.stateService.staffs() || []).length >= maxStaffs) {
+      this.stateService.showToast(`Gói cước hiện tại chỉ hỗ trợ tối đa ${maxStaffs} nhân viên. Vui lòng nâng cấp gói cước!`, 'error');
+      return;
+    }
     this.editingStaff.set(null);
     this.staffForm.reset();
     this.isStaffFormOpen.set(true);
@@ -281,9 +291,17 @@ export class StaffsComponent implements OnInit {
       return;
     }
 
+    const staffId = this.editingStaff()?.id;
+    if (!staffId) {
+      const maxStaffs = this.stateService.getFeatureLimit('max_staffs');
+      if (maxStaffs !== -1 && (this.stateService.staffs() || []).length >= maxStaffs) {
+        this.stateService.showToast(`Gói cước hiện tại chỉ hỗ trợ tối đa ${maxStaffs} nhân viên. Vui lòng nâng cấp gói cước!`, 'error');
+        return;
+      }
+    }
+
     this.isSavingStaff.set(true);
     const data = this.staffForm.value;
-    const staffId = this.editingStaff()?.id;
 
     const request = staffId
       ? this.apiService.updateStaff(staffId, data)

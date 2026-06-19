@@ -1154,6 +1154,14 @@
           }
         </div>
 
+        <!-- Cảnh báo giới hạn sản phẩm theo gói cước -->
+        @if (menuModalType() === 'add' && isProductLimitReached()) {
+          <div class="flex items-center gap-2.5 p-3.5 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800/20 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-bold mt-4">
+            <app-icon name="warning" class="h-4 w-4 shrink-0" strokeWidth="2" />
+            <span>Gói cước hiện tại chỉ hỗ trợ tối đa {{ stateService.getFeatureLimit('max_products') }} sản phẩm/nguyên liệu. Vui lòng nâng cấp gói cước!</span>
+          </div>
+        }
+
         <!-- Actions -->
         <div class="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800 shrink-0 mt-5">
           <button
@@ -1165,7 +1173,7 @@
           </button>
           <button
             (click)="saveProduct()"
-            [disabled]="isProductSaving()"
+            [disabled]="isProductSaving() || (menuModalType() === 'add' && isProductLimitReached())"
             class="btn-primary flex-1 shadow-md"
           >
             @if (isProductSaving()) {

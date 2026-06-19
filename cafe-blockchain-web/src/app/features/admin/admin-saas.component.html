@@ -1,0 +1,507 @@
+<div class="space-y-6 p-4 sm:p-6 max-w-[1530px] mx-auto">
+  <app-page-header 
+    title="Quản trị hệ thống" 
+    description="Quản lý các cửa hàng đăng ký, gia hạn thuê bao, phân chia tính năng gói cước và dọn dẹp hệ thống."
+  >
+    <app-icon icon name="settings" class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" strokeWidth="2.5" />
+  </app-page-header>
+  
+  @if (!stateService.web3Service.walletConnected()) {
+    <app-web3-connect-prompt [title]="'Quản trị hệ thống'"></app-web3-connect-prompt>
+  } @else if (!stateService.isSuperAdmin()) {
+    <app-access-restricted></app-access-restricted>
+  } @else {
+    
+    <!-- Tab Navigation -->
+    <div class="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 mb-6">
+      <app-tab-group 
+        [options]="subTabOptions" 
+        [activeValue]="activeSubTab()" 
+        (valueChange)="setSubTab($event)"
+        class="shrink-0">
+      </app-tab-group>
+
+      @if (activeSubTab() === 'tenants') {
+        <!-- Search Field -->
+        <div class="relative w-full md:w-80">
+          <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+            <app-icon name="search" class="h-4.5 w-4.5 text-slate-400"></app-icon>
+          </div>
+          <input 
+            type="text" 
+            [ngModel]="searchQuery()" 
+            (ngModelChange)="onSearchQueryChange($event)"
+            placeholder="Tìm theo ví, tên quán..." 
+            class="search-input" />
+        </div>
+      } @else {
+        <!-- Add Plan Button -->
+        <button 
+          (click)="openAddPlan()"
+          class="btn-primary w-full md:w-auto">
+          <app-icon name="plus" class="h-4.5 w-4.5 shrink-0" strokeWidth="2.5"></app-icon>
+          <span>Thêm gói cước mới</span>
+        </button>
+      }
+    </div>
+
+    <!-- Content Sections -->
+    @if (isDataLoading()) {
+      <app-skeleton-loader type="reports"></app-skeleton-loader>
+    } @else {
+      
+      <!-- Tab 1: Tenants List -->
+      @if (activeSubTab() === 'tenants') {
+        <div class="app-card p-0 overflow-hidden">
+          <app-table 
+            [columns]="tenantColumns" 
+            [data]="filteredTenants()">
+            
+            <ng-template appCell="store_name" let-row>
+              <div class="font-extrabold text-slate-800 dark:text-slate-200 text-sm sm:text-base">{{ row.store_name }}</div>
+            </ng-template>
+
+            <ng-template appCell="wallet_address" let-row>
+              <div class="flex items-center gap-1.5 font-mono text-purple-650 dark:text-purple-400">
+                <span>{{ shortAddress(row.wallet_address) }}</span>
+                <button 
+                  (click)="stateService.copyAddress(row.wallet_address)" 
+                  class="p-1 text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition" 
+                  title="Sao chép ví">
+                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                  </svg>
+                </button>
+              </div>
+            </ng-template>
+
+            <ng-template appCell="plan_code" let-row>
+              <span class="inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-black uppercase tracking-wider"
+                [ngClass]="{
+                  'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700': row.plan_code === 'free',
+                  'bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20': row.plan_code === 'pro',
+                  'bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20': row.plan_code === 'ultra' || row.plan_code !== 'free' && row.plan_code !== 'pro'
+                }">
+                {{ row.plan_code }}
+              </span>
+            </ng-template>
+
+            <ng-template appCell="subscription_expires_at" let-row>
+              @if (!row.subscription_expires_at) {
+                <span class="text-slate-500 dark:text-slate-400 font-semibold">Vô hạn</span>
+              } @else {
+                <div class="flex items-center gap-1.5">
+                  <span class="text-sm font-medium"
+                    [ngClass]="{
+                      'text-rose-500 dark:text-rose-400': row.subscription_status === 'suspended',
+                      'text-slate-600 dark:text-slate-400': row.subscription_status !== 'suspended'
+                    }">
+                    {{ row.subscription_expires_at | date:'dd/MM/yyyy' }}
+                  </span>
+                </div>
+              }
+            </ng-template>
+
+            <ng-template appCell="subscription_status" let-row>
+              <span class="inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-bold"
+                [ngClass]="{
+                  'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20': row.subscription_status === 'active',
+                  'bg-rose-100 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/20': row.subscription_status === 'suspended'
+                }">
+                {{ row.subscription_status === 'active' ? 'Hoạt động' : 'Bị khóa' }}
+              </span>
+            </ng-template>
+
+            <ng-template appCell="created_at" let-row>
+              <span class="text-slate-600 dark:text-slate-400 font-medium">{{ row.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+            </ng-template>
+
+            <ng-template appCell="actions" let-row>
+              <div class="flex justify-end gap-2 pr-6">
+                <button 
+                  (click)="openEditSubscription(row)"
+                  class="btn-secondary btn-sm"
+                  title="Thay đổi gói thuê bao">
+                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  <span>Sửa</span>
+                </button>
+              </div>
+            </ng-template>
+          </app-table>
+        </div>
+      }
+
+      <!-- Tab 2: Plans Management & Global Settings -->
+      @if (activeSubTab() === 'plans') {
+        <div class="space-y-6">
+          
+          <!-- Plans List -->
+          <div class="app-card p-0 overflow-hidden">
+            <app-table 
+              [columns]="planColumns" 
+              [data]="plans()">
+              
+              <ng-template appCell="code" let-row>
+                <div class="font-mono text-purple-650 dark:text-purple-400 font-bold pl-6 text-xs">{{ row.code }}</div>
+              </ng-template>
+
+              <ng-template appCell="name" let-row>
+                <div class="text-slate-800 dark:text-slate-200 text-sm sm:text-base font-extrabold">{{ row.name }}</div>
+              </ng-template>
+
+              <ng-template appCell="limits" let-row>
+                <div class="flex flex-col gap-1 text-xs font-semibold">
+                  <div>
+                    <span class="text-slate-400 mr-1.5">Sản phẩm:</span>
+                    <span class="font-extrabold text-slate-700 dark:text-slate-350">{{ row.features?.max_products === -1 ? 'Không giới hạn' : row.features?.max_products }}</span>
+                  </div>
+                  <div>
+                    <span class="text-slate-400 mr-1.5">Nhân viên:</span>
+                    <span class="font-extrabold text-slate-700 dark:text-slate-350">{{ row.features?.max_staffs === -1 ? 'Không giới hạn' : row.features?.max_staffs }}</span>
+                  </div>
+                </div>
+              </ng-template>
+
+              <ng-template appCell="features" let-row>
+                <div class="flex flex-wrap gap-1.5 max-w-sm">
+                  <span class="inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold"
+                    [ngClass]="row.features?.enable_storefront ? 'bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700'">
+                    Web Store
+                  </span>
+                  <span class="inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold"
+                    [ngClass]="row.features?.enable_reports ? 'bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700'">
+                    Báo cáo
+                  </span>
+                  <span class="inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold"
+                    [ngClass]="row.features?.enable_excel_export ? 'bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700'">
+                    Xuất Excel
+                  </span>
+                </div>
+              </ng-template>
+
+              <ng-template appCell="is_active" let-row>
+                <span class="inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-bold"
+                  [ngClass]="{
+                    'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20': row.is_active,
+                    'bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700': !row.is_active
+                  }">
+                  {{ row.is_active ? 'Hoạt động' : 'Tạm dừng' }}
+                </span>
+              </ng-template>
+
+              <ng-template appCell="actions" let-row>
+                <div class="flex justify-end gap-2 pr-6">
+                  <button 
+                    (click)="openEditPlan(row)"
+                    class="btn-secondary btn-sm"
+                    title="Chỉnh sửa cấu hình gói cước">
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    <span>Sửa</span>
+                  </button>
+                  @if (row.code !== 'free' && row.code !== 'pro' && row.code !== 'ultra') {
+                    <button 
+                      (click)="triggerDeletePlan(row)"
+                      class="btn-danger-light btn-sm"
+                      title="Xóa gói cước">
+                      <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      <span>Xóa</span>
+                    </button>
+                  } @else {
+                    <button 
+                      disabled
+                      class="btn-cancel btn-sm cursor-not-allowed opacity-40"
+                      title="Gói cước hệ thống không thể xóa">
+                      <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      <span>Xóa</span>
+                    </button>
+                  }
+                </div>
+              </ng-template>
+            </app-table>
+          </div>
+
+          <!-- Token Maintenance Configuration -->
+          <div class="app-card space-y-6 relative overflow-hidden">
+            <div class="flex items-center gap-2.5 pb-2 border-b border-slate-100 dark:border-slate-800/60">
+              <div class="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0 flex items-center">
+                <app-icon name="trash" class="h-5 w-5" strokeWidth="2" />
+              </div>
+              <div>
+                <h4 class="text-md font-bold text-slate-800 dark:text-white uppercase tracking-wider">
+                  Bảo trì Token hệ thống (Clean Tokens)
+                </h4>
+                <p class="text-xs text-slate-400 mt-0.5">
+                  Xóa bỏ các token đăng nhập cũ và đã hết hạn trong database Laravel Sanctum để giải phóng dung lượng và tối ưu hóa hệ thống.
+                </p>
+              </div>
+            </div>
+
+            <!-- Configuration Inputs -->
+            <div class="space-y-5">
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block">Thời gian giữ lại token (Ngày)</label>
+                <input 
+                  type="number" 
+                  [(ngModel)]="tokenCleanupDays" 
+                  min="1" 
+                  max="365"
+                  class="form-input" />
+              </div>
+              
+              <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                <button 
+                  (click)="saveSystemSettings()"
+                  [disabled]="isSavingSettings()"
+                  class="btn-primary flex-1 sm:flex-none">
+                  Lưu thiết lập
+                </button>
+                <button 
+                  (click)="confirmCleanTokensOpen.set(true)"
+                  [disabled]="isCleaningTokens()"
+                  class="btn-secondary flex-1 sm:flex-none">
+                  Dọn dẹp Token Ngay
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      }
+
+    }
+    
+  }
+</div>
+
+<!-- Modal 1: Edit Tenant Subscription -->
+<app-modal 
+  [isOpen]="isSubscriptionModalOpen()" 
+  [title]="'Cấu hình thuê bao cửa hàng'" 
+  (close)="isSubscriptionModalOpen.set(false)">
+  
+  @if (selectedTenant()) {
+    <form [formGroup]="subscriptionForm" (ngSubmit)="saveSubscription()" class="space-y-6">
+      
+      <!-- General Info -->
+      <div class="bg-slate-50 dark:bg-slate-950/20 p-4 rounded-xl border border-slate-100 dark:border-slate-800/60 text-sm space-y-2.5">
+        <div class="flex justify-between">
+          <span class="text-slate-500">Tên cửa hàng:</span>
+          <span class="text-slate-800 dark:text-slate-200 font-extrabold">{{ selectedTenant()?.store_name }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500">Ví chủ quán:</span>
+          <span class="font-mono text-purple-650 dark:text-purple-400 text-xs">{{ selectedTenant()?.wallet_address }}</span>
+        </div>
+      </div>
+
+      <!-- Plan Selection -->
+      <div class="space-y-2">
+        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wide">Gói cước phân bổ</label>
+        <app-custom-select 
+          [options]="planOptions" 
+          formControlName="plan_code">
+        </app-custom-select>
+      </div>
+
+      <!-- Expires At DatePicker -->
+      <div class="space-y-2">
+        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wide">Ngày hết hạn (Nếu có)</label>
+        <app-custom-date-picker
+          [selectedDate]="subscriptionForm.get('subscription_expires_at')?.value"
+          (selectedDateChange)="subscriptionForm.get('subscription_expires_at')?.setValue($event)"
+          placeholder="Chọn ngày hết hạn">
+        </app-custom-date-picker>
+        <p class="text-slate-450 text-2xs">Bỏ trống nếu muốn gia hạn thời gian vô hạn cho cửa hàng này.</p>
+      </div>
+
+      <!-- Subscription Status -->
+      <div class="space-y-2">
+        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wide">Trạng thái thuê bao</label>
+        <app-custom-select 
+          [options]="[
+            { value: 'active', label: 'Hoạt động (Active)' },
+            { value: 'suspended', label: 'Bị khóa / Đình chỉ (Suspended)' }
+          ]" 
+          formControlName="subscription_status">
+        </app-custom-select>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800/60">
+        <button 
+          type="button" 
+          (click)="isSubscriptionModalOpen.set(false)" 
+          class="btn-cancel">
+          Hủy
+        </button>
+        <button 
+          type="submit" 
+          [disabled]="isSavingSubscription()"
+          class="btn-primary">
+          @if (isSavingSubscription()) {
+            <div class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></div>
+          }
+          <span>Lưu thay đổi</span>
+        </button>
+      </div>
+
+    </form>
+  }
+</app-modal>
+
+<!-- Modal 2: Add / Edit Subscription Plan -->
+<app-modal 
+  [isOpen]="isPlanModalOpen()" 
+  [title]="editingPlan() ? 'Chỉnh sửa cấu hình gói cước' : 'Thêm gói cước mới'" 
+  (close)="isPlanModalOpen.set(false)">
+  
+  <form [formGroup]="planForm" (ngSubmit)="savePlan()" class="space-y-6">
+    
+    <!-- Plan Code (Only new) -->
+    <div class="space-y-2">
+      <label class="block text-xs font-bold text-slate-400 uppercase tracking-wide">Mã gói cước</label>
+      <input 
+        type="text" 
+        formControlName="code" 
+        placeholder="Ví dụ: free, pro, pro_plus..."
+        class="form-input" />
+      @if (planForm.get('code')?.touched && planForm.get('code')?.invalid) {
+        <span class="text-xs text-rose-500">Mã gói bắt buộc nhập và chỉ gồm chữ thường không dấu, số, dấu gạch dưới.</span>
+      }
+    </div>
+
+    <!-- Plan Name -->
+    <div class="space-y-2">
+      <label class="block text-xs font-bold text-slate-400 uppercase tracking-wide">Tên gói cước</label>
+      <input 
+        type="text" 
+        formControlName="name" 
+        placeholder="Ví dụ: Gói Chuyên Nghiệp"
+        class="form-input" />
+      @if (planForm.get('name')?.touched && planForm.get('name')?.invalid) {
+        <span class="text-xs text-rose-500">Tên gói cước không được bỏ trống.</span>
+      }
+    </div>
+
+    <!-- Active Status -->
+    <div class="space-y-2">
+      <label class="block text-xs font-bold text-slate-400 uppercase tracking-wide">Trạng thái gói</label>
+      <app-custom-select 
+        [options]="[
+          { value: true, label: 'Cho phép sử dụng (Active)' },
+          { value: false, label: 'Tạm ẩn gói (Inactive)' }
+        ]" 
+        formControlName="is_active">
+      </app-custom-select>
+    </div>
+
+    <!-- Feature Flags -->
+    <div formGroupName="features" class="space-y-5 p-4 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-slate-100 dark:border-slate-800/60">
+      <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800/60 pb-2 mb-3">Feature Flagging (Giới hạn tính năng)</h4>
+
+      <!-- Max Products Limit -->
+      <div class="space-y-1.5">
+        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">Số lượng sản phẩm tối đa</label>
+        <input 
+          type="number" 
+          formControlName="max_products" 
+          class="form-input" />
+        <p class="text-slate-450 text-2xs">Nhập -1 nếu muốn cho phép tạo không giới hạn sản phẩm.</p>
+      </div>
+
+      <!-- Max Staffs Limit -->
+      <div class="space-y-1.5">
+        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">Số lượng nhân viên tối đa</label>
+        <input 
+          type="number" 
+          formControlName="max_staffs" 
+          class="form-input" />
+        <p class="text-slate-450 text-2xs">Nhập -1 nếu muốn cho phép tạo không giới hạn nhân viên.</p>
+      </div>
+
+      <!-- Features checkboxes -->
+      <div class="space-y-3 pt-2">
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input 
+            type="checkbox" 
+            formControlName="enable_storefront" 
+            class="h-4.5 w-4.5 rounded border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-slate-50 dark:focus:ring-offset-slate-900" />
+          <div class="text-xs sm:text-sm">
+            <p class="font-extrabold text-slate-800 dark:text-slate-200">Kích hoạt Website Cửa hàng (Storefront)</p>
+            <p class="text-2xs text-slate-400">Cho phép bán hàng trực tuyến và tự động đẩy đơn hàng POS.</p>
+          </div>
+        </label>
+
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input 
+            type="checkbox" 
+            formControlName="enable_reports" 
+            class="h-4.5 w-4.5 rounded border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-slate-50 dark:focus:ring-offset-slate-900" />
+          <div class="text-xs sm:text-sm">
+            <p class="font-extrabold text-slate-800 dark:text-slate-200">Kích hoạt phân hệ Báo cáo doanh thu & Lãi lỗ</p>
+            <p class="text-2xs text-slate-400">Cho phép chủ quán xem thống kê chi tiết tình hình tài chính.</p>
+          </div>
+        </label>
+
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input 
+            type="checkbox" 
+            formControlName="enable_excel_export" 
+            class="h-4.5 w-4.5 rounded border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-slate-50 dark:focus:ring-offset-slate-900" />
+          <div class="text-xs sm:text-sm">
+            <p class="font-extrabold text-slate-800 dark:text-slate-200">Cho phép xuất file dữ liệu Excel (.xlsx)</p>
+            <p class="text-2xs text-slate-400">Mở chức năng tải báo cáo dạng tệp Excel nhị phân Unicode.</p>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800/60">
+      <button 
+        type="button" 
+        (click)="isPlanModalOpen.set(false)" 
+        class="btn-cancel">
+        Hủy
+      </button>
+      <button 
+        type="submit" 
+        [disabled]="isSavingPlan()"
+        class="btn-primary">
+        @if (isSavingPlan()) {
+          <div class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></div>
+        }
+        <span>{{ editingPlan() ? 'Lưu thay đổi' : 'Thêm gói cước' }}</span>
+      </button>
+    </div>
+
+  </form>
+</app-modal>
+
+<!-- Modal 3: Confirm Delete Subscription Plan -->
+<app-confirm-modal 
+  [isOpen]="!!confirmDeletePlanData()" 
+  [title]="'Xóa cấu hình gói cước'" 
+  [description]="'Bạn có chắc chắn muốn xóa cấu hình gói cước này không? Thao tác này không thể hoàn tác và chỉ thực hiện được khi không có quán nào đang sử dụng.'"
+  [confirmText]="'Xóa gói cước'"
+  (confirm)="onDeletePlanConfirm()" 
+  (cancel)="confirmDeletePlanData.set(null)">
+</app-confirm-modal>
+
+<!-- Modal 4: Confirm Clean system tokens -->
+<app-confirm-modal 
+  [isOpen]="confirmCleanTokensOpen()" 
+  [title]="'Xác nhận dọn dẹp Token'" 
+  [description]="'Bạn có chắc muốn thực hiện dọn dẹp các token cũ trong hệ thống ngay bây giờ? Tiến trình sẽ xóa toàn bộ token không hoạt động theo số ngày đã cấu hình.'"
+  [confirmText]="'Dọn dẹp ngay'"
+  (confirm)="confirmCleanTokens(); confirmCleanTokensOpen.set(false)" 
+  (cancel)="confirmCleanTokensOpen.set(false)">
+</app-confirm-modal>
