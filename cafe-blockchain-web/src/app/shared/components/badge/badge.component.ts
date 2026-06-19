@@ -25,7 +25,7 @@ import { CommonModule } from '@angular/common';
   `]
 })
 export class BadgeComponent {
-  @Input() variant: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info' | 'neutral' = 'primary';
+  @Input() variant: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'ultra' = 'primary';
   @Input() size: 'sm' | 'md' | 'lg' = 'md';
   @Input() rounded: 'sm' | 'md' | 'lg' | 'xl' | 'full' = 'xl';
   @Input() pulse = false;
@@ -56,6 +56,9 @@ export class BadgeComponent {
         break;
       case 'neutral':
         classes.push('bg-slate-150/80 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200/50 dark:border-slate-700/50');
+        break;
+      case 'ultra':
+        classes.push('bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/15');
         break;
     }
 

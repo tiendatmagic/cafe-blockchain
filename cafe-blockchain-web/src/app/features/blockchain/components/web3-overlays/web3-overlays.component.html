@@ -201,23 +201,9 @@
                     </span>
                   }
                 </app-badge>
-              } @else if (stateService.subscriptionPlanCode() === 'pro') {
-                <app-badge
-                  variant="success"
-                  size="sm"
-                  rounded="full"
-                  class="text-[10px] px-2.5 py-1 uppercase tracking-wide font-black"
-                >
-                  <span>{{ stateService.subscriptionPlanCode() }}</span>
-                  @if (stateService.subscriptionDaysLeft() > 0) {
-                    <span class="text-[9px] opacity-90 normal-case font-bold ml-1">
-                      (còn {{ stateService.subscriptionDaysLeft() }} ngày)
-                    </span>
-                  }
-                </app-badge>
               } @else {
                 <app-badge
-                  variant="primary"
+                  variant="success"
                   size="sm"
                   rounded="full"
                   class="text-[10px] px-2.5 py-1 uppercase tracking-wide font-black"

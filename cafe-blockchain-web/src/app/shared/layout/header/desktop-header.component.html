@@ -254,24 +254,9 @@
               >
             }
           </app-badge>
-        } @else if (stateService.subscriptionPlanCode() === 'pro') {
+        } @else {
           <app-badge
             variant="success"
-            size="sm"
-            rounded="full"
-            class="absolute -top-2 -right-1 text-[8px] px-1.5 py-0.5 shadow-sm uppercase tracking-wide font-black"
-          >
-            <span>{{ stateService.subscriptionPlanCode() }}</span>
-            @if (stateService.subscriptionDaysLeft() > 0) {
-              <span class="normal-case font-semibold opacity-85"
-                >· {{ stateService.subscriptionDaysLeft() }}d</span
-              >
-            }
-          </app-badge>
-        } @else {
-          <!-- Gói Ultra và các gói cao cấp khác hiển thị màu chủ đạo động sang trọng -->
-          <app-badge
-            variant="primary"
             size="sm"
             rounded="full"
             class="absolute -top-2 -right-1 text-[8px] px-1.5 py-0.5 shadow-sm uppercase tracking-wide font-black"

@@ -76,19 +76,25 @@
                   >Gói của bạn:</span
                 >
                 @if (stateService.subscriptionPlanCode() === 'free') {
-                  <span
-                    class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-500 text-white text-[11px] font-black uppercase tracking-wide shadow-sm"
+                  <app-badge
+                    variant="danger"
+                    size="sm"
+                    rounded="full"
+                    class="text-[11px] px-2.5 py-0.5 uppercase tracking-wide font-black shadow-sm"
                   >
-                    <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
-                    {{ stateService.subscriptionPlanCode() }}
-                  </span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse mr-1"></span>
+                    <span>{{ stateService.subscriptionPlanCode() }}</span>
+                  </app-badge>
                 } @else {
-                  <span
-                    class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500 text-white text-[11px] font-black uppercase tracking-wide shadow-sm"
+                  <app-badge
+                    variant="success"
+                    size="sm"
+                    rounded="full"
+                    class="text-[11px] px-2.5 py-0.5 uppercase tracking-wide font-black shadow-sm"
                   >
-                    <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
-                    {{ stateService.subscriptionPlanCode() }}
-                  </span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-1"></span>
+                    <span>{{ stateService.subscriptionPlanCode() }}</span>
+                  </app-badge>
                 }
               </div>
 
