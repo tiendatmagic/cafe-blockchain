@@ -624,6 +624,7 @@ export class StateService {
     });
   }
 
+
   // Tải cấu hình public và menu storefront khi chưa kết nối ví
   public loadPublicSettingsAndMenu() {
     this.apiService.getPublicSettings().subscribe({

@@ -33,6 +33,8 @@ export class Web3Service {
   public readonly isOwnerContract = signal<boolean>(false);
   public readonly walletError = signal<string>('');
   public readonly chainId = signal<string>('');
+  public readonly gasPriceGwei = signal<string>('0.0');
+  public readonly networkStatus = signal<string>('Đang kiểm tra...');
 
   // Sự kiện thay đổi tài khoản hoặc ngắt kết nối ví
   public readonly accountsChanged$ = new Subject<string>();
@@ -247,7 +249,46 @@ export class Web3Service {
     setTimeout(() => {
       this.isAppKitInitializing = false;
     }, 2000);
+
+    // Định kỳ 30 giây cập nhật tình trạng mạng lưới blockchain và phí Gas
+    this.updateNetworkHealth();
+    if (typeof window !== 'undefined') {
+      setInterval(() => {
+        this.updateNetworkHealth();
+      }, 30000);
+    }
   }
+
+  /**
+   * Định kỳ kiểm tra sức khỏe mạng lưới và lấy Gas Price thực tế
+   */
+  public async updateNetworkHealth() {
+    try {
+      const rpc = this.rpcUrl();
+      if (!rpc) {
+        this.networkStatus.set('Chưa cấu hình RPC');
+        return;
+      }
+
+      // Tạo provider tạm thời để test connection và get gas price
+      const tempProvider = new JsonRpcProvider(rpc);
+      const feeData = await tempProvider.getFeeData();
+      
+      if (feeData && feeData.gasPrice) {
+        const gwei = Number(feeData.gasPrice) / 1e9;
+        this.gasPriceGwei.set(gwei.toFixed(1));
+        this.networkStatus.set('Hoạt động');
+      } else {
+        this.networkStatus.set('Hoạt động');
+        this.gasPriceGwei.set('0.0');
+      }
+    } catch (err) {
+      console.warn('[Web3] Lỗi kết nối RPC check network health:', err);
+      this.networkStatus.set('Mất kết nối');
+      this.gasPriceGwei.set('—');
+    }
+  }
+
 
   /**
    * Khởi tạo Reown AppKit modal với cấu hình được yêu cầu

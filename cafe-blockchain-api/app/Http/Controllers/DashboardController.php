@@ -35,6 +35,20 @@ class DashboardController extends Controller
         $todayRevenue = $todayOrders->sum('total_amount');
         $todayOrdersCount = $todayOrders->count();
 
+        // Tính doanh thu ngày hôm qua để so sánh tăng trưởng
+        $yesterday = Carbon::yesterday();
+        $yesterdayOrders = Order::where('store_owner_address', $storeOwner)
+            ->where('status', 'completed')
+            ->whereDate('created_at', $yesterday);
+        $yesterdayRevenue = $yesterdayOrders->sum('total_amount');
+        
+        $todayRevenueGrowth = 0;
+        if ($yesterdayRevenue > 0) {
+            $todayRevenueGrowth = (($todayRevenue - $yesterdayRevenue) / $yesterdayRevenue) * 100;
+        } elseif ($todayRevenue > 0) {
+            $todayRevenueGrowth = 100.0;
+        }
+
         // 2. Tổng doanh thu (tất cả các đơn completed)
         $totalOrders = Order::where('store_owner_address', $storeOwner)->where('status', 'completed');
         $totalRevenue = $totalOrders->sum('total_amount');
@@ -51,6 +65,30 @@ class DashboardController extends Controller
             ->where('status', 'completed')
             ->whereIn('blockchain_status', ['none', 'pending'])
             ->count();
+
+        // Tính toán doanh thu kỳ hiện tại và kỳ trước đó có cùng độ dài ngày để so sánh tăng trưởng
+        $start = Carbon::parse($startDate);
+        $end = Carbon::parse($endDate);
+        $daysDiff = $start->diffInDays($end);
+
+        $periodRevenue = Order::where('store_owner_address', $storeOwner)
+            ->where('status', 'completed')
+            ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->sum('total_amount');
+
+        $prevEndDate = $start->copy()->subDay()->toDateString();
+        $prevStartDate = $start->copy()->subDays($daysDiff + 1)->toDateString();
+        $prevPeriodRevenue = Order::where('store_owner_address', $storeOwner)
+            ->where('status', 'completed')
+            ->whereBetween('created_at', [$prevStartDate . ' 00:00:00', $prevEndDate . ' 23:59:59'])
+            ->sum('total_amount');
+
+        $periodRevenueGrowth = 0;
+        if ($prevPeriodRevenue > 0) {
+            $periodRevenueGrowth = (($periodRevenue - $prevPeriodRevenue) / $prevPeriodRevenue) * 100;
+        } elseif ($periodRevenue > 0) {
+            $periodRevenueGrowth = 100.0;
+        }
 
         // 5. Biểu đồ doanh thu trong kỳ (theo start_date và end_date)
         $weeklyChart = [];
@@ -227,8 +265,10 @@ class DashboardController extends Controller
         return response()->json([
             'today_revenue' => (float)$todayRevenue,
             'today_orders_count' => $todayOrdersCount,
+            'today_revenue_growth' => round($todayRevenueGrowth, 1),
             'total_revenue' => (float)$totalRevenue,
             'total_orders_count' => $totalOrdersCount,
+            'period_revenue_growth' => round($periodRevenueGrowth, 1),
             'web3_revenue' => (float)$web3Revenue,
             'pending_web3_count' => $pendingWeb3Count,
             'weekly_chart' => $weeklyChart,

@@ -18,6 +18,7 @@ class ShiftController extends Controller
         $user = $request->user();
         $shift = Shift::where('user_id', $user->id)
             ->where('status', 'open')
+            ->with('user')
             ->first();
 
         return response()->json($shift);
@@ -176,6 +177,7 @@ class ShiftController extends Controller
         $user = $request->user();
         $shift = Shift::where('user_id', $user->id)
             ->where('status', 'open')
+            ->with('user')
             ->first();
 
         if (!$shift) {

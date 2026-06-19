@@ -68,6 +68,7 @@ export class DashboardComponent implements OnInit {
   public loadAllData() {
     this.stateService.refreshDashboard();
     this.stateService.loadSettings();
+    this.stateService.refreshCurrentShift();
   }
 
   public getTxExplorerLink(txHash: string | null | undefined, chainId: string | number | null | undefined): string {
