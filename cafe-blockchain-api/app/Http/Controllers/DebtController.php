@@ -79,24 +79,6 @@ class DebtController extends Controller
             'recorded_at' => 'required|date',
         ]);
 
-        // Kiểm tra giới hạn số ghi nợ tối đa của gói cước
-        $owner = \App\Domain\Entities\User::where('wallet_address', $storeOwner)->first();
-        if ($owner) {
-            $plan = \App\Domain\Entities\SubscriptionPlan::where('code', $owner->plan_code ?: 'free')->first();
-            if ($plan && isset($plan->features['max_debts'])) {
-                $maxDebts = (int)$plan->features['max_debts'];
-                if ($maxDebts >= 0) {
-                    $currentDebtsCount = DebtLog::where('store_owner_address', $storeOwner)->where('type', 'debt')->count();
-                    if ($currentDebtsCount >= $maxDebts) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => "Gói cước của bạn đã đạt giới hạn tối đa {$maxDebts} lượt ghi nợ. Vui lòng nâng cấp gói cước để tiếp tục."
-                        ], 403);
-                    }
-                }
-            }
-        }
-
         $customer = Customer::where('store_owner_address', $storeOwner)->findOrFail($validated['customer_id']);
 
         $debtLog = DB::transaction(function () use ($storeOwner, $validated, $customer) {

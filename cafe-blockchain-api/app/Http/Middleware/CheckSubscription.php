@@ -42,7 +42,7 @@ class CheckSubscription
                 return response()->json([
                     'success' => false,
                     'subscription_status' => 'suspended',
-                    'message' => 'Tài khoản của bạn đã bị khóa hoặc đình chỉ hoạt động. Vui lòng liên hệ quản trị viên để giải quyết.'
+                    'message' => 'Your account has been suspended. Please contact support.'
                 ], 403);
             }
 
@@ -52,7 +52,7 @@ class CheckSubscription
                     'success' => false,
                     'subscription_status' => 'expired',
                     'subscription_expires_at' => $owner->subscription_expires_at,
-                    'message' => 'Gói dịch vụ của bạn đã hết hạn. Vui lòng liên hệ quản trị viên để gia hạn và tiếp tục sử dụng.'
+                    'message' => 'Your subscription has expired. Please renew or upgrade to continue.'
                 ], 402);
             }
         }

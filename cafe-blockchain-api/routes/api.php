@@ -133,7 +133,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Customers API
         Route::get('/customers', [CustomerController::class, 'index'])->middleware('permission:pos|customers|reports');
-        Route::post('/customers', [CustomerController::class, 'store'])->middleware('permission:pos|customers');
+        Route::post('/customers', [CustomerController::class, 'store'])->middleware(['permission:pos|customers', 'limit:customers']);
         Route::put('/customers/{id}', [CustomerController::class, 'update'])->middleware('permission:pos|customers');
         Route::delete('/customers/{id}', [CustomerController::class, 'destroy'])->middleware('permission:customers');
 
@@ -141,7 +141,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::middleware('feature:enable_debts')->group(function () {
             Route::get('/debts', [\App\Http\Controllers\DebtController::class, 'index'])->middleware('permission:debts');
             Route::get('/debts/customer/{id}', [\App\Http\Controllers\DebtController::class, 'show'])->middleware('permission:debts');
-            Route::post('/debts', [\App\Http\Controllers\DebtController::class, 'store'])->middleware('permission:debts');
+            Route::post('/debts', [\App\Http\Controllers\DebtController::class, 'store'])->middleware(['permission:debts', 'limit:debts']);
             Route::post('/debts/payment', [\App\Http\Controllers\DebtController::class, 'storePayment'])->middleware('permission:debts');
             Route::delete('/debts/{id}', [\App\Http\Controllers\DebtController::class, 'destroy'])->middleware('permission:debts');
         });
@@ -155,7 +155,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // Transactions (Thu Chi) API
         Route::middleware('feature:enable_financials')->group(function () {
             Route::get('/transactions', [TransactionController::class, 'index'])->middleware('permission:financials');
-            Route::post('/transactions', [TransactionController::class, 'store'])->middleware('permission:financials');
+            Route::post('/transactions', [TransactionController::class, 'store'])->middleware(['permission:financials', 'limit:transactions']);
             Route::put('/transactions/{id}', [TransactionController::class, 'update'])->middleware('permission:financials');
             Route::delete('/transactions/{id}', [TransactionController::class, 'destroy'])->middleware('permission:financials');
             Route::put('/transactions/{id}/sync', [TransactionController::class, 'syncBlockchain'])->middleware(RequireOwner::class);
@@ -192,7 +192,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Staffs & Roles API
         Route::get('/staffs', [StaffController::class, 'index'])->middleware('permission:staffs');
-        Route::post('/staffs', [StaffController::class, 'store'])->middleware('permission:staffs');
+        Route::post('/staffs', [StaffController::class, 'store'])->middleware(['permission:staffs', 'limit:staffs']);
         Route::put('/staffs/{id}', [StaffController::class, 'update'])->middleware('permission:staffs');
         Route::delete('/staffs/{id}', [StaffController::class, 'destroy'])->middleware('permission:staffs');
         Route::get('/roles', [StaffController::class, 'indexRoles'])->middleware('permission:staffs');
@@ -204,7 +204,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // Owner-only routes
         Route::middleware(RequireOwner::class)->group(function () {
             Route::get('/reports', [ReportController::class, 'index'])->middleware('feature:enable_reports');
-            Route::post('/products', [ProductController::class, 'store']);
+            Route::post('/products', [ProductController::class, 'store'])->middleware('limit:products');
             Route::put('/products/{id}', [ProductController::class, 'update']);
             Route::delete('/products/{id}', [ProductController::class, 'destroy']);
 

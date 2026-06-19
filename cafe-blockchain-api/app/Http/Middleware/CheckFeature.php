@@ -63,7 +63,7 @@ class CheckFeature
             if (!$enabled) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tính năng này chưa được mở khóa trong gói cước hiện tại của bạn. Vui lòng nâng cấp gói cước để sử dụng.'
+                    'message' => 'This feature is not unlocked in your current subscription plan. Please upgrade your plan to use this feature.'
                 ], 403);
             }
         }

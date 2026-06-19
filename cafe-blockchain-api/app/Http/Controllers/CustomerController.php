@@ -94,24 +94,6 @@ class CustomerController extends Controller
             'wallet_address.regex' => 'Invalid Web3 wallet address! Must be a valid 42-character EVM address (starting with 0x + 40 hex characters).',
         ]);
 
-        // Kiểm tra giới hạn khách hàng tối đa của gói cước
-        $owner = \App\Domain\Entities\User::where('wallet_address', $storeOwner)->first();
-        if ($owner) {
-            $plan = \App\Domain\Entities\SubscriptionPlan::where('code', $owner->plan_code ?: 'free')->first();
-            if ($plan && isset($plan->features['max_customers'])) {
-                $maxCustomers = (int)$plan->features['max_customers'];
-                if ($maxCustomers >= 0) {
-                    $currentCustomersCount = Customer::where('store_owner_address', $storeOwner)->count();
-                    if ($currentCustomersCount >= $maxCustomers) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => "Gói cước của bạn đã đạt giới hạn tối đa {$maxCustomers} khách hàng. Vui lòng nâng cấp gói cước để tiếp tục."
-                        ], 403);
-                    }
-                }
-            }
-        }
-
         $customer = Customer::create([
             'name' => $validated['name'],
             'phone' => $validated['phone'] ?? null,

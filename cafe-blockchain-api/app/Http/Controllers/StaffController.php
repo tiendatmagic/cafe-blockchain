@@ -32,24 +32,6 @@ class StaffController extends Controller
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
 
-        // Kiểm tra giới hạn nhân viên tối đa của gói cước
-        $owner = User::where('wallet_address', $storeOwner)->first();
-        if ($owner) {
-            $plan = \App\Domain\Entities\SubscriptionPlan::where('code', $owner->plan_code ?: 'free')->first();
-            if ($plan && isset($plan->features['max_staffs'])) {
-                $maxStaffs = (int)$plan->features['max_staffs'];
-                if ($maxStaffs >= 0) {
-                    $currentStaffsCount = Staff::where('store_owner_address', $storeOwner)->count();
-                    if ($currentStaffsCount >= $maxStaffs) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => "Gói cước của bạn đã đạt giới hạn tối đa {$maxStaffs} nhân viên. Vui lòng nâng cấp gói cước để tiếp tục."
-                        ], 403);
-                    }
-                }
-            }
-        }
-
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
