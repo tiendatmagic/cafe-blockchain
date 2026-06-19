@@ -1702,6 +1702,11 @@ export class StateService {
   }
 
   public hasFeature(featureKey: string): boolean {
+    // Nếu chưa kết nối ví, mặc định cho phép mọi tính năng đi qua (giao diện sẽ tự động nhắc kết nối ví)
+    if (!this.web3Service.walletConnected()) {
+      return true;
+    }
+
     let features = this.planFeatures();
     
     // Nếu features là string (do sync hoặc storage lưu dạng JSON string) thì parse
