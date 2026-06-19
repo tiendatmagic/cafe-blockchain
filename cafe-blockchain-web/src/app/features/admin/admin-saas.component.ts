@@ -52,6 +52,9 @@ export class AdminSaaSComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
+  // Expose Math to template
+  public readonly Math = Math;
+
   // Columns Tables
   public readonly tenantColumns: TableColumn[] = [
     { key: 'store_name', header: 'Cửa hàng', sortable: false, class: 'pl-6 whitespace-nowrap' },
@@ -72,12 +75,14 @@ export class AdminSaaSComponent implements OnInit {
     { key: 'actions', header: 'Thao tác', sortable: false, class: 'text-right pr-6 whitespace-nowrap', headerClass: 'text-right pr-6' }
   ];
 
-  // Tab: 'tenants' (Cửa hàng) hoặc 'plans' (Gói cước & Cấu hình)
-  public readonly activeSubTab = signal<'tenants' | 'plans'>('tenants');
+  // Tab: 'tenants' | 'plans' | 'system' | 'sysinfo'
+  public readonly activeSubTab = signal<'tenants' | 'plans' | 'system' | 'sysinfo'>('tenants');
 
   public readonly subTabOptions: TabOption[] = [
     { value: 'tenants', label: 'Cửa hàng' },
-    { value: 'plans', label: 'Thiết lập Gói cước & Hệ thống' }
+    { value: 'plans', label: 'Gói cước' },
+    { value: 'system', label: 'Hệ thống' },
+    { value: 'sysinfo', label: 'Thông tin hệ thống' },
   ];
 
   // Trạng thái Loading và Dữ liệu
@@ -128,9 +133,39 @@ export class AdminSaaSComponent implements OnInit {
   public readonly confirmCleanTokensOpen = signal<boolean>(false);
   public readonly isCleaningTokens = signal<boolean>(false);
 
+  public readonly confirmCleanAllTokensOpen = signal<boolean>(false);
+  public readonly isCleaningAllTokens = signal<boolean>(false);
+
   // Khôi phục gói mặc định
   public readonly confirmResetDefaultPlansOpen = signal<boolean>(false);
   public readonly isResettingDefaultPlans = signal<boolean>(false);
+
+  // System Info & Packages
+  public readonly systemInfo = signal<any | null>(null);
+  public readonly packages = signal<any[]>([]);
+  public readonly isLoadingSysInfo = signal<boolean>(false);
+  public readonly packageSearch = signal<string>('');
+  public readonly packageCurrentPage = signal<number>(1);
+  public readonly packageItemsPerPage = 15;
+
+  // Maintenance
+  public readonly runningMaintenance = signal<string>('');
+
+  public readonly filteredPackages = computed(() => {
+    const q = this.packageSearch().trim().toLowerCase();
+    if (!q) return this.packages();
+    return this.packages().filter(p => p.name.toLowerCase().includes(q));
+  });
+
+  public readonly paginatedPackages = computed(() => {
+    const list = this.filteredPackages();
+    const start = (this.packageCurrentPage() - 1) * this.packageItemsPerPage;
+    return list.slice(start, start + this.packageItemsPerPage);
+  });
+
+  public readonly packageTotalPages = computed(() =>
+    Math.ceil(this.filteredPackages().length / this.packageItemsPerPage)
+  );
 
   // Select Options cho Gói cước
   public get planOptions() {
@@ -176,8 +211,11 @@ export class AdminSaaSComponent implements OnInit {
     // Đồng bộ tab hiện tại với Query Parameter 'tab' trên URL
     this.route.queryParams.subscribe(params => {
       const tab = params['tab'];
-      if (tab && ['tenants', 'plans'].includes(tab)) {
+      if (tab && ['tenants', 'plans', 'system', 'sysinfo'].includes(tab)) {
         this.activeSubTab.set(tab as any);
+        if (tab === 'sysinfo' && !this.systemInfo()) {
+          this.loadSysInfo();
+        }
       }
     });
 
@@ -207,11 +245,16 @@ export class AdminSaaSComponent implements OnInit {
     });
   }
 
-  public setSubTab(tab: 'tenants' | 'plans') {
+  public setSubTab(tab: 'tenants' | 'plans' | 'system' | 'sysinfo') {
     this.activeSubTab.set(tab);
     this.searchQuery.set('');
     this.tenantCurrentPage.set(1);
     this.planCurrentPage.set(1);
+
+    // Lazy load sysinfo khi chuyển sang tab
+    if (tab === 'sysinfo' && !this.systemInfo()) {
+      this.loadSysInfo();
+    }
 
     // Cập nhật query parameter tab trên URL
     this.router.navigate([], {
@@ -469,9 +512,86 @@ export class AdminSaaSComponent implements OnInit {
     });
   }
 
+  public onCleanAllTokensConfirm() {
+    if (this.isCleaningAllTokens()) return;
+    this.isCleaningAllTokens.set(true);
+
+    this.apiService.cleanAllTokens().subscribe({
+      next: (res) => {
+        this.stateService.showToast(res.message || 'Xóa tất cả token thành công!', 'success');
+        this.confirmCleanAllTokensOpen.set(false);
+        this.isCleaningAllTokens.set(false);
+        this.stateService.disconnectWalletAndClose('Tất cả token đã bị xóa. Vui lòng kết nối lại ví.');
+        this.router.navigate(['/']);
+      },
+      error: (err) => {
+        this.stateService.showToast('Lỗi khi xóa tất cả token hệ thống.', 'error');
+        this.confirmCleanAllTokensOpen.set(false);
+        this.isCleaningAllTokens.set(false);
+      }
+    });
+  }
+
   // Rút gọn ví
   public shortAddress(address: string): string {
     if (!address) return '';
     return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+  }
+
+  // --- System Info ---
+  public loadSysInfo() {
+    if (this.isLoadingSysInfo()) return;
+    this.isLoadingSysInfo.set(true);
+
+    forkJoin({
+      info: this.apiService.getAdminSystemInfo(),
+      pkgs: this.apiService.getAdminPackages(),
+    }).subscribe({
+      next: (res) => {
+        this.systemInfo.set(res.info);
+        this.packages.set(res.pkgs?.packages ?? []);
+        this.packageCurrentPage.set(1);
+        this.isLoadingSysInfo.set(false);
+      },
+      error: () => {
+        this.stateService.showToast('Không thể tải thông tin hệ thống.', 'error');
+        this.isLoadingSysInfo.set(false);
+      }
+    });
+  }
+
+  public onPackageSearchChange(q: string) {
+    this.packageSearch.set(q);
+    this.packageCurrentPage.set(1);
+  }
+
+  // --- Maintenance ---
+  public runMaintenance(action: string) {
+    if (this.runningMaintenance()) return;
+    this.runningMaintenance.set(action);
+
+    const apiMap: Record<string, () => any> = {
+      'clear-views': () => this.apiService.adminMaintenanceClearViews(),
+      'clear-config': () => this.apiService.adminMaintenanceClearConfig(),
+      'clear-routes': () => this.apiService.adminMaintenanceClearRoutes(),
+      'clear-logs': () => this.apiService.adminMaintenanceClearLogs(),
+      'optimize': () => this.apiService.adminMaintenanceOptimize(),
+      'clear-optimize': () => this.apiService.adminMaintenanceClearOptimize(),
+    };
+
+    const call = apiMap[action];
+    if (!call) { this.runningMaintenance.set(''); return; }
+
+    call().subscribe({
+      next: (res: any) => {
+        this.stateService.showToast(res.message || 'Thao tác thành công!', 'success');
+        this.runningMaintenance.set('');
+      },
+      error: (err: any) => {
+        const msg = err?.error?.message || 'Có lỗi xảy ra, vui lòng thử lại.';
+        this.stateService.showToast(msg, 'error');
+        this.runningMaintenance.set('');
+      }
+    });
   }
 }

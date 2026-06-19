@@ -34,25 +34,29 @@
             placeholder="Tìm theo ví, tên quán..." 
             class="search-input" />
         </div>
-      } @else {
+      } @else if (activeSubTab() === 'plans') {
         <!-- Plans Tab Buttons -->
         <div class="flex items-center gap-2 w-full md:w-auto">
           <button 
             (click)="triggerResetDefaultPlans()"
             class="btn-secondary w-full md:w-auto"
             title="Khôi phục 3 gói mặc định (free, pro, ultra) về trạng thái ban đầu">
-            <svg class="h-4.5 w-4.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
             <span>Khôi phục mặc định</span>
           </button>
           <button 
             (click)="openAddPlan()"
             class="btn-primary w-full md:w-auto">
-            <app-icon name="plus" class="h-4.5 w-4.5 shrink-0" strokeWidth="2.5"></app-icon>
             <span>Thêm gói cước mới</span>
           </button>
         </div>
+      } @else if (activeSubTab() === 'sysinfo') {
+        <!-- Reload SysInfo -->
+        <button 
+          (click)="loadSysInfo()"
+          [disabled]="isLoadingSysInfo()"
+          class="btn-secondary w-full md:w-auto">
+          <span>Làm mới</span>
+        </button>
       }
     </div>
 
@@ -61,7 +65,7 @@
       <app-skeleton-loader type="table" [cols]="7" [rows]="5"></app-skeleton-loader>
     } @else {
       
-      <!-- Tab 1: Tenants List -->
+      <!-- ===== TAB 1: TENANTS ===== -->
       @if (activeSubTab() === 'tenants') {
         <div class="app-card p-0 overflow-hidden">
           <app-table 
@@ -107,15 +111,13 @@
               @if (!row.subscription_expires_at) {
                 <span class="text-slate-500 dark:text-slate-400 font-semibold">Vô hạn</span>
               } @else {
-                <div class="flex items-center gap-1.5">
-                  <span class="text-sm font-medium"
-                    [ngClass]="{
-                      'text-rose-500 dark:text-rose-400': row.subscription_status === 'suspended',
-                      'text-slate-600 dark:text-slate-400': row.subscription_status !== 'suspended'
-                    }">
-                    {{ row.subscription_expires_at | date:'dd/MM/yyyy' }}
-                  </span>
-                </div>
+                <span class="text-sm font-medium"
+                  [ngClass]="{
+                    'text-rose-500 dark:text-rose-400': row.subscription_status === 'suspended',
+                    'text-slate-600 dark:text-slate-400': row.subscription_status !== 'suspended'
+                  }">
+                  {{ row.subscription_expires_at | date:'dd/MM/yyyy' }}
+                </span>
               }
             </ng-template>
 
@@ -137,11 +139,8 @@
               <div class="flex justify-end gap-2 pr-6">
                 <button 
                   (click)="openEditSubscription(row)"
-                  class="btn-secondary btn-sm"
+                  class="btn-secondary"
                   title="Thay đổi gói thuê bao">
-                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
                   <span>Sửa</span>
                 </button>
               </div>
@@ -150,136 +149,215 @@
         </div>
       }
 
-      <!-- Tab 2: Plans Management & Global Settings -->
+      <!-- ===== TAB 2: PLANS ===== -->
       @if (activeSubTab() === 'plans') {
-        <div class="space-y-6">
-          
-          <!-- Plans List -->
-          <div class="app-card p-0 overflow-hidden">
-            <app-table 
-              [columns]="planColumns" 
-              [data]="paginatedPlans()"
-              [totalItems]="plans().length"
-              [itemsPerPage]="planItemsPerPage"
-              [currentPage]="planCurrentPage()"
-              [showPagination]="true"
-              [itemName]="'gói cước'"
-              (pageChange)="planCurrentPage.set($event)">
-              
-              <ng-template appCell="code" let-row>
-                <div class="font-mono text-purple-650 dark:text-purple-400 font-bold pl-6 text-xs">{{ row.code }}</div>
-              </ng-template>
+        <div class="app-card p-0 overflow-hidden">
+          <app-table 
+            [columns]="planColumns" 
+            [data]="paginatedPlans()"
+            [totalItems]="plans().length"
+            [itemsPerPage]="planItemsPerPage"
+            [currentPage]="planCurrentPage()"
+            [showPagination]="true"
+            [itemName]="'gói cước'"
+            (pageChange)="planCurrentPage.set($event)">
+            
+            <ng-template appCell="code" let-row>
+              <div class="font-mono text-purple-650 dark:text-purple-400 font-bold pl-6 text-xs">{{ row.code }}</div>
+            </ng-template>
 
-              <ng-template appCell="name" let-row>
-                <div class="text-slate-800 dark:text-slate-200 text-sm font-semibold">{{ row.name }}</div>
-              </ng-template>
+            <ng-template appCell="name" let-row>
+              <div class="text-slate-800 dark:text-slate-200 text-sm font-semibold">{{ row.name }}</div>
+            </ng-template>
 
-              <ng-template appCell="limits" let-row>
-                <div class="flex flex-col gap-1 text-xs font-semibold">
-                  <div>
-                    <span class="text-slate-400 mr-1.5">Sản phẩm:</span>
-                    <span class="font-extrabold text-slate-700 dark:text-slate-350">{{ row.features?.max_products < 0 ? 'Không giới hạn' : row.features?.max_products }}</span>
-                  </div>
-                  <div>
-                    <span class="text-slate-400 mr-1.5">Nhân viên:</span>
-                    <span class="font-extrabold text-slate-700 dark:text-slate-350">{{ row.features?.max_staffs < 0 ? 'Không giới hạn' : row.features?.max_staffs }}</span>
-                  </div>
+            <ng-template appCell="limits" let-row>
+              <div class="flex flex-col gap-1 text-xs font-semibold">
+                <div>
+                  <span class="text-slate-400 mr-1.5">Sản phẩm:</span>
+                  <span class="font-extrabold text-slate-700 dark:text-slate-350">{{ row.features?.max_products < 0 ? 'Không giới hạn' : row.features?.max_products }}</span>
                 </div>
-              </ng-template>
-
-              <ng-template appCell="features" let-row>
-                <div class="flex flex-wrap gap-1.5 max-w-sm">
-                  <span class="inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold"
-                    [ngClass]="row.features?.enable_storefront ? 'bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700'">
-                    Web Store
-                  </span>
-                  <span class="inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold"
-                    [ngClass]="row.features?.enable_reports ? 'bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700'">
-                    Báo cáo
-                  </span>
-                  <span class="inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold"
-                    [ngClass]="row.features?.enable_excel_export ? 'bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700'">
-                    Xuất Excel
-                  </span>
+                <div>
+                  <span class="text-slate-400 mr-1.5">Nhân viên:</span>
+                  <span class="font-extrabold text-slate-700 dark:text-slate-350">{{ row.features?.max_staffs < 0 ? 'Không giới hạn' : row.features?.max_staffs }}</span>
                 </div>
-              </ng-template>
+              </div>
+            </ng-template>
 
-              <ng-template appCell="is_active" let-row>
-                <span class="inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-bold"
-                  [ngClass]="{
-                    'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20': row.is_active,
-                    'bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700': !row.is_active
-                  }">
-                  {{ row.is_active ? 'Hoạt động' : 'Tạm dừng' }}
+            <ng-template appCell="features" let-row>
+              <div class="flex flex-wrap gap-1.5 max-w-sm">
+                <span class="inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold"
+                  [ngClass]="row.features?.enable_storefront ? 'bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700'">
+                  Web Store
                 </span>
-              </ng-template>
+                <span class="inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold"
+                  [ngClass]="row.features?.enable_reports ? 'bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700'">
+                  Báo cáo
+                </span>
+                <span class="inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold"
+                  [ngClass]="row.features?.enable_excel_export ? 'bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700'">
+                  Xuất Excel
+                </span>
+              </div>
+            </ng-template>
 
-              <ng-template appCell="actions" let-row>
-                <div class="flex justify-end gap-2 pr-6">
+            <ng-template appCell="is_active" let-row>
+              <span class="inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-bold"
+                [ngClass]="{
+                  'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20': row.is_active,
+                  'bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700': !row.is_active
+                }">
+                {{ row.is_active ? 'Hoạt động' : 'Tạm dừng' }}
+              </span>
+            </ng-template>
+
+            <ng-template appCell="actions" let-row>
+              <div class="flex justify-end gap-2 pr-6">
+                <button 
+                  (click)="openEditPlan(row)"
+                  class="btn-secondary"
+                  title="Chỉnh sửa cấu hình gói cước">
+                  <span>Sửa</span>
+                </button>
+                @if (row.code !== 'free') {
                   <button 
-                    (click)="openEditPlan(row)"
-                    class="btn-secondary btn-sm"
-                    title="Chỉnh sửa cấu hình gói cước">
-                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                    <span>Sửa</span>
+                    (click)="triggerDeletePlan(row)"
+                    class="btn-danger-light"
+                    title="Xóa gói cước (nếu không có cửa hàng nào đang sử dụng)">
+                    <span>Xóa</span>
                   </button>
-                  @if (row.code !== 'free') {
-                    <button 
-                      (click)="triggerDeletePlan(row)"
-                      class="btn-danger-light btn-sm"
-                      title="Xóa gói cước (nếu không có cửa hàng nào đang sử dụng)">
-                      <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                      <span>Xóa</span>
-                    </button>
-                  } @else {
-                    <button 
-                      disabled
-                      class="btn-cancel btn-sm cursor-not-allowed opacity-40"
-                      title="Gói 'free' là gói mặc định hệ thống, không thể xóa">
-                      <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                      <span>Xóa</span>
-                    </button>
-                  }
+                } @else {
+                  <button 
+                    disabled
+                    class="btn-cancel cursor-not-allowed opacity-40"
+                    title="Gói 'free' là gói mặc định hệ thống, không thể xóa">
+                    <span>Xóa</span>
+                  </button>
+                }
+              </div>
+            </ng-template>
+          </app-table>
+        </div>
+      }
+
+      <!-- ===== TAB 3: SYSTEM (Maintenance) ===== -->
+      @if (activeSubTab() === 'system') {
+        <div class="space-y-6">
+
+          <!-- Cache & Views Maintenance -->
+          <div class="app-card p-0 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800/60">
+              <div>
+                <h4 class="text-base font-black text-slate-800 dark:text-white uppercase tracking-wider">BẢO TRÌ CACHE & VIEW</h4>
+                <p class="text-sm text-slate-400 mt-0.5">Quản lý bộ nhớ đệm cấu hình, tệp biên dịch, định tuyến và nhật ký hệ thống.</p>
+              </div>
+            </div>
+
+            <!-- Action Rows -->
+            <div class="divide-y divide-slate-100 dark:divide-slate-800/60">
+
+              <!-- Clear Views -->
+              <div class="flex items-center justify-between px-6 py-4 gap-4">
+                <div class="min-w-0">
+                  <p class="text-base font-bold text-slate-800 dark:text-slate-200">Làm mới compiled views</p>
+                  <p class="text-sm text-slate-400 mt-1">Xóa các Blade views đã biên dịch để bắt buộc cập nhật lại giao diện mới nhất.</p>
                 </div>
-              </ng-template>
-            </app-table>
+                <button (click)="runMaintenance('clear-views')" [disabled]="!!runningMaintenance()" class="btn-primary shrink-0 !bg-amber-500 hover:!bg-amber-600 border-0">
+                  @if (runningMaintenance() === 'clear-views') { <div class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></div> }
+                  @else { <span>Làm mới</span> }
+                </button>
+              </div>
+
+              <!-- Clear Config -->
+              <div class="flex items-center justify-between px-6 py-4 gap-4">
+                <div class="min-w-0">
+                  <p class="text-base font-bold text-slate-800 dark:text-slate-200">Xóa cấu hình cache</p>
+                  <p class="text-sm text-slate-400 mt-1">Làm mới bộ nhớ đệm của cấu hình dự án, áp dụng khi thay đổi các biến môi trường .env.</p>
+                </div>
+                <button (click)="runMaintenance('clear-config')" [disabled]="!!runningMaintenance()" class="btn-secondary shrink-0">
+                  @if (runningMaintenance() === 'clear-config') { <div class="w-4 h-4 rounded-full border-2 border-current/30 border-t-current animate-spin"></div> }
+                  @else { <span>Xóa cache</span> }
+                </button>
+              </div>
+
+              <!-- Clear Routes -->
+              <div class="flex items-center justify-between px-6 py-4 gap-4">
+                <div class="min-w-0">
+                  <p class="text-base font-bold text-slate-800 dark:text-slate-200">Xóa định tuyến cache</p>
+                  <p class="text-sm text-slate-400 mt-1">Xóa bộ nhớ đệm của hệ thống định tuyến Laravel API, cần thiết khi đăng ký thêm route mới.</p>
+                </div>
+                <button (click)="runMaintenance('clear-routes')" [disabled]="!!runningMaintenance()" class="btn-primary shrink-0 !bg-emerald-500 hover:!bg-emerald-600 border-0">
+                  @if (runningMaintenance() === 'clear-routes') { <div class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></div> }
+                  @else { <span>Xóa cache</span> }
+                </button>
+              </div>
+
+              <!-- Clear Logs -->
+              <div class="flex items-center justify-between px-6 py-4 gap-4">
+                <div class="min-w-0">
+                  <p class="text-base font-bold text-slate-800 dark:text-slate-200">Xóa nhật ký hệ thống</p>
+                  <p class="text-sm text-slate-400 mt-1">Xóa sạch toàn bộ các tệp log phát sinh trong thư mục storage/logs để giải phóng dung lượng.</p>
+                </div>
+                <button (click)="runMaintenance('clear-logs')" [disabled]="!!runningMaintenance()" class="btn-danger-light shrink-0">
+                  @if (runningMaintenance() === 'clear-logs') { <div class="w-4 h-4 rounded-full border-2 border-current/30 border-t-current animate-spin"></div> }
+                  @else { <span>Xóa log</span> }
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Performance Optimization -->
+          <div class="app-card p-0 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800/60">
+              <div>
+                <h4 class="text-base font-black text-slate-800 dark:text-white uppercase tracking-wider">TỐI ƯU HÓA HIỆU NĂNG</h4>
+                <p class="text-sm text-slate-400 mt-0.5">Biên dịch và cache đồng loạt cấu hình, định tuyến và views để tăng tốc độ tải ứng dụng.</p>
+              </div>
+            </div>
+            <div class="divide-y divide-slate-100 dark:divide-slate-800/60">
+              <!-- Optimize -->
+              <div class="flex items-center justify-between px-6 py-4 gap-4">
+                <div class="min-w-0">
+                  <p class="text-base font-bold text-slate-800 dark:text-slate-200">Tối ưu hóa hiệu năng</p>
+                  <p class="text-sm text-slate-400 mt-1">Thực thi lệnh cache tối ưu hóa toàn diện cho dự án Laravel ở chế độ Production.</p>
+                </div>
+                <button (click)="runMaintenance('optimize')" [disabled]="!!runningMaintenance()" class="btn-primary shrink-0 !bg-emerald-500 hover:!bg-emerald-600 border-0">
+                  @if (runningMaintenance() === 'optimize') { <div class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></div> }
+                  @else { <span>Tối ưu hóa</span> }
+                </button>
+              </div>
+              <!-- Clear Optimize -->
+              <div class="flex items-center justify-between px-6 py-4 gap-4">
+                <div class="min-w-0">
+                  <p class="text-base font-bold text-slate-800 dark:text-slate-200">Xóa cache tối ưu hóa</p>
+                  <p class="text-sm text-slate-400 mt-1">Gỡ bỏ tất cả các tệp cache tối ưu hóa để cho phép các thay đổi mới trong code có hiệu lực.</p>
+                </div>
+                <button (click)="runMaintenance('clear-optimize')" [disabled]="!!runningMaintenance()" class="btn-primary shrink-0 !bg-amber-500 hover:!bg-amber-600 border-0">
+                  @if (runningMaintenance() === 'clear-optimize') { <div class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></div> }
+                  @else { <span>Xóa cache</span> }
+                </button>
+              </div>
+            </div>
           </div>
 
           <!-- Token Maintenance Configuration -->
           <div class="app-card space-y-6 relative overflow-hidden">
-            <div class="flex items-center gap-2.5 pb-2 border-b border-slate-100 dark:border-slate-800/60">
-              <div class="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0 flex items-center">
-                <app-icon name="trash" class="h-5 w-5" strokeWidth="2" />
-              </div>
+            <div class="pb-2 border-b border-slate-100 dark:border-slate-800/60">
               <div>
-                <h4 class="text-md font-bold text-slate-800 dark:text-white uppercase tracking-wider">
-                  Bảo trì Token hệ thống (Clean Tokens)
-                </h4>
-                <p class="text-xs text-slate-400 mt-0.5">
-                  Xóa bỏ các token đăng nhập cũ và đã hết hạn trong database Laravel Sanctum để giải phóng dung lượng và tối ưu hóa hệ thống.
-                </p>
+                <h4 class="text-base font-black text-slate-800 dark:text-white uppercase tracking-wider">BẢO TRÌ SANCTUM TOKEN</h4>
+                <p class="text-sm text-slate-400 mt-0.5">Xóa bỏ các token đăng nhập cũ hoặc đã hết hạn trong database để giải phóng dung lượng.</p>
               </div>
             </div>
-
-            <!-- Configuration Inputs -->
             <div class="space-y-5">
-              <div class="space-y-1.5">
-                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block">Thời gian giữ lại token (Ngày)</label>
+              <div class="space-y-2">
+                <label class="text-sm font-bold text-slate-400 uppercase tracking-wide block">Thời gian giữ lại token (Ngày)</label>
                 <input 
                   type="number" 
                   [(ngModel)]="tokenCleanupDays" 
                   min="1" 
                   max="365"
-                  class="form-input" />
+                  class="form-input text-base" />
               </div>
-              
-              <div class="flex flex-col sm:flex-row gap-3 pt-2">
+              <div class="flex flex-wrap gap-3 pt-2">
                 <button 
                   (click)="saveSystemSettings()"
                   [disabled]="isSavingSettings()"
@@ -290,7 +368,13 @@
                   (click)="confirmCleanTokensOpen.set(true)"
                   [disabled]="isCleaningTokens()"
                   class="btn-secondary flex-1 sm:flex-none">
-                  Dọn dẹp Token Ngay
+                  Dọn dẹp Token hết hạn
+                </button>
+                <button 
+                  (click)="confirmCleanAllTokensOpen.set(true)"
+                  [disabled]="isCleaningAllTokens()"
+                  class="btn-danger flex-1 sm:flex-none">
+                  Xóa tất cả Token
                 </button>
               </div>
             </div>
@@ -299,10 +383,219 @@
         </div>
       }
 
+      <!-- ===== TAB 4: SYSTEM INFO ===== -->
+      @if (activeSubTab() === 'sysinfo') {
+        @if (isLoadingSysInfo()) {
+          <app-skeleton-loader type="table" [cols]="3" [rows]="8"></app-skeleton-loader>
+        } @else if (!systemInfo()) {
+          <div class="app-card flex flex-col items-center justify-center py-16 gap-4 text-center">
+            <div class="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+              <svg class="h-7 w-7 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            </div>
+            <div>
+              <p class="font-bold text-slate-800 dark:text-slate-200">Chưa tải thông tin hệ thống</p>
+              <p class="text-sm text-slate-400 mt-1">Nhấn nút "Làm mới" ở góc trên bên phải để tải.</p>
+            </div>
+            <button (click)="loadSysInfo()" class="btn-primary">
+              <span>Tải thông tin ngay</span>
+            </button>
+          </div>
+        } @else {
+          <div class="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-6 items-start">
+
+            <!-- LEFT: Installed Packages -->
+            <div class="app-card p-0 overflow-hidden">
+              <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800/60 flex flex-col sm:flex-row sm:items-center gap-3">
+                <div class="flex-1 min-w-0">
+                  <div>
+                    <h4 class="text-sm font-bold text-slate-800 dark:text-white">Thư viện đã cài đặt (composer.json)</h4>
+                    <p class="text-sm text-slate-400 mt-0.5">{{ filteredPackages().length }} / {{ packages().length }} package</p>
+                  </div>
+                </div>
+                <div class="relative w-full sm:w-64">
+                  <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                  </div>
+                  <input type="text" [ngModel]="packageSearch()" (ngModelChange)="onPackageSearchChange($event)" placeholder="Tìm thư viện..." class="search-input !pl-9 !h-9 !text-sm" />
+                </div>
+              </div>
+
+              <!-- Package List -->
+              <div class="divide-y divide-slate-50 dark:divide-slate-800/40">
+                @for (pkg of paginatedPackages(); track pkg.name) {
+                  <div class="flex items-start gap-4 px-6 py-3.5 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+                    <div class="min-w-[220px] shrink-0">
+                      <span class="text-sm font-mono font-bold text-purple-650 dark:text-purple-400 block sm:inline">{{ pkg.name }}</span>
+                      <span class="inline-flex ml-2 items-center rounded px-1.5 py-0.5 text-sm font-bold bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400">{{ pkg.version }}</span>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 min-w-0">
+                      @for (dep of pkg.require; track dep) {
+                        <span class="inline-flex items-center rounded px-1.5 py-0.5 text-sm font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">{{ dep }}</span>
+                      }
+                    </div>
+                  </div>
+                }
+                @if (paginatedPackages().length === 0) {
+                  <div class="py-8 text-center text-sm text-slate-405">Không tìm thấy thư viện nào.</div>
+                }
+              </div>
+
+              <!-- Pagination -->
+              @if (filteredPackages().length > packageItemsPerPage) {
+                <div class="px-6 py-3 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between gap-2">
+                  <span class="text-sm text-slate-405">
+                    {{ (packageCurrentPage() - 1) * packageItemsPerPage + 1 }}–{{ packageCurrentPage() * packageItemsPerPage < filteredPackages().length ? packageCurrentPage() * packageItemsPerPage : filteredPackages().length }} / {{ filteredPackages().length }}
+                  </span>
+                  <div class="flex items-center gap-1">
+                    <button (click)="packageCurrentPage.set(packageCurrentPage() - 1)" [disabled]="packageCurrentPage() <= 1" class="w-9.5 h-9.5 rounded-lg flex items-center justify-center text-slate-400 hover:text-[var(--dynamic-primary)] hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 transition">
+                      <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                    </button>
+                    <span class="text-sm font-bold text-slate-600 dark:text-slate-400 px-2">{{ packageCurrentPage() }} / {{ packageTotalPages() }}</span>
+                    <button (click)="packageCurrentPage.set(packageCurrentPage() + 1)" [disabled]="packageCurrentPage() >= packageTotalPages()" class="w-9.5 h-9.5 rounded-lg flex items-center justify-center text-slate-400 hover:text-[var(--dynamic-primary)] hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 transition">
+                      <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- RIGHT: Info Panels -->
+            <div class="space-y-5">
+
+              <!-- System Environment -->
+              <div class="app-card space-y-0 p-0 overflow-hidden">
+                <div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800/60">
+                  <h5 class="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">MÔI TRƯỜNG HỆ THỐNG</h5>
+                </div>
+                <div class="divide-y divide-slate-50 dark:divide-slate-800/40">
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm">
+                    <span class="text-slate-500 font-medium">Tên ứng dụng</span>
+                    <span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.system_env?.app_name }}</span>
+                  </div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm">
+                    <span class="text-slate-500 font-medium">Phiên bản Laravel</span>
+                    <span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.system_env?.laravel_version }}</span>
+                  </div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm">
+                    <span class="text-slate-500 font-medium">Phiên bản PHP</span>
+                    <span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.system_env?.php_version }}</span>
+                  </div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm">
+                    <span class="text-slate-500 font-medium">Múi giờ hệ thống</span>
+                    <span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.system_env?.timezone }}</span>
+                  </div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm gap-2">
+                    <span class="text-slate-500 shrink-0 font-medium">IP Máy chủ</span>
+                    <div class="flex items-center gap-1.5">
+                      <span class="font-mono font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.system_env?.server_ip }}</span>
+                      <button (click)="stateService.copyAddress(systemInfo()?.system_env?.server_ip)" class="p-0.5 text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition" title="Sao chép IP">
+                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm">
+                    <span class="text-slate-500 font-medium">Chế độ Debug</span>
+                    <span [ngClass]="systemInfo()?.system_env?.debug_mode ? 'text-rose-500' : 'text-emerald-500'" class="font-extrabold flex items-center gap-1">
+                      <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" [attr.d]="systemInfo()?.system_env?.debug_mode ? 'M6 18L18 6M6 6l12 12' : 'M5 13l4 4L19 7'" /></svg>
+                      {{ systemInfo()?.system_env?.debug_mode ? 'Bật (On)' : 'Tắt (Off)' }}
+                    </span>
+                  </div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm">
+                    <span class="text-slate-500 font-medium">Thư mục Storage ghi được</span>
+                    <span [ngClass]="systemInfo()?.system_env?.storage_writable ? 'text-emerald-500' : 'text-rose-500'" class="font-extrabold flex items-center gap-1">
+                      <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" [attr.d]="systemInfo()?.system_env?.storage_writable ? 'M5 13l4 4L19 7' : 'M6 18L18 6M6 6l12 12'" /></svg>
+                      {{ systemInfo()?.system_env?.storage_writable ? 'Được (Yes)' : 'Không (No)' }}
+                    </span>
+                  </div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm">
+                    <span class="text-slate-500 font-medium">Thư mục Cache ghi được</span>
+                    <span [ngClass]="systemInfo()?.system_env?.cache_writable ? 'text-emerald-500' : 'text-rose-500'" class="font-extrabold flex items-center gap-1">
+                      <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" [attr.d]="systemInfo()?.system_env?.cache_writable ? 'M5 13l4 4L19 7' : 'M6 18L18 6M6 6l12 12'" /></svg>
+                      {{ systemInfo()?.system_env?.cache_writable ? 'Được (Yes)' : 'Không (No)' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Server Environment -->
+              <div class="app-card space-y-0 p-0 overflow-hidden">
+                <div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800/60">
+                  <h5 class="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">MÔI TRƯỜNG MÁY CHỦ</h5>
+                </div>
+                <div class="divide-y divide-slate-50 dark:divide-slate-800/40">
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">Giới hạn bộ nhớ</span><span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.server_env?.memory_limit }}</span></div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">T.gian chạy tối đa</span><span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.server_env?.max_exec_time }}s</span></div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">Trình quản lý Cache</span><span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.server_env?.cache_driver }}</span></div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">Trình quản lý Session</span><span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.server_env?.session_driver }}</span></div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">Kết nối Hàng đợi</span><span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.server_env?.queue_connection }}</span></div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">OPcache</span><span [ngClass]="systemInfo()?.server_env?.opcache_enabled ? 'text-emerald-500' : 'text-slate-400'" class="font-extrabold flex items-center gap-1"><svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" [attr.d]="systemInfo()?.server_env?.opcache_enabled ? 'M5 13l4 4L19 7' : 'M6 18L18 6M6 6l12 12'" /></svg>{{ systemInfo()?.server_env?.opcache_enabled ? 'Kích hoạt' : 'Tắt' }}</span></div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">SSL</span><span [ngClass]="systemInfo()?.server_env?.ssl_installed ? 'text-emerald-500' : 'text-rose-450'" class="font-extrabold flex items-center gap-1"><svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" [attr.d]="systemInfo()?.server_env?.ssl_installed ? 'M5 13l4 4L19 7' : 'M6 18L18 6M6 6l12 12'" /></svg>{{ systemInfo()?.server_env?.ssl_installed ? 'Đã thiết lập' : 'Chưa cài đặt' }}</span></div>
+                  <!-- PHP Extensions -->
+                  <div class="px-5 py-2.5 text-sm">
+                    <p class="text-slate-500 mb-2 font-semibold">Các phần mở rộng PHP</p>
+                    <div class="flex flex-wrap gap-1.5">
+                      @for (ext of [
+                        {label:'OpenSSL', key:'ext_openssl'},
+                        {label:'Mbstring', key:'ext_mbstring'},
+                        {label:'PDO', key:'ext_pdo'},
+                        {label:'cURL', key:'ext_curl'},
+                        {label:'Exif', key:'ext_exif'},
+                        {label:'FileInfo', key:'ext_fileinfo'},
+                        {label:'Tokenizer', key:'ext_tokenizer'},
+                        {label:'GD/Imagick', key:'ext_gd_imagick'},
+                        {label:'Zip', key:'ext_zip'},
+                        {label:'Iconv', key:'ext_iconv'},
+                        {label:'JSON', key:'ext_json'}
+                      ]; track ext.key) {
+                        <span class="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-sm font-semibold"
+                          [ngClass]="systemInfo()?.server_env?.[ext.key] ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'">
+                          <svg class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" [attr.d]="systemInfo()?.server_env?.[ext.key] ? 'M5 13l4 4L19 7' : 'M6 18L18 6M6 6l12 12'" /></svg>
+                          {{ ext.label }}
+                        </span>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Database Info -->
+              <div class="app-card space-y-0 p-0 overflow-hidden">
+                <div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800/60">
+                  <h5 class="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">THÔNG TIN CƠ SỞ DỮ LIỆU</h5>
+                </div>
+                <div class="divide-y divide-slate-50 dark:divide-slate-800/40">
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">Trình kết nối</span><span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.database_info?.driver }}</span></div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">Tên Database</span><span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.database_info?.name }}</span></div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">Phiên bản DB</span><span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.database_info?.version }}</span></div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">Bảng mã kết nối</span><span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.database_info?.charset }}</span></div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">Đối chiếu kết nối</span><span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.database_info?.collation }}</span></div>
+                </div>
+              </div>
+
+              <!-- PHP Configuration -->
+              <div class="app-card space-y-0 p-0 overflow-hidden">
+                <div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800/60">
+                  <h5 class="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">CẤU HÌNH PHP (INI)</h5>
+                </div>
+                <div class="divide-y divide-slate-50 dark:divide-slate-800/40">
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">Kích thước POST tối đa</span><span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.php_config?.post_max_size }}</span></div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">Tải tệp lên tối đa</span><span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.php_config?.upload_max_size }}</span></div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">Số lượng tệp tải tối đa</span><span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.php_config?.max_file_uploads }}</span></div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">T.gian nhập liệu tối đa</span><span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.php_config?.max_input_time }}s</span></div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">Số lượng biến nhập tối đa</span><span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.php_config?.max_input_vars }}</span></div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">Múi giờ cấu hình</span><span class="font-extrabold text-slate-800 dark:text-slate-200">{{ systemInfo()?.php_config?.date_timezone }}</span></div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm"><span class="text-slate-500 font-medium">Hiển thị lỗi</span><span [ngClass]="systemInfo()?.php_config?.display_errors ? 'text-rose-500' : 'text-emerald-500'" class="font-extrabold">{{ systemInfo()?.php_config?.display_errors ? 'Bật (On)' : 'Tắt (Off)' }}</span></div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        }
+      }
     }
-    
   }
 </div>
+  
 
 <!-- Modal 1: Edit Tenant Subscription -->
 <app-modal 
@@ -327,7 +620,7 @@
 
       <!-- Plan Selection -->
       <div class="space-y-2">
-        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wide">Gói cước phân bổ</label>
+        <label class="block text-sm font-bold text-slate-400 uppercase tracking-wide">Gói cước phân bổ</label>
         <app-custom-select 
           [options]="planOptions" 
           formControlName="plan_code">
@@ -336,7 +629,7 @@
 
       <!-- Expires At DatePicker -->
       <div class="space-y-2">
-        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wide">Ngày hết hạn (Nếu có)</label>
+        <label class="block text-sm font-bold text-slate-400 uppercase tracking-wide">Ngày hết hạn (Nếu có)</label>
         <app-custom-date-picker
           [selectedDate]="subscriptionForm.get('subscription_expires_at')?.value"
           (selectedDateChange)="subscriptionForm.get('subscription_expires_at')?.setValue($event)"
@@ -347,7 +640,7 @@
 
       <!-- Subscription Status -->
       <div class="space-y-2">
-        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wide">Trạng thái thuê bao</label>
+        <label class="block text-sm font-bold text-slate-400 uppercase tracking-wide">Trạng thái thuê bao</label>
         <app-custom-select 
           [options]="[
             { value: 'active', label: 'Hoạt động (Active)' },
@@ -390,7 +683,7 @@
     
     <!-- Plan Code (Only new) -->
     <div class="space-y-2">
-      <label class="block text-xs font-bold text-slate-400 uppercase tracking-wide">Mã gói cước</label>
+      <label class="block text-sm font-bold text-slate-400 uppercase tracking-wide">Mã gói cước</label>
       <input 
         type="text" 
         formControlName="code" 
@@ -403,7 +696,7 @@
 
     <!-- Plan Name -->
     <div class="space-y-2">
-      <label class="block text-xs font-bold text-slate-400 uppercase tracking-wide">Tên gói cước</label>
+      <label class="block text-sm font-bold text-slate-400 uppercase tracking-wide">Tên gói cước</label>
       <input 
         type="text" 
         formControlName="name" 
@@ -416,7 +709,7 @@
 
     <!-- Active Status -->
     <div class="space-y-2">
-      <label class="block text-xs font-bold text-slate-400 uppercase tracking-wide">Trạng thái gói</label>
+      <label class="block text-sm font-bold text-slate-400 uppercase tracking-wide">Trạng thái gói</label>
       <app-custom-select 
         [options]="[
           { value: true, label: 'Cho phép sử dụng (Active)' },
@@ -428,57 +721,37 @@
 
     <!-- Feature Flags -->
     <div formGroupName="features" class="space-y-5 p-4 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-slate-100 dark:border-slate-800/60">
-      <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800/60 pb-2 mb-3">Feature Flagging (Giới hạn tính năng)</h4>
+      <h4 class="text-sm font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800/60 pb-2 mb-3">Feature Flagging (Giới hạn tính năng)</h4>
 
-      <!-- Max Products Limit -->
       <div class="space-y-1.5">
-        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">Số lượng sản phẩm tối đa</label>
-        <input 
-          type="number" 
-          formControlName="max_products" 
-          class="form-input" />
+        <label class="block text-sm font-bold text-slate-700 dark:text-slate-300">Số lượng sản phẩm tối đa</label>
+        <input type="number" formControlName="max_products" class="form-input" />
         <p class="text-slate-450 text-2xs">Nhập -1 nếu muốn cho phép tạo không giới hạn sản phẩm.</p>
       </div>
 
-      <!-- Max Staffs Limit -->
       <div class="space-y-1.5">
-        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">Số lượng nhân viên tối đa</label>
-        <input 
-          type="number" 
-          formControlName="max_staffs" 
-          class="form-input" />
+        <label class="block text-sm font-bold text-slate-700 dark:text-slate-300">Số lượng nhân viên tối đa</label>
+        <input type="number" formControlName="max_staffs" class="form-input" />
         <p class="text-slate-450 text-2xs">Nhập -1 nếu muốn cho phép tạo không giới hạn nhân viên.</p>
       </div>
 
-      <!-- Features checkboxes -->
       <div class="space-y-3 pt-2">
         <label class="flex items-center gap-3 cursor-pointer">
-          <input 
-            type="checkbox" 
-            formControlName="enable_storefront" 
-            class="h-4.5 w-4.5 rounded border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-slate-50 dark:focus:ring-offset-slate-900" />
+          <input type="checkbox" formControlName="enable_storefront" class="h-4.5 w-4.5 rounded border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-slate-50 dark:focus:ring-offset-slate-900" />
           <div class="text-xs sm:text-sm">
             <p class="font-extrabold text-slate-800 dark:text-slate-200">Kích hoạt Website Cửa hàng (Storefront)</p>
             <p class="text-2xs text-slate-400">Cho phép bán hàng trực tuyến và tự động đẩy đơn hàng POS.</p>
           </div>
         </label>
-
         <label class="flex items-center gap-3 cursor-pointer">
-          <input 
-            type="checkbox" 
-            formControlName="enable_reports" 
-            class="h-4.5 w-4.5 rounded border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-slate-50 dark:focus:ring-offset-slate-900" />
+          <input type="checkbox" formControlName="enable_reports" class="h-4.5 w-4.5 rounded border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-slate-50 dark:focus:ring-offset-slate-900" />
           <div class="text-xs sm:text-sm">
             <p class="font-extrabold text-slate-800 dark:text-slate-200">Kích hoạt phân hệ Báo cáo doanh thu & Lãi lỗ</p>
             <p class="text-2xs text-slate-400">Cho phép chủ quán xem thống kê chi tiết tình hình tài chính.</p>
           </div>
         </label>
-
         <label class="flex items-center gap-3 cursor-pointer">
-          <input 
-            type="checkbox" 
-            formControlName="enable_excel_export" 
-            class="h-4.5 w-4.5 rounded border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-slate-50 dark:focus:ring-offset-slate-900" />
+          <input type="checkbox" formControlName="enable_excel_export" class="h-4.5 w-4.5 rounded border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-slate-50 dark:focus:ring-offset-slate-900" />
           <div class="text-xs sm:text-sm">
             <p class="font-extrabold text-slate-800 dark:text-slate-200">Cho phép xuất file dữ liệu Excel (.xlsx)</p>
             <p class="text-2xs text-slate-400">Mở chức năng tải báo cáo dạng tệp Excel nhị phân Unicode.</p>
@@ -537,4 +810,14 @@
   [confirmText]="'Khôi phục ngay'"
   (confirm)="onResetDefaultPlansConfirm()" 
   (cancel)="confirmResetDefaultPlansOpen.set(false)">
+</app-confirm-modal>
+
+<!-- Modal 6: Confirm Clean all system tokens -->
+<app-confirm-modal 
+  [isOpen]="confirmCleanAllTokensOpen()" 
+  [title]="'Xác nhận xóa TẤT CẢ Token đăng nhập'" 
+  [description]="'CẢNH BÁO BẢO MẬT: Thao tác này sẽ xóa sạch tất cả các token phiên đăng nhập (cả hết hạn và còn hạn) của toàn bộ người dùng trong hệ thống (bao gồm cả bạn và tất cả các Super Admin). Mọi tài khoản sẽ lập tức bị đăng xuất. Bạn có chắc chắn muốn tiếp tục?'"
+  [confirmText]="'Đăng xuất tất cả'"
+  (confirm)="onCleanAllTokensConfirm()" 
+  (cancel)="confirmCleanAllTokensOpen.set(false)">
 </app-confirm-modal>

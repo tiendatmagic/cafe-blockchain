@@ -304,4 +304,194 @@ class AdminController extends Controller
             'message' => "Đã dọn dẹp thành công {$deletedCount} token cũ hết hạn khỏi cơ sở dữ liệu."
         ]);
     }
+
+    /**
+     * API thực hiện xóa toàn bộ Sanctum tokens của mọi user, bao gồm cả super admin.
+     * Khi gọi api này xong, toàn bộ người dùng sẽ lập tức bị logout.
+     */
+    public function cleanAllTokens()
+    {
+        $deletedCount = PersonalAccessToken::query()->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Đã xóa toàn bộ {$deletedCount} token đăng nhập của hệ thống. Tất cả tài khoản đã bị đăng xuất."
+        ]);
+    }
+
+    // =========================================================
+    // SYSTEM INFO
+    // =========================================================
+
+    /**
+     * Trả về toàn bộ thông tin hệ thống, môi trường server, cấu hình PHP và database.
+     */
+    public function getSystemInfo()
+    {
+        $dbDriver  = config('database.default');
+        $dbConfig  = config("database.connections.{$dbDriver}");
+        $dbVersion = 'N/A';
+
+        try {
+            $row = DB::selectOne('SELECT VERSION() as version');
+            $dbVersion = $row->version ?? 'N/A';
+        } catch (\Throwable $e) {}
+
+        $serverIp = request()->server('SERVER_ADDR')
+            ?? (function_exists('gethostbyname') ? gethostbyname(gethostname()) : 'N/A');
+
+        return response()->json([
+            'system_env' => [
+                'app_name'         => config('app.name'),
+                'laravel_version'  => app()->version(),
+                'php_version'      => PHP_VERSION,
+                'timezone'         => config('app.timezone'),
+                'server_ip'        => $serverIp,
+                'debug_mode'       => (bool) config('app.debug'),
+                'storage_writable' => is_writable(storage_path()),
+                'cache_writable'   => is_writable(storage_path('framework/cache')),
+            ],
+            'server_env' => [
+                'php_version'      => PHP_VERSION,
+                'opcache_enabled'  => function_exists('opcache_get_status') && @opcache_get_status() !== false,
+                'memory_limit'     => ini_get('memory_limit'),
+                'max_exec_time'    => ini_get('max_execution_time'),
+                'server_software'  => request()->server('SERVER_SOFTWARE') ?? php_uname('s'),
+                'server_os'        => php_uname(),
+                'database'         => $dbDriver,
+                'ssl_installed'    => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+                'cache_driver'     => config('cache.default'),
+                'session_driver'   => config('session.driver'),
+                'queue_connection' => config('queue.default'),
+                'allow_url_fopen'  => (bool) ini_get('allow_url_fopen'),
+                'ext_openssl'      => extension_loaded('openssl'),
+                'ext_mbstring'     => extension_loaded('mbstring'),
+                'ext_pdo'          => extension_loaded('pdo'),
+                'ext_curl'         => extension_loaded('curl'),
+                'ext_exif'         => extension_loaded('exif'),
+                'ext_fileinfo'     => extension_loaded('fileinfo'),
+                'ext_tokenizer'    => extension_loaded('tokenizer'),
+                'ext_gd_imagick'   => extension_loaded('gd') || extension_loaded('imagick'),
+                'ext_zip'          => extension_loaded('zip'),
+                'ext_iconv'        => extension_loaded('iconv'),
+                'ext_json'         => extension_loaded('json'),
+            ],
+            'database_info' => [
+                'driver'    => $dbDriver,
+                'name'      => $dbConfig['database'] ?? 'N/A',
+                'version'   => $dbVersion,
+                'charset'   => $dbConfig['charset'] ?? 'utf8mb4',
+                'collation' => $dbConfig['collation'] ?? 'utf8mb4_unicode_ci',
+            ],
+            'php_config' => [
+                'post_max_size'      => ini_get('post_max_size'),
+                'upload_max_size'    => ini_get('upload_max_filesize'),
+                'max_file_uploads'   => ini_get('max_file_uploads'),
+                'max_input_time'     => ini_get('max_input_time'),
+                'max_input_vars'     => ini_get('max_input_vars'),
+                'display_errors'     => (bool) ini_get('display_errors'),
+                'error_reporting'    => ini_get('error_reporting'),
+                'date_timezone'      => ini_get('date.timezone'),
+            ],
+        ]);
+    }
+
+    /**
+     * Đọc các gói cước đã khai báo trong composer.json và trả về danh sách cùng version.
+     */
+    public function getPackages()
+    {
+        $jsonFile = base_path('composer.json');
+
+        if (!file_exists($jsonFile)) {
+            return response()->json(['packages' => [], 'message' => 'composer.json không tìm thấy.']);
+        }
+
+        $data = json_decode(file_get_contents($jsonFile), true);
+        $packages = [];
+
+        if (isset($data['require'])) {
+            foreach ($data['require'] as $name => $version) {
+                if ($name === 'php') {
+                    continue;
+                }
+                $packages[] = [
+                    'name'    => $name,
+                    'version' => $version,
+                    'require' => [],
+                ];
+            }
+        }
+
+        if (isset($data['require-dev'])) {
+            foreach ($data['require-dev'] as $name => $version) {
+                $packages[] = [
+                    'name'    => $name,
+                    'version' => $version,
+                    'require' => [],
+                ];
+            }
+        }
+
+        return response()->json(['packages' => $packages]);
+    }
+
+    // =========================================================
+    // MAINTENANCE ACTIONS
+    // =========================================================
+
+    /** Xóa compiled Blade views */
+    public function clearViews()
+    {
+        \Artisan::call('view:clear');
+        return response()->json(['success' => true, 'message' => 'Đã xóa compiled views thành công.']);
+    }
+
+    /** Xóa config cache */
+    public function clearConfig()
+    {
+        \Artisan::call('config:clear');
+        return response()->json(['success' => true, 'message' => 'Đã xóa config cache thành công.']);
+    }
+
+    /** Xóa route cache */
+    public function clearRoutes()
+    {
+        \Artisan::call('route:clear');
+        return response()->json(['success' => true, 'message' => 'Đã xóa route cache thành công.']);
+    }
+
+    /** Xóa toàn bộ file .log trong storage/logs */
+    public function clearLogs()
+    {
+        $logPath = storage_path('logs');
+        $deleted = 0;
+
+        foreach (glob("{$logPath}/*.log") as $file) {
+            if (is_file($file)) {
+                unlink($file);
+                $deleted++;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Đã xóa {$deleted} file log trong storage/logs thành công.",
+        ]);
+    }
+
+    /** Tối ưu hóa hiệu năng: cache config, routes, views */
+    public function optimize()
+    {
+        \Artisan::call('optimize');
+        return response()->json(['success' => true, 'message' => 'Tối ưu hóa hệ thống thành công.']);
+    }
+
+    /** Xóa toàn bộ optimization cache */
+    public function clearOptimize()
+    {
+        \Artisan::call('optimize:clear');
+        return response()->json(['success' => true, 'message' => 'Đã xóa cache tối ưu hóa thành công.']);
+    }
 }
+

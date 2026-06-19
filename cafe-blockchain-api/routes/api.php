@@ -55,6 +55,19 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/system-settings', [AdminController::class, 'getSystemSettings']);
         Route::put('/system-settings', [AdminController::class, 'updateSystemSettings']);
         Route::post('/clean-tokens', [AdminController::class, 'cleanTokens']);
+        Route::post('/clean-all-tokens', [AdminController::class, 'cleanAllTokens']);
+
+        // System Info & Packages
+        Route::get('/system-info', [AdminController::class, 'getSystemInfo']);
+        Route::get('/packages', [AdminController::class, 'getPackages']);
+
+        // Maintenance Actions
+        Route::post('/maintenance/clear-views', [AdminController::class, 'clearViews']);
+        Route::post('/maintenance/clear-config', [AdminController::class, 'clearConfig']);
+        Route::post('/maintenance/clear-routes', [AdminController::class, 'clearRoutes']);
+        Route::post('/maintenance/clear-logs', [AdminController::class, 'clearLogs']);
+        Route::post('/maintenance/optimize', [AdminController::class, 'optimize']);
+        Route::post('/maintenance/clear-optimize', [AdminController::class, 'clearOptimize']);
     });
 
     // Business routes (protected by CheckSubscription)

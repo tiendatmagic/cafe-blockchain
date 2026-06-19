@@ -524,5 +524,41 @@ export class ApiService {
   public cleanTokens(): Observable<any> {
     return this.http.post(`${this.baseUrl}/admin/clean-tokens`, {}, { headers: this.getHeaders() });
   }
+
+  public cleanAllTokens(): Observable<any> {
+    return this.http.post(`${this.baseUrl}/admin/clean-all-tokens`, {}, { headers: this.getHeaders() });
+  }
+
+  public getAdminSystemInfo(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/admin/system-info`, { headers: this.getHeaders() });
+  }
+
+  public getAdminPackages(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/admin/packages`, { headers: this.getHeaders() });
+  }
+
+  public adminMaintenanceClearViews(): Observable<any> {
+    return this.http.post(`${this.baseUrl}/admin/maintenance/clear-views`, {}, { headers: this.getHeaders() });
+  }
+
+  public adminMaintenanceClearConfig(): Observable<any> {
+    return this.http.post(`${this.baseUrl}/admin/maintenance/clear-config`, {}, { headers: this.getHeaders() });
+  }
+
+  public adminMaintenanceClearRoutes(): Observable<any> {
+    return this.http.post(`${this.baseUrl}/admin/maintenance/clear-routes`, {}, { headers: this.getHeaders() });
+  }
+
+  public adminMaintenanceClearLogs(): Observable<any> {
+    return this.http.post(`${this.baseUrl}/admin/maintenance/clear-logs`, {}, { headers: this.getHeaders() });
+  }
+
+  public adminMaintenanceOptimize(): Observable<any> {
+    return this.http.post(`${this.baseUrl}/admin/maintenance/optimize`, {}, { headers: this.getHeaders() });
+  }
+
+  public adminMaintenanceClearOptimize(): Observable<any> {
+    return this.http.post(`${this.baseUrl}/admin/maintenance/clear-optimize`, {}, { headers: this.getHeaders() });
+  }
 }
 
