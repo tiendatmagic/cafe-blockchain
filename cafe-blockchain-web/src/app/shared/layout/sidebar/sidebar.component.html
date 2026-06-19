@@ -317,9 +317,25 @@
         >
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
           <span>{{ web3Service.shortAddress() }}</span>
-          <span class="text-[9px] font-black text-purple-600 dark:text-purple-400 px-1 bg-purple-100 dark:bg-purple-500/10 rounded uppercase tracking-wide shrink-0">
-            {{ stateService.subscriptionPlanCode() }}
-          </span>
+          @if (stateService.subscriptionPlanCode() === 'free') {
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wide bg-rose-50 text-rose-600 border border-rose-100 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-900/20 shrink-0">
+              <span>{{ stateService.subscriptionPlanCode() }}</span>
+              @if (stateService.subscriptionDaysLeft() > 0) {
+                <span class="text-[8.5px] opacity-90 normal-case font-bold">
+                  (còn {{ stateService.subscriptionDaysLeft() }} ngày)
+                </span>
+              }
+            </span>
+          } @else {
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wide bg-purple-50 text-purple-600 border border-purple-100 dark:bg-purple-950/30 dark:text-purple-400 dark:border-purple-900/20 shrink-0">
+              <span>{{ stateService.subscriptionPlanCode() }}</span>
+              @if (stateService.subscriptionDaysLeft() > 0) {
+                <span class="text-[8.5px] opacity-90 normal-case font-bold">
+                  (còn {{ stateService.subscriptionDaysLeft() }} ngày)
+                </span>
+              }
+            </span>
+          }
         </button>
       } @else {
         <button
@@ -567,14 +583,28 @@
                 <span class="text-slate-550 dark:text-slate-400 font-bold"
                   >Ví: {{ web3Service.shortAddress() }}</span
                 >
-                <span class="text-[10px] font-black text-slate-400 dark:text-slate-500 mt-1.5 uppercase tracking-wide">
-                  Gói: {{ stateService.subscriptionPlanCode() }}
+                <div class="flex items-center gap-1.5 mt-2">
+                  <span class="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Gói:</span>
                   @if (stateService.subscriptionPlanCode() === 'free') {
-                    <span class="text-[9px] text-rose-500 lowercase font-medium">
-                      (thử nghiệm {{ stateService.freeTrialDaysLeft() }} ngày)
+                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wide bg-rose-50 text-rose-600 border border-rose-100 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-900/20 shrink-0">
+                      <span>{{ stateService.subscriptionPlanCode() }}</span>
+                      @if (stateService.subscriptionDaysLeft() > 0) {
+                        <span class="text-[8.5px] opacity-90 normal-case font-bold">
+                          (còn {{ stateService.subscriptionDaysLeft() }} ngày)
+                        </span>
+                      }
+                    </span>
+                  } @else {
+                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wide bg-purple-50 text-purple-600 border border-purple-100 dark:bg-purple-950/30 dark:text-purple-400 dark:border-purple-900/20 shrink-0">
+                      <span>{{ stateService.subscriptionPlanCode() }}</span>
+                      @if (stateService.subscriptionDaysLeft() > 0) {
+                        <span class="text-[8.5px] opacity-90 normal-case font-bold">
+                          (còn {{ stateService.subscriptionDaysLeft() }} ngày)
+                        </span>
+                      }
                     </span>
                   }
-                </span>
+                </div>
               </div>
               <span
                 class="text-purple-600 dark:text-purple-400 font-black flex items-center gap-1.5"
