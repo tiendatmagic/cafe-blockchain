@@ -1693,15 +1693,52 @@ export class StateService {
       return true;
     }
     
-    const features = this.planFeatures();
+    let features = this.planFeatures();
+    
+    // Nếu features là string (do sync hoặc storage lưu dạng JSON string) thì parse
+    if (features && typeof features === 'string') {
+      try {
+        features = JSON.parse(features);
+      } catch (e) {
+        features = null;
+      }
+    }
+    
     if (!features) {
-      if (featureKey === 'enable_storefront' || featureKey === 'enable_reports' || featureKey === 'enable_excel_export') {
-        return false;
+      // Fallback an toàn dựa trên plan_code nếu chưa tải kịp object features
+      const isFree = this.subscriptionPlanCode() === 'free';
+      if (isFree) {
+        const premiumFeatures = [
+          'enable_inventory', 
+          'enable_debts', 
+          'enable_financials', 
+          'enable_storefront', 
+          'enable_reports', 
+          'enable_excel_export'
+        ];
+        if (premiumFeatures.includes(featureKey)) {
+          return false;
+        }
       }
       return true;
     }
 
     if (features[featureKey] === undefined) {
+      // Fallback nếu trường tính năng mới chưa tồn tại trong cấu hình gói cước cũ
+      const isFree = this.subscriptionPlanCode() === 'free';
+      if (isFree) {
+        const premiumFeatures = [
+          'enable_inventory', 
+          'enable_debts', 
+          'enable_financials', 
+          'enable_storefront', 
+          'enable_reports', 
+          'enable_excel_export'
+        ];
+        if (premiumFeatures.includes(featureKey)) {
+          return false;
+        }
+      }
       return true;
     }
 
@@ -1714,14 +1751,41 @@ export class StateService {
       return -1; // Không giới hạn
     }
     
-    const features = this.planFeatures();
+    let features = this.planFeatures();
+    
+    if (features && typeof features === 'string') {
+      try {
+        features = JSON.parse(features);
+      } catch (e) {
+        features = null;
+      }
+    }
+    
     if (!features) {
-      if (featureKey === 'max_products') return 20;
-      if (featureKey === 'max_staffs') return 2;
+      const isFree = this.subscriptionPlanCode() === 'free';
+      if (isFree) {
+        if (featureKey === 'max_products') return 20;
+        if (featureKey === 'max_staffs') return 2;
+        if (featureKey === 'max_customers') return 50;
+        if (featureKey === 'max_transactions') return 100;
+        if (featureKey === 'max_debts') return 10;
+      }
       return -1;
     }
 
-    return features[featureKey] !== undefined ? Number(features[featureKey]) : -1;
+    if (features[featureKey] === undefined) {
+      const isFree = this.subscriptionPlanCode() === 'free';
+      if (isFree) {
+        if (featureKey === 'max_products') return 20;
+        if (featureKey === 'max_staffs') return 2;
+        if (featureKey === 'max_customers') return 50;
+        if (featureKey === 'max_transactions') return 100;
+        if (featureKey === 'max_debts') return 10;
+      }
+      return -1;
+    }
+
+    return Number(features[featureKey]);
   }
 
   // Chuyển đổi mạng (Chain) trên ví Web3
