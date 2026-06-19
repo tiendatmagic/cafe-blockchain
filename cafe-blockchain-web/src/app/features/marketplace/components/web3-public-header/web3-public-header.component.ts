@@ -9,11 +9,12 @@ import { ApiService } from '@core/services/api.service';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { ThemeToggleComponent } from '@shared/components/theme-toggle/theme-toggle.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
+import { CardComponent } from '@shared/components/card/card.component';
 
 @Component({
   selector: 'app-web3-public-header',
   standalone: true,
-  imports: [CommonModule, RouterModule, IconComponent, ThemeToggleComponent, TabGroupComponent],
+  imports: [CommonModule, RouterModule, IconComponent, ThemeToggleComponent, TabGroupComponent, CardComponent],
   templateUrl: './web3-public-header.component.html'
 })
 export class Web3PublicHeaderComponent implements OnInit, OnDestroy {
