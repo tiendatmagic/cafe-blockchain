@@ -95,6 +95,7 @@ export class StateService {
 
   // Trạng thái chờ ký xác thực Web3 và modal gửi token
   public readonly isWaitingForSignature = signal<boolean>(false);
+  public readonly isCurrentlySigning = signal<boolean>(false);
   public readonly isSendTokenModalOpen = signal<boolean>(false);
   public readonly recipientAddress = signal<string>('');
   public readonly sendAmount = signal<string>('');
@@ -989,11 +990,13 @@ export class StateService {
 
   // Kết nối và Yêu cầu Ký ví Web3 Auth
   public async connectWalletAndSign() {
+    if (this.isCurrentlySigning()) return;
     const isConnected = await this.web3Service.connectWallet();
     if (isConnected) {
       const address = this.web3Service.currentAccount();
       if (!address) return;
 
+      this.isCurrentlySigning.set(true);
       this.apiService.getNonce(address).subscribe({
         next: async (res) => {
           this.pendingNonceMessage = res.message;
@@ -1007,6 +1010,7 @@ export class StateService {
 
             this.apiService.verifySignature(address, signature).subscribe({
               next: (verifyRes) => {
+                this.isCurrentlySigning.set(false);
                 if (verifyRes.token) {
                   this.apiService.setToken(verifyRes.token);
                   if (typeof window !== 'undefined') {
@@ -1092,18 +1096,21 @@ export class StateService {
               },
               error: (err) => {
                 this.isWaitingForSignature.set(false);
+                this.isCurrentlySigning.set(false);
                 this.web3Service.disconnectWallet();
                 this.showToast('Xác thực chữ ký thất bại!', 'error');
               }
             });
           } catch (e) {
             this.isWaitingForSignature.set(false);
+            this.isCurrentlySigning.set(false);
             this.web3Service.disconnectWallet();
             this.showToast('Bạn đã từ chối ký xác thực!', 'error');
           }
         },
         error: (err) => {
           this.isWaitingForSignature.set(false);
+          this.isCurrentlySigning.set(false);
           console.error('Lỗi lấy nonce từ server:', err, 'địa chỉ ví:', address);
           this.web3Service.disconnectWallet();
           this.showToast(`Lỗi lấy mã xác thực từ server! (Ví: ${address})`, 'error');
@@ -1114,13 +1121,16 @@ export class StateService {
 
   // Ký lại xác thực khi bấm nút "Ký ngay"
   public async retrySign() {
+    if (this.isCurrentlySigning()) return;
     if (!this.pendingNonceMessage || !this.pendingAddress) return;
+    this.isCurrentlySigning.set(true);
     try {
       const signature = await this.web3Service.signMessage(this.pendingNonceMessage);
       this.isWaitingForSignature.set(false);
 
       this.apiService.verifySignature(this.pendingAddress, signature).subscribe({
         next: (verifyRes) => {
+          this.isCurrentlySigning.set(false);
           if (verifyRes.token) {
             this.apiService.setToken(verifyRes.token);
             if (typeof window !== 'undefined') {
@@ -1187,11 +1197,13 @@ export class StateService {
         },
         error: () => {
           this.isWaitingForSignature.set(false);
+          this.isCurrentlySigning.set(false);
           this.web3Service.disconnectWallet();
           this.showToast('Phiên ký đã hết hạn. Vui lòng kết nối ví lại!', 'error');
         }
       });
     } catch (e) {
+      this.isCurrentlySigning.set(false);
       this.showToast('Bạn đã từ chối ký xác thực!', 'error');
     }
   }
