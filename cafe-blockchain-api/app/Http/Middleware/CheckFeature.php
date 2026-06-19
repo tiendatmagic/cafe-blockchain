@@ -64,7 +64,7 @@ class CheckFeature
                 return response()->json([
                     'success' => false,
                     'message' => 'This feature is not unlocked in your current subscription plan. Please upgrade your plan to use this feature.'
-                ], 403);
+                ], 200);
             }
         }
 

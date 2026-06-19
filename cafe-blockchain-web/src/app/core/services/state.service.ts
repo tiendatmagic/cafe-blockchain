@@ -3,7 +3,7 @@ import { ApiService } from './api.service';
 import { Web3Service } from './web3.service';
 import { forkJoin, Subject, Subscription, of } from 'rxjs';
 import { Router, NavigationEnd } from '@angular/router';
-import { debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, filter, catchError } from 'rxjs/operators';
 import { OrderStore } from '@features/pos/store/order.store';
 import { SettingStore } from '@features/settings/store/setting.store';
 
@@ -375,9 +375,17 @@ export class StateService {
         untracked(() => {
           this.isInitialLoading.set(true);
 
-          const settings$ = this.apiService.getSettings();
+          const settings$ = this.hasPermission('settings')
+            ? this.apiService.getSettings().pipe(catchError((err) => {
+                console.warn('[StateService] Không có quyền tải settings hoặc lỗi settings:', err);
+                return of(null);
+              }))
+            : of(null);
           const shift$ = this.hasPermission('shifts') 
-            ? this.apiService.getCurrentShift() 
+            ? this.apiService.getCurrentShift().pipe(catchError((err) => {
+                console.warn('[StateService] Lỗi tải ca trực hiện tại:', err);
+                return of(null);
+              }))
             : of(null);
 
           forkJoin({
