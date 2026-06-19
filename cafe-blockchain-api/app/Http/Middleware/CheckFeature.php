@@ -26,14 +26,6 @@ class CheckFeature
 
         // Xác định địa chỉ ví chủ quán
         $ownerAddress = strtolower($user->store_owner_address ?: $user->wallet_address);
-        
-        // Bỏ qua kiểm tra nếu chủ quán là Super Admin
-        $superAdminEnv = env('SUPER_ADMIN_ADDRESSES', '');
-        $superAdmins = array_map('trim', explode(',', $superAdminEnv));
-        $superAdmins = array_map('strtolower', array_filter($superAdmins));
-        if (in_array($ownerAddress, $superAdmins)) {
-            return $next($request);
-        }
 
         // Tìm tài khoản chủ quán để lấy gói cước
         $owner = User::where('wallet_address', $ownerAddress)->first();

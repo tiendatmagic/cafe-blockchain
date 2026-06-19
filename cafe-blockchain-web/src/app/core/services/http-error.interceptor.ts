@@ -69,12 +69,20 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
           
           if (!isStorefrontDetails) {
             const errorMsg = error.error?.message || error.error?.error || error.message || 'Lỗi kết nối máy chủ!';
-            stateService.errorMessage.set(errorMsg);
             
-            // Xóa message sau 4 giây để ẩn Toast
-            setTimeout(() => {
-              stateService.errorMessage.set('');
-            }, 4000);
+            // Không hiển thị Toast đỏ đối với lỗi khóa tính năng/giới hạn của request GET chạy ngầm
+            const isFeatureOrLimitError = errorMsg.includes('This feature is not unlocked') || 
+                                          errorMsg.includes('subscription plan has reached the maximum limit');
+            const isGetRequest = req.method === 'GET';
+
+            if (!(isGetRequest && isFeatureOrLimitError)) {
+              stateService.errorMessage.set(errorMsg);
+              
+              // Xóa message sau 4 giây để ẩn Toast
+              setTimeout(() => {
+                stateService.errorMessage.set('');
+              }, 4000);
+            }
           }
         }
       }
