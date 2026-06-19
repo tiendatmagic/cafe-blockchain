@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { StateService } from '@core/services/state.service';
 import { IconComponent } from '../icon/icon.component';
 import { ButtonComponent } from '../button/button.component';
+import { CardComponent } from '../card/card.component';
 
 @Component({
   selector: 'app-web3-connect-prompt',
   standalone: true,
-  imports: [CommonModule, IconComponent, ButtonComponent],
+  imports: [CommonModule, IconComponent, ButtonComponent, CardComponent],
   templateUrl: './web3-connect-prompt.component.html'
 })
 export class Web3ConnectPromptComponent {

@@ -14,6 +14,7 @@ import { IconComponent } from '@shared/components/icon/icon.component';
 
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
+import { CardComponent } from '@shared/components/card/card.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -31,7 +32,8 @@ import { ButtonComponent } from '@shared/components/button/button.component';
     PaginationComponent,
     IconComponent,
     SkeletonLoaderComponent,
-    ButtonComponent
+    ButtonComponent,
+    CardComponent
   ],
   templateUrl: './dashboard.component.html'
 })

@@ -31,7 +31,7 @@
       <!-- Thẻ Thống kê Tài chính (3 thẻ) -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mt-6">
         <!-- Tổng nợ phải thu -->
-        <div class="app-card-interactive flex items-center justify-between">
+        <div app-card [interactive]="true" class="flex items-center justify-between">
           <div class="space-y-1.5">
             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block"
               >Tổng nợ phải thu</span>
@@ -47,7 +47,7 @@
         </div>
 
         <!-- Số khách hàng đang nợ -->
-        <div class="app-card-interactive flex items-center justify-between">
+        <div app-card [interactive]="true" class="flex items-center justify-between">
           <div class="space-y-1.5">
             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block"
               >Khách hàng đang nợ</span>
@@ -66,7 +66,7 @@
         </div>
 
         <!-- Đã thu hồi trong tháng -->
-        <div class="app-card-interactive flex items-center justify-between">
+        <div app-card [interactive]="true" class="flex items-center justify-between">
           <div class="space-y-1.5">
             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block"
               >Thu hồi trong tháng</span>
@@ -83,7 +83,7 @@
       </div>
 
       <!-- Khối Bảng Dữ Liệu và Bộ Lọc -->
-      <div class="app-card mt-6 p-0 overflow-hidden">
+      <div app-card class="mt-6 p-0 overflow-hidden">
         <!-- Thanh tìm kiếm & lọc nhanh -->
         <div
           class="p-5 border-b border-slate-100 dark:border-slate-800/60 flex items-center justify-between flex-wrap gap-4"
@@ -262,7 +262,8 @@
 
     <!-- Modal Content -->
     <div
-      class="relative app-card p-6 max-w-md w-full shadow-2xl text-slate-800 dark:text-slate-200 flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200"
+      app-card
+      class="relative p-6 max-w-md w-full text-slate-800 dark:text-slate-200 flex flex-col max-h-[90vh]"
     >
       <!-- Header -->
       <div
@@ -396,7 +397,8 @@
 
     <!-- Modal Content -->
     <div
-      class="relative app-card p-6 max-w-md w-full shadow-2xl text-slate-800 dark:text-slate-200 flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200"
+      app-card
+      class="relative p-6 max-w-md w-full text-slate-800 dark:text-slate-200 flex flex-col max-h-[90vh]"
     >
       <!-- Header -->
       <div

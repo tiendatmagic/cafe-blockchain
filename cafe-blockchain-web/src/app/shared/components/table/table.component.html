@@ -1,7 +1,7 @@
 @if (isLoading) {
   <app-skeleton-loader [type]="skeletonType"></app-skeleton-loader>
 } @else {
-  <div class="app-card p-0 overflow-hidden border border-slate-100 dark:border-slate-800/60 rounded-[15px] shadow-sm">
+  <div app-card class="p-0 overflow-hidden">
     <div class="overflow-x-auto">
       <table class="app-table min-w-full">
         <thead>

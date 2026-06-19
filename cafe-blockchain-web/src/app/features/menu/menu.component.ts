@@ -19,6 +19,7 @@ import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { CustomCheckboxComponent } from '@shared/components/custom-checkbox/custom-checkbox.component';
+import { CardComponent } from '@shared/components/card/card.component';
 
 @Component({
   selector: 'app-menu',
@@ -40,7 +41,8 @@ import { CustomCheckboxComponent } from '@shared/components/custom-checkbox/cust
     TabGroupComponent,
     SkeletonLoaderComponent,
     ButtonComponent,
-    CustomCheckboxComponent
+    CustomCheckboxComponent,
+    CardComponent
   ],
   templateUrl: './menu.component.html'
 })

@@ -72,7 +72,8 @@
 
         <!-- THANH LỌC ĐƠN HÀNG -->
         <div
-          class="app-card flex flex-col lg:flex-row gap-5 justify-between items-stretch lg:items-end"
+          app-card
+          class="flex flex-col lg:flex-row gap-5 justify-between items-stretch lg:items-end"
         >
           <!-- Nhóm bộ lọc (trạng thái + blockchain) -->
           <div
@@ -297,7 +298,8 @@
 
           <!-- Modal Content -->
           <div
-            class="relative app-card max-w-md md:max-w-5xl w-full max-h-[90vh] md:max-h-[85vh] shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200 flex flex-col"
+            app-card
+            class="relative max-w-md md:max-w-5xl w-full max-h-[90vh] md:max-h-[85vh] text-slate-800 dark:text-slate-200 flex flex-col"
           >
             <!-- Header Modal -->
             <div
@@ -810,7 +812,8 @@
         <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div (click)="isCancelExplanationOpen.set(false)" class="fixed inset-0 bg-black/40"></div>
           <div
-            class="relative app-card border-2 border-rose-500/20 max-w-md w-full shadow-[0_20px_50px_rgba(244,63,94,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)] animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200"
+            app-card
+            class="relative border-2 border-rose-500/20 max-w-md w-full text-slate-800 dark:text-slate-200"
           >
             <!-- Header -->
             <div

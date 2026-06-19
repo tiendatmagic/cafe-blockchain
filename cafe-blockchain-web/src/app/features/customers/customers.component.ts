@@ -16,6 +16,7 @@ import { IconComponent } from '@shared/components/icon/icon.component';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { CustomCheckboxComponent } from '@shared/components/custom-checkbox/custom-checkbox.component';
+import { CardComponent } from '@shared/components/card/card.component';
 
 @Component({
   selector: 'app-customers',
@@ -36,7 +37,8 @@ import { CustomCheckboxComponent } from '@shared/components/custom-checkbox/cust
     IconComponent,
     SkeletonLoaderComponent,
     ButtonComponent,
-    CustomCheckboxComponent
+    CustomCheckboxComponent,
+    CardComponent
   ],
   templateUrl: './customers.component.html'
 })

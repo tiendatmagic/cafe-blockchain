@@ -18,6 +18,7 @@ import { CustomDatePickerComponent } from '@shared/components/custom-date-picker
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
+import { CardComponent } from '@shared/components/card/card.component';
 
 @Component({
   selector: 'app-debts',
@@ -38,7 +39,8 @@ import { ButtonComponent } from '@shared/components/button/button.component';
     CustomDatePickerComponent,
     IconComponent,
     TabGroupComponent,
-    ButtonComponent
+    ButtonComponent,
+    CardComponent
   ],
   templateUrl: './debts.component.html'
 })

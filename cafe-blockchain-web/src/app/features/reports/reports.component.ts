@@ -17,6 +17,7 @@ import { MiniButtonsComponent, DATE_FILTER_OPTIONS } from '@shared/components/mi
 import { TableComponent, TableCellDirective, TableColumn } from '@shared/components/table/table.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
+import { CardComponent } from '@shared/components/card/card.component';
 
 @Component({
   selector: 'app-reports',
@@ -35,7 +36,8 @@ import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-g
     TableComponent,
     TableCellDirective,
     IconComponent,
-    TabGroupComponent
+    TabGroupComponent,
+    CardComponent
   ],
   templateUrl: './reports.component.html'
 })

@@ -199,7 +199,8 @@
       </div>
 
       <div
-        class="app-card p-4 flex items-center"
+        app-card
+        class="p-4 flex items-center"
       >
         <!-- Danh mục trượt mượt mà (Horizontal scrolling) -->
         <div class="flex gap-2 overflow-x-auto pb-1.5 pr-1 no-scrollbar w-full">
@@ -222,7 +223,7 @@
       <div class="space-y-6">
         <!-- CHẾ ĐỘ XEM 1: DẠNG BẢNG (TABLE VIEW) -->
         @if (menuViewMode() === 'table') {
-          <div class="app-card p-0 overflow-hidden">
+          <div app-card class="p-0 overflow-hidden">
             <div class="overflow-x-auto">
               <table class="app-table min-w-[850px]">
                 <thead>
@@ -354,7 +355,7 @@
         @else {
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
             @for (p of paginatedProducts(); track p.id) {
-              <div class="group app-card p-0 overflow-hidden hover:shadow-md flex flex-col h-full">
+              <div app-card class="group p-0 overflow-hidden flex flex-col h-full">
                 <!-- Ảnh sản phẩm -->
                 <div
                   class="relative h-44 w-full bg-slate-100 dark:bg-slate-800 overflow-hidden shrink-0"
@@ -481,7 +482,7 @@
 
         <!-- WIDGET QUẢN LÝ DANH MỤC ĐỘNG DÀNH CHO ADMIN -->
         <div class="mt-8 pt-6 border-t border-slate-200/60 dark:border-slate-800/60">
-          <div class="app-card space-y-4">
+          <div app-card class="space-y-4">
             <div
               class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4.5 flex-wrap gap-3"
             >
@@ -550,7 +551,7 @@
           <!-- LỊCH SỬ ĐỒNG BỘ THỰC ĐƠN LÊN BLOCKCHAIN -->
           @if (web3Service.walletConnected() && web3Service.menuRegistryContractAddress()) {
             <div class="mt-8 pt-6 border-t border-slate-200/60 dark:border-slate-800/60">
-              <div class="app-card p-0">
+              <div app-card class="p-0">
                 <!-- Header -->
                 <div
                   class="flex items-center justify-between px-6 pt-5 pb-4 border-b border-slate-100 dark:border-slate-800/60 flex-wrap gap-3"

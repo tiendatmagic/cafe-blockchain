@@ -222,7 +222,7 @@
         <div class="space-y-6">
           <!-- Grid Danh sách món ăn/đồ uống -->
           @if (paginatedPosProducts().length === 0) {
-            <div class="app-card flex flex-col items-center justify-center py-20 text-center gap-3">
+            <div app-card class="flex flex-col items-center justify-center py-20 text-center gap-3">
               <app-icon
                 name="archive"
                 class="h-12 w-12 text-slate-300 dark:text-slate-700"
@@ -239,10 +239,10 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4.5">
               @for (p of paginatedPosProducts(); track p.id) {
                 <div
+                  app-card
+                  [interactive]="web3Service.walletConnected()"
                   (click)="web3Service.walletConnected() ? addToCart(p) : null"
                   [class.cursor-default]="!web3Service.walletConnected()"
-                  [class.app-card]="!web3Service.walletConnected()"
-                  [class.app-card-interactive]="web3Service.walletConnected()"
                   class="group p-0 overflow-hidden flex flex-col h-full"
                 >
                   <!-- Hình ảnh món ăn có overlay mờ -->
@@ -319,7 +319,8 @@
 
       <!-- CỘT 3: GIỎ HÀNG & THANH TOÁN (RIGHT) -->
       <div
-        class="xl:col-span-2 app-card flex flex-col h-auto xl:h-[calc(100vh-115px)] min-h-[400px] xl:min-h-[600px] xl:sticky xl:top-[50px]"
+        app-card
+        class="xl:col-span-2 flex flex-col h-auto xl:h-[calc(100vh-115px)] min-h-[400px] xl:min-h-[600px] xl:sticky xl:top-[50px]"
       >
         @if (web3Service.walletConnected()) {
           @if (stateService.hasPermission('pos')) {
@@ -1275,7 +1276,8 @@
 
       <!-- Modal Content -->
       <div
-        class="relative app-card max-w-md w-full max-h-[90vh] flex flex-col shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200"
+        app-card
+        class="relative max-w-md w-full max-h-[90vh] flex flex-col text-slate-800 dark:text-slate-200"
       >
         <!-- Header -->
         <div
@@ -1547,7 +1549,8 @@
 
       <!-- Modal Content -->
       <div
-        class="relative app-card max-w-sm w-full shadow-[0_20px_50px_rgba(0,0,0,0.3)] text-slate-800 dark:text-slate-200 flex flex-col items-center text-center animate-in fade-in zoom-in duration-200"
+        app-card
+        class="relative max-w-sm w-full text-slate-800 dark:text-slate-200 flex flex-col items-center text-center"
       >
         <!-- Icon & Title -->
         <div
@@ -1668,7 +1671,8 @@
 
       <!-- Modal Content -->
       <div
-        class="relative app-card max-w-sm w-full shadow-[0_20px_50px_rgba(0,0,0,0.4)] text-slate-800 dark:text-slate-200 flex flex-col items-center text-center animate-in fade-in zoom-in duration-200"
+        app-card
+        class="relative max-w-sm w-full text-slate-800 dark:text-slate-200 flex flex-col items-center text-center"
       >
         <!-- Warning Icon -->
         <div

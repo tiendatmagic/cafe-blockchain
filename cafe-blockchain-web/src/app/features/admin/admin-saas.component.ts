@@ -17,6 +17,7 @@ import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-g
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { CustomCheckboxComponent } from '@shared/components/custom-checkbox/custom-checkbox.component';
+import { CardComponent } from '@shared/components/card/card.component';
 import { forkJoin } from 'rxjs';
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
 
@@ -42,6 +43,7 @@ import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
     SkeletonLoaderComponent,
     ButtonComponent,
     CustomCheckboxComponent,
+    CardComponent,
     VNDCurrencyPipe
   ],
   templateUrl: './admin-saas.component.html',

@@ -140,7 +140,8 @@
         <!-- CỘT DANH MỤC (DESKTOP: Sidebar bên trái, MOBILE: Trượt ngang phía trên) -->
         @if (!showFavoritesOnly()) {
           <div
-            class="w-full md:w-56 shrink-0 app-card md:p-3 overflow-x-auto no-scrollbar md:overflow-visible flex md:flex-col gap-2 md:gap-1.5 p-1 mb-2 sticky top-0 md:top-6 z-20 transition-all duration-300 bg-transparent md:bg-white dark:md:bg-slate-900 border-none md:border border-slate-200/50 dark:border-slate-800/50"
+            app-card
+            class="w-full md:w-56 shrink-0 md:p-3 overflow-x-auto no-scrollbar md:overflow-visible flex md:flex-col gap-2 md:gap-1.5 p-1 mb-2 sticky top-0 md:top-6 z-20 bg-transparent md:bg-white dark:md:bg-slate-900 border-none md:border"
           >
             @for (cat of categoryOptions(); track cat.value) {
               <button
@@ -162,7 +163,7 @@
         <!-- DANH SÁCH SẢN PHẨM -->
         <main class="flex-1 w-full space-y-4">
           <!-- Ô tìm kiếm và Bộ lọc thực đơn (Tối ưu Responsive 2 hàng phẳng) -->
-          <div class="app-card p-4.5 space-y-4">
+          <div app-card class="p-4.5 space-y-4">
             <!-- Hàng 1: Ô tìm kiếm và nút Lọc -->
             <div class="flex items-center gap-3 w-full">
               <div class="relative flex-1">
@@ -312,7 +313,7 @@
           </div>
 
           @if (filteredProducts().length === 0) {
-            <div class="app-card p-12 text-center">
+            <div app-card class="p-12 text-center">
               <p class="text-slate-400 font-semibold text-sm">
                 {{
                   showFavoritesOnly()
@@ -328,7 +329,9 @@
               <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                 @for (product of paginatedProducts(); track product.id) {
                   <div
-                    class="group app-card-interactive p-0 overflow-hidden flex flex-col h-full relative"
+                    app-card
+                    [interactive]="true"
+                    class="group p-0 overflow-hidden flex flex-col h-full relative"
                   >
                     <!-- Nút yêu thích dạng Tim -->
                     <button
@@ -432,7 +435,9 @@
               <div class="flex flex-col gap-3.5">
                 @for (product of paginatedProducts(); track product.id) {
                   <div
-                    class="group app-card-interactive overflow-hidden flex flex-row p-3.5 gap-4 relative"
+                    app-card
+                    [interactive]="true"
+                    class="group overflow-hidden flex flex-row p-3.5 gap-4 relative"
                   >
                     <!-- Nút yêu thích dạng Tim -->
                     <button

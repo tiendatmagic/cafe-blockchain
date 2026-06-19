@@ -14,6 +14,7 @@ import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
+import { CardComponent } from '@shared/components/card/card.component';
 
 @Component({
   selector: 'app-tables',
@@ -31,7 +32,8 @@ import { ButtonComponent } from '@shared/components/button/button.component';
     IconComponent,
     TabGroupComponent,
     SkeletonLoaderComponent,
-    ButtonComponent
+    ButtonComponent,
+    CardComponent
   ],
   templateUrl: './tables.component.html'
 })

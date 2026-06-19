@@ -20,7 +20,7 @@
       } @else {
         <!-- WIDGET CA TRỰC ĐANG HOẠT ĐỘNG (Dành cho Thu ngân tự đối soát nhanh) -->
         @if (stateService.currentShift() && stateService.currentShift().id) {
-          <div class="app-card border-l-4 border-l-emerald-500 overflow-hidden relative mb-6">
+          <div app-card class="border-l-4 border-l-emerald-500 overflow-hidden relative mb-6">
             <!-- Background SVG trang trí mờ ảo -->
             <div class="absolute right-0 bottom-0 opacity-[0.03] pointer-events-none">
               <app-icon name="clock" class="w-64 h-64 text-emerald-500" strokeWidth="1" />
@@ -72,7 +72,7 @@
           </div>
         } @else {
           <!-- TRẠNG THÁI CHƯA VÀO CA -->
-          <div class="app-card border-l-4 border-l-amber-500 p-6 mb-6">
+          <div app-card class="border-l-4 border-l-amber-500 p-6 mb-6">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div class="flex items-start gap-4">
                 <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
@@ -102,7 +102,7 @@
         }
 
         <!-- THANH LỌC & TIÊU ĐỀ LỊCH SỬ CA TRỰC -->
-        <div class="app-card p-4 sm:p-6 flex flex-col gap-6 mb-6">
+        <div app-card class="p-4 sm:p-6 flex flex-col gap-6 mb-6">
           <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h5 class="text-base font-extrabold text-slate-800 dark:text-white">
@@ -322,7 +322,8 @@
 
           <!-- Modal Content -->
           <div
-            class="relative app-card max-w-md md:max-w-4xl w-full max-h-[90vh] md:max-h-[85vh] shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200 flex flex-col overflow-hidden"
+            app-card
+            class="relative max-w-md md:max-w-4xl w-full max-h-[90vh] md:max-h-[85vh] text-slate-800 dark:text-slate-200 flex flex-col overflow-hidden"
           >
             <!-- Header Modal -->
             <div

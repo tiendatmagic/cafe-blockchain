@@ -39,7 +39,7 @@
         <app-skeleton-loader type="tables"></app-skeleton-loader>
       } @else {
         <!-- THANH BỘ LỌC SƠ ĐỒ BÀN (KHU VỰC VÀ TRẠNG THÁI) -->
-        <div class="app-card flex flex-col sm:flex-row gap-5 justify-between items-start sm:items-center">
+        <div app-card class="flex flex-col sm:flex-row gap-5 justify-between items-start sm:items-center">
           <div class="flex flex-col gap-1.5">
             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Chọn khu vực để xem</span>
             <app-tab-group
@@ -65,7 +65,7 @@
           <!-- SƠ ĐỒ LƯỚI BÀN ĂN (RICH AESTHETICS GRID) -->
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
             @if (filteredDiningTables().length === 0) {
-              <div class="col-span-full py-16 text-center app-card flex flex-col items-center justify-center gap-3">
+              <div app-card class="col-span-full py-16 text-center flex flex-col items-center justify-center gap-3">
                 <app-icon
                   name="archive"
                   class="h-10 w-10 text-slate-300 dark:text-slate-700"
@@ -76,11 +76,13 @@
             }
             @for (table of filteredDiningTables(); track table.id) {
               <div
-                class="relative group app-card border-2 overflow-hidden flex flex-col justify-between p-4.5 hover:scale-[1.03] hover:shadow-md"
+                app-card
+                [interactive]="true"
+                class="relative group overflow-hidden flex flex-col justify-between p-4.5"
                 [class]="
                   table.status === 'using'
                     ? 'border-amber-400 dark:border-amber-900/60 bg-amber-500/[0.02]'
-                    : 'border-slate-200/60 dark:border-slate-800/60 hover:border-purple-500/40'
+                    : ''
                 "
               >
                 <div class="flex items-start justify-between">
@@ -162,7 +164,7 @@
 
           <!-- WIDGET QUẢN LÝ KHU VỰC ĐỘNG DÀNH CHO ADMIN (FULL WIDTH) -->
           <div class="mt-8 pt-6 border-t border-slate-200/60 dark:border-slate-800/60">
-            <div class="app-card space-y-4">
+            <div app-card class="space-y-4">
               <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-4 flex-wrap gap-3">
                 <h4 class="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
                   <app-icon

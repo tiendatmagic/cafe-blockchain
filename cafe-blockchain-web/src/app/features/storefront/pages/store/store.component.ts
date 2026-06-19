@@ -13,6 +13,7 @@ import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prom
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
+import { CardComponent } from '@shared/components/card/card.component';
 
 
 interface CartItem {
@@ -25,7 +26,7 @@ interface CartItem {
 @Component({
   selector: 'app-store',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, PaginationComponent, VNDCurrencyPipe, ThemeToggleComponent, DrawerComponent, Web3ConnectPromptComponent, IconComponent, TabGroupComponent, ButtonComponent],
+  imports: [CommonModule, FormsModule, RouterModule, PaginationComponent, VNDCurrencyPipe, ThemeToggleComponent, DrawerComponent, Web3ConnectPromptComponent, IconComponent, TabGroupComponent, ButtonComponent, CardComponent],
   templateUrl: './store.component.html',
   styleUrls: []
 })

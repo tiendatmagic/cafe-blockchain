@@ -17,6 +17,7 @@ import { CustomSelectComponent } from '@shared/components/custom-select/custom-s
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
+import { CardComponent } from '@shared/components/card/card.component';
 
 @Component({
   selector: 'app-blockchain-explorer',
@@ -30,7 +31,8 @@ import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-g
     CustomSelectComponent,
     PaginationComponent,
     IconComponent,
-    TabGroupComponent
+    TabGroupComponent,
+    CardComponent
   ],
   templateUrl: './blockchain-explorer.component.html'
 })

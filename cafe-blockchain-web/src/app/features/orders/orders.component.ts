@@ -14,6 +14,7 @@ import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-g
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { CustomCheckboxComponent } from '@shared/components/custom-checkbox/custom-checkbox.component';
+import { CardComponent } from '@shared/components/card/card.component';
 
 @Component({
   selector: 'app-orders',
@@ -32,7 +33,8 @@ import { CustomCheckboxComponent } from '@shared/components/custom-checkbox/cust
     TabGroupComponent,
     SkeletonLoaderComponent,
     ButtonComponent,
-    CustomCheckboxComponent
+    CustomCheckboxComponent,
+    CardComponent
   ],
   templateUrl: './orders.component.html'
 })

@@ -16,6 +16,7 @@ import { ShortAddressPipe } from '@shared/pipes/short-address.pipe';
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
+import { CardComponent } from '@shared/components/card/card.component';
 
 @Component({
   selector: 'app-shifts',
@@ -35,7 +36,8 @@ import { ButtonComponent } from '@shared/components/button/button.component';
     ShortAddressPipe,
     VNDCurrencyPipe,
     SkeletonLoaderComponent,
-    ButtonComponent
+    ButtonComponent,
+    CardComponent
   ],
   templateUrl: './shifts.component.html'
 })

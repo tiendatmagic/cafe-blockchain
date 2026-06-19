@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { SkeletonLoaderComponent } from '../skeleton-loader/skeleton-loader.component';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { IconComponent } from '../icon/icon.component';
+import { CardComponent } from '../card/card.component';
 
 export interface TableColumn {
   key: string;

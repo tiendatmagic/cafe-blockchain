@@ -273,12 +273,12 @@ div.form-input.p-0 {
 /* ==================== HỆ THỐNG CARD DÙNG CHUNG (CARD SYSTEM) ==================== */
 /* 1. Card cơ bản (tĩnh) */
 .app-card {
-  @apply bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 shadow-sm rounded-3xl transition-all duration-300 p-6;
+  @apply bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 shadow-lg shadow-slate-100 dark:shadow-none rounded-[15px] transition-all duration-300 p-6;
 }
 
 /* 2. Card tương tác (bấm được, hover được) */
 .app-card-interactive {
-  @apply bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 shadow-sm rounded-3xl transition-all duration-300 cursor-pointer hover:shadow-md hover:scale-[1.01] hover:border-[var(--color-primary)]/40 dark:hover:border-[var(--color-secondary)]/40 p-6;
+  @apply bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 shadow-lg shadow-slate-100 dark:shadow-none rounded-[15px] transition-all duration-300 cursor-pointer hover:scale-[1.01] hover:border-[var(--color-primary)]/40 dark:hover:border-[var(--color-secondary)]/40 p-6;
 }
 
 /* 3. Ghi đè padding cho card khi dùng kèm class tiện ích của Tailwind */

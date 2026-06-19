@@ -3,11 +3,12 @@ import { CommonModule, Location } from '@angular/common';
 import { Router } from '@angular/router';
 import { IconComponent } from '../icon/icon.component';
 import { ButtonComponent } from '../button/button.component';
+import { CardComponent } from '../card/card.component';
 
 @Component({
   selector: 'app-access-restricted',
   standalone: true,
-  imports: [CommonModule, IconComponent, ButtonComponent],
+  imports: [CommonModule, IconComponent, ButtonComponent, CardComponent],
   templateUrl: './access-restricted.component.html'
 })
 export class AccessRestrictedComponent {
