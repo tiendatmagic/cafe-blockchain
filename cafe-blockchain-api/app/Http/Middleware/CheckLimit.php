@@ -85,7 +85,7 @@ class CheckLimit
                     return response()->json([
                         'success' => false,
                         'message' => "Your subscription plan has reached the maximum limit of {$limitVal} {$resourceName}. Please upgrade your plan to continue."
-                    ], 200);
+                    ], 403);
                 }
             }
         }

@@ -422,29 +422,33 @@ class SettingController extends Controller
 
         $storeOwner = strtolower($setting->store_owner_address);
 
-        // Kiểm tra trạng thái thuê bao của chủ quán trước
         $owner = \App\Domain\Entities\User::where('wallet_address', $storeOwner)->first();
-        if ($owner) {
-            // Bypass check nếu chủ quán là Super Admin
-            $superAdminEnv = env('SUPER_ADMIN_ADDRESSES', '');
-            $superAdmins = array_map('trim', explode(',', $superAdminEnv));
-            $superAdmins = array_map('strtolower', array_filter($superAdmins));
-            
-            if (!in_array($storeOwner, $superAdmins)) {
-                if ($owner->subscription_status === 'suspended') {
-                    return response()->json(['message' => 'Website cửa hàng này đã bị tạm dừng hoạt động.'], 403);
-                }
+        if (!$owner) {
+            return response()->json(['message' => 'Store owner not found!'], 404);
+        }
 
-                if ($owner->subscription_expires_at !== null && now()->greaterThan($owner->subscription_expires_at)) {
-                    return response()->json(['message' => 'Website cửa hàng này đã hết hạn dịch vụ.'], 403);
-                }
+        if ($owner->subscription_status === 'suspended') {
+            return response()->json([
+                'success' => false,
+                'message' => 'This store website is currently suspended.'
+            ], 403);
+        }
 
-                // Kiểm tra xem gói cước hiện tại có hỗ trợ storefront không
-                $plan = \App\Domain\Entities\SubscriptionPlan::where('code', $owner->plan_code ?: 'free')->first();
-                if ($plan && isset($plan->features['enable_storefront']) && !$plan->features['enable_storefront']) {
-                    return response()->json(['message' => 'Tính năng Website cửa hàng chưa được kích hoạt cho gói dịch vụ của quán.'], 403);
-                }
-            }
+        if ($owner->subscription_expires_at !== null && now()->greaterThan($owner->subscription_expires_at)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This store website service has expired.'
+            ], 403);
+        }
+
+        // Kiểm tra xem gói cước hiện tại có hỗ trợ storefront không
+        $plan = \App\Domain\Entities\SubscriptionPlan::where('code', $owner->plan_code ?: 'free')->first();
+        if ($plan && isset($plan->features['enable_storefront']) && !$plan->features['enable_storefront']) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Storefront feature is not enabled for this store\'s subscription plan.',
+                'feature' => 'enable_storefront'
+            ], 403);
         }
 
         $cacheKey = "store_details:{$slug}";
@@ -553,6 +557,35 @@ class SettingController extends Controller
         }
 
         $storeOwner = strtolower($setting->store_owner_address);
+
+        $owner = \App\Domain\Entities\User::where('wallet_address', $storeOwner)->first();
+        if (!$owner) {
+            return response()->json(['message' => 'Store owner not found!'], 404);
+        }
+
+        if ($owner->subscription_status === 'suspended') {
+            return response()->json([
+                'success' => false,
+                'message' => 'This store website is currently suspended.'
+            ], 403);
+        }
+
+        if ($owner->subscription_expires_at !== null && now()->greaterThan($owner->subscription_expires_at)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This store website service has expired.'
+            ], 403);
+        }
+
+        // Kiểm tra xem gói cước hiện tại có hỗ trợ storefront không
+        $plan = \App\Domain\Entities\SubscriptionPlan::where('code', $owner->plan_code ?: 'free')->first();
+        if ($plan && isset($plan->features['enable_storefront']) && !$plan->features['enable_storefront']) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Storefront feature is not enabled for this store\'s subscription plan.',
+                'feature' => 'enable_storefront'
+            ], 403);
+        }
 
         $validated = $request->validate([
             'customer_name' => 'required|string|max:255',

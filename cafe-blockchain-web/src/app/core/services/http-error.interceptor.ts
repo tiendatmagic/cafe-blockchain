@@ -15,6 +15,10 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
   const isExplorer = router.url.includes('/blockchain-explorer') || 
                       (typeof window !== 'undefined' && window.location.pathname.includes('/blockchain-explorer'));
 
+  // Kiểm tra xem trang hiện tại có phải là storefront không
+  const isStorefront = router.url.includes('/store/') || 
+                       (typeof window !== 'undefined' && window.location.pathname.includes('/store/'));
+
   const isBackendApi = req.url.startsWith(environment.apiBaseUrl);
 
   // Nếu hệ thống đang trong trạng thái bảo trì và không phải trang explorer, chặn request ngay từ client để chống spam
@@ -73,7 +77,7 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
             const isFeatureError = errorMsg.includes('This feature is not unlocked');
             const isLimitError = errorMsg.includes('subscription plan has reached the maximum limit');
 
-            if (isFeatureError) {
+            if (isFeatureError && !isStorefront) {
               const featureKey = error.error?.feature || '';
               const featureNamesMap: Record<string, string> = {
                 'enable_dashboard': 'Tổng quan',

@@ -102,6 +102,7 @@ When user's prompt is NOT in English:
 1. **Internally translate** for better comprehension
 2. **Respond in user's language** - match their communication
 3. **Code comments/variables** remain in English
+4. **Backend API response messages** (e.g., error/success JSON messages in controllers, middlewares, validators) MUST ALWAYS be in English. Frontend is responsible for translating them into Vietnamese for UI display.
 
 ### 🧹 Clean Code (Global Mandatory)
 

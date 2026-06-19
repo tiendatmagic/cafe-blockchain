@@ -279,7 +279,8 @@ export class StoreComponent implements OnInit {
       error: (err) => {
         console.error(err);
         this.isError.set(true);
-        this.errorMessage.set(err.error?.message || 'Lỗi kết nối máy chủ!');
+        const translatedMsg = this.translateErrorMessage(err.error?.message || 'Lỗi kết nối máy chủ!');
+        this.errorMessage.set(translatedMsg);
         this.isLoading.set(false);
       }
     });
@@ -520,6 +521,17 @@ export class StoreComponent implements OnInit {
     if (!msg) return 'Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại!';
     
     const lowerMsg = msg.toLowerCase();
+
+    // Dịch các lỗi phân quyền truy cập website cửa hàng (storefront)
+    if (lowerMsg.includes('this store website is currently suspended')) {
+      return 'Website cửa hàng này hiện đang bị tạm ngưng hoạt động.';
+    }
+    if (lowerMsg.includes('this store website service has expired')) {
+      return 'Website cửa hàng này đã hết hạn gói dịch vụ.';
+    }
+    if (lowerMsg.includes("storefront feature is not enabled for this store's subscription plan")) {
+      return 'Tính năng Website cửa hàng chưa được kích hoạt cho gói dịch vụ của quán.';
+    }
     
     // Dịch các lỗi phổ biến liên quan đến sản phẩm ngừng phục vụ
     if (lowerMsg.includes('is currently disabled and not available for purchase')) {
