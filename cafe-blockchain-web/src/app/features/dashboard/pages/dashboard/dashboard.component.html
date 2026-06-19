@@ -174,12 +174,15 @@
                   </h3>
                 </div>
               </div>
-              <span
-                class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold shrink-0"
+              <app-badge
+                variant="success"
+                size="sm"
+                rounded="full"
+                [pulse]="true"
+                class="shrink-0"
               >
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
                 Đang trực
-              </span>
+              </app-badge>
             </div>
 
             <div
@@ -802,11 +805,14 @@
                     >
                   </h4>
                   @if (getLowStockTotalCount() > 0) {
-                    <span
-                      class="text-[10px] font-black px-2.5 py-1 bg-rose-500/10 text-rose-500 rounded-full shrink-0"
+                    <app-badge
+                      variant="danger"
+                      size="sm"
+                      rounded="full"
+                      class="shrink-0"
                     >
                       {{ getLowStockTotalCount() }} mục
-                    </span>
+                    </app-badge>
                   }
                 </div>
 

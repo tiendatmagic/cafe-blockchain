@@ -6,11 +6,12 @@ import { Web3Service } from '@core/services/web3.service';
 import { ApiService } from '@core/services/api.service';
 import { Router } from '@angular/router';
 import { IconComponent } from '@shared/components/icon/icon.component';
+import { BadgeComponent } from '@shared/components/badge/badge.component';
 
 @Component({
   selector: 'app-web3-overlays',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconComponent],
+  imports: [CommonModule, FormsModule, IconComponent, BadgeComponent],
   templateUrl: './web3-overlays.component.html'
 })
 export class Web3OverlaysComponent {

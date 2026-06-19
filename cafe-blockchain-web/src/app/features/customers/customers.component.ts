@@ -17,6 +17,7 @@ import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skel
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { CustomCheckboxComponent } from '@shared/components/custom-checkbox/custom-checkbox.component';
 import { CardComponent } from '@shared/components/card/card.component';
+import { BadgeComponent } from '@shared/components/badge/badge.component';
 
 @Component({
   selector: 'app-customers',
@@ -38,7 +39,8 @@ import { CardComponent } from '@shared/components/card/card.component';
     SkeletonLoaderComponent,
     ButtonComponent,
     CustomCheckboxComponent,
-    CardComponent
+    CardComponent,
+    BadgeComponent
   ],
   templateUrl: './customers.component.html'
 })

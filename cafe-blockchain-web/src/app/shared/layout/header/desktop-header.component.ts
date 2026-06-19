@@ -5,11 +5,12 @@ import { Web3Service } from '@core/services/web3.service';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { CardComponent } from '@shared/components/card/card.component';
+import { BadgeComponent } from '@shared/components/badge/badge.component';
 
 @Component({
   selector: 'app-desktop-header',
   standalone: true,
-  imports: [CommonModule, IconComponent, ButtonComponent, CardComponent],
+  imports: [CommonModule, IconComponent, ButtonComponent, CardComponent, BadgeComponent],
   templateUrl: './desktop-header.component.html'
 })
 export class DesktopHeaderComponent {

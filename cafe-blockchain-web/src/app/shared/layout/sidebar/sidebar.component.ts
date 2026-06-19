@@ -4,11 +4,12 @@ import { RouterModule } from '@angular/router';
 import { StateService } from '@core/services/state.service';
 import { ThemeToggleComponent } from '@shared/components/theme-toggle/theme-toggle.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
+import { BadgeComponent } from '@shared/components/badge/badge.component';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule, ThemeToggleComponent, IconComponent],
+  imports: [CommonModule, RouterModule, ThemeToggleComponent, IconComponent, BadgeComponent],
   templateUrl: './sidebar.component.html'
 })
 export class SidebarComponent {

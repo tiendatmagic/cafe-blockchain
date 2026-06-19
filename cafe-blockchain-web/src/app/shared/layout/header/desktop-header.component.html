@@ -241,8 +241,11 @@
       >
         <!-- Badge gói cước: absolute góc trên phải, không chiếm chỗ trong layout -->
         @if (stateService.subscriptionPlanCode() === 'free') {
-          <span
-            class="absolute -top-2 -right-1 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wide bg-rose-100 text-rose-600 border border-rose-200 dark:bg-rose-950/50 dark:text-rose-400 dark:border-rose-900/40 shadow-sm"
+          <app-badge
+            variant="danger"
+            size="sm"
+            rounded="full"
+            class="absolute -top-2 -right-1 text-[8px] px-1.5 py-0.5 shadow-sm uppercase tracking-wide font-black"
           >
             <span>{{ stateService.subscriptionPlanCode() }}</span>
             @if (stateService.subscriptionDaysLeft() > 0) {
@@ -250,10 +253,28 @@
                 >· {{ stateService.subscriptionDaysLeft() }}d</span
               >
             }
-          </span>
+          </app-badge>
+        } @else if (stateService.subscriptionPlanCode() === 'pro') {
+          <app-badge
+            variant="success"
+            size="sm"
+            rounded="full"
+            class="absolute -top-2 -right-1 text-[8px] px-1.5 py-0.5 shadow-sm uppercase tracking-wide font-black"
+          >
+            <span>{{ stateService.subscriptionPlanCode() }}</span>
+            @if (stateService.subscriptionDaysLeft() > 0) {
+              <span class="normal-case font-semibold opacity-85"
+                >· {{ stateService.subscriptionDaysLeft() }}d</span
+              >
+            }
+          </app-badge>
         } @else {
-          <span
-            class="absolute -top-2 -right-1 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wide bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-900/40 shadow-sm"
+          <!-- Gói Ultra và các gói cao cấp khác hiển thị màu chủ đạo động sang trọng -->
+          <app-badge
+            variant="primary"
+            size="sm"
+            rounded="full"
+            class="absolute -top-2 -right-1 text-[8px] px-1.5 py-0.5 shadow-sm uppercase tracking-wide font-black"
           >
             <span>{{ stateService.subscriptionPlanCode() }}</span>
             @if (stateService.subscriptionDaysLeft() > 0) {
@@ -261,7 +282,7 @@
                 >· {{ stateService.subscriptionDaysLeft() }}d</span
               >
             }
-          </span>
+          </app-badge>
         }
         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
         <div class="flex flex-col text-left leading-none">

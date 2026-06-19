@@ -563,27 +563,47 @@
         >
           <!-- Badge gói cước: absolute góc trên phải -->
           @if (stateService.subscriptionPlanCode() === 'free') {
-            <span
-              class="absolute -top-2 -right-1 inline-flex items-center gap-0.5 px-1 py-0.5 rounded-full text-[7px] font-black uppercase tracking-wide bg-rose-100 text-rose-600 border border-rose-200 dark:bg-rose-950/50 dark:text-rose-400 dark:border-rose-900/40"
+            <app-badge
+              variant="danger"
+              size="sm"
+              rounded="full"
+              class="absolute -top-2 -right-1 text-[7px] px-1.5 py-0.5 shadow-sm uppercase tracking-wide font-black"
             >
-              {{ stateService.subscriptionPlanCode() }}
+              <span>{{ stateService.subscriptionPlanCode() }}</span>
               @if (stateService.subscriptionDaysLeft() > 0) {
-                <span class="normal-case font-medium"
+                <span class="normal-case font-semibold opacity-85"
                   >· {{ stateService.subscriptionDaysLeft() }}d</span
                 >
               }
-            </span>
+            </app-badge>
+          } @else if (stateService.subscriptionPlanCode() === 'pro') {
+            <app-badge
+              variant="success"
+              size="sm"
+              rounded="full"
+              class="absolute -top-2 -right-1 text-[7px] px-1.5 py-0.5 shadow-sm uppercase tracking-wide font-black"
+            >
+              <span>{{ stateService.subscriptionPlanCode() }}</span>
+              @if (stateService.subscriptionDaysLeft() > 0) {
+                <span class="normal-case font-semibold opacity-85"
+                  >· {{ stateService.subscriptionDaysLeft() }}d</span
+                >
+              }
+            </app-badge>
           } @else {
-            <span
-              class="absolute -top-2 -right-1 inline-flex items-center gap-0.5 px-1 py-0.5 rounded-full text-[7px] font-black uppercase tracking-wide bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-900/40"
+            <app-badge
+              variant="primary"
+              size="sm"
+              rounded="full"
+              class="absolute -top-2 -right-1 text-[7px] px-1.5 py-0.5 shadow-sm uppercase tracking-wide font-black"
             >
-              {{ stateService.subscriptionPlanCode() }}
+              <span>{{ stateService.subscriptionPlanCode() }}</span>
               @if (stateService.subscriptionDaysLeft() > 0) {
-                <span class="normal-case font-medium"
+                <span class="normal-case font-semibold opacity-85"
                   >· {{ stateService.subscriptionDaysLeft() }}d</span
                 >
               }
-            </span>
+            </app-badge>
           }
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
           <span>{{ web3Service.shortAddress() }}</span>
@@ -1010,27 +1030,47 @@
                 >
                 <div class="flex items-center gap-1.5 mt-2">
                   @if (stateService.subscriptionPlanCode() === 'free') {
-                    <span
-                      class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wide bg-rose-100 text-rose-600 border border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-900/20"
+                    <app-badge
+                      variant="danger"
+                      size="sm"
+                      rounded="full"
+                      class="text-[9px] px-1.5 py-0.5 uppercase tracking-wide font-black"
                     >
-                      {{ stateService.subscriptionPlanCode() }}
+                      <span>{{ stateService.subscriptionPlanCode() }}</span>
                       @if (stateService.subscriptionDaysLeft() > 0) {
-                        <span class="normal-case font-semibold opacity-80"
+                        <span class="normal-case font-semibold opacity-85"
                           >· {{ stateService.subscriptionDaysLeft() }} ngày</span
                         >
                       }
-                    </span>
+                    </app-badge>
+                  } @else if (stateService.subscriptionPlanCode() === 'pro') {
+                    <app-badge
+                      variant="success"
+                      size="sm"
+                      rounded="full"
+                      class="text-[9px] px-1.5 py-0.5 uppercase tracking-wide font-black"
+                    >
+                      <span>{{ stateService.subscriptionPlanCode() }}</span>
+                      @if (stateService.subscriptionDaysLeft() > 0) {
+                        <span class="normal-case font-semibold opacity-85"
+                          >· {{ stateService.subscriptionDaysLeft() }} ngày</span
+                        >
+                      }
+                    </app-badge>
                   } @else {
-                    <span
-                      class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wide bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/20"
+                    <app-badge
+                      variant="primary"
+                      size="sm"
+                      rounded="full"
+                      class="text-[9px] px-1.5 py-0.5 uppercase tracking-wide font-black"
                     >
-                      {{ stateService.subscriptionPlanCode() }}
+                      <span>{{ stateService.subscriptionPlanCode() }}</span>
                       @if (stateService.subscriptionDaysLeft() > 0) {
-                        <span class="normal-case font-semibold opacity-80"
+                        <span class="normal-case font-semibold opacity-85"
                           >· {{ stateService.subscriptionDaysLeft() }} ngày</span
                         >
                       }
-                    </span>
+                    </app-badge>
                   }
                 </div>
               </div>

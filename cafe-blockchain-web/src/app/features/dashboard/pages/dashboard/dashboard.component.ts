@@ -15,6 +15,7 @@ import { IconComponent } from '@shared/components/icon/icon.component';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { CardComponent } from '@shared/components/card/card.component';
+import { BadgeComponent } from '@shared/components/badge/badge.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -33,7 +34,8 @@ import { CardComponent } from '@shared/components/card/card.component';
     IconComponent,
     SkeletonLoaderComponent,
     ButtonComponent,
-    CardComponent
+    CardComponent,
+    BadgeComponent
   ],
   templateUrl: './dashboard.component.html'
 })

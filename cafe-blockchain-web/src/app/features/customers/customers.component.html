@@ -173,15 +173,23 @@
                         {{ row.type === 'business' ? row.company_name : row.name }}
                       </span>
                       @if (row.type === 'business') {
-                        <span
-                          class="bg-indigo-500/10 text-indigo-500 text-[10px] font-black px-1.5 py-0.2 rounded uppercase tracking-wider shrink-0"
-                          >DN</span
+                        <app-badge
+                          variant="info"
+                          size="sm"
+                          rounded="sm"
+                          class="shrink-0 uppercase tracking-wider font-black"
                         >
+                          DN
+                        </app-badge>
                       } @else {
-                        <span
-                          class="bg-emerald-500/10 text-emerald-500 text-[10px] font-black px-1.5 py-0.2 rounded uppercase tracking-wider shrink-0"
-                          >CN</span
+                        <app-badge
+                          variant="success"
+                          size="sm"
+                          rounded="sm"
+                          class="shrink-0 uppercase tracking-wider font-black"
                         >
+                          CN
+                        </app-badge>
                       }
                     </div>
                     @if (row.type === 'business') {
@@ -193,23 +201,35 @@
                         </span>
                         @if (row.business_status) {
                           @if (getBusinessStatusColor(row.business_status) === 'rose') {
-                            <span
-                              class="bg-rose-500/10 text-rose-500 text-[8px] font-black px-1.5 py-0.2 rounded uppercase tracking-wider shrink-0"
+                            <app-badge
+                              variant="danger"
+                              size="sm"
+                              rounded="sm"
+                              class="shrink-0 uppercase tracking-wider text-[8px]"
                               [title]="row.business_status"
-                              >Ngừng hoạt động</span
                             >
+                              Ngừng hoạt động
+                            </app-badge>
                           } @else if (getBusinessStatusColor(row.business_status) === 'amber') {
-                            <span
-                              class="bg-amber-500/10 text-amber-500 text-[8px] font-black px-1.5 py-0.2 rounded uppercase tracking-wider shrink-0"
+                            <app-badge
+                              variant="warning"
+                              size="sm"
+                              rounded="sm"
+                              class="shrink-0 uppercase tracking-wider text-[8px]"
                               [title]="row.business_status"
-                              >Tạm ngưng</span
                             >
+                              Tạm ngưng
+                            </app-badge>
                           } @else {
-                            <span
-                              class="bg-emerald-500/10 text-emerald-500 text-[8px] font-black px-1.5 py-0.2 rounded uppercase tracking-wider shrink-0"
+                            <app-badge
+                              variant="success"
+                              size="sm"
+                              rounded="sm"
+                              class="shrink-0 uppercase tracking-wider text-[8px]"
                               [title]="row.business_status"
-                              >Hoạt động</span
                             >
+                              Hoạt động
+                            </app-badge>
                           }
                         }
                       </div>
@@ -239,11 +259,13 @@
                 <div class="flex flex-wrap gap-1 max-w-[150px]">
                   @if (row.groups && row.groups.length > 0) {
                     @for (g of row.groups; track g.id) {
-                      <span
-                        class="bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 text-xs font-bold px-2 py-0.5 rounded-lg border border-purple-200/10"
+                      <app-badge
+                        variant="info"
+                        size="sm"
+                        rounded="lg"
                       >
                         {{ g.name }}
-                      </span>
+                      </app-badge>
                     }
                   } @else {
                     <span class="text-xs text-slate-400">Không có nhóm</span>
@@ -268,12 +290,15 @@
                   }
 
                   @if (row.active_vouchers_count && row.active_vouchers_count > 0) {
-                    <span
-                      class="inline-flex items-center gap-1 text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full font-black w-max"
+                    <app-badge
+                      variant="success"
+                      size="sm"
+                      rounded="full"
+                      class="w-max gap-1"
                     >
                       <app-icon name="ticket" class="h-3.5 w-3.5 shrink-0" strokeWidth="2" />
                       <span>{{ row.active_vouchers_count }} Voucher</span>
-                    </span>
+                    </app-badge>
                   } @else {
                     <span
                       class="text-xs text-slate-400 dark:text-slate-600 font-semibold animate-pulse"
