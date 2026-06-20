@@ -204,7 +204,7 @@ export class TablesComponent implements OnInit {
       this.apiService.updateDiningTableStatus(table.id, 'using').subscribe({
         next: () => {
           this.stateService.tableNumber.set(table.name);
-          this.refreshTablesAndAreas();
+          this.stateService.updateTableStatusLocal(table.id, 'using');
           this.isUpdatingTableStatus.set(false);
           this.stateService.showToast(`Đã mở ${table.name} và chuyển sang giao diện POS.`, 'success');
           this.router.navigate(['/pos']);
@@ -393,7 +393,7 @@ export class TablesComponent implements OnInit {
     this.apiService.updateDiningTableStatus(table.id, newStatus).subscribe({
       next: () => {
         this.stateService.showToast(`Đã chuyển trạng thái bàn ${table.name} sang ${newStatus === 'empty' ? 'Trống' : 'Đang sử dụng'}!`, 'success');
-        this.refreshTablesAndAreas();
+        this.stateService.updateTableStatusLocal(table.id, newStatus);
         this.isUpdatingTableStatus.set(false);
       },
       error: () => {

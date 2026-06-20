@@ -96,14 +96,14 @@
                       <!-- Nút Sửa / Xóa khu vực (Chỉ hiện khi hover hoặc gọn gàng) -->
                       <button
                         (click)="openEditAreaModal(area); $event.stopPropagation()"
-                        class="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors opacity-0 group-hover/area:opacity-100"
+                        class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors opacity-0 group-hover/area:opacity-100 shrink-0"
                         title="Sửa khu vực"
                       >
                         <app-icon name="edit" class="w-3.5 h-3.5" strokeWidth="2.5" />
                       </button>
                       <button
                         (click)="deleteArea(area); $event.stopPropagation()"
-                        class="p-1 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors opacity-0 group-hover/area:opacity-100"
+                        class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors opacity-0 group-hover/area:opacity-100 shrink-0"
                         title="Xóa khu vực"
                       >
                         <app-icon name="trash" class="w-3.5 h-3.5" />
@@ -228,7 +228,7 @@
                       <div class="relative shrink-0">
                         <button
                           (click)="toggleDropdown(table.id, $event)"
-                          class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                          class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
                         >
                           <app-icon name="dots-vertical" class="w-4 h-4" strokeWidth="3" />
                         </button>
@@ -589,7 +589,7 @@
                 <button
                   type="button"
                   (click)="copyTableLink(selectedTableForQr())"
-                  class="p-1.5 text-slate-400 hover:text-[var(--color-primary)] hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all shrink-0"
+                  class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-[var(--color-primary)] hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all shrink-0"
                   title="Sao chép liên kết"
                 >
                   <app-icon name="copy" class="w-4 h-4" strokeWidth="2.5" />
@@ -598,7 +598,7 @@
                 <a
                   [href]="getTableStorefrontUrl(selectedTableForQr())"
                   target="_blank"
-                  class="p-1.5 text-slate-400 hover:text-[var(--color-primary)] hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all shrink-0"
+                  class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-[var(--color-primary)] hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all shrink-0"
                   title="Truy cập liên kết"
                 >
                   <app-icon name="external-link" class="w-4 h-4" strokeWidth="2.5" />

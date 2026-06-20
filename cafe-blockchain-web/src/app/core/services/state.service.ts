@@ -715,6 +715,11 @@ export class StateService {
     this.tableStore.refreshTablesAndAreas(this.hasPermission('pos') || this.hasPermission('tables'));
   }
 
+  // Cập nhật trạng thái bàn ăn cục bộ trên client
+  public updateTableStatusLocal(tableId: number, status: 'empty' | 'using') {
+    this.tableStore.updateTableStatusLocal(tableId, status);
+  }
+
   // Ngắt kết nối ví
   public disconnectWalletAndClose(message?: string, isError = false) {
     this.web3Service.disconnectWallet();

@@ -40,4 +40,13 @@ export class TableStore {
       }
     });
   }
+
+  /**
+   * Cập nhật trạng thái bàn ăn cục bộ trên client-side
+   */
+  public updateTableStatusLocal(tableId: number, status: 'empty' | 'using') {
+    this.diningTables.update(tables =>
+      tables.map(t => t.id === tableId ? { ...t, status } : t)
+    );
+  }
 }
