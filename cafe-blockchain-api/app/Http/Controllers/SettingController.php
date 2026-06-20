@@ -50,6 +50,10 @@ class SettingController extends Controller
             'shipping_fee_free_enabled' => '0',
             'shipping_fee_free_min_amount' => '0',
             'website_avatar_image' => '',
+            'store_phone' => '',
+            'store_opening_hours' => '',
+            'store_address' => '',
+            'store_description' => '',
         ];
 
         if (empty($settings)) {
@@ -131,7 +135,11 @@ class SettingController extends Controller
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
 
         $settingsData = $request->validate([
-            'store_name' => 'nullable|string|max:255',
+            'store_name' => 'required|string|max:255',
+            'store_phone' => 'required|string|regex:/^[0-9]+$/',
+            'store_opening_hours' => 'nullable|string',
+            'store_address' => 'nullable|string|max:500',
+            'store_description' => 'nullable|string|max:1000',
             'contract_address' => 'nullable|string|max:255',
             'finance_contract_address' => 'nullable|string|max:255',
             'voucher_contract_address' => 'nullable|string|max:255',
@@ -400,6 +408,10 @@ class SettingController extends Controller
             'shipping_fee_free_enabled' => $settings['shipping_fee_free_enabled'] ?? '0',
             'shipping_fee_free_min_amount' => $settings['shipping_fee_free_min_amount'] ?? '0',
             'website_avatar_image' => $settings['website_avatar_image'] ?? '',
+            'store_phone' => $settings['store_phone'] ?? '',
+            'store_opening_hours' => $settings['store_opening_hours'] ?? '',
+            'store_address' => $settings['store_address'] ?? '',
+            'store_description' => $settings['store_description'] ?? '',
             'temp_order' => $tempOrderData, // Trả về thông tin đơn hàng tạm thời/thực tế để client hiển thị
             'order_status' => $order ? $order->status : null,
             'blockchain_status' => $order ? $order->blockchain_status : null,
@@ -512,6 +524,10 @@ class SettingController extends Controller
                 'shipping_fee_free_enabled' => $settings['shipping_fee_free_enabled'] ?? '0',
                 'shipping_fee_free_min_amount' => $settings['shipping_fee_free_min_amount'] ?? '0',
                 'website_avatar_image' => $settings['website_avatar_image'] ?? '',
+                'store_phone' => $settings['store_phone'] ?? '',
+                'store_opening_hours' => $settings['store_opening_hours'] ?? '',
+                'store_address' => $settings['store_address'] ?? '',
+                'store_description' => $settings['store_description'] ?? '',
             ];
 
             // Nếu cửa hàng tạm đóng thì không cần load danh mục và sản phẩm

@@ -82,6 +82,27 @@ export class SettingsComponent implements OnInit {
           });
           this.syncSelectedCategories();
 
+          // Parse giờ mở cửa hoạt động
+          const openingHours = settings.store_opening_hours || '';
+          if (openingHours && openingHours.includes(';')) {
+            const parts = openingHours.split(';');
+            this.storeOpenDateTime.set(parts[0]);
+            this.storeCloseDateTime.set(parts[1]);
+          } else {
+            this.storeOpenDateTime.set('');
+            this.storeCloseDateTime.set('');
+          }
+
+          // Reset lỗi
+          this.phoneError.set('');
+          this.dateTimeError.set('');
+          this.descriptionError.set('');
+
+          // Đếm từ mô tả ban đầu
+          const desc = settings.store_description || '';
+          const words = desc.trim().split(/\s+/).filter((w: string) => w.length > 0);
+          this.descriptionWordCount.set(words.length);
+
           // Tải danh sách owners nếu ví đã kết nối và tab hiện tại là permissions
           if (this.web3Service.walletConnected() && this.settingsSubTab() === 'permissions') {
             this.loadOwnersList();
@@ -106,9 +127,21 @@ export class SettingsComponent implements OnInit {
     { value: 'permissions', label: 'Ủy quyền ví' },
   ];
 
+  // Các signals quản lý lỗi và đếm số từ
+  public readonly storeOpenDateTime = signal<string>('');
+  public readonly storeCloseDateTime = signal<string>('');
+  public readonly phoneError = signal<string>('');
+  public readonly dateTimeError = signal<string>('');
+  public readonly descriptionError = signal<string>('');
+  public readonly descriptionWordCount = signal<number>(0);
+
   // Form Cấu hình hệ thống
   public readonly configForm = signal<any>({
     store_name: '',
+    store_phone: '',
+    store_opening_hours: '',
+    store_address: '',
+    store_description: '',
     contract_address: '',
     finance_contract_address: '',
     voucher_contract_address: '',
@@ -141,6 +174,71 @@ export class SettingsComponent implements OnInit {
     website_avatar_image: '',
     has_relayer_private_key: false,
   });
+
+  // Validate số điện thoại
+  public onPhoneChange(value: string) {
+    this.updateConfigForm('store_phone', value);
+    if (!value) {
+      this.phoneError.set('Số điện thoại là bắt buộc.');
+    } else if (!/^[0-9]+$/.test(value)) {
+      this.phoneError.set('Số điện thoại chỉ được chứa ký số (0-9).');
+    } else {
+      this.phoneError.set('');
+    }
+  }
+
+  // Cập nhật giờ mở cửa
+  public onOpenDateTimeChange(value: string) {
+    this.storeOpenDateTime.set(value);
+    this.updateOpeningHoursRange();
+  }
+
+  // Cập nhật giờ đóng cửa
+  public onCloseDateTimeChange(value: string) {
+    this.storeCloseDateTime.set(value);
+    this.updateOpeningHoursRange();
+  }
+
+  // Hàm ghép và validate khoảng ngày giờ
+  private updateOpeningHoursRange() {
+    const open = this.storeOpenDateTime();
+    const close = this.storeCloseDateTime();
+
+    if (open && close) {
+      if (new Date(close) <= new Date(open)) {
+        this.dateTimeError.set('Thời gian đóng cửa phải sau thời gian mở cửa.');
+      } else {
+        this.dateTimeError.set('');
+      }
+      this.updateConfigForm('store_opening_hours', `${open};${close}`);
+    } else if (!open && !close) {
+      this.dateTimeError.set('');
+      this.updateConfigForm('store_opening_hours', '');
+    } else {
+      this.dateTimeError.set('Vui lòng chọn đầy đủ cả thời gian mở cửa và đóng cửa.');
+      this.updateConfigForm('store_opening_hours', '');
+    }
+  }
+
+  // Validate mô tả cửa hàng và đếm số từ
+  public onDescriptionChange(value: string) {
+    this.updateConfigForm('store_description', value);
+    if (!value) {
+      this.descriptionWordCount.set(0);
+      this.descriptionError.set('');
+      return;
+    }
+
+    const words = value.trim().split(/\s+/).filter(w => w.length > 0);
+    const count = words.length;
+    this.descriptionWordCount.set(count);
+
+    if (count > 200) {
+      this.descriptionError.set('Mô tả cửa hàng không được vượt quá 200 chữ.');
+    } else {
+      this.descriptionError.set('');
+    }
+  }
 
   // Quản lý các danh mục cho Website Cửa hàng
   public readonly categoriesList = signal<any[]>([]);
@@ -339,6 +437,22 @@ export class SettingsComponent implements OnInit {
       this.stateService.showToast('Vui lòng kết nối ví Web3 để thực hiện tác vụ này!', 'error');
       return;
     }
+    
+    // Kiểm tra lỗi validate trước khi lưu
+    if (
+      this.phoneError() ||
+      this.dateTimeError() ||
+      this.descriptionError() ||
+      !this.configForm().store_name ||
+      !this.configForm().store_phone
+    ) {
+      this.stateService.showToast(
+        'Vui lòng nhập đầy đủ và sửa các lỗi nhập liệu trước khi lưu!',
+        'error',
+      );
+      return;
+    }
+
     this.isConfigSaving.set(true);
     const data = this.configForm();
     this.apiService.updateSettings(data).subscribe({

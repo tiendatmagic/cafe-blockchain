@@ -93,15 +93,108 @@
               <!-- Tên quán -->
               <div class="space-y-1.5">
                 <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-                  >Tên cửa hàng</label
+                  >Tên cửa hàng <span class="text-rose-500">*</span></label
                 >
                 <input
                   type="text"
                   [ngModel]="configForm().store_name"
                   (ngModelChange)="updateConfigForm('store_name', $event)"
                   [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
-                  class="form-input"
+                  class="form-input font-semibold"
+                  placeholder="Nhập tên cửa hàng"
                 />
+              </div>
+
+              <!-- Số điện thoại -->
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                  >Số điện thoại <span class="text-rose-500">*</span></label
+                >
+                <input
+                  type="text"
+                  [ngModel]="configForm().store_phone"
+                  (ngModelChange)="onPhoneChange($event)"
+                  [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                  class="form-input font-semibold"
+                  placeholder="Nhập số điện thoại (chỉ nhập số)"
+                />
+                @if (phoneError()) {
+                  <span class="text-xs font-bold text-rose-500 mt-1 block">{{ phoneError() }}</span>
+                }
+              </div>
+
+              <!-- Giờ mở cửa (Datetime range) -->
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                  >Giờ hoạt động (Giờ mở cửa & Đóng cửa)</label
+                >
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div class="space-y-1">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide block"
+                      >Thời gian mở cửa</span
+                    >
+                    <input
+                      type="datetime-local"
+                      [ngModel]="storeOpenDateTime()"
+                      (ngModelChange)="onOpenDateTimeChange($event)"
+                      [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                      class="form-input font-semibold"
+                    />
+                  </div>
+                  <div class="space-y-1">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide block"
+                      >Thời gian đóng cửa</span
+                    >
+                    <input
+                      type="datetime-local"
+                      [ngModel]="storeCloseDateTime()"
+                      (ngModelChange)="onCloseDateTimeChange($event)"
+                      [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                      class="form-input font-semibold"
+                    />
+                  </div>
+                </div>
+                @if (dateTimeError()) {
+                  <span class="text-xs font-bold text-rose-500 mt-1 block">{{ dateTimeError() }}</span>
+                }
+              </div>
+
+              <!-- Địa chỉ cửa hàng -->
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                  >Địa chỉ cửa hàng</label
+                >
+                <input
+                  type="text"
+                  [ngModel]="configForm().store_address"
+                  (ngModelChange)="updateConfigForm('store_address', $event)"
+                  [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                  class="form-input font-semibold"
+                  placeholder="Nhập địa chỉ cửa hàng"
+                />
+              </div>
+
+              <!-- Mô tả cửa hàng -->
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                    >Mô tả cửa hàng</label
+                  >
+                  <span class="text-xs font-bold" [class]="descriptionWordCount() > 200 ? 'text-rose-500' : 'text-slate-400'">
+                    {{ descriptionWordCount() }}/200 chữ
+                  </span>
+                </div>
+                <textarea
+                  rows="3"
+                  [ngModel]="configForm().store_description"
+                  (ngModelChange)="onDescriptionChange($event)"
+                  [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                  class="form-input font-semibold py-2.5 resize-none animate-none"
+                  placeholder="Nhập mô tả ngắn về cửa hàng (tối đa 200 chữ)..."
+                ></textarea>
+                @if (descriptionError()) {
+                  <span class="text-xs font-bold text-rose-500 mt-1 block">{{ descriptionError() }}</span>
+                }
               </div>
 
               <!-- Cho phép thanh toán Crypto -->
@@ -209,7 +302,12 @@
                   [loading]="isConfigSaving()"
                   [disabled]="
                     !web3Service.walletConnected() ||
-                    !web3Service.isOwnerContract()
+                    !web3Service.isOwnerContract() ||
+                    !!phoneError() ||
+                    !!dateTimeError() ||
+                    !!descriptionError() ||
+                    !configForm().store_name ||
+                    !configForm().store_phone
                   "
                   class="w-full shadow-lg"
                 >
