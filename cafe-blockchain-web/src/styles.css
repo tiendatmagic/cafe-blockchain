@@ -78,8 +78,8 @@
   --radius-4xl: 15px;
 
   /* Cấu hình mở rộng responsive breakpoint cho màn hình lớn */
-  --screen-3xl: 1920px;
-  --screen-4xl: 2560px;
+  --breakpoint-3xl: 1920px;
+  --breakpoint-4xl: 2560px;
 }
 
 body {
