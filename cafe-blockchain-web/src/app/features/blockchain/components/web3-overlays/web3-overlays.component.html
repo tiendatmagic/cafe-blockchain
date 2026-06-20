@@ -136,26 +136,38 @@
               </p>
 
               <div class="flex items-center gap-2 mt-1.5 w-full">
-                <a
-                  [href]="web3Service.addressExplorerLink()"
-                  target="_blank"
-                  class="text-base font-extrabold text-slate-800 hover:text-purple-600 dark:text-slate-100 dark:hover:text-purple-400 font-mono truncate hover:underline transition-colors flex items-center gap-1.5"
-                  title="Xem địa chỉ ví trên Block Explorer"
-                >
-                  <span>{{ web3Service.shortAddress() }}</span>
-                  <app-icon
-                    name="external-link"
-                    class="h-4 w-4 opacity-50 shrink-0"
-                    strokeWidth="2.5"
-                  />
-                </a>
-                <button
-                  (click)="stateService.copyAddress()"
-                  class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors cursor-pointer"
-                  title="Sao chép địa chỉ ví"
-                >
-                  <app-icon name="copy" class="h-4.5 w-4.5" strokeWidth="2.2" />
-                </button>
+                @if (web3Service.shortAddress()) {
+                  <span class="text-base font-extrabold text-slate-800 dark:text-slate-100 font-mono select-all leading-none">
+                    {{ web3Service.shortAddress() }}
+                  </span>
+                  <a
+                    [href]="web3Service.addressExplorerLink()"
+                    target="_blank"
+                    class="w-7 h-7 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors flex items-center justify-center shrink-0 cursor-pointer border-0 bg-transparent p-0"
+                    title="Xem địa chỉ ví trên Block Explorer"
+                  >
+                    <app-icon
+                      name="external-link"
+                      class="h-4 w-4"
+                      strokeWidth="2.2"
+                    />
+                  </a>
+                  <button
+                    (click)="stateService.copyAddress()"
+                    class="w-7 h-7 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors flex items-center justify-center shrink-0 cursor-pointer border-0 bg-transparent p-0 outline-none"
+                    title="Sao chép địa chỉ ví"
+                  >
+                    <app-icon name="copy" class="h-4 w-4" strokeWidth="2.2" />
+                  </button>
+                } @else {
+                  <div class="flex items-center gap-2 text-slate-400 font-semibold text-xs py-1">
+                    <svg class="animate-spin h-3.5 w-3.5 text-slate-400 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Đang tải địa chỉ ví...</span>
+                  </div>
+                }
               </div>
             </div>
           </div>

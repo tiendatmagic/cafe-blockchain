@@ -61,7 +61,7 @@ export class Web3Service {
   // Địa chỉ ví rút gọn
   public readonly shortAddress = computed(() => {
     const addr = this.currentAccount();
-    if (!addr) return '';
+    if (!addr || !addr.startsWith('0x') || addr.length < 42) return '';
     return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
   });
 
