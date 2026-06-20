@@ -1,4 +1,15 @@
-import { Component, Input, Output, EventEmitter, ContentChildren, QueryList, Directive, TemplateRef, inject } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  ContentChildren,
+  QueryList,
+  Directive,
+  TemplateRef,
+  inject,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SkeletonLoaderComponent } from '../skeleton-loader/skeleton-loader.component';
 import { PaginationComponent } from '../pagination/pagination.component';
@@ -15,7 +26,7 @@ export interface TableColumn {
 
 @Directive({
   selector: '[appCell]',
-  standalone: true
+  standalone: true,
 })
 export class TableCellDirective {
   @Input('appCell') columnName!: string;
@@ -25,9 +36,16 @@ export class TableCellDirective {
 @Component({
   selector: 'app-table',
   standalone: true,
-  imports: [CommonModule, SkeletonLoaderComponent, PaginationComponent, IconComponent, CardComponent],
+  imports: [
+    CommonModule,
+    SkeletonLoaderComponent,
+    PaginationComponent,
+    IconComponent,
+    CardComponent,
+  ],
   templateUrl: './table.component.html',
-  styleUrls: []
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrls: [],
 })
 export class TableComponent {
   public readonly Math = Math;
@@ -51,13 +69,13 @@ export class TableComponent {
   @Input() sortDirection: 'asc' | 'desc' | '' = '';
 
   @Output() pageChange = new EventEmitter<number>();
-  @Output() sortChange = new EventEmitter<{ key: string, direction: 'asc' | 'desc' | '' }>();
+  @Output() sortChange = new EventEmitter<{ key: string; direction: 'asc' | 'desc' | '' }>();
 
   @ContentChildren(TableCellDirective) customCells!: QueryList<TableCellDirective>;
 
   public getCustomTemplate(columnName: string): TemplateRef<any> | null {
     if (!this.customCells) return null;
-    const match = this.customCells.find(cell => cell.columnName === columnName);
+    const match = this.customCells.find((cell) => cell.columnName === columnName);
     return match ? match.template : null;
   }
 
@@ -75,7 +93,7 @@ export class TableComponent {
 
     this.sortChange.emit({
       key: nextDir ? column.key : '',
-      direction: nextDir
+      direction: nextDir,
     });
   }
 

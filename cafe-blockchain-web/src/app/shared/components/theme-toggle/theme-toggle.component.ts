@@ -1,4 +1,4 @@
-import { Component, Input, inject } from '@angular/core';
+import { Component, Input, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StateService } from '@core/services/state.service';
 
@@ -6,6 +6,7 @@ import { StateService } from '@core/services/state.service';
   selector: 'app-theme-toggle',
   standalone: true,
   imports: [CommonModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     @if (size === 'md') {
       <div
@@ -217,7 +218,7 @@ import { StateService } from '@core/services/state.service';
         </span>
       </button>
     }
-  `
+  `,
 })
 export class ThemeToggleComponent {
   private readonly stateService = inject(StateService);

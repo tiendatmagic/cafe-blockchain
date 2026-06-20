@@ -1,4 +1,17 @@
-import { Component, Input, Output, EventEmitter, ElementRef, HostListener, inject, signal, computed, OnDestroy, forwardRef } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  ElementRef,
+  HostListener,
+  inject,
+  signal,
+  computed,
+  OnDestroy,
+  forwardRef,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
 import { IconComponent } from '../icon/icon.component';
@@ -8,13 +21,14 @@ import { IconComponent } from '../icon/icon.component';
   standalone: true,
   imports: [CommonModule, FormsModule, IconComponent],
   templateUrl: './custom-select.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => CustomSelectComponent),
-      multi: true
-    }
-  ]
+      multi: true,
+    },
+  ],
 })
 export class CustomSelectComponent implements ControlValueAccessor, OnDestroy {
   private readonly elementRef = inject(ElementRef);
@@ -36,7 +50,7 @@ export class CustomSelectComponent implements ControlValueAccessor, OnDestroy {
   public readonly isOpen = signal<boolean>(false);
   public readonly searchQuery = signal<string>('');
   public readonly dynamicPlacement = signal<'bottom' | 'top'>('bottom');
-  public readonly dropdownStyle = signal<{[key: string]: string}>({});
+  public readonly dropdownStyle = signal<{ [key: string]: string }>({});
 
   private scrollListener: (() => void) | null = null;
 
@@ -58,10 +72,10 @@ export class CustomSelectComponent implements ControlValueAccessor, OnDestroy {
     const viewportHeight = window.innerHeight;
     const spaceBelow = viewportHeight - rect.bottom;
     const spaceAbove = rect.top;
-    
+
     // Chiều cao ước lượng tối đa của dropdown menu là 280px
     const dropdownHeight = 280;
-    
+
     let placement: 'top' | 'bottom' = 'bottom';
     if (this.placement === 'auto') {
       if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
@@ -73,7 +87,7 @@ export class CustomSelectComponent implements ControlValueAccessor, OnDestroy {
       placement = this.placement as 'top' | 'bottom';
     }
 
-    const styles: {[key: string]: string} = {
+    const styles: { [key: string]: string } = {
       position: 'fixed',
       left: `${rect.left}px`,
       width: `${rect.width}px`,
@@ -118,7 +132,7 @@ export class CustomSelectComponent implements ControlValueAccessor, OnDestroy {
 
   public toggleOpen(): void {
     if (this.disabled) return;
-    this.isOpen.update(val => !val);
+    this.isOpen.update((val) => !val);
     if (this.isOpen()) {
       this.searchQuery.set('');
       // Chờ Angular render dropdown vào DOM rồi đo tọa độ
@@ -163,7 +177,7 @@ export class CustomSelectComponent implements ControlValueAccessor, OnDestroy {
 
   // Lấy nhãn của tùy chọn hiện tại để hiển thị lên nút kích hoạt
   public get selectedLabel(): string {
-    const selected = this.options.find(opt => {
+    const selected = this.options.find((opt) => {
       const optVal = this.getOptionValue(opt);
       return String(optVal) === String(this.value);
     });
@@ -203,7 +217,7 @@ export class CustomSelectComponent implements ControlValueAccessor, OnDestroy {
     if (!query) {
       return opts;
     }
-    return opts.filter(opt => {
+    return opts.filter((opt) => {
       const label = String(this.getOptionLabel(opt)).toLowerCase();
       return label.includes(query);
     });

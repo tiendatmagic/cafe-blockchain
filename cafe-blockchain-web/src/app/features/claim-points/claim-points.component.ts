@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StateService } from '@core/services/state.service';
@@ -9,12 +9,9 @@ import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prom
 @Component({
   selector: 'app-claim-points',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    Web3ConnectPromptComponent
-  ],
-  templateUrl: './claim-points.component.html'
+  imports: [CommonModule, FormsModule, Web3ConnectPromptComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  templateUrl: './claim-points.component.html',
 })
 export class ClaimPointsComponent implements OnInit {
   public readonly stateService = inject(StateService);
@@ -80,18 +77,14 @@ export class ClaimPointsComponent implements OnInit {
 
     this.isClaiming.set(true);
 
-    this.apiService.claimPoints(
-      code,
-      phone,
-      this.web3Service.currentAccount()
-    ).subscribe({
+    this.apiService.claimPoints(code, phone, this.web3Service.currentAccount()).subscribe({
       next: (res) => {
         this.isClaiming.set(false);
         if (res.success) {
           this.claimResult.set(res);
           this.isSuccessModalOpen.set(true);
           this.loadTokenBalance();
-          
+
           // Reset Form
           this.orderCode.set('');
           this.phoneLast5.set('');
@@ -103,7 +96,7 @@ export class ClaimPointsComponent implements OnInit {
         this.isClaiming.set(false);
         const msg = err.error?.message || 'Có lỗi xảy ra trong quá trình kết nối máy chủ.';
         this.stateService.showToast(msg, 'error');
-      }
+      },
     });
   }
 

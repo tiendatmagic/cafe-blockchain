@@ -1,4 +1,11 @@
-import { Component, inject, signal, HostListener, ElementRef } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  HostListener,
+  ElementRef,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { StateService } from '@core/services/state.service';
@@ -10,7 +17,8 @@ import { BadgeComponent } from '@shared/components/badge/badge.component';
   selector: 'app-sidebar',
   standalone: true,
   imports: [CommonModule, RouterModule, ThemeToggleComponent, IconComponent, BadgeComponent],
-  templateUrl: './sidebar.component.html'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  templateUrl: './sidebar.component.html',
 })
 export class SidebarComponent {
   public readonly stateService = inject(StateService);
@@ -54,7 +62,11 @@ export class SidebarComponent {
   @HostListener('document:click', ['$event'])
   public onDocumentClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
-    if (!this.elementRef.nativeElement.querySelector('#mobile-chain-dropdown-container')?.contains(target)) {
+    if (
+      !this.elementRef.nativeElement
+        .querySelector('#mobile-chain-dropdown-container')
+        ?.contains(target)
+    ) {
       this.isChainDropdownOpen.set(false);
     }
   }
@@ -75,7 +87,7 @@ export class SidebarComponent {
       case '97':
         return 'bg-yellow-500';
       case '137':
-         return 'bg-purple-500';
+        return 'bg-purple-500';
       case '42161':
       case '8453':
         return 'bg-sky-500';

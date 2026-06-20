@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -12,20 +12,31 @@ import { CommonModule } from '@angular/common';
     '[class.cursor-pointer]': 'interactive',
     '[class.hover:opacity-85]': 'interactive',
     '[class.active:scale-95]': 'interactive',
-    '[class.transition-all]': 'interactive'
+    '[class.transition-all]': 'interactive',
   },
-  styles: [`
-    :host {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800; /* mặc định font font-black hoặc font-bold rất đậm */
-      line-height: 1;
-    }
-  `]
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styles: [
+    `
+      :host {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800; /* mặc định font font-black hoặc font-bold rất đậm */
+        line-height: 1;
+      }
+    `,
+  ],
 })
 export class BadgeComponent {
-  @Input() variant: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'ultra' = 'primary';
+  @Input() variant:
+    | 'primary'
+    | 'secondary'
+    | 'success'
+    | 'warning'
+    | 'danger'
+    | 'info'
+    | 'neutral'
+    | 'ultra' = 'primary';
   @Input() size: 'sm' | 'md' | 'lg' = 'md';
   @Input() rounded: 'sm' | 'md' | 'lg' | 'xl' | 'full' = 'xl';
   @Input() pulse = false;
@@ -37,28 +48,44 @@ export class BadgeComponent {
     // Variant classes
     switch (this.variant) {
       case 'primary':
-        classes.push('bg-[var(--color-primary)]/20 text-[var(--color-primary)] dark:bg-[var(--color-primary)]/25 dark:text-[var(--color-secondary)] border border-[var(--color-primary)]/20');
+        classes.push(
+          'bg-[var(--color-primary)]/20 text-[var(--color-primary)] dark:bg-[var(--color-primary)]/25 dark:text-[var(--color-secondary)] border border-[var(--color-primary)]/20',
+        );
         break;
       case 'secondary':
-        classes.push('bg-[var(--color-secondary)]/20 text-[var(--color-secondary)] border border-[var(--color-secondary)]/20');
+        classes.push(
+          'bg-[var(--color-secondary)]/20 text-[var(--color-secondary)] border border-[var(--color-secondary)]/20',
+        );
         break;
       case 'success':
-        classes.push('bg-emerald-500/20 dark:bg-emerald-500/25 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 dark:border-emerald-500/30');
+        classes.push(
+          'bg-emerald-500/20 dark:bg-emerald-500/25 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 dark:border-emerald-500/30',
+        );
         break;
       case 'warning':
-        classes.push('bg-amber-500/20 dark:bg-amber-500/25 text-amber-600 dark:text-amber-400 border border-amber-500/20 dark:border-amber-500/30');
+        classes.push(
+          'bg-amber-500/20 dark:bg-amber-500/25 text-amber-600 dark:text-amber-400 border border-amber-500/20 dark:border-amber-500/30',
+        );
         break;
       case 'danger':
-        classes.push('bg-rose-500/20 dark:bg-rose-500/25 text-rose-500 dark:text-rose-450 border border-rose-500/20 dark:border-rose-500/30');
+        classes.push(
+          'bg-rose-500/20 dark:bg-rose-500/25 text-rose-500 dark:text-rose-450 border border-rose-500/20 dark:border-rose-500/30',
+        );
         break;
       case 'info':
-        classes.push('bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 border border-purple-200/50 dark:border-purple-800/40');
+        classes.push(
+          'bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 border border-purple-200/50 dark:border-purple-800/40',
+        );
         break;
       case 'neutral':
-        classes.push('bg-slate-150/90 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200/50 dark:border-slate-700/50');
+        classes.push(
+          'bg-slate-150/90 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200/50 dark:border-slate-700/50',
+        );
         break;
       case 'ultra':
-        classes.push('bg-violet-500/20 dark:bg-violet-500/25 text-violet-600 dark:text-violet-400 border border-violet-500/20 dark:border-violet-500/30');
+        classes.push(
+          'bg-violet-500/20 dark:bg-violet-500/25 text-violet-600 dark:text-violet-400 border border-violet-500/20 dark:border-violet-500/30',
+        );
         break;
     }
 

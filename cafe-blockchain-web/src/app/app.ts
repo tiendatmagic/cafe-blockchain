@@ -1,4 +1,12 @@
-import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  inject,
+  signal,
+  computed,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { StateService } from '@core/services/state.service';
@@ -27,10 +35,11 @@ import { FeatureBlockedComponent } from '@shared/components/feature-blocked/feat
     Web3PublicHeaderComponent,
     SubscriptionBlockedComponent,
     ToastComponent,
-    FeatureBlockedComponent
+    FeatureBlockedComponent,
   ],
   templateUrl: './app.html',
-  styleUrl: './app.css'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './app.css',
 })
 export class App implements OnInit, OnDestroy {
   public readonly stateService = inject(StateService);
@@ -59,7 +68,11 @@ export class App implements OnInit, OnDestroy {
       const routerUrl = this.router.url;
       const url = routerUrl || path;
 
-      if (url.includes('/store/') || url.includes('/blockchain-explorer') || url.includes('/mobile-sign')) {
+      if (
+        url.includes('/store/') ||
+        url.includes('/blockchain-explorer') ||
+        url.includes('/mobile-sign')
+      ) {
         return 'h-screen bg-slate-900 overflow-y-auto';
       }
       return 'h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 font-sans antialiased overflow-y-auto';
@@ -67,8 +80,12 @@ export class App implements OnInit, OnDestroy {
     return 'flex flex-col lg:flex-row h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 font-sans antialiased overflow-hidden';
   }
 
-  public get successMessage() { return this.stateService.successMessage; }
-  public get errorMessage() { return this.stateService.errorMessage; }
+  public get successMessage() {
+    return this.stateService.successMessage;
+  }
+  public get errorMessage() {
+    return this.stateService.errorMessage;
+  }
 
   public get isWrongChain() {
     return this.web3Service.isWrongChain();

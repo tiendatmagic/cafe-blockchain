@@ -1394,7 +1394,9 @@
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
                   <button
-                    (click)="removeFromCart(item.product.id, item.variant?.id)"
+                    (click)="
+                      removeFromCart(item.product.id, $safeNavigationMigration(item.variant?.id))
+                    "
                     class="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-rose-50 hover:text-rose-500 flex items-center justify-center text-sm font-bold transition-all"
                   >
                     -
@@ -1404,7 +1406,9 @@
                     >{{ item.quantity }}</span
                   >
                   <button
-                    (click)="increaseQuantity(item.product.id, item.variant?.id)"
+                    (click)="
+                      increaseQuantity(item.product.id, $safeNavigationMigration(item.variant?.id))
+                    "
                     class="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-[var(--dynamic-primary)] hover:text-white flex items-center justify-center text-sm font-bold transition-all hover:scale-105 active:scale-95"
                   >
                     +
@@ -1418,7 +1422,13 @@
                   <input
                     type="text"
                     [ngModel]="item.note"
-                    (ngModelChange)="updateItemNote(item.product.id, item.variant?.id, $event)"
+                    (ngModelChange)="
+                      updateItemNote(
+                        item.product.id,
+                        $safeNavigationMigration(item.variant?.id),
+                        $event
+                      )
+                    "
                     placeholder="Nhập ghi chú cho món..."
                     class="w-full form-input-sm bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80"
                   />

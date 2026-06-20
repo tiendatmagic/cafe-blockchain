@@ -1,6 +1,14 @@
 import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prompt/web3-connect-prompt.component';
 import { AccessRestrictedComponent } from '@shared/components/access-restricted/access-restricted.component';
-import { Component, inject, signal, OnInit, effect, untracked } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  OnInit,
+  effect,
+  untracked,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
@@ -14,7 +22,11 @@ import { ModalComponent } from '@shared/components/modal/modal.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
-import { TableComponent, TableCellDirective, TableColumn } from '@shared/components/table/table.component';
+import {
+  TableComponent,
+  TableCellDirective,
+  TableColumn,
+} from '@shared/components/table/table.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { CustomCheckboxComponent } from '@shared/components/custom-checkbox/custom-checkbox.component';
 import { CardComponent } from '@shared/components/card/card.component';
@@ -43,9 +55,10 @@ import { POPULAR_CHAINS } from '@core/utils/blockchain.utils';
     ButtonComponent,
     CustomCheckboxComponent,
     CardComponent,
-    BadgeComponent
+    BadgeComponent,
   ],
-  templateUrl: './settings.component.html'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  templateUrl: './settings.component.html',
 })
 export class SettingsComponent implements OnInit {
   public readonly stateService = inject(StateService);
@@ -65,7 +78,7 @@ export class SettingsComponent implements OnInit {
         untracked(() => {
           this.configForm.set({
             ...settings,
-            relayer_private_key: ''
+            relayer_private_key: '',
           });
           this.syncSelectedCategories();
 
@@ -79,7 +92,9 @@ export class SettingsComponent implements OnInit {
   }
 
   // Tab nhỏ trong Cấu hình: 'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher' | 'store' | 'payment'
-  public readonly settingsSubTab = signal<'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher' | 'store' | 'payment'>('general');
+  public readonly settingsSubTab = signal<
+    'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher' | 'store' | 'payment'
+  >('general');
 
   public readonly settingsSubTabOptions: TabOption[] = [
     { value: 'general', label: 'Cấu hình Quán' },
@@ -124,13 +139,12 @@ export class SettingsComponent implements OnInit {
     shipping_fee_free_enabled: '0',
     shipping_fee_free_min_amount: 0,
     website_avatar_image: '',
-    has_relayer_private_key: false
+    has_relayer_private_key: false,
   });
 
   // Quản lý các danh mục cho Website Cửa hàng
   public readonly categoriesList = signal<any[]>([]);
   public readonly selectedCategories = signal<string[]>([]);
-
 
   // Trạng thái lưu cấu hình & deploy smart contracts
   public readonly isConfigSaving = signal<boolean>(false);
@@ -179,14 +193,23 @@ export class SettingsComponent implements OnInit {
   public readonly POPULAR_CHAINS = POPULAR_CHAINS;
 
   // Getters từ StateService
-  public get web3Service() { return this.stateService.web3Service; }
-  public get settings() { return this.stateService.settings; }
+  public get web3Service() {
+    return this.stateService.web3Service;
+  }
+  public get settings() {
+    return this.stateService.settings;
+  }
 
   public ngOnInit() {
     // Đồng bộ tab hiện tại với Query Parameter 'tab' trên URL
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.subscribe((params) => {
       const tab = params['tab'];
-      if (tab && ['general', 'blockchain', 'permissions', 'invoice', 'voucher', 'store', 'payment'].includes(tab)) {
+      if (
+        tab &&
+        ['general', 'blockchain', 'permissions', 'invoice', 'voucher', 'store', 'payment'].includes(
+          tab,
+        )
+      ) {
         this.settingsSubTab.set(tab as any);
         if (tab === 'permissions' && this.web3Service.walletConnected()) {
           this.loadOwnersList();
@@ -201,15 +224,16 @@ export class SettingsComponent implements OnInit {
     });
   }
 
-
-  public setSettingsSubTab(subTab: 'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher' | 'store' | 'payment') {
+  public setSettingsSubTab(
+    subTab: 'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher' | 'store' | 'payment',
+  ) {
     this.settingsSubTab.set(subTab);
 
     // Cập nhật query parameter tab trên URL
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { tab: subTab },
-      queryParamsHandling: 'merge'
+      queryParamsHandling: 'merge',
     });
 
     if (subTab === 'permissions' && this.web3Service.walletConnected()) {
@@ -225,7 +249,7 @@ export class SettingsComponent implements OnInit {
 
   // --- Hỗ trợ cấu hình Website Cửa hàng ---
   public loadStoreCategories() {
-    this.apiService.getCategories().subscribe(res => {
+    this.apiService.getCategories().subscribe((res) => {
       if (res) {
         this.categoriesList.set(res);
         this.syncSelectedCategories();
@@ -236,7 +260,7 @@ export class SettingsComponent implements OnInit {
   public syncSelectedCategories() {
     const csv = this.configForm().store_categories || '';
     if (csv === 'all') {
-      this.selectedCategories.set(this.categoriesList().map(c => c.id.toString()));
+      this.selectedCategories.set(this.categoriesList().map((c) => c.id.toString()));
     } else if (csv === '') {
       this.selectedCategories.set([]);
     } else {
@@ -270,7 +294,7 @@ export class SettingsComponent implements OnInit {
   }
 
   public selectAllCategories() {
-    const allIds = this.categoriesList().map(c => c.id.toString());
+    const allIds = this.categoriesList().map((c) => c.id.toString());
     this.selectedCategories.set(allIds);
     this.updateConfigForm('store_categories', 'all');
   }
@@ -292,18 +316,20 @@ export class SettingsComponent implements OnInit {
   public copyStoreLink() {
     const link = this.getFullStoreLink();
     if (!link) return;
-    navigator.clipboard.writeText(link).then(() => {
-      this.stateService.showToast('Đã sao chép liên kết Website Cửa hàng!', 'success');
-    }).catch(err => {
-      this.stateService.showToast('Lỗi sao chép liên kết!', 'error');
-    });
+    navigator.clipboard
+      .writeText(link)
+      .then(() => {
+        this.stateService.showToast('Đã sao chép liên kết Website Cửa hàng!', 'success');
+      })
+      .catch((err) => {
+        this.stateService.showToast('Lỗi sao chép liên kết!', 'error');
+      });
   }
 
-
   public updateConfigForm(field: string, value: any) {
-    this.configForm.update(form => ({
+    this.configForm.update((form) => ({
       ...form,
-      [field]: value
+      [field]: value,
     }));
   }
 
@@ -323,17 +349,20 @@ export class SettingsComponent implements OnInit {
         this.configForm.set({
           ...this.configForm(),
           ...res.data,
-          relayer_private_key: ''
+          relayer_private_key: '',
         });
         // Áp dụng màu sắc động
-        this.stateService.applyAndCacheDynamicColors(res.data.primary_color, res.data.secondary_color);
+        this.stateService.applyAndCacheDynamicColors(
+          res.data.primary_color,
+          res.data.secondary_color,
+        );
         this.web3Service.updateConfig(res.data);
         this.isConfigSaving.set(false);
       },
       error: () => {
         this.stateService.showToast('Lưu cấu hình thất bại!', 'error');
         this.isConfigSaving.set(false);
-      }
+      },
     });
   }
 
@@ -343,13 +372,16 @@ export class SettingsComponent implements OnInit {
       this.stateService.showToast('Vui lòng kết nối ví Web3 để thực hiện tác vụ này!', 'error');
       return;
     }
-    this.configForm.update(form => ({
+    this.configForm.update((form) => ({
       ...form,
       primary_color: '#7c3aed',
-      secondary_color: '#c084fc'
+      secondary_color: '#c084fc',
     }));
     this.stateService.applyDynamicColors('#7c3aed', '#c084fc');
-    this.stateService.showToast('Đã đặt màu về mặc định. Nhấn "LƯU CẤU HÌNH HỆ THỐNG" để ghi nhận!', 'success');
+    this.stateService.showToast(
+      'Đã đặt màu về mặc định. Nhấn "LƯU CẤU HÌNH HỆ THỐNG" để ghi nhận!',
+      'success',
+    );
   }
 
   // Tự động deploy Smart Contract bán hàng mới
@@ -362,20 +394,26 @@ export class SettingsComponent implements OnInit {
     this.web3Service.updateConfig({
       rpc_url: this.configForm().rpc_url,
       chain_id: this.configForm().chain_id,
-      explorer_url: this.configForm().explorer_url
+      explorer_url: this.configForm().explorer_url,
     });
 
     this.isDeploying.set(true);
-    this.stateService.showToast('Vui lòng xác nhận giao dịch Deploy Smart Contract trên ví của bạn...', 'success');
+    this.stateService.showToast(
+      'Vui lòng xác nhận giao dịch Deploy Smart Contract trên ví của bạn...',
+      'success',
+    );
 
     const res = await this.web3Service.deployContractOnChain(this.configForm().chain_id);
     if (res.success && res.contractAddress) {
-      this.configForm.update(form => ({
+      this.configForm.update((form) => ({
         ...form,
-        contract_address: res.contractAddress
+        contract_address: res.contractAddress,
       }));
       this.web3Service.updateConfig({ contract_address: res.contractAddress });
-      this.stateService.showToast(`Deploy thành công! Contract mới: ${res.contractAddress}. Nhấn LƯU CẤU HÌNH HỆ THỐNG để ghi nhận!`, 'success');
+      this.stateService.showToast(
+        `Deploy thành công! Contract mới: ${res.contractAddress}. Nhấn LƯU CẤU HÌNH HỆ THỐNG để ghi nhận!`,
+        'success',
+      );
       await this.loadOwnersList();
     } else {
       this.stateService.showToast(res.error || 'Deploy Smart Contract thất bại!', 'error');
@@ -393,22 +431,31 @@ export class SettingsComponent implements OnInit {
     this.web3Service.updateConfig({
       rpc_url: this.configForm().rpc_url,
       chain_id: this.configForm().chain_id,
-      explorer_url: this.configForm().explorer_url
+      explorer_url: this.configForm().explorer_url,
     });
 
     this.isDeployingFinance.set(true);
-    this.stateService.showToast('Vui lòng xác nhận giao dịch Deploy Smart Contract Tài chính trên ví của bạn...', 'success');
+    this.stateService.showToast(
+      'Vui lòng xác nhận giao dịch Deploy Smart Contract Tài chính trên ví của bạn...',
+      'success',
+    );
 
     const res = await this.web3Service.deployFinanceContractOnChain(this.configForm().chain_id);
     if (res.success && res.contractAddress) {
-      this.configForm.update(form => ({
+      this.configForm.update((form) => ({
         ...form,
-        finance_contract_address: res.contractAddress
+        finance_contract_address: res.contractAddress,
       }));
       this.web3Service.updateConfig({ finance_contract_address: res.contractAddress });
-      this.stateService.showToast(`Deploy Smart Contract Tài chính thành công! Địa chỉ mới: ${res.contractAddress}. Nhấn LƯU CẤU HÌNH HỆ THỐNG để ghi nhận!`, 'success');
+      this.stateService.showToast(
+        `Deploy Smart Contract Tài chính thành công! Địa chỉ mới: ${res.contractAddress}. Nhấn LƯU CẤU HÌNH HỆ THỐNG để ghi nhận!`,
+        'success',
+      );
     } else {
-      this.stateService.showToast(res.error || 'Deploy Smart Contract Tài chính thất bại!', 'error');
+      this.stateService.showToast(
+        res.error || 'Deploy Smart Contract Tài chính thất bại!',
+        'error',
+      );
     }
     this.isDeployingFinance.set(false);
   }
@@ -423,22 +470,31 @@ export class SettingsComponent implements OnInit {
     this.web3Service.updateConfig({
       rpc_url: this.configForm().rpc_url,
       chain_id: this.configForm().chain_id,
-      explorer_url: this.configForm().explorer_url
+      explorer_url: this.configForm().explorer_url,
     });
 
     this.isDeployingVoucher.set(true);
-    this.stateService.showToast('Vui lòng xác nhận giao dịch Deploy Smart Contract NFT Voucher trên ví của bạn...', 'success');
+    this.stateService.showToast(
+      'Vui lòng xác nhận giao dịch Deploy Smart Contract NFT Voucher trên ví của bạn...',
+      'success',
+    );
 
     const res = await this.web3Service.deployVoucherContractOnChain(this.configForm().chain_id);
     if (res.success && res.contractAddress) {
-      this.configForm.update(form => ({
+      this.configForm.update((form) => ({
         ...form,
-        voucher_contract_address: res.contractAddress
+        voucher_contract_address: res.contractAddress,
       }));
       this.web3Service.updateConfig({ voucher_contract_address: res.contractAddress });
-      this.stateService.showToast(`Deploy Smart Contract NFT Voucher thành công! Địa chỉ mới: ${res.contractAddress}. Nhấn LƯU CẤU HÌNH HỆ THỐNG để ghi nhận!`, 'success');
+      this.stateService.showToast(
+        `Deploy Smart Contract NFT Voucher thành công! Địa chỉ mới: ${res.contractAddress}. Nhấn LƯU CẤU HÌNH HỆ THỐNG để ghi nhận!`,
+        'success',
+      );
     } else {
-      this.stateService.showToast(res.error || 'Deploy Smart Contract NFT Voucher thất bại!', 'error');
+      this.stateService.showToast(
+        res.error || 'Deploy Smart Contract NFT Voucher thất bại!',
+        'error',
+      );
     }
     this.isDeployingVoucher.set(false);
   }
@@ -453,20 +509,28 @@ export class SettingsComponent implements OnInit {
     this.web3Service.updateConfig({
       rpc_url: this.configForm().rpc_url,
       chain_id: this.configForm().chain_id,
-      explorer_url: this.configForm().explorer_url
+      explorer_url: this.configForm().explorer_url,
     });
 
     this.isDeployingLoyaltyToken.set(true);
-    this.stateService.showToast('Vui lòng xác nhận giao dịch Deploy Smart Contract $CAFE Token trên ví của bạn...', 'success');
+    this.stateService.showToast(
+      'Vui lòng xác nhận giao dịch Deploy Smart Contract $CAFE Token trên ví của bạn...',
+      'success',
+    );
 
-    const res = await this.web3Service.deployLoyaltyTokenContractOnChain(this.configForm().chain_id);
+    const res = await this.web3Service.deployLoyaltyTokenContractOnChain(
+      this.configForm().chain_id,
+    );
     if (res.success && res.contractAddress) {
-      this.configForm.update(form => ({
+      this.configForm.update((form) => ({
         ...form,
-        loyalty_token_contract_address: res.contractAddress
+        loyalty_token_contract_address: res.contractAddress,
       }));
       this.web3Service.updateConfig({ loyalty_token_contract_address: res.contractAddress });
-      this.stateService.showToast(`Deploy $CAFE Token thành công! Địa chỉ mới: ${res.contractAddress}. Nhấn LƯU CẤU HÌNH HỆ THỐNG để ghi nhận!`, 'success');
+      this.stateService.showToast(
+        `Deploy $CAFE Token thành công! Địa chỉ mới: ${res.contractAddress}. Nhấn LƯU CẤU HÌNH HỆ THỐNG để ghi nhận!`,
+        'success',
+      );
     } else {
       this.stateService.showToast(res.error || 'Deploy $CAFE Token thất bại!', 'error');
     }
@@ -483,24 +547,30 @@ export class SettingsComponent implements OnInit {
     this.web3Service.updateConfig({
       rpc_url: this.configForm().rpc_url,
       chain_id: this.configForm().chain_id,
-      explorer_url: this.configForm().explorer_url
+      explorer_url: this.configForm().explorer_url,
     });
 
     this.isDeployingVoucherShop.set(true);
-    this.stateService.showToast('Vui lòng xác nhận giao dịch Deploy Smart Contract VoucherShop trên ví của bạn...', 'success');
+    this.stateService.showToast(
+      'Vui lòng xác nhận giao dịch Deploy Smart Contract VoucherShop trên ví của bạn...',
+      'success',
+    );
 
     const res = await this.web3Service.deployVoucherShopContractOnChain(
       this.configForm().chain_id,
       this.configForm().loyalty_token_contract_address,
-      this.configForm().voucher_contract_address
+      this.configForm().voucher_contract_address,
     );
     if (res.success && res.contractAddress) {
-      this.configForm.update(form => ({
+      this.configForm.update((form) => ({
         ...form,
-        voucher_shop_contract_address: res.contractAddress
+        voucher_shop_contract_address: res.contractAddress,
       }));
       this.web3Service.updateConfig({ voucher_shop_contract_address: res.contractAddress });
-      this.stateService.showToast(`Deploy VoucherShop thành công! Địa chỉ mới: ${res.contractAddress}. Nhấn LƯU CẤU HÌNH HỆ THỐNG để ghi nhận!`, 'success');
+      this.stateService.showToast(
+        `Deploy VoucherShop thành công! Địa chỉ mới: ${res.contractAddress}. Nhấn LƯU CẤU HÌNH HỆ THỐNG để ghi nhận!`,
+        'success',
+      );
     } else {
       this.stateService.showToast(res.error || 'Deploy VoucherShop thất bại!', 'error');
     }
@@ -517,25 +587,31 @@ export class SettingsComponent implements OnInit {
     this.web3Service.updateConfig({
       rpc_url: this.configForm().rpc_url,
       chain_id: this.configForm().chain_id,
-      explorer_url: this.configForm().explorer_url
+      explorer_url: this.configForm().explorer_url,
     });
 
     this.isDeployingVoucherMarketplace.set(true);
-    this.stateService.showToast('Vui lòng xác nhận giao dịch Deploy Smart Contract VoucherMarketplace trên ví của bạn...', 'success');
+    this.stateService.showToast(
+      'Vui lòng xác nhận giao dịch Deploy Smart Contract VoucherMarketplace trên ví của bạn...',
+      'success',
+    );
 
     const res = await this.web3Service.deployVoucherMarketplaceContractOnChain(
       this.configForm().chain_id,
       this.configForm().loyalty_token_contract_address,
       this.configForm().voucher_contract_address,
-      this.web3Service.currentAccount()
+      this.web3Service.currentAccount(),
     );
     if (res.success && res.contractAddress) {
-      this.configForm.update(form => ({
+      this.configForm.update((form) => ({
         ...form,
-        voucher_marketplace_contract_address: res.contractAddress
+        voucher_marketplace_contract_address: res.contractAddress,
       }));
       this.web3Service.updateConfig({ voucher_marketplace_contract_address: res.contractAddress });
-      this.stateService.showToast(`Deploy VoucherMarketplace thành công! Địa chỉ mới: ${res.contractAddress}. Nhấn LƯU CẤU HÌNH HỆ THỐNG để ghi nhận!`, 'success');
+      this.stateService.showToast(
+        `Deploy VoucherMarketplace thành công! Địa chỉ mới: ${res.contractAddress}. Nhấn LƯU CẤU HÌNH HỆ THỐNG để ghi nhận!`,
+        'success',
+      );
     } else {
       this.stateService.showToast(res.error || 'Deploy VoucherMarketplace thất bại!', 'error');
     }
@@ -552,22 +628,33 @@ export class SettingsComponent implements OnInit {
     this.web3Service.updateConfig({
       rpc_url: this.configForm().rpc_url,
       chain_id: this.configForm().chain_id,
-      explorer_url: this.configForm().explorer_url
+      explorer_url: this.configForm().explorer_url,
     });
 
     this.isDeployingMenuRegistry.set(true);
-    this.stateService.showToast('Vui lòng xác nhận giao dịch Deploy Smart Contract Menu Registry trên ví của bạn...', 'success');
+    this.stateService.showToast(
+      'Vui lòng xác nhận giao dịch Deploy Smart Contract Menu Registry trên ví của bạn...',
+      'success',
+    );
 
-    const res = await this.web3Service.deployMenuRegistryContractOnChain(this.configForm().chain_id);
+    const res = await this.web3Service.deployMenuRegistryContractOnChain(
+      this.configForm().chain_id,
+    );
     if (res.success && res.contractAddress) {
-      this.configForm.update(form => ({
+      this.configForm.update((form) => ({
         ...form,
-        menu_registry_contract_address: res.contractAddress
+        menu_registry_contract_address: res.contractAddress,
       }));
       this.web3Service.updateConfig({ menu_registry_contract_address: res.contractAddress });
-      this.stateService.showToast(`Deploy Smart Contract Menu Registry thành công! Địa chỉ mới: ${res.contractAddress}. Nhấn LƯU CẤU HÌNH HỆ THỐNG để ghi nhận!`, 'success');
+      this.stateService.showToast(
+        `Deploy Smart Contract Menu Registry thành công! Địa chỉ mới: ${res.contractAddress}. Nhấn LƯU CẤU HÌNH HỆ THỐNG để ghi nhận!`,
+        'success',
+      );
     } else {
-      this.stateService.showToast(res.error || 'Deploy Smart Contract Menu Registry thất bại!', 'error');
+      this.stateService.showToast(
+        res.error || 'Deploy Smart Contract Menu Registry thất bại!',
+        'error',
+      );
     }
     this.isDeployingMenuRegistry.set(false);
   }
@@ -599,22 +686,31 @@ export class SettingsComponent implements OnInit {
     }
     const address = this.newOwnerAddress().trim();
     if (!address.startsWith('0x') || address.length !== 42) {
-      this.stateService.showToast('Địa chỉ ví EVM không hợp lệ (phải bắt đầu bằng 0x và dài 42 ký tự)!', 'error');
+      this.stateService.showToast(
+        'Địa chỉ ví EVM không hợp lệ (phải bắt đầu bằng 0x và dài 42 ký tự)!',
+        'error',
+      );
       return;
     }
 
     this.isOwnerActionLoading.set(true);
-    this.stateService.showToast('Vui lòng xác nhận giao dịch thêm Owner trên ví của bạn...', 'success');
+    this.stateService.showToast(
+      'Vui lòng xác nhận giao dịch thêm Owner trên ví của bạn...',
+      'success',
+    );
 
     const res = await this.web3Service.addOwnersOnChain([address]);
     if (res.success && res.txHash) {
-      this.stateService.showToast(`Giao dịch thêm Owner thành công! TxHash: ${res.txHash}`, 'success');
+      this.stateService.showToast(
+        `Giao dịch thêm Owner thành công! TxHash: ${res.txHash}`,
+        'success',
+      );
       this.newOwnerAddress.set('');
 
       // Đồng bộ đăng ký ví thu ngân vào Laravel Backend
       this.apiService.registerCashier(address).subscribe({
-        next: () => { },
-        error: (err) => console.error('Lỗi đồng bộ đăng ký thu ngân:', err)
+        next: () => {},
+        error: (err) => console.error('Lỗi đồng bộ đăng ký thu ngân:', err),
       });
 
       await this.loadOwnersList();
@@ -650,22 +746,31 @@ export class SettingsComponent implements OnInit {
     }
     const address = this.newFinanceOwnerAddress().trim();
     if (!address.startsWith('0x') || address.length !== 42) {
-      this.stateService.showToast('Địa chỉ ví EVM không hợp lệ (phải bắt đầu bằng 0x và dài 42 ký tự)!', 'error');
+      this.stateService.showToast(
+        'Địa chỉ ví EVM không hợp lệ (phải bắt đầu bằng 0x và dài 42 ký tự)!',
+        'error',
+      );
       return;
     }
 
     this.isFinanceOwnerActionLoading.set(true);
-    this.stateService.showToast('Vui lòng xác nhận giao dịch thêm ví Kế toán trên ví của bạn...', 'success');
+    this.stateService.showToast(
+      'Vui lòng xác nhận giao dịch thêm ví Kế toán trên ví của bạn...',
+      'success',
+    );
 
     const res = await this.web3Service.addFinanceOwnersOnChain([address]);
     if (res.success && res.txHash) {
-      this.stateService.showToast(`Giao dịch thêm ví Kế toán thành công! TxHash: ${res.txHash}`, 'success');
+      this.stateService.showToast(
+        `Giao dịch thêm ví Kế toán thành công! TxHash: ${res.txHash}`,
+        'success',
+      );
       this.newFinanceOwnerAddress.set('');
 
       // Đồng bộ đăng ký ví kế toán vào Laravel Backend
       this.apiService.registerCashier(address).subscribe({
-        next: () => { },
-        error: (err) => console.error('Lỗi đồng bộ đăng ký kế toán:', err)
+        next: () => {},
+        error: (err) => console.error('Lỗi đồng bộ đăng ký kế toán:', err),
       });
 
       await this.loadFinanceOwnersList();
@@ -696,18 +801,24 @@ export class SettingsComponent implements OnInit {
     if (!address) return;
 
     this.isFinanceOwnerActionLoading.set(true);
-    this.stateService.showToast('Vui lòng xác nhận giao dịch xóa ví Kế toán trên ví của bạn...', 'success');
+    this.stateService.showToast(
+      'Vui lòng xác nhận giao dịch xóa ví Kế toán trên ví của bạn...',
+      'success',
+    );
 
     const res = await this.web3Service.removeFinanceOwnersOnChain([address]);
     if (res.success && res.txHash) {
-      this.stateService.showToast(`Giao dịch xóa ví Kế toán thành công! TxHash: ${res.txHash}`, 'success');
+      this.stateService.showToast(
+        `Giao dịch xóa ví Kế toán thành công! TxHash: ${res.txHash}`,
+        'success',
+      );
       this.isDeleteFinanceOwnerConfirmOpen.set(false);
       this.deletingFinanceOwnerAddress.set('');
 
       // Đồng bộ gỡ ví kế toán khỏi Laravel Backend
       this.apiService.removeCashier(address).subscribe({
-        next: () => { },
-        error: (err) => console.error('Lỗi đồng bộ gỡ kế toán khỏi DB:', err)
+        next: () => {},
+        error: (err) => console.error('Lỗi đồng bộ gỡ kế toán khỏi DB:', err),
       });
 
       await this.loadFinanceOwnersList();
@@ -738,18 +849,24 @@ export class SettingsComponent implements OnInit {
     if (!address) return;
 
     this.isOwnerActionLoading.set(true);
-    this.stateService.showToast('Vui lòng xác nhận giao dịch xóa Owner trên ví của bạn...', 'success');
+    this.stateService.showToast(
+      'Vui lòng xác nhận giao dịch xóa Owner trên ví của bạn...',
+      'success',
+    );
 
     const res = await this.web3Service.removeOwnersOnChain([address]);
     if (res.success && res.txHash) {
-      this.stateService.showToast(`Giao dịch xóa Owner thành công! TxHash: ${res.txHash}`, 'success');
+      this.stateService.showToast(
+        `Giao dịch xóa Owner thành công! TxHash: ${res.txHash}`,
+        'success',
+      );
       this.isDeleteOwnerConfirmOpen.set(false);
       this.deletingOwnerAddress.set('');
 
       // Đồng bộ gỡ bỏ ví thu ngân khỏi Laravel Backend
       this.apiService.removeCashier(address).subscribe({
-        next: () => { },
-        error: (err) => console.error('Lỗi đồng bộ gỡ thu ngân khỏi DB:', err)
+        next: () => {},
+        error: (err) => console.error('Lỗi đồng bộ gỡ thu ngân khỏi DB:', err),
       });
 
       await this.loadOwnersList();
@@ -762,16 +879,21 @@ export class SettingsComponent implements OnInit {
   // Toggle đóng mở dropdown chọn mạng
   public toggleChainDropdown() {
     if (!this.web3Service.walletConnected() || !this.web3Service.isOwnerContract()) return;
-    this.isChainDropdownOpen.update(val => !val);
+    this.isChainDropdownOpen.update((val) => !val);
   }
 
   // Chọn nhanh mạng lưới EVM
-  public selectPopularChainDirect(chain: { name: string, chainId: string, rpcUrl: string, explorerUrl: string }) {
-    this.configForm.update(form => ({
+  public selectPopularChainDirect(chain: {
+    name: string;
+    chainId: string;
+    rpcUrl: string;
+    explorerUrl: string;
+  }) {
+    this.configForm.update((form) => ({
       ...form,
       rpc_url: chain.rpcUrl,
       chain_id: chain.chainId,
-      explorer_url: chain.explorerUrl
+      explorer_url: chain.explorerUrl,
     }));
     this.selectedChainName.set(`${chain.name} (ID: ${chain.chainId})`);
     this.stateService.showToast(`Đã tự động điền cấu hình mạng: ${chain.name}!`, 'success');
@@ -781,7 +903,7 @@ export class SettingsComponent implements OnInit {
   // Khi chọn mạng EVM từ Custom Select
   public onChainChange(chainId: string) {
     if (!chainId) return;
-    const chain = this.POPULAR_CHAINS.find(c => c.chainId === chainId);
+    const chain = this.POPULAR_CHAINS.find((c) => c.chainId === chainId);
     if (chain) {
       this.selectPopularChainDirect(chain);
     }
@@ -813,22 +935,31 @@ export class SettingsComponent implements OnInit {
     }
     const address = this.newMenuOwnerAddress().trim();
     if (!address.startsWith('0x') || address.length !== 42) {
-      this.stateService.showToast('Địa chỉ ví EVM không hợp lệ (phải bắt đầu bằng 0x và dài 42 ký tự)!', 'error');
+      this.stateService.showToast(
+        'Địa chỉ ví EVM không hợp lệ (phải bắt đầu bằng 0x và dài 42 ký tự)!',
+        'error',
+      );
       return;
     }
 
     this.isMenuOwnerActionLoading.set(true);
-    this.stateService.showToast('Vui lòng xác nhận giao dịch thêm ví Quản trị Thực đơn trên ví của bạn...', 'success');
+    this.stateService.showToast(
+      'Vui lòng xác nhận giao dịch thêm ví Quản trị Thực đơn trên ví của bạn...',
+      'success',
+    );
 
     const res = await this.web3Service.addMenuRegistryOwnersOnChain([address]);
     if (res.success && res.txHash) {
-      this.stateService.showToast(`Giao dịch thêm ví Quản trị Thực đơn thành công! TxHash: ${res.txHash}`, 'success');
+      this.stateService.showToast(
+        `Giao dịch thêm ví Quản trị Thực đơn thành công! TxHash: ${res.txHash}`,
+        'success',
+      );
       this.newMenuOwnerAddress.set('');
 
       // Đồng bộ đăng ký ví vào Laravel Backend
       this.apiService.registerCashier(address).subscribe({
-        next: () => { },
-        error: (err) => console.error('Lỗi đồng bộ đăng ký quản trị thực đơn:', err)
+        next: () => {},
+        error: (err) => console.error('Lỗi đồng bộ đăng ký quản trị thực đơn:', err),
       });
 
       await this.loadMenuOwnersList();
@@ -859,18 +990,24 @@ export class SettingsComponent implements OnInit {
     if (!address) return;
 
     this.isMenuOwnerActionLoading.set(true);
-    this.stateService.showToast('Vui lòng xác nhận giao dịch xóa ví Quản trị Thực đơn trên ví của bạn...', 'success');
+    this.stateService.showToast(
+      'Vui lòng xác nhận giao dịch xóa ví Quản trị Thực đơn trên ví của bạn...',
+      'success',
+    );
 
     const res = await this.web3Service.removeMenuRegistryOwnersOnChain([address]);
     if (res.success && res.txHash) {
-      this.stateService.showToast(`Giao dịch xóa ví Quản trị Thực đơn thành công! TxHash: ${res.txHash}`, 'success');
+      this.stateService.showToast(
+        `Giao dịch xóa ví Quản trị Thực đơn thành công! TxHash: ${res.txHash}`,
+        'success',
+      );
       this.isDeleteMenuOwnerConfirmOpen.set(false);
       this.deletingMenuOwnerAddress.set('');
 
       // Đồng bộ gỡ ví khỏi Laravel Backend
       this.apiService.removeCashier(address).subscribe({
-        next: () => { },
-        error: (err) => console.error('Lỗi đồng bộ gỡ quản trị thực đơn khỏi DB:', err)
+        next: () => {},
+        error: (err) => console.error('Lỗi đồng bộ gỡ quản trị thực đơn khỏi DB:', err),
       });
 
       await this.loadMenuOwnersList();
@@ -906,22 +1043,31 @@ export class SettingsComponent implements OnInit {
     }
     const address = this.newVoucherOwnerAddress().trim();
     if (!address.startsWith('0x') || address.length !== 42) {
-      this.stateService.showToast('Địa chỉ ví EVM không hợp lệ (phải bắt đầu bằng 0x và dài 42 ký tự)!', 'error');
+      this.stateService.showToast(
+        'Địa chỉ ví EVM không hợp lệ (phải bắt đầu bằng 0x và dài 42 ký tự)!',
+        'error',
+      );
       return;
     }
 
     this.isVoucherOwnerActionLoading.set(true);
-    this.stateService.showToast('Vui lòng xác nhận giao dịch thêm ví Quản trị Voucher trên ví của bạn...', 'success');
+    this.stateService.showToast(
+      'Vui lòng xác nhận giao dịch thêm ví Quản trị Voucher trên ví của bạn...',
+      'success',
+    );
 
     const res = await this.web3Service.addVoucherOwnersOnChain([address]);
     if (res.success && res.txHash) {
-      this.stateService.showToast(`Giao dịch thêm ví Quản trị Voucher thành công! TxHash: ${res.txHash}`, 'success');
+      this.stateService.showToast(
+        `Giao dịch thêm ví Quản trị Voucher thành công! TxHash: ${res.txHash}`,
+        'success',
+      );
       this.newVoucherOwnerAddress.set('');
 
       // Đồng bộ đăng ký ví vào Laravel Backend
       this.apiService.registerCashier(address).subscribe({
-        next: () => { },
-        error: (err) => console.error('Lỗi đồng bộ đăng ký quản trị voucher:', err)
+        next: () => {},
+        error: (err) => console.error('Lỗi đồng bộ đăng ký quản trị voucher:', err),
       });
 
       await this.loadVoucherOwnersList();
@@ -952,18 +1098,24 @@ export class SettingsComponent implements OnInit {
     if (!address) return;
 
     this.isVoucherOwnerActionLoading.set(true);
-    this.stateService.showToast('Vui lòng xác nhận giao dịch xóa ví Quản trị Voucher trên ví của bạn...', 'success');
+    this.stateService.showToast(
+      'Vui lòng xác nhận giao dịch xóa ví Quản trị Voucher trên ví của bạn...',
+      'success',
+    );
 
     const res = await this.web3Service.removeVoucherOwnersOnChain([address]);
     if (res.success && res.txHash) {
-      this.stateService.showToast(`Giao dịch xóa ví Quản trị Voucher thành công! TxHash: ${res.txHash}`, 'success');
+      this.stateService.showToast(
+        `Giao dịch xóa ví Quản trị Voucher thành công! TxHash: ${res.txHash}`,
+        'success',
+      );
       this.isDeleteVoucherOwnerConfirmOpen.set(false);
       this.deletingVoucherOwnerAddress.set('');
 
       // Đồng bộ gỡ ví khỏi Laravel Backend
       this.apiService.removeCashier(address).subscribe({
-        next: () => { },
-        error: (err) => console.error('Lỗi đồng bộ gỡ quản trị voucher khỏi DB:', err)
+        next: () => {},
+        error: (err) => console.error('Lỗi đồng bộ gỡ quản trị voucher khỏi DB:', err),
       });
 
       await this.loadVoucherOwnersList();
@@ -975,16 +1127,46 @@ export class SettingsComponent implements OnInit {
 
   // --- Hỗ trợ cấu hình Phương thức thanh toán ---
   public readonly paymentColumns: TableColumn[] = [
-    { key: 'type', header: 'Loại', sortable: false, class: 'font-semibold text-slate-700 dark:text-slate-300' },
-    { key: 'name', header: 'Tên Ngân hàng / Ví', sortable: false, class: 'font-extrabold text-slate-800 dark:text-white' },
-    { key: 'account_number', header: 'Số tài khoản / Số điện thoại', sortable: false, class: 'font-mono font-bold text-slate-700 dark:text-slate-300' },
-    { key: 'account_holder', header: 'Chủ tài khoản', sortable: false, class: 'font-bold uppercase text-slate-700 dark:text-slate-300' },
+    {
+      key: 'type',
+      header: 'Loại',
+      sortable: false,
+      class: 'font-semibold text-slate-700 dark:text-slate-300',
+    },
+    {
+      key: 'name',
+      header: 'Tên Ngân hàng / Ví',
+      sortable: false,
+      class: 'font-extrabold text-slate-800 dark:text-white',
+    },
+    {
+      key: 'account_number',
+      header: 'Số tài khoản / Số điện thoại',
+      sortable: false,
+      class: 'font-mono font-bold text-slate-700 dark:text-slate-300',
+    },
+    {
+      key: 'account_holder',
+      header: 'Chủ tài khoản',
+      sortable: false,
+      class: 'font-bold uppercase text-slate-700 dark:text-slate-300',
+    },
     { key: 'is_active', header: 'Trạng thái', sortable: false },
-    { key: 'actions', header: 'Thao tác', sortable: false, class: 'text-right', headerClass: 'text-right' }
+    {
+      key: 'actions',
+      header: 'Thao tác',
+      sortable: false,
+      class: 'text-right',
+      headerClass: 'text-right',
+    },
   ];
 
-  public get paymentMethodsList() { return this.stateService.paymentMethodsList; }
-  public get paymentMethodsTotal() { return this.stateService.paymentMethodsTotal; }
+  public get paymentMethodsList() {
+    return this.stateService.paymentMethodsList;
+  }
+  public get paymentMethodsTotal() {
+    return this.stateService.paymentMethodsTotal;
+  }
   public readonly paymentMethodsPage = signal<number>(1);
   public readonly paymentMethodsPerPage = signal<number>(10);
   public readonly paymentMethodsSearch = signal<string>('');
@@ -999,7 +1181,7 @@ export class SettingsComponent implements OnInit {
     account_number: '',
     account_holder: '',
     bank_code: '',
-    is_active: true
+    is_active: true,
   });
 
   public readonly POPULAR_BANKS = [
@@ -1013,13 +1195,13 @@ export class SettingsComponent implements OnInit {
     { code: 'TPB', name: 'TPBank' },
     { code: 'STB', name: 'Sacombank' },
     { code: 'SHB', name: 'SHB' },
-    { code: 'VBA', name: 'Agribank' }
+    { code: 'VBA', name: 'Agribank' },
   ];
 
   public readonly POPULAR_WALLETS = [
     { name: 'Momo' },
     { name: 'ZaloPay' },
-    { name: 'Viettel Money' }
+    { name: 'Viettel Money' },
   ];
 
   public readonly isQrModalOpen = signal<boolean>(false);
@@ -1031,29 +1213,35 @@ export class SettingsComponent implements OnInit {
   public loadPaymentMethods(force = false) {
     const now = Date.now();
     // Cache 5 phút: dữ liệu và timestamp nằm ở StateService nên tồn tại xuyên vòng đời component
-    if (!force && this.stateService.paymentMethodsList().length > 0 && (now - this.stateService.lastPaymentMethodsLoadTimestamp < 300000)) {
+    if (
+      !force &&
+      this.stateService.paymentMethodsList().length > 0 &&
+      now - this.stateService.lastPaymentMethodsLoadTimestamp < 300000
+    ) {
       return;
     }
 
     this.isPaymentMethodsLoading.set(true);
-    this.apiService.getPaymentMethods({
-      page: this.paymentMethodsPage(),
-      per_page: this.paymentMethodsPerPage(),
-      search: this.paymentMethodsSearch()
-    }).subscribe({
-      next: (res) => {
-        if (res) {
-          this.stateService.paymentMethodsList.set(res.data || []);
-          this.stateService.paymentMethodsTotal.set(res.total || 0);
-          this.stateService.lastPaymentMethodsLoadTimestamp = now;
-        }
-        this.isPaymentMethodsLoading.set(false);
-      },
-      error: () => {
-        this.stateService.showToast('Không thể tải danh sách phương thức thanh toán!', 'error');
-        this.isPaymentMethodsLoading.set(false);
-      }
-    });
+    this.apiService
+      .getPaymentMethods({
+        page: this.paymentMethodsPage(),
+        per_page: this.paymentMethodsPerPage(),
+        search: this.paymentMethodsSearch(),
+      })
+      .subscribe({
+        next: (res) => {
+          if (res) {
+            this.stateService.paymentMethodsList.set(res.data || []);
+            this.stateService.paymentMethodsTotal.set(res.total || 0);
+            this.stateService.lastPaymentMethodsLoadTimestamp = now;
+          }
+          this.isPaymentMethodsLoading.set(false);
+        },
+        error: () => {
+          this.stateService.showToast('Không thể tải danh sách phương thức thanh toán!', 'error');
+          this.isPaymentMethodsLoading.set(false);
+        },
+      });
   }
 
   public onPaymentSearchChange() {
@@ -1094,7 +1282,7 @@ export class SettingsComponent implements OnInit {
       account_number: '',
       account_holder: '',
       bank_code: '',
-      is_active: true
+      is_active: true,
     });
     this.isEditingPaymentMethod.set(false);
     this.editingPaymentMethodId.set(null);
@@ -1108,50 +1296,50 @@ export class SettingsComponent implements OnInit {
       account_number: item.account_number,
       account_holder: item.account_holder,
       bank_code: item.bank_code || '',
-      is_active: item.is_active
+      is_active: item.is_active,
     });
     this.isEditingPaymentMethod.set(true);
     this.editingPaymentMethodId.set(item.id);
     this.isPaymentFormOpen.set(true);
   }
 
-  public selectPopularBank(bank: { code: string, name: string }) {
-    this.paymentForm.update(form => ({
+  public selectPopularBank(bank: { code: string; name: string }) {
+    this.paymentForm.update((form) => ({
       ...form,
       name: bank.name,
-      bank_code: bank.code
+      bank_code: bank.code,
     }));
   }
 
   public onBankSelectChange(bankCode: string) {
-    const bank = this.POPULAR_BANKS.find(b => b.code === bankCode);
+    const bank = this.POPULAR_BANKS.find((b) => b.code === bankCode);
     if (bank) {
-      this.paymentForm.update(form => ({
+      this.paymentForm.update((form) => ({
         ...form,
         name: bank.name,
-        bank_code: bank.code
+        bank_code: bank.code,
       }));
     } else {
-      this.paymentForm.update(form => ({
+      this.paymentForm.update((form) => ({
         ...form,
-        bank_code: bankCode
+        bank_code: bankCode,
       }));
     }
   }
 
   public selectPopularWallet(wallet: { name: string }) {
-    this.paymentForm.update(form => ({
+    this.paymentForm.update((form) => ({
       ...form,
       name: wallet.name,
-      bank_code: ''
+      bank_code: '',
     }));
   }
 
   public onWalletSelectChange(walletName: string) {
-    this.paymentForm.update(form => ({
+    this.paymentForm.update((form) => ({
       ...form,
       name: walletName,
-      bank_code: ''
+      bank_code: '',
     }));
   }
 
@@ -1180,7 +1368,7 @@ export class SettingsComponent implements OnInit {
           this.isEditingPaymentMethod()
             ? 'Cập nhật phương thức thanh toán thành công!'
             : 'Thêm phương thức thanh toán thành công!',
-          'success'
+          'success',
         );
         this.isPaymentFormOpen.set(false);
         this.isPaymentActionLoading.set(false);
@@ -1189,7 +1377,7 @@ export class SettingsComponent implements OnInit {
       error: (err) => {
         this.stateService.showToast(err.error?.message || 'Có lỗi xảy ra khi lưu!', 'error');
         this.isPaymentActionLoading.set(false);
-      }
+      },
     });
   }
 
@@ -1216,7 +1404,7 @@ export class SettingsComponent implements OnInit {
       error: () => {
         this.stateService.showToast('Xóa phương thức thanh toán thất bại!', 'error');
         this.isPaymentActionLoading.set(false);
-      }
+      },
     });
   }
 
@@ -1231,8 +1419,8 @@ export class SettingsComponent implements OnInit {
     const filename = `qrcode-${item.bank_code || item.name}-${item.account_number}.jpg`;
 
     fetch(url)
-      .then(response => response.blob())
-      .then(blob => {
+      .then((response) => response.blob())
+      .then((blob) => {
         const blobUrl = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = blobUrl;

@@ -1,5 +1,13 @@
 import { AccessRestrictedComponent } from '@shared/components/access-restricted/access-restricted.component';
-import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  computed,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -37,9 +45,10 @@ import { CardComponent } from '@shared/components/card/card.component';
     TabGroupComponent,
     SkeletonLoaderComponent,
     ButtonComponent,
-    CardComponent
+    CardComponent,
   ],
-  templateUrl: './pos.component.html'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  templateUrl: './pos.component.html',
 })
 export class PosComponent implements OnInit, OnDestroy {
   public readonly stateService = inject(StateService);
@@ -70,13 +79,15 @@ export class PosComponent implements OnInit, OnDestroy {
   public readonly posCheckoutMode = signal<'quick' | 'confirm'>('quick');
   public readonly posCheckoutModeOptions: TabOption[] = [
     { value: 'quick', label: 'Nhanh', icon: 'bolt' },
-    { value: 'confirm', label: 'Xác nhận', icon: 'check-circle' }
+    { value: 'confirm', label: 'Xác nhận', icon: 'check-circle' },
   ];
   public readonly isTableDropdownOpen = signal<boolean>(false);
   public readonly isPosConfirmModalOpen = signal<boolean>(false);
   public readonly customerCashGiven = signal<number>(0);
   public readonly isDebtPayment = signal<boolean>(false);
-  public readonly posPaymentMethod = signal<'cash' | 'bank_transfer' | 'crypto' | 'e_wallet' | 'debt'>('cash');
+  public readonly posPaymentMethod = signal<
+    'cash' | 'bank_transfer' | 'crypto' | 'e_wallet' | 'debt'
+  >('cash');
 
   // Trạng thái chọn kích thước/biến thể
   public readonly activeSelectingProduct = signal<any>(null);
@@ -90,7 +101,7 @@ export class PosComponent implements OnInit, OnDestroy {
   public readonly isCustomerDropdownOpen = signal<boolean>(false);
   public readonly posSearchedCustomers = signal<any[]>([]);
   public readonly isCustomerSearching = signal<boolean>(false);
-  
+
   // Trạng thái Voucher tại POS
   public readonly posActiveVouchers = signal<any[]>([]);
   public readonly posSelectedVoucher = signal<any | null>(null);
@@ -151,12 +162,11 @@ export class PosComponent implements OnInit, OnDestroy {
   }
 
   public ngOnInit() {
-    this.customerSearchSubscription = this.customerSearchSubject.pipe(
-      debounceTime(300),
-      distinctUntilChanged()
-    ).subscribe(query => {
-      this.performCustomerSearch(query);
-    });
+    this.customerSearchSubscription = this.customerSearchSubject
+      .pipe(debounceTime(300), distinctUntilChanged())
+      .subscribe((query) => {
+        this.performCustomerSearch(query);
+      });
   }
 
   public ngOnDestroy() {
@@ -188,87 +198,138 @@ export class PosComponent implements OnInit, OnDestroy {
       this.isCustomerSearching.set(false);
       return;
     }
-    
+
     const cleanQuery = query.trim();
-    
+
     // Kiểm tra nếu chuỗi bắt đầu bằng "0x" (dạng ví EVM) nhưng chưa đủ 42 ký tự
     // thì KHÔNG gọi API search, chờ người dùng nhập đủ
     const looksLikeEvmWallet = /^0x[a-fA-F0-9]*$/i.test(cleanQuery);
     if (looksLikeEvmWallet && cleanQuery.length < 42) {
-      this.posSearchedCustomers.set([{
-        id: -98,
-        name: `Đang nhập ví EVM... (${cleanQuery.length}/42 ký tự)`,
-        customer_code: 'CHỜ',
-        is_pending_wallet: true
-      }]);
+      this.posSearchedCustomers.set([
+        {
+          id: -98,
+          name: `Đang nhập ví EVM... (${cleanQuery.length}/42 ký tự)`,
+          customer_code: 'CHỜ',
+          is_pending_wallet: true,
+        },
+      ]);
       this.isCustomerSearching.set(false);
       return;
     }
-    
+
     const isEvmWallet = /^0x[a-fA-F0-9]{40}$/.test(cleanQuery);
-    
+
     this.apiService.getCustomers(cleanQuery, 15).subscribe({
       next: (res) => {
         const results = res || [];
-        
+
         if (isEvmWallet) {
-          const hasWallet = results.some(c => c.wallet_address && c.wallet_address.toLowerCase() === cleanQuery.toLowerCase());
+          const hasWallet = results.some(
+            (c) => c.wallet_address && c.wallet_address.toLowerCase() === cleanQuery.toLowerCase(),
+          );
           if (!hasWallet) {
             const autoCreateOption = {
               id: -99,
               name: `Khách ví Web3 (${cleanQuery.substring(0, 6)}...${cleanQuery.substring(38)})`,
               wallet_address: cleanQuery,
               customer_code: 'TẠO MỚI',
-              is_auto_create: true
+              is_auto_create: true,
             };
             this.posSearchedCustomers.set([autoCreateOption, ...results]);
             this.isCustomerSearching.set(false);
             return;
           }
         }
-        
+
         this.posSearchedCustomers.set(results);
         this.isCustomerSearching.set(false);
       },
       error: (err) => {
         console.error('Lỗi tìm kiếm khách hàng động:', err);
         this.isCustomerSearching.set(false);
-      }
+      },
     });
   }
 
-
   // Getters từ StateService để sử dụng trực tiếp trong template HTML
-  public get cart() { return this.stateService.cart; }
-  public get cartTotal() { return this.stateService.cartTotal; }
-  public get tableNumber() { return this.stateService.tableNumber; }
-  public get paymentMethod() { return this.stateService.paymentMethod; }
-  public get posSelectedCustomer() { return this.stateService.posSelectedCustomer; }
-  public get posCategoryFilter() { return this.stateService.posCategoryFilter; }
-  public get posSearchQuery() { return this.stateService.posSearchQuery; }
-  
-  public get posItemsPerPage() { return this.stateService.posItemsPerPage; }
-  public get posCurrentPage() { return this.stateService.posCurrentPage; }
-  public get posProductsList() { return this.stateService.posProductsList; }
-  public get paginatedPosProducts() { return this.stateService.paginatedPosProducts; }
-  public get posTotalPages() { return this.stateService.posTotalPages; }
-  public get posTotalItems() { return this.stateService.posTotalItems; }
+  public get cart() {
+    return this.stateService.cart;
+  }
+  public get cartTotal() {
+    return this.stateService.cartTotal;
+  }
+  public get tableNumber() {
+    return this.stateService.tableNumber;
+  }
+  public get paymentMethod() {
+    return this.stateService.paymentMethod;
+  }
+  public get posSelectedCustomer() {
+    return this.stateService.posSelectedCustomer;
+  }
+  public get posCategoryFilter() {
+    return this.stateService.posCategoryFilter;
+  }
+  public get posSearchQuery() {
+    return this.stateService.posSearchQuery;
+  }
 
-  public get editingOrderId() { return this.stateService.editingOrderId; }
-  public get isOrderSubmitting() { return this.stateService.isOrderSubmitting; }
+  public get posItemsPerPage() {
+    return this.stateService.posItemsPerPage;
+  }
+  public get posCurrentPage() {
+    return this.stateService.posCurrentPage;
+  }
+  public get posProductsList() {
+    return this.stateService.posProductsList;
+  }
+  public get paginatedPosProducts() {
+    return this.stateService.paginatedPosProducts;
+  }
+  public get posTotalPages() {
+    return this.stateService.posTotalPages;
+  }
+  public get posTotalItems() {
+    return this.stateService.posTotalItems;
+  }
 
-  public get settings() { return this.stateService.settings; }
-  public get products() { return this.stateService.products; }
-  public get categoriesList() { return this.stateService.categoriesList; }
-  public get areas() { return this.stateService.areas; }
-  public get diningTables() { return this.stateService.diningTables; }
+  public get editingOrderId() {
+    return this.stateService.editingOrderId;
+  }
+  public get isOrderSubmitting() {
+    return this.stateService.isOrderSubmitting;
+  }
 
-  public get isProductsLoading() { return this.stateService.isProductsLoading; }
+  public get settings() {
+    return this.stateService.settings;
+  }
+  public get products() {
+    return this.stateService.products;
+  }
+  public get categoriesList() {
+    return this.stateService.categoriesList;
+  }
+  public get areas() {
+    return this.stateService.areas;
+  }
+  public get diningTables() {
+    return this.stateService.diningTables;
+  }
+
+  public get isProductsLoading() {
+    return this.stateService.isProductsLoading;
+  }
 
   // Computed properties cho Confirm Modal
-  public readonly posTotalQuantity = computed(() => this.cart().reduce((sum, item) => sum + item.quantity, 0));
-  public readonly posCashReturn = computed(() => Math.max(0, this.customerCashGiven() - this.posFinalTotal()));
-  public readonly posDebtAmount = computed(() => this.isDebtPayment() ? Math.max(0, this.posFinalTotal() - this.customerCashGiven()) : 0);
+  public readonly posTotalQuantity = computed(() =>
+    this.cart().reduce((sum, item) => sum + item.quantity, 0),
+  );
+  public readonly posCashReturn = computed(() =>
+    Math.max(0, this.customerCashGiven() - this.posFinalTotal()),
+  );
+  public readonly posDebtAmount = computed(() =>
+    this.isDebtPayment() ? Math.max(0, this.posFinalTotal() - this.customerCashGiven()) : 0,
+  );
   public readonly customerCashGivenFormatted = computed(() => {
     const val = this.customerCashGiven();
     if (val === 0) return '';
@@ -277,18 +338,20 @@ export class PosComponent implements OnInit, OnDestroy {
 
   // Danh mục có 'Tất cả' ở đầu
   public readonly categories = computed(() => {
-    const list = this.categoriesList().map(c => c.name);
+    const list = this.categoriesList().map((c) => c.name);
     return ['Tất cả', ...list];
   });
 
   public readonly categoryOptions = computed(() => {
-    return this.categories().map(cat => ({ value: cat, label: cat }));
+    return this.categories().map((cat) => ({ value: cat, label: cat }));
   });
 
   // Lọc sản phẩm cục bộ để hiển thị (phục vụ kiểm tra lỗi hoặc fallback client filter)
   public readonly filteredProducts = computed(() => {
-    return this.products().filter(p => {
-      const matchCategory = this.posCategoryFilter() === 'Tất cả' || (p.categories && p.categories.some((c: any) => c.name === this.posCategoryFilter()));
+    return this.products().filter((p) => {
+      const matchCategory =
+        this.posCategoryFilter() === 'Tất cả' ||
+        (p.categories && p.categories.some((c: any) => c.name === this.posCategoryFilter()));
       const matchSearch = p.name.toLowerCase().includes(this.posSearchQuery().toLowerCase());
       return matchCategory && matchSearch && p.status;
     });
@@ -314,9 +377,11 @@ export class PosComponent implements OnInit, OnDestroy {
     }
 
     const currentCart = this.cart();
-    const existIndex = currentCart.findIndex(item =>
-      item.product.id === product.id &&
-      ((!item.variant && !variant) || (item.variant && variant && item.variant.id === variant.id))
+    const existIndex = currentCart.findIndex(
+      (item) =>
+        item.product.id === product.id &&
+        ((!item.variant && !variant) ||
+          (item.variant && variant && item.variant.id === variant.id)),
     );
 
     if (existIndex > -1) {
@@ -327,15 +392,20 @@ export class PosComponent implements OnInit, OnDestroy {
       this.cart.set([...currentCart, { product, variant, quantity: 1 }]);
     }
 
-    this.stateService.showToast(`Đã thêm: ${product.name}${variant ? ' (' + variant.variant_name + ')' : ''}`, 'success');
+    this.stateService.showToast(
+      `Đã thêm: ${product.name}${variant ? ' (' + variant.variant_name + ')' : ''}`,
+      'success',
+    );
   }
 
   // Tăng số lượng trong giỏ
   public increaseQuantity(productId: number, variantId: number | null = null) {
     const currentCart = this.cart();
-    const existIndex = currentCart.findIndex(item =>
-      item.product.id === productId &&
-      ((!item.variant && !variantId) || (item.variant && variantId && item.variant.id === variantId))
+    const existIndex = currentCart.findIndex(
+      (item) =>
+        item.product.id === productId &&
+        ((!item.variant && !variantId) ||
+          (item.variant && variantId && item.variant.id === variantId)),
     );
     if (existIndex > -1) {
       const updated = [...currentCart];
@@ -347,9 +417,11 @@ export class PosComponent implements OnInit, OnDestroy {
   // Giảm số lượng / Xóa khỏi giỏ
   public removeFromCart(productId: number, variantId: number | null = null) {
     const currentCart = this.cart();
-    const existIndex = currentCart.findIndex(item =>
-      item.product.id === productId &&
-      ((!item.variant && !variantId) || (item.variant && variantId && item.variant.id === variantId))
+    const existIndex = currentCart.findIndex(
+      (item) =>
+        item.product.id === productId &&
+        ((!item.variant && !variantId) ||
+          (item.variant && variantId && item.variant.id === variantId)),
     );
 
     if (existIndex > -1) {
@@ -421,9 +493,15 @@ export class PosComponent implements OnInit, OnDestroy {
   public openPosConfirmModal() {
     this.customerCashGiven.set(this.posFinalTotal());
     this.isDebtPayment.set(false);
-    
+
     const currentMethod = this.paymentMethod();
-    if (currentMethod === 'cash' || currentMethod === 'bank_transfer' || currentMethod === 'crypto' || currentMethod === 'e_wallet' || currentMethod === 'debt') {
+    if (
+      currentMethod === 'cash' ||
+      currentMethod === 'bank_transfer' ||
+      currentMethod === 'crypto' ||
+      currentMethod === 'e_wallet' ||
+      currentMethod === 'debt'
+    ) {
       this.posPaymentMethod.set(currentMethod as any);
       if (currentMethod === 'debt') {
         this.customerCashGiven.set(0);
@@ -432,7 +510,7 @@ export class PosComponent implements OnInit, OnDestroy {
     } else {
       this.posPaymentMethod.set('cash');
     }
-    
+
     this.isPosConfirmModalOpen.set(true);
   }
 
@@ -466,12 +544,12 @@ export class PosComponent implements OnInit, OnDestroy {
       const payload = {
         name: customer.name,
         type: 'individual',
-        wallet_address: customer.wallet_address
+        wallet_address: customer.wallet_address,
       };
-      
+
       this.isCustomerSearching.set(true);
       this.stateService.isLoading.set(true);
-      
+
       this.apiService.createCustomer(payload).subscribe({
         next: (createdRes) => {
           const newCust = createdRes.customer;
@@ -482,32 +560,42 @@ export class PosComponent implements OnInit, OnDestroy {
           this.loadActiveVouchers(newCust.id);
           this.isCustomerSearching.set(false);
           this.stateService.isLoading.set(false);
-          this.stateService.showToast('Đã tự động tạo hồ sơ khách hàng off-chain cho ví này!', 'success');
+          this.stateService.showToast(
+            'Đã tự động tạo hồ sơ khách hàng off-chain cho ví này!',
+            'success',
+          );
         },
         error: (err) => {
           console.error('Lỗi tự động tạo khách hàng từ ví Web3:', err);
-          
+
           // Kiểm tra xem lỗi có phải do ví đã tồn tại hay không (lỗi validation 422 trùng ví)
-          const isWalletExistsError = err.status === 422 && (
-            (err.error?.errors && err.error.errors.wallet_address) ||
-            (err.error?.message && err.error.message.includes('ví Web3 này đã tồn tại'))
-          );
-          
+          const isWalletExistsError =
+            err.status === 422 &&
+            ((err.error?.errors && err.error.errors.wallet_address) ||
+              (err.error?.message && err.error.message.includes('ví Web3 này đã tồn tại')));
+
           if (isWalletExistsError) {
             // Nếu đã tồn tại ví này, tự động tìm kiếm lại khách hàng đó và chọn
             this.apiService.getCustomers(customer.wallet_address, 1).subscribe({
               next: (results) => {
-                const foundCustomer = results && results.find(
-                  (c: any) => c.wallet_address && c.wallet_address.toLowerCase() === customer.wallet_address.toLowerCase()
-                );
-                
+                const foundCustomer =
+                  results &&
+                  results.find(
+                    (c: any) =>
+                      c.wallet_address &&
+                      c.wallet_address.toLowerCase() === customer.wallet_address.toLowerCase(),
+                  );
+
                 if (foundCustomer) {
                   this.stateService.posSelectedCustomer.set(foundCustomer);
                   this.posCustomerSearchQuery.set('');
                   this.isCustomerDropdownOpen.set(false);
                   this.posSelectedVoucher.set(null);
                   this.loadActiveVouchers(foundCustomer.id);
-                  this.stateService.showToast('Địa chỉ ví đã tồn tại! Đã tự động chọn khách hàng này.', 'success');
+                  this.stateService.showToast(
+                    'Địa chỉ ví đã tồn tại! Đã tự động chọn khách hàng này.',
+                    'success',
+                  );
                 } else {
                   this.stateService.showToast('Không thể tự động tạo khách hàng!', 'error');
                 }
@@ -519,14 +607,14 @@ export class PosComponent implements OnInit, OnDestroy {
                 this.stateService.showToast('Không thể tự động tạo khách hàng!', 'error');
                 this.isCustomerSearching.set(false);
                 this.stateService.isLoading.set(false);
-              }
+              },
             });
           } else {
             this.stateService.showToast('Không thể tự động tạo khách hàng!', 'error');
             this.isCustomerSearching.set(false);
             this.stateService.isLoading.set(false);
           }
-        }
+        },
       });
     } else {
       this.stateService.posSelectedCustomer.set(customer);
@@ -549,12 +637,15 @@ export class PosComponent implements OnInit, OnDestroy {
 
     // Chỉ đọc thông tin NFT Voucher khả dụng trực tiếp từ blockchain thông qua Web3Service
     if (walletAddress && this.web3Service.voucherContractAddress()) {
-      this.web3Service.getCustomerVouchersFromChain(walletAddress).then(chainVouchers => {
-        this.setAndFilterActiveVouchers(chainVouchers || []);
-      }).catch(err => {
-        console.error('Lỗi quét voucher NFT từ blockchain:', err);
-        this.posActiveVouchers.set([]);
-      });
+      this.web3Service
+        .getCustomerVouchersFromChain(walletAddress)
+        .then((chainVouchers) => {
+          this.setAndFilterActiveVouchers(chainVouchers || []);
+        })
+        .catch((err) => {
+          console.error('Lỗi quét voucher NFT từ blockchain:', err);
+          this.posActiveVouchers.set([]);
+        });
     } else {
       this.posActiveVouchers.set([]);
     }
@@ -563,7 +654,7 @@ export class PosComponent implements OnInit, OnDestroy {
   private setAndFilterActiveVouchers(vouchers: any[]) {
     const now = new Date();
     // Lọc bỏ voucher đã hết hạn hoặc đã được sử dụng
-    const activeVouchers = vouchers.filter(v => {
+    const activeVouchers = vouchers.filter((v) => {
       // Bỏ qua nếu voucher không active
       if (v.status && v.status !== 'active') return false;
 
@@ -585,11 +676,17 @@ export class PosComponent implements OnInit, OnDestroy {
     } else {
       const total = this.cartTotal();
       if (total < voucher.min_order_amount) {
-        this.stateService.showToast(`Đơn hàng tối thiểu phải đạt ${voucher.min_order_amount.toLocaleString('vi-VN')}đ để áp dụng voucher này!`, 'error');
+        this.stateService.showToast(
+          `Đơn hàng tối thiểu phải đạt ${voucher.min_order_amount.toLocaleString('vi-VN')}đ để áp dụng voucher này!`,
+          'error',
+        );
         return;
       }
       this.posSelectedVoucher.set(voucher);
-      this.stateService.showToast(`Đã áp dụng mã giảm giá ${voucher.discount_amount.toLocaleString('vi-VN')}đ!`, 'success');
+      this.stateService.showToast(
+        `Đã áp dụng mã giảm giá ${voucher.discount_amount.toLocaleString('vi-VN')}đ!`,
+        'success',
+      );
     }
   }
 
@@ -599,7 +696,10 @@ export class PosComponent implements OnInit, OnDestroy {
     const tokenIdStr = this.nftVoucherInputId().trim();
 
     if (!customer || !walletAddress) {
-      this.stateService.showToast('Vui lòng chọn khách hàng có ví Web3 để áp dụng Voucher NFT!', 'error');
+      this.stateService.showToast(
+        'Vui lòng chọn khách hàng có ví Web3 để áp dụng Voucher NFT!',
+        'error',
+      );
       return;
     }
 
@@ -619,21 +719,30 @@ export class PosComponent implements OnInit, OnDestroy {
 
     try {
       const res = await this.web3Service.getSingleVoucherFromChain(tokenId);
-      
+
       if (!res) {
-        this.stateService.showToast(`Không tìm thấy NFT Voucher #${tokenId} trên Blockchain!`, 'error');
+        this.stateService.showToast(
+          `Không tìm thấy NFT Voucher #${tokenId} trên Blockchain!`,
+          'error',
+        );
         this.isNftVoucherLoading.set(false);
         return;
       }
 
       if (res.status === 'used') {
-        this.stateService.showToast(`NFT Voucher #${tokenId} đã được sử dụng hoặc tiêu hủy!`, 'error');
+        this.stateService.showToast(
+          `NFT Voucher #${tokenId} đã được sử dụng hoặc tiêu hủy!`,
+          'error',
+        );
         this.isNftVoucherLoading.set(false);
         return;
       }
 
       if (res.ownerAddress.toLowerCase() !== walletAddress.toLowerCase()) {
-        this.stateService.showToast(`Voucher #${tokenId} thuộc ví khác, không phải của khách hàng đang chọn!`, 'error');
+        this.stateService.showToast(
+          `Voucher #${tokenId} thuộc ví khác, không phải của khách hàng đang chọn!`,
+          'error',
+        );
         this.isNftVoucherLoading.set(false);
         return;
       }
@@ -645,11 +754,11 @@ export class PosComponent implements OnInit, OnDestroy {
         min_order_amount: res.min_order_amount,
         isNft: true,
         tokenId: res.tokenId,
-        status: 'active'
+        status: 'active',
       };
 
       const currentVouchers = this.posActiveVouchers();
-      const exists = currentVouchers.some(v => v.tokenId === res.tokenId);
+      const exists = currentVouchers.some((v) => v.tokenId === res.tokenId);
       if (!exists) {
         this.posActiveVouchers.set([newVoucher, ...currentVouchers]);
       }
@@ -658,7 +767,6 @@ export class PosComponent implements OnInit, OnDestroy {
       this.stateService.showToast(`Đã áp dụng thành công NFT Voucher #${tokenId}!`);
       this.nftVoucherInputId.set('');
       this.isNftVoucherLoading.set(false);
-
     } catch (err: any) {
       console.error('Lỗi khi áp dụng NFT Voucher thủ công:', err);
       this.stateService.showToast(err.message || 'Lỗi truy vấn blockchain.', 'error');
@@ -668,9 +776,11 @@ export class PosComponent implements OnInit, OnDestroy {
 
   public updateItemNote(productId: number, variantId: number | null, note: string) {
     const currentCart = this.cart();
-    const existIndex = currentCart.findIndex(item =>
-      item.product.id === productId &&
-      ((!item.variant && !variantId) || (item.variant && variantId && item.variant.id === variantId))
+    const existIndex = currentCart.findIndex(
+      (item) =>
+        item.product.id === productId &&
+        ((!item.variant && !variantId) ||
+          (item.variant && variantId && item.variant.id === variantId)),
     );
     if (existIndex > -1) {
       const updated = [...currentCart];
@@ -682,7 +792,10 @@ export class PosComponent implements OnInit, OnDestroy {
   // Phân luồng click nút Đặt hàng ở POS (Nhanh / Nâng cao)
   public handlePosOrderClick() {
     if (!this.web3Service.walletConnected()) {
-      this.stateService.showToast('Vui lòng kết nối ví Web3 để thanh toán và ghi nhận đơn hàng!', 'error');
+      this.stateService.showToast(
+        'Vui lòng kết nối ví Web3 để thanh toán và ghi nhận đơn hàng!',
+        'error',
+      );
       return;
     }
 
@@ -701,7 +814,10 @@ export class PosComponent implements OnInit, OnDestroy {
   // Tạo hoặc Cập nhật đơn hàng từ POS (Hỗ trợ ký số EIP-712 & Relayer)
   public async submitOrder() {
     if (!this.web3Service.walletConnected()) {
-      this.stateService.showToast('Vui lòng kết nối ví Web3 để thanh toán và ghi nhận đơn hàng!', 'error');
+      this.stateService.showToast(
+        'Vui lòng kết nối ví Web3 để thanh toán và ghi nhận đơn hàng!',
+        'error',
+      );
       return;
     }
 
@@ -717,35 +833,44 @@ export class PosComponent implements OnInit, OnDestroy {
 
     // Kiểm tra trạng thái hoạt động của sản phẩm và biến thể trong giỏ hàng trước khi thanh toán
     for (const item of this.cart()) {
-      const liveProduct = this.products().find(p => p.id === item.product.id);
+      const liveProduct = this.products().find((p) => p.id === item.product.id);
       if (!liveProduct || !liveProduct.status) {
-        this.stateService.showToast(`Món ăn "${item.product.name}" đã ngừng phục vụ! Vui lòng xóa khỏi giỏ.`, 'error');
+        this.stateService.showToast(
+          `Món ăn "${item.product.name}" đã ngừng phục vụ! Vui lòng xóa khỏi giỏ.`,
+          'error',
+        );
         return;
       }
       if (item.variant) {
-        const liveVariant = liveProduct.variants && liveProduct.variants.find((v: any) => v.id === item.variant.id);
+        const liveVariant =
+          liveProduct.variants && liveProduct.variants.find((v: any) => v.id === item.variant.id);
         if (!liveVariant || !liveVariant.status) {
-          this.stateService.showToast(`Biến thể "${item.variant.variant_name || liveVariant.name}" của "${item.product.name}" đã ngừng phục vụ! Vui lòng xóa khỏi giỏ.`, 'error');
+          this.stateService.showToast(
+            `Biến thể "${item.variant.variant_name || liveVariant.name}" của "${item.product.name}" đã ngừng phục vụ! Vui lòng xóa khỏi giỏ.`,
+            'error',
+          );
           return;
         }
       }
     }
 
     this.isOrderSubmitting.set(true);
-    
+
     // Khởi tạo thông tin đơn hàng
     const orderData: any = {
       table_number: this.tableNumber(),
       customer_id: this.stateService.posSelectedCustomer()?.id || null,
       payment_method: this.paymentMethod(),
-      voucher_nft_token_id: this.posSelectedVoucher()?.isNft ? this.posSelectedVoucher()?.tokenId : null,
+      voucher_nft_token_id: this.posSelectedVoucher()?.isNft
+        ? this.posSelectedVoucher()?.tokenId
+        : null,
       voucher_nft_signature: null,
-      items: this.cart().map(item => ({
+      items: this.cart().map((item) => ({
         product_id: item.product.id,
         product_variant_id: item.variant ? item.variant.id : null,
         quantity: item.quantity,
-        note: item.note || null
-      }))
+        note: item.note || null,
+      })),
     };
 
     const selectedVoucher = this.posSelectedVoucher();
@@ -754,10 +879,13 @@ export class PosComponent implements OnInit, OnDestroy {
     if (selectedVoucher && selectedVoucher.isNft) {
       try {
         this.stateService.showToast('Đang khởi tạo yêu cầu ký số NFT Voucher...', 'success');
-        
+
         // 1. Tự sinh mã hóa đơn duy nhất ở frontend để khớp với chữ ký EIP-712
-        const orderCode = 'HD-' + Date.now().toString(36).substring(3).toUpperCase() + Math.floor(10 + Math.random() * 90);
-        
+        const orderCode =
+          'HD-' +
+          Date.now().toString(36).substring(3).toUpperCase() +
+          Math.floor(10 + Math.random() * 90);
+
         // 2. Đăng ký yêu cầu ký lên Backend cùng thông tin đơn hàng tạm thời
         const tempOrderData = {
           table_number: orderData.table_number,
@@ -766,44 +894,45 @@ export class PosComponent implements OnInit, OnDestroy {
           total_amount: this.cartTotal(),
           discount_amount: this.posSelectedVoucher()?.discount_amount || 0,
           final_amount: this.posFinalTotal(),
-          items: this.cart().map(item => ({
+          items: this.cart().map((item) => ({
             product_id: item.product.id,
             product_variant_id: item.variant ? item.variant.id : null,
             product_name: item.product.name,
-            variant_name: item.variant ? (item.variant.variant_name || item.variant.name) : null,
+            variant_name: item.variant ? item.variant.variant_name || item.variant.name : null,
             quantity: item.quantity,
             price: item.variant ? item.variant.price : item.product.price,
-            note: item.note || null
-          }))
+            note: item.note || null,
+          })),
         };
 
-        this.apiService.requestVoucherSignature(orderCode, selectedVoucher.tokenId, tempOrderData).subscribe({
-          next: () => {
-            // 3. Tạo link QR trỏ tới trang ký số di động
-            const currentUrl = window.location.origin;
-            const qrData = `${currentUrl}/mobile-sign?order_code=${orderCode}&token_id=${selectedVoucher.tokenId}`;
-            const qrApiUrl = `https://quickchart.io/qr?text=${encodeURIComponent(qrData)}&size=250`;
-            
-            // 4. Cập nhật signal để hiển thị modal QR
-            this.signOrderCode.set(orderCode);
-            this.signTokenId.set(selectedVoucher.tokenId);
-            this.signQrCodeUrl.set(qrApiUrl);
-            this.signLink.set(qrData);
-            this.showSignQrModal.set(true);
-            
-            // 5. Bắt đầu polling
-            this.startSignaturePolling(orderCode, orderData);
-          },
-          error: (err) => {
-            console.error('Lỗi đăng ký yêu cầu ký số:', err);
-            const errMsg = err.error?.message || 'Không thể đăng ký yêu cầu ký số với máy chủ!';
-            this.stateService.showToast('Lỗi: ' + errMsg, 'error');
-            this.isOrderSubmitting.set(false);
-          }
-        });
-        
-        return; // Dừng tiến trình nộp đơn để chờ chữ ký từ QR code
+        this.apiService
+          .requestVoucherSignature(orderCode, selectedVoucher.tokenId, tempOrderData)
+          .subscribe({
+            next: () => {
+              // 3. Tạo link QR trỏ tới trang ký số di động
+              const currentUrl = window.location.origin;
+              const qrData = `${currentUrl}/mobile-sign?order_code=${orderCode}&token_id=${selectedVoucher.tokenId}`;
+              const qrApiUrl = `https://quickchart.io/qr?text=${encodeURIComponent(qrData)}&size=250`;
 
+              // 4. Cập nhật signal để hiển thị modal QR
+              this.signOrderCode.set(orderCode);
+              this.signTokenId.set(selectedVoucher.tokenId);
+              this.signQrCodeUrl.set(qrApiUrl);
+              this.signLink.set(qrData);
+              this.showSignQrModal.set(true);
+
+              // 5. Bắt đầu polling
+              this.startSignaturePolling(orderCode, orderData);
+            },
+            error: (err) => {
+              console.error('Lỗi đăng ký yêu cầu ký số:', err);
+              const errMsg = err.error?.message || 'Không thể đăng ký yêu cầu ký số với máy chủ!';
+              this.stateService.showToast('Lỗi: ' + errMsg, 'error');
+              this.isOrderSubmitting.set(false);
+            },
+          });
+
+        return; // Dừng tiến trình nộp đơn để chờ chữ ký từ QR code
       } catch (err: any) {
         console.error('Lỗi khởi tạo luồng ký số QR:', err);
         this.stateService.showToast('Khởi tạo ký số thất bại!', 'error');
@@ -824,8 +953,11 @@ export class PosComponent implements OnInit, OnDestroy {
           if (res && res.status === 'signed' && res.signature) {
             this.stopSignaturePolling();
             this.showSignQrModal.set(false);
-            this.stateService.showToast('Khách hàng đã ký số và chốt đơn hàng thành công!', 'success');
-            
+            this.stateService.showToast(
+              'Khách hàng đã ký số và chốt đơn hàng thành công!',
+              'success',
+            );
+
             // Vì Backend đã tự động tạo đơn hàng chính thức từ temp_order_data khi nhận chữ ký,
             // POS thu ngân chỉ cần dọn dẹp giỏ hàng và tải lại danh sách đơn hàng
             this.stateService.clearCart();
@@ -840,7 +972,7 @@ export class PosComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           console.error('Lỗi kiểm tra trạng thái chữ ký:', err);
-        }
+        },
       });
     }, 2000);
   }
@@ -862,7 +994,7 @@ export class PosComponent implements OnInit, OnDestroy {
     const code = this.signOrderCode();
     if (code) {
       this.apiService.cancelVoucherSignature(code).subscribe({
-        error: (err) => console.error('Lỗi khi hủy chữ ký tạm thời:', err)
+        error: (err) => console.error('Lỗi khi hủy chữ ký tạm thời:', err),
       });
     }
 
@@ -881,12 +1013,15 @@ export class PosComponent implements OnInit, OnDestroy {
   public copySignLink() {
     const link = this.signLink();
     if (!link) return;
-    navigator.clipboard.writeText(link).then(() => {
-      this.stateService.showToast('Đã copy đường link ký số!', 'success');
-    }).catch(err => {
-      console.error('Không thể copy link:', err);
-      this.stateService.showToast('Không thể copy link, vui lòng thử lại!', 'error');
-    });
+    navigator.clipboard
+      .writeText(link)
+      .then(() => {
+        this.stateService.showToast('Đã copy đường link ký số!', 'success');
+      })
+      .catch((err) => {
+        console.error('Không thể copy link:', err);
+        this.stateService.showToast('Không thể copy link, vui lòng thử lại!', 'error');
+      });
   }
 
   // Thực hiện gọi API nộp đơn hàng cuối cùng
@@ -910,15 +1045,19 @@ export class PosComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           console.error('Lỗi cập nhật đơn:', err);
-          const errorMsg = err.error?.message || 'Không thể cập nhật đơn hàng. Vui lòng kiểm tra lại!';
+          const errorMsg =
+            err.error?.message || 'Không thể cập nhật đơn hàng. Vui lòng kiểm tra lại!';
           this.stateService.showToast(errorMsg, 'error');
           this.isOrderSubmitting.set(false);
-        }
+        },
       });
     } else {
       this.apiService.createOrder(orderData).subscribe({
         next: (res) => {
-          this.stateService.showToast('Đã ghi nhận đơn hàng thành công! Trạng thái: Đang chờ xác nhận.', 'success');
+          this.stateService.showToast(
+            'Đã ghi nhận đơn hàng thành công! Trạng thái: Đang chờ xác nhận.',
+            'success',
+          );
           this.stateService.clearCart();
           this.isOrderSubmitting.set(false);
           this.stateService.refreshOrders();
@@ -932,11 +1071,10 @@ export class PosComponent implements OnInit, OnDestroy {
           const errorMsg = err.error?.message || 'Không thể tạo đơn hàng. Vui lòng kiểm tra lại!';
           this.stateService.showToast(errorMsg, 'error');
           this.isOrderSubmitting.set(false);
-        }
+        },
       });
     }
   }
-
 
   public getProductImage(imagePath: string): string {
     if (!imagePath || !imagePath.trim()) {
@@ -970,7 +1108,7 @@ export class PosComponent implements OnInit, OnDestroy {
     this.isBarcodeScannerOpen.set(true);
     this.isScannerLoading.set(true);
     this.scannerError.set('');
-    
+
     setTimeout(() => {
       this.initPosScanner();
     }, 300);
@@ -978,7 +1116,7 @@ export class PosComponent implements OnInit, OnDestroy {
 
   private initPosScanner() {
     try {
-      this.html5Qrcode = new Html5Qrcode("pos-barcode-scanner-reader", {
+      this.html5Qrcode = new Html5Qrcode('pos-barcode-scanner-reader', {
         formatsToSupport: [
           Html5QrcodeSupportedFormats.EAN_13,
           Html5QrcodeSupportedFormats.EAN_8,
@@ -986,44 +1124,54 @@ export class PosComponent implements OnInit, OnDestroy {
           Html5QrcodeSupportedFormats.CODE_39,
           Html5QrcodeSupportedFormats.UPC_A,
           Html5QrcodeSupportedFormats.UPC_E,
-          Html5QrcodeSupportedFormats.QR_CODE
+          Html5QrcodeSupportedFormats.QR_CODE,
         ],
-        verbose: false
+        verbose: false,
       });
-      
+
       const config = {
         fps: 10,
         qrbox: (width: number, height: number) => {
           return { width: Math.min(width * 0.8, 250), height: Math.min(height * 0.4, 100) };
         },
-        aspectRatio: 1.777778
+        aspectRatio: 1.777778,
       };
 
-      this.html5Qrcode.start(
-        { facingMode: "environment" },
-        config,
-        (decodedText: string, decodedResult: any) => {
-          const barcode = decodedText.trim();
-          const foundProduct = this.products().find((p: any) => p.barcode && p.barcode.trim() === barcode);
-          if (foundProduct) {
-            this.addToCart(foundProduct);
-            this.stopPosBarcodeScan();
-          } else {
-            this.stateService.showToast(`Không tìm thấy sản phẩm có mã vạch: ${barcode}`, 'error');
-            this.stateService.onSearchQueryChange(barcode);
-            this.stopPosBarcodeScan();
-          }
-        },
-        (errorMessage: string) => {
-          // Bỏ qua lỗi quét
-        }
-      ).then(() => {
-        this.isScannerLoading.set(false);
-      }).catch((err: any) => {
-        console.error('Không khởi động được camera:', err);
-        this.scannerError.set('Không thể truy cập camera. Vui lòng cấp quyền camera cho trình duyệt.');
-        this.isScannerLoading.set(false);
-      });
+      this.html5Qrcode
+        .start(
+          { facingMode: 'environment' },
+          config,
+          (decodedText: string, decodedResult: any) => {
+            const barcode = decodedText.trim();
+            const foundProduct = this.products().find(
+              (p: any) => p.barcode && p.barcode.trim() === barcode,
+            );
+            if (foundProduct) {
+              this.addToCart(foundProduct);
+              this.stopPosBarcodeScan();
+            } else {
+              this.stateService.showToast(
+                `Không tìm thấy sản phẩm có mã vạch: ${barcode}`,
+                'error',
+              );
+              this.stateService.onSearchQueryChange(barcode);
+              this.stopPosBarcodeScan();
+            }
+          },
+          (errorMessage: string) => {
+            // Bỏ qua lỗi quét
+          },
+        )
+        .then(() => {
+          this.isScannerLoading.set(false);
+        })
+        .catch((err: any) => {
+          console.error('Không khởi động được camera:', err);
+          this.scannerError.set(
+            'Không thể truy cập camera. Vui lòng cấp quyền camera cho trình duyệt.',
+          );
+          this.isScannerLoading.set(false);
+        });
     } catch (e: any) {
       console.error('Lỗi khởi tạo quét:', e);
       this.scannerError.set('Có lỗi xảy ra: ' + e.message);
@@ -1044,10 +1192,10 @@ export class PosComponent implements OnInit, OnDestroy {
         if (this.html5Qrcode && this.html5Qrcode.isScanning) {
           await this.html5Qrcode.stop();
         }
-        
+
         // Tạo thực thể mới nếu chưa có
         if (!this.html5Qrcode) {
-          this.html5Qrcode = new Html5Qrcode("pos-barcode-scanner-reader", {
+          this.html5Qrcode = new Html5Qrcode('pos-barcode-scanner-reader', {
             formatsToSupport: [
               Html5QrcodeSupportedFormats.EAN_13,
               Html5QrcodeSupportedFormats.EAN_8,
@@ -1055,15 +1203,17 @@ export class PosComponent implements OnInit, OnDestroy {
               Html5QrcodeSupportedFormats.CODE_39,
               Html5QrcodeSupportedFormats.UPC_A,
               Html5QrcodeSupportedFormats.UPC_E,
-              Html5QrcodeSupportedFormats.QR_CODE
+              Html5QrcodeSupportedFormats.QR_CODE,
             ],
-            verbose: false
+            verbose: false,
           });
         }
 
         const decodedText = await this.html5Qrcode.scanFile(fileToScan, false);
         const barcode = decodedText.trim();
-        const foundProduct = this.products().find((p: any) => p.barcode && p.barcode.trim() === barcode);
+        const foundProduct = this.products().find(
+          (p: any) => p.barcode && p.barcode.trim() === barcode,
+        );
         if (foundProduct) {
           this.addToCart(foundProduct);
           this.stopPosBarcodeScan();
@@ -1074,7 +1224,9 @@ export class PosComponent implements OnInit, OnDestroy {
         }
       } catch (err: any) {
         console.error('Lỗi quét file ảnh POS:', err);
-        this.scannerError.set('Không tìm thấy mã vạch hợp lệ trong ảnh này. Vui lòng chụp rõ nét hơn!');
+        this.scannerError.set(
+          'Không tìm thấy mã vạch hợp lệ trong ảnh này. Vui lòng chụp rõ nét hơn!',
+        );
         this.isScannerLoading.set(false);
       }
     };
@@ -1106,7 +1258,7 @@ export class PosComponent implements OnInit, OnDestroy {
             if (blob) {
               const processedFile = new File([blob], file.name, {
                 type: file.type || 'image/jpeg',
-                lastModified: Date.now()
+                lastModified: Date.now(),
               });
               runFileScan(processedFile);
             } else {
@@ -1127,15 +1279,18 @@ export class PosComponent implements OnInit, OnDestroy {
 
   public stopPosBarcodeScan() {
     if (this.html5Qrcode && this.html5Qrcode.isScanning) {
-      this.html5Qrcode.stop().then(() => {
-        this.html5Qrcode.clear();
-        this.html5Qrcode = null;
-        this.isBarcodeScannerOpen.set(false);
-      }).catch((err: any) => {
-        console.error('Lỗi tắt camera:', err);
-        this.html5Qrcode = null;
-        this.isBarcodeScannerOpen.set(false);
-      });
+      this.html5Qrcode
+        .stop()
+        .then(() => {
+          this.html5Qrcode.clear();
+          this.html5Qrcode = null;
+          this.isBarcodeScannerOpen.set(false);
+        })
+        .catch((err: any) => {
+          console.error('Lỗi tắt camera:', err);
+          this.html5Qrcode = null;
+          this.isBarcodeScannerOpen.set(false);
+        });
     } else {
       this.html5Qrcode = null;
       this.isBarcodeScannerOpen.set(false);

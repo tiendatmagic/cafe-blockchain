@@ -1,4 +1,19 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ElementRef, HostListener, inject, signal, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnInit,
+  OnChanges,
+  SimpleChanges,
+  ElementRef,
+  HostListener,
+  inject,
+  signal,
+  OnDestroy,
+  ChangeDetectorRef,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IconComponent } from '../icon/icon.component';
@@ -7,7 +22,8 @@ import { IconComponent } from '../icon/icon.component';
   selector: 'app-custom-date-picker',
   standalone: true,
   imports: [CommonModule, FormsModule, IconComponent],
-  templateUrl: './custom-date-picker.component.html'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  templateUrl: './custom-date-picker.component.html',
 })
 export class CustomDatePickerComponent implements OnInit, OnChanges, OnDestroy {
   private readonly elementRef = inject(ElementRef);
@@ -15,7 +31,7 @@ export class CustomDatePickerComponent implements OnInit, OnChanges, OnDestroy {
 
   @Input() selectedDate: string = ''; // Format: YYYY-MM-DD
   @Output() selectedDateChange = new EventEmitter<string>();
-  
+
   @Input() label: string = '';
   @Input() placeholder: string = 'Chọn ngày';
   @Input() minDate: string = '';
@@ -26,7 +42,7 @@ export class CustomDatePickerComponent implements OnInit, OnChanges, OnDestroy {
   public readonly currentYear = signal<number>(new Date().getFullYear());
   public readonly currentMonth = signal<number>(new Date().getMonth()); // 0-11
   public readonly daysArray = signal<any[]>([]);
-  public readonly dropdownStyle = signal<{[key: string]: string}>({});
+  public readonly dropdownStyle = signal<{ [key: string]: string }>({});
 
   public readonly daysOfWeek = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
 
@@ -104,7 +120,7 @@ export class CustomDatePickerComponent implements OnInit, OnChanges, OnDestroy {
         dateStr,
         isCurrentMonth: false,
         isToday: this.checkIsToday(year, month - 1, d),
-        disabled: this.checkIsDisabled(dateStr)
+        disabled: this.checkIsDisabled(dateStr),
       });
     }
 
@@ -116,7 +132,7 @@ export class CustomDatePickerComponent implements OnInit, OnChanges, OnDestroy {
         dateStr,
         isCurrentMonth: true,
         isToday: this.checkIsToday(year, month, i),
-        disabled: this.checkIsDisabled(dateStr)
+        disabled: this.checkIsDisabled(dateStr),
       });
     }
 
@@ -129,7 +145,7 @@ export class CustomDatePickerComponent implements OnInit, OnChanges, OnDestroy {
         dateStr,
         isCurrentMonth: false,
         isToday: this.checkIsToday(year, month + 1, i),
-        disabled: this.checkIsDisabled(dateStr)
+        disabled: this.checkIsDisabled(dateStr),
       });
     }
 
@@ -150,9 +166,11 @@ export class CustomDatePickerComponent implements OnInit, OnChanges, OnDestroy {
   private checkIsToday(year: number, month: number, day: number): boolean {
     const today = new Date();
     const target = new Date(year, month, day);
-    return today.getDate() === target.getDate() &&
-           today.getMonth() === target.getMonth() &&
-           today.getFullYear() === target.getFullYear();
+    return (
+      today.getDate() === target.getDate() &&
+      today.getMonth() === target.getMonth() &&
+      today.getFullYear() === target.getFullYear()
+    );
   }
 
   private checkIsDisabled(dateStr: string): boolean {
@@ -169,7 +187,7 @@ export class CustomDatePickerComponent implements OnInit, OnChanges, OnDestroy {
     let m = this.currentMonth() - 1;
     if (m < 0) {
       m = 11;
-      this.currentYear.update(y => y - 1);
+      this.currentYear.update((y) => y - 1);
     }
     this.currentMonth.set(m);
     this.generateCalendar();
@@ -181,7 +199,7 @@ export class CustomDatePickerComponent implements OnInit, OnChanges, OnDestroy {
     let m = this.currentMonth() + 1;
     if (m > 11) {
       m = 0;
-      this.currentYear.update(y => y + 1);
+      this.currentYear.update((y) => y + 1);
     }
     this.currentMonth.set(m);
     this.generateCalendar();
@@ -196,10 +214,10 @@ export class CustomDatePickerComponent implements OnInit, OnChanges, OnDestroy {
     const viewportHeight = window.innerHeight;
     const spaceBelow = viewportHeight - rect.bottom;
     const spaceAbove = rect.top;
-    
+
     // Chiều cao popup lịch là khoảng 310px
     const popupHeight = 310;
-    
+
     let placement: 'top' | 'bottom' = 'bottom';
     if (spaceBelow < popupHeight && spaceAbove > spaceBelow) {
       placement = 'top';
@@ -207,7 +225,7 @@ export class CustomDatePickerComponent implements OnInit, OnChanges, OnDestroy {
       placement = 'bottom';
     }
 
-    const styles: {[key: string]: string} = {
+    const styles: { [key: string]: string } = {
       position: 'fixed',
       left: `${rect.left}px`,
       width: '288px', // w-72
@@ -262,7 +280,7 @@ export class CustomDatePickerComponent implements OnInit, OnChanges, OnDestroy {
   public toggleOpen(event: MouseEvent): void {
     event.stopPropagation();
     if (this.disabled) return;
-    this.isOpen.update(val => !val);
+    this.isOpen.update((val) => !val);
     if (this.isOpen()) {
       setTimeout(() => {
         this.updateDropdownPosition();

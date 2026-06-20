@@ -1,4 +1,4 @@
-import { Component, Input, inject } from '@angular/core';
+import { Component, Input, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StateService } from '@core/services/state.service';
 import { IconComponent } from '../icon/icon.component';
@@ -9,7 +9,8 @@ import { CardComponent } from '../card/card.component';
   selector: 'app-feature-blocked',
   standalone: true,
   imports: [CommonModule, IconComponent, ButtonComponent, CardComponent],
-  templateUrl: './feature-blocked.component.html'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  templateUrl: './feature-blocked.component.html',
 })
 export class FeatureBlockedComponent {
   public readonly stateService = inject(StateService);

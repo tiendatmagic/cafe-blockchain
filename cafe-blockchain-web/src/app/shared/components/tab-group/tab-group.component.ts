@@ -1,18 +1,19 @@
-import { 
-  Component, 
-  Input, 
-  Output, 
-  EventEmitter, 
-  ElementRef, 
-  ViewChildren, 
-  QueryList, 
-  AfterViewInit, 
-  HostListener, 
-  ViewChild, 
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  ElementRef,
+  ViewChildren,
+  QueryList,
+  AfterViewInit,
+  HostListener,
+  ViewChild,
   signal,
   OnChanges,
   SimpleChanges,
-  OnDestroy
+  OnDestroy,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IconComponent } from '../icon/icon.component';
@@ -30,11 +31,14 @@ export interface TabOption {
   standalone: true,
   imports: [CommonModule, IconComponent],
   templateUrl: './tab-group.component.html',
-  styles: [`
-    :host {
-      display: block;
-    }
-  `]
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
 })
 export class TabGroupComponent implements AfterViewInit, OnChanges, OnDestroy {
   /** Danh sách các lựa chọn tab */
@@ -58,10 +62,13 @@ export class TabGroupComponent implements AfterViewInit, OnChanges, OnDestroy {
   private resizeObserver?: ResizeObserver;
 
   /** Trạng thái vị trí và kích thước của slider */
-  public readonly sliderStyle = signal<{ left: string; width: string }>({ left: '0px', width: '0px' });
+  public readonly sliderStyle = signal<{ left: string; width: string }>({
+    left: '0px',
+    width: '0px',
+  });
 
   public get activeIndex(): number {
-    return this.options.findIndex(opt => opt.value === this.activeValue);
+    return this.options.findIndex((opt) => opt.value === this.activeValue);
   }
 
   ngAfterViewInit(): void {
@@ -117,12 +124,12 @@ export class TabGroupComponent implements AfterViewInit, OnChanges, OnDestroy {
       const activeEl = buttons[activeIdx].nativeElement;
       const nextLeft = `${activeEl.offsetLeft}px`;
       const nextWidth = `${activeEl.offsetWidth}px`;
-      
+
       const current = this.sliderStyle();
       if (current.left !== nextLeft || current.width !== nextWidth) {
         this.sliderStyle.set({
           left: nextLeft,
-          width: nextWidth
+          width: nextWidth,
         });
       }
 
@@ -136,14 +143,17 @@ export class TabGroupComponent implements AfterViewInit, OnChanges, OnDestroy {
       if (buttonLeft < scrollLeft) {
         container.scrollTo({ left: buttonLeft - 8, behavior: 'smooth' });
       } else if (buttonLeft + buttonWidth > scrollLeft + containerWidth) {
-        container.scrollTo({ left: buttonLeft + buttonWidth - containerWidth + 8, behavior: 'smooth' });
+        container.scrollTo({
+          left: buttonLeft + buttonWidth - containerWidth + 8,
+          behavior: 'smooth',
+        });
       }
     } else {
       const current = this.sliderStyle();
       if (current.left !== '0px' || current.width !== '0px') {
         this.sliderStyle.set({
           left: '0px',
-          width: '0px'
+          width: '0px',
         });
       }
     }

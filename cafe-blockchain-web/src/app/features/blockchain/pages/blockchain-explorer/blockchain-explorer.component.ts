@@ -1,4 +1,11 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  inject,
+  signal,
+  computed,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -32,9 +39,10 @@ import { CardComponent } from '@shared/components/card/card.component';
     PaginationComponent,
     IconComponent,
     TabGroupComponent,
-    CardComponent
+    CardComponent,
   ],
-  templateUrl: './blockchain-explorer.component.html'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  templateUrl: './blockchain-explorer.component.html',
 })
 export class BlockchainExplorerComponent implements OnInit {
   private readonly apiService = inject(ApiService);
@@ -55,7 +63,9 @@ export class BlockchainExplorerComponent implements OnInit {
   public readonly chainId = signal<string>('42161');
 
   // Trạng thái kết nối
-  public readonly connectionStatus = signal<'api' | 'offline_fallback' | 'custom' | 'loading'>('loading');
+  public readonly connectionStatus = signal<'api' | 'offline_fallback' | 'custom' | 'loading'>(
+    'loading',
+  );
 
   // Cấu hình tùy chỉnh (form)
   public customRpcUrl = '';
@@ -84,7 +94,7 @@ export class BlockchainExplorerComponent implements OnInit {
     { value: 'order', label: `Hóa đơn (${this.orderTotal()})` },
     { value: 'transaction', label: `Thu chi (${this.transactionTotal()})` },
     { value: 'voucher', label: `Voucher NFT (${this.voucherTotal()})` },
-    { value: 'menu', label: `Thực đơn (${this.menuTotal()})` }
+    { value: 'menu', label: `Thực đơn (${this.menuTotal()})` },
   ]);
 
   public readonly orderPage = signal<number>(1);
@@ -148,7 +158,7 @@ export class BlockchainExplorerComponent implements OnInit {
       },
       error: (err) => {
         console.warn('Không thể tải sản phẩm từ local API phục vụ fallback hình ảnh:', err);
-      }
+      },
     });
   }
 
@@ -204,7 +214,7 @@ export class BlockchainExplorerComponent implements OnInit {
       error: (err) => {
         console.warn('API sập hoặc lỗi, chuyển sang chế độ Offline Fallback:', err);
         this.useOfflineFallback();
-      }
+      },
     });
   }
 
@@ -256,7 +266,7 @@ export class BlockchainExplorerComponent implements OnInit {
       menuRegistryContractAddress: this.customMenuRegistryAddress.trim(),
       explorerUrl: this.customExplorerUrl.trim(),
       chainId: this.customChainId.trim(),
-      storeName: 'Cấu hình tùy chỉnh'
+      storeName: 'Cấu hình tùy chỉnh',
     };
 
     localStorage.setItem('cafe_blockchain_explorer_config', JSON.stringify(config));
@@ -356,11 +366,15 @@ export class BlockchainExplorerComponent implements OnInit {
             paymentMethod: orderData.paymentMethod,
             itemsSummary: orderData.itemsSummary,
             timestamp: Number(orderData.timestamp) * 1000,
-            recordedBy: orderData.recordedBy
+            recordedBy: orderData.recordedBy,
           });
         }
       } else if (this.searchType === 'transaction') {
-        const contract = new Contract(this.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, provider);
+        const contract = new Contract(
+          this.financeContractAddress(),
+          CAFE_WEB3_FINANCE_ABI,
+          provider,
+        );
         const txData = await contract['getTransactionByCode'](query);
 
         if (!txData || txData.transactionCode !== query) {
@@ -375,11 +389,15 @@ export class BlockchainExplorerComponent implements OnInit {
             category: txData.category,
             description: txData.description,
             timestamp: Number(txData.timestamp) * 1000,
-            recordedBy: txData.recordedBy
+            recordedBy: txData.recordedBy,
           });
         }
       } else if (this.searchType === 'voucher') {
-        const contract = new Contract(this.voucherContractAddress(), CAFE_VOUCHER_NFT_ABI, provider);
+        const contract = new Contract(
+          this.voucherContractAddress(),
+          CAFE_VOUCHER_NFT_ABI,
+          provider,
+        );
 
         if (query.startsWith('0x') && query.length === 42) {
           // Tra cứu ví sở hữu
@@ -393,14 +411,14 @@ export class BlockchainExplorerComponent implements OnInit {
               tokenId: id,
               discountAmount: Number(info.discountAmount),
               minOrderAmount: Number(info.minOrderAmount),
-              isUsed: info.isUsed
+              isUsed: info.isUsed,
             });
           }
 
           this.searchResult.set({
             type: 'voucher_owner',
             address: query,
-            vouchers: vouchersList
+            vouchers: vouchersList,
           });
         } else if (/^\d+$/.test(query)) {
           // Tra cứu ID NFT
@@ -431,7 +449,7 @@ export class BlockchainExplorerComponent implements OnInit {
                 tokenUri = `${environment.apiBaseUrl}${match[0]}`;
               }
             }
-          } catch (e) { }
+          } catch (e) {}
 
           this.searchResult.set({
             type: 'voucher_detail',
@@ -440,15 +458,19 @@ export class BlockchainExplorerComponent implements OnInit {
             discountAmount: Number(info.discountAmount),
             minOrderAmount: Number(info.minOrderAmount),
             isUsed: info.isUsed,
-            tokenUri: tokenUri
+            tokenUri: tokenUri,
           });
         } else {
-          this.searchError.set('Vui lòng nhập địa chỉ ví hợp lệ (0x...) hoặc ID NFT Voucher (số nguyên).');
+          this.searchError.set(
+            'Vui lòng nhập địa chỉ ví hợp lệ (0x...) hoặc ID NFT Voucher (số nguyên).',
+          );
         }
       }
     } catch (e: any) {
       console.error('Lỗi khi tra cứu onchain:', e);
-      this.searchError.set(`Lỗi truy vấn RPC Node: ${e.message || 'Không thể kết nối đến RPC node. Hãy kiểm tra cài đặt mạng!'}`);
+      this.searchError.set(
+        `Lỗi truy vấn RPC Node: ${e.message || 'Không thể kết nối đến RPC node. Hãy kiểm tra cài đặt mạng!'}`,
+      );
     } finally {
       this.isSearching.set(false);
     }
@@ -524,7 +546,7 @@ export class BlockchainExplorerComponent implements OnInit {
               paymentMethod: o.paymentMethod,
               itemsSummary: o.itemsSummary,
               timestamp: Number(o.timestamp) * 1000,
-              recordedBy: o.recordedBy
+              recordedBy: o.recordedBy,
             }));
             this.latestOrders.set(orders);
             this.orderTotal.set(Number(res[1]));
@@ -535,8 +557,15 @@ export class BlockchainExplorerComponent implements OnInit {
       } else if (tab === 'transaction') {
         this.latestTransactions.set([]);
         try {
-          const financeContract = new Contract(this.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, provider);
-          const res = await financeContract['getTransactionsPaginated'](this.transactionPage(), this.limit);
+          const financeContract = new Contract(
+            this.financeContractAddress(),
+            CAFE_WEB3_FINANCE_ABI,
+            provider,
+          );
+          const res = await financeContract['getTransactionsPaginated'](
+            this.transactionPage(),
+            this.limit,
+          );
           if (res && res[0]) {
             const transactions = res[0].map((t: any) => ({
               txId: t.txId.toString(),
@@ -546,7 +575,7 @@ export class BlockchainExplorerComponent implements OnInit {
               category: t.category,
               description: t.description,
               timestamp: Number(t.timestamp) * 1000,
-              recordedBy: t.recordedBy
+              recordedBy: t.recordedBy,
             }));
             this.latestTransactions.set(transactions);
             this.transactionTotal.set(Number(res[1]));
@@ -557,7 +586,11 @@ export class BlockchainExplorerComponent implements OnInit {
       } else if (tab === 'voucher') {
         this.latestVouchers.set([]);
         try {
-          const voucherContract = new Contract(this.voucherContractAddress(), CAFE_VOUCHER_NFT_ABI, provider);
+          const voucherContract = new Contract(
+            this.voucherContractAddress(),
+            CAFE_VOUCHER_NFT_ABI,
+            provider,
+          );
           const maxId = await this.getMaxTokenId(voucherContract);
           this.voucherTotal.set(maxId);
 
@@ -568,35 +601,37 @@ export class BlockchainExplorerComponent implements OnInit {
 
             const promises: Promise<any>[] = [];
             for (let id = startId; id >= endId; id--) {
-              promises.push((async () => {
-                try {
-                  const info = await voucherContract['vouchers'](id);
-                  if (Number(info.discountAmount) > 0) {
-                    let owner = '0x0000000000000000000000000000000000000000';
-                    if (!info.isUsed) {
-                      try {
-                        owner = await voucherContract['ownerOf'](id);
-                      } catch (e) {
-                        console.warn(`Lỗi lấy owner cho voucher ID ${id}:`, e);
+              promises.push(
+                (async () => {
+                  try {
+                    const info = await voucherContract['vouchers'](id);
+                    if (Number(info.discountAmount) > 0) {
+                      let owner = '0x0000000000000000000000000000000000000000';
+                      if (!info.isUsed) {
+                        try {
+                          owner = await voucherContract['ownerOf'](id);
+                        } catch (e) {
+                          console.warn(`Lỗi lấy owner cho voucher ID ${id}:`, e);
+                        }
                       }
+                      return {
+                        tokenId: id,
+                        discountAmount: Number(info.discountAmount),
+                        minOrderAmount: Number(info.minOrderAmount),
+                        isUsed: info.isUsed,
+                        owner: owner,
+                      };
                     }
-                    return {
-                      tokenId: id,
-                      discountAmount: Number(info.discountAmount),
-                      minOrderAmount: Number(info.minOrderAmount),
-                      isUsed: info.isUsed,
-                      owner: owner
-                    };
+                  } catch (err) {
+                    console.warn(`Lỗi load voucher ID ${id}:`, err);
                   }
-                } catch (err) {
-                  console.warn(`Lỗi load voucher ID ${id}:`, err);
-                }
-                return null;
-              })());
+                  return null;
+                })(),
+              );
             }
 
             const results = await Promise.all(promises);
-            const vouchersList = results.filter(v => v !== null);
+            const vouchersList = results.filter((v) => v !== null);
             this.latestVouchers.set(vouchersList);
           }
         } catch (err) {
@@ -605,7 +640,11 @@ export class BlockchainExplorerComponent implements OnInit {
       } else if (tab === 'menu') {
         this.menuHistory.set([]);
         try {
-          const menuRegistryContract = new Contract(this.menuRegistryContractAddress(), CAFE_MENU_REGISTRY_ABI, provider);
+          const menuRegistryContract = new Contract(
+            this.menuRegistryContractAddress(),
+            CAFE_MENU_REGISTRY_ABI,
+            provider,
+          );
 
           try {
             const lastUpdatedRaw = await menuRegistryContract['lastUpdated']();
@@ -629,30 +668,39 @@ export class BlockchainExplorerComponent implements OnInit {
               const filter = menuRegistryContract.filters['MenuUpdated']();
 
               // Truy vấn song song txHash cho các milestone của trang hiện tại
-              const paginatedHistory = await Promise.all(milestonesList.map(async (m: any) => {
-                const blockNum = Number(m.blockNumber);
-                let txHash = '';
-                try {
-                  // Chỉ quét đúng 1 block cụ thể chứa milestone -> Cực kỳ nhanh và an toàn
-                  const events = await menuRegistryContract.queryFilter(filter, blockNum, blockNum);
-                  txHash = events.length > 0 ? events[0].transactionHash : '';
-                } catch (err) {
-                  console.warn(`Lỗi lấy txHash cho milestone tại block ${blockNum}:`, err);
-                }
-                return {
-                  txHash: txHash,
-                  blockNumber: blockNum,
-                  updatedBy: m.updatedBy,
-                  timestamp: Number(m.timestamp) * 1000,
-                  productCount: Number(m.productCount)
-                };
-              }));
+              const paginatedHistory = await Promise.all(
+                milestonesList.map(async (m: any) => {
+                  const blockNum = Number(m.blockNumber);
+                  let txHash = '';
+                  try {
+                    // Chỉ quét đúng 1 block cụ thể chứa milestone -> Cực kỳ nhanh và an toàn
+                    const events = await menuRegistryContract.queryFilter(
+                      filter,
+                      blockNum,
+                      blockNum,
+                    );
+                    txHash = events.length > 0 ? events[0].transactionHash : '';
+                  } catch (err) {
+                    console.warn(`Lỗi lấy txHash cho milestone tại block ${blockNum}:`, err);
+                  }
+                  return {
+                    txHash: txHash,
+                    blockNumber: blockNum,
+                    updatedBy: m.updatedBy,
+                    timestamp: Number(m.timestamp) * 1000,
+                    productCount: Number(m.productCount),
+                  };
+                }),
+              );
 
               this.menuHistory.set(paginatedHistory);
             }
           } catch (contractErr) {
             // 2. Fallback: Nếu contract chưa nâng cấp (không có hàm milestones) -> dùng cách quét event log cũ
-            console.warn('[MenuRegistry] getMilestonesPaginated không khả dụng, fallback sang event query logs:', contractErr);
+            console.warn(
+              '[MenuRegistry] getMilestonesPaginated không khả dụng, fallback sang event query logs:',
+              contractErr,
+            );
 
             const filter = menuRegistryContract.filters['MenuUpdated']();
             const latestBlock = await provider.getBlockNumber();
@@ -663,19 +711,33 @@ export class BlockchainExplorerComponent implements OnInit {
             const fromBlockFull = Math.max(0, latestBlock - SAFE_RANGE);
 
             try {
-              allEvents = await menuRegistryContract.queryFilter(filter, fromBlockFull, latestBlock);
+              allEvents = await menuRegistryContract.queryFilter(
+                filter,
+                fromBlockFull,
+                latestBlock,
+              );
             } catch (rangeErr: any) {
               const errMsg = (rangeErr?.message || '').toLowerCase();
-              const isRangeError = errMsg.includes('block range') || errMsg.includes('too large')
-                || errMsg.includes('10000') || errMsg.includes('exceed') || errMsg.includes('limit');
+              const isRangeError =
+                errMsg.includes('block range') ||
+                errMsg.includes('too large') ||
+                errMsg.includes('10000') ||
+                errMsg.includes('exceed') ||
+                errMsg.includes('limit');
 
               if (isRangeError) {
-                console.warn('[MenuRegistry] RPC giới hạn block range, chuyển sang chunked query...');
+                console.warn(
+                  '[MenuRegistry] RPC giới hạn block range, chuyển sang chunked query...',
+                );
                 allEvents = [];
                 for (let toBlock = latestBlock; toBlock >= fromBlockFull; toBlock -= CHUNK_SIZE) {
                   const fromBlock = Math.max(fromBlockFull, toBlock - CHUNK_SIZE + 1);
                   try {
-                    const chunk = await menuRegistryContract.queryFilter(filter, fromBlock, toBlock);
+                    const chunk = await menuRegistryContract.queryFilter(
+                      filter,
+                      fromBlock,
+                      toBlock,
+                    );
                     allEvents.push(...chunk);
                   } catch (chunkErr) {
                     console.warn(`Bỏ qua block range ${fromBlock}-${toBlock}:`, chunkErr);
@@ -686,16 +748,18 @@ export class BlockchainExplorerComponent implements OnInit {
               }
             }
 
-            const formattedHistory = allEvents.map((e: any) => {
-              const args = e.args;
-              return {
-                txHash: e.transactionHash,
-                blockNumber: e.blockNumber,
-                updatedBy: args ? args[0] : '',
-                timestamp: args ? Number(args[1]) * 1000 : 0,
-                productCount: args ? Number(args[2]) : 0
-              };
-            }).sort((a, b) => b.timestamp - a.timestamp);
+            const formattedHistory = allEvents
+              .map((e: any) => {
+                const args = e.args;
+                return {
+                  txHash: e.transactionHash,
+                  blockNumber: e.blockNumber,
+                  updatedBy: args ? args[0] : '',
+                  timestamp: args ? Number(args[1]) * 1000 : 0,
+                  productCount: args ? Number(args[2]) : 0,
+                };
+              })
+              .sort((a, b) => b.timestamp - a.timestamp);
 
             this.menuTotal.set(formattedHistory.length);
 
@@ -766,8 +830,6 @@ export class BlockchainExplorerComponent implements OnInit {
     this.searchOnChain();
   }
 
-
-
   public formatUuid(uint256Val: any): string {
     if (!uint256Val) return '';
     try {
@@ -803,7 +865,7 @@ export class BlockchainExplorerComponent implements OnInit {
       name: prod.name,
       price: prod.price,
       image: displayImage,
-      status: prod.status
+      status: prod.status,
     });
     this.searchError.set('');
   }
@@ -811,7 +873,7 @@ export class BlockchainExplorerComponent implements OnInit {
   public getProductImage(imagePath: string, sku?: string): string {
     if (!imagePath || !imagePath.trim()) {
       if (sku) {
-        const localProd = this.localProducts().find(p => p.sku === sku);
+        const localProd = this.localProducts().find((p) => p.sku === sku);
         if (localProd && localProd.image) {
           return localProd.image;
         }
@@ -832,8 +894,6 @@ export class BlockchainExplorerComponent implements OnInit {
     return Math.ceil(this.detailProductTotal() / this.detailProductLimit) || 1;
   }
 
-
-
   /**
    * Cập nhật danh sách món ăn hiển thị ở cột trái dựa trên trang hiện tại
    */
@@ -853,30 +913,40 @@ export class BlockchainExplorerComponent implements OnInit {
       this.isSearching.set(true);
       try {
         const provider = new JsonRpcProvider(this.rpcUrl());
-        const menuRegistryContract = new Contract(this.menuRegistryContractAddress(), CAFE_MENU_REGISTRY_ABI, provider);
+        const menuRegistryContract = new Contract(
+          this.menuRegistryContractAddress(),
+          CAFE_MENU_REGISTRY_ABI,
+          provider,
+        );
 
         try {
-          const res = await menuRegistryContract['getProductsPaginated'](start, this.detailProductLimit);
+          const res = await menuRegistryContract['getProductsPaginated'](
+            start,
+            this.detailProductLimit,
+          );
           if (res && res[0]) {
             const products = res[0].map((p: any) => ({
               sku: p.sku,
               name: p.name,
               price: Number(p.price),
               image: p.image,
-              status: p.status
+              status: p.status,
             }));
             this.detailProducts.set(products);
             this.detailProductTotal.set(Number(res[1]));
           }
         } catch (paginatedErr) {
-          console.warn('[MenuRegistry] getProductsPaginated không khả dụng, fallback sang getAllProducts():', paginatedErr);
+          console.warn(
+            '[MenuRegistry] getProductsPaginated không khả dụng, fallback sang getAllProducts():',
+            paginatedErr,
+          );
           const rawProducts = await menuRegistryContract['getAllProducts']();
           const allProducts = rawProducts.map((p: any) => ({
             sku: p.sku,
             name: p.name,
             price: Number(p.price),
             image: p.image,
-            status: p.status
+            status: p.status,
           }));
           this.detailProductTotal.set(allProducts.length);
           const paginated = allProducts.slice(start, start + this.detailProductLimit);
@@ -905,12 +975,16 @@ export class BlockchainExplorerComponent implements OnInit {
 
     try {
       const provider = new JsonRpcProvider(this.rpcUrl());
-      const menuRegistryContract = new Contract(this.menuRegistryContractAddress(), CAFE_MENU_REGISTRY_ABI, provider);
+      const menuRegistryContract = new Contract(
+        this.menuRegistryContractAddress(),
+        CAFE_MENU_REGISTRY_ABI,
+        provider,
+      );
       const lastUpdatedRaw = await menuRegistryContract['lastUpdated']();
 
       this.searchResult.set({
         type: 'menu_current_detail',
-        timestamp: Number(lastUpdatedRaw) * 1000
+        timestamp: Number(lastUpdatedRaw) * 1000,
       });
 
       await this.updateDetailProducts();
@@ -954,7 +1028,7 @@ export class BlockchainExplorerComponent implements OnInit {
         name: p.name,
         price: Number(p.price),
         image: p.image,
-        status: p.status
+        status: p.status,
       }));
 
       this.allHistoryProducts = products;
@@ -964,7 +1038,7 @@ export class BlockchainExplorerComponent implements OnInit {
         type: 'menu_history_detail',
         timestamp: item.timestamp,
         updatedBy: item.updatedBy,
-        txHash: item.txHash
+        txHash: item.txHash,
       });
 
       await this.updateDetailProducts();

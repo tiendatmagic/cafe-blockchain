@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StateService } from '@core/services/state.service';
@@ -12,7 +12,8 @@ import { BadgeComponent } from '@shared/components/badge/badge.component';
   selector: 'app-web3-overlays',
   standalone: true,
   imports: [CommonModule, FormsModule, IconComponent, BadgeComponent],
-  templateUrl: './web3-overlays.component.html'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  templateUrl: './web3-overlays.component.html',
 })
 export class Web3OverlaysComponent {
   public readonly stateService = inject(StateService);
@@ -36,7 +37,7 @@ export class Web3OverlaysComponent {
       next: (data) => {
         this.plans.set(data);
         const currentPlanCode = this.stateService.subscriptionPlanCode();
-        const currentPlan = data.find(p => p.code === currentPlanCode);
+        const currentPlan = data.find((p) => p.code === currentPlanCode);
         if (currentPlan) {
           this.selectedPlan.set(currentPlan);
         } else if (data.length > 0) {
@@ -47,7 +48,7 @@ export class Web3OverlaysComponent {
       error: (err) => {
         console.error('[Upgrade] Lỗi tải gói cước:', err);
         this.isPlansLoading.set(false);
-      }
+      },
     });
   }
 
@@ -86,23 +87,32 @@ export class Web3OverlaysComponent {
     this.isUpgrading.set(true);
     this.stateService.showToast('Đang gửi yêu cầu nâng cấp gói cước...', 'success');
 
-    this.apiService.updateTenantSubscriptionUpgrade({
-      plan_code: plan.code,
-      duration_months: duration,
-      tx_hash: fakeTxHash
-    }).subscribe({
-      next: (res) => {
-        this.stateService.showToast('Chúc mừng! Gói cước đã được nâng cấp/gia hạn thành công.', 'success');
-        // Cập nhật lại cấu hình và subscription từ backend
-        this.stateService.loadSettings();
-        this.closeUpgradeModal();
-      },
-      error: (err) => {
-        console.error('[Upgrade] Lỗi nâng cấp gói cước backend:', err);
-        this.stateService.showToast(err.error?.message || 'Không thể nâng cấp gói cước trên hệ thống. Vui lòng liên hệ hỗ trợ!', 'error');
-        this.isUpgrading.set(false);
-      }
-    });
+    this.apiService
+      .updateTenantSubscriptionUpgrade({
+        plan_code: plan.code,
+        duration_months: duration,
+        tx_hash: fakeTxHash,
+      })
+      .subscribe({
+        next: (res) => {
+          this.stateService.showToast(
+            'Chúc mừng! Gói cước đã được nâng cấp/gia hạn thành công.',
+            'success',
+          );
+          // Cập nhật lại cấu hình và subscription từ backend
+          this.stateService.loadSettings();
+          this.closeUpgradeModal();
+        },
+        error: (err) => {
+          console.error('[Upgrade] Lỗi nâng cấp gói cước backend:', err);
+          this.stateService.showToast(
+            err.error?.message ||
+              'Không thể nâng cấp gói cước trên hệ thống. Vui lòng liên hệ hỗ trợ!',
+            'error',
+          );
+          this.isUpgrading.set(false);
+        },
+      });
   }
 
   /**

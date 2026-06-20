@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IconComponent } from '../icon/icon.component';
 
@@ -6,7 +6,8 @@ import { IconComponent } from '../icon/icon.component';
   selector: 'app-drawer',
   standalone: true,
   imports: [CommonModule, IconComponent],
-  templateUrl: './drawer.component.html'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  templateUrl: './drawer.component.html',
 })
 export class DrawerComponent {
   @Input() isOpen = false;

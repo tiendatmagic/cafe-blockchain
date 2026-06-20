@@ -532,7 +532,7 @@
             @if (selectedTableForQr()) {
               <img
                 [src]="getDiningTableQrUrl(selectedTableForQr())"
-                [alt]="'QR Code ' + selectedTableForQr()?.name"
+                [alt]="'QR Code ' + $safeNavigationMigration(selectedTableForQr()?.name)"
                 class="w-full h-full object-contain rounded-xl"
               />
 
@@ -543,7 +543,9 @@
                 >
                   @if (stateService.settings()?.website_avatar_image) {
                     <img
-                      [src]="stateService.settings()?.website_avatar_image"
+                      [src]="
+                        $safeNavigationMigration(stateService.settings()?.website_avatar_image)
+                      "
                       class="w-full h-full object-cover rounded-lg"
                     />
                   } @else {
@@ -569,14 +571,20 @@
               class="text-[10px] text-slate-400 dark:text-slate-500 font-semibold leading-relaxed max-w-[240px]"
             >
               Mã QR này chứa liên kết đến Website storefront của quán và định danh riêng cho
-              <strong>{{ selectedTableForQr()?.name }}</strong>.
+              <strong>{{ selectedTableForQr()?.name }}</strong
+              >.
             </p>
           </div>
 
           <!-- Đường link liên kết & Hành động sao chép/truy cập -->
           @if (selectedTableForQr()) {
-            <div class="w-full space-y-1.5 bg-slate-50 dark:bg-slate-950/40 p-3 rounded-xl border border-slate-200/40 dark:border-slate-800/40">
-              <span class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Liên kết gọi món</span>
+            <div
+              class="w-full space-y-1.5 bg-slate-50 dark:bg-slate-950/40 p-3 rounded-xl border border-slate-200/40 dark:border-slate-800/40"
+            >
+              <span
+                class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block"
+                >Liên kết gọi món</span
+              >
               <div class="flex items-center gap-1.5 min-w-0">
                 <input
                   type="text"
@@ -585,7 +593,7 @@
                   class="flex-1 text-[11px] font-mono font-bold text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/40 rounded-lg px-2.5 py-1.5 outline-none truncate"
                   #storefrontLinkInput
                 />
-                
+
                 <button
                   type="button"
                   (click)="copyTableLink(selectedTableForQr())"
@@ -594,7 +602,7 @@
                 >
                   <app-icon name="copy" class="w-4 h-4" strokeWidth="2.5" />
                 </button>
-                
+
                 <a
                   [href]="getTableStorefrontUrl(selectedTableForQr())"
                   target="_blank"

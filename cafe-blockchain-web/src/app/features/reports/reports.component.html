@@ -72,7 +72,7 @@
                 >Doanh thu bán hàng</span
               >
               <h4 class="text-2xl font-black text-slate-800 dark:text-white leading-none">
-                {{ reportsData()?.financials?.revenue | number }}
+                {{ $safeNavigationMigration(reportsData()?.financials?.revenue) | number }}
                 <span class="text-xs font-bold text-slate-400">đ</span>
               </h4>
               <span class="text-[10px] text-slate-400 font-medium"
@@ -97,12 +97,12 @@
                 >Giá vốn hàng bán (COGS)</span
               >
               <h4 class="text-2xl font-black text-slate-800 dark:text-white leading-none">
-                {{ reportsData()?.financials?.cogs | vnd }}
+                {{ $safeNavigationMigration(reportsData()?.financials?.cogs) | vnd }}
               </h4>
               <span class="text-[10px] text-slate-400 font-medium"
                 >Lợi nhuận gộp:
                 <strong class="text-emerald-500 font-black">{{
-                  reportsData()?.financials?.gross_profit | vnd
+                  $safeNavigationMigration(reportsData()?.financials?.gross_profit) | vnd
                 }}</strong>
                 <span class="text-[10px] text-slate-400 dark:text-slate-500 font-bold ml-1"
                   >(Biên: {{ getGrossProfitMargin() | number: '1.0-1' }}%)</span
@@ -123,12 +123,14 @@
                 >Chi phí & Thu nhập khác</span
               >
               <h4 class="text-2xl font-black text-slate-800 dark:text-white leading-none">
-                {{ reportsData()?.financials?.expenses | vnd }}
+                {{ $safeNavigationMigration(reportsData()?.financials?.expenses) | vnd }}
               </h4>
               <span class="text-[10px] text-slate-400 font-medium"
                 >Thu nhập khác:
                 <strong class="text-purple-500 font-black"
-                  >+{{ reportsData()?.financials?.other_income | vnd }}</strong
+                  >+{{
+                    $safeNavigationMigration(reportsData()?.financials?.other_income) | vnd
+                  }}</strong
                 ></span
               >
             </div>
@@ -158,7 +160,7 @@
                 [class.text-rose-500]="reportsData()?.financials?.net_profit < 0"
                 class="text-2xl font-black leading-none"
               >
-                {{ reportsData()?.financials?.net_profit | number }}
+                {{ $safeNavigationMigration(reportsData()?.financials?.net_profit) | number }}
                 <span class="text-xs font-bold">đ</span>
               </h4>
               <span class="text-[10px] text-slate-400 font-medium"
@@ -302,7 +304,7 @@
                   <span
                     class="text-sm font-black text-slate-800 dark:text-white leading-none mt-0.5"
                   >
-                    {{ reportsData()?.financials?.revenue | vnd }}
+                    {{ $safeNavigationMigration(reportsData()?.financials?.revenue) | vnd }}
                   </span>
                 </div>
               </div>

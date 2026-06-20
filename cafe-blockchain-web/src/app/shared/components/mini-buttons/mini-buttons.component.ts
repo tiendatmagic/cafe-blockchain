@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 
 export interface MiniButtonOption {
@@ -27,7 +27,8 @@ export const DASHBOARD_DATE_OPTIONS: MiniButtonOption[] = [
   selector: 'app-mini-buttons',
   standalone: true,
   imports: [CommonModule, NgClass],
-  templateUrl: './mini-buttons.component.html'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  templateUrl: './mini-buttons.component.html',
 })
 export class MiniButtonsComponent {
   /** Danh sách các nút lựa chọn */

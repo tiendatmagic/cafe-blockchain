@@ -1,6 +1,19 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  computed,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { StateService } from '@core/services/state.service';
 import { ApiService } from '@core/services/api.service';
@@ -10,7 +23,11 @@ import { CustomDatePickerComponent } from '@shared/components/custom-date-picker
 import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prompt/web3-connect-prompt.component';
 import { AccessRestrictedComponent } from '@shared/components/access-restricted/access-restricted.component';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
-import { TableComponent, TableColumn, TableCellDirective } from '@shared/components/table/table.component';
+import {
+  TableComponent,
+  TableColumn,
+  TableCellDirective,
+} from '@shared/components/table/table.component';
 import { ModalComponent } from '@shared/components/modal/modal.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
@@ -44,14 +61,17 @@ import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
     ButtonComponent,
     CustomCheckboxComponent,
     CardComponent,
-    VNDCurrencyPipe
+    VNDCurrencyPipe,
   ],
   templateUrl: './admin-saas.component.html',
-  styles: [`
-    :host {
-      display: block;
-    }
-  `]
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
 })
 export class AdminSaaSComponent implements OnInit {
   public readonly stateService = inject(StateService);
@@ -66,26 +86,75 @@ export class AdminSaaSComponent implements OnInit {
   // Columns Tables
   public readonly tenantColumns: TableColumn[] = [
     { key: 'store_name', header: 'Cửa hàng', sortable: false, class: 'pl-6 whitespace-nowrap' },
-    { key: 'wallet_address', header: 'Địa chỉ ví chủ quán', sortable: false, class: 'whitespace-nowrap font-mono text-xs' },
+    {
+      key: 'wallet_address',
+      header: 'Địa chỉ ví chủ quán',
+      sortable: false,
+      class: 'whitespace-nowrap font-mono text-xs',
+    },
     { key: 'plan_code', header: 'Gói dịch vụ', sortable: false, class: 'whitespace-nowrap' },
-    { key: 'subscription_expires_at', header: 'Ngày hết hạn', sortable: false, class: 'whitespace-nowrap font-medium' },
-    { key: 'subscription_status', header: 'Trạng thái', sortable: false, class: 'whitespace-nowrap' },
-    { key: 'created_at', header: 'Ngày đăng ký', sortable: false, class: 'whitespace-nowrap text-slate-500' },
-    { key: 'actions', header: 'Thao tác', sortable: false, class: 'text-right pr-6 whitespace-nowrap', headerClass: 'text-right pr-6' }
+    {
+      key: 'subscription_expires_at',
+      header: 'Ngày hết hạn',
+      sortable: false,
+      class: 'whitespace-nowrap font-medium',
+    },
+    {
+      key: 'subscription_status',
+      header: 'Trạng thái',
+      sortable: false,
+      class: 'whitespace-nowrap',
+    },
+    {
+      key: 'created_at',
+      header: 'Ngày đăng ký',
+      sortable: false,
+      class: 'whitespace-nowrap text-slate-500',
+    },
+    {
+      key: 'actions',
+      header: 'Thao tác',
+      sortable: false,
+      class: 'text-right pr-6 whitespace-nowrap',
+      headerClass: 'text-right pr-6',
+    },
   ];
 
   public readonly planColumns: TableColumn[] = [
-    { key: 'code', header: 'Mã gói', sortable: false, class: 'pl-6 whitespace-nowrap font-mono text-xs' },
+    {
+      key: 'code',
+      header: 'Mã gói',
+      sortable: false,
+      class: 'pl-6 whitespace-nowrap font-mono text-xs',
+    },
     { key: 'name', header: 'Tên gói cước', sortable: false, class: 'whitespace-nowrap font-bold' },
     { key: 'prices', header: 'Giá cước', sortable: false, class: 'whitespace-nowrap' },
-    { key: 'limits', header: 'Giới hạn (Sản phẩm / Nhân viên)', sortable: false, class: 'whitespace-nowrap' },
-    { key: 'features', header: 'Tính năng hỗ trợ', sortable: false, class: 'whitespace-nowrap max-w-sm truncate' },
+    {
+      key: 'limits',
+      header: 'Giới hạn (Sản phẩm / Nhân viên)',
+      sortable: false,
+      class: 'whitespace-nowrap',
+    },
+    {
+      key: 'features',
+      header: 'Tính năng hỗ trợ',
+      sortable: false,
+      class: 'whitespace-nowrap max-w-sm truncate',
+    },
     { key: 'is_active', header: 'Trạng thái', sortable: false, class: 'whitespace-nowrap' },
-    { key: 'actions', header: 'Thao tác', sortable: false, class: 'text-right pr-6 whitespace-nowrap', headerClass: 'text-right pr-6' }
+    {
+      key: 'actions',
+      header: 'Thao tác',
+      sortable: false,
+      class: 'text-right pr-6 whitespace-nowrap',
+      headerClass: 'text-right pr-6',
+    },
   ];
 
   // Tab: 'sysconfig' | 'tenants' | 'plans' | 'system' | 'sysinfo'
-  public readonly activeSubTab = signal<'sysconfig' | 'tenants' | 'plans' | 'system' | 'sysinfo'>('sysconfig');
+  public readonly activeSubTab = signal<'sysconfig' | 'tenants' | 'plans' | 'system' | 'sysinfo'>(
+    'sysconfig',
+  );
 
   public readonly subTabOptions: TabOption[] = [
     { value: 'sysconfig', label: 'Cấu hình thông tin hệ thống' },
@@ -110,9 +179,9 @@ export class AdminSaaSComponent implements OnInit {
 
   // Computed signal cho danh sách chọn bộ lọc gói cước (kết hợp các gói thực tế từ DB)
   public readonly planFilterOptions = computed(() => {
-    const list = this.plans().map(p => ({
+    const list = this.plans().map((p) => ({
       value: p.code,
-      label: p.name
+      label: p.name,
     }));
     return [{ value: 'all', label: 'Tất cả gói cước' }, ...list];
   });
@@ -178,7 +247,7 @@ export class AdminSaaSComponent implements OnInit {
   public readonly filteredPackages = computed(() => {
     const q = this.packageSearch().trim().toLowerCase();
     if (!q) return this.packages();
-    return this.packages().filter(p => p.name.toLowerCase().includes(q));
+    return this.packages().filter((p) => p.name.toLowerCase().includes(q));
   });
 
   public readonly paginatedPackages = computed(() => {
@@ -188,16 +257,16 @@ export class AdminSaaSComponent implements OnInit {
   });
 
   public readonly packageTotalPages = computed(() =>
-    Math.ceil(this.filteredPackages().length / this.packageItemsPerPage)
+    Math.ceil(this.filteredPackages().length / this.packageItemsPerPage),
   );
 
   // Select Options cho Gói cước
   public get planOptions() {
     return this.plans()
-      .filter(p => p.is_active)
-      .map(p => ({
+      .filter((p) => p.is_active)
+      .map((p) => ({
         value: p.code,
-        label: p.name
+        label: p.name,
       }));
   }
 
@@ -223,7 +292,7 @@ export class AdminSaaSComponent implements OnInit {
     const d = today.getDate();
     const dateStr = `${y}-${m < 10 ? '0' + m : m}-${d < 10 ? '0' + d : d}`;
     this.subscriptionForm.patchValue({
-      subscription_expires_at: dateStr
+      subscription_expires_at: dateStr,
     });
   }
 
@@ -244,26 +313,28 @@ export class AdminSaaSComponent implements OnInit {
     // 1. Lọc theo gói cước
     const planFilter = this.tenantPlanFilter();
     if (planFilter !== 'all') {
-      list = list.filter(t => t.plan_code === planFilter);
+      list = list.filter((t) => t.plan_code === planFilter);
     }
 
     // 2. Lọc theo trạng thái
     const statusFilter = this.tenantStatusFilter();
     if (statusFilter !== 'all') {
-      list = list.filter(t => t.subscription_status === statusFilter);
+      list = list.filter((t) => t.subscription_status === statusFilter);
     }
 
     // 3. Lọc theo từ khóa tìm kiếm
     const search = this.searchQuery().trim().toLowerCase();
     if (search) {
       const searchClean = this.removeSign(search);
-      list = list.filter(t => {
+      list = list.filter((t) => {
         const storeNameClean = t.store_name ? this.removeSign(t.store_name.toLowerCase()) : '';
         const walletClean = t.wallet_address ? t.wallet_address.toLowerCase() : '';
         const planClean = t.plan_code ? t.plan_code.toLowerCase() : '';
-        return storeNameClean.includes(searchClean) ||
+        return (
+          storeNameClean.includes(searchClean) ||
           walletClean.includes(searchClean) ||
-          planClean.includes(searchClean);
+          planClean.includes(searchClean)
+        );
       });
     }
     return list;
@@ -273,7 +344,7 @@ export class AdminSaaSComponent implements OnInit {
     this.initForms();
 
     // Đồng bộ tab hiện tại với Query Parameter 'tab' trên URL
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.subscribe((params) => {
       const tab = params['tab'];
       if (tab && ['sysconfig', 'tenants', 'plans', 'system', 'sysinfo'].includes(tab)) {
         this.activeSubTab.set(tab as any);
@@ -293,11 +364,11 @@ export class AdminSaaSComponent implements OnInit {
       store_name: ['', [Validators.required, Validators.maxLength(255)]],
       plan_code: ['free', [Validators.required]],
       subscription_expires_at: [null, [Validators.required]],
-      subscription_status: ['active', [Validators.required]]
+      subscription_status: ['active', [Validators.required]],
     });
 
     // Tự động set 7 ngày nếu admin đổi gói cước sang gói 'free'
-    this.subscriptionForm.get('plan_code')?.valueChanges.subscribe(planCode => {
+    this.subscriptionForm.get('plan_code')?.valueChanges.subscribe((planCode) => {
       if (planCode === 'free') {
         this.setSubscriptionDuration(7, 'days');
       }
@@ -328,8 +399,8 @@ export class AdminSaaSComponent implements OnInit {
         enable_staffs: [true, [Validators.required]],
         enable_storefront: [false, [Validators.required]],
         enable_reports: [false, [Validators.required]],
-        enable_excel_export: [false, [Validators.required]]
-      })
+        enable_excel_export: [false, [Validators.required]],
+      }),
     });
   }
 
@@ -350,7 +421,7 @@ export class AdminSaaSComponent implements OnInit {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { tab: tab },
-      queryParamsHandling: 'merge'
+      queryParamsHandling: 'merge',
     });
   }
 
@@ -380,7 +451,7 @@ export class AdminSaaSComponent implements OnInit {
     forkJoin({
       tenants: tenants$,
       plans: plans$,
-      settings: settings$
+      settings: settings$,
     }).subscribe({
       next: (res) => {
         this.tenants.set(res.tenants || []);
@@ -395,7 +466,7 @@ export class AdminSaaSComponent implements OnInit {
         console.error('[AdminSaaS] Lỗi tải dữ liệu quản trị:', err);
         this.stateService.showToast('Không thể lấy dữ liệu quản trị từ Laravel API.', 'error');
         this.isDataLoading.set(false);
-      }
+      },
     });
   }
 
@@ -413,7 +484,7 @@ export class AdminSaaSComponent implements OnInit {
       store_name: tenant.store_name || '',
       plan_code: tenant.plan_code || 'free',
       subscription_expires_at: dateStr,
-      subscription_status: tenant.subscription_status || 'active'
+      subscription_status: tenant.subscription_status || 'active',
     });
     this.isSubscriptionModalOpen.set(true);
   }
@@ -443,7 +514,7 @@ export class AdminSaaSComponent implements OnInit {
         const errorMsg = err.error?.message || 'Có lỗi xảy ra, vui lòng thử lại.';
         this.stateService.showToast(errorMsg, 'error');
         this.isSavingSubscription.set(false);
-      }
+      },
     });
   }
 
@@ -476,8 +547,8 @@ export class AdminSaaSComponent implements OnInit {
         enable_staffs: true,
         enable_storefront: false,
         enable_reports: false,
-        enable_excel_export: false
-      }
+        enable_excel_export: false,
+      },
     });
     this.isPlanModalOpen.set(true);
   }
@@ -514,8 +585,8 @@ export class AdminSaaSComponent implements OnInit {
         enable_staffs: plan.features?.enable_staffs !== false,
         enable_storefront: !!plan.features?.enable_storefront,
         enable_reports: !!plan.features?.enable_reports,
-        enable_excel_export: !!plan.features?.enable_excel_export
-      }
+        enable_excel_export: !!plan.features?.enable_excel_export,
+      },
     });
     this.isPlanModalOpen.set(true);
   }
@@ -542,7 +613,7 @@ export class AdminSaaSComponent implements OnInit {
       next: () => {
         this.stateService.showToast(
           editing ? 'Cập nhật gói cước thành công!' : 'Tạo gói cước mới thành công!',
-          'success'
+          'success',
         );
         this.isPlanModalOpen.set(false);
         this.loadAllAdminData();
@@ -552,7 +623,7 @@ export class AdminSaaSComponent implements OnInit {
         const errorMsg = err.error?.message || 'Có lỗi xảy ra, vui lòng thử lại.';
         this.stateService.showToast(errorMsg, 'error');
         this.isSavingPlan.set(false);
-      }
+      },
     });
   }
 
@@ -578,7 +649,7 @@ export class AdminSaaSComponent implements OnInit {
         this.stateService.showToast(errorMsg, 'error');
         this.confirmDeletePlanData.set(null);
         this.isDeletingPlan.set(false);
-      }
+      },
     });
   }
 
@@ -601,7 +672,7 @@ export class AdminSaaSComponent implements OnInit {
         this.stateService.showToast('Có lỗi xảy ra khi khôi phục gói mặc định.', 'error');
         this.confirmResetDefaultPlansOpen.set(false);
         this.isResettingDefaultPlans.set(false);
-      }
+      },
     });
   }
 
@@ -624,13 +695,13 @@ export class AdminSaaSComponent implements OnInit {
       error: (err) => {
         this.stateService.showToast('Không thể lưu cấu hình dọn dẹp.', 'error');
         this.isSavingSettings.set(false);
-      }
+      },
     });
   }
 
   // --- Cấu hình Thông tin liên hệ ---
   public addContact() {
-    this.systemContactsList.update(list => [
+    this.systemContactsList.update((list) => [
       ...list,
       {
         name: '',
@@ -638,13 +709,13 @@ export class AdminSaaSComponent implements OnInit {
         email: '',
         zalo: '',
         facebook: '',
-        telegram: ''
-      }
+        telegram: '',
+      },
     ]);
   }
 
   public removeContact(index: number) {
-    this.systemContactsList.update(list => list.filter((_, i) => i !== index));
+    this.systemContactsList.update((list) => list.filter((_, i) => i !== index));
   }
 
   public saveSystemContacts() {
@@ -658,34 +729,42 @@ export class AdminSaaSComponent implements OnInit {
         return;
       }
       if (!c.phone || !c.phone.trim()) {
-        this.stateService.showToast(`Liên hệ thứ ${i + 1}: Số điện thoại không được để trống.`, 'error');
+        this.stateService.showToast(
+          `Liên hệ thứ ${i + 1}: Số điện thoại không được để trống.`,
+          'error',
+        );
         return;
       }
       if (!/^[0-9]+$/.test(c.phone)) {
-        this.stateService.showToast(`Liên hệ thứ ${i + 1}: Số điện thoại chỉ được chứa các ký số.`, 'error');
+        this.stateService.showToast(
+          `Liên hệ thứ ${i + 1}: Số điện thoại chỉ được chứa các ký số.`,
+          'error',
+        );
         return;
       }
     }
 
     this.isSavingContacts.set(true);
-    this.apiService.updateAdminSystemSettings({
-      token_cleanup_days: this.tokenCleanupDays(),
-      system_contacts: contacts
-    }).subscribe({
-      next: () => {
-        this.stateService.showToast('Lưu cấu hình thông tin hệ thống thành công!', 'success');
-        this.isSavingContacts.set(false);
-        this.stateService.systemContacts.set(contacts);
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('auth_system_contacts', JSON.stringify(contacts));
-        }
-      },
-      error: (err) => {
-        const errorMsg = err.error?.message || 'Không thể lưu cấu hình thông tin hệ thống.';
-        this.stateService.showToast(errorMsg, 'error');
-        this.isSavingContacts.set(false);
-      }
-    });
+    this.apiService
+      .updateAdminSystemSettings({
+        token_cleanup_days: this.tokenCleanupDays(),
+        system_contacts: contacts,
+      })
+      .subscribe({
+        next: () => {
+          this.stateService.showToast('Lưu cấu hình thông tin hệ thống thành công!', 'success');
+          this.isSavingContacts.set(false);
+          this.stateService.systemContacts.set(contacts);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('auth_system_contacts', JSON.stringify(contacts));
+          }
+        },
+        error: (err) => {
+          const errorMsg = err.error?.message || 'Không thể lưu cấu hình thông tin hệ thống.';
+          this.stateService.showToast(errorMsg, 'error');
+          this.isSavingContacts.set(false);
+        },
+      });
   }
 
   public confirmCleanTokens() {
@@ -702,7 +781,7 @@ export class AdminSaaSComponent implements OnInit {
         this.stateService.showToast('Lỗi khi dọn dẹp token hệ thống.', 'error');
         this.confirmCleanTokensOpen.set(false);
         this.isCleaningTokens.set(false);
-      }
+      },
     });
   }
 
@@ -715,14 +794,16 @@ export class AdminSaaSComponent implements OnInit {
         this.stateService.showToast(res.message || 'Xóa tất cả token thành công!', 'success');
         this.confirmCleanAllTokensOpen.set(false);
         this.isCleaningAllTokens.set(false);
-        this.stateService.disconnectWalletAndClose('Tất cả token đã bị xóa. Vui lòng kết nối lại ví.');
+        this.stateService.disconnectWalletAndClose(
+          'Tất cả token đã bị xóa. Vui lòng kết nối lại ví.',
+        );
         this.router.navigate(['/']);
       },
       error: (err) => {
         this.stateService.showToast('Lỗi khi xóa tất cả token hệ thống.', 'error');
         this.confirmCleanAllTokensOpen.set(false);
         this.isCleaningAllTokens.set(false);
-      }
+      },
     });
   }
 
@@ -750,7 +831,7 @@ export class AdminSaaSComponent implements OnInit {
       error: () => {
         this.stateService.showToast('Không thể tải thông tin hệ thống.', 'error');
         this.isLoadingSysInfo.set(false);
-      }
+      },
     });
   }
 
@@ -769,12 +850,15 @@ export class AdminSaaSComponent implements OnInit {
       'clear-config': () => this.apiService.adminMaintenanceClearConfig(),
       'clear-routes': () => this.apiService.adminMaintenanceClearRoutes(),
       'clear-logs': () => this.apiService.adminMaintenanceClearLogs(),
-      'optimize': () => this.apiService.adminMaintenanceOptimize(),
+      optimize: () => this.apiService.adminMaintenanceOptimize(),
       'clear-optimize': () => this.apiService.adminMaintenanceClearOptimize(),
     };
 
     const call = apiMap[action];
-    if (!call) { this.runningMaintenance.set(''); return; }
+    if (!call) {
+      this.runningMaintenance.set('');
+      return;
+    }
 
     call().subscribe({
       next: (res: any) => {
@@ -785,7 +869,7 @@ export class AdminSaaSComponent implements OnInit {
         const msg = err?.error?.message || 'Có lỗi xảy ra, vui lòng thử lại.';
         this.stateService.showToast(msg, 'error');
         this.runningMaintenance.set('');
-      }
+      },
     });
   }
 }

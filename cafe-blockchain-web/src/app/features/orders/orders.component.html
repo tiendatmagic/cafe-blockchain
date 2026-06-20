@@ -11,11 +11,7 @@
       strokeWidth="2.5"
     />
     @if (stateService.web3Service.walletConnected()) {
-      <button
-        app-button
-        variant="secondary"
-        (click)="refreshOrders()"
-      >
+      <button app-button variant="secondary" (click)="refreshOrders()">
         <app-icon name="refresh" class="h-4 w-4 shrink-0" strokeWidth="2" />
         <span>Làm mới</span>
       </button>
@@ -28,244 +24,240 @@
         <app-skeleton-loader type="orders"></app-skeleton-loader>
       } @else {
         <div class="space-y-6">
-        <!-- Banner cảnh báo đối soát cạn/thiếu đồng bộ Blockchain khi chốt ca -->
-        @if (unsyncedCompletedOrders().length > 0) {
-          <div
-            class="p-4 rounded-2xl bg-[var(--dynamic-primary)]/10 dark:bg-[var(--dynamic-primary)]/15 border border-[var(--dynamic-primary)]/20 dark:border-[var(--dynamic-primary)]/35 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4.5 shadow-sm animate-in slide-in-from-top-4 duration-300"
-          >
-            <div class="flex items-start gap-3">
-              <div
-                class="p-2 rounded-xl bg-[var(--dynamic-primary)]/10 dark:bg-[var(--dynamic-primary)]/20 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] shrink-0 animate-pulse"
-              >
-                <app-icon name="warning" class="h-5 w-5" strokeWidth="2.5" />
-              </div>
-              <div class="space-y-0.5">
-                <h5
-                  class="text-xs font-black uppercase tracking-wider text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)]"
-                >
-                  Cảnh báo đối soát ca trực
-                </h5>
-                <p class="text-xs text-slate-600 dark:text-slate-400 font-bold leading-normal">
-                  Phát hiện
-                  <span
-                    class="text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] font-extrabold text-xs shrink-0"
-                    >{{ unsyncedCompletedOrders().length }} đơn hàng</span
-                  >
-                  đã hoàn thành nhưng chưa được ghi nhận lên Blockchain. Vui lòng bấm đồng bộ để
-                  hoàn tất đối soát trước khi giao ca ra về!
-                </p>
-              </div>
-            </div>
-            <button
-              app-button
-              variant="secondary"
-              (click)="syncAllUnsyncedOrders()"
-              [loading]="blockchainSyncLoading()"
-              [disabled]="isOrderStatusUpdating()"
-              class="w-full sm:w-auto shrink-0 flex items-center justify-center gap-1.5"
+          <!-- Banner cảnh báo đối soát cạn/thiếu đồng bộ Blockchain khi chốt ca -->
+          @if (unsyncedCompletedOrders().length > 0) {
+            <div
+              class="p-4 rounded-2xl bg-[var(--dynamic-primary)]/10 dark:bg-[var(--dynamic-primary)]/15 border border-[var(--dynamic-primary)]/20 dark:border-[var(--dynamic-primary)]/35 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4.5 shadow-sm animate-in slide-in-from-top-4 duration-300"
             >
-              <app-icon name="sync" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
-              <span>Đồng bộ nhanh tất cả</span>
-            </button>
-          </div>
-        }
-
-        <!-- THANH LỌC ĐƠN HÀNG -->
-        <div
-          app-card
-          class="flex flex-col xl:flex-row gap-5 justify-between items-stretch xl:items-end"
-        >
-          <!-- Nhóm bộ lọc (trạng thái + blockchain) -->
-          <div
-            class="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-4.5 w-full xl:w-auto"
-          >
-            <!-- Lọc trạng thái đơn hàng -->
-            <div class="flex flex-col gap-1.5 w-full sm:w-auto">
-              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider"
-                >Trạng thái đơn hàng</span
-              >
-              <app-tab-group
-                [options]="statusFilterOptions"
-                [activeValue]="orderStatusFilter()"
-                (valueChange)="setOrderStatusFilter($event)"
-                containerClass="w-full sm:w-auto"
-              ></app-tab-group>
-            </div>
-
-            <!-- Lọc trạng thái blockchain -->
-            <div class="flex flex-col gap-1.5 w-full sm:w-auto">
-              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider"
-                >Blockchain (Bằng chứng hóa đơn)</span
-              >
-              <app-tab-group
-                [options]="blockchainFilterOptions"
-                [activeValue]="orderBlockchainFilter()"
-                (valueChange)="setOrderBlockchainFilter($event)"
-                containerClass="w-full sm:w-auto"
-              ></app-tab-group>
-            </div>
-          </div>
-
-          <!-- Tìm kiếm đơn hàng -->
-          <div class="flex flex-col gap-1.5 w-full xl:w-72 shrink-0">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider"
-              >Tìm kiếm đơn hàng</span
-            >
-            <div class="relative w-full">
-              <input
-                type="text"
-                [ngModel]="orderSearchQuery()"
-                (ngModelChange)="orderSearchQuery.set($event); ordersCurrentPage.set(1)"
-                placeholder="Mã đơn, số bàn, khách..."
-                class="w-full search-input"
-              />
-              <app-icon
-                name="search"
-                class="absolute left-3 top-3 h-4 w-4 text-slate-400"
-                strokeWidth="2.5"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- BẢNG LỊCH SỬ ĐƠN HÀNG -->
-        <app-table
-          [data]="paginatedOrders()"
-          [columns]="columns"
-          [isLoading]="stateService.isOrdersLoading()"
-          skeletonType="table"
-          [totalItems]="filteredOrders().length"
-          [itemsPerPage]="ordersItemsPerPage"
-          [currentPage]="ordersCurrentPage()"
-          itemName="hóa đơn"
-          [showPagination]="true"
-          (pageChange)="ordersCurrentPage.set($event)"
-        >
-          <!-- Custom cell cho cột mã đơn -->
-          <ng-template appCell="order_code" let-row>
-            <span class="font-bold whitespace-nowrap">{{ row.order_code }}</span>
-          </ng-template>
-
-          <!-- Custom cell cho cột số bàn -->
-          <ng-template appCell="table_number" let-row>
-            <span class="font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">
-              {{ row.table_number || 'Mang về' }}
-            </span>
-          </ng-template>
-
-          <!-- Custom cell cho cột tổng tiền -->
-          <ng-template appCell="total_amount" let-row>
-            <span class="font-black text-slate-800 dark:text-white whitespace-nowrap">
-              {{ row.total_amount | vnd }}
-            </span>
-          </ng-template>
-
-          <!-- Custom cell cho cột hình thức -->
-          <ng-template appCell="payment_method" let-row>
-            <app-badge [variant]="row.payment_method === 'crypto' ? 'info' : 'neutral'" size="sm">
-              {{ getPaymentMethodText(row.payment_method) }}
-            </app-badge>
-          </ng-template>
-
-          <!-- Custom cell cho cột thời gian -->
-          <ng-template appCell="created_at" let-row>
-            <span class="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">
-              {{ row.created_at | date: 'dd/MM/yyyy HH:mm' }}
-            </span>
-          </ng-template>
-
-          <!-- Custom cell cho cột trạng thái đơn -->
-          <ng-template appCell="status" let-row>
-            @if (row.is_verified === false) {
-              <app-badge variant="danger" [pulse]="true">
-                <app-icon name="warning" class="h-4 w-4 text-amber-500 shrink-0 mr-1" strokeWidth="2" />
-                <span>DB bị can thiệp!</span>
-              </app-badge>
-            } @else if (row.status === 'completed') {
-              <app-badge variant="success">Thành công</app-badge>
-            } @else if (row.status === 'cancelled') {
-              <app-badge variant="danger">Đã hủy</app-badge>
-            } @else if (row.status === 'preparing') {
-              <app-badge variant="info" [pulse]="true">Đang chuẩn bị</app-badge>
-            } @else {
-              <app-badge variant="warning" [pulse]="true">Chờ xác nhận</app-badge>
-            }
-          </ng-template>
-
-          <!-- Custom cell cho cột bằng chứng blockchain -->
-          <ng-template appCell="blockchain_status" let-row>
-            @if (row.blockchain_status === 'success') {
-              <div class="flex items-center gap-1.5">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                <a
-                  [href]="getTxExplorerLink(row.tx_hash, row.chain_id)"
-                  target="_blank"
-                  class="text-xs text-blue-500 font-mono hover:underline font-bold"
+              <div class="flex items-start gap-3">
+                <div
+                  class="p-2 rounded-xl bg-[var(--dynamic-primary)]/10 dark:bg-[var(--dynamic-primary)]/20 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] shrink-0 animate-pulse"
                 >
-                  {{ row.tx_hash.substring(0, 5) }}...{{
-                    row.tx_hash.substring(row.tx_hash.length - 4)
-                  }}
-                  ↗
-                </a>
-              </div>
-            } @else if (row.status === 'completed' && row.blockchain_status !== 'failed') {
-              @if (row.is_verified === false) {
-                <div class="flex flex-col gap-1 items-start">
-                  <app-badge variant="danger" size="sm" [pulse]="true">
-                    <app-icon
-                      name="warning"
-                      class="h-4 w-4 text-amber-500 shrink-0 mr-1"
-                      [strokeWidth]="2"
-                    />
-                    <span>Dữ liệu bị thay đổi!</span>
-                  </app-badge>
-                  <button [disabled]="true" class="btn-cancel btn-sm">
-                    <span>Bị khóa đồng bộ</span>
-                  </button>
+                  <app-icon name="warning" class="h-5 w-5" strokeWidth="2.5" />
                 </div>
-              } @else {
-                <button
-                  app-button
-                  variant="primary"
-                  size="sm"
-                  [disabled]="!web3Service.walletConnected()"
-                  [loading]="blockchainSyncLoading()"
-                  (click)="syncToBlockchain(row)"
-                >
-                  <app-icon name="cloud-upload" class="h-3.5 w-3.5 shrink-0" strokeWidth="2" />
-                  <span>Đồng bộ Blockchain</span>
-                </button>
-              }
-            } @else {
-              <span class="text-xs text-slate-400 font-semibold italic">Đơn chưa hoàn thành</span>
-            }
-          </ng-template>
-
-          <!-- Custom cell cho cột thao tác -->
-          <ng-template appCell="actions" let-row>
-            <div class="flex items-center justify-end gap-2.5">
+                <div class="space-y-0.5">
+                  <h5
+                    class="text-xs font-black uppercase tracking-wider text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)]"
+                  >
+                    Cảnh báo đối soát ca trực
+                  </h5>
+                  <p class="text-xs text-slate-600 dark:text-slate-400 font-bold leading-normal">
+                    Phát hiện
+                    <span
+                      class="text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)] font-extrabold text-xs shrink-0"
+                      >{{ unsyncedCompletedOrders().length }} đơn hàng</span
+                    >
+                    đã hoàn thành nhưng chưa được ghi nhận lên Blockchain. Vui lòng bấm đồng bộ để
+                    hoàn tất đối soát trước khi giao ca ra về!
+                  </p>
+                </div>
+              </div>
               <button
                 app-button
-                variant="cancel"
-                size="sm"
-                (click)="viewOrderDetail(row)"
+                variant="secondary"
+                (click)="syncAllUnsyncedOrders()"
+                [loading]="blockchainSyncLoading()"
+                [disabled]="isOrderStatusUpdating()"
+                class="w-full sm:w-auto shrink-0 flex items-center justify-center gap-1.5"
               >
-                Chi tiết
+                <app-icon name="sync" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
+                <span>Đồng bộ nhanh tất cả</span>
               </button>
-              @if (row.status === 'pending' && row.blockchain_status === 'none') {
-                <button
-                  app-button
-                  variant="secondary"
-                  size="sm"
-                  (click)="editOrder(row)"
-                >
-                  Sửa
-                </button>
-              }
             </div>
-          </ng-template>
-        </app-table>
-      </div>
+          }
+
+          <!-- THANH LỌC ĐƠN HÀNG -->
+          <div
+            app-card
+            class="flex flex-col xl:flex-row gap-5 justify-between items-stretch xl:items-end"
+          >
+            <!-- Nhóm bộ lọc (trạng thái + blockchain) -->
+            <div
+              class="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-4.5 w-full xl:w-auto"
+            >
+              <!-- Lọc trạng thái đơn hàng -->
+              <div class="flex flex-col gap-1.5 w-full sm:w-auto">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider"
+                  >Trạng thái đơn hàng</span
+                >
+                <app-tab-group
+                  [options]="statusFilterOptions"
+                  [activeValue]="orderStatusFilter()"
+                  (valueChange)="setOrderStatusFilter($event)"
+                  containerClass="w-full sm:w-auto"
+                ></app-tab-group>
+              </div>
+
+              <!-- Lọc trạng thái blockchain -->
+              <div class="flex flex-col gap-1.5 w-full sm:w-auto">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider"
+                  >Blockchain (Bằng chứng hóa đơn)</span
+                >
+                <app-tab-group
+                  [options]="blockchainFilterOptions"
+                  [activeValue]="orderBlockchainFilter()"
+                  (valueChange)="setOrderBlockchainFilter($event)"
+                  containerClass="w-full sm:w-auto"
+                ></app-tab-group>
+              </div>
+            </div>
+
+            <!-- Tìm kiếm đơn hàng -->
+            <div class="flex flex-col gap-1.5 w-full xl:w-72 shrink-0">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider"
+                >Tìm kiếm đơn hàng</span
+              >
+              <div class="relative w-full">
+                <input
+                  type="text"
+                  [ngModel]="orderSearchQuery()"
+                  (ngModelChange)="orderSearchQuery.set($event); ordersCurrentPage.set(1)"
+                  placeholder="Mã đơn, số bàn, khách..."
+                  class="w-full search-input"
+                />
+                <app-icon
+                  name="search"
+                  class="absolute left-3 top-3 h-4 w-4 text-slate-400"
+                  strokeWidth="2.5"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- BẢNG LỊCH SỬ ĐƠN HÀNG -->
+          <app-table
+            [data]="paginatedOrders()"
+            [columns]="columns"
+            [isLoading]="stateService.isOrdersLoading()"
+            skeletonType="table"
+            [totalItems]="filteredOrders().length"
+            [itemsPerPage]="ordersItemsPerPage"
+            [currentPage]="ordersCurrentPage()"
+            itemName="hóa đơn"
+            [showPagination]="true"
+            (pageChange)="ordersCurrentPage.set($event)"
+          >
+            <!-- Custom cell cho cột mã đơn -->
+            <ng-template appCell="order_code" let-row>
+              <span class="font-bold whitespace-nowrap">{{ row.order_code }}</span>
+            </ng-template>
+
+            <!-- Custom cell cho cột số bàn -->
+            <ng-template appCell="table_number" let-row>
+              <span class="font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                {{ row.table_number || 'Mang về' }}
+              </span>
+            </ng-template>
+
+            <!-- Custom cell cho cột tổng tiền -->
+            <ng-template appCell="total_amount" let-row>
+              <span class="font-black text-slate-800 dark:text-white whitespace-nowrap">
+                {{ row.total_amount | vnd }}
+              </span>
+            </ng-template>
+
+            <!-- Custom cell cho cột hình thức -->
+            <ng-template appCell="payment_method" let-row>
+              <app-badge [variant]="row.payment_method === 'crypto' ? 'info' : 'neutral'" size="sm">
+                {{ getPaymentMethodText(row.payment_method) }}
+              </app-badge>
+            </ng-template>
+
+            <!-- Custom cell cho cột thời gian -->
+            <ng-template appCell="created_at" let-row>
+              <span
+                class="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap"
+              >
+                {{ row.created_at | date: 'dd/MM/yyyy HH:mm' }}
+              </span>
+            </ng-template>
+
+            <!-- Custom cell cho cột trạng thái đơn -->
+            <ng-template appCell="status" let-row>
+              @if (row.is_verified === false) {
+                <app-badge variant="danger" [pulse]="true">
+                  <app-icon
+                    name="warning"
+                    class="h-4 w-4 text-amber-500 shrink-0 mr-1"
+                    strokeWidth="2"
+                  />
+                  <span>DB bị can thiệp!</span>
+                </app-badge>
+              } @else if (row.status === 'completed') {
+                <app-badge variant="success">Thành công</app-badge>
+              } @else if (row.status === 'cancelled') {
+                <app-badge variant="danger">Đã hủy</app-badge>
+              } @else if (row.status === 'preparing') {
+                <app-badge variant="info" [pulse]="true">Đang chuẩn bị</app-badge>
+              } @else {
+                <app-badge variant="warning" [pulse]="true">Chờ xác nhận</app-badge>
+              }
+            </ng-template>
+
+            <!-- Custom cell cho cột bằng chứng blockchain -->
+            <ng-template appCell="blockchain_status" let-row>
+              @if (row.blockchain_status === 'success') {
+                <div class="flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  <a
+                    [href]="getTxExplorerLink(row.tx_hash, row.chain_id)"
+                    target="_blank"
+                    class="text-xs text-blue-500 font-mono hover:underline font-bold"
+                  >
+                    {{ row.tx_hash.substring(0, 5) }}...{{
+                      row.tx_hash.substring(row.tx_hash.length - 4)
+                    }}
+                    ↗
+                  </a>
+                </div>
+              } @else if (row.status === 'completed' && row.blockchain_status !== 'failed') {
+                @if (row.is_verified === false) {
+                  <div class="flex flex-col gap-1 items-start">
+                    <app-badge variant="danger" size="sm" [pulse]="true">
+                      <app-icon
+                        name="warning"
+                        class="h-4 w-4 text-amber-500 shrink-0 mr-1"
+                        [strokeWidth]="2"
+                      />
+                      <span>Dữ liệu bị thay đổi!</span>
+                    </app-badge>
+                    <button [disabled]="true" class="btn-cancel btn-sm">
+                      <span>Bị khóa đồng bộ</span>
+                    </button>
+                  </div>
+                } @else {
+                  <button
+                    app-button
+                    variant="primary"
+                    size="sm"
+                    [disabled]="!web3Service.walletConnected()"
+                    [loading]="blockchainSyncLoading()"
+                    (click)="syncToBlockchain(row)"
+                  >
+                    <app-icon name="cloud-upload" class="h-3.5 w-3.5 shrink-0" strokeWidth="2" />
+                    <span>Đồng bộ Blockchain</span>
+                  </button>
+                }
+              } @else {
+                <span class="text-xs text-slate-400 font-semibold italic">Đơn chưa hoàn thành</span>
+              }
+            </ng-template>
+
+            <!-- Custom cell cho cột thao tác -->
+            <ng-template appCell="actions" let-row>
+              <div class="flex items-center justify-end gap-2.5">
+                <button app-button variant="cancel" size="sm" (click)="viewOrderDetail(row)">
+                  Chi tiết
+                </button>
+                @if (row.status === 'pending' && row.blockchain_status === 'none') {
+                  <button app-button variant="secondary" size="sm" (click)="editOrder(row)">
+                    Sửa
+                  </button>
+                }
+              </div>
+            </ng-template>
+          </app-table>
+        </div>
       }
 
       <!-- ==================== MODAL XEM CHI TIẾT HÓA ĐƠN ==================== -->
@@ -319,7 +311,9 @@
                           >THANH TOÁN</span
                         >
                         <span class="font-extrabold text-slate-700 dark:text-slate-300 text-sm">{{
-                          getPaymentMethodText(selectedOrderDetails()?.payment_method)
+                          getPaymentMethodText(
+                            $safeNavigationMigration(selectedOrderDetails()?.payment_method)
+                          )
                         }}</span>
                       </div>
                       <div
@@ -332,7 +326,8 @@
                         <span
                           class="font-extrabold text-slate-700 dark:text-slate-300 text-xs font-mono"
                           >{{
-                            selectedOrderDetails()?.created_at | date: 'dd/MM/yyyy HH:mm:ss'
+                            $safeNavigationMigration(selectedOrderDetails()?.created_at)
+                              | date: 'dd/MM/yyyy HH:mm:ss'
                           }}</span
                         >
                       </div>
@@ -360,7 +355,11 @@
                             @if (selectedOrderDetails()?.customer.wallet_address) {
                               <span
                                 class="text-xs text-purple-600 dark:text-purple-400 font-bold leading-none mt-1 truncate max-w-full block"
-                                [title]="selectedOrderDetails()?.customer.wallet_address"
+                                [title]="
+                                  $safeNavigationMigration(
+                                    selectedOrderDetails()?.customer.wallet_address
+                                  )
+                                "
                               >
                                 Ví: {{ selectedOrderDetails()?.customer.wallet_address }}
                               </span>
@@ -419,8 +418,8 @@
                               <a
                                 [href]="
                                   getTxExplorerLink(
-                                    selectedOrderDetails()?.tx_hash,
-                                    selectedOrderDetails()?.chain_id
+                                    $safeNavigationMigration(selectedOrderDetails()?.tx_hash),
+                                    $safeNavigationMigration(selectedOrderDetails()?.chain_id)
                                   )
                                 "
                                 target="_blank"
@@ -446,8 +445,8 @@
                           <a
                             [href]="
                               getTxExplorerLink(
-                                selectedOrderDetails()?.tx_hash,
-                                selectedOrderDetails()?.chain_id
+                                $safeNavigationMigration(selectedOrderDetails()?.tx_hash),
+                                $safeNavigationMigration(selectedOrderDetails()?.chain_id)
                               )
                             "
                             target="_blank"
@@ -487,7 +486,9 @@
                           (checkedChange)="isAutoSyncOnCompleteChecked.set($event)"
                           [disabled]="isOrderStatusUpdating() || blockchainSyncLoading()"
                         >
-                          <span class="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                          <span
+                            class="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5"
+                          >
                             <span>Đồng bộ Blockchain lập tức</span>
                             <app-badge variant="info" size="sm" rounded="sm">Web3</app-badge>
                           </span>
@@ -615,14 +616,19 @@
                     @if (
                       (selectedOrderDetails()?.status === 'completed' &&
                         selectedOrderDetails()?.blockchain_status === 'success' &&
-                        selectedOrderDetails()?.gift_voucher_nft_token_id === null &&
+                        $safeNavigationMigration(
+                          selectedOrderDetails()?.gift_voucher_nft_token_id
+                        ) === null &&
                         selectedOrderDetails()?.customer?.wallet_address &&
                         (selectedOrderDetails()?.total_amount || 0) +
                           (selectedOrderDetails()?.discount_amount || 0) >=
                           (settings()?.voucher_gift_min_amount || 100000)) ||
                       (selectedOrderDetails()?.status === 'cancelled' &&
-                        selectedOrderDetails()?.voucher_nft_token_id !== null &&
-                        selectedOrderDetails()?.gift_voucher_nft_token_id === null &&
+                        $safeNavigationMigration(selectedOrderDetails()?.voucher_nft_token_id) !==
+                          null &&
+                        $safeNavigationMigration(
+                          selectedOrderDetails()?.gift_voucher_nft_token_id
+                        ) === null &&
                         selectedOrderDetails()?.customer?.wallet_address)
                     ) {
                       <button
@@ -633,11 +639,7 @@
                         [loading]="isMintingVoucherManual()"
                         class="w-full hover:scale-[1.01]"
                       >
-                        <app-icon
-                          name="gift"
-                          class="h-4 w-4 shrink-0"
-                          strokeWidth="2.5"
-                        />
+                        <app-icon name="gift" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
                         <span>
                           {{
                             selectedOrderDetails()?.status === 'cancelled'
@@ -748,8 +750,12 @@
                         <span class="flex items-center gap-1">
                           <span>Giảm giá</span>
                           @if (
-                            selectedOrderDetails()?.voucher_nft_token_id !== null &&
-                            selectedOrderDetails()?.voucher_nft_token_id !== undefined
+                            $safeNavigationMigration(
+                              selectedOrderDetails()?.voucher_nft_token_id
+                            ) !== null &&
+                            $safeNavigationMigration(
+                              selectedOrderDetails()?.voucher_nft_token_id
+                            ) !== undefined
                           ) {
                             <app-badge variant="info" size="sm" rounded="sm" class="font-mono">
                               NFT Voucher #{{ selectedOrderDetails()?.voucher_nft_token_id }}
@@ -844,7 +850,10 @@
                   <p class="text-xs text-slate-600 dark:text-slate-400 font-medium">
                     Lập một <strong class="text-rose-500">PHIẾU CHI</strong> đối ứng với số tiền:
                     <strong class="text-base text-rose-500 font-black"
-                      >{{ explanationOrderDetails()?.total_amount | number: '1.0-0' }}đ</strong
+                      >{{
+                        $safeNavigationMigration(explanationOrderDetails()?.total_amount)
+                          | number: '1.0-0'
+                      }}đ</strong
                     >
                     để hoàn tiền/bù trừ két tiền mặt của quán.
                   </p>
@@ -854,7 +863,7 @@
                   (click)="
                     copyToClipboard(
                       'Hoàn tiền do thu ngân thao tác nhầm đơn hàng #' +
-                        explanationOrderDetails()?.id
+                        $safeNavigationMigration(explanationOrderDetails()?.id)
                     )
                   "
                   class="flex items-start gap-2.5 group/copy cursor-pointer"

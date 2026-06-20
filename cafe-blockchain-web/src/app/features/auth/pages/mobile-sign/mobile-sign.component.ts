@@ -1,4 +1,12 @@
-import { Component, inject, signal, OnInit, HostListener, ElementRef } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  OnInit,
+  HostListener,
+  ElementRef,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { Web3Service } from '@core/services/web3.service';
@@ -16,7 +24,8 @@ import { CardComponent } from '@shared/components/card/card.component';
   selector: 'app-mobile-sign',
   standalone: true,
   imports: [CommonModule, VNDCurrencyPipe, ThemeToggleComponent, IconComponent, CardComponent],
-  templateUrl: './mobile-sign.component.html'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  templateUrl: './mobile-sign.component.html',
 })
 export class MobileSignComponent implements OnInit {
   public readonly web3Service = inject(Web3Service);
@@ -29,7 +38,7 @@ export class MobileSignComponent implements OnInit {
 
   public orderCode = signal<string>('');
   public tokenId = signal<number | null>(null);
-  public voucherInfo = signal<{ discount: number, minOrder: number, isUsed: boolean } | null>(null);
+  public voucherInfo = signal<{ discount: number; minOrder: number; isUsed: boolean } | null>(null);
   public tempOrder = signal<any | null>(null);
   public orderStatus = signal<string | null>(null);
   public blockchainStatus = signal<string | null>(null);
@@ -46,11 +55,12 @@ export class MobileSignComponent implements OnInit {
     return this.web3Service.isWrongChain();
   }
 
-
   @HostListener('document:click', ['$event'])
   public onDocumentClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
-    if (!this.elementRef.nativeElement.querySelector('#chain-dropdown-container')?.contains(target)) {
+    if (
+      !this.elementRef.nativeElement.querySelector('#chain-dropdown-container')?.contains(target)
+    ) {
       this.isChainDropdownOpen.set(false);
     }
   }
@@ -60,7 +70,9 @@ export class MobileSignComponent implements OnInit {
     try {
       const success = await this.web3Service.ensureCorrectNetwork();
       if (!success) {
-        this.errorMessage.set('Không thể chuyển mạng tự động. Vui lòng tự chuyển mạng trong ví của bạn!');
+        this.errorMessage.set(
+          'Không thể chuyển mạng tự động. Vui lòng tự chuyển mạng trong ví của bạn!',
+        );
       }
     } catch (err: any) {
       this.errorMessage.set(err.message || 'Lỗi khi chuyển mạng.');
@@ -81,7 +93,9 @@ export class MobileSignComponent implements OnInit {
     try {
       const success = await this.web3Service.ensureCorrectNetwork(chainId);
       if (!success) {
-        this.errorMessage.set('Không thể chuyển mạng tự động. Vui lòng tự chuyển mạng trong ví của bạn!');
+        this.errorMessage.set(
+          'Không thể chuyển mạng tự động. Vui lòng tự chuyển mạng trong ví của bạn!',
+        );
       }
     } catch (err: any) {
       this.errorMessage.set(err.message || 'Lỗi khi chuyển mạng.');
@@ -111,7 +125,7 @@ export class MobileSignComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.subscribe((params) => {
       const code = params['order_code'] || '';
       const tid = params['token_id'] ? Number(params['token_id']) : null;
       this.orderCode.set(code);
@@ -135,7 +149,9 @@ export class MobileSignComponent implements OnInit {
             this.orderStatus.set(settings.order_status || null);
             this.blockchainStatus.set(settings.blockchain_status || null);
             this.txHash.set(settings.tx_hash || null);
-            this.orderVoucherTokenId.set(settings.voucher_nft_token_id ? Number(settings.voucher_nft_token_id) : null);
+            this.orderVoucherTokenId.set(
+              settings.voucher_nft_token_id ? Number(settings.voucher_nft_token_id) : null,
+            );
 
             // Nếu không truyền token_id, đây là yêu cầu xem biên lai/trạng thái đơn hàng thông thường
             if (tid === null) {
@@ -150,7 +166,9 @@ export class MobileSignComponent implements OnInit {
             }
 
             // 2. Nếu voucher đã được áp dụng thành công cho đơn hàng này rồi, chuyển sang step 'success' ngay
-            const orderVoucherId = settings.voucher_nft_token_id ? Number(settings.voucher_nft_token_id) : null;
+            const orderVoucherId = settings.voucher_nft_token_id
+              ? Number(settings.voucher_nft_token_id)
+              : null;
             if (orderVoucherId !== null && orderVoucherId === tid) {
               this.step.set('success');
               return;
@@ -160,7 +178,9 @@ export class MobileSignComponent implements OnInit {
             // (hoặc chưa áp dụng voucher nào, hoặc áp dụng voucher khác), thì không cho phép ký ví nữa vì đơn hàng đã được xử lý.
             if (settings.order_status === 'completed' || settings.order_status === 'preparing') {
               this.step.set('error');
-              this.errorMessage.set('Đơn hàng đã được xử lý hoặc thanh toán từ trước, không thể áp dụng NFT Voucher này nữa!');
+              this.errorMessage.set(
+                'Đơn hàng đã được xử lý hoặc thanh toán từ trước, không thể áp dụng NFT Voucher này nữa!',
+              );
               return;
             }
           }
@@ -172,8 +192,11 @@ export class MobileSignComponent implements OnInit {
         error: (err) => {
           console.error('Lỗi tải cấu hình public của quán:', err);
           this.step.set('error');
-          this.errorMessage.set(err.error?.message || 'Không thể tải thông tin hóa đơn và cấu hình của quán. Vui lòng kiểm tra lại đường dẫn!');
-        }
+          this.errorMessage.set(
+            err.error?.message ||
+              'Không thể tải thông tin hóa đơn và cấu hình của quán. Vui lòng kiểm tra lại đường dẫn!',
+          );
+        },
       });
     });
 
@@ -197,15 +220,16 @@ export class MobileSignComponent implements OnInit {
       const provider = new JsonRpcProvider(rpc);
       const contract = new Contract(contractAddr, CAFE_VOUCHER_NFT_ABI, provider);
       const info = await contract['vouchers'](tokenId);
-      
+
       this.voucherInfo.set({
         discount: Number(info.discountAmount),
         minOrder: Number(info.minOrderAmount),
-        isUsed: info.isUsed
+        isUsed: info.isUsed,
       });
 
       if (info.isUsed) {
-        const isMatchedOrder = this.orderStatus() !== null && this.orderVoucherTokenId() === tokenId;
+        const isMatchedOrder =
+          this.orderStatus() !== null && this.orderVoucherTokenId() === tokenId;
         if (isMatchedOrder) {
           this.step.set('success');
         } else {
@@ -251,7 +275,7 @@ export class MobileSignComponent implements OnInit {
       const signature = await this.web3Service.signVoucherUsageEIP712(tid, code);
 
       this.statusMessage.set('Đang nộp chữ ký lên hệ thống POS...');
-      
+
       // 2. POST chữ ký số lên backend Laravel qua endpoint công khai
       this.apiService.submitVoucherSignature(code, signature).subscribe({
         next: (res) => {
@@ -267,7 +291,7 @@ export class MobileSignComponent implements OnInit {
           this.step.set('error');
           this.errorMessage.set(err.error?.message || 'Lỗi gửi chữ ký lên máy POS.');
           this.isSigning.set(false);
-        }
+        },
       });
     } catch (err: any) {
       console.error('Lỗi ký số:', err);

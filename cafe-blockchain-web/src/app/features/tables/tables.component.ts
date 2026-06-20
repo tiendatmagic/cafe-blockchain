@@ -1,6 +1,13 @@
 import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prompt/web3-connect-prompt.component';
 import { AccessRestrictedComponent } from '@shared/components/access-restricted/access-restricted.component';
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  computed,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
@@ -35,9 +42,10 @@ import { BadgeComponent } from '@shared/components/badge/badge.component';
     SkeletonLoaderComponent,
     ButtonComponent,
     CardComponent,
-    BadgeComponent
+    BadgeComponent,
   ],
-  templateUrl: './tables.component.html'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  templateUrl: './tables.component.html',
 })
 export class TablesComponent implements OnInit {
   public readonly stateService = inject(StateService);
@@ -51,17 +59,17 @@ export class TablesComponent implements OnInit {
 
   public readonly areaFilterOptions = computed<TabOption[]>(() => [
     { value: 'all', label: 'Tất cả khu vực' },
-    ...this.areas().map(area => ({
+    ...this.areas().map((area) => ({
       value: area.id.toString(),
       label: area.name,
-      badge: area.tables_count
-    }))
+      badge: area.tables_count,
+    })),
   ]);
 
   public readonly tableStatusFilterOptions: TabOption[] = [
     { value: 'all', label: 'Tất cả' },
     { value: 'empty', label: 'Bàn trống', dotClass: 'bg-emerald-500' },
-    { value: 'using', label: 'Đang sử dụng', dotClass: 'bg-amber-500' }
+    { value: 'using', label: 'Đang sử dụng', dotClass: 'bg-amber-500' },
   ];
 
   // Modals & Form Khu vực
@@ -70,7 +78,7 @@ export class TablesComponent implements OnInit {
   public readonly editingArea = signal<any>(null);
   public readonly isAreaSaving = signal<boolean>(false);
   public readonly areaForm = signal<any>({
-    name: ''
+    name: '',
   });
 
   // Modals & Form Bàn ăn
@@ -82,7 +90,7 @@ export class TablesComponent implements OnInit {
   public readonly tableForm = signal<any>({
     name: '',
     area_id: 0,
-    status: 'empty'
+    status: 'empty',
   });
 
   // Trạng thái modal xác nhận xóa
@@ -99,14 +107,20 @@ export class TablesComponent implements OnInit {
   public readonly selectedTableForQr = signal<any>(null);
 
   // Getters từ StateService
-  public get areas() { return this.stateService.areas; }
-  public get diningTables() { return this.stateService.diningTables; }
-  public get isTablesLoading() { return this.stateService.isTablesLoading; }
+  public get areas() {
+    return this.stateService.areas;
+  }
+  public get diningTables() {
+    return this.stateService.diningTables;
+  }
+  public get isTablesLoading() {
+    return this.stateService.isTablesLoading;
+  }
 
   // Danh sách khu vực bao gồm tùy chọn mặc định cho dropdown
   public readonly tableAreaOptions = computed(() => [
     { id: 0, name: '-- Chọn khu vực --' },
-    ...this.areas()
+    ...this.areas(),
   ]);
 
   // Computed Properties lọc phòng bàn
@@ -116,7 +130,7 @@ export class TablesComponent implements OnInit {
     const status = this.tableStatusFilter();
     const search = this.tableSearchQuery().trim().toLowerCase();
 
-    return tables.filter(t => {
+    return tables.filter((t) => {
       const matchArea = areaId === 'all' || t.area_id?.toString() === areaId;
       const matchStatus = status === 'all' || t.status === status;
       const matchSearch = !search || t.name.toLowerCase().includes(search);
@@ -162,11 +176,14 @@ export class TablesComponent implements OnInit {
   public copyTableLink(table: any) {
     if (!table) return;
     const url = this.getTableStorefrontUrl(table);
-    navigator.clipboard.writeText(url).then(() => {
-      this.stateService.showToast('Đã sao chép liên kết gọi món trực tuyến của bàn!', 'success');
-    }).catch(() => {
-      this.stateService.showToast('Sao chép liên kết thất bại, vui lòng thử lại!', 'error');
-    });
+    navigator.clipboard
+      .writeText(url)
+      .then(() => {
+        this.stateService.showToast('Đã sao chép liên kết gọi món trực tuyến của bàn!', 'success');
+      })
+      .catch(() => {
+        this.stateService.showToast('Sao chép liên kết thất bại, vui lòng thử lại!', 'error');
+      });
   }
 
   public downloadTableQrCode(table: any) {
@@ -176,8 +193,8 @@ export class TablesComponent implements OnInit {
 
     this.stateService.showToast('Đang chuẩn bị tải file QR...', 'success');
     fetch(url)
-      .then(response => response.blob())
-      .then(blob => {
+      .then((response) => response.blob())
+      .then((blob) => {
         const blobUrl = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = blobUrl;
@@ -195,7 +212,10 @@ export class TablesComponent implements OnInit {
   public openPosForTable(table: any) {
     this.activeDropdownTableId.set(null);
     if (!this.stateService.currentShift() || !this.stateService.currentShift()?.id) {
-      this.stateService.showToast('Vui lòng mở ca làm việc trước khi thực hiện nghiệp vụ bán hàng POS!', 'error');
+      this.stateService.showToast(
+        'Vui lòng mở ca làm việc trước khi thực hiện nghiệp vụ bán hàng POS!',
+        'error',
+      );
       return;
     }
 
@@ -206,14 +226,17 @@ export class TablesComponent implements OnInit {
           this.stateService.tableNumber.set(table.name);
           this.stateService.updateTableStatusLocal(table.id, 'using');
           this.isUpdatingTableStatus.set(false);
-          this.stateService.showToast(`Đã mở ${table.name} và chuyển sang giao diện POS.`, 'success');
+          this.stateService.showToast(
+            `Đã mở ${table.name} và chuyển sang giao diện POS.`,
+            'success',
+          );
           this.router.navigate(['/pos']);
         },
         error: () => {
           this.stateService.tableNumber.set(table.name);
           this.isUpdatingTableStatus.set(false);
           this.router.navigate(['/pos']);
-        }
+        },
       });
     } else {
       this.stateService.tableNumber.set(table.name);
@@ -227,8 +250,7 @@ export class TablesComponent implements OnInit {
     this.stateService.showToast(`Đã áp dụng bộ lọc, tìm thấy ${count} bàn ăn phù hợp!`, 'success');
   }
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   // Tải lại dữ liệu khu vực & bàn
   public refreshTablesAndAreas() {
@@ -274,7 +296,7 @@ export class TablesComponent implements OnInit {
         error: () => {
           this.stateService.showToast('Thêm khu vực thất bại hoặc tên đã tồn tại!', 'error');
           this.isAreaSaving.set(false);
-        }
+        },
       });
     } else {
       const id = this.editingArea().id;
@@ -288,7 +310,7 @@ export class TablesComponent implements OnInit {
         error: () => {
           this.stateService.showToast('Cập nhật khu vực thất bại!', 'error');
           this.isAreaSaving.set(false);
-        }
+        },
       });
     }
   }
@@ -316,7 +338,7 @@ export class TablesComponent implements OnInit {
         this.stateService.showToast('Xóa khu vực thất bại!', 'error');
         this.deletingArea.set(null);
         this.stateService.isLoading.set(false);
-      }
+      },
     });
   }
 
@@ -327,7 +349,7 @@ export class TablesComponent implements OnInit {
     this.tableForm.set({
       name: '',
       area_id: this.areas().length > 0 ? this.areas()[0].id : 0,
-      status: 'empty'
+      status: 'empty',
     });
     this.isTableModalOpen.set(true);
   }
@@ -338,7 +360,7 @@ export class TablesComponent implements OnInit {
     this.tableForm.set({
       name: table.name,
       area_id: table.area_id,
-      status: table.status
+      status: table.status,
     });
     this.isTableModalOpen.set(true);
   }
@@ -367,7 +389,7 @@ export class TablesComponent implements OnInit {
         error: () => {
           this.stateService.showToast('Thêm bàn thất bại!', 'error');
           this.isTableSaving.set(false);
-        }
+        },
       });
     } else {
       const id = this.editingTable().id;
@@ -381,7 +403,7 @@ export class TablesComponent implements OnInit {
         error: () => {
           this.stateService.showToast('Cập nhật bàn thất bại!', 'error');
           this.isTableSaving.set(false);
-        }
+        },
       });
     }
   }
@@ -392,14 +414,17 @@ export class TablesComponent implements OnInit {
     const newStatus = table.status === 'empty' ? 'using' : 'empty';
     this.apiService.updateDiningTableStatus(table.id, newStatus).subscribe({
       next: () => {
-        this.stateService.showToast(`Đã chuyển trạng thái bàn ${table.name} sang ${newStatus === 'empty' ? 'Trống' : 'Đang sử dụng'}!`, 'success');
+        this.stateService.showToast(
+          `Đã chuyển trạng thái bàn ${table.name} sang ${newStatus === 'empty' ? 'Trống' : 'Đang sử dụng'}!`,
+          'success',
+        );
         this.stateService.updateTableStatusLocal(table.id, newStatus);
         this.isUpdatingTableStatus.set(false);
       },
       error: () => {
         this.stateService.showToast('Không thể thay đổi trạng thái bàn!', 'error');
         this.isUpdatingTableStatus.set(false);
-      }
+      },
     });
   }
 
@@ -426,13 +451,13 @@ export class TablesComponent implements OnInit {
         this.stateService.showToast('Xóa bàn thất bại!', 'error');
         this.deletingTable.set(null);
         this.stateService.isLoading.set(false);
-      }
+      },
     });
   }
 
   // Tiện ích lấy tên khu vực từ id
   public getAreaName(areaId: number): string {
-    const area = this.areas().find(a => a.id === areaId);
+    const area = this.areas().find((a) => a.id === areaId);
     return area ? area.name : 'Chưa có';
   }
 }

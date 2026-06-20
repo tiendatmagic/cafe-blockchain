@@ -1,4 +1,11 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  computed,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -8,9 +15,16 @@ import { PageHeaderComponent } from '@shared/components/page-header/page-header.
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prompt/web3-connect-prompt.component';
 import { AccessRestrictedComponent } from '@shared/components/access-restricted/access-restricted.component';
-import { MiniButtonsComponent, DATE_FILTER_OPTIONS } from '@shared/components/mini-buttons/mini-buttons.component';
+import {
+  MiniButtonsComponent,
+  DATE_FILTER_OPTIONS,
+} from '@shared/components/mini-buttons/mini-buttons.component';
 import { CustomDatePickerComponent } from '@shared/components/custom-date-picker/custom-date-picker.component';
-import { TableComponent, TableColumn, TableCellDirective } from '@shared/components/table/table.component';
+import {
+  TableComponent,
+  TableColumn,
+  TableCellDirective,
+} from '@shared/components/table/table.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { ShortAddressPipe } from '@shared/pipes/short-address.pipe';
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
@@ -39,9 +53,10 @@ import { BadgeComponent } from '@shared/components/badge/badge.component';
     SkeletonLoaderComponent,
     ButtonComponent,
     CardComponent,
-    BadgeComponent
+    BadgeComponent,
   ],
-  templateUrl: './shifts.component.html'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  templateUrl: './shifts.component.html',
 })
 export class ShiftsComponent implements OnInit {
   public readonly stateService = inject(StateService);
@@ -49,15 +64,50 @@ export class ShiftsComponent implements OnInit {
   public readonly datePresets = DATE_FILTER_OPTIONS;
 
   public readonly shiftColumns: TableColumn[] = [
-    { key: 'staff_name', header: 'NHÂN VIÊN', sortable: true, class: 'font-extrabold text-slate-800 dark:text-white pl-6' },
+    {
+      key: 'staff_name',
+      header: 'NHÂN VIÊN',
+      sortable: true,
+      class: 'font-extrabold text-slate-800 dark:text-white pl-6',
+    },
     { key: 'status', header: 'TRẠNG THÁI', sortable: true, class: 'font-bold' },
     { key: 'start_time', header: 'MỞ CA', sortable: true, class: 'text-slate-500' },
     { key: 'end_time', header: 'KẾT CA', sortable: true, class: 'text-slate-500' },
-    { key: 'initial_cash', header: 'TIỀN ĐẦU CA', sortable: true, class: 'text-right text-slate-500', headerClass: 'text-right' },
-    { key: 'expected_cash', header: 'TIỀN HỆ THỐNG', sortable: true, class: 'text-right text-slate-500', headerClass: 'text-right' },
-    { key: 'actual_cash', header: 'TIỀN THỰC TẾ', sortable: true, class: 'text-right font-bold text-slate-800 dark:text-white', headerClass: 'text-right' },
-    { key: 'difference', header: 'CHÊNH LỆCH', sortable: true, class: 'text-right font-black', headerClass: 'text-right' },
-    { key: 'actions', header: 'THAO TÁC', sortable: false, class: 'text-right pr-6 whitespace-nowrap', headerClass: 'text-right pr-6 whitespace-nowrap' }
+    {
+      key: 'initial_cash',
+      header: 'TIỀN ĐẦU CA',
+      sortable: true,
+      class: 'text-right text-slate-500',
+      headerClass: 'text-right',
+    },
+    {
+      key: 'expected_cash',
+      header: 'TIỀN HỆ THỐNG',
+      sortable: true,
+      class: 'text-right text-slate-500',
+      headerClass: 'text-right',
+    },
+    {
+      key: 'actual_cash',
+      header: 'TIỀN THỰC TẾ',
+      sortable: true,
+      class: 'text-right font-bold text-slate-800 dark:text-white',
+      headerClass: 'text-right',
+    },
+    {
+      key: 'difference',
+      header: 'CHÊNH LỆCH',
+      sortable: true,
+      class: 'text-right font-black',
+      headerClass: 'text-right',
+    },
+    {
+      key: 'actions',
+      header: 'THAO TÁC',
+      sortable: false,
+      class: 'text-right pr-6 whitespace-nowrap',
+      headerClass: 'text-right pr-6 whitespace-nowrap',
+    },
   ];
 
   // Lọc ngày
@@ -80,7 +130,7 @@ export class ShiftsComponent implements OnInit {
   public readonly statusFilterOptions: TabOption[] = [
     { value: 'all', label: 'Tất cả' },
     { value: 'open', label: 'Đang mở' },
-    { value: 'closed', label: 'Đã đóng' }
+    { value: 'closed', label: 'Đã đóng' },
   ];
 
   // Chi tiết ca trực (Modal)
@@ -169,7 +219,7 @@ export class ShiftsComponent implements OnInit {
     if (start && end) {
       const startDate = new Date(start + 'T00:00:00');
       const endDate = new Date(end + 'T23:59:59');
-      result = result.filter(shift => {
+      result = result.filter((shift) => {
         const shiftDate = new Date(shift.start_time);
         return shiftDate >= startDate && shiftDate <= endDate;
       });
@@ -177,7 +227,7 @@ export class ShiftsComponent implements OnInit {
 
     // 2. Lọc theo từ khóa tìm kiếm (tên nhân viên hoặc địa chỉ ví)
     if (search) {
-      result = result.filter(shift => {
+      result = result.filter((shift) => {
         const name = (shift.user?.name || '').toLowerCase();
         const address = (shift.user?.wallet_address || '').toLowerCase();
         return name.includes(search) || address.includes(search);
@@ -186,7 +236,7 @@ export class ShiftsComponent implements OnInit {
 
     // 3. Lọc theo trạng thái ca trực
     if (status !== 'all') {
-      result = result.filter(shift => shift.status === status);
+      result = result.filter((shift) => shift.status === status);
     }
 
     return result;
@@ -217,7 +267,7 @@ export class ShiftsComponent implements OnInit {
       if (typeof valA === 'string') {
         return desc ? valB.localeCompare(valA) : valA.localeCompare(valB);
       }
-      return desc ? (valB - valA) : (valA - valB);
+      return desc ? valB - valA : valA - valB;
     });
     return result;
   });
@@ -234,7 +284,7 @@ export class ShiftsComponent implements OnInit {
     return Math.ceil(list.length / this.shiftLimit);
   });
 
-  public onSortChange(event: { key: string, direction: 'asc' | 'desc' | '' }) {
+  public onSortChange(event: { key: string; direction: 'asc' | 'desc' | '' }) {
     if (event.key) {
       this.shiftSortField.set(event.key);
       this.shiftSortDesc.set(event.direction === 'desc');
@@ -258,7 +308,11 @@ export class ShiftsComponent implements OnInit {
   public formatShiftTime(isoStr: string): string {
     if (!isoStr) return '';
     const d = new Date(isoStr);
-    return d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) + ' ' + d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+    return (
+      d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) +
+      ' ' +
+      d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })
+    );
   }
 
   // In hóa đơn kết ca nhiệt (K80)
@@ -273,10 +327,20 @@ export class ShiftsComponent implements OnInit {
     const start = new Date(shift.start_time).toLocaleString('vi-VN');
     const end = shift.end_time ? new Date(shift.end_time).toLocaleString('vi-VN') : 'Chưa kết ca';
     const initial = (shift.initial_cash || 0).toLocaleString('vi-VN') + 'đ';
-    const expected = shift.expected_cash !== null && shift.expected_cash !== undefined ? (shift.expected_cash).toLocaleString('vi-VN') + 'đ' : '—';
-    const actual = shift.actual_cash !== null && shift.actual_cash !== undefined ? (shift.actual_cash).toLocaleString('vi-VN') + 'đ' : '—';
-    const diffVal = shift.actual_cash !== null && shift.expected_cash !== null ? shift.actual_cash - shift.expected_cash : null;
-    const diff = diffVal !== null ? (diffVal > 0 ? '+' : '') + diffVal.toLocaleString('vi-VN') + 'đ' : '—';
+    const expected =
+      shift.expected_cash !== null && shift.expected_cash !== undefined
+        ? shift.expected_cash.toLocaleString('vi-VN') + 'đ'
+        : '—';
+    const actual =
+      shift.actual_cash !== null && shift.actual_cash !== undefined
+        ? shift.actual_cash.toLocaleString('vi-VN') + 'đ'
+        : '—';
+    const diffVal =
+      shift.actual_cash !== null && shift.expected_cash !== null
+        ? shift.actual_cash - shift.expected_cash
+        : null;
+    const diff =
+      diffVal !== null ? (diffVal > 0 ? '+' : '') + diffVal.toLocaleString('vi-VN') + 'đ' : '—';
     const note = shift.note || 'Không có';
     const staff = shift.user?.name || 'Nhân viên';
 

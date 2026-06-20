@@ -180,13 +180,7 @@
                   </h3>
                 </div>
               </div>
-              <app-badge
-                variant="success"
-                size="sm"
-                rounded="full"
-                [pulse]="true"
-                class="shrink-0"
-              >
+              <app-badge variant="success" size="sm" rounded="full" [pulse]="true" class="shrink-0">
                 Đang trực
               </app-badge>
             </div>
@@ -258,7 +252,11 @@
           <!-- Grid 4 thẻ thống kê số liệu thật -->
           <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
             <!-- Doanh thu hôm nay -->
-            <div app-card [interactive]="true" class="p-4 sm:p-5 flex items-center justify-between group gap-2">
+            <div
+              app-card
+              [interactive]="true"
+              class="p-4 sm:p-5 flex items-center justify-between group gap-2"
+            >
               <div class="space-y-2 min-w-0">
                 <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
                   >Doanh thu hôm nay</span
@@ -270,7 +268,9 @@
                   <span class="text-emerald-500 flex items-center gap-1 shrink-0">
                     ↗ {{ dashboardData()?.today_orders_count || 0 }} đơn mới
                   </span>
-                  @if (dashboardData()?.today_revenue_growth !== undefined) {
+                  @if (
+                    $safeNavigationMigration(dashboardData()?.today_revenue_growth) !== undefined
+                  ) {
                     <span
                       [class.text-emerald-500]="dashboardData()?.today_revenue_growth >= 0"
                       [class.text-rose-500]="dashboardData()?.today_revenue_growth < 0"
@@ -295,7 +295,11 @@
             </div>
 
             <!-- Tổng doanh thu -->
-            <div app-card [interactive]="true" class="p-4 sm:p-5 flex items-center justify-between group gap-2">
+            <div
+              app-card
+              [interactive]="true"
+              class="p-4 sm:p-5 flex items-center justify-between group gap-2"
+            >
               <div class="space-y-2 min-w-0">
                 <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
                   >Tổng doanh thu</span
@@ -307,7 +311,9 @@
                   <span class="text-slate-500 shrink-0">
                     {{ dashboardData()?.total_orders_count || 0 }} đơn đã bán
                   </span>
-                  @if (dashboardData()?.period_revenue_growth !== undefined) {
+                  @if (
+                    $safeNavigationMigration(dashboardData()?.period_revenue_growth) !== undefined
+                  ) {
                     <span
                       [class.text-emerald-500]="dashboardData()?.period_revenue_growth >= 0"
                       [class.text-rose-500]="dashboardData()?.period_revenue_growth < 0"
@@ -332,7 +338,11 @@
             </div>
 
             <!-- Doanh thu Web3 (tích lũy blockchain) -->
-            <div app-card [interactive]="true" class="p-4 sm:p-5 flex items-center justify-between group gap-2">
+            <div
+              app-card
+              [interactive]="true"
+              class="p-4 sm:p-5 flex items-center justify-between group gap-2"
+            >
               <div class="space-y-2 min-w-0">
                 <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
                   >Doanh thu Web3</span
@@ -343,7 +353,9 @@
                   {{ ((dashboardData()?.web3_revenue || 0) / nativeTokenPriceVND()).toFixed(5) }}
                   <span class="text-xs">{{ web3Service.nativeTokenSymbol() }}</span>
                 </h4>
-                <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate">
+                <span
+                  class="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate"
+                >
                   {{ dashboardData()?.web3_revenue || 0 | vnd }} tương đương
                 </span>
               </div>
@@ -359,7 +371,11 @@
             </div>
 
             <!-- Đơn chờ Web3 -->
-            <div app-card [interactive]="true" class="p-4 sm:p-5 flex items-center justify-between group gap-2">
+            <div
+              app-card
+              [interactive]="true"
+              class="p-4 sm:p-5 flex items-center justify-between group gap-2"
+            >
               <div class="space-y-2 min-w-0">
                 <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
                   >Đơn chờ Web3</span
@@ -607,7 +623,10 @@
             </div>
 
             <!-- Cột phải: Giao dịch Blockchain mới nhất -->
-            <div app-card class="h-[380px] flex flex-col justify-between space-y-4 md:col-span-2 xl:col-span-1">
+            <div
+              app-card
+              class="h-[380px] flex flex-col justify-between space-y-4 md:col-span-2 xl:col-span-1"
+            >
               <div class="flex items-start justify-between gap-2 shrink-0">
                 <div class="space-y-1">
                   <h4
@@ -688,8 +707,12 @@
                     <div
                       class="p-3 rounded-2xl bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-900/60"
                     >
-                      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-4 text-[11px]">
-                        <div class="flex items-center justify-between sm:justify-start gap-4 flex-1">
+                      <div
+                        class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-4 text-[11px]"
+                      >
+                        <div
+                          class="flex items-center justify-between sm:justify-start gap-4 flex-1"
+                        >
                           <span class="font-extrabold text-slate-700 dark:text-slate-300"
                             >Đơn #{{ tx.id }}</span
                           >
@@ -701,8 +724,12 @@
                             tx: {{ tx.tx_hash | appShortAddress: 6 : 6 }} ↗
                           </a>
                         </div>
-                        <div class="flex items-center justify-between sm:justify-end gap-3 shrink-0 text-[10px]">
-                          <span class="font-black text-purple-600 dark:text-purple-400 text-[11px] leading-none">
+                        <div
+                          class="flex items-center justify-between sm:justify-end gap-3 shrink-0 text-[10px]"
+                        >
+                          <span
+                            class="font-black text-purple-600 dark:text-purple-400 text-[11px] leading-none"
+                          >
                             {{ tx.total_amount | vnd }}
                           </span>
                           @if (tx.blockchain_status === 'success') {
@@ -813,12 +840,7 @@
                     >
                   </h4>
                   @if (getLowStockTotalCount() > 0) {
-                    <app-badge
-                      variant="danger"
-                      size="sm"
-                      rounded="full"
-                      class="shrink-0"
-                    >
+                    <app-badge variant="danger" size="sm" rounded="full" class="shrink-0">
                       {{ getLowStockTotalCount() }} mục
                     </app-badge>
                   }
@@ -899,7 +921,9 @@
             </div>
 
             <!-- Cột phải (xl:col-span-1): Trạng thái bàn ăn & Thống kê Voucher NFT -->
-            <div class="md:col-span-2 xl:col-span-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-6">
+            <div
+              class="md:col-span-2 xl:col-span-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-6"
+            >
               <!-- Widget Trạng thái Bàn Ăn -->
               <div app-card class="flex flex-col justify-between h-full min-h-[240px]">
                 <h4
@@ -1020,9 +1044,15 @@
                     <span class="text-[9px] font-black text-slate-400 uppercase">Giảm giá</span>
                     <span
                       class="text-xs sm:text-sm font-black text-amber-500 mt-2 truncate w-full"
-                      title="{{ dashboardData()?.voucher_activity?.total_discount | number }}đ"
+                      title="{{
+                        $safeNavigationMigration(dashboardData()?.voucher_activity?.total_discount)
+                          | number
+                      }}đ"
                     >
-                      {{ dashboardData()?.voucher_activity?.total_discount | number }}đ
+                      {{
+                        $safeNavigationMigration(dashboardData()?.voucher_activity?.total_discount)
+                          | number
+                      }}đ
                     </span>
                   </div>
                 </div>

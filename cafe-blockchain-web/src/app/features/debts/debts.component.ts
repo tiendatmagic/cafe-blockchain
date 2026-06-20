@@ -1,4 +1,13 @@
-import { Component, inject, signal, computed, OnInit, effect, untracked } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  computed,
+  OnInit,
+  effect,
+  untracked,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
@@ -40,9 +49,10 @@ import { CardComponent } from '@shared/components/card/card.component';
     IconComponent,
     TabGroupComponent,
     ButtonComponent,
-    CardComponent
+    CardComponent,
   ],
-  templateUrl: './debts.component.html'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  templateUrl: './debts.component.html',
 })
 export class DebtsComponent implements OnInit {
   public readonly stateService = inject(StateService);
@@ -74,7 +84,7 @@ export class DebtsComponent implements OnInit {
   public readonly debtFilterOptions: TabOption[] = [
     { value: 'all', label: 'Tất cả' },
     { value: 'only_debt', label: 'Đang nợ', dotClass: 'bg-rose-500' },
-    { value: 'no_debt', label: 'Đã trả hết', dotClass: 'bg-emerald-500' }
+    { value: 'no_debt', label: 'Đã trả hết', dotClass: 'bg-emerald-500' },
   ];
 
   // Sắp xếp cột
@@ -99,7 +109,7 @@ export class DebtsComponent implements OnInit {
     customer_id: null,
     amount: null,
     note: '',
-    recorded_at: ''
+    recorded_at: '',
   });
 
   public readonly paymentForm = signal<any>({
@@ -107,7 +117,7 @@ export class DebtsComponent implements OnInit {
     amount: null,
     payment_method: 'cash',
     note: '',
-    recorded_at: ''
+    recorded_at: '',
   });
 
   // Tìm kiếm khách hàng khi lập phiếu nợ thủ công
@@ -115,10 +125,18 @@ export class DebtsComponent implements OnInit {
   public readonly isModalCustomerDropdownOpen = signal<boolean>(false);
 
   // Getters từ StateService
-  public get debts() { return this.stateService.debts; }
-  public get isDebtsLoading() { return this.stateService.isDebtsLoading; }
-  public get customers() { return this.stateService.customers; }
-  public get web3Service() { return this.stateService.web3Service; }
+  public get debts() {
+    return this.stateService.debts;
+  }
+  public get isDebtsLoading() {
+    return this.stateService.isDebtsLoading;
+  }
+  public get customers() {
+    return this.stateService.customers;
+  }
+  public get web3Service() {
+    return this.stateService.web3Service;
+  }
 
   // Định dạng ngày hiện tại YYYY-MM-DD
   private getTodayDateString(): string {
@@ -130,7 +148,6 @@ export class DebtsComponent implements OnInit {
   }
 
   public ngOnInit() {
-
     // Nạp danh sách khách hàng nếu chưa có để dùng cho modal chọn khách hàng
     if (this.customers().length === 0 && this.web3Service.walletConnected()) {
       this.stateService.refreshCustomers();
@@ -149,7 +166,7 @@ export class DebtsComponent implements OnInit {
 
   // Số khách đang nợ (debt_balance > 0)
   public readonly totalDebtorsCount = computed(() => {
-    return this.debts().filter(c => Number(c.debt_balance || 0) > 0).length;
+    return this.debts().filter((c) => Number(c.debt_balance || 0) > 0).length;
   });
 
   // Đã thu hồi trong tháng (tính từ transactions thu nợ khách hàng trong tháng hiện tại)
@@ -158,9 +175,9 @@ export class DebtsComponent implements OnInit {
     const today = new Date();
     const currentYear = today.getFullYear();
     const currentMonth = today.getMonth(); // 0-11
-    
+
     return txs
-      .filter(t => {
+      .filter((t) => {
         if (t.type !== 'thu' || t.category !== 'Thu nợ khách hàng') return false;
         const tDate = new Date(t.transaction_date || t.created_at);
         return tDate.getFullYear() === currentYear && tDate.getMonth() === currentMonth;
@@ -185,22 +202,24 @@ export class DebtsComponent implements OnInit {
     // 1. Lọc theo bộ lọc Đang nợ / Đã trả
     const filter = this.debtFilterMode();
     if (filter === 'only_debt') {
-      list = list.filter(c => Number(c.debt_balance || 0) > 0);
+      list = list.filter((c) => Number(c.debt_balance || 0) > 0);
     } else if (filter === 'no_debt') {
-      list = list.filter(c => Number(c.debt_balance || 0) <= 0);
+      list = list.filter((c) => Number(c.debt_balance || 0) <= 0);
     }
 
     // 2. Lọc theo tìm kiếm từ khóa
     const search = this.debtSearchQuery().trim().toLowerCase();
     if (search) {
       const searchClean = this.removeSign(search);
-      list = list.filter(c => {
+      list = list.filter((c) => {
         const nameClean = c.name ? this.removeSign(c.name.toLowerCase()) : '';
         const phoneClean = c.phone ? c.phone.toLowerCase() : '';
         const codeClean = c.customer_code ? c.customer_code.toLowerCase() : '';
-        return nameClean.includes(searchClean) ||
-               phoneClean.includes(searchClean) ||
-               codeClean.includes(searchClean);
+        return (
+          nameClean.includes(searchClean) ||
+          phoneClean.includes(searchClean) ||
+          codeClean.includes(searchClean)
+        );
       });
     }
 
@@ -214,10 +233,10 @@ export class DebtsComponent implements OnInit {
       if (typeof valA === 'string') {
         return desc ? valB.localeCompare(valA) : valA.localeCompare(valB);
       }
-      
+
       const numA = Number(valA) || 0;
       const numB = Number(valB) || 0;
-      return desc ? (numB - numA) : (numA - numB);
+      return desc ? numB - numA : numA - numB;
     });
 
     return list;
@@ -257,20 +276,24 @@ export class DebtsComponent implements OnInit {
     if (!search) return allCusts.slice(0, 10); // Chỉ hiện 10 khách đầu khi chưa gõ
 
     const searchClean = this.removeSign(search);
-    return allCusts.filter(c => {
-      const nameClean = c.name ? this.removeSign(c.name.toLowerCase()) : '';
-      const phoneClean = c.phone ? c.phone.toLowerCase() : '';
-      const codeClean = c.customer_code ? c.customer_code.toLowerCase() : '';
-      return nameClean.includes(searchClean) ||
-             phoneClean.includes(searchClean) ||
-             codeClean.includes(searchClean);
-    }).slice(0, 10);
+    return allCusts
+      .filter((c) => {
+        const nameClean = c.name ? this.removeSign(c.name.toLowerCase()) : '';
+        const phoneClean = c.phone ? c.phone.toLowerCase() : '';
+        const codeClean = c.customer_code ? c.customer_code.toLowerCase() : '';
+        return (
+          nameClean.includes(searchClean) ||
+          phoneClean.includes(searchClean) ||
+          codeClean.includes(searchClean)
+        );
+      })
+      .slice(0, 10);
   });
 
   public selectModalCustomer(customer: any) {
-    this.manualDebtForm.update(form => ({
+    this.manualDebtForm.update((form) => ({
       ...form,
-      customer_id: customer.id
+      customer_id: customer.id,
     }));
     this.modalCustomerSearch.set(customer.name + (customer.phone ? ` - ${customer.phone}` : ''));
     this.isModalCustomerDropdownOpen.set(false);
@@ -285,7 +308,7 @@ export class DebtsComponent implements OnInit {
       customer_id: null,
       amount: null,
       note: '',
-      recorded_at: this.getTodayDateString()
+      recorded_at: this.getTodayDateString(),
     });
     this.modalCustomerSearch.set('');
     this.isModalCustomerDropdownOpen.set(false);
@@ -330,7 +353,7 @@ export class DebtsComponent implements OnInit {
         this.stateService.showToast(errMsg, 'error');
         this.isManualDebtSaving.set(false);
         this.stateService.isLoading.set(false);
-      }
+      },
     });
   }
 
@@ -342,7 +365,7 @@ export class DebtsComponent implements OnInit {
       amount: null,
       payment_method: 'cash',
       note: '',
-      recorded_at: this.getTodayDateString()
+      recorded_at: this.getTodayDateString(),
     });
     this.isPaymentModalOpen.set(true);
   }
@@ -366,7 +389,10 @@ export class DebtsComponent implements OnInit {
 
     // Validate không vượt quá dư nợ hiện tại
     if (form.amount > Number(customer.debt_balance)) {
-      this.stateService.showToast(`Số tiền thu nợ không được vượt quá số dư nợ hiện tại (${Number(customer.debt_balance).toLocaleString()}đ)!`, 'error');
+      this.stateService.showToast(
+        `Số tiền thu nợ không được vượt quá số dư nợ hiện tại (${Number(customer.debt_balance).toLocaleString()}đ)!`,
+        'error',
+      );
       return;
     }
 
@@ -392,7 +418,7 @@ export class DebtsComponent implements OnInit {
         this.stateService.showToast(errMsg, 'error');
         this.isPaymentSaving.set(false);
         this.stateService.isLoading.set(false);
-      }
+      },
     });
   }
 
@@ -428,20 +454,26 @@ export class DebtsComponent implements OnInit {
         console.error('Lỗi tải lịch sử công nợ:', err);
         this.stateService.showToast('Không thể tải lịch sử công nợ!', 'error');
         this.isLogsLoading.set(false);
-      }
+      },
     });
   }
 
   // --- Hủy/Xóa bản ghi công nợ thủ công ---
   public deleteDebtLog(log: any) {
     if (log.order_id) {
-      this.stateService.showToast('Bản ghi nợ này sinh ra từ Đơn hàng POS. Vui lòng hủy đơn hàng tương ứng ở trang Đơn hàng!', 'error');
+      this.stateService.showToast(
+        'Bản ghi nợ này sinh ra từ Đơn hàng POS. Vui lòng hủy đơn hàng tương ứng ở trang Đơn hàng!',
+        'error',
+      );
       return;
     }
-    
+
     // Nếu là log trả nợ và transaction đã đồng bộ blockchain
     if (log.type === 'payment' && log.transaction?.blockchain_status === 'success') {
-      this.stateService.showToast('Giao dịch thu nợ đã đồng bộ lên Blockchain, không thể hủy bỏ!', 'error');
+      this.stateService.showToast(
+        'Giao dịch thu nợ đã đồng bộ lên Blockchain, không thể hủy bỏ!',
+        'error',
+      );
       return;
     }
 
@@ -470,7 +502,7 @@ export class DebtsComponent implements OnInit {
         const errMsg = err.error?.message || 'Xóa bản ghi công nợ thất bại!';
         this.stateService.showToast(errMsg, 'error');
         this.stateService.isLoading.set(false);
-      }
+      },
     });
   }
 
@@ -486,7 +518,7 @@ export class DebtsComponent implements OnInit {
     const rows = logs.map((log: any) => {
       let documentRef = '';
       if (log.order_id) {
-        documentRef = `Hóa đơn POS: ${log.order?.order_code || ('#' + log.order_id)}`;
+        documentRef = `Hóa đơn POS: ${log.order?.order_code || '#' + log.order_id}`;
       } else if (log.transaction_id) {
         documentRef = `Phiếu thu nợ: #${log.transaction_id.substring(0, 8)}...`;
       } else {
@@ -494,25 +526,26 @@ export class DebtsComponent implements OnInit {
       }
 
       return {
-        'Thời gian ghi nhận': log.recorded_at ? new Date(log.recorded_at).toLocaleString('vi-VN') : '',
+        'Thời gian ghi nhận': log.recorded_at
+          ? new Date(log.recorded_at).toLocaleString('vi-VN')
+          : '',
         'Loại giao dịch': log.type === 'debt' ? 'Ghi nợ (+)' : 'Trả nợ (-)',
         'Số tiền (đ)': Number(log.amount || 0),
         'Chứng từ / Nguồn': documentRef,
-        'Ghi chú / Mô tả': log.note || ''
+        'Ghi chú / Mô tả': log.note || '',
       };
     });
 
     const fileName = `sao_ke_cong_no_${this.removeSign(customer.name).replace(/\s+/g, '_')}_${this.getTodayDateString()}.xlsx`;
-    
+
     // Tạo sheet
     const ws = XLSX.utils.json_to_sheet(rows);
-    
+
     // Thêm style đơn giản hoặc các thông tin chung ở đầu sheet nếu cần, nhưng json_to_sheet là chuẩn và an toàn nhất
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Sao kê công nợ');
     XLSX.writeFile(wb, fileName);
-    
+
     this.stateService.showToast('Đã xuất file sao kê Excel thành công!', 'success');
   }
-
 }

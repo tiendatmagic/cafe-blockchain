@@ -44,9 +44,28 @@
           class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-200 dark:bg-slate-800/40 border border-slate-300 dark:border-slate-700/30 text-xs font-black text-slate-600 dark:text-slate-300 transition-colors cursor-pointer hover:bg-slate-300/50 dark:hover:bg-slate-800/70"
           title="Chọn mạng Blockchain"
         >
-          <span class="w-1.5 h-1.5 rounded-full animate-pulse" [class]="getChainColorClass(web3Service.walletConnected() ? web3Service.chainId() : web3Service.configuredChainId())"></span>
-          <span>{{ (web3Service.walletConnected() ? web3Service.networkName() : web3Service.configuredNetworkName()) | uppercase }}</span>
-          <app-icon name="chevron-down" class="h-3 w-3 text-slate-500 transition-transform duration-200" [class.rotate-180]="isChainDropdownOpen()" [strokeWidth]="2.5"></app-icon>
+          <span
+            class="w-1.5 h-1.5 rounded-full animate-pulse"
+            [class]="
+              getChainColorClass(
+                web3Service.walletConnected()
+                  ? web3Service.chainId()
+                  : web3Service.configuredChainId()
+              )
+            "
+          ></span>
+          <span>{{
+            (web3Service.walletConnected()
+              ? web3Service.networkName()
+              : web3Service.configuredNetworkName()
+            ) | uppercase
+          }}</span>
+          <app-icon
+            name="chevron-down"
+            class="h-3 w-3 text-slate-500 transition-transform duration-200"
+            [class.rotate-180]="isChainDropdownOpen()"
+            [strokeWidth]="2.5"
+          ></app-icon>
         </button>
 
         @if (isChainDropdownOpen()) {
@@ -64,11 +83,22 @@
                 type="button"
                 (click)="switchChain(chain.chainId)"
                 class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm text-slate-700 dark:text-slate-300 hover:bg-[var(--dynamic-primary)]/5 hover:text-[var(--dynamic-primary)] transition-all text-left"
-                [class.bg-[var(--dynamic-primary)]/5]="web3Service.chainId() === chain.chainId || (!web3Service.walletConnected() && web3Service.configuredChainId() === chain.chainId)"
-                [class.text-[var(--dynamic-primary)]]="web3Service.chainId() === chain.chainId || (!web3Service.walletConnected() && web3Service.configuredChainId() === chain.chainId)"
+                [class.bg-[var(--dynamic-primary)]/5]="
+                  web3Service.chainId() === chain.chainId ||
+                  (!web3Service.walletConnected() &&
+                    web3Service.configuredChainId() === chain.chainId)
+                "
+                [class.text-[var(--dynamic-primary)]]="
+                  web3Service.chainId() === chain.chainId ||
+                  (!web3Service.walletConnected() &&
+                    web3Service.configuredChainId() === chain.chainId)
+                "
               >
                 <div class="flex items-center gap-2">
-                  <span class="w-2.5 h-2.5 rounded-full shrink-0" [class]="getChainColorClass(chain.chainId)"></span>
+                  <span
+                    class="w-2.5 h-2.5 rounded-full shrink-0"
+                    [class]="getChainColorClass(chain.chainId)"
+                  ></span>
                   <span class="font-medium">{{ chain.name }}</span>
                 </div>
                 <span
@@ -239,7 +269,11 @@
                 class="text-xs font-bold text-purple-600 dark:text-purple-400 truncate hover:underline flex items-center gap-1 leading-none font-mono"
               >
                 {{ txHash() }}
-                <app-icon name="external-link" class="h-3 w-3 inline shrink-0" [strokeWidth]="2.5"></app-icon>
+                <app-icon
+                  name="external-link"
+                  class="h-3 w-3 inline shrink-0"
+                  [strokeWidth]="2.5"
+                ></app-icon>
               </a>
             </div>
           }
@@ -264,17 +298,23 @@
             class="p-4 rounded-2xl bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border border-purple-100 dark:border-purple-500/10 mb-6 flex items-center justify-between"
           >
             <div class="flex items-center gap-3">
-              <app-icon name="gift" class="h-6 w-6 text-purple-600 dark:text-purple-400 shrink-0 inline-block animate-pulse" [strokeWidth]="2"></app-icon>
+              <app-icon
+                name="gift"
+                class="h-6 w-6 text-purple-600 dark:text-purple-400 shrink-0 inline-block animate-pulse"
+                [strokeWidth]="2"
+              ></app-icon>
               <div class="flex flex-col">
                 <span
                   class="text-xs font-black text-purple-600 dark:text-purple-400 uppercase tracking-wide"
                   >Trị giá Voucher</span
                 >
-                <span class="text-xl font-black text-slate-800 dark:text-white leading-tight"
-                  >{{ voucherInfo()?.discount | vnd }}</span>
+                <span class="text-xl font-black text-slate-800 dark:text-white leading-tight">{{
+                  $safeNavigationMigration(voucherInfo()?.discount) | vnd
+                }}</span>
                 >
                 <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-0.5"
-                  >Đơn tối thiểu: {{ voucherInfo()?.minOrder | vnd }}</span
+                  >Đơn tối thiểu:
+                  {{ $safeNavigationMigration(voucherInfo()?.minOrder) | vnd }}</span
                 >
               </div>
             </div>
@@ -324,7 +364,12 @@
         <h2
           class="text-lg font-black text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2"
         >
-          <app-icon name="lock" class="h-5 w-5 text-[var(--dynamic-primary)] inline-block shrink-0" [strokeWidth]="2"></app-icon> <span>Xác Thực Chữ Ký</span>
+          <app-icon
+            name="lock"
+            class="h-5 w-5 text-[var(--dynamic-primary)] inline-block shrink-0"
+            [strokeWidth]="2"
+          ></app-icon>
+          <span>Xác Thực Chữ Ký</span>
         </h2>
 
         <!-- Connected Wallet Display -->
@@ -350,7 +395,7 @@
                   >Khấu trừ hóa đơn</span
                 >
                 <span class="text-xl font-black text-slate-800 dark:text-white leading-tight"
-                  >-{{ voucherInfo()?.discount | vnd }}</span
+                  >-{{ $safeNavigationMigration(voucherInfo()?.discount) | vnd }}</span
                 >
                 <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-0.5"
                   >Áp dụng cho đơn: {{ orderCode() }}</span
@@ -413,10 +458,7 @@
 
     <!-- Chi tiết đơn hàng/Biên lai (Hiển thị dưới dạng thông tin đối soát ở mọi step) -->
     @if (tempOrder()) {
-      <div
-        app-card
-        class="mt-6 p-5 bg-white/70 dark:bg-slate-800/40 backdrop-blur-md"
-      >
+      <div app-card class="mt-6 p-5 bg-white/70 dark:bg-slate-800/40 backdrop-blur-md">
         <div
           class="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-700/40 pb-3 mb-3"
         >
@@ -462,9 +504,9 @@
                 }
               </div>
               <div class="flex flex-col items-end shrink-0">
-                <span class="font-black text-slate-700 dark:text-slate-300"
-                  >{{ item.price | vnd }}</span
-                >
+                <span class="font-black text-slate-700 dark:text-slate-300">{{
+                  item.price | vnd
+                }}</span>
                 <span class="text-xs font-bold text-slate-400">x{{ item.quantity }}</span>
               </div>
             </div>
@@ -475,9 +517,9 @@
         <div class="border-t border-slate-200/60 dark:border-slate-700/40 mt-4 pt-3 space-y-2">
           <div class="flex justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
             <span>Tổng tiền món:</span>
-            <span class="text-slate-800 dark:text-slate-200"
-              >{{ tempOrder().total_amount | vnd }}</span
-            >
+            <span class="text-slate-800 dark:text-slate-200">{{
+              tempOrder().total_amount | vnd
+            }}</span>
           </div>
           @if (tempOrder().discount_amount > 0) {
             <div
@@ -491,9 +533,9 @@
             class="flex justify-between text-sm font-black text-slate-800 dark:text-white border-t border-dashed border-slate-200 dark:border-slate-700/40 pt-2.5"
           >
             <span>Cần thanh toán:</span>
-            <span class="text-purple-600 dark:text-purple-400 text-base"
-              >{{ tempOrder().final_amount | vnd }}</span
-            >
+            <span class="text-purple-600 dark:text-purple-400 text-base">{{
+              tempOrder().final_amount | vnd
+            }}</span>
           </div>
         </div>
       </div>

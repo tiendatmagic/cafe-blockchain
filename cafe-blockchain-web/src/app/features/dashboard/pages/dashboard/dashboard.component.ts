@@ -1,6 +1,6 @@
 import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prompt/web3-connect-prompt.component';
 import { AccessRestrictedComponent } from '@shared/components/access-restricted/access-restricted.component';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StateService } from '@core/services/state.service';
@@ -8,7 +8,10 @@ import { ShortAddressPipe } from '@shared/pipes/short-address.pipe';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
 import { CustomDatePickerComponent } from '@shared/components/custom-date-picker/custom-date-picker.component';
-import { MiniButtonsComponent, DASHBOARD_DATE_OPTIONS } from '@shared/components/mini-buttons/mini-buttons.component';
+import {
+  MiniButtonsComponent,
+  DASHBOARD_DATE_OPTIONS,
+} from '@shared/components/mini-buttons/mini-buttons.component';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 
@@ -35,9 +38,10 @@ import { BadgeComponent } from '@shared/components/badge/badge.component';
     SkeletonLoaderComponent,
     ButtonComponent,
     CardComponent,
-    BadgeComponent
+    BadgeComponent,
   ],
-  templateUrl: './dashboard.component.html'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {
   public readonly stateService = inject(StateService);
@@ -77,7 +81,10 @@ export class DashboardComponent implements OnInit {
     this.stateService.refreshCurrentShift();
   }
 
-  public getTxExplorerLink(txHash: string | null | undefined, chainId: string | number | null | undefined): string {
+  public getTxExplorerLink(
+    txHash: string | null | undefined,
+    chainId: string | number | null | undefined,
+  ): string {
     return this.web3Service.getTxExplorerLink(txHash, chainId);
   }
 
@@ -160,7 +167,7 @@ export class DashboardComponent implements OnInit {
       // Nhận diện lại preset hiện tại từ StateService
       this.tempStartDate = this.stateService.dashboardStartDate();
       this.tempEndDate = this.stateService.dashboardEndDate();
-      
+
       const todayStr = this.formatDate(new Date());
       if (this.tempStartDate === todayStr && this.tempEndDate === todayStr) {
         this.activeDatePreset = 'today';

@@ -1,4 +1,12 @@
-import { Component, inject, signal, OnInit, effect, computed } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  OnInit,
+  effect,
+  computed,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StateService } from '@core/services/state.service';
@@ -12,13 +20,9 @@ import { CAFE_VOUCHER_NFT_ABI } from '@core/services/voucher-contract-abi';
 @Component({
   selector: 'app-marketplace',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    Web3ConnectPromptComponent,
-    TabGroupComponent
-  ],
-  templateUrl: './marketplace.component.html'
+  imports: [CommonModule, FormsModule, Web3ConnectPromptComponent, TabGroupComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  templateUrl: './marketplace.component.html',
 })
 export class MarketplaceComponent implements OnInit {
   public readonly parseFloat = parseFloat;
@@ -33,7 +37,7 @@ export class MarketplaceComponent implements OnInit {
   public readonly tabOptions: TabOption[] = [
     { value: 'shop', label: 'Đổi Voucher', icon: 'gift' },
     { value: 'market', label: 'Chợ Giao Dịch', icon: 'ticket' },
-    { value: 'my-vouchers', label: 'Voucher của tôi', icon: 'wallet' }
+    { value: 'my-vouchers', label: 'Voucher của tôi', icon: 'wallet' },
   ];
 
   // Dữ liệu từ Blockchain
@@ -106,7 +110,7 @@ export class MarketplaceComponent implements OnInit {
 
     try {
       const address = this.web3Service.currentAccount();
-      
+
       // 1. Lấy số dư CafeToken $CAFE
       const bal = await this.web3Service.getCafeTokenBalance(address);
       this.cafeTokenBalance.set(bal);
@@ -165,7 +169,7 @@ export class MarketplaceComponent implements OnInit {
     try {
       const provider = new JsonRpcProvider(rpcUrl);
       const contract = new Contract(nftContractAddress, CAFE_VOUCHER_NFT_ABI, provider);
-      
+
       // 1. Gọi hàm getTokensOfOwner để lấy danh sách IDs
       const rawIds = await contract['getTokensOfOwner'](address);
       const ids: number[] = rawIds.map((id: any) => Number(id));
@@ -182,13 +186,13 @@ export class MarketplaceComponent implements OnInit {
           tokenId: id,
           discountAmount: Number(info.discountAmount),
           minOrderAmount: Number(info.minOrderAmount),
-          isUsed: info.isUsed
+          isUsed: info.isUsed,
         };
       });
 
       const list = await Promise.all(promises);
       // Chỉ giữ lại những voucher chưa sử dụng
-      this.myNFTVouchers.set(list.filter(v => !v.isUsed));
+      this.myNFTVouchers.set(list.filter((v) => !v.isUsed));
     } catch (e) {
       console.error('Lỗi lấy danh sách NFT Voucher của tôi:', e);
       this.myNFTVouchers.set([]);
@@ -210,8 +214,11 @@ export class MarketplaceComponent implements OnInit {
     this.isActionPending.set(true);
     this.stateService.showToast('Vui lòng phê duyệt và xác nhận đổi voucher trên ví...', 'success');
 
-    const res = await this.web3Service.buyVoucherFromShop(voucherType.id, voucherType.priceInCafeToken.toString());
-    
+    const res = await this.web3Service.buyVoucherFromShop(
+      voucherType.id,
+      voucherType.priceInCafeToken.toString(),
+    );
+
     if (res.success && res.txHash) {
       this.stateService.showToast(`Đổi Voucher thành công! Giao dịch: ${res.txHash}`, 'success');
       await this.refreshAllData();
@@ -236,8 +243,11 @@ export class MarketplaceComponent implements OnInit {
     this.isActionPending.set(true);
     this.stateService.showToast('Vui lòng phê duyệt và xác nhận mua voucher trên ví...', 'success');
 
-    const res = await this.web3Service.buyVoucherFromMarket(listing.tokenId, listing.price.toString());
-    
+    const res = await this.web3Service.buyVoucherFromMarket(
+      listing.tokenId,
+      listing.price.toString(),
+    );
+
     if (res.success && res.txHash) {
       this.stateService.showToast(`Mua Voucher thành công! Giao dịch: ${res.txHash}`, 'success');
       await this.refreshAllData();
@@ -276,10 +286,13 @@ export class MarketplaceComponent implements OnInit {
 
     this.closeListModal();
     this.isActionPending.set(true);
-    this.stateService.showToast('Vui lòng phê duyệt NFT và xác nhận treo bán trên ví...', 'success');
+    this.stateService.showToast(
+      'Vui lòng phê duyệt NFT và xác nhận treo bán trên ví...',
+      'success',
+    );
 
     const res = await this.web3Service.listVoucherOnMarket(tokenId, price);
-    
+
     if (res.success && res.txHash) {
       this.stateService.showToast(`Treo bán Voucher NFT #${tokenId} thành công!`, 'success');
       await this.refreshAllData();
@@ -299,9 +312,12 @@ export class MarketplaceComponent implements OnInit {
     this.stateService.showToast('Vui lòng xác nhận hủy bán trên ví...', 'success');
 
     const res = await this.web3Service.cancelListingOnMarket(tokenId);
-    
+
     if (res.success && res.txHash) {
-      this.stateService.showToast(`Đã hủy bán Voucher NFT #${tokenId} thành công! NFT đã được hoàn trả về ví.`, 'success');
+      this.stateService.showToast(
+        `Đã hủy bán Voucher NFT #${tokenId} thành công! NFT đã được hoàn trả về ví.`,
+        'success',
+      );
       await this.refreshAllData();
     } else {
       this.stateService.showToast(res.error || 'Hủy bán thất bại!', 'error');
@@ -314,11 +330,11 @@ export class MarketplaceComponent implements OnInit {
    */
   public isTokenListedByMe(tokenId: number, listingsList: any[]): boolean {
     const address = this.web3Service.currentAccount().toLowerCase();
-    return listingsList.some(l => l.tokenId === tokenId && l.seller.toLowerCase() === address);
+    return listingsList.some((l) => l.tokenId === tokenId && l.seller.toLowerCase() === address);
   }
 
   public connectWallet() {
-    this.web3Service.connectWallet().then(success => {
+    this.web3Service.connectWallet().then((success) => {
       if (success) {
         this.refreshAllData();
       }

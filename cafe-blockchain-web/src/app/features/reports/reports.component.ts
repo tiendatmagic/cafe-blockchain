@@ -1,6 +1,15 @@
 import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prompt/web3-connect-prompt.component';
 import { AccessRestrictedComponent } from '@shared/components/access-restricted/access-restricted.component';
-import { Component, inject, signal, computed, OnInit, effect, untracked } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  computed,
+  OnInit,
+  effect,
+  untracked,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -13,8 +22,15 @@ import { ShortAddressPipe } from '@shared/pipes/short-address.pipe';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
 import { CustomDatePickerComponent } from '@shared/components/custom-date-picker/custom-date-picker.component';
-import { MiniButtonsComponent, DATE_FILTER_OPTIONS } from '@shared/components/mini-buttons/mini-buttons.component';
-import { TableComponent, TableCellDirective, TableColumn } from '@shared/components/table/table.component';
+import {
+  MiniButtonsComponent,
+  DATE_FILTER_OPTIONS,
+} from '@shared/components/mini-buttons/mini-buttons.component';
+import {
+  TableComponent,
+  TableCellDirective,
+  TableColumn,
+} from '@shared/components/table/table.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { CardComponent } from '@shared/components/card/card.component';
@@ -37,9 +53,10 @@ import { CardComponent } from '@shared/components/card/card.component';
     TableCellDirective,
     IconComponent,
     TabGroupComponent,
-    CardComponent
+    CardComponent,
   ],
-  templateUrl: './reports.component.html'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  templateUrl: './reports.component.html',
 })
 export class ReportsComponent implements OnInit {
   public readonly datePresets = DATE_FILTER_OPTIONS;
@@ -49,25 +66,82 @@ export class ReportsComponent implements OnInit {
 
   public readonly reportTabOptions: TabOption[] = [
     { value: 'products', label: 'Báo cáo bán hàng theo món' },
-    { value: 'customers', label: 'Báo cáo chi tiêu khách hàng' }
+    { value: 'customers', label: 'Báo cáo chi tiêu khách hàng' },
   ];
 
   public readonly productColumns: TableColumn[] = [
     { key: 'sku', header: 'MÃ SKU', sortable: true, class: 'font-mono text-slate-500' },
-    { key: 'product_name', header: 'TÊN MÓN / SIZE', sortable: true, class: 'font-extrabold text-slate-800 dark:text-white' },
-    { key: 'total_quantity', header: 'SỐ LƯỢNG BÁN', sortable: true, class: 'text-right font-bold text-slate-800 dark:text-white', headerClass: 'text-right' },
-    { key: 'total_revenue', header: 'DOANH SỐ', sortable: true, class: 'text-right text-slate-800 dark:text-white', headerClass: 'text-right' },
-    { key: 'total_cost', header: 'TỔNG GIÁ VỐN', sortable: true, class: 'text-right text-slate-500', headerClass: 'text-right' },
-    { key: 'gross_profit', header: 'LỢI NHUẬN GỘP', sortable: true, class: 'text-right font-black text-emerald-500', headerClass: 'text-right' },
+    {
+      key: 'product_name',
+      header: 'TÊN MÓN / SIZE',
+      sortable: true,
+      class: 'font-extrabold text-slate-800 dark:text-white',
+    },
+    {
+      key: 'total_quantity',
+      header: 'SỐ LƯỢNG BÁN',
+      sortable: true,
+      class: 'text-right font-bold text-slate-800 dark:text-white',
+      headerClass: 'text-right',
+    },
+    {
+      key: 'total_revenue',
+      header: 'DOANH SỐ',
+      sortable: true,
+      class: 'text-right text-slate-800 dark:text-white',
+      headerClass: 'text-right',
+    },
+    {
+      key: 'total_cost',
+      header: 'TỔNG GIÁ VỐN',
+      sortable: true,
+      class: 'text-right text-slate-500',
+      headerClass: 'text-right',
+    },
+    {
+      key: 'gross_profit',
+      header: 'LỢI NHUẬN GỘP',
+      sortable: true,
+      class: 'text-right font-black text-emerald-500',
+      headerClass: 'text-right',
+    },
   ];
 
   public readonly customerColumns: TableColumn[] = [
-    { key: 'customer_name', header: 'TÊN KHÁCH HÀNG', sortable: true, class: 'font-extrabold text-slate-800 dark:text-white' },
+    {
+      key: 'customer_name',
+      header: 'TÊN KHÁCH HÀNG',
+      sortable: true,
+      class: 'font-extrabold text-slate-800 dark:text-white',
+    },
     { key: 'customer_phone', header: 'SỐ ĐIỆN THOẠI', sortable: true, class: 'text-slate-500' },
-    { key: 'wallet_address', header: 'VÍ BLOCKCHAIN (RÚT GỌN)', sortable: true, class: 'font-mono text-[11px] text-slate-500' },
-    { key: 'orders_count', header: 'SỐ ĐƠN MUA', sortable: true, class: 'text-right font-bold text-slate-800 dark:text-white', headerClass: 'text-right' },
-    { key: 'total_spent', header: 'TỔNG CHI TIÊU', sortable: true, class: 'text-right font-black text-slate-800 dark:text-white', headerClass: 'text-right' },
-    { key: 'average_order_value', header: 'TB ĐƠN HÀNG', sortable: true, class: 'text-right font-bold text-purple-600 dark:text-purple-400', headerClass: 'text-right' },
+    {
+      key: 'wallet_address',
+      header: 'VÍ BLOCKCHAIN (RÚT GỌN)',
+      sortable: true,
+      class: 'font-mono text-[11px] text-slate-500',
+    },
+    {
+      key: 'orders_count',
+      header: 'SỐ ĐƠN MUA',
+      sortable: true,
+      class: 'text-right font-bold text-slate-800 dark:text-white',
+      headerClass: 'text-right',
+    },
+    {
+      key: 'total_spent',
+      header: 'TỔNG CHI TIÊU',
+      sortable: true,
+      class: 'text-right font-black text-slate-800 dark:text-white',
+      headerClass: 'text-right',
+    },
+    {
+      key: 'average_order_value',
+      header: 'TB ĐƠN HÀNG',
+      sortable: true,
+      class: 'text-right font-bold text-purple-600 dark:text-purple-400',
+      headerClass: 'text-right',
+    },
   ];
 
   constructor() {
@@ -84,7 +158,7 @@ export class ReportsComponent implements OnInit {
   public readonly activePreset = signal<string>('7days'); // today, yesterday, 7days, thisMonth, lastMonth, custom
   public readonly reportsStartDate = signal<string>('');
   public readonly reportsEndDate = signal<string>('');
-  
+
   public tempStartDate = '';
   public tempEndDate = '';
 
@@ -180,7 +254,7 @@ export class ReportsComponent implements OnInit {
 
     this.isReportsLoading.set(true);
     this.reportsError.set('');
-    
+
     // Reset phân trang & sắp xếp
     this.productPage.set(1);
     this.customerPage.set(1);
@@ -198,7 +272,7 @@ export class ReportsComponent implements OnInit {
         console.error('Lỗi tải báo cáo:', err);
         this.reportsError.set('Không thể tải dữ liệu báo cáo từ máy chủ.');
         this.isReportsLoading.set(false);
-      }
+      },
     });
   }
 
@@ -236,9 +310,7 @@ export class ReportsComponent implements OnInit {
     this.customerPage.set(1); // Quay về trang 1
   }
 
-
-
-  public onProductSortChange(event: { key: string, direction: 'asc' | 'desc' | '' }) {
+  public onProductSortChange(event: { key: string; direction: 'asc' | 'desc' | '' }) {
     if (event.key) {
       this.productSortField.set(event.key);
       this.productSortDesc.set(event.direction === 'desc');
@@ -249,7 +321,7 @@ export class ReportsComponent implements OnInit {
     this.productPage.set(1);
   }
 
-  public onCustomerSortChange(event: { key: string, direction: 'asc' | 'desc' | '' }) {
+  public onCustomerSortChange(event: { key: string; direction: 'asc' | 'desc' | '' }) {
     if (event.key) {
       this.customerSortField.set(event.key);
       this.customerSortDesc.set(event.direction === 'desc');
@@ -259,8 +331,6 @@ export class ReportsComponent implements OnInit {
     }
     this.customerPage.set(1);
   }
-
-
 
   // --- Hỗ trợ vẽ biểu đồ Conic Gradient (Cơ cấu thanh toán) ---
   public getConicGradient(): string {
@@ -317,7 +387,9 @@ export class ReportsComponent implements OnInit {
     if (!data || !data.trend_chart || data.trend_chart.length === 0) {
       return 100000;
     }
-    const maxVal = Math.max(...data.trend_chart.map((item: any) => Math.max(item.revenue, item.expense)));
+    const maxVal = Math.max(
+      ...data.trend_chart.map((item: any) => Math.max(item.revenue, item.expense)),
+    );
     return maxVal > 0 ? maxVal : 100000;
   }
 
@@ -333,12 +405,12 @@ export class ReportsComponent implements OnInit {
     list.sort((a, b) => {
       const valA = a[field];
       const valB = b[field];
-      
+
       // Xử lý kiểu chuỗi/số
       if (typeof valA === 'string') {
         return desc ? valB.localeCompare(valA) : valA.localeCompare(valB);
       }
-      return desc ? (valB - valA) : (valA - valB);
+      return desc ? valB - valA : valA - valB;
     });
     return list;
   });
@@ -366,11 +438,11 @@ export class ReportsComponent implements OnInit {
     list.sort((a, b) => {
       const valA = a[field];
       const valB = b[field];
-      
+
       if (typeof valA === 'string') {
         return desc ? valB.localeCompare(valA) : valA.localeCompare(valB);
       }
-      return desc ? (valB - valA) : (valA - valB);
+      return desc ? valB - valA : valA - valB;
     });
     return list;
   });
@@ -386,7 +458,6 @@ export class ReportsComponent implements OnInit {
     return Math.ceil(list.length / this.customerLimit);
   });
 
-
   public mathMin(a: number, b: number): number {
     return Math.min(a, b);
   }
@@ -394,7 +465,10 @@ export class ReportsComponent implements OnInit {
   // --- Logic Xuất file Excel (.xlsx) bằng SheetJS ---
   public exportToExcel(type: 'products' | 'customers') {
     if (!this.stateService.hasFeature('enable_excel_export')) {
-      this.stateService.showToast('Gói cước của bạn không hỗ trợ tính năng xuất báo cáo Excel. Vui lòng nâng cấp gói cước!', 'error');
+      this.stateService.showToast(
+        'Gói cước của bạn không hỗ trợ tính năng xuất báo cáo Excel. Vui lòng nâng cấp gói cước!',
+        'error',
+      );
       return;
     }
 
@@ -413,7 +487,7 @@ export class ReportsComponent implements OnInit {
         'Số lượng bán': p.total_quantity,
         'Doanh số (đ)': p.total_revenue,
         'Tổng giá vốn (đ)': p.total_cost,
-        'Lợi nhuận gộp (đ)': p.gross_profit
+        'Lợi nhuận gộp (đ)': p.gross_profit,
       }));
       fileName = `bao_cao_ban_hang_theo_mon_${this.reportsStartDate()}_den_${this.reportsEndDate()}.xlsx`;
       sheetName = 'Báo cáo món ăn';
@@ -424,7 +498,7 @@ export class ReportsComponent implements OnInit {
         'Địa chỉ ví': c.wallet_address || '',
         'Số đơn mua': c.orders_count,
         'Tổng chi tiêu (đ)': c.total_spent,
-        'TB đơn hàng (đ)': c.average_order_value
+        'TB đơn hàng (đ)': c.average_order_value,
       }));
       fileName = `bao_cao_chi_tieu_khach_hang_${this.reportsStartDate()}_den_${this.reportsEndDate()}.xlsx`;
       sheetName = 'Báo cáo khách hàng';

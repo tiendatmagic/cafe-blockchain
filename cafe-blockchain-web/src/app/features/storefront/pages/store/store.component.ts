@@ -1,4 +1,11 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  inject,
+  signal,
+  computed,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -16,7 +23,6 @@ import { ButtonComponent } from '@shared/components/button/button.component';
 import { CardComponent } from '@shared/components/card/card.component';
 import { BadgeComponent } from '@shared/components/badge/badge.component';
 
-
 interface CartItem {
   product: any;
   variant: any | null;
@@ -27,9 +33,24 @@ interface CartItem {
 @Component({
   selector: 'app-store',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, PaginationComponent, VNDCurrencyPipe, ThemeToggleComponent, DrawerComponent, Web3ConnectPromptComponent, IconComponent, TabGroupComponent, ButtonComponent, CardComponent, BadgeComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    PaginationComponent,
+    VNDCurrencyPipe,
+    ThemeToggleComponent,
+    DrawerComponent,
+    Web3ConnectPromptComponent,
+    IconComponent,
+    TabGroupComponent,
+    ButtonComponent,
+    CardComponent,
+    BadgeComponent,
+  ],
   templateUrl: './store.component.html',
-  styleUrls: []
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrls: [],
 })
 export class StoreComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
@@ -82,25 +103,25 @@ export class StoreComponent implements OnInit {
     table_number: '',
     payment_method: 'cash',
     note: '',
-    selected_payment_method_id: null
+    selected_payment_method_id: null,
   });
   public readonly isSubmittingOrder = signal<boolean>(false);
   public readonly isQrTable = signal<boolean>(false);
 
   // Computed values
   public readonly categoryOptions = computed(() => {
-    const list = this.categories().map(cat => ({ value: cat.id, label: cat.name }));
+    const list = this.categories().map((cat) => ({ value: cat.id, label: cat.name }));
     return [{ value: null, label: 'Tất cả' }, ...list];
   });
 
   public readonly storeViewModeOptions = computed<TabOption[]>(() => [
     { value: false, label: 'Thực đơn', icon: 'menu' },
-    { value: true, label: 'Yêu thích', icon: 'heart', badge: this.favorites().length || undefined }
+    { value: true, label: 'Yêu thích', icon: 'heart', badge: this.favorites().length || undefined },
   ]);
 
   public readonly displayModeOptions: TabOption[] = [
     { value: 'grid', label: 'Lưới', icon: 'grid' },
-    { value: 'list', label: 'Danh sách', icon: 'list' }
+    { value: 'list', label: 'Danh sách', icon: 'list' },
   ];
 
   public readonly cartCount = computed(() => {
@@ -110,7 +131,7 @@ export class StoreComponent implements OnInit {
   public readonly cartTotal = computed(() => {
     return this.cart().reduce((sum, item) => {
       const price = item.variant ? item.variant.price : item.product.price;
-      return sum + (price * item.quantity);
+      return sum + price * item.quantity;
     }, 0);
   });
 
@@ -138,14 +159,14 @@ export class StoreComponent implements OnInit {
   public readonly filteredProducts = computed(() => {
     let list = this.products();
     const favs = this.favorites();
-    
+
     // Nếu chỉ xem yêu thích
     if (this.showFavoritesOnly()) {
-      list = list.filter(p => favs.includes(p.id));
+      list = list.filter((p) => favs.includes(p.id));
     } else {
       const activeCatId = this.activeCategoryId();
       if (activeCatId !== null) {
-        list = list.filter(product => {
+        list = list.filter((product) => {
           return product.categories.some((cat: any) => cat.id === activeCatId);
         });
       }
@@ -154,32 +175,40 @@ export class StoreComponent implements OnInit {
     // Lọc theo tìm kiếm
     const search = this.searchQuery().trim().toLowerCase();
     if (search) {
-      list = list.filter(p => 
-        p.name.toLowerCase().includes(search) || 
-        (p.short_description && p.short_description.toLowerCase().includes(search)) ||
-        (p.barcode && p.barcode.toLowerCase() === search)
+      list = list.filter(
+        (p) =>
+          p.name.toLowerCase().includes(search) ||
+          (p.short_description && p.short_description.toLowerCase().includes(search)) ||
+          (p.barcode && p.barcode.toLowerCase() === search),
       );
     }
 
     // Lọc theo khoảng giá sản phẩm chính
     const minPrice = this.storeMinPrice();
     if (minPrice !== null && minPrice !== undefined) {
-      list = list.filter(p => p.price >= minPrice);
+      list = list.filter((p) => p.price >= minPrice);
     }
     const maxPrice = this.storeMaxPrice();
     if (maxPrice !== null && maxPrice !== undefined) {
-      list = list.filter(p => p.price <= maxPrice);
+      list = list.filter((p) => p.price <= maxPrice);
     }
 
     // Lọc theo khoảng giá biến thể sản phẩm
     const minVarPrice = this.storeMinVariantPrice();
     const maxVarPrice = this.storeMaxVariantPrice();
     if (minVarPrice !== null || maxVarPrice !== null) {
-      list = list.filter(p => p.variants && p.variants.length > 0 && p.variants.some((v: any) => {
-        const matchMin = minVarPrice === null || minVarPrice === undefined || v.price >= minVarPrice;
-        const matchMax = maxVarPrice === null || maxVarPrice === undefined || v.price <= maxVarPrice;
-        return matchMin && matchMax;
-      }));
+      list = list.filter(
+        (p) =>
+          p.variants &&
+          p.variants.length > 0 &&
+          p.variants.some((v: any) => {
+            const matchMin =
+              minVarPrice === null || minVarPrice === undefined || v.price >= minVarPrice;
+            const matchMax =
+              maxVarPrice === null || maxVarPrice === undefined || v.price <= maxVarPrice;
+            return matchMin && matchMax;
+          }),
+      );
     }
 
     return list;
@@ -208,7 +237,7 @@ export class StoreComponent implements OnInit {
 
   ngOnInit() {
     // Đọc slug từ route
-    this.route.params.subscribe(params => {
+    this.route.params.subscribe((params) => {
       const slug = params['slug'];
       if (slug) {
         this.loadStoreData(slug);
@@ -220,10 +249,10 @@ export class StoreComponent implements OnInit {
     });
 
     // Đọc query parameters (ví dụ: table từ QR code)
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.subscribe((params) => {
       const table = params['table'];
       if (table) {
-        this.orderForm.update(f => ({ ...f, table_number: table }));
+        this.orderForm.update((f) => ({ ...f, table_number: table }));
         this.isQrTable.set(true);
       } else {
         this.isQrTable.set(false);
@@ -262,14 +291,16 @@ export class StoreComponent implements OnInit {
           const activeProducts = res.products || [];
           const currentCart = [...this.cart()];
           let cartChanged = false;
-          const updatedCart = currentCart.filter(item => {
+          const updatedCart = currentCart.filter((item) => {
             const activeProd = activeProducts.find((p: any) => p.id === item.product.id);
             if (!activeProd) {
               cartChanged = true;
               return false;
             }
             if (item.variant) {
-              const activeVar = activeProd.variants && activeProd.variants.find((v: any) => v.id === item.variant.id && v.status);
+              const activeVar =
+                activeProd.variants &&
+                activeProd.variants.find((v: any) => v.id === item.variant.id && v.status);
               if (!activeVar) {
                 cartChanged = true;
                 return false;
@@ -282,7 +313,9 @@ export class StoreComponent implements OnInit {
             this.cart.set(updatedCart);
             this.saveCartToStorage(updatedCart);
             setTimeout(() => {
-              this.showFloatingToastSuccess('Một số món ăn trong giỏ hàng đã ngừng phục vụ và được tự động loại bỏ.');
+              this.showFloatingToastSuccess(
+                'Một số món ăn trong giỏ hàng đã ngừng phục vụ và được tự động loại bỏ.',
+              );
             }, 1000);
           }
         } else {
@@ -294,10 +327,12 @@ export class StoreComponent implements OnInit {
       error: (err) => {
         console.error(err);
         this.isError.set(true);
-        const translatedMsg = this.translateErrorMessage(err.error?.message || 'Lỗi kết nối máy chủ!');
+        const translatedMsg = this.translateErrorMessage(
+          err.error?.message || 'Lỗi kết nối máy chủ!',
+        );
         this.errorMessage.set(translatedMsg);
         this.isLoading.set(false);
-      }
+      },
     });
   }
 
@@ -340,7 +375,9 @@ export class StoreComponent implements OnInit {
 
     // Nếu không có biến thể, thêm trực tiếp vào giỏ hàng
     const currentCart = [...this.cart()];
-    const existIndex = currentCart.findIndex(item => item.product.id === product.id && !item.variant);
+    const existIndex = currentCart.findIndex(
+      (item) => item.product.id === product.id && !item.variant,
+    );
 
     if (existIndex > -1) {
       currentCart[existIndex].quantity += 1;
@@ -349,7 +386,7 @@ export class StoreComponent implements OnInit {
         product,
         variant: null,
         quantity: 1,
-        note: ''
+        note: '',
       });
     }
 
@@ -367,11 +404,12 @@ export class StoreComponent implements OnInit {
     if (!variant) return;
 
     const currentCart = [...this.cart()];
-    const existIndex = currentCart.findIndex(item => 
-      item.product.id === product.id && 
-      item.variant && 
-      item.variant.id === variant.id &&
-      item.note === this.variantNote()
+    const existIndex = currentCart.findIndex(
+      (item) =>
+        item.product.id === product.id &&
+        item.variant &&
+        item.variant.id === variant.id &&
+        item.note === this.variantNote(),
     );
 
     const qty = this.variantQuantity();
@@ -384,14 +422,16 @@ export class StoreComponent implements OnInit {
         product,
         variant,
         quantity: qty,
-        note
+        note,
       });
     }
 
     this.cart.set(currentCart);
     this.saveCartToStorage(currentCart);
     this.selectedProductForVariant.set(null); // Đóng modal
-    this.showFloatingToastSuccess(`Đã thêm ${product.name} (${variant.variant_name}) vào giỏ hàng!`);
+    this.showFloatingToastSuccess(
+      `Đã thêm ${product.name} (${variant.variant_name}) vào giỏ hàng!`,
+    );
   }
 
   public updateCartQty(index: number, change: number) {
@@ -449,7 +489,7 @@ export class StoreComponent implements OnInit {
 
   public onPhoneInputChange(value: string) {
     const cleaned = value.replace(/[^0-9]/g, '');
-    this.orderForm.update(f => ({ ...f, customer_phone: cleaned }));
+    this.orderForm.update((f) => ({ ...f, customer_phone: cleaned }));
   }
 
   // --- Đặt hàng ---
@@ -470,18 +510,20 @@ export class StoreComponent implements OnInit {
       return;
     }
     if (form.payment_method === 'bank_transfer' && !form.selected_payment_method_id) {
-      this.alertModalMessage.set('Vui lòng chọn tài khoản ngân hàng hoặc ví điện tử để chuyển khoản!');
+      this.alertModalMessage.set(
+        'Vui lòng chọn tài khoản ngân hàng hoặc ví điện tử để chuyển khoản!',
+      );
       return;
     }
 
     this.isSubmittingOrder.set(true);
 
     // Chuẩn bị danh sách món
-    const items = this.cart().map(item => ({
+    const items = this.cart().map((item) => ({
       product_id: item.product.id,
       product_variant_id: item.variant ? item.variant.id : null,
       quantity: item.quantity,
-      note: item.note
+      note: item.note,
     }));
 
     // Gộp ghi chú chung của đơn hàng vào table_number hoặc truyền riêng
@@ -499,7 +541,7 @@ export class StoreComponent implements OnInit {
       customer_phone: form.customer_phone.trim(),
       table_number: tableInfo,
       payment_method: form.payment_method === 'e_wallet' ? 'bank_transfer' : form.payment_method,
-      items
+      items,
     };
 
     const slug = this.storeSettings().website_slug;
@@ -517,7 +559,7 @@ export class StoreComponent implements OnInit {
             table_number: '',
             payment_method: 'cash',
             note: '',
-            selected_payment_method_id: null
+            selected_payment_method_id: null,
           });
         }
         this.isSubmittingOrder.set(false);
@@ -527,14 +569,14 @@ export class StoreComponent implements OnInit {
         const translatedMsg = this.translateErrorMessage(err.error?.message);
         this.alertModalMessage.set(translatedMsg);
         this.isSubmittingOrder.set(false);
-      }
+      },
     });
   }
 
   // Dịch thông báo lỗi tiếng Anh từ API backend sang tiếng Việt cho giao diện frontend storefront
   private translateErrorMessage(msg: string): string {
     if (!msg) return 'Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại!';
-    
+
     const lowerMsg = msg.toLowerCase();
 
     // Dịch các lỗi phân quyền truy cập website cửa hàng (storefront)
@@ -547,7 +589,7 @@ export class StoreComponent implements OnInit {
     if (lowerMsg.includes("storefront feature is not enabled for this store's subscription plan")) {
       return 'Tính năng Website cửa hàng chưa được kích hoạt cho gói dịch vụ của quán.';
     }
-    
+
     // Dịch các lỗi phổ biến liên quan đến sản phẩm ngừng phục vụ
     if (lowerMsg.includes('is currently disabled and not available for purchase')) {
       const match = msg.match(/Product '(.*)' is currently disabled/i);
@@ -596,7 +638,9 @@ export class StoreComponent implements OnInit {
 
   // Helper hiển thị thông báo góc màn hình
   private toastMessage = signal<string>('');
-  public get floatingToastMessage() { return this.toastMessage; }
+  public get floatingToastMessage() {
+    return this.toastMessage;
+  }
 
   private showFloatingToastSuccess(msg: string) {
     this.toastMessage.set(msg);
@@ -608,23 +652,23 @@ export class StoreComponent implements OnInit {
   }
 
   public selectStorePaymentMethod(id: number) {
-    this.orderForm.update(f => ({ ...f, selected_payment_method_id: id }));
+    this.orderForm.update((f) => ({ ...f, selected_payment_method_id: id }));
   }
 
   public getSelectedPaymentMethod(): any {
     const id = this.orderForm().selected_payment_method_id;
     if (!id) return null;
-    return this.paymentMethods().find(pm => pm.id === id);
+    return this.paymentMethods().find((pm) => pm.id === id);
   }
 
   public downloadQrCode(item: any) {
     if (!item) return;
     const url = this.getStoreQrUrl(item);
     const filename = `qrcode-${item.bank_code || item.name}-${item.account_number}.jpg`;
-    
+
     fetch(url)
-      .then(response => response.blob())
-      .then(blob => {
+      .then((response) => response.blob())
+      .then((blob) => {
         const blobUrl = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = blobUrl;

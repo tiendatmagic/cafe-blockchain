@@ -4,7 +4,12 @@
     title="Sổ kho hàng"
     description="Lập phiếu nhập kho nguyên liệu, xuất kho hao hụt và kiểm kho định kỳ cho cửa hàng của bạn."
   >
-    <app-icon icon name="inventory" class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" strokeWidth="2.5" />
+    <app-icon
+      icon
+      name="inventory"
+      class="h-6.5 w-6.5 text-[var(--dynamic-primary)]"
+      strokeWidth="2.5"
+    />
 
     @if (stateService.web3Service.walletConnected()) {
       <div
@@ -43,9 +48,15 @@
               (click)="openAddInventoryModal('nhap')"
               class="w-full text-left px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-200 transition-colors flex items-center gap-3"
             >
-              <app-icon name="arrow-up" class="h-4.5 w-4.5 text-emerald-500 shrink-0" strokeWidth="2.5" />
+              <app-icon
+                name="arrow-up"
+                class="h-4.5 w-4.5 text-emerald-500 shrink-0"
+                strokeWidth="2.5"
+              />
               <div>
-                <div class="font-semibold text-slate-800 dark:text-slate-200 text-sm">Nhập hàng</div>
+                <div class="font-semibold text-slate-800 dark:text-slate-200 text-sm">
+                  Nhập hàng
+                </div>
                 <div class="text-xs text-slate-400">Nhập nguyên liệu vào kho</div>
               </div>
             </button>
@@ -53,9 +64,15 @@
               (click)="openAddInventoryModal('xuat')"
               class="w-full text-left px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-200 transition-colors flex items-center gap-3 border-t border-slate-100 dark:border-slate-700/50"
             >
-              <app-icon name="arrow-down" class="h-4.5 w-4.5 text-rose-500 shrink-0" strokeWidth="2.5" />
+              <app-icon
+                name="arrow-down"
+                class="h-4.5 w-4.5 text-rose-500 shrink-0"
+                strokeWidth="2.5"
+              />
               <div>
-                <div class="font-semibold text-slate-800 dark:text-slate-200 text-sm">Xuất hàng</div>
+                <div class="font-semibold text-slate-800 dark:text-slate-200 text-sm">
+                  Xuất hàng
+                </div>
                 <div class="text-xs text-slate-400">Xuất hao hụt, hư hỏng</div>
               </div>
             </button>
@@ -75,601 +92,625 @@
     }
   </app-page-header>
 
-    @if (stateService.web3Service.walletConnected()) {
+  @if (stateService.web3Service.walletConnected()) {
     @if (stateService.hasPermission('inventory')) {
-    @if (isInventoryLoading()) {
-      <app-skeleton-loader type="inventory"></app-skeleton-loader>
-    } @else {
-      <div class="space-y-6">
-    <!-- BỘ LỌC PHIẾU KHO VÀ HÀNH ĐỘNG -->
-    <div class="space-y-4">
-      <div
-        app-card
-        class="p-4 flex items-center justify-between flex-wrap gap-4"
-      >
-        <app-tab-group
-          [options]="inventoryTypeFilterOptions"
-          [activeValue]="inventoryTypeFilter()"
-          (valueChange)="inventoryTypeFilter.set($event); inventoryCurrentPage.set(1)"
-        ></app-tab-group>
+      @if (isInventoryLoading()) {
+        <app-skeleton-loader type="inventory"></app-skeleton-loader>
+      } @else {
+        <div class="space-y-6">
+          <!-- BỘ LỌC PHIẾU KHO VÀ HÀNH ĐỘNG -->
+          <div class="space-y-4">
+            <div app-card class="p-4 flex items-center justify-between flex-wrap gap-4">
+              <app-tab-group
+                [options]="inventoryTypeFilterOptions"
+                [activeValue]="inventoryTypeFilter()"
+                (valueChange)="inventoryTypeFilter.set($event); inventoryCurrentPage.set(1)"
+              ></app-tab-group>
 
-        <div class="flex items-center gap-4 w-full sm:w-auto shrink-0 flex-wrap sm:flex-nowrap">
-          <!-- Search input -->
-          <div class="relative w-full sm:w-60">
-            <input
-              type="text"
-              [ngModel]="inventorySearchQuery()"
-              (ngModelChange)="inventorySearchQuery.set($event); inventoryCurrentPage.set(1)"
-              placeholder="Tìm ghi chú, mã phiếu, món..."
-              class="w-full search-input"
-            />
-            <app-icon
-              name="search"
-              class="absolute left-3 top-3 h-4 w-4 text-slate-400"
-              strokeWidth="2.5"
-            />
-          </div>
+              <div
+                class="flex items-center gap-4 w-full sm:w-auto shrink-0 flex-wrap sm:flex-nowrap"
+              >
+                <!-- Search input -->
+                <div class="relative w-full sm:w-60">
+                  <input
+                    type="text"
+                    [ngModel]="inventorySearchQuery()"
+                    (ngModelChange)="inventorySearchQuery.set($event); inventoryCurrentPage.set(1)"
+                    placeholder="Tìm ghi chú, mã phiếu, món..."
+                    class="w-full search-input"
+                  />
+                  <app-icon
+                    name="search"
+                    class="absolute left-3 top-3 h-4 w-4 text-slate-400"
+                    strokeWidth="2.5"
+                  />
+                </div>
 
-          <span class="text-xs font-bold text-slate-400 whitespace-nowrap"
-            >Tìm thấy {{ filteredInventoryRecords().length }} phiếu kho</span
-          >
-        </div>
-      </div>
-
-      <!-- DANH SÁCH PHIẾU KHO -->
-      <div
-        app-card
-        class="p-0 overflow-hidden"
-      >
-        <div class="overflow-x-auto">
-          <table class="app-table min-w-[850px]">
-            <thead>
-              <tr>
-                <th>
-                  Mã phiếu
-                </th>
-                <th>
-                  Phân loại phiếu
-                </th>
-                <th>
-                  Ngày lập
-                </th>
-                <th>
-                  Ghi chú
-                </th>
-                <th class="text-right">
-                  Thao tác
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              @if (filteredInventoryRecords().length === 0) {
-                <tr>
-                  <td colspan="5" class="p-8 text-center text-xs text-slate-400 italic">
-                    Chưa lập phiếu kho nào phù hợp với bộ lọc.
-                  </td>
-                </tr>
-              }
-              @for (record of paginatedInventoryRecords(); track record.id) {
-                <tr>
-                  <td
-                    class="font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap"
-                  >
-                    {{ record.record_code }}
-                  </td>
-                  <td class="whitespace-nowrap">
-                    @if (record.type === 'nhap') {
-                      <span
-                        class="bg-emerald-500/10 text-emerald-500 text-xs font-extrabold px-2.5 py-1 rounded-xl"
-                        >NHẬP KHO</span
-                      >
-                    } @else if (record.type === 'xuat') {
-                      <span
-                        class="bg-rose-500/10 text-rose-500 text-xs font-extrabold px-2.5 py-1 rounded-xl"
-                        >XUẤT KHO</span
-                      >
-                    } @else {
-                      <span
-                        class="bg-amber-500/10 text-amber-500 text-xs font-extrabold px-2.5 py-1 rounded-xl"
-                        >KIỂM KHO</span
-                      >
-                    }
-                  </td>
-                  <td
-                    class="font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap"
-                  >
-                    {{ record.record_date | date: 'dd/MM/yyyy' }}
-                  </td>
-                  <td
-                    class="max-w-[200px] truncate text-slate-500 dark:text-slate-400 font-medium"
-                  >
-                    {{ record.note || '--' }}
-                  </td>
-                  <td class="text-right whitespace-nowrap">
-                    <div class="flex items-center justify-end gap-2.5">
-                      <button
-                        app-button
-                        variant="secondary"
-                        size="sm"
-                        (click)="viewInventoryRecordDetails(record)"
-                      >
-                        Chi tiết
-                      </button>
-                      <button
-                        app-button
-                        variant="danger-light"
-                        size="sm"
-                        (click)="deleteInventoryRecord(record)"
-                      >
-                        Xóa
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Phân trang Kho -->
-        @if (filteredInventoryRecords().length > inventoryItemsPerPage) {
-          <app-pagination
-            [currentPage]="inventoryCurrentPage()"
-            [totalPages]="inventoryTotalPages()"
-            [totalItems]="filteredInventoryRecords().length"
-            [itemsPerPage]="inventoryItemsPerPage"
-            itemName="phiếu"
-            (pageChange)="inventoryCurrentPage.set($event)"
-          ></app-pagination>
-        }
-      </div>
-
-      <!-- ==================== BẢNG BÁO CÁO TỒN KHO THỜI GIAN THỰC ==================== -->
-      <div class="mt-8 pt-6 border-t border-slate-200/60 dark:border-slate-800/60">
-        <div
-          app-card
-          class="p-0 overflow-hidden"
-        >
-          <div
-            class="p-5 border-b border-slate-100 dark:border-slate-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-          >
-            <div>
-              <h4 class="font-extrabold text-slate-800 dark:text-white text-base">
-                Bảng báo cáo Tồn kho hiện tại
-              </h4>
-              <p class="text-xs text-slate-400 dark:text-slate-500">
-                Số lượng tồn kho thực tế được tính toán tự động dựa trên Nhập - Xuất - Bán hàng và
-                phiếu Kiểm kho gần nhất.
-              </p>
+                <span class="text-xs font-bold text-slate-400 whitespace-nowrap"
+                  >Tìm thấy {{ filteredInventoryRecords().length }} phiếu kho</span
+                >
+              </div>
             </div>
-            <!-- Search + count -->
-            <div class="flex items-center gap-3 flex-wrap sm:flex-nowrap shrink-0">
-              <div class="relative">
+
+            <!-- DANH SÁCH PHIẾU KHO -->
+            <div app-card class="p-0 overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="app-table min-w-[850px]">
+                  <thead>
+                    <tr>
+                      <th>Mã phiếu</th>
+                      <th>Phân loại phiếu</th>
+                      <th>Ngày lập</th>
+                      <th>Ghi chú</th>
+                      <th class="text-right">Thao tác</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @if (filteredInventoryRecords().length === 0) {
+                      <tr>
+                        <td colspan="5" class="p-8 text-center text-xs text-slate-400 italic">
+                          Chưa lập phiếu kho nào phù hợp với bộ lọc.
+                        </td>
+                      </tr>
+                    }
+                    @for (record of paginatedInventoryRecords(); track record.id) {
+                      <tr>
+                        <td class="font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                          {{ record.record_code }}
+                        </td>
+                        <td class="whitespace-nowrap">
+                          @if (record.type === 'nhap') {
+                            <span
+                              class="bg-emerald-500/10 text-emerald-500 text-xs font-extrabold px-2.5 py-1 rounded-xl"
+                              >NHẬP KHO</span
+                            >
+                          } @else if (record.type === 'xuat') {
+                            <span
+                              class="bg-rose-500/10 text-rose-500 text-xs font-extrabold px-2.5 py-1 rounded-xl"
+                              >XUẤT KHO</span
+                            >
+                          } @else {
+                            <span
+                              class="bg-amber-500/10 text-amber-500 text-xs font-extrabold px-2.5 py-1 rounded-xl"
+                              >KIỂM KHO</span
+                            >
+                          }
+                        </td>
+                        <td
+                          class="font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap"
+                        >
+                          {{ record.record_date | date: 'dd/MM/yyyy' }}
+                        </td>
+                        <td
+                          class="max-w-[200px] truncate text-slate-500 dark:text-slate-400 font-medium"
+                        >
+                          {{ record.note || '--' }}
+                        </td>
+                        <td class="text-right whitespace-nowrap">
+                          <div class="flex items-center justify-end gap-2.5">
+                            <button
+                              app-button
+                              variant="secondary"
+                              size="sm"
+                              (click)="viewInventoryRecordDetails(record)"
+                            >
+                              Chi tiết
+                            </button>
+                            <button
+                              app-button
+                              variant="danger-light"
+                              size="sm"
+                              (click)="deleteInventoryRecord(record)"
+                            >
+                              Xóa
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Phân trang Kho -->
+              @if (filteredInventoryRecords().length > inventoryItemsPerPage) {
+                <app-pagination
+                  [currentPage]="inventoryCurrentPage()"
+                  [totalPages]="inventoryTotalPages()"
+                  [totalItems]="filteredInventoryRecords().length"
+                  [itemsPerPage]="inventoryItemsPerPage"
+                  itemName="phiếu"
+                  (pageChange)="inventoryCurrentPage.set($event)"
+                ></app-pagination>
+              }
+            </div>
+
+            <!-- ==================== BẢNG BÁO CÁO TỒN KHO THỜI GIAN THỰC ==================== -->
+            <div class="mt-8 pt-6 border-t border-slate-200/60 dark:border-slate-800/60">
+              <div app-card class="p-0 overflow-hidden">
+                <div
+                  class="p-5 border-b border-slate-100 dark:border-slate-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                >
+                  <div>
+                    <h4 class="font-extrabold text-slate-800 dark:text-white text-base">
+                      Bảng báo cáo Tồn kho hiện tại
+                    </h4>
+                    <p class="text-xs text-slate-400 dark:text-slate-500">
+                      Số lượng tồn kho thực tế được tính toán tự động dựa trên Nhập - Xuất - Bán
+                      hàng và phiếu Kiểm kho gần nhất.
+                    </p>
+                  </div>
+                  <!-- Search + count -->
+                  <div class="flex items-center gap-3 flex-wrap sm:flex-nowrap shrink-0">
+                    <div class="relative">
+                      <input
+                        type="text"
+                        [ngModel]="stockReportSearch()"
+                        (ngModelChange)="
+                          stockReportSearch.set($event); stockReportCurrentPage.set(1)
+                        "
+                        placeholder="Tìm sản phẩm..."
+                        class="w-48 sm:w-64 search-input"
+                      />
+                      <app-icon
+                        name="search"
+                        class="absolute left-3 top-3 h-4 w-4 text-slate-400"
+                        strokeWidth="2.5"
+                      />
+                    </div>
+                    <span
+                      class="text-xs font-bold text-purple-600 bg-purple-50 dark:bg-purple-950/40 dark:text-purple-400 px-3 py-1 rounded-xl whitespace-nowrap"
+                    >
+                      {{ filteredStockRows().length }} dòng
+                    </span>
+                  </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                  <table class="app-table min-w-[750px]">
+                    <thead>
+                      <tr>
+                        <th>Sản phẩm / Nguyên liệu</th>
+                        <th>Loại / Biến thể (Size)</th>
+                        <th>Đơn giá bán hiện tại</th>
+                        <th>Tồn kho hiện tại</th>
+                        <th class="text-right">Trạng thái kho</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @if (filteredStockRows().length === 0) {
+                        <tr>
+                          <td colspan="5" class="p-8 text-center text-xs text-slate-400 italic">
+                            @if (stockReportSearch()) {
+                              Không tìm thấy sản phẩm nào khớp với “{{ stockReportSearch() }}”.
+                            } @else {
+                              Chưa có sản phẩm nào để tính toán tồn kho.
+                            }
+                          </td>
+                        </tr>
+                      }
+                      @for (row of paginatedStockRows(); track $index) {
+                        <tr>
+                          <td>
+                            <div class="flex items-center gap-3">
+                              <div
+                                class="w-8 h-8 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 flex items-center justify-center font-extrabold text-xs shrink-0"
+                              >
+                                {{ row.product.name.substring(0, 1) | uppercase }}
+                              </div>
+                              <span class="font-extrabold text-slate-800 dark:text-white">{{
+                                row.product.name
+                              }}</span>
+                            </div>
+                          </td>
+                          <td>
+                            @if (row.variant) {
+                              <span
+                                class="text-xs font-bold text-purple-600 bg-purple-50 dark:bg-purple-950/40 dark:text-purple-400 px-2 py-0.5 rounded-lg border border-purple-200/10"
+                                >{{ row.variant.variant_name }}</span
+                              >
+                            } @else {
+                              <span class="text-xs text-slate-400 italic">Sản phẩm thường</span>
+                            }
+                          </td>
+                          <td class="font-semibold text-slate-600 dark:text-slate-400">
+                            {{ (row.variant ? row.variant.price : row.product.price) | vnd }}
+                          </td>
+                          <td
+                            class="font-black text-base"
+                            [class.text-rose-500]="
+                              getProductStock(row.product.id, row.variant?.id ?? null) <= 5
+                            "
+                            [class.text-emerald-500]="
+                              getProductStock(row.product.id, row.variant?.id ?? null) > 5
+                            "
+                          >
+                            {{ getProductStock(row.product.id, row.variant?.id ?? null) | number }}
+                          </td>
+                          <td class="text-right whitespace-nowrap">
+                            @if (getProductStock(row.product.id, row.variant?.id ?? null) <= 0) {
+                              <span
+                                class="bg-rose-500/10 text-rose-500 text-xs font-black px-2.5 py-1 rounded-full uppercase tracking-wider animate-pulse"
+                                >Hết hàng</span
+                              >
+                            } @else if (
+                              getProductStock(row.product.id, row.variant?.id ?? null) <= 5
+                            ) {
+                              <span
+                                class="bg-amber-500/10 text-amber-500 text-xs font-black px-2.5 py-1 rounded-full uppercase tracking-wider"
+                                >Sắp hết hàng</span
+                              >
+                            } @else {
+                              <span
+                                class="bg-emerald-500/10 text-emerald-500 text-xs font-black px-2.5 py-1 rounded-full uppercase tracking-wider"
+                                >Còn hàng</span
+                              >
+                            }
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- Footer phân trang Bảng Tồn kho -->
+                @if (filteredStockRows().length > stockReportItemsPerPage) {
+                  <app-pagination
+                    [currentPage]="stockReportCurrentPage()"
+                    [totalPages]="stockReportTotalPages()"
+                    [totalItems]="filteredStockRows().length"
+                    [itemsPerPage]="stockReportItemsPerPage"
+                    itemName="dòng"
+                    (pageChange)="stockReportCurrentPage.set($event)"
+                  ></app-pagination>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ==================== MODALS KHO HÀNG ==================== -->
+
+      <!-- Modal Tạo Phiếu Kho -->
+      @if (isInventoryModalOpen()) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div (click)="closeInventoryModal()" class="fixed inset-0 bg-black/40"></div>
+          <div
+            class="relative bg-white dark:bg-slate-900 rounded-xl border border-slate-200/60 dark:border-slate-800/60 p-6 max-w-xl w-full max-h-[90vh] flex flex-col shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200"
+          >
+            <!-- Header -->
+            <div
+              class="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-800 shrink-0"
+            >
+              <h4 class="text-base font-extrabold text-slate-800 dark:text-white">
+                Lập phiếu kho mới
+              </h4>
+              <button
+                (click)="closeInventoryModal()"
+                class="text-slate-400 hover:text-slate-600 p-1"
+              >
+                <app-icon name="close" class="h-5 w-5" strokeWidth="2" />
+              </button>
+            </div>
+
+            <!-- Body Form -->
+            <div class="flex-1 overflow-y-auto py-4 pr-1 space-y-4 no-scrollbar min-h-0">
+              <!-- Phân loại & Ngày lập -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                  <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                    >Phân loại phiếu</label
+                  >
+                  <app-tab-group
+                    [options]="inventoryFormTypeOptions"
+                    [activeValue]="inventoryForm().type"
+                    (valueChange)="inventoryForm.update((f) => ({ ...f, type: $event }))"
+                  ></app-tab-group>
+                </div>
+
+                <div class="space-y-1.5">
+                  <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                    >Ngày lập phiếu</label
+                  >
+                  <app-custom-date-picker
+                    [selectedDate]="inventoryForm().record_date"
+                    (selectedDateChange)="
+                      inventoryForm.update((f) => ({ ...f, record_date: $event }))
+                    "
+                    placeholder="Chọn ngày lập phiếu"
+                  ></app-custom-date-picker>
+                </div>
+              </div>
+
+              <!-- Ghi chú phiếu kho -->
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                  >Ghi chú phiếu kho</label
+                >
                 <input
                   type="text"
-                  [ngModel]="stockReportSearch()"
-                  (ngModelChange)="stockReportSearch.set($event); stockReportCurrentPage.set(1)"
-                  placeholder="Tìm sản phẩm..."
-                  class="w-48 sm:w-64 search-input"
-                />
-                <app-icon
-                  name="search"
-                  class="absolute left-3 top-3 h-4 w-4 text-slate-400"
-                  strokeWidth="2.5"
+                  [(ngModel)]="inventoryForm().note"
+                  placeholder="Nhập nội dung ghi chú (Ví dụ: Nhập trà nhãn, kiểm kê sữa tươi)..."
+                  class="form-input"
                 />
               </div>
-              <span class="text-xs font-bold text-purple-600 bg-purple-50 dark:bg-purple-950/40 dark:text-purple-400 px-3 py-1 rounded-xl whitespace-nowrap">
-                {{ filteredStockRows().length }} dòng
-              </span>
+
+              <!-- DANH SÁCH MÓN KHO ĐA DÒNG -->
+              <div class="space-y-3 pt-2">
+                <div
+                  class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2"
+                >
+                  <span class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                    >Sản phẩm / Món trong phiếu kho</span
+                  >
+                  <button
+                    type="button"
+                    (click)="addInventoryItemRow()"
+                    class="text-xs font-bold text-purple-600 dark:text-purple-400 hover:underline flex items-center gap-1"
+                  >
+                    + Thêm dòng
+                  </button>
+                </div>
+
+                <!-- Header cột form item -->
+                <div class="flex items-center gap-2 px-1 pb-0.5">
+                  <div
+                    class="flex-1 min-w-0 text-[10px] font-black text-slate-400 uppercase tracking-wider"
+                  >
+                    Sản phẩm / Biến thể
+                  </div>
+                  <div
+                    class="w-20 shrink-0 text-[10px] font-black text-slate-400 uppercase tracking-wider text-center"
+                  >
+                    Số lượng
+                  </div>
+                  <div
+                    class="w-28 shrink-0 text-[10px] font-black text-slate-400 uppercase tracking-wider text-center"
+                  >
+                    Đơn giá (VNĐ)
+                  </div>
+                  <div class="w-9 shrink-0"></div>
+                </div>
+
+                <div class="space-y-3 pr-1">
+                  @if (inventoryForm().items.length === 0) {
+                    <div class="text-center py-6 text-xs text-slate-400 italic">
+                      Chưa có sản phẩm nào được chọn. Nhấn + Thêm dòng ở trên để bắt đầu!
+                    </div>
+                  }
+                  @for (item of inventoryForm().items; track $index) {
+                    <div
+                      class="flex items-stretch gap-2 bg-slate-50 dark:bg-slate-950 p-3 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 relative animate-in fade-in duration-150"
+                    >
+                      <!-- Dropdown chọn sản phẩm -->
+                      <div class="flex-1 min-w-0 flex flex-col justify-center gap-2">
+                        <app-custom-select
+                          [value]="item.product_id"
+                          (valueChange)="updateInventoryItemField($index, 'product_id', $event)"
+                          [options]="inventoryProductOptions()"
+                          valueKey="id"
+                          labelKey="name"
+                          placeholder="-- Chọn món --"
+                          [showSearch]="true"
+                          triggerClass="w-full form-input cursor-pointer font-semibold"
+                        ></app-custom-select>
+
+                        <!-- Chọn biến thể nếu sản phẩm đó có biến thể -->
+                        @if (
+                          item.product_id > 0 && getProductVariants(item.product_id).length > 0
+                        ) {
+                          <app-custom-select
+                            [value]="item.product_variant_id"
+                            (valueChange)="
+                              updateInventoryItemField($index, 'product_variant_id', $event)
+                            "
+                            [options]="getProductVariantsOptions(item.product_id)"
+                            valueKey="id"
+                            labelKey="label"
+                            placeholder="Chọn size..."
+                            triggerClass="w-full form-input cursor-pointer font-bold text-purple-600"
+                          ></app-custom-select>
+                        }
+                      </div>
+
+                      <!-- Nhập Số lượng -->
+                      <div class="w-20 shrink-0 flex items-center">
+                        <input
+                          type="number"
+                          min="0"
+                          [ngModel]="item.quantity"
+                          (ngModelChange)="updateInventoryItemField($index, 'quantity', $event)"
+                          placeholder="0"
+                          title="Số lượng"
+                          class="w-full form-input text-center font-bold"
+                        />
+                      </div>
+
+                      <!-- Nhập Đơn giá -->
+                      <div class="w-28 shrink-0 flex items-center">
+                        <input
+                          type="number"
+                          min="0"
+                          [ngModel]="item.price"
+                          (ngModelChange)="updateInventoryItemField($index, 'price', $event)"
+                          placeholder="0đ"
+                          title="Đơn giá (VNĐ)"
+                          class="w-full form-input text-center font-extrabold"
+                        />
+                      </div>
+
+                      <!-- Nút xóa dòng -->
+                      <button
+                        type="button"
+                        (click)="removeInventoryItemRow($index)"
+                        class="text-rose-500 hover:text-rose-600 p-2 hover:bg-rose-100 dark:hover:bg-rose-950/40 rounded-xl transition-all shrink-0 self-center"
+                      >
+                        <app-icon name="trash" class="h-4 w-4" strokeWidth="2" />
+                      </button>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer Buttons -->
+            <div class="flex gap-3 pt-3.5 border-t border-slate-100 dark:border-slate-800 shrink-0">
+              <button
+                app-button
+                variant="cancel"
+                (click)="closeInventoryModal()"
+                [disabled]="isInventorySaving()"
+                class="flex-1"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                app-button
+                variant="primary"
+                (click)="saveInventoryRecord()"
+                [loading]="isInventorySaving()"
+                class="flex-1"
+              >
+                Lập phiếu kho
+              </button>
             </div>
           </div>
-
-          <div class="overflow-x-auto">
-            <table class="app-table min-w-[750px]">
-              <thead>
-                <tr>
-                  <th>
-                    Sản phẩm / Nguyên liệu
-                  </th>
-                  <th>
-                    Loại / Biến thể (Size)
-                  </th>
-                  <th>
-                    Đơn giá bán hiện tại
-                  </th>
-                  <th>
-                    Tồn kho hiện tại
-                  </th>
-                  <th class="text-right">
-                    Trạng thái kho
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                @if (filteredStockRows().length === 0) {
-                  <tr>
-                    <td colspan="5" class="p-8 text-center text-xs text-slate-400 italic">
-                      @if (stockReportSearch()) {
-                        Không tìm thấy sản phẩm nào khớp với “{{ stockReportSearch() }}”.
-                      } @else {
-                        Chưa có sản phẩm nào để tính toán tồn kho.
-                      }
-                    </td>
-                  </tr>
-                }
-                @for (row of paginatedStockRows(); track $index) {
-                  <tr>
-                    <td>
-                      <div class="flex items-center gap-3">
-                        <div
-                          class="w-8 h-8 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 flex items-center justify-center font-extrabold text-xs shrink-0"
-                        >
-                          {{ row.product.name.substring(0, 1) | uppercase }}
-                        </div>
-                        <span class="font-extrabold text-slate-800 dark:text-white">{{ row.product.name }}</span>
-                      </div>
-                    </td>
-                    <td>
-                      @if (row.variant) {
-                        <span
-                          class="text-xs font-bold text-purple-600 bg-purple-50 dark:bg-purple-950/40 dark:text-purple-400 px-2 py-0.5 rounded-lg border border-purple-200/10"
-                        >{{ row.variant.variant_name }}</span>
-                      } @else {
-                        <span class="text-xs text-slate-400 italic">Sản phẩm thường</span>
-                      }
-                    </td>
-                    <td class="font-semibold text-slate-600 dark:text-slate-400">
-                      {{ (row.variant ? row.variant.price : row.product.price) | vnd }}
-                    </td>
-                    <td
-                      class="font-black text-base"
-                      [class.text-rose-500]="getProductStock(row.product.id, row.variant?.id ?? null) <= 5"
-                      [class.text-emerald-500]="getProductStock(row.product.id, row.variant?.id ?? null) > 5"
-                    >
-                      {{ getProductStock(row.product.id, row.variant?.id ?? null) | number }}
-                    </td>
-                    <td class="text-right whitespace-nowrap">
-                      @if (getProductStock(row.product.id, row.variant?.id ?? null) <= 0) {
-                        <span class="bg-rose-500/10 text-rose-500 text-xs font-black px-2.5 py-1 rounded-full uppercase tracking-wider animate-pulse">Hết hàng</span>
-                      } @else if (getProductStock(row.product.id, row.variant?.id ?? null) <= 5) {
-                        <span class="bg-amber-500/10 text-amber-500 text-xs font-black px-2.5 py-1 rounded-full uppercase tracking-wider">Sắp hết hàng</span>
-                      } @else {
-                        <span class="bg-emerald-500/10 text-emerald-500 text-xs font-black px-2.5 py-1 rounded-full uppercase tracking-wider">Còn hàng</span>
-                      }
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Footer phân trang Bảng Tồn kho -->
-          @if (filteredStockRows().length > stockReportItemsPerPage) {
-            <app-pagination
-              [currentPage]="stockReportCurrentPage()"
-              [totalPages]="stockReportTotalPages()"
-              [totalItems]="filteredStockRows().length"
-              [itemsPerPage]="stockReportItemsPerPage"
-              itemName="dòng"
-              (pageChange)="stockReportCurrentPage.set($event)"
-            ></app-pagination>
-          }
         </div>
-      </div>
-      </div>
-      </div>
-    }
+      }
 
-<!-- ==================== MODALS KHO HÀNG ==================== -->
-
-<!-- Modal Tạo Phiếu Kho -->
-@if (isInventoryModalOpen()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div (click)="closeInventoryModal()" class="fixed inset-0 bg-black/40"></div>
-    <div
-      class="relative bg-white dark:bg-slate-900 rounded-xl border border-slate-200/60 dark:border-slate-800/60 p-6 max-w-xl w-full max-h-[90vh] flex flex-col shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200"
-    >
-      <!-- Header -->
-      <div
-        class="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-800 shrink-0"
-      >
-        <h4 class="text-base font-extrabold text-slate-800 dark:text-white">Lập phiếu kho mới</h4>
-        <button (click)="closeInventoryModal()" class="text-slate-400 hover:text-slate-600 p-1">
-          <app-icon name="close" class="h-5 w-5" strokeWidth="2" />
-        </button>
-      </div>
-
-      <!-- Body Form -->
-      <div class="flex-1 overflow-y-auto py-4 pr-1 space-y-4 no-scrollbar min-h-0">
-        <!-- Phân loại & Ngày lập -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="space-y-1.5">
-            <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-              >Phân loại phiếu</label
-            >
-            <app-tab-group
-              [options]="inventoryFormTypeOptions"
-              [activeValue]="inventoryForm().type"
-              (valueChange)="inventoryForm.update(f => ({ ...f, type: $event }))"
-            ></app-tab-group>
-          </div>
-
-          <div class="space-y-1.5">
-            <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-              >Ngày lập phiếu</label
-            >
-            <app-custom-date-picker
-              [selectedDate]="inventoryForm().record_date"
-              (selectedDateChange)="inventoryForm.update(f => ({ ...f, record_date: $event }))"
-              placeholder="Chọn ngày lập phiếu"
-            ></app-custom-date-picker>
-          </div>
-        </div>
-
-        <!-- Ghi chú phiếu kho -->
-        <div class="space-y-1.5">
-          <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-            >Ghi chú phiếu kho</label
-          >
-          <input
-            type="text"
-            [(ngModel)]="inventoryForm().note"
-            placeholder="Nhập nội dung ghi chú (Ví dụ: Nhập trà nhãn, kiểm kê sữa tươi)..."
-            class="form-input"
-          />
-        </div>
-
-        <!-- DANH SÁCH MÓN KHO ĐA DÒNG -->
-        <div class="space-y-3 pt-2">
+      <!-- Modal Chi Tiết Phiếu Kho -->
+      @if (isInventoryDetailModalOpen() && selectedInventoryRecord()) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div (click)="closeInventoryDetailModal()" class="fixed inset-0 bg-black/40"></div>
           <div
-            class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2"
+            class="relative bg-white dark:bg-slate-900 rounded-xl border border-slate-200/60 dark:border-slate-800/60 p-6 max-w-md w-full shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200 flex flex-col max-h-[90vh]"
           >
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-              >Sản phẩm / Món trong phiếu kho</span
+            <!-- Header -->
+            <div
+              class="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-800/60 shrink-0"
             >
-            <button
-              type="button"
-              (click)="addInventoryItemRow()"
-              class="text-xs font-bold text-purple-600 dark:text-purple-400 hover:underline flex items-center gap-1"
-            >
-              + Thêm dòng
-            </button>
-          </div>
-
-          <!-- Header cột form item -->
-          <div class="flex items-center gap-2 px-1 pb-0.5">
-            <div class="flex-1 min-w-0 text-[10px] font-black text-slate-400 uppercase tracking-wider">Sản phẩm / Biến thể</div>
-            <div class="w-20 shrink-0 text-[10px] font-black text-slate-400 uppercase tracking-wider text-center">Số lượng</div>
-            <div class="w-28 shrink-0 text-[10px] font-black text-slate-400 uppercase tracking-wider text-center">Đơn giá (VNĐ)</div>
-            <div class="w-9 shrink-0"></div>
-          </div>
-
-          <div class="space-y-3 pr-1">
-            @if (inventoryForm().items.length === 0) {
-              <div class="text-center py-6 text-xs text-slate-400 italic">
-                Chưa có sản phẩm nào được chọn. Nhấn + Thêm dòng ở trên để bắt đầu!
-              </div>
-            }
-            @for (item of inventoryForm().items; track $index) {
-              <div
-                class="flex items-stretch gap-2 bg-slate-50 dark:bg-slate-950 p-3 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 relative animate-in fade-in duration-150"
+              <h4 class="text-base font-extrabold text-slate-800 dark:text-white">
+                Chi tiết phiếu kho {{ selectedInventoryRecord()?.record_code }}
+              </h4>
+              <button
+                (click)="closeInventoryDetailModal()"
+                class="text-slate-400 hover:text-slate-600 p-1 rounded-xl hover:bg-slate-100"
               >
-                <!-- Dropdown chọn sản phẩm -->
-                <div class="flex-1 min-w-0 flex flex-col justify-center gap-2">
-                  <app-custom-select
-                    [value]="item.product_id"
-                    (valueChange)="updateInventoryItemField($index, 'product_id', $event)"
-                    [options]="inventoryProductOptions()"
-                    valueKey="id"
-                    labelKey="name"
-                    placeholder="-- Chọn món --"
-                    [showSearch]="true"
-                    triggerClass="w-full form-input cursor-pointer font-semibold"
-                  ></app-custom-select>
+                <app-icon name="close" class="h-5 w-5" strokeWidth="2" />
+              </button>
+            </div>
 
-                  <!-- Chọn biến thể nếu sản phẩm đó có biến thể -->
-                  @if (item.product_id > 0 && getProductVariants(item.product_id).length > 0) {
-                    <app-custom-select
-                      [value]="item.product_variant_id"
-                      (valueChange)="updateInventoryItemField($index, 'product_variant_id', $event)"
-                      [options]="getProductVariantsOptions(item.product_id)"
-                      valueKey="id"
-                      labelKey="label"
-                      placeholder="Chọn size..."
-                      triggerClass="w-full form-input cursor-pointer font-bold text-purple-600"
-                    ></app-custom-select>
-                  }
-                </div>
-
-                <!-- Nhập Số lượng -->
-                <div class="w-20 shrink-0 flex items-center">
-                  <input
-                    type="number"
-                    min="0"
-                    [ngModel]="item.quantity"
-                    (ngModelChange)="updateInventoryItemField($index, 'quantity', $event)"
-                    placeholder="0"
-                    title="Số lượng"
-                    class="w-full form-input text-center font-bold"
-                  />
-                </div>
-
-                <!-- Nhập Đơn giá -->
-                <div class="w-28 shrink-0 flex items-center">
-                  <input
-                    type="number"
-                    min="0"
-                    [ngModel]="item.price"
-                    (ngModelChange)="updateInventoryItemField($index, 'price', $event)"
-                    placeholder="0đ"
-                    title="Đơn giá (VNĐ)"
-                    class="w-full form-input text-center font-extrabold"
-                  />
-                </div>
-
-                <!-- Nút xóa dòng -->
-                <button
-                  type="button"
-                  (click)="removeInventoryItemRow($index)"
-                  class="text-rose-500 hover:text-rose-600 p-2 hover:bg-rose-100 dark:hover:bg-rose-950/40 rounded-xl transition-all shrink-0 self-center"
-                >
-                  <app-icon name="trash" class="h-4 w-4" strokeWidth="2" />
-                </button>
-              </div>
-            }
-          </div>
-        </div>
-      </div>
-
-      <!-- Footer Buttons -->
-      <div class="flex gap-3 pt-3.5 border-t border-slate-100 dark:border-slate-800 shrink-0">
-        <button
-          app-button
-          variant="cancel"
-          (click)="closeInventoryModal()"
-          [disabled]="isInventorySaving()"
-          class="flex-1"
-        >
-          Hủy bỏ
-        </button>
-        <button
-          app-button
-          variant="primary"
-          (click)="saveInventoryRecord()"
-          [loading]="isInventorySaving()"
-          class="flex-1"
-        >
-          Lập phiếu kho
-        </button>
-      </div>
-    </div>
-  </div>
-}
-
-<!-- Modal Chi Tiết Phiếu Kho -->
-@if (isInventoryDetailModalOpen() && selectedInventoryRecord()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div (click)="closeInventoryDetailModal()" class="fixed inset-0 bg-black/40"></div>
-    <div
-      class="relative bg-white dark:bg-slate-900 rounded-xl border border-slate-200/60 dark:border-slate-800/60 p-6 max-w-md w-full shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] animate-in fade-in zoom-in duration-200 text-slate-800 dark:text-slate-200 flex flex-col max-h-[90vh]"
-    >
-      <!-- Header -->
-      <div
-        class="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-800/60 shrink-0"
-      >
-        <h4 class="text-base font-extrabold text-slate-800 dark:text-white">
-          Chi tiết phiếu kho {{ selectedInventoryRecord()?.record_code }}
-        </h4>
-        <button
-          (click)="closeInventoryDetailModal()"
-          class="text-slate-400 hover:text-slate-600 p-1 rounded-xl hover:bg-slate-100"
-        >
-          <app-icon name="close" class="h-5 w-5" strokeWidth="2" />
-        </button>
-      </div>
-
-      <!-- Body content -->
-      <div class="flex-1 overflow-y-auto py-4 pr-1 space-y-4 no-scrollbar min-h-0">
-        <!-- Thông tin chung -->
-        <div
-          class="grid grid-cols-2 gap-3 text-xs bg-slate-50 dark:bg-slate-950 p-4.5 rounded-2xl border border-slate-100 dark:border-slate-900"
-        >
-          <div>
-            <span class="text-slate-400 font-bold block uppercase tracking-wider text-xs"
-              >LOẠI PHIẾU KHO</span
-            >
-            <span class="font-extrabold text-sm text-slate-700 dark:text-slate-300">
-              @if (selectedInventoryRecord()?.type === 'nhap') {
-                NHẬP KHO
-              } @else if (selectedInventoryRecord()?.type === 'xuat') {
-                XUẤT KHO
-              } @else {
-                KIỂM KHO
-              }
-            </span>
-          </div>
-          <div>
-            <span class="text-slate-400 font-bold block uppercase tracking-wider text-xs"
-              >NGÀY LẬP</span
-            >
-            <span class="font-extrabold text-sm text-slate-700 dark:text-slate-300">{{
-              selectedInventoryRecord()?.record_date | date: 'dd/MM/yyyy'
-            }}</span>
-          </div>
-          <div class="col-span-2 pt-2.5 border-t border-slate-200/50 dark:border-slate-800">
-            <span class="text-slate-400 font-bold block uppercase tracking-wider text-xs"
-              >NỘI DUNG GHI CHÚ</span
-            >
-            <span class="font-semibold text-slate-600 dark:text-slate-300 text-xs mt-0.5 block">{{
-              selectedInventoryRecord()?.note || 'Không có ghi chú'
-            }}</span>
-          </div>
-        </div>
-
-        <!-- Danh sách chi tiết món -->
-        <div class="space-y-3.5">
-          <span
-            class="text-xs font-bold text-slate-400 uppercase tracking-wider block border-b border-slate-200/50 dark:border-slate-800/60 pb-2"
-            >Danh sách sản phẩm</span
-          >
-          <div class="space-y-2 max-h-48 overflow-y-auto pr-1 no-scrollbar">
-            @for (item of selectedInventoryRecord()?.items; track item.id) {
+            <!-- Body content -->
+            <div class="flex-1 overflow-y-auto py-4 pr-1 space-y-4 no-scrollbar min-h-0">
+              <!-- Thông tin chung -->
               <div
-                class="flex items-center justify-between text-xs py-2 border-b border-slate-100 dark:border-slate-800/30"
+                class="grid grid-cols-2 gap-3 text-xs bg-slate-50 dark:bg-slate-950 p-4.5 rounded-2xl border border-slate-100 dark:border-slate-900"
               >
-                <div class="flex flex-col min-w-0">
-                  <span class="font-extrabold text-slate-700 dark:text-slate-300 truncate">{{
-                    item.product?.name || 'Sản phẩm khác'
+                <div>
+                  <span class="text-slate-400 font-bold block uppercase tracking-wider text-xs"
+                    >LOẠI PHIẾU KHO</span
+                  >
+                  <span class="font-extrabold text-sm text-slate-700 dark:text-slate-300">
+                    @if (selectedInventoryRecord()?.type === 'nhap') {
+                      NHẬP KHO
+                    } @else if (selectedInventoryRecord()?.type === 'xuat') {
+                      XUẤT KHO
+                    } @else {
+                      KIỂM KHO
+                    }
+                  </span>
+                </div>
+                <div>
+                  <span class="text-slate-400 font-bold block uppercase tracking-wider text-xs"
+                    >NGÀY LẬP</span
+                  >
+                  <span class="font-extrabold text-sm text-slate-700 dark:text-slate-300">{{
+                    $safeNavigationMigration(selectedInventoryRecord()?.record_date)
+                      | date: 'dd/MM/yyyy'
                   }}</span>
-                  @if (item.variant) {
-                    <span
-                      class="text-[10px] text-purple-600 font-extrabold tracking-wider uppercase mt-0.5"
-                      >Size: {{ item.variant.variant_name }}</span
-                    >
-                  }
                 </div>
-                <div class="flex items-center gap-6 text-right shrink-0">
-                  <span class="font-bold text-slate-400 text-xs">x{{ item.quantity }}</span>
-                  <span class="font-black text-slate-800 dark:text-white font-mono"
-                    >{{ item.price * item.quantity | vnd }}</span
+                <div class="col-span-2 pt-2.5 border-t border-slate-200/50 dark:border-slate-800">
+                  <span class="text-slate-400 font-bold block uppercase tracking-wider text-xs"
+                    >NỘI DUNG GHI CHÚ</span
+                  >
+                  <span
+                    class="font-semibold text-slate-600 dark:text-slate-300 text-xs mt-0.5 block"
+                    >{{ selectedInventoryRecord()?.note || 'Không có ghi chú' }}</span
                   >
                 </div>
               </div>
-            }
+
+              <!-- Danh sách chi tiết món -->
+              <div class="space-y-3.5">
+                <span
+                  class="text-xs font-bold text-slate-400 uppercase tracking-wider block border-b border-slate-200/50 dark:border-slate-800/60 pb-2"
+                  >Danh sách sản phẩm</span
+                >
+                <div class="space-y-2 max-h-48 overflow-y-auto pr-1 no-scrollbar">
+                  @for (item of selectedInventoryRecord()?.items; track item.id) {
+                    <div
+                      class="flex items-center justify-between text-xs py-2 border-b border-slate-100 dark:border-slate-800/30"
+                    >
+                      <div class="flex flex-col min-w-0">
+                        <span class="font-extrabold text-slate-700 dark:text-slate-300 truncate">{{
+                          item.product?.name || 'Sản phẩm khác'
+                        }}</span>
+                        @if (item.variant) {
+                          <span
+                            class="text-[10px] text-purple-600 font-extrabold tracking-wider uppercase mt-0.5"
+                            >Size: {{ item.variant.variant_name }}</span
+                          >
+                        }
+                      </div>
+                      <div class="flex items-center gap-6 text-right shrink-0">
+                        <span class="font-bold text-slate-400 text-xs">x{{ item.quantity }}</span>
+                        <span class="font-black text-slate-800 dark:text-white font-mono">{{
+                          item.price * item.quantity | vnd
+                        }}</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer Buttons -->
+            <div class="flex pt-3.5 border-t border-slate-100 dark:border-slate-800 shrink-0">
+              <button
+                app-button
+                variant="cancel"
+                (click)="closeInventoryDetailModal()"
+                class="w-full"
+              >
+                Đóng cửa sổ
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      }
 
-      <!-- Footer Buttons -->
-      <div class="flex pt-3.5 border-t border-slate-100 dark:border-slate-800 shrink-0">
-        <button
-          app-button
-          variant="cancel"
-          (click)="closeInventoryDetailModal()"
-          class="w-full"
-        >
-          Đóng cửa sổ
-        </button>
-      </div>
-    </div>
-  </div>
-}
-
-<!-- Modal Xác nhận Xóa Phiếu Kho -->
-<app-confirm-modal
-  [isOpen]="isDeleteRecordConfirmOpen()"
-  title="Xác nhận xóa phiếu kho"
-  [description]="'Bạn có chắc chắn muốn xóa phiếu kho ' + (deletingRecord()?.record_code || '') + ' khỏi hệ thống? Hành động này không thể hoàn tác.'"
-  confirmText="Xác nhận xóa"
-  cancelText="Hủy bỏ"
-  [isSubmitting]="stateService.isLoading()"
-  (confirm)="confirmDeleteInventoryRecord()"
-  (cancel)="isDeleteRecordConfirmOpen.set(false)"
-></app-confirm-modal>
+      <!-- Modal Xác nhận Xóa Phiếu Kho -->
+      <app-confirm-modal
+        [isOpen]="isDeleteRecordConfirmOpen()"
+        title="Xác nhận xóa phiếu kho"
+        [description]="
+          'Bạn có chắc chắn muốn xóa phiếu kho ' +
+          (deletingRecord()?.record_code || '') +
+          ' khỏi hệ thống? Hành động này không thể hoàn tác.'
+        "
+        confirmText="Xác nhận xóa"
+        cancelText="Hủy bỏ"
+        [isSubmitting]="stateService.isLoading()"
+        (confirm)="confirmDeleteInventoryRecord()"
+        (cancel)="isDeleteRecordConfirmOpen.set(false)"
+      ></app-confirm-modal>
     } @else {
       <app-access-restricted pageName="Kho hàng"></app-access-restricted>
     }
-} @else {
-  <app-web3-connect-prompt [title]="'Kết nối ví Web3 để quản lý Kho hàng'"></app-web3-connect-prompt>
+  } @else {
+    <app-web3-connect-prompt
+      [title]="'Kết nối ví Web3 để quản lý Kho hàng'"
+    ></app-web3-connect-prompt>
   }
 </div>

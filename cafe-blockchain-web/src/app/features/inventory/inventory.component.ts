@@ -1,6 +1,13 @@
 import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prompt/web3-connect-prompt.component';
 import { AccessRestrictedComponent } from '@shared/components/access-restricted/access-restricted.component';
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  computed,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -38,9 +45,10 @@ import { CardComponent } from '@shared/components/card/card.component';
     TabGroupComponent,
     SkeletonLoaderComponent,
     ButtonComponent,
-    CardComponent
+    CardComponent,
   ],
-  templateUrl: './inventory.component.html'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  templateUrl: './inventory.component.html',
 })
 export class InventoryComponent implements OnInit {
   public readonly stateService = inject(StateService);
@@ -58,13 +66,13 @@ export class InventoryComponent implements OnInit {
     { value: 'all', label: 'Tất cả' },
     { value: 'nhap', label: 'Nhập kho' },
     { value: 'xuat', label: 'Xuất kho' },
-    { value: 'kiem', label: 'Kiểm kho' }
+    { value: 'kiem', label: 'Kiểm kho' },
   ];
 
   public readonly inventoryFormTypeOptions: TabOption[] = [
     { value: 'nhap', label: 'Nhập' },
     { value: 'xuat', label: 'Xuất' },
-    { value: 'kiem', label: 'Kiểm' }
+    { value: 'kiem', label: 'Kiểm' },
   ];
 
   // Bộ tìm kiếm Kho hàng
@@ -83,19 +91,27 @@ export class InventoryComponent implements OnInit {
     type: 'nhap',
     note: '',
     record_date: '',
-    items: []
+    items: [],
   });
 
   // Getters từ StateService
-  public get products() { return this.stateService.products; }
-  public get orders() { return this.stateService.orders; }
-  public get inventoryRecords() { return this.stateService.inventoryRecords; }
-  public get isInventoryLoading() { return this.stateService.isInventoryLoading; }
+  public get products() {
+    return this.stateService.products;
+  }
+  public get orders() {
+    return this.stateService.orders;
+  }
+  public get inventoryRecords() {
+    return this.stateService.inventoryRecords;
+  }
+  public get isInventoryLoading() {
+    return this.stateService.isInventoryLoading;
+  }
 
   // Danh sách sản phẩm bao gồm tùy chọn mặc định cho dropdown
   public readonly inventoryProductOptions = computed(() => [
     { id: 0, name: '-- Chọn món --' },
-    ...this.products()
+    ...this.products(),
   ]);
 
   // --- Computed Properties Kho hàng ---
@@ -103,20 +119,22 @@ export class InventoryComponent implements OnInit {
     let list = this.inventoryRecords();
     const type = this.inventoryTypeFilter();
     if (type !== 'all') {
-      list = list.filter(r => r.type === type);
+      list = list.filter((r) => r.type === type);
     }
 
     // Thêm tìm kiếm cục bộ (note, record_code, tên món trong record items)
     const search = this.inventorySearchQuery().trim().toLowerCase();
     if (search) {
-      list = list.filter(r => 
-        (r.note && r.note.toLowerCase().includes(search)) ||
-        (r.record_code && r.record_code.toLowerCase().includes(search)) ||
-        (r.id && r.id.toString().includes(search)) ||
-        (r.items && r.items.some((item: any) => {
-          const prod = this.products().find(p => p.id === item.product_id);
-          return prod && prod.name.toLowerCase().includes(search);
-        }))
+      list = list.filter(
+        (r) =>
+          (r.note && r.note.toLowerCase().includes(search)) ||
+          (r.record_code && r.record_code.toLowerCase().includes(search)) ||
+          (r.id && r.id.toString().includes(search)) ||
+          (r.items &&
+            r.items.some((item: any) => {
+              const prod = this.products().find((p) => p.id === item.product_id);
+              return prod && prod.name.toLowerCase().includes(search);
+            })),
       );
     }
     return list;
@@ -140,7 +158,7 @@ export class InventoryComponent implements OnInit {
 
     const stocks: { [key: string]: number } = {};
 
-    productsList.forEach(p => {
+    productsList.forEach((p) => {
       if (p.variants && p.variants.length > 0) {
         p.variants.forEach((v: any) => {
           stocks[`${p.id}_${v.id}`] = 0;
@@ -150,16 +168,18 @@ export class InventoryComponent implements OnInit {
       }
     });
 
-    productsList.forEach(p => {
+    productsList.forEach((p) => {
       const processItem = (variantId: number | null) => {
         const key = `${p.id}_${variantId}`;
 
         let latestKiemDate: Date | null = null;
         let latestKiemQty = 0;
 
-        records.forEach(r => {
+        records.forEach((r) => {
           if (r.type === 'kiem') {
-            const item = r.items?.find((i: any) => i.product_id === p.id && i.product_variant_id === variantId);
+            const item = r.items?.find(
+              (i: any) => i.product_id === p.id && i.product_variant_id === variantId,
+            );
             if (item) {
               const rDate = new Date(r.record_date);
               if (!latestKiemDate || rDate > latestKiemDate) {
@@ -174,10 +194,12 @@ export class InventoryComponent implements OnInit {
         let totalOut = 0;
         let totalSold = 0;
 
-        records.forEach(r => {
+        records.forEach((r) => {
           const rDate = new Date(r.record_date);
           if (!latestKiemDate || rDate > latestKiemDate) {
-            const item = r.items?.find((i: any) => i.product_id === p.id && i.product_variant_id === variantId);
+            const item = r.items?.find(
+              (i: any) => i.product_id === p.id && i.product_variant_id === variantId,
+            );
             if (item) {
               const qty = Number(item.quantity) || 0;
               if (r.type === 'nhap') {
@@ -190,16 +212,18 @@ export class InventoryComponent implements OnInit {
         });
 
         if (p.type === 'ingredient') {
-          ordersList.forEach(o => {
+          ordersList.forEach((o) => {
             if (o.status === 'completed') {
               const oDate = new Date(o.created_at);
               if (!latestKiemDate || oDate > latestKiemDate) {
                 o.items?.forEach((oItem: any) => {
-                  const sellProduct = productsList.find(sp => sp.id === oItem.product_id);
+                  const sellProduct = productsList.find((sp) => sp.id === oItem.product_id);
                   if (sellProduct && sellProduct.recipes && sellProduct.recipes.length > 0) {
-                    const recipe = sellProduct.recipes.find((r: any) => 
-                      r.ingredient_id === p.id &&
-                      (!r.product_variant_id || r.product_variant_id === oItem.product_variant_id)
+                    const recipe = sellProduct.recipes.find(
+                      (r: any) =>
+                        r.ingredient_id === p.id &&
+                        (!r.product_variant_id ||
+                          r.product_variant_id === oItem.product_variant_id),
                     );
                     if (recipe) {
                       totalSold += (Number(oItem.quantity) || 0) * (Number(recipe.quantity) || 0);
@@ -210,11 +234,13 @@ export class InventoryComponent implements OnInit {
             }
           });
         } else {
-          ordersList.forEach(o => {
+          ordersList.forEach((o) => {
             if (o.status === 'completed') {
               const oDate = new Date(o.created_at);
               if (!latestKiemDate || oDate > latestKiemDate) {
-                const item = o.items?.find((i: any) => i.product_id === p.id && i.product_variant_id === variantId);
+                const item = o.items?.find(
+                  (i: any) => i.product_id === p.id && i.product_variant_id === variantId,
+                );
                 if (item) {
                   totalSold += Number(item.quantity) || 0;
                 }
@@ -261,11 +287,12 @@ export class InventoryComponent implements OnInit {
   public readonly filteredStockRows = computed(() => {
     const q = this.stockReportSearch().trim().toLowerCase();
     if (!q) return this.flatStockRows();
-    return this.flatStockRows().filter(r =>
-      r.product.name.toLowerCase().includes(q) ||
-      (r.variant?.variant_name && r.variant.variant_name.toLowerCase().includes(q)) ||
-      (r.variant?.sku && r.variant.sku.toLowerCase().includes(q)) ||
-      (r.product.sku && r.product.sku.toLowerCase().includes(q))
+    return this.flatStockRows().filter(
+      (r) =>
+        r.product.name.toLowerCase().includes(q) ||
+        (r.variant?.variant_name && r.variant.variant_name.toLowerCase().includes(q)) ||
+        (r.variant?.sku && r.variant.sku.toLowerCase().includes(q)) ||
+        (r.product.sku && r.product.sku.toLowerCase().includes(q)),
     );
   });
 
@@ -275,11 +302,9 @@ export class InventoryComponent implements OnInit {
     return this.filteredStockRows().slice(start, start + this.stockReportItemsPerPage);
   });
 
-  public readonly stockReportTotalPages = computed(() =>
-    Math.ceil(this.filteredStockRows().length / this.stockReportItemsPerPage) || 1
+  public readonly stockReportTotalPages = computed(
+    () => Math.ceil(this.filteredStockRows().length / this.stockReportItemsPerPage) || 1,
   );
-
-
 
   public getProductStock(productId: number, variantId: number | null = null): number {
     const key = `${productId}_${variantId}`;
@@ -297,7 +322,7 @@ export class InventoryComponent implements OnInit {
       type: type,
       note: '',
       record_date: new Date().toISOString().split('T')[0],
-      items: [{ product_id: 0, product_variant_id: null, quantity: 1, price: 0 }]
+      items: [{ product_id: 0, product_variant_id: null, quantity: 1, price: 0 }],
     });
     this.isInventoryModalOpen.set(true);
     this.isInventoryDropdownOpen.set(false);
@@ -308,14 +333,14 @@ export class InventoryComponent implements OnInit {
   }
 
   public addInventoryItemRow() {
-    this.inventoryForm.update(form => ({
+    this.inventoryForm.update((form) => ({
       ...form,
-      items: [...form.items, { product_id: 0, product_variant_id: null, quantity: 1, price: 0 }]
+      items: [...form.items, { product_id: 0, product_variant_id: null, quantity: 1, price: 0 }],
     }));
   }
 
   public removeInventoryItemRow(index: number) {
-    this.inventoryForm.update(form => {
+    this.inventoryForm.update((form) => {
       const items = [...form.items];
       items.splice(index, 1);
       return { ...form, items };
@@ -323,35 +348,39 @@ export class InventoryComponent implements OnInit {
   }
 
   public updateInventoryItemField(index: number, field: string, value: any) {
-    this.inventoryForm.update(form => {
+    this.inventoryForm.update((form) => {
       const items = [...form.items];
       if (items[index]) {
         let parsedValue = value;
         if (field === 'product_id') {
           parsedValue = Number(value);
-          const prod = this.products().find(p => p.id === parsedValue);
+          const prod = this.products().find((p) => p.id === parsedValue);
           items[index] = {
             ...items[index],
             product_id: parsedValue,
-            product_variant_id: prod && prod.variants && prod.variants.length > 0 ? prod.variants[0].id : null,
-            price: prod ? prod.price : 0
+            product_variant_id:
+              prod && prod.variants && prod.variants.length > 0 ? prod.variants[0].id : null,
+            price: prod ? prod.price : 0,
           };
         } else if (field === 'product_variant_id') {
           parsedValue = value ? Number(value) : null;
           const prodId = items[index].product_id;
-          const prod = this.products().find(p => p.id === prodId);
+          const prod = this.products().find((p) => p.id === prodId);
           if (prod && prod.variants && parsedValue) {
             const variant = prod.variants.find((v: any) => v.id === parsedValue);
             items[index] = {
               ...items[index],
               product_variant_id: parsedValue,
-              price: variant ? variant.price : prod.price
+              price: variant ? variant.price : prod.price,
             };
           } else {
             items[index] = { ...items[index], product_variant_id: parsedValue };
           }
         } else {
-          items[index] = { ...items[index], [field]: field === 'price' || field === 'quantity' ? Number(value) : value };
+          items[index] = {
+            ...items[index],
+            [field]: field === 'price' || field === 'quantity' ? Number(value) : value,
+          };
         }
       }
       return { ...form, items };
@@ -367,7 +396,10 @@ export class InventoryComponent implements OnInit {
 
     const invalidItem = form.items.some((item: any) => item.product_id <= 0 || item.quantity <= 0);
     if (invalidItem) {
-      this.stateService.showToast('Vui lòng chọn sản phẩm và nhập số lượng hợp lệ cho tất cả các dòng!', 'error');
+      this.stateService.showToast(
+        'Vui lòng chọn sản phẩm và nhập số lượng hợp lệ cho tất cả các dòng!',
+        'error',
+      );
       return;
     }
 
@@ -382,7 +414,7 @@ export class InventoryComponent implements OnInit {
       error: () => {
         this.stateService.showToast('Tạo phiếu kho thất bại!', 'error');
         this.isInventorySaving.set(false);
-      }
+      },
     });
   }
 
@@ -409,7 +441,7 @@ export class InventoryComponent implements OnInit {
         this.stateService.showToast('Xóa phiếu kho thất bại!', 'error');
         this.deletingRecord.set(null);
         this.stateService.isLoading.set(false);
-      }
+      },
     });
   }
 
@@ -427,7 +459,7 @@ export class InventoryComponent implements OnInit {
 
   // Tiện ích lấy variants của một sản phẩm
   public getProductVariants(productId: number): any[] {
-    const prod = this.products().find(p => p.id === Number(productId));
+    const prod = this.products().find((p) => p.id === Number(productId));
     return prod && prod.variants ? prod.variants : [];
   }
 
@@ -438,7 +470,7 @@ export class InventoryComponent implements OnInit {
       const formattedPrice = new Intl.NumberFormat('en-US').format(v.price) + 'đ';
       return {
         id: v.id,
-        label: `${v.variant_name} (${formattedPrice})`
+        label: `${v.variant_name} (${formattedPrice})`,
       };
     });
   }

@@ -1,4 +1,11 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  computed,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -11,7 +18,11 @@ import { ShortAddressPipe } from '@shared/pipes/short-address.pipe';
 import { ConfirmModalComponent } from '@shared/components/confirm-modal/confirm-modal.component';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { CustomDatePickerComponent } from '@shared/components/custom-date-picker/custom-date-picker.component';
-import { TableComponent, TableCellDirective, TableColumn } from '@shared/components/table/table.component';
+import {
+  TableComponent,
+  TableCellDirective,
+  TableColumn,
+} from '@shared/components/table/table.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
@@ -40,25 +51,58 @@ import { BadgeComponent } from '@shared/components/badge/badge.component';
     ButtonComponent,
     CustomCheckboxComponent,
     CardComponent,
-    BadgeComponent
+    BadgeComponent,
   ],
-  templateUrl: './customers.component.html'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  templateUrl: './customers.component.html',
 })
 export class CustomersComponent implements OnInit {
   public readonly customerColumns: TableColumn[] = [
-    { key: 'customer_code', header: 'Mã khách', sortable: false, class: 'font-bold whitespace-nowrap' },
-    { key: 'name', header: 'Tên khách hàng / Doanh nghiệp', sortable: false, class: 'font-extrabold text-slate-800 dark:text-white whitespace-nowrap' },
+    {
+      key: 'customer_code',
+      header: 'Mã khách',
+      sortable: false,
+      class: 'font-bold whitespace-nowrap',
+    },
+    {
+      key: 'name',
+      header: 'Tên khách hàng / Doanh nghiệp',
+      sortable: false,
+      class: 'font-extrabold text-slate-800 dark:text-white whitespace-nowrap',
+    },
     { key: 'type', header: 'Phân loại', sortable: false, class: 'whitespace-nowrap' },
     { key: 'phone', header: 'Điện thoại', sortable: false, class: 'font-bold whitespace-nowrap' },
     { key: 'dob', header: 'Ngày sinh / MST', sortable: false, class: 'whitespace-nowrap' },
-    { key: 'wallet_address', header: 'Địa chỉ ví Web3', sortable: false, class: 'whitespace-nowrap font-mono' },
-    { key: 'actions', header: 'Thao tác', sortable: false, class: 'text-right whitespace-nowrap', headerClass: 'text-right' }
+    {
+      key: 'wallet_address',
+      header: 'Địa chỉ ví Web3',
+      sortable: false,
+      class: 'whitespace-nowrap font-mono',
+    },
+    {
+      key: 'actions',
+      header: 'Thao tác',
+      sortable: false,
+      class: 'text-right whitespace-nowrap',
+      headerClass: 'text-right',
+    },
   ];
 
   public readonly groupColumns: TableColumn[] = [
     { key: 'id', header: 'Mã nhóm', sortable: false, class: 'font-bold whitespace-nowrap' },
-    { key: 'name', header: 'Tên nhóm khách hàng', sortable: false, class: 'font-extrabold text-slate-800 dark:text-white whitespace-nowrap' },
-    { key: 'actions', header: 'Thao tác', sortable: false, class: 'text-right whitespace-nowrap', headerClass: 'text-right' }
+    {
+      key: 'name',
+      header: 'Tên nhóm khách hàng',
+      sortable: false,
+      class: 'font-extrabold text-slate-800 dark:text-white whitespace-nowrap',
+    },
+    {
+      key: 'actions',
+      header: 'Thao tác',
+      sortable: false,
+      class: 'text-right whitespace-nowrap',
+      headerClass: 'text-right',
+    },
   ];
   public readonly stateService = inject(StateService);
   private readonly apiService = inject(ApiService);
@@ -68,7 +112,7 @@ export class CustomersComponent implements OnInit {
   public readonly customerItemsPerPage = 9;
   public readonly customerGroupCurrentPage = signal<number>(1);
   public readonly customerGroupItemsPerPage = 9;
-  
+
   // Bộ tìm kiếm khách hàng
   public readonly customerSearchQuery = signal<string>('');
 
@@ -109,17 +153,23 @@ export class CustomersComponent implements OnInit {
     representative_name: '',
     website: '',
     business_status: 'Đang hoạt động',
-    wallet_address: ''
+    wallet_address: '',
   });
 
   public readonly customerGroupForm = signal<any>({
-    name: ''
+    name: '',
   });
 
   // Getters từ StateService
-  public get customers() { return this.stateService.customers; }
-  public get customerGroups() { return this.stateService.customerGroups; }
-  public get isCustomersLoading() { return this.stateService.isCustomersLoading; }
+  public get customers() {
+    return this.stateService.customers;
+  }
+  public get customerGroups() {
+    return this.stateService.customerGroups;
+  }
+  public get isCustomersLoading() {
+    return this.stateService.isCustomersLoading;
+  }
 
   private removeSign(str: string): string {
     if (!str) return '';
@@ -136,26 +186,30 @@ export class CustomersComponent implements OnInit {
     const search = this.customerSearchQuery().trim().toLowerCase();
     if (search) {
       const searchClean = this.removeSign(search);
-      list = list.filter(c => {
+      list = list.filter((c) => {
         const nameClean = c.name ? this.removeSign(c.name.toLowerCase()) : '';
         const phoneClean = c.phone ? c.phone.toLowerCase() : '';
         const emailClean = c.email ? this.removeSign(c.email.toLowerCase()) : '';
         const codeClean = c.customer_code ? c.customer_code.toLowerCase() : '';
         const companyClean = c.company_name ? this.removeSign(c.company_name.toLowerCase()) : '';
-        const repClean = c.representative_name ? this.removeSign(c.representative_name.toLowerCase()) : '';
+        const repClean = c.representative_name
+          ? this.removeSign(c.representative_name.toLowerCase())
+          : '';
         const taxClean = c.tax_code ? c.tax_code.toLowerCase() : '';
         const walletClean = c.wallet_address ? c.wallet_address.toLowerCase() : '';
         const idClean = c.id ? c.id.toString() : '';
 
-        return nameClean.includes(searchClean) ||
-               phoneClean.includes(searchClean) ||
-               emailClean.includes(searchClean) ||
-               codeClean.includes(searchClean) ||
-               companyClean.includes(searchClean) ||
-               repClean.includes(searchClean) ||
-               taxClean.includes(searchClean) ||
-               walletClean.includes(searchClean) ||
-               idClean.includes(searchClean);
+        return (
+          nameClean.includes(searchClean) ||
+          phoneClean.includes(searchClean) ||
+          emailClean.includes(searchClean) ||
+          codeClean.includes(searchClean) ||
+          companyClean.includes(searchClean) ||
+          repClean.includes(searchClean) ||
+          taxClean.includes(searchClean) ||
+          walletClean.includes(searchClean) ||
+          idClean.includes(searchClean)
+        );
       });
     }
     return list;
@@ -215,12 +269,12 @@ export class CustomersComponent implements OnInit {
       // 1. Kiểm tra kết quả trong bộ nhớ đệm (Local Cache) trước
       if (this.taxLookupCache[cleanTax]) {
         const cachedData = this.taxLookupCache[cleanTax];
-        this.customerForm.update(form => ({
+        this.customerForm.update((form) => ({
           ...form,
           company_name: cachedData.name || form.company_name,
           address: cachedData.address || form.address,
           representative_name: cachedData.representative || form.representative_name,
-          business_status: cachedData.status || 'Đang hoạt động'
+          business_status: cachedData.status || 'Đang hoạt động',
         }));
         this.lastSearchedTaxCode = cleanTax;
         this.stateService.showToast('Đã khôi phục thông tin từ bộ nhớ đệm!', 'success');
@@ -230,27 +284,30 @@ export class CustomersComponent implements OnInit {
       // 2. Nếu không có trong cache, tiến hành gọi API mạng
       this.isSearchingTax.set(true);
       fetch(`https://api.vietqr.io/v2/business/${cleanTax}`)
-        .then(res => res.json())
-        .then(res => {
+        .then((res) => res.json())
+        .then((res) => {
           this.isSearchingTax.set(false);
           if (res && res.code === '00' && res.data) {
             // Lưu dữ liệu vào cache để tái sử dụng
             this.taxLookupCache[cleanTax] = res.data;
             this.lastSearchedTaxCode = cleanTax;
 
-            this.customerForm.update(form => ({
+            this.customerForm.update((form) => ({
               ...form,
               company_name: res.data.name || form.company_name,
               address: res.data.address || form.address,
               representative_name: res.data.representative || form.representative_name,
-              business_status: res.data.status || 'Đang hoạt động'
+              business_status: res.data.status || 'Đang hoạt động',
             }));
             this.stateService.showToast('Đã tìm thấy thông tin doanh nghiệp!', 'success');
           } else {
-            this.stateService.showToast('Không tìm thấy thông tin doanh nghiệp cho mã số thuế này.', 'error');
+            this.stateService.showToast(
+              'Không tìm thấy thông tin doanh nghiệp cho mã số thuế này.',
+              'error',
+            );
           }
         })
-        .catch(err => {
+        .catch((err) => {
           this.isSearchingTax.set(false);
           console.error('Lỗi tra cứu mã số thuế:', err);
           this.stateService.showToast('Lỗi kết nối khi tra cứu mã số thuế!', 'error');
@@ -261,10 +318,21 @@ export class CustomersComponent implements OnInit {
   public getBusinessStatusColor(status: string): 'emerald' | 'amber' | 'rose' {
     if (!status) return 'emerald';
     const s = status.toLowerCase();
-    if (s.includes('ngừng') || s.includes('chấm dứt') || s.includes('không hoạt động') || s.includes('đóng cửa') || s.includes('nguong')) {
+    if (
+      s.includes('ngừng') ||
+      s.includes('chấm dứt') ||
+      s.includes('không hoạt động') ||
+      s.includes('đóng cửa') ||
+      s.includes('nguong')
+    ) {
       return 'rose';
     }
-    if (s.includes('tạm nghỉ') || s.includes('tạm ngưng') || s.includes('tam nghi') || s.includes('tam ngung')) {
+    if (
+      s.includes('tạm nghỉ') ||
+      s.includes('tạm ngưng') ||
+      s.includes('tam nghi') ||
+      s.includes('tam ngung')
+    ) {
       return 'amber';
     }
     return 'emerald';
@@ -288,7 +356,7 @@ export class CustomersComponent implements OnInit {
       representative_name: '',
       website: '',
       business_status: 'Đang hoạt động',
-      wallet_address: ''
+      wallet_address: '',
     });
     this.isCustomerModalOpen.set(true);
     this.isCustomerDropdownOpen.set(false);
@@ -311,7 +379,7 @@ export class CustomersComponent implements OnInit {
       representative_name: customer.representative_name || '',
       website: customer.website || '',
       business_status: customer.business_status || 'Đang hoạt động',
-      wallet_address: customer.wallet_address || ''
+      wallet_address: customer.wallet_address || '',
     });
     this.isCustomerModalOpen.set(true);
   }
@@ -322,7 +390,7 @@ export class CustomersComponent implements OnInit {
   }
 
   public toggleCustomerFormGroup(groupId: number) {
-    this.customerForm.update(form => {
+    this.customerForm.update((form) => {
       const ids = [...(form.group_ids || [])];
       const index = ids.indexOf(groupId);
       if (index > -1) {
@@ -336,7 +404,7 @@ export class CustomersComponent implements OnInit {
 
   public saveCustomer() {
     const form = { ...this.customerForm() };
-    
+
     // Nếu là doanh nghiệp và người đại diện trống, tự động lấy tên công ty
     if (form.type === 'business') {
       if (!form.company_name || !form.company_name.trim()) {
@@ -361,7 +429,10 @@ export class CustomersComponent implements OnInit {
       const walletTrimmed = form.wallet_address.trim();
       const isValidEvmWallet = /^0x[a-fA-F0-9]{40}$/.test(walletTrimmed);
       if (!isValidEvmWallet) {
-        this.stateService.showToast(`Địa chỉ ví Web3 không hợp lệ! Phải đúng 42 ký tự (hiện ${walletTrimmed.length}/42), bắt đầu bằng 0x.`, 'error');
+        this.stateService.showToast(
+          `Địa chỉ ví Web3 không hợp lệ! Phải đúng 42 ký tự (hiện ${walletTrimmed.length}/42), bắt đầu bằng 0x.`,
+          'error',
+        );
         this.isCustomerSaving.set(false);
         return;
       }
@@ -378,7 +449,7 @@ export class CustomersComponent implements OnInit {
         error: () => {
           this.stateService.showToast('Thêm khách hàng thất bại!', 'error');
           this.isCustomerSaving.set(false);
-        }
+        },
       });
     } else {
       const id = this.editingCustomer().id;
@@ -392,7 +463,7 @@ export class CustomersComponent implements OnInit {
         error: () => {
           this.stateService.showToast('Cập nhật khách hàng thất bại!', 'error');
           this.isCustomerSaving.set(false);
-        }
+        },
       });
     }
   }
@@ -420,7 +491,7 @@ export class CustomersComponent implements OnInit {
         this.stateService.showToast('Xóa khách hàng thất bại!', 'error');
         this.deletingCustomer.set(null);
         this.stateService.isLoading.set(false);
-      }
+      },
     });
   }
 
@@ -463,7 +534,7 @@ export class CustomersComponent implements OnInit {
         error: () => {
           this.stateService.showToast('Thêm nhóm thất bại hoặc tên nhóm đã tồn tại!', 'error');
           this.isCustomerGroupSaving.set(false);
-        }
+        },
       });
     } else {
       const id = this.editingCustomerGroup().id;
@@ -477,7 +548,7 @@ export class CustomersComponent implements OnInit {
         error: () => {
           this.stateService.showToast('Cập nhật nhóm thất bại!', 'error');
           this.isCustomerGroupSaving.set(false);
-        }
+        },
       });
     }
   }
@@ -505,8 +576,7 @@ export class CustomersComponent implements OnInit {
         this.stateService.showToast('Xóa nhóm thất bại!', 'error');
         this.deletingGroup.set(null);
         this.stateService.isLoading.set(false);
-      }
+      },
     });
   }
-
 }

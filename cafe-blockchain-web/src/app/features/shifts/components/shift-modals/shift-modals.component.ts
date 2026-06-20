@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StateService } from '@core/services/state.service';
@@ -10,7 +10,8 @@ import { ButtonComponent } from '@shared/components/button/button.component';
   selector: 'app-shift-modals',
   standalone: true,
   imports: [CommonModule, FormsModule, ModalComponent, IconComponent, ButtonComponent],
-  templateUrl: './shift-modals.component.html'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  templateUrl: './shift-modals.component.html',
 })
 export class ShiftModalsComponent {
   public readonly stateService = inject(StateService);
@@ -18,6 +19,10 @@ export class ShiftModalsComponent {
   public formatShiftTime(isoStr: string): string {
     if (!isoStr) return '';
     const d = new Date(isoStr);
-    return d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) + ' ' + d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+    return (
+      d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) +
+      ' ' +
+      d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })
+    );
   }
 }

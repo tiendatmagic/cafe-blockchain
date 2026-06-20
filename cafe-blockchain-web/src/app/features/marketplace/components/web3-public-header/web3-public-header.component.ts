@@ -1,4 +1,13 @@
-import { Component, OnInit, OnDestroy, inject, signal, HostListener, ElementRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  inject,
+  signal,
+  HostListener,
+  ElementRef,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
@@ -14,8 +23,16 @@ import { CardComponent } from '@shared/components/card/card.component';
 @Component({
   selector: 'app-web3-public-header',
   standalone: true,
-  imports: [CommonModule, RouterModule, IconComponent, ThemeToggleComponent, TabGroupComponent, CardComponent],
-  templateUrl: './web3-public-header.component.html'
+  imports: [
+    CommonModule,
+    RouterModule,
+    IconComponent,
+    ThemeToggleComponent,
+    TabGroupComponent,
+    CardComponent,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  templateUrl: './web3-public-header.component.html',
 })
 export class Web3PublicHeaderComponent implements OnInit, OnDestroy {
   public readonly stateService = inject(StateService);
@@ -38,13 +55,21 @@ export class Web3PublicHeaderComponent implements OnInit, OnDestroy {
   private pendingAddress = '';
   private routerSub?: Subscription;
 
-  public get settings() { return this.stateService.settings; }
-  public get nativeTokenPriceVND() { return this.stateService.nativeTokenPriceVND; }
+  public get settings() {
+    return this.stateService.settings;
+  }
+  public get nativeTokenPriceVND() {
+    return this.stateService.nativeTokenPriceVND;
+  }
 
   @HostListener('document:click', ['$event'])
   public onDocumentClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
-    if (!this.elementRef.nativeElement.querySelector('#public-chain-dropdown-container')?.contains(target)) {
+    if (
+      !this.elementRef.nativeElement
+        .querySelector('#public-chain-dropdown-container')
+        ?.contains(target)
+    ) {
       this.isChainDropdownOpen.set(false);
     }
   }
@@ -56,11 +81,11 @@ export class Web3PublicHeaderComponent implements OnInit, OnDestroy {
     }
 
     this.setActiveTabByUrl(this.router.url);
-    this.routerSub = this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe((event: any) => {
-      this.setActiveTabByUrl(event.urlAfterRedirects || event.url);
-    });
+    this.routerSub = this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe((event: any) => {
+        this.setActiveTabByUrl(event.urlAfterRedirects || event.url);
+      });
   }
 
   ngOnDestroy() {
@@ -128,7 +153,7 @@ export class Web3PublicHeaderComponent implements OnInit, OnDestroy {
                 this.isCurrentlySigning.set(false);
                 this.web3Service.disconnectWallet();
                 this.stateService.showToast('Xác thực chữ ký thất bại!', 'error');
-              }
+              },
             });
           } catch (e) {
             this.isWaitingForSignature.set(false);
@@ -143,7 +168,7 @@ export class Web3PublicHeaderComponent implements OnInit, OnDestroy {
           console.error('Lỗi lấy nonce từ server:', err, 'địa chỉ ví:', address);
           this.web3Service.disconnectWallet();
           this.stateService.showToast(`Lỗi lấy mã xác thực từ server! (Ví: ${address})`, 'error');
-        }
+        },
       });
     }
   }
@@ -180,7 +205,7 @@ export class Web3PublicHeaderComponent implements OnInit, OnDestroy {
           this.isCurrentlySigning.set(false);
           this.web3Service.disconnectWallet();
           this.stateService.showToast('Phiên ký đã hết hạn. Vui lòng kết nối ví lại!', 'error');
-        }
+        },
       });
     } catch (e) {
       this.isCurrentlySigning.set(false);

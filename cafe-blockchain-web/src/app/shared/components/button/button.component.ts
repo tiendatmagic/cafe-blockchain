@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -7,18 +7,28 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   template: `
     @if (loading) {
-      <div class="w-4 h-4 rounded-full border-2 border-current border-t-transparent animate-spin shrink-0"></div>
+      <div
+        class="w-4 h-4 rounded-full border-2 border-current border-t-transparent animate-spin shrink-0"
+      ></div>
     }
     <ng-content></ng-content>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   host: {
     '[class]': 'hostClasses',
     '[attr.disabled]': '(disabled || loading) ? "" : null',
-    '[class.pointer-events-none]': 'loading || disabled'
-  }
+    '[class.pointer-events-none]': 'loading || disabled',
+  },
 })
 export class ButtonComponent {
-  @Input() variant: 'primary' | 'secondary' | 'success' | 'danger' | 'danger-light' | 'cancel' | 'info' = 'primary';
+  @Input() variant:
+    | 'primary'
+    | 'secondary'
+    | 'success'
+    | 'danger'
+    | 'danger-light'
+    | 'cancel'
+    | 'info' = 'primary';
   @Input() size: 'sm' | 'md' | 'lg' = 'md';
   @Input() loading = false;
   @Input() disabled = false;

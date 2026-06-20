@@ -1,4 +1,11 @@
-import { Component, inject, signal, HostListener, ElementRef } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  HostListener,
+  ElementRef,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StateService } from '@core/services/state.service';
 import { Web3Service } from '@core/services/web3.service';
@@ -11,7 +18,8 @@ import { BadgeComponent } from '@shared/components/badge/badge.component';
   selector: 'app-desktop-header',
   standalone: true,
   imports: [CommonModule, IconComponent, ButtonComponent, CardComponent, BadgeComponent],
-  templateUrl: './desktop-header.component.html'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  templateUrl: './desktop-header.component.html',
 })
 export class DesktopHeaderComponent {
   public readonly stateService = inject(StateService);
@@ -25,13 +33,19 @@ export class DesktopHeaderComponent {
   @HostListener('document:click', ['$event'])
   public onDocumentClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
-    if (!this.elementRef.nativeElement.querySelector('#price-dropdown-container')?.contains(target)) {
+    if (
+      !this.elementRef.nativeElement.querySelector('#price-dropdown-container')?.contains(target)
+    ) {
       this.isPriceDropdownOpen.set(false);
     }
-    if (!this.elementRef.nativeElement.querySelector('#chain-dropdown-container')?.contains(target)) {
+    if (
+      !this.elementRef.nativeElement.querySelector('#chain-dropdown-container')?.contains(target)
+    ) {
       this.isChainDropdownOpen.set(false);
     }
-    if (!this.elementRef.nativeElement.querySelector('#shift-dropdown-container')?.contains(target)) {
+    if (
+      !this.elementRef.nativeElement.querySelector('#shift-dropdown-container')?.contains(target)
+    ) {
       this.isShiftDropdownOpen.set(false);
     }
   }
@@ -61,7 +75,11 @@ export class DesktopHeaderComponent {
   public formatShiftTime(isoStr: string): string {
     if (!isoStr) return '';
     const d = new Date(isoStr);
-    return d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) + ' ' + d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+    return (
+      d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) +
+      ' ' +
+      d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })
+    );
   }
 
   public openStartShiftModal() {

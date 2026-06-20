@@ -1,4 +1,4 @@
-import { Component, Input, inject } from '@angular/core';
+import { Component, Input, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { Router } from '@angular/router';
 import { IconComponent } from '../icon/icon.component';
@@ -9,7 +9,8 @@ import { CardComponent } from '../card/card.component';
   selector: 'app-access-restricted',
   standalone: true,
   imports: [CommonModule, IconComponent, ButtonComponent, CardComponent],
-  templateUrl: './access-restricted.component.html'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  templateUrl: './access-restricted.component.html',
 })
 export class AccessRestrictedComponent {
   private readonly location = inject(Location);
@@ -17,7 +18,8 @@ export class AccessRestrictedComponent {
 
   @Input() pageName: string = '';
   @Input() title: string = 'Truy cập bị hạn chế';
-  @Input() description: string = 'Tài khoản nhân viên của bạn chưa được cấp quyền để truy cập module này. Vui lòng liên hệ với quản lý hoặc chủ cửa hàng để được hỗ trợ.';
+  @Input() description: string =
+    'Tài khoản nhân viên của bạn chưa được cấp quyền để truy cập module này. Vui lòng liên hệ với quản lý hoặc chủ cửa hàng để được hỗ trợ.';
 
   get displayTitle(): string {
     if (this.pageName) {

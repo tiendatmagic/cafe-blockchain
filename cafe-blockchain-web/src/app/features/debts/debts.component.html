@@ -5,7 +5,12 @@
     title="Sổ nợ khách hàng"
     description="Quản lý chi tiết dư nợ khách hàng, lịch sử ghi nợ, lập phiếu thu nợ và đối soát quỹ tiền mặt tự động."
   >
-    <app-icon icon name="debts" class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" [strokeWidth]="2.5"></app-icon>
+    <app-icon
+      icon
+      name="debts"
+      class="h-6.5 w-6.5 text-[var(--dynamic-primary)]"
+      [strokeWidth]="2.5"
+    ></app-icon>
 
     <!-- Nút Lập phiếu nợ thủ công (Chỉ hiện khi ví đã kết nối) -->
     @if (web3Service.walletConnected()) {
@@ -24,234 +29,265 @@
     ></app-web3-connect-prompt>
   } @else {
     @if (stateService.hasPermission('debts')) {
-    <!-- Khối Loading Skeleton dùng chung -->
-    @if (isDebtsLoading()) {
-      <app-skeleton-loader type="debts"></app-skeleton-loader>
-    } @else {
-      <!-- Thẻ Thống kê Tài chính (3 thẻ) -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mt-6">
-        <!-- Tổng nợ phải thu -->
-        <div app-card [interactive]="true" class="flex items-center justify-between">
-          <div class="space-y-1.5">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block"
-              >Tổng nợ phải thu</span>
-            <span class="text-2xl font-extrabold text-rose-500 dark:text-rose-400">
-              {{ totalDebtOutstanding() | number }}<span class="text-sm font-bold ml-0.5">đ</span>
-            </span>
-            <span class="text-xs text-slate-400 font-medium block"
-              >Dư nợ hiện tại chưa thanh toán</span>
-          </div>
-          <div class="p-4 rounded-xl bg-rose-500/10 text-rose-500 shrink-0">
-            <app-icon name="warning" class="h-6.5 w-6.5" [strokeWidth]="2"></app-icon>
-          </div>
-        </div>
-
-        <!-- Số khách hàng đang nợ -->
-        <div app-card [interactive]="true" class="flex items-center justify-between">
-          <div class="space-y-1.5">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block"
-              >Khách hàng đang nợ</span>
-            <span class="text-2xl font-extrabold text-[var(--dynamic-primary)]">
-              {{ totalDebtorsCount() | number }}
-              <span class="text-sm font-bold text-slate-400">khách</span>
-            </span>
-            <span class="text-xs text-slate-400 font-medium block"
-              >Số lượng khách hàng có dư nợ > 0</span>
-          </div>
-          <div
-            class="p-4 rounded-xl bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] shrink-0"
-          >
-            <app-icon name="customers" class="h-6.5 w-6.5" [strokeWidth]="2"></app-icon>
-          </div>
-        </div>
-
-        <!-- Đã thu hồi trong tháng -->
-        <div app-card [interactive]="true" class="flex items-center justify-between">
-          <div class="space-y-1.5">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block"
-              >Thu hồi trong tháng</span>
-            <span class="text-2xl font-extrabold text-emerald-500 dark:text-emerald-400">
-              {{ recoveredThisMonth() | number }}<span class="text-sm font-bold ml-0.5">đ</span>
-            </span>
-            <span class="text-xs text-slate-400 font-medium block"
-              >Tổng số tiền đã thu nợ tháng này</span>
-          </div>
-          <div class="p-4 rounded-xl bg-emerald-500/10 text-emerald-500 shrink-0">
-            <app-icon name="check-circle" class="h-6.5 w-6.5" [strokeWidth]="2"></app-icon>
-          </div>
-        </div>
-      </div>
-
-      <!-- Khối Bảng Dữ Liệu và Bộ Lọc -->
-      <div app-card class="mt-6 p-0 overflow-hidden">
-        <!-- Thanh tìm kiếm & lọc nhanh -->
-        <div
-          class="p-5 border-b border-slate-100 dark:border-slate-800/60 flex items-center justify-between flex-wrap gap-4"
-        >
-          <h4 class="font-extrabold text-slate-800 dark:text-white text-base">
-            Chi tiết công nợ khách hàng
-          </h4>
-
-          <div class="flex items-center gap-4 flex-wrap w-full sm:w-auto">
-            <!-- Tìm kiếm -->
-            <div class="relative w-full sm:w-64">
-              <input
-                type="text"
-                [ngModel]="debtSearchQuery()"
-                (ngModelChange)="debtSearchQuery.set($event); debtPage.set(1)"
-                placeholder="Tìm tên, SĐT, mã khách..."
-                class="w-full search-input"
-              />
-              <app-icon name="search" class="absolute left-3 top-3 h-4 w-4 text-slate-400" [strokeWidth]="2.5"></app-icon>
+      <!-- Khối Loading Skeleton dùng chung -->
+      @if (isDebtsLoading()) {
+        <app-skeleton-loader type="debts"></app-skeleton-loader>
+      } @else {
+        <!-- Thẻ Thống kê Tài chính (3 thẻ) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mt-6">
+          <!-- Tổng nợ phải thu -->
+          <div app-card [interactive]="true" class="flex items-center justify-between">
+            <div class="space-y-1.5">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block"
+                >Tổng nợ phải thu</span
+              >
+              <span class="text-2xl font-extrabold text-rose-500 dark:text-rose-400">
+                {{ totalDebtOutstanding() | number }}<span class="text-sm font-bold ml-0.5">đ</span>
+              </span>
+              <span class="text-xs text-slate-400 font-medium block"
+                >Dư nợ hiện tại chưa thanh toán</span
+              >
             </div>
+            <div class="p-4 rounded-xl bg-rose-500/10 text-rose-500 shrink-0">
+              <app-icon name="warning" class="h-6.5 w-6.5" [strokeWidth]="2"></app-icon>
+            </div>
+          </div>
 
-            <!-- Bộ lọc tab -->
-            <app-tab-group
-              [options]="debtFilterOptions"
-              [activeValue]="debtFilterMode()"
-              (valueChange)="debtFilterMode.set($event); debtPage.set(1)"
-            ></app-tab-group>
+          <!-- Số khách hàng đang nợ -->
+          <div app-card [interactive]="true" class="flex items-center justify-between">
+            <div class="space-y-1.5">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block"
+                >Khách hàng đang nợ</span
+              >
+              <span class="text-2xl font-extrabold text-[var(--dynamic-primary)]">
+                {{ totalDebtorsCount() | number }}
+                <span class="text-sm font-bold text-slate-400">khách</span>
+              </span>
+              <span class="text-xs text-slate-400 font-medium block"
+                >Số lượng khách hàng có dư nợ > 0</span
+              >
+            </div>
+            <div
+              class="p-4 rounded-xl bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] shrink-0"
+            >
+              <app-icon name="customers" class="h-6.5 w-6.5" [strokeWidth]="2"></app-icon>
+            </div>
+          </div>
+
+          <!-- Đã thu hồi trong tháng -->
+          <div app-card [interactive]="true" class="flex items-center justify-between">
+            <div class="space-y-1.5">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block"
+                >Thu hồi trong tháng</span
+              >
+              <span class="text-2xl font-extrabold text-emerald-500 dark:text-emerald-400">
+                {{ recoveredThisMonth() | number }}<span class="text-sm font-bold ml-0.5">đ</span>
+              </span>
+              <span class="text-xs text-slate-400 font-medium block"
+                >Tổng số tiền đã thu nợ tháng này</span
+              >
+            </div>
+            <div class="p-4 rounded-xl bg-emerald-500/10 text-emerald-500 shrink-0">
+              <app-icon name="check-circle" class="h-6.5 w-6.5" [strokeWidth]="2"></app-icon>
+            </div>
           </div>
         </div>
 
-        <!-- Bảng hiển thị -->
-        <div class="overflow-x-auto">
-          <table class="app-table min-w-[650px]">
-            <thead>
-              <tr>
-                <th>Mã khách</th>
-                <th>Khách hàng</th>
-                <th>Số điện thoại</th>
-                <th>Địa chỉ ví</th>
-                <th
-                  class="text-right cursor-pointer select-none"
-                  (click)="toggleSort('debt_balance')"
-                >
-                  <div class="flex items-center justify-end gap-1">
-                    <span>Dư nợ hiện tại</span>
-                    <span class="text-slate-400">
-                      @if (sortField() === 'debt_balance') {
-                        @if (sortDesc()) {
-                          <app-icon name="chevron-down" class="h-3.5 w-3.5 text-[var(--dynamic-primary)] inline" [strokeWidth]="3"></app-icon>
-                        } @else {
-                          <app-icon name="chevron-up" class="h-3.5 w-3.5 text-[var(--dynamic-primary)] inline" [strokeWidth]="3"></app-icon>
-                        }
-                      } @else {
-                        <app-icon name="sort" class="h-3.5 w-3.5 text-slate-300 dark:text-slate-700 inline" [strokeWidth]="2.5"></app-icon>
-                      }
-                    </span>
-                  </div>
-                </th>
-                <th class="text-center">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              @if (paginatedDebts().length === 0) {
+        <!-- Khối Bảng Dữ Liệu và Bộ Lọc -->
+        <div app-card class="mt-6 p-0 overflow-hidden">
+          <!-- Thanh tìm kiếm & lọc nhanh -->
+          <div
+            class="p-5 border-b border-slate-100 dark:border-slate-800/60 flex items-center justify-between flex-wrap gap-4"
+          >
+            <h4 class="font-extrabold text-slate-800 dark:text-white text-base">
+              Chi tiết công nợ khách hàng
+            </h4>
+
+            <div class="flex items-center gap-4 flex-wrap w-full sm:w-auto">
+              <!-- Tìm kiếm -->
+              <div class="relative w-full sm:w-64">
+                <input
+                  type="text"
+                  [ngModel]="debtSearchQuery()"
+                  (ngModelChange)="debtSearchQuery.set($event); debtPage.set(1)"
+                  placeholder="Tìm tên, SĐT, mã khách..."
+                  class="w-full search-input"
+                />
+                <app-icon
+                  name="search"
+                  class="absolute left-3 top-3 h-4 w-4 text-slate-400"
+                  [strokeWidth]="2.5"
+                ></app-icon>
+              </div>
+
+              <!-- Bộ lọc tab -->
+              <app-tab-group
+                [options]="debtFilterOptions"
+                [activeValue]="debtFilterMode()"
+                (valueChange)="debtFilterMode.set($event); debtPage.set(1)"
+              ></app-tab-group>
+            </div>
+          </div>
+
+          <!-- Bảng hiển thị -->
+          <div class="overflow-x-auto">
+            <table class="app-table min-w-[650px]">
+              <thead>
                 <tr>
-                  <td colspan="6" class="p-8 text-center text-xs text-slate-400 font-bold italic">
-                    Không tìm thấy khách hàng nào khớp với điều kiện lọc.
-                  </td>
+                  <th>Mã khách</th>
+                  <th>Khách hàng</th>
+                  <th>Số điện thoại</th>
+                  <th>Địa chỉ ví</th>
+                  <th
+                    class="text-right cursor-pointer select-none"
+                    (click)="toggleSort('debt_balance')"
+                  >
+                    <div class="flex items-center justify-end gap-1">
+                      <span>Dư nợ hiện tại</span>
+                      <span class="text-slate-400">
+                        @if (sortField() === 'debt_balance') {
+                          @if (sortDesc()) {
+                            <app-icon
+                              name="chevron-down"
+                              class="h-3.5 w-3.5 text-[var(--dynamic-primary)] inline"
+                              [strokeWidth]="3"
+                            ></app-icon>
+                          } @else {
+                            <app-icon
+                              name="chevron-up"
+                              class="h-3.5 w-3.5 text-[var(--dynamic-primary)] inline"
+                              [strokeWidth]="3"
+                            ></app-icon>
+                          }
+                        } @else {
+                          <app-icon
+                            name="sort"
+                            class="h-3.5 w-3.5 text-slate-300 dark:text-slate-700 inline"
+                            [strokeWidth]="2.5"
+                          ></app-icon>
+                        }
+                      </span>
+                    </div>
+                  </th>
+                  <th class="text-center">Thao tác</th>
                 </tr>
-              } @else {
-                @for (item of paginatedDebts(); track item.id) {
+              </thead>
+              <tbody>
+                @if (paginatedDebts().length === 0) {
                   <tr>
-                    <td
-                      class="font-mono font-bold text-xs text-[var(--dynamic-primary)] whitespace-nowrap"
-                    >
-                      {{ item.customer_code || 'KH-' + item.id }}
-                    </td>
-                    <td>
-                      <div class="flex items-center gap-3">
-                        <div
-                          class="w-9 h-9 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold text-sm shrink-0"
-                        >
-                          {{ (item.name || '').substring(0, 1) | uppercase }}
-                        </div>
-                        <div class="flex flex-col min-w-0">
-                          <span
-                            class="font-extrabold text-slate-800 dark:text-white truncate max-w-[200px]"
-                          >
-                            {{ item.name }}
-                          </span>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="font-semibold text-slate-700 dark:text-slate-300">
-                      {{ item.phone || '--' }}
-                    </td>
-                    <td class="font-mono text-xs text-slate-600 dark:text-slate-400">
-                      @if (item.wallet_address) {
-                        <span
-                          class="bg-slate-100 dark:bg-slate-950 px-1.5 py-0.5 rounded font-bold"
-                          [title]="item.wallet_address"
-                        >
-                          {{ item.wallet_address | appShortAddress }}
-                        </span>
-                      } @else {
-                        <span class="text-slate-400 dark:text-slate-600 italic"
-                          >Chưa liên kết ví</span>
-                      }
-                    </td>
-                    <td
-                      class="text-right font-black text-sm"
-                      [class]="
-                        Number(item.debt_balance || 0) > 0
-                          ? 'text-rose-500 dark:text-rose-400'
-                          : 'text-slate-400'
-                      "
-                    >
-                      {{ item.debt_balance | vnd }}
-                    </td>
-                    <td>
-                      <div class="flex items-center justify-center gap-2">
-                        <!-- Nút Lịch sử -->
-                        <button
-                          app-button
-                          variant="cancel"
-                          size="sm"
-                          (click)="openHistoryDrawer(item)"
-                          class="flex items-center gap-1"
-                        >
-                          <app-icon name="clock" class="h-3.5 w-3.5" [strokeWidth]="2.5"></app-icon>
-                          <span>Lịch sử</span>
-                        </button>
- 
-                        <!-- Nút Thu nợ -->
-                        <button
-                          app-button
-                          variant="success"
-                          size="sm"
-                          (click)="openPaymentModal(item)"
-                          [disabled]="Number(item.debt_balance || 0) <= 0"
-                          class="flex items-center gap-1"
-                        >
-                          <app-icon name="check-circle" class="h-3.5 w-3.5" [strokeWidth]="2.5"></app-icon>
-                          <span>Thu nợ</span>
-                        </button>
-                      </div>
+                    <td colspan="6" class="p-8 text-center text-xs text-slate-400 font-bold italic">
+                      Không tìm thấy khách hàng nào khớp với điều kiện lọc.
                     </td>
                   </tr>
-                }
-              }
-            </tbody>
-          </table>
-        </div>
+                } @else {
+                  @for (item of paginatedDebts(); track item.id) {
+                    <tr>
+                      <td
+                        class="font-mono font-bold text-xs text-[var(--dynamic-primary)] whitespace-nowrap"
+                      >
+                        {{ item.customer_code || 'KH-' + item.id }}
+                      </td>
+                      <td>
+                        <div class="flex items-center gap-3">
+                          <div
+                            class="w-9 h-9 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold text-sm shrink-0"
+                          >
+                            {{ (item.name || '').substring(0, 1) | uppercase }}
+                          </div>
+                          <div class="flex flex-col min-w-0">
+                            <span
+                              class="font-extrabold text-slate-800 dark:text-white truncate max-w-[200px]"
+                            >
+                              {{ item.name }}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="font-semibold text-slate-700 dark:text-slate-300">
+                        {{ item.phone || '--' }}
+                      </td>
+                      <td class="font-mono text-xs text-slate-600 dark:text-slate-400">
+                        @if (item.wallet_address) {
+                          <span
+                            class="bg-slate-100 dark:bg-slate-950 px-1.5 py-0.5 rounded font-bold"
+                            [title]="item.wallet_address"
+                          >
+                            {{ item.wallet_address | appShortAddress }}
+                          </span>
+                        } @else {
+                          <span class="text-slate-400 dark:text-slate-600 italic"
+                            >Chưa liên kết ví</span
+                          >
+                        }
+                      </td>
+                      <td
+                        class="text-right font-black text-sm"
+                        [class]="
+                          Number(item.debt_balance || 0) > 0
+                            ? 'text-rose-500 dark:text-rose-400'
+                            : 'text-slate-400'
+                        "
+                      >
+                        {{ item.debt_balance | vnd }}
+                      </td>
+                      <td>
+                        <div class="flex items-center justify-center gap-2">
+                          <!-- Nút Lịch sử -->
+                          <button
+                            app-button
+                            variant="cancel"
+                            size="sm"
+                            (click)="openHistoryDrawer(item)"
+                            class="flex items-center gap-1"
+                          >
+                            <app-icon
+                              name="clock"
+                              class="h-3.5 w-3.5"
+                              [strokeWidth]="2.5"
+                            ></app-icon>
+                            <span>Lịch sử</span>
+                          </button>
 
-        <!-- Khối Phân trang dùng chung -->
-        <app-pagination
-          [currentPage]="debtPage()"
-          [totalPages]="debtTotalPages()"
-          [totalItems]="filteredDebts().length"
-          [itemsPerPage]="debtLimit"
-          itemName="khách hàng"
-          (pageChange)="debtPage.set($event)"
-        ></app-pagination>
-      </div>
+                          <!-- Nút Thu nợ -->
+                          <button
+                            app-button
+                            variant="success"
+                            size="sm"
+                            (click)="openPaymentModal(item)"
+                            [disabled]="Number(item.debt_balance || 0) <= 0"
+                            class="flex items-center gap-1"
+                          >
+                            <app-icon
+                              name="check-circle"
+                              class="h-3.5 w-3.5"
+                              [strokeWidth]="2.5"
+                            ></app-icon>
+                            <span>Thu nợ</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Khối Phân trang dùng chung -->
+          <app-pagination
+            [currentPage]="debtPage()"
+            [totalPages]="debtTotalPages()"
+            [totalItems]="filteredDebts().length"
+            [itemsPerPage]="debtLimit"
+            itemName="khách hàng"
+            (pageChange)="debtPage.set($event)"
+          ></app-pagination>
+        </div>
+      }
+    } @else {
+      <app-access-restricted pageName="Sổ nợ"></app-access-restricted>
     }
-  } @else {
-    <app-access-restricted pageName="Sổ nợ"></app-access-restricted>
   }
-}
 </div>
 
 <!-- ==================== MODAL GHI NỢ THỦ CÔNG ==================== -->
@@ -286,7 +322,8 @@
         <div class="space-y-1.5 relative">
           <label
             class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5"
-            >Khách hàng ghi nợ</label>
+            >Khách hàng ghi nợ</label
+          >
           <div class="relative">
             <input
               type="text"
@@ -336,7 +373,8 @@
         <div class="space-y-1.5">
           <label
             class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5"
-            >Số tiền ghi nợ (đ)</label>
+            >Số tiền ghi nợ (đ)</label
+          >
           <input
             type="number"
             [(ngModel)]="manualDebtForm().amount"
@@ -349,10 +387,11 @@
         <div class="space-y-1.5">
           <label
             class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5"
-            >Ngày ghi nhận</label>
+            >Ngày ghi nhận</label
+          >
           <app-custom-date-picker
             [selectedDate]="manualDebtForm().recorded_at"
-            (selectedDateChange)="manualDebtForm.update(f => ({ ...f, recorded_at: $event }))"
+            (selectedDateChange)="manualDebtForm.update((f) => ({ ...f, recorded_at: $event }))"
             placeholder="Chọn ngày ghi nhận"
           ></app-custom-date-picker>
         </div>
@@ -361,7 +400,8 @@
         <div class="space-y-1.5">
           <label
             class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5"
-            >Ghi chú công nợ</label>
+            >Ghi chú công nợ</label
+          >
           <textarea
             [(ngModel)]="manualDebtForm().note"
             rows="3"
@@ -373,7 +413,9 @@
 
       <!-- Action Buttons -->
       <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex gap-3 shrink-0">
-        <button app-button variant="cancel" (click)="closeManualDebtModal()" class="flex-1">Hủy bỏ</button>
+        <button app-button variant="cancel" (click)="closeManualDebtModal()" class="flex-1">
+          Hủy bỏ
+        </button>
         <button
           app-button
           variant="primary"
@@ -421,7 +463,8 @@
         <div class="space-y-1.5">
           <label
             class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5"
-            >Khách hàng</label>
+            >Khách hàng</label
+          >
           <div
             class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-slate-800/80 font-extrabold text-slate-900 dark:text-white text-sm"
           >
@@ -436,11 +479,12 @@
         <div class="space-y-1.5">
           <label
             class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5"
-            >Dư nợ hiện tại</label>
+            >Dư nợ hiện tại</label
+          >
           <div
             class="w-full px-4 py-2.5 rounded-xl bg-rose-500/5 border border-rose-500/10 font-black text-rose-500 text-sm"
           >
-            {{ selectedCustomer()?.debt_balance | vnd }}
+            {{ $safeNavigationMigration(selectedCustomer()?.debt_balance) | vnd }}
           </div>
         </div>
 
@@ -448,7 +492,8 @@
         <div class="space-y-1.5">
           <label
             class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5"
-            >Số tiền thu hồi (đ)</label>
+            >Số tiền thu hồi (đ)</label
+          >
           <div class="relative">
             <input
               type="number"
@@ -470,7 +515,8 @@
         <div class="space-y-1.5">
           <label
             class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5"
-            >Phương thức thanh toán</label>
+            >Phương thức thanh toán</label
+          >
           <div class="grid grid-cols-2 gap-2">
             <button
               type="button"
@@ -527,10 +573,11 @@
         <div class="space-y-1.5">
           <label
             class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5"
-            >Ngày ghi nhận</label>
+            >Ngày ghi nhận</label
+          >
           <app-custom-date-picker
             [selectedDate]="paymentForm().recorded_at"
-            (selectedDateChange)="paymentForm.update(f => ({ ...f, recorded_at: $event }))"
+            (selectedDateChange)="paymentForm.update((f) => ({ ...f, recorded_at: $event }))"
             placeholder="Chọn ngày ghi nhận"
           ></app-custom-date-picker>
         </div>
@@ -539,7 +586,8 @@
         <div class="space-y-1.5">
           <label
             class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5"
-            >Ghi chú thu nợ</label>
+            >Ghi chú thu nợ</label
+          >
           <textarea
             [(ngModel)]="paymentForm().note"
             rows="2"
@@ -551,7 +599,9 @@
 
       <!-- Action Buttons -->
       <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex gap-3 shrink-0">
-        <button app-button variant="cancel" (click)="closePaymentModal()" class="flex-1">Hủy bỏ</button>
+        <button app-button variant="cancel" (click)="closePaymentModal()" class="flex-1">
+          Hủy bỏ
+        </button>
         <button
           app-button
           variant="primary"
@@ -574,7 +624,8 @@
   title="Lịch sử biến động công nợ"
 >
   <span class="text-xs text-slate-500 dark:text-slate-400 font-bold block mb-4 mt-[-8px]"
-    >Khách hàng: {{ selectedCustomer()?.name }}</span>
+    >Khách hàng: {{ selectedCustomer()?.name }}</span
+  >
 
   <!-- Khung tổng quan dư nợ -->
   <div
@@ -582,9 +633,10 @@
   >
     <div>
       <span class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-        >Dư nợ hiện tại</span>
+        >Dư nợ hiện tại</span
+      >
       <span class="text-2xl font-black text-rose-500 dark:text-rose-400">
-        {{ selectedCustomer()?.debt_balance | vnd }}
+        {{ $safeNavigationMigration(selectedCustomer()?.debt_balance) | vnd }}
       </span>
     </div>
 
@@ -659,9 +711,10 @@
                   Ghi nợ từ Đơn hàng:
                   <a
                     [routerLink]="['/orders']"
-                    [queryParams]="{ search: log.order?.code }"
+                    [queryParams]="{ search: $safeNavigationMigration(log.order?.code) }"
                     class="underline hover:opacity-85 font-black uppercase font-mono"
-                    >{{ log.order?.code }}</a>
+                    >{{ log.order?.code }}</a
+                  >
                 </div>
               } @else {
                 <div class="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
