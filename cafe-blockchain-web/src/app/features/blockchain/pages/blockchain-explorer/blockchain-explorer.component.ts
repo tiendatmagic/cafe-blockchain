@@ -52,7 +52,7 @@ export class BlockchainExplorerComponent implements OnInit {
   public readonly voucherContractAddress = signal<string>('');
   public readonly menuRegistryContractAddress = signal<string>('');
   public readonly explorerUrl = signal<string>('');
-  public readonly chainId = signal<string>('97');
+  public readonly chainId = signal<string>('42161');
 
   // Trạng thái kết nối
   public readonly connectionStatus = signal<'api' | 'offline_fallback' | 'custom' | 'loading'>('loading');
@@ -188,13 +188,13 @@ export class BlockchainExplorerComponent implements OnInit {
     this.connectionStatus.set('loading');
     this.apiService.getPublicSettings().subscribe({
       next: (res) => {
-        this.rpcUrl.set(res.rpc_url || 'https://bsc-testnet-rpc.publicnode.com');
-        this.posContractAddress.set(res.contract_address || '0xB35E2987932C7D6499f93d8CE5ac90CF43DD8c38');
-        this.financeContractAddress.set(res.finance_contract_address || '0x7988500670EC631F7be36eD91E367760f380d6Af');
-        this.voucherContractAddress.set(res.voucher_contract_address || '0xc6828e46E100B248173e28a33e8D92662Cd1A8c7');
+        this.rpcUrl.set(res.rpc_url || 'https://arb1.arbitrum.io/rpc');
+        this.posContractAddress.set(res.contract_address || '');
+        this.financeContractAddress.set(res.finance_contract_address || '');
+        this.voucherContractAddress.set(res.voucher_contract_address || '');
         this.menuRegistryContractAddress.set(res.menu_registry_contract_address || '');
-        this.explorerUrl.set(res.explorer_url || 'https://testnet.bscscan.com');
-        this.chainId.set(res.chain_id || '97');
+        this.explorerUrl.set(res.explorer_url || 'https://arbiscan.io');
+        this.chainId.set(res.chain_id || '42161');
         this.storeName.set(res.store_name || 'Cafe Web3 POS');
         this.connectionStatus.set('api');
 
@@ -219,7 +219,7 @@ export class BlockchainExplorerComponent implements OnInit {
     this.menuRegistryContractAddress.set('');
     this.explorerUrl.set('');
     this.chainId.set('');
-    this.storeName.set('Mạng BSC Testnet (Fallback)');
+    this.storeName.set('Mạng Arbitrum (Fallback)');
     this.connectionStatus.set('offline_fallback');
 
     this.syncToCustomFields();

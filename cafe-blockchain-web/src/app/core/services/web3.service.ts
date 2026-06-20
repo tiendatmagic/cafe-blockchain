@@ -11,7 +11,7 @@ import { getExplorerApiUrl, getBackupRpcUrls, getAvgBlockTime, POPULAR_CHAINS } 
 // Tích hợp Reown AppKit cho WalletConnect
 import { createAppKit } from '@reown/appkit';
 import { EthersAdapter } from '@reown/appkit-adapter-ethers';
-import { mainnet, arbitrum, bsc, polygon, optimism, base, sepolia, bscTestnet, arbitrumSepolia } from '@reown/appkit/networks';
+import { arbitrum, bsc, base, bscTestnet, arbitrumSepolia } from '@reown/appkit/networks';
 
 @Injectable({
   providedIn: 'root'
@@ -42,10 +42,10 @@ export class Web3Service {
   public readonly loyaltyTokenContractAddress = signal<string>('');
   public readonly voucherShopContractAddress = signal<string>('');
   public readonly voucherMarketplaceContractAddress = signal<string>('');
-  public readonly rpcUrl = signal<string>(environment.defaultRpcUrl || 'https://bsc-testnet-rpc.publicnode.com');
-  public readonly explorerUrl = signal<string>(environment.defaultExplorerUrl || 'https://testnet.bscscan.com');
+  public readonly rpcUrl = signal<string>(environment.defaultRpcUrl || 'https://arb1.arbitrum.io/rpc');
+  public readonly explorerUrl = signal<string>(environment.defaultExplorerUrl || 'https://arbiscan.io');
   public readonly explorerApiKey = signal<string>('');
-  public readonly configuredChainId = signal<string>(environment.defaultChainId || '97');
+  public readonly configuredChainId = signal<string>(environment.defaultChainId || '42161');
 
   public readonly POPULAR_CHAINS = POPULAR_CHAINS;
 
@@ -299,16 +299,12 @@ export class Web3Service {
   private getAppKitNetworkByChainId(chainId: string | number): any {
     const id = chainId.toString().trim();
     switch (id) {
-      case '1': return mainnet;
-      case '11155111': return sepolia;
       case '56': return bsc;
       case '97': return bscTestnet;
-      case '137': return polygon;
       case '42161': return arbitrum;
       case '421614': return arbitrumSepolia;
-      case '10': return optimism;
       case '8453': return base;
-      default: return bscTestnet;
+      default: return arbitrum;
     }
   }
 
@@ -330,8 +326,8 @@ export class Web3Service {
 
       this.modal = createAppKit({
         adapters: [ethersAdapter],
-        networks: [arbitrum, mainnet, bsc, polygon, optimism, base, sepolia, bscTestnet, arbitrumSepolia],
-        defaultNetwork: mainnet,
+        networks: [arbitrum, base, bsc, bscTestnet, arbitrumSepolia],
+        defaultNetwork: arbitrum,
         metadata: {
           name: 'Cafe Blockchain',
           description: 'Cafe Blockchain POS & Storefront DApp',
