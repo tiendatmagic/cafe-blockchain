@@ -899,9 +899,9 @@
             </div>
 
             <!-- Cột phải (xl:col-span-1): Trạng thái bàn ăn & Thống kê Voucher NFT -->
-            <div class="md:col-span-2 xl:col-span-1 space-y-6">
+            <div class="md:col-span-2 xl:col-span-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-6">
               <!-- Widget Trạng thái Bàn Ăn -->
-              <div app-card class="flex flex-col justify-between h-[300px]">
+              <div app-card class="flex flex-col justify-between h-full min-h-[240px]">
                 <h4
                   class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2"
                 >
@@ -975,7 +975,7 @@
               </div>
 
               <!-- Widget Thống kê Voucher NFT -->
-              <div app-card class="space-y-4">
+              <div app-card class="flex flex-col justify-between h-full min-h-[240px] space-y-4">
                 <h4
                   class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2"
                 >
@@ -983,7 +983,7 @@
                   <span>Hoạt động Voucher NFT</span>
                 </h4>
 
-                <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-2 gap-3">
+                <div class="grid grid-cols-2 gap-3 flex-1 items-center">
                   <!-- Minted -->
                   <div
                     class="p-2 sm:p-3 bg-purple-500/5 border border-purple-500/10 rounded-2xl flex flex-col items-center justify-center text-center"
