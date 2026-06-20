@@ -152,6 +152,23 @@ export class TablesComponent implements OnInit {
     return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`;
   }
 
+  public getTableStorefrontUrl(table: any): string {
+    if (!table) return '';
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const slug = this.stateService.settings()?.website_slug || '';
+    return `${origin}/store/${slug}?table=${encodeURIComponent(table.name)}`;
+  }
+
+  public copyTableLink(table: any) {
+    if (!table) return;
+    const url = this.getTableStorefrontUrl(table);
+    navigator.clipboard.writeText(url).then(() => {
+      this.stateService.showToast('Đã sao chép liên kết gọi món trực tuyến của bàn!', 'success');
+    }).catch(() => {
+      this.stateService.showToast('Sao chép liên kết thất bại, vui lòng thử lại!', 'error');
+    });
+  }
+
   public downloadTableQrCode(table: any) {
     if (!table) return;
     const url = this.getDiningTableQrUrl(table);

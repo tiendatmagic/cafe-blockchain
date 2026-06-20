@@ -54,13 +54,7 @@
               </div>
 
               <!-- Nút Thêm khu vực nhanh -->
-              <button
-                app-button
-                variant="primary"
-                size="sm"
-                (click)="openAddAreaModal()"
-                class="btn-full"
-              >
+              <button app-button variant="primary" (click)="openAddAreaModal()" class="btn-full">
                 <app-icon name="plus" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
                 <span>Thêm Khu vực</span>
               </button>
@@ -129,10 +123,10 @@
             <!-- Thanh bộ lọc trạng thái và tìm kiếm/lọc -->
             <div
               app-card
-              class="flex flex-col sm:flex-row gap-5 justify-between items-stretch sm:items-end"
+              class="flex flex-col 2xl:flex-row gap-5 justify-between items-stretch 2xl:items-end"
             >
               <!-- Lọc trạng thái bàn ăn -->
-              <div class="flex flex-col gap-1.5 w-full sm:w-auto">
+              <div class="flex flex-col gap-1.5 w-full 2xl:w-auto">
                 <span class="text-xs font-bold text-slate-400 uppercase tracking-wider"
                   >Trạng thái</span
                 >
@@ -145,7 +139,7 @@
               </div>
 
               <!-- Tìm kiếm & Lọc bàn ăn -->
-              <div class="flex flex-col gap-1.5 w-full sm:w-72 shrink-0">
+              <div class="flex flex-col gap-1.5 w-full 2xl:w-80 shrink-0">
                 <span class="text-xs font-bold text-slate-400 uppercase tracking-wider"
                   >Tìm kiếm bàn ăn</span
                 >
@@ -179,7 +173,7 @@
 
             <!-- SƠ ĐỒ LƯỚI BÀN ĂN (RICH AESTHETICS GRID) -->
             <div
-              class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-4"
+              class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5 gap-4"
             >
               @if (filteredDiningTables().length === 0) {
                 <div
@@ -575,10 +569,43 @@
               class="text-[10px] text-slate-400 dark:text-slate-500 font-semibold leading-relaxed max-w-[240px]"
             >
               Mã QR này chứa liên kết đến Website storefront của quán và định danh riêng cho
-              <strong>{{ selectedTableForQr()?.name }}</strong
-              >.
+              <strong>{{ selectedTableForQr()?.name }}</strong>.
             </p>
           </div>
+
+          <!-- Đường link liên kết & Hành động sao chép/truy cập -->
+          @if (selectedTableForQr()) {
+            <div class="w-full space-y-1.5 bg-slate-50 dark:bg-slate-950/40 p-3 rounded-xl border border-slate-200/40 dark:border-slate-800/40">
+              <span class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Liên kết gọi món</span>
+              <div class="flex items-center gap-1.5 min-w-0">
+                <input
+                  type="text"
+                  [value]="getTableStorefrontUrl(selectedTableForQr())"
+                  readonly
+                  class="flex-1 text-[11px] font-mono font-bold text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/40 rounded-lg px-2.5 py-1.5 outline-none truncate"
+                  #storefrontLinkInput
+                />
+                
+                <button
+                  type="button"
+                  (click)="copyTableLink(selectedTableForQr())"
+                  class="p-1.5 text-slate-400 hover:text-[var(--color-primary)] hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all shrink-0"
+                  title="Sao chép liên kết"
+                >
+                  <app-icon name="copy" class="w-4 h-4" strokeWidth="2.5" />
+                </button>
+                
+                <a
+                  [href]="getTableStorefrontUrl(selectedTableForQr())"
+                  target="_blank"
+                  class="p-1.5 text-slate-400 hover:text-[var(--color-primary)] hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all shrink-0"
+                  title="Truy cập liên kết"
+                >
+                  <app-icon name="external-link" class="w-4 h-4" strokeWidth="2.5" />
+                </a>
+              </div>
+            </div>
+          }
 
           <!-- Nút tải ảnh và Đóng -->
           <div class="flex gap-3 w-full pt-2">
