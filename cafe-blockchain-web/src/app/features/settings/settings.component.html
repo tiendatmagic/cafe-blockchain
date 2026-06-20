@@ -92,216 +92,235 @@
             <div class="space-y-5">
               <!-- Bố cục lưới 2 cột cho thông tin quán trên Desktop -->
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Cột trái: Tên cửa hàng, Số điện thoại, Giờ hoạt động -->
-                <div class="space-y-5">
-                  <!-- Tên quán -->
-                  <div class="space-y-1.5">
-                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-                      >Tên cửa hàng <span class="text-rose-500">*</span></label
-                    >
-                    <input
-                      type="text"
-                      [ngModel]="configForm().store_name"
-                      (ngModelChange)="updateConfigForm('store_name', $event)"
-                      [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
-                      class="form-input font-semibold"
-                      placeholder="Nhập tên cửa hàng"
-                    />
-                  </div>
-
-                  <!-- Số điện thoại -->
-                  <div class="space-y-1.5">
-                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-                      >Số điện thoại <span class="text-rose-500">*</span></label
-                    >
-                    <input
-                      type="text"
-                      [ngModel]="configForm().store_phone"
-                      (ngModelChange)="onPhoneChange($event)"
-                      [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
-                      class="form-input font-semibold"
-                      placeholder="Nhập số điện thoại (chỉ nhập số)"
-                    />
-                    @if (phoneError()) {
-                      <span class="text-xs font-bold text-rose-500 mt-1 block">{{ phoneError() }}</span>
-                    }
-                  </div>
-
-                  <!-- Giờ hoạt động Custom Time Range Picker -->
-                  <div class="space-y-1.5 relative text-left" id="time-picker-container">
-                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-                      >Giờ hoạt động</label
-                    >
-                    <!-- Input trigger -->
-                    <div class="relative cursor-pointer" (click)="toggleTimePicker($event)">
-                      <input
-                        type="text"
-                        readonly
-                        [value]="configForm().store_opening_hours || '08:00 - 17:00'"
-                        [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
-                        class="form-input font-semibold cursor-pointer pr-10"
-                        placeholder="Chọn giờ hoạt động"
-                      />
-                      <div class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                        <app-icon name="clock" class="h-5 w-5" strokeWidth="2" />
-                      </div>
-                    </div>
-
-                    <!-- Dropdown Time Picker -->
-                    @if (isOpenTimePicker()) {
-                      <div
-                        class="absolute left-0 mt-2 w-full max-w-[500px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 shadow-2xl rounded-2xl p-4 z-[9999] transition-all duration-200"
-                      >
-                        <!-- Header hiển thị giờ đã chọn -->
-                        <div class="grid grid-cols-2 gap-4 pb-3 border-b border-slate-100 dark:border-slate-800/60 text-center font-bold">
-                          <div class="text-[var(--dynamic-primary)] text-sm">
-                            Mở cửa: {{ startHour() }}:{{ startMinute() }}
-                          </div>
-                          <div class="text-[var(--dynamic-primary)] text-sm">
-                            Đóng cửa: {{ endHour() }}:{{ endMinute() }}
-                          </div>
-                        </div>
-
-                        <!-- Layout grid chọn giờ/phút -->
-                        <div class="grid grid-cols-2 gap-4 pt-3">
-                          <!-- Bảng chọn Giờ mở cửa -->
-                          <div class="space-y-2 border-r border-slate-100 dark:border-slate-800/60 pr-2">
-                            <div class="text-[10px] font-black text-center text-slate-400 uppercase tracking-wider">
-                              Mở cửa
-                            </div>
-                            <div class="grid grid-cols-2 gap-1 text-center font-bold text-xs uppercase text-slate-400">
-                              <div>Giờ</div>
-                              <div>Phút</div>
-                            </div>
-                            <div class="grid grid-cols-2 gap-1.5 h-[160px]">
-                              <!-- Cột chọn giờ mở -->
-                              <div class="overflow-y-auto max-h-full space-y-0.5 scrollbar-none">
-                                @for (h of hoursList; track h) {
-                                  <div
-                                    (click)="selectTimeValue('startHour', h)"
-                                    [class]="
-                                      'py-1 text-center text-xs font-bold rounded-lg cursor-pointer transition-all ' +
-                                      (startHour() === h
-                                        ? 'bg-[var(--dynamic-primary)] text-white'
-                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800')
-                                    "
-                                  >
-                                    {{ h }}
-                                  </div>
-                                }
-                              </div>
-                              <!-- Cột chọn phút mở -->
-                              <div class="overflow-y-auto max-h-full space-y-0.5 scrollbar-none">
-                                @for (m of minutesList; track m) {
-                                  <div
-                                    (click)="selectTimeValue('startMinute', m)"
-                                    [class]="
-                                      'py-1 text-center text-xs font-bold rounded-lg cursor-pointer transition-all ' +
-                                      (startMinute() === m
-                                        ? 'bg-[var(--dynamic-primary)] text-white'
-                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800')
-                                    "
-                                  >
-                                    {{ m }}
-                                  </div>
-                                }
-                              </div>
-                            </div>
-                          </div>
-
-                          <!-- Bảng chọn Giờ đóng cửa -->
-                          <div class="space-y-2 pl-2">
-                            <div class="text-[10px] font-black text-center text-slate-400 uppercase tracking-wider">
-                              Đóng cửa
-                            </div>
-                            <div class="grid grid-cols-2 gap-1 text-center font-bold text-xs uppercase text-slate-400">
-                              <div>Giờ</div>
-                              <div>Phút</div>
-                            </div>
-                            <div class="grid grid-cols-2 gap-1.5 h-[160px]">
-                              <!-- Cột chọn giờ đóng -->
-                              <div class="overflow-y-auto max-h-full space-y-0.5 scrollbar-none">
-                                @for (h of hoursList; track h) {
-                                  <div
-                                    (click)="selectTimeValue('endHour', h)"
-                                    [class]="
-                                      'py-1 text-center text-xs font-bold rounded-lg cursor-pointer transition-all ' +
-                                      (endHour() === h
-                                        ? 'bg-[var(--dynamic-primary)] text-white'
-                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800')
-                                    "
-                                  >
-                                    {{ h }}
-                                  </div>
-                                }
-                              </div>
-                              <!-- Cột chọn phút đóng -->
-                              <div class="overflow-y-auto max-h-full space-y-0.5 scrollbar-none">
-                                @for (m of minutesList; track m) {
-                                  <div
-                                    (click)="selectTimeValue('endMinute', m)"
-                                    [class]="
-                                      'py-1 text-center text-xs font-bold rounded-lg cursor-pointer transition-all ' +
-                                      (endMinute() === m
-                                        ? 'bg-[var(--dynamic-primary)] text-white'
-                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800')
-                                    "
-                                  >
-                                    {{ m }}
-                                  </div>
-                                }
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    }
-
-                    @if (dateTimeError()) {
-                      <span class="text-xs font-bold text-rose-500 mt-1 block">{{ dateTimeError() }}</span>
-                    }
-                  </div>
+                <!-- Tên quán -->
+                <div class="space-y-1.5">
+                  <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                    >Tên cửa hàng <span class="text-rose-500">*</span></label
+                  >
+                  <input
+                    type="text"
+                    [ngModel]="configForm().store_name"
+                    (ngModelChange)="updateConfigForm('store_name', $event)"
+                    [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                    class="form-input font-semibold"
+                    placeholder="Nhập tên cửa hàng"
+                  />
                 </div>
 
-                <!-- Cột phải: Địa chỉ cửa hàng, Mô tả cửa hàng -->
-                <div class="space-y-5">
-                  <!-- Địa chỉ cửa hàng -->
-                  <div class="space-y-1.5">
-                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-                      >Địa chỉ cửa hàng</label
-                    >
+                <!-- Địa chỉ cửa hàng -->
+                <div class="space-y-1.5">
+                  <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                    >Địa chỉ cửa hàng</label
+                  >
+                  <input
+                    type="text"
+                    [ngModel]="configForm().store_address"
+                    (ngModelChange)="updateConfigForm('store_address', $event)"
+                    [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                    class="form-input font-semibold"
+                    placeholder="Nhập địa chỉ cửa hàng"
+                  />
+                </div>
+
+                <!-- Số điện thoại -->
+                <div class="space-y-1.5">
+                  <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                    >Số điện thoại <span class="text-rose-500">*</span></label
+                  >
+                  <input
+                    type="text"
+                    [ngModel]="configForm().store_phone"
+                    (ngModelChange)="onPhoneChange($event)"
+                    [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                    class="form-input font-semibold"
+                    placeholder="Nhập số điện thoại"
+                  />
+                  @if (phoneError()) {
+                    <span class="text-xs font-bold text-rose-500 mt-1 block">{{
+                      phoneError()
+                    }}</span>
+                  }
+                </div>
+
+                <!-- Giờ hoạt động Custom Time Range Picker -->
+                <div class="space-y-1.5 relative text-left" id="time-picker-container">
+                  <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                    >Giờ hoạt động</label
+                  >
+                  <!-- Input trigger -->
+                  <div class="relative cursor-pointer" (click)="toggleTimePicker($event)">
                     <input
                       type="text"
-                      [ngModel]="configForm().store_address"
-                      (ngModelChange)="updateConfigForm('store_address', $event)"
-                      [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
-                      class="form-input font-semibold"
-                      placeholder="Nhập địa chỉ cửa hàng"
+                      readonly
+                      [value]="configForm().store_opening_hours || '08:00 - 17:00'"
+                      [disabled]="
+                        !web3Service.walletConnected() || !web3Service.isOwnerContract()
+                      "
+                      class="form-input font-semibold cursor-pointer pr-10"
+                      placeholder="Chọn giờ hoạt động"
                     />
+                    <div
+                      class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                    >
+                      <app-icon name="clock" class="h-5 w-5" strokeWidth="2" />
+                    </div>
                   </div>
 
-                  <!-- Mô tả cửa hàng -->
-                  <div class="space-y-1.5">
-                    <div class="flex items-center justify-between">
-                      <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-                        >Mô tả cửa hàng</label
+                  <!-- Dropdown Time Picker -->
+                  @if (isOpenTimePicker()) {
+                    <div
+                      class="absolute left-0 mt-2 w-full max-w-[500px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 shadow-2xl rounded-2xl p-4 z-[9999] transition-all duration-200"
+                    >
+                      <!-- Header hiển thị giờ đã chọn -->
+                      <div
+                        class="grid grid-cols-2 gap-4 pb-3 border-b border-slate-100 dark:border-slate-800/60 text-center font-bold"
                       >
-                      <span class="text-xs font-bold" [class]="descriptionWordCount() > 200 ? 'text-rose-500' : 'text-slate-400'">
-                        {{ descriptionWordCount() }}/200 chữ
-                      </span>
+                        <div class="text-[var(--dynamic-primary)] text-sm">
+                          Mở cửa: {{ startHour() }}:{{ startMinute() }}
+                        </div>
+                        <div class="text-[var(--dynamic-primary)] text-sm">
+                          Đóng cửa: {{ endHour() }}:{{ endMinute() }}
+                        </div>
+                      </div>
+
+                      <!-- Layout grid chọn giờ/phút -->
+                      <div class="grid grid-cols-2 gap-4 pt-3">
+                        <!-- Bảng chọn Giờ mở cửa -->
+                        <div
+                          class="space-y-2 border-r border-slate-100 dark:border-slate-800/60 pr-2"
+                        >
+                          <div
+                            class="text-[10px] font-black text-center text-slate-400 uppercase tracking-wider"
+                          >
+                            Mở cửa
+                          </div>
+                          <div
+                            class="grid grid-cols-2 gap-1 text-center font-bold text-xs uppercase text-slate-400"
+                          >
+                            <div>Giờ</div>
+                            <div>Phút</div>
+                          </div>
+                          <div class="grid grid-cols-2 gap-1.5 h-[160px]">
+                            <!-- Cột chọn giờ mở -->
+                            <div class="overflow-y-auto max-h-full space-y-0.5 scrollbar-none">
+                              @for (h of hoursList; track h) {
+                                <div
+                                  (click)="selectTimeValue('startHour', h)"
+                                  [class]="
+                                    'py-1 text-center text-xs font-bold rounded-lg cursor-pointer transition-all ' +
+                                    (startHour() === h
+                                      ? 'bg-[var(--dynamic-primary)] text-white'
+                                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800')
+                                  "
+                                >
+                                  {{ h }}
+                                </div>
+                              }
+                            </div>
+                            <!-- Cột chọn phút mở -->
+                            <div class="overflow-y-auto max-h-full space-y-0.5 scrollbar-none">
+                              @for (m of minutesList; track m) {
+                                <div
+                                  (click)="selectTimeValue('startMinute', m)"
+                                  [class]="
+                                    'py-1 text-center text-xs font-bold rounded-lg cursor-pointer transition-all ' +
+                                    (startMinute() === m
+                                      ? 'bg-[var(--dynamic-primary)] text-white'
+                                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800')
+                                  "
+                                >
+                                  {{ m }}
+                                </div>
+                              }
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Bảng chọn Giờ đóng cửa -->
+                        <div class="space-y-2 pl-2">
+                          <div
+                            class="text-[10px] font-black text-center text-slate-400 uppercase tracking-wider"
+                          >
+                            Đóng cửa
+                          </div>
+                          <div
+                            class="grid grid-cols-2 gap-1 text-center font-bold text-xs uppercase text-slate-400"
+                          >
+                            <div>Giờ</div>
+                            <div>Phút</div>
+                          </div>
+                          <div class="grid grid-cols-2 gap-1.5 h-[160px]">
+                            <!-- Cột chọn giờ đóng -->
+                            <div class="overflow-y-auto max-h-full space-y-0.5 scrollbar-none">
+                              @for (h of hoursList; track h) {
+                                <div
+                                  (click)="selectTimeValue('endHour', h)"
+                                  [class]="
+                                    'py-1 text-center text-xs font-bold rounded-lg cursor-pointer transition-all ' +
+                                    (endHour() === h
+                                      ? 'bg-[var(--dynamic-primary)] text-white'
+                                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800')
+                                  "
+                                >
+                                  {{ h }}
+                                </div>
+                              }
+                            </div>
+                            <!-- Cột chọn phút đóng -->
+                            <div class="overflow-y-auto max-h-full space-y-0.5 scrollbar-none">
+                              @for (m of minutesList; track m) {
+                                <div
+                                  (click)="selectTimeValue('endMinute', m)"
+                                  [class]="
+                                    'py-1 text-center text-xs font-bold rounded-lg cursor-pointer transition-all ' +
+                                    (endMinute() === m
+                                      ? 'bg-[var(--dynamic-primary)] text-white'
+                                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800')
+                                  "
+                                >
+                                  {{ m }}
+                                </div>
+                              }
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <textarea
-                      rows="6"
-                      [ngModel]="configForm().store_description"
-                      (ngModelChange)="onDescriptionChange($event)"
-                      [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
-                      class="form-input font-semibold py-2.5 resize-none animate-none"
-                      placeholder="Nhập mô tả ngắn về cửa hàng (tối đa 200 chữ)..."
-                    ></textarea>
-                    @if (descriptionError()) {
-                      <span class="text-xs font-bold text-rose-500 mt-1 block">{{ descriptionError() }}</span>
-                    }
+                  }
+
+                  @if (dateTimeError()) {
+                    <span class="text-xs font-bold text-rose-500 mt-1 block">{{
+                      dateTimeError()
+                    }}</span>
+                  }
+                </div>
+
+                <!-- Mô tả cửa hàng -->
+                <div class="space-y-1.5 md:col-span-2">
+                  <div class="flex items-center justify-between">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                      >Mô tả cửa hàng</label
+                    >
+                    <span
+                      class="text-xs font-bold"
+                      [class]="descriptionWordCount() > 200 ? 'text-rose-500' : 'text-slate-400'"
+                    >
+                      {{ descriptionWordCount() }}/200 chữ
+                    </span>
                   </div>
+                  <textarea
+                    rows="4"
+                    [ngModel]="configForm().store_description"
+                    (ngModelChange)="onDescriptionChange($event)"
+                    [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                    class="form-input font-semibold py-2.5 resize-none animate-none"
+                    placeholder="Nhập mô tả ngắn về cửa hàng (tối đa 200 chữ)..."
+                  ></textarea>
+                  @if (descriptionError()) {
+                    <span class="text-xs font-bold text-rose-500 mt-1 block">{{
+                      descriptionError()
+                    }}</span>
+                  }
                 </div>
               </div>
 
@@ -542,10 +561,7 @@
                   variant="primary"
                   (click)="saveConfig()"
                   [loading]="isConfigSaving()"
-                  [disabled]="
-                    !web3Service.walletConnected() ||
-                    !web3Service.isOwnerContract()
-                  "
+                  [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
                   class="w-full shadow-lg"
                 >
                   <app-icon name="save" class="h-4.5 w-4.5 shrink-0" strokeWidth="2.5" />
@@ -677,7 +693,9 @@
                       settings().voucher_contract_address === '' ||
                       !settings().voucher_contract_address
                     ) {
-                      <app-badge variant="danger" size="sm" rounded="full" [pulse]="true">Chưa Deploy</app-badge>
+                      <app-badge variant="danger" size="sm" rounded="full" [pulse]="true"
+                        >Chưa Deploy</app-badge
+                      >
                     } @else {
                       <app-badge variant="success" size="sm" rounded="full">Đã Cấu Hình</app-badge>
                     }
@@ -699,8 +717,7 @@
                         type="button"
                         [loading]="isDeployingVoucher()"
                         [disabled]="
-                          !web3Service.walletConnected() ||
-                          !web3Service.isOwnerContract()
+                          !web3Service.walletConnected() || !web3Service.isOwnerContract()
                         "
                         (click)="deployVoucherContract()"
                         class="h-[42px] w-full sm:w-auto shrink-0"
@@ -756,10 +773,7 @@
                   variant="primary"
                   (click)="saveConfig()"
                   [loading]="isConfigSaving()"
-                  [disabled]="
-                    !web3Service.walletConnected() ||
-                    !web3Service.isOwnerContract()
-                  "
+                  [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
                   class="w-full shadow-lg"
                 >
                   <app-icon name="save" class="h-4.5 w-4.5 shrink-0" strokeWidth="2.5" />
@@ -819,11 +833,17 @@
                     >Địa chỉ Smart Contract POS (0x...)</span
                   >
                   @if (settings().contract_address === '') {
-                    <app-badge variant="danger" size="sm" rounded="full" [pulse]="true">Chưa Deploy</app-badge>
+                    <app-badge variant="danger" size="sm" rounded="full" [pulse]="true"
+                      >Chưa Deploy</app-badge
+                    >
                   } @else if (!settings().has_synced_orders) {
-                    <app-badge variant="warning" size="sm" rounded="full" [pulse]="true">Chưa sử dụng (Có thể sửa)</app-badge>
+                    <app-badge variant="warning" size="sm" rounded="full" [pulse]="true"
+                      >Chưa sử dụng (Có thể sửa)</app-badge
+                    >
                   } @else {
-                    <app-badge variant="success" size="sm" rounded="full">Đã khóa vĩnh viễn</app-badge>
+                    <app-badge variant="success" size="sm" rounded="full"
+                      >Đã khóa vĩnh viễn</app-badge
+                    >
                   }
                 </div>
                 <div class="flex flex-col sm:flex-row gap-2">
@@ -846,10 +866,7 @@
                       size="sm"
                       type="button"
                       [loading]="isDeploying()"
-                      [disabled]="
-                        !web3Service.walletConnected() ||
-                        !web3Service.isOwnerContract()
-                      "
+                      [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
                       (click)="deployNewContract()"
                       class="h-[42px] w-full sm:w-auto shrink-0"
                     >
@@ -867,11 +884,17 @@
                     >Địa chỉ Smart Contract Tài chính (0x...)</span
                   >
                   @if (settings().finance_contract_address === '') {
-                    <app-badge variant="danger" size="sm" rounded="full" [pulse]="true">Chưa Deploy</app-badge>
+                    <app-badge variant="danger" size="sm" rounded="full" [pulse]="true"
+                      >Chưa Deploy</app-badge
+                    >
                   } @else if (!settings().has_synced_transactions) {
-                    <app-badge variant="warning" size="sm" rounded="full" [pulse]="true">Chưa sử dụng (Có thể sửa)</app-badge>
+                    <app-badge variant="warning" size="sm" rounded="full" [pulse]="true"
+                      >Chưa sử dụng (Có thể sửa)</app-badge
+                    >
                   } @else {
-                    <app-badge variant="success" size="sm" rounded="full">Đã khóa vĩnh viễn</app-badge>
+                    <app-badge variant="success" size="sm" rounded="full"
+                      >Đã khóa vĩnh viễn</app-badge
+                    >
                   }
                 </div>
                 <div class="flex flex-col sm:flex-row gap-2">
@@ -898,10 +921,7 @@
                       size="sm"
                       type="button"
                       [loading]="isDeployingFinance()"
-                      [disabled]="
-                        !web3Service.walletConnected() ||
-                        !web3Service.isOwnerContract()
-                      "
+                      [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
                       (click)="deployFinanceContract()"
                       class="h-[42px] w-full sm:w-auto shrink-0"
                     >
@@ -922,11 +942,17 @@
                     settings().menu_registry_contract_address === '' ||
                     !settings().menu_registry_contract_address
                   ) {
-                    <app-badge variant="danger" size="sm" rounded="full" [pulse]="true">Chưa Deploy</app-badge>
+                    <app-badge variant="danger" size="sm" rounded="full" [pulse]="true"
+                      >Chưa Deploy</app-badge
+                    >
                   } @else if (settings().has_synced_menu !== '1') {
-                    <app-badge variant="warning" size="sm" rounded="full" [pulse]="true">Chưa sử dụng (Có thể sửa)</app-badge>
+                    <app-badge variant="warning" size="sm" rounded="full" [pulse]="true"
+                      >Chưa sử dụng (Có thể sửa)</app-badge
+                    >
                   } @else {
-                    <app-badge variant="success" size="sm" rounded="full">Đã khóa vĩnh viễn</app-badge>
+                    <app-badge variant="success" size="sm" rounded="full"
+                      >Đã khóa vĩnh viễn</app-badge
+                    >
                   }
                 </div>
                 <div class="flex flex-col sm:flex-row gap-2">
@@ -953,10 +979,7 @@
                       size="sm"
                       type="button"
                       [loading]="isDeployingMenuRegistry()"
-                      [disabled]="
-                        !web3Service.walletConnected() ||
-                        !web3Service.isOwnerContract()
-                      "
+                      [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
                       (click)="deployMenuRegistryContract()"
                       class="h-[42px] w-full sm:w-auto shrink-0"
                     >
@@ -973,8 +996,13 @@
                   <span class="text-xs font-bold text-slate-400 uppercase tracking-wide"
                     >Địa chỉ Smart Contract Token Điểm Tích Lũy ($CAFE) (0x...)</span
                   >
-                  @if (settings().loyalty_token_contract_address === '' || !settings().loyalty_token_contract_address) {
-                    <app-badge variant="danger" size="sm" rounded="full" [pulse]="true">Chưa Deploy</app-badge>
+                  @if (
+                    settings().loyalty_token_contract_address === '' ||
+                    !settings().loyalty_token_contract_address
+                  ) {
+                    <app-badge variant="danger" size="sm" rounded="full" [pulse]="true"
+                      >Chưa Deploy</app-badge
+                    >
                   } @else {
                     <app-badge variant="success" size="sm" rounded="full">Đã cấu hình</app-badge>
                   }
@@ -985,23 +1013,20 @@
                     [ngModel]="configForm().loyalty_token_contract_address"
                     (ngModelChange)="updateConfigForm('loyalty_token_contract_address', $event)"
                     placeholder="Chưa deploy hợp đồng CafeToken ($CAFE). Vui lòng bấm Deploy..."
-                    [disabled]="
-                      !web3Service.walletConnected() ||
-                      !web3Service.isOwnerContract()
-                    "
+                    [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
                     class="form-input font-mono flex-1 min-w-0"
                   />
-                  @if (settings().loyalty_token_contract_address === '' || !settings().loyalty_token_contract_address) {
+                  @if (
+                    settings().loyalty_token_contract_address === '' ||
+                    !settings().loyalty_token_contract_address
+                  ) {
                     <button
                       app-button
                       variant="secondary"
                       size="sm"
                       type="button"
                       [loading]="isDeployingLoyaltyToken()"
-                      [disabled]="
-                        !web3Service.walletConnected() ||
-                        !web3Service.isOwnerContract()
-                      "
+                      [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
                       (click)="deployLoyaltyTokenContract()"
                       class="h-[42px] w-full sm:w-auto shrink-0"
                     >
@@ -1018,8 +1043,13 @@
                   <span class="text-xs font-bold text-slate-400 uppercase tracking-wide"
                     >Địa chỉ Smart Contract Voucher Shop (0x...)</span
                   >
-                  @if (settings().voucher_shop_contract_address === '' || !settings().voucher_shop_contract_address) {
-                    <app-badge variant="danger" size="sm" rounded="full" [pulse]="true">Chưa Deploy</app-badge>
+                  @if (
+                    settings().voucher_shop_contract_address === '' ||
+                    !settings().voucher_shop_contract_address
+                  ) {
+                    <app-badge variant="danger" size="sm" rounded="full" [pulse]="true"
+                      >Chưa Deploy</app-badge
+                    >
                   } @else {
                     <app-badge variant="success" size="sm" rounded="full">Đã cấu hình</app-badge>
                   }
@@ -1030,13 +1060,13 @@
                     [ngModel]="configForm().voucher_shop_contract_address"
                     (ngModelChange)="updateConfigForm('voucher_shop_contract_address', $event)"
                     placeholder="Chưa deploy hợp đồng VoucherShop. Vui lòng bấm Deploy..."
-                    [disabled]="
-                      !web3Service.walletConnected() ||
-                      !web3Service.isOwnerContract()
-                    "
+                    [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
                     class="form-input font-mono flex-1 min-w-0"
                   />
-                  @if (settings().voucher_shop_contract_address === '' || !settings().voucher_shop_contract_address) {
+                  @if (
+                    settings().voucher_shop_contract_address === '' ||
+                    !settings().voucher_shop_contract_address
+                  ) {
                     <button
                       app-button
                       variant="secondary"
@@ -1051,7 +1081,12 @@
                       "
                       (click)="deployVoucherShopContract()"
                       class="h-[42px] w-full sm:w-auto shrink-0"
-                      [title]="(configForm().loyalty_token_contract_address === '' || configForm().voucher_contract_address === '') ? 'Vui lòng deploy $CAFE Token và NFT Voucher trước' : ''"
+                      [title]="
+                        configForm().loyalty_token_contract_address === '' ||
+                        configForm().voucher_contract_address === ''
+                          ? 'Vui lòng deploy $CAFE Token và NFT Voucher trước'
+                          : ''
+                      "
                     >
                       <app-icon name="archive" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
                       <span>Deploy Voucher Shop</span>
@@ -1066,8 +1101,13 @@
                   <span class="text-xs font-bold text-slate-400 uppercase tracking-wide"
                     >Địa chỉ Smart Contract Voucher Marketplace (0x...)</span
                   >
-                  @if (settings().voucher_marketplace_contract_address === '' || !settings().voucher_marketplace_contract_address) {
-                    <app-badge variant="danger" size="sm" rounded="full" [pulse]="true">Chưa Deploy</app-badge>
+                  @if (
+                    settings().voucher_marketplace_contract_address === '' ||
+                    !settings().voucher_marketplace_contract_address
+                  ) {
+                    <app-badge variant="danger" size="sm" rounded="full" [pulse]="true"
+                      >Chưa Deploy</app-badge
+                    >
                   } @else {
                     <app-badge variant="success" size="sm" rounded="full">Đã cấu hình</app-badge>
                   }
@@ -1076,15 +1116,17 @@
                   <input
                     type="text"
                     [ngModel]="configForm().voucher_marketplace_contract_address"
-                    (ngModelChange)="updateConfigForm('voucher_marketplace_contract_address', $event)"
-                    placeholder="Chưa deploy hợp đồng Marketplace. Vui lòng bấm Deploy..."
-                    [disabled]="
-                      !web3Service.walletConnected() ||
-                      !web3Service.isOwnerContract()
+                    (ngModelChange)="
+                      updateConfigForm('voucher_marketplace_contract_address', $event)
                     "
+                    placeholder="Chưa deploy hợp đồng Marketplace. Vui lòng bấm Deploy..."
+                    [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
                     class="form-input font-mono flex-1 min-w-0"
                   />
-                  @if (settings().voucher_marketplace_contract_address === '' || !settings().voucher_marketplace_contract_address) {
+                  @if (
+                    settings().voucher_marketplace_contract_address === '' ||
+                    !settings().voucher_marketplace_contract_address
+                  ) {
                     <button
                       app-button
                       variant="secondary"
@@ -1099,7 +1141,12 @@
                       "
                       (click)="deployVoucherMarketplaceContract()"
                       class="h-[42px] w-full sm:w-auto shrink-0"
-                      [title]="(configForm().loyalty_token_contract_address === '' || configForm().voucher_contract_address === '') ? 'Vui lòng deploy $CAFE Token và NFT Voucher trước' : ''"
+                      [title]="
+                        configForm().loyalty_token_contract_address === '' ||
+                        configForm().voucher_contract_address === ''
+                          ? 'Vui lòng deploy $CAFE Token và NFT Voucher trước'
+                          : ''
+                      "
                     >
                       <app-icon name="archive" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
                       <span>Deploy Marketplace</span>
@@ -1203,10 +1250,7 @@
                   variant="primary"
                   (click)="saveConfig()"
                   [loading]="isConfigSaving()"
-                  [disabled]="
-                    !web3Service.walletConnected() ||
-                    !web3Service.isOwnerContract()
-                  "
+                  [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
                   class="w-full shadow-lg"
                 >
                   <app-icon name="save" class="h-4.5 w-4.5 shrink-0" strokeWidth="2.5" />
@@ -1283,8 +1327,7 @@
                         size="sm"
                         [loading]="isOwnerActionLoading()"
                         [disabled]="
-                          !web3Service.walletConnected() ||
-                          !web3Service.isOwnerContract()
+                          !web3Service.walletConnected() || !web3Service.isOwnerContract()
                         "
                         (click)="addOwnerAddress()"
                         class="h-[42px] shrink-0"
@@ -2013,11 +2056,19 @@
                             class="text-[10px] sm:text-xs text-white/80 font-bold truncate drop-shadow-sm leading-none mt-1"
                           >
                             @if (configForm().store_status === '1') {
-                              <app-badge variant="success" size="sm" class="!bg-emerald-500/90 !text-white border-none uppercase text-[9px]">
+                              <app-badge
+                                variant="success"
+                                size="sm"
+                                class="!bg-emerald-500/90 !text-white border-none uppercase text-[9px]"
+                              >
                                 Đang mở cửa
                               </app-badge>
                             } @else {
-                              <app-badge variant="neutral" size="sm" class="!bg-slate-500/90 !text-white border-none uppercase text-[9px]">
+                              <app-badge
+                                variant="neutral"
+                                size="sm"
+                                class="!bg-slate-500/90 !text-white border-none uppercase text-[9px]"
+                              >
                                 Tạm đóng
                               </app-badge>
                             }
@@ -2103,7 +2154,9 @@
                         >
                           <app-custom-checkbox
                             [checked]="isCategorySelected(category.id)"
-                            [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                            [disabled]="
+                              !web3Service.walletConnected() || !web3Service.isOwnerContract()
+                            "
                             class="pointer-events-none shrink-0"
                           ></app-custom-checkbox>
                           <span class="text-xs font-bold leading-none truncate">{{
@@ -2122,10 +2175,7 @@
                   variant="primary"
                   (click)="saveConfig()"
                   [loading]="isConfigSaving()"
-                  [disabled]="
-                    !web3Service.walletConnected() ||
-                    !web3Service.isOwnerContract()
-                  "
+                  [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
                   class="w-full shadow-lg"
                 >
                   <app-icon name="save" class="h-4.5 w-4.5 shrink-0" strokeWidth="2.5" />
@@ -2140,17 +2190,24 @@
         @if (settingsSubTab() === 'payment') {
           <div app-card class="space-y-6 w-full">
             <!-- Header Tab -->
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800/60">
+            <div
+              class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800/60"
+            >
               <div class="flex items-center gap-2.5">
-                <div class="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0 flex items-center">
+                <div
+                  class="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0 flex items-center"
+                >
                   <app-icon name="debts" class="h-5 w-5" strokeWidth="2" />
                 </div>
                 <div>
-                  <h4 class="text-md font-bold text-slate-800 dark:text-white uppercase tracking-wider">
+                  <h4
+                    class="text-md font-bold text-slate-800 dark:text-white uppercase tracking-wider"
+                  >
                     Phương thức thanh toán
                   </h4>
                   <p class="text-xs text-slate-500 dark:text-slate-400 font-bold mt-0.5">
-                    Quản lý tài khoản ngân hàng và ví điện tử dùng cho khách chuyển khoản trên Storefront.
+                    Quản lý tài khoản ngân hàng và ví điện tử dùng cho khách chuyển khoản trên
+                    Storefront.
                   </p>
                 </div>
               </div>
@@ -2167,7 +2224,9 @@
             <!-- Tìm kiếm phương thức thanh toán -->
             <div class="flex flex-col sm:flex-row gap-4 items-end justify-between">
               <div class="flex flex-col gap-1.5 w-full sm:max-w-xs shrink-0">
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Tìm kiếm phương thức</span>
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider"
+                  >Tìm kiếm phương thức</span
+                >
                 <div class="relative w-full">
                   <input
                     type="text"
@@ -2202,10 +2261,12 @@
               <!-- Cell Loại -->
               <ng-template appCell="type" let-row>
                 <span
-                  [class]="'text-xs font-black px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0 ' +
-                    (row.type === 'bank' 
-                      ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' 
-                      : 'bg-pink-500/10 text-pink-600 dark:text-pink-400')"
+                  [class]="
+                    'text-xs font-black px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0 ' +
+                    (row.type === 'bank'
+                      ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                      : 'bg-pink-500/10 text-pink-600 dark:text-pink-400')
+                  "
                 >
                   {{ row.type === 'bank' ? 'Ngân hàng' : 'Ví điện tử' }}
                 </span>
@@ -2214,10 +2275,12 @@
               <!-- Cell Trạng thái -->
               <ng-template appCell="is_active" let-row>
                 <span
-                  [class]="'text-xs font-black px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0 ' +
-                    (row.is_active 
-                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' 
-                      : 'bg-slate-500/10 text-slate-500 dark:text-slate-400')"
+                  [class]="
+                    'text-xs font-black px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0 ' +
+                    (row.is_active
+                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                      : 'bg-slate-500/10 text-slate-500 dark:text-slate-400')
+                  "
                 >
                   {{ row.is_active ? 'Kích hoạt' : 'Vô hiệu' }}
                 </span>
@@ -2344,25 +2407,35 @@
           <div class="space-y-5">
             <!-- Loại phương thức -->
             <div class="space-y-1.5 font-bold">
-              <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block">Loại phương thức</label>
+              <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                >Loại phương thức</label
+              >
               <div class="grid grid-cols-2 gap-3">
                 <button
                   type="button"
-                  (click)="paymentForm.update(f => ({ ...f, type: 'bank', bank_code: '', name: '' }))"
-                  [class]="'py-2.5 rounded-xl border-2 font-bold text-xs uppercase transition-all ' + 
-                    (paymentForm().type === 'bank' 
-                      ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)]' 
-                      : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-600 dark:text-slate-400')"
+                  (click)="
+                    paymentForm.update((f) => ({ ...f, type: 'bank', bank_code: '', name: '' }))
+                  "
+                  [class]="
+                    'py-2.5 rounded-xl border-2 font-bold text-xs uppercase transition-all ' +
+                    (paymentForm().type === 'bank'
+                      ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)]'
+                      : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-600 dark:text-slate-400')
+                  "
                 >
                   Ngân hàng
                 </button>
                 <button
                   type="button"
-                  (click)="paymentForm.update(f => ({ ...f, type: 'wallet', bank_code: '', name: '' }))"
-                  [class]="'py-2.5 rounded-xl border-2 font-bold text-xs uppercase transition-all ' + 
-                    (paymentForm().type === 'wallet' 
-                      ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)]' 
-                      : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-600 dark:text-slate-400')"
+                  (click)="
+                    paymentForm.update((f) => ({ ...f, type: 'wallet', bank_code: '', name: '' }))
+                  "
+                  [class]="
+                    'py-2.5 rounded-xl border-2 font-bold text-xs uppercase transition-all ' +
+                    (paymentForm().type === 'wallet'
+                      ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)]'
+                      : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-600 dark:text-slate-400')
+                  "
                 >
                   Ví điện tử
                 </button>
@@ -2372,7 +2445,9 @@
             <!-- Dropdown chọn nhanh Ngân hàng -->
             @if (paymentForm().type === 'bank') {
               <div class="space-y-1.5 font-bold">
-                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block">Chọn nhanh Ngân hàng</label>
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                  >Chọn nhanh Ngân hàng</label
+                >
                 <app-custom-select
                   [value]="paymentForm().bank_code"
                   (valueChange)="onBankSelectChange($event)"
@@ -2385,22 +2460,26 @@
               </div>
 
               <div class="space-y-1.5">
-                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block">Mã Ngân hàng (VietQR Code)</label>
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                  >Mã Ngân hàng (VietQR Code)</label
+                >
                 <input
                   type="text"
                   [ngModel]="paymentForm().bank_code"
-                  (ngModelChange)="paymentForm.update(f => ({ ...f, bank_code: $event }))"
+                  (ngModelChange)="paymentForm.update((f) => ({ ...f, bank_code: $event }))"
                   placeholder="Ví dụ: VCB, MB, TCB"
                   class="form-input font-mono uppercase"
                 />
               </div>
 
               <div class="space-y-1.5">
-                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block">Tên Ngân hàng <span class="text-red-500">*</span></label>
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                  >Tên Ngân hàng <span class="text-red-500">*</span></label
+                >
                 <input
                   type="text"
                   [ngModel]="paymentForm().name"
-                  (ngModelChange)="paymentForm.update(f => ({ ...f, name: $event }))"
+                  (ngModelChange)="paymentForm.update((f) => ({ ...f, name: $event }))"
                   placeholder="Ví dụ: Vietcombank"
                   class="form-input"
                 />
@@ -2410,7 +2489,9 @@
             <!-- Chọn nhanh ví điện tử -->
             @if (paymentForm().type === 'wallet') {
               <div class="space-y-1.5 font-bold">
-                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block">Chọn nhanh Ví</label>
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                  >Chọn nhanh Ví</label
+                >
                 <app-custom-select
                   [value]="paymentForm().name"
                   (valueChange)="onWalletSelectChange($event)"
@@ -2422,11 +2503,13 @@
               </div>
 
               <div class="space-y-1.5">
-                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block">Tên Ví điện tử <span class="text-red-500">*</span></label>
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                  >Tên Ví điện tử <span class="text-red-500">*</span></label
+                >
                 <input
                   type="text"
                   [ngModel]="paymentForm().name"
-                  (ngModelChange)="paymentForm.update(f => ({ ...f, name: $event }))"
+                  (ngModelChange)="paymentForm.update((f) => ({ ...f, name: $event }))"
                   placeholder="Ví dụ: Momo"
                   class="form-input"
                 />
@@ -2436,12 +2519,13 @@
             <!-- Số tài khoản / Số điện thoại -->
             <div class="space-y-1.5">
               <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block">
-                {{ paymentForm().type === 'bank' ? 'Số tài khoản' : 'Số điện thoại ví' }} <span class="text-red-500">*</span>
+                {{ paymentForm().type === 'bank' ? 'Số tài khoản' : 'Số điện thoại ví' }}
+                <span class="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 [ngModel]="paymentForm().account_number"
-                (ngModelChange)="paymentForm.update(f => ({ ...f, account_number: $event }))"
+                (ngModelChange)="paymentForm.update((f) => ({ ...f, account_number: $event }))"
                 placeholder="Nhập số tài khoản hoặc số điện thoại..."
                 class="form-input font-mono"
               />
@@ -2449,11 +2533,13 @@
 
             <!-- Tên chủ tài khoản -->
             <div class="space-y-1.5">
-              <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block">Tên chủ tài khoản (Không dấu) <span class="text-red-500">*</span></label>
+              <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                >Tên chủ tài khoản (Không dấu) <span class="text-red-500">*</span></label
+              >
               <input
                 type="text"
                 [ngModel]="paymentForm().account_holder"
-                (ngModelChange)="paymentForm.update(f => ({ ...f, account_holder: $event }))"
+                (ngModelChange)="paymentForm.update((f) => ({ ...f, account_holder: $event }))"
                 placeholder="Ví dụ: NGUYEN VAN A"
                 class="form-input uppercase"
               />
@@ -2465,7 +2551,7 @@
               label="Kích hoạt sử dụng"
               description="Kích hoạt phương thức này để hiển thị trên website Storefront."
               [checked]="paymentForm().is_active"
-              (checkedChange)="paymentForm.update(f => ({ ...f, is_active: $event }))"
+              (checkedChange)="paymentForm.update((f) => ({ ...f, is_active: $event }))"
             ></app-custom-switch>
 
             <!-- Nút xác nhận lưu -->
@@ -2477,9 +2563,25 @@
                 class="btn-primary w-full h-11 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 @if (isPaymentActionLoading()) {
-                  <svg class="animate-spin h-4.5 w-4.5 text-white animate-infinite" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    class="animate-spin h-4.5 w-4.5 text-white animate-infinite"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                    ></circle>
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                   <span>Đang xử lý...</span>
                 } @else {
@@ -2504,7 +2606,9 @@
             </p>
 
             <!-- QR Image -->
-            <div class="p-3 bg-white rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-md flex items-center justify-center w-56 h-56 shrink-0">
+            <div
+              class="p-3 bg-white rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-md flex items-center justify-center w-56 h-56 shrink-0"
+            >
               <img
                 [src]="getQrCodeUrl(selectedPaymentForQr())"
                 alt="QR Code"
@@ -2523,19 +2627,31 @@
             </button>
 
             <!-- Chi tiết thông tin -->
-            <div class="w-full mt-5 p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800/40 text-left space-y-1.5">
+            <div
+              class="w-full mt-5 p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800/40 text-left space-y-1.5"
+            >
               <div class="flex justify-between text-xs">
-                <span class="text-slate-400 font-bold uppercase tracking-wider">Chủ tài khoản:</span>
-                <span class="font-extrabold text-slate-800 dark:text-white uppercase">{{ selectedPaymentForQr()?.account_holder }}</span>
+                <span class="text-slate-400 font-bold uppercase tracking-wider"
+                  >Chủ tài khoản:</span
+                >
+                <span class="font-extrabold text-slate-800 dark:text-white uppercase">{{
+                  selectedPaymentForQr()?.account_holder
+                }}</span>
               </div>
               <div class="flex justify-between text-xs">
                 <span class="text-slate-400 font-bold uppercase tracking-wider">Số tài khoản:</span>
-                <span class="font-bold text-slate-800 dark:text-white font-mono">{{ selectedPaymentForQr()?.account_number }}</span>
+                <span class="font-bold text-slate-800 dark:text-white font-mono">{{
+                  selectedPaymentForQr()?.account_number
+                }}</span>
               </div>
               @if (selectedPaymentForQr()?.type === 'bank') {
                 <div class="flex justify-between text-xs">
                   <span class="text-slate-400 font-bold uppercase tracking-wider">Ngân hàng:</span>
-                  <span class="font-extrabold text-slate-800 dark:text-white">{{ selectedPaymentForQr()?.name }} ({{ selectedPaymentForQr()?.bank_code }})</span>
+                  <span class="font-extrabold text-slate-800 dark:text-white"
+                    >{{ selectedPaymentForQr()?.name }} ({{
+                      selectedPaymentForQr()?.bank_code
+                    }})</span
+                  >
                 </div>
               }
             </div>
