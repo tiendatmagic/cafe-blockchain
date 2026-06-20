@@ -14,7 +14,6 @@ import { RouterModule, Router } from '@angular/router';
 import { StateService } from '@core/services/state.service';
 import { ApiService } from '@core/services/api.service';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
-import { CustomSelectComponent } from '@shared/components/custom-select/custom-select.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
@@ -36,7 +35,6 @@ import { TableQrModalComponent } from './components/table-qr-modal/table-qr-moda
     Web3ConnectPromptComponent,
     AccessRestrictedComponent,
     PageHeaderComponent,
-    CustomSelectComponent,
     IconComponent,
     TabGroupComponent,
     SkeletonLoaderComponent,

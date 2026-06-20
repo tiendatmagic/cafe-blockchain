@@ -8,6 +8,7 @@ import { CustomDatePickerComponent } from '@shared/components/custom-date-picker
 import { CustomCheckboxComponent } from '@shared/components/custom-checkbox/custom-checkbox.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
+import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 
 @Component({
   selector: 'app-customer-form-modal',
@@ -19,6 +20,7 @@ import { ButtonComponent } from '@shared/components/button/button.component';
     CustomCheckboxComponent,
     IconComponent,
     ButtonComponent,
+    TabGroupComponent,
   ],
   templateUrl: './customer-form-modal.component.html',
 })
@@ -32,6 +34,16 @@ export class CustomerFormModalComponent implements OnInit {
   public readonly isSearchingTax = signal<boolean>(false);
   public customerModalType: 'add' | 'edit' = 'add';
   private editingCustomer: any = null;
+
+  public readonly customerTypeOptions: TabOption[] = [
+    { value: 'individual', label: 'Cá nhân (B2C)' },
+    { value: 'business', label: 'Doanh nghiệp (B2B)' },
+  ];
+
+  public readonly genderOptions: TabOption[] = [
+    { value: 'Nam', label: 'Nam' },
+    { value: 'Nữ', label: 'Nữ' },
+  ];
 
   public readonly customerForm = signal<any>({
     name: '',
@@ -49,6 +61,13 @@ export class CustomerFormModalComponent implements OnInit {
     business_status: 'Đang hoạt động',
     wallet_address: '',
   });
+
+  public updateCustomerForm(field: string, value: any): void {
+    this.customerForm.update((form) => ({
+      ...form,
+      [field]: value,
+    }));
+  }
 
   private taxLookupTimeout: any = null;
   private lastSearchedTaxCode: string = '';

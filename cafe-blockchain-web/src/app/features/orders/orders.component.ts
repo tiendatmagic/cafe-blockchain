@@ -236,10 +236,10 @@ export class OrdersComponent implements OnInit {
   // Mở modal xem chi tiết đơn hàng
   public viewOrderDetail(order: any) {
     this.selectedOrderDetails.set(order);
-    
+
     const dialogRef = this.modalService.open(OrderDetailModalComponent, {
       title: `Chi tiết hóa đơn ${order.order_code || '#' + order.id}`,
-      size: '4xl',
+      size: '5xl',
       data: {
         order: order,
         settings: this.settings(),
@@ -255,9 +255,15 @@ export class OrdersComponent implements OnInit {
       this.selectedOrderDetails.set(null);
       if (res) {
         this.isAutoSyncOnCompleteChecked.set(res.isAutoSync);
-        
-        if (res.action === 'status') {
-          this.updateStatus(order.id, res.status);
+
+        if (res.action === 'preparing' || res.action === 'completed' || res.action === 'cancelled') {
+          if (res.action === 'cancelled' && order.status === 'completed') {
+            // Yêu cầu hủy đơn hàng đã hoàn thành -> Kích hoạt popup giải thích nghiệp vụ
+            this.triggerCancelExplanation(order);
+          } else {
+            // Cập nhật trạng thái đơn thông thường
+            this.updateStatus(order.id, res.action);
+          }
         } else if (res.action === 'sync') {
           this.syncToBlockchain(order);
         } else if (res.action === 'mint_voucher') {

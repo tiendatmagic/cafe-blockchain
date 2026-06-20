@@ -200,7 +200,7 @@
               [disabled]="!data.web3Service.walletConnected()"
             >
               <app-icon name="close" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
-              <span>HỦY ĐƠN</span>
+              <span class="whitespace-nowrap">HỦY ĐƠN</span>
             </button>
             <button
               app-button
@@ -210,7 +210,7 @@
               [disabled]="!data.web3Service.walletConnected()"
             >
               <app-icon name="clock" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
-              <span>CHUẨN BỊ</span>
+              <span class="whitespace-nowrap">CHUẨN BỊ</span>
             </button>
             <button
               app-button
@@ -224,7 +224,7 @@
                 class="h-3.5 w-3.5 shrink-0"
                 strokeWidth="2.5"
               />
-              <span>HOÀN THÀNH</span>
+              <span class="whitespace-nowrap">HOÀN THÀNH</span>
             </button>
           </div>
         }
@@ -239,7 +239,7 @@
               [disabled]="!data.web3Service.walletConnected()"
             >
               <app-icon name="close" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
-              <span>HỦY ĐƠN</span>
+              <span class="whitespace-nowrap">HỦY ĐƠN</span>
             </button>
             <button
               app-button
@@ -253,7 +253,7 @@
                 class="h-3.5 w-3.5 shrink-0"
                 strokeWidth="2.5"
               />
-              <span>HOÀN THÀNH</span>
+              <span class="whitespace-nowrap">HOÀN THÀNH</span>
             </button>
           </div>
         }
@@ -323,7 +323,6 @@
           <button
             app-button
             variant="primary"
-            size="sm"
             (click)="onAction('mint_voucher')"
             [loading]="data.isMintingVoucherManual"
             class="w-full hover:scale-[1.01]"
@@ -369,7 +368,7 @@
           [disabled]="data.isOrderStatusUpdating"
           class="w-full"
         >
-          Đóng cửa sổ
+          <span>ĐÓNG CỬA SỔ</span>
         </button>
       </div>
     </div>

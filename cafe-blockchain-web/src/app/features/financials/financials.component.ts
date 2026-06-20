@@ -19,12 +19,10 @@ import { FinancialTransactionModalComponent } from './components/financial-trans
 import { FinancialDetailModalComponent } from './components/financial-detail-modal/financial-detail-modal.component';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
-import { CustomDatePickerComponent } from '@shared/components/custom-date-picker/custom-date-picker.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
-import { CustomCheckboxComponent } from '@shared/components/custom-checkbox/custom-checkbox.component';
 import { CardComponent } from '@shared/components/card/card.component';
 
 @Component({
@@ -39,12 +37,10 @@ import { CardComponent } from '@shared/components/card/card.component';
     PaginationComponent,
     PageHeaderComponent,
     VNDCurrencyPipe,
-    CustomDatePickerComponent,
     IconComponent,
     TabGroupComponent,
     SkeletonLoaderComponent,
     ButtonComponent,
-    CustomCheckboxComponent,
     CardComponent,
   ],
   changeDetection: ChangeDetectionStrategy.Eager,

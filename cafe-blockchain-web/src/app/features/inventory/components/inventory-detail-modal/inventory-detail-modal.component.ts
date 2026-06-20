@@ -2,7 +2,6 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ModalRef, MODAL_DATA } from '@core/services/modal-ref';
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
-import { IconComponent } from '@shared/components/icon/icon.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
 
 @Component({
@@ -11,7 +10,6 @@ import { ButtonComponent } from '@shared/components/button/button.component';
   imports: [
     CommonModule,
     VNDCurrencyPipe,
-    IconComponent,
     ButtonComponent,
   ],
   templateUrl: './inventory-detail-modal.component.html',

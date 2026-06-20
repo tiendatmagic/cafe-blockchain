@@ -17,7 +17,6 @@ import {
 import { StateService } from '@core/services/state.service';
 import { ApiService } from '@core/services/api.service';
 import { ModalService } from '@core/services/modal.service';
-import { CustomSelectComponent } from '@shared/components/custom-select/custom-select.component';
 import { AccessRestrictedComponent } from '@shared/components/access-restricted/access-restricted.component';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prompt/web3-connect-prompt.component';
@@ -30,7 +29,6 @@ import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
-import { CustomCheckboxComponent } from '@shared/components/custom-checkbox/custom-checkbox.component';
 import { StaffFormModalComponent } from './components/staff-form-modal/staff-form-modal.component';
 import { RoleFormModalComponent } from './components/role-form-modal/role-form-modal.component';
 
@@ -41,7 +39,6 @@ import { RoleFormModalComponent } from './components/role-form-modal/role-form-m
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    CustomSelectComponent,
     AccessRestrictedComponent,
     PageHeaderComponent,
     Web3ConnectPromptComponent,
@@ -51,7 +48,6 @@ import { RoleFormModalComponent } from './components/role-form-modal/role-form-m
     TabGroupComponent,
     SkeletonLoaderComponent,
     ButtonComponent,
-    CustomCheckboxComponent,
   ],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './staffs.component.html',

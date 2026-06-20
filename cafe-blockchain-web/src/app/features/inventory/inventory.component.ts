@@ -20,8 +20,6 @@ import { InventoryFormModalComponent } from './components/inventory-form-modal/i
 import { InventoryDetailModalComponent } from './components/inventory-detail-modal/inventory-detail-modal.component';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
-import { CustomDatePickerComponent } from '@shared/components/custom-date-picker/custom-date-picker.component';
-import { CustomSelectComponent } from '@shared/components/custom-select/custom-select.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
@@ -40,8 +38,6 @@ import { CardComponent } from '@shared/components/card/card.component';
     PaginationComponent,
     PageHeaderComponent,
     VNDCurrencyPipe,
-    CustomDatePickerComponent,
-    CustomSelectComponent,
     IconComponent,
     TabGroupComponent,
     SkeletonLoaderComponent,

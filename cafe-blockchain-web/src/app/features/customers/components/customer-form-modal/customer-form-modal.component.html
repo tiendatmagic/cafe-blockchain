@@ -4,34 +4,11 @@
     <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
       >Loại khách hàng</label
     >
-    <div
-      class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-200/60 dark:border-slate-800/60"
-    >
-      <button
-        type="button"
-        (click)="customerForm().type = 'individual'"
-        [class]="
-          customerForm().type === 'individual'
-            ? 'bg-white dark:bg-slate-900 text-purple-600 font-bold shadow-sm'
-            : 'text-slate-500'
-        "
-        class="flex-1 py-1.5 text-xs rounded-xl font-bold transition-all"
-      >
-        Cá nhân (B2C)
-      </button>
-      <button
-        type="button"
-        (click)="customerForm().type = 'business'"
-        [class]="
-          customerForm().type === 'business'
-            ? 'bg-white dark:bg-slate-900 text-purple-600 font-bold shadow-sm'
-            : 'text-slate-500'
-        "
-        class="flex-1 py-1.5 text-xs rounded-xl font-bold transition-all"
-      >
-        Doanh nghiệp (B2B)
-      </button>
-    </div>
+    <app-tab-group
+      [options]="customerTypeOptions"
+      [activeValue]="customerForm().type"
+      (valueChange)="updateCustomerForm('type', $event)"
+    ></app-tab-group>
   </div>
 
   @if (customerForm().type === 'business') {
@@ -220,34 +197,11 @@
         <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
           >Giới tính</label
         >
-        <div
-          class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-200/60 dark:border-slate-800/60"
-        >
-          <button
-            type="button"
-            (click)="customerForm().gender = 'Nam'"
-            [class]="
-              customerForm().gender === 'Nam'
-                ? 'bg-white dark:bg-slate-900 text-purple-600 font-bold shadow-sm'
-                : 'text-slate-500'
-            "
-            class="flex-1 py-1.5 text-xs rounded-xl font-bold transition-all"
-          >
-            Nam
-          </button>
-          <button
-            type="button"
-            (click)="customerForm().gender = 'Nữ'"
-            [class]="
-              customerForm().gender === 'Nữ'
-                ? 'bg-white dark:bg-slate-900 text-purple-600 font-bold shadow-sm'
-                : 'text-slate-500'
-            "
-            class="flex-1 py-1.5 text-xs rounded-xl font-bold transition-all"
-          >
-            Nữ
-          </button>
-        </div>
+        <app-tab-group
+          [options]="genderOptions"
+          [activeValue]="customerForm().gender"
+          (valueChange)="updateCustomerForm('gender', $event)"
+        ></app-tab-group>
       </div>
     </div>
   }

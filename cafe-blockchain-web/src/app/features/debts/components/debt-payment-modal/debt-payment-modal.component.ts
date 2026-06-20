@@ -5,7 +5,6 @@ import { StateService } from '@core/services/state.service';
 import { ApiService } from '@core/services/api.service';
 import { ModalRef, MODAL_DATA } from '@core/services/modal-ref';
 import { CustomDatePickerComponent } from '@shared/components/custom-date-picker/custom-date-picker.component';
-import { IconComponent } from '@shared/components/icon/icon.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
 
@@ -16,7 +15,6 @@ import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
     CommonModule,
     FormsModule,
     CustomDatePickerComponent,
-    IconComponent,
     ButtonComponent,
     VNDCurrencyPipe,
   ],
