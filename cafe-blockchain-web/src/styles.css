@@ -453,3 +453,37 @@ body.dark input[type='date']::-webkit-calendar-picker-indicator {
 .app-modal-footer {
   @apply flex items-center gap-3 pt-3 border-t border-slate-100 dark:border-slate-800 shrink-0;
 }
+
+/* ==================== HỆ THỐNG TOAST THÔNG BÁO (TOAST ANIMATION SYSTEM) ==================== */
+/* QUAN TRỌNG: Phải đặt trong styles.css (global) chứ không phải app.css (AppComponent-scoped)
+   vì ToastComponent là standalone component riêng, View Encapsulation sẽ chặn style từ app.css */
+
+/* Animation co ngắn thanh tiến trình Toast (từ full → 0%) */
+@keyframes toastProgress {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+.toast-progress-success {
+  animation: toastProgress 3000ms linear forwards;
+}
+
+.toast-progress-error {
+  animation: toastProgress 4000ms linear forwards;
+}
+
+/* Hiệu ứng slide-in cho toast */
+@keyframes toastSlideIn {
+  from {
+    transform: translateY(20px) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.toast-animate {
+  animation: toastSlideIn 250ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

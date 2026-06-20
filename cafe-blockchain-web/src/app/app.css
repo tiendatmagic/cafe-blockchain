@@ -21,32 +21,3 @@
   }
 }
 
-/* Animation co ngắn thanh tiến trình Toast */
-@keyframes toastProgress {
-  from { width: 100%; }
-  to { width: 0%; }
-}
-
-.toast-progress-success {
-  animation: toastProgress 3000ms linear forwards;
-}
-
-.toast-progress-error {
-  animation: toastProgress 4000ms linear forwards;
-}
-
-/* Hiệu ứng slide-in cho toast */
-@keyframes toastSlideIn {
-  from {
-    transform: translateY(-20px) scale(0.95);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-}
-
-.toast-animate {
-  animation: toastSlideIn 250ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
