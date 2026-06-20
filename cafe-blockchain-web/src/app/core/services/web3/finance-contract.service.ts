@@ -109,14 +109,17 @@ export class FinanceContractService extends BaseContractService {
 
       const explorerApiUrl = this.web3Service.getExplorerApiUrl(chainId);
       const apiKey = this.web3Service.explorerApiKey();
-      if (explorerApiUrl && apiKey && apiKey.trim() !== '') {
+      if (explorerApiUrl) {
         try {
           const cleanHexId = typeof finalTxId === 'string' ? finalTxId.replace('0x', '') : finalTxId.toString(16);
           const topic1 = '0x' + cleanHexId.padStart(64, '0');
           const topic0 = contract.interface.getEvent('TransactionRecorded')?.topicHash;
 
           if (topic0) {
-            const url = `${explorerApiUrl}?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${this.web3Service.financeContractAddress()}&topic0=${topic0}&topic1=${topic1}&apikey=${apiKey}`;
+            let url = `${explorerApiUrl}?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${this.web3Service.financeContractAddress()}&topic0=${topic0}&topic1=${topic1}`;
+            if (apiKey && apiKey.trim() !== '') {
+              url += `&apikey=${apiKey}`;
+            }
             const response = await fetch(url);
             const data = await response.json();
 
@@ -129,52 +132,6 @@ export class FinanceContractService extends BaseContractService {
         }
       }
 
-      const backupRpcUrls = this.web3Service.getBackupRpcUrls(chainId);
-      const rpcUrlsToTry = [this.web3Service.rpcUrl(), ...backupRpcUrls].filter(url => !!url);
-
-      let eventsFound: any[] = [];
-      for (const rpcUrl of rpcUrlsToTry) {
-        try {
-          const backupProvider = new JsonRpcProvider(rpcUrl);
-          const backupContract = new Contract(this.web3Service.financeContractAddress(), CAFE_WEB3_FINANCE_ABI, backupProvider);
-
-          const currentBlock = await backupProvider.getBlockNumber();
-          const currentTime = Math.floor(Date.now() / 1000);
-
-          const blockTime = this.web3Service.getAvgBlockTime(chainId);
-          const timeDiff = currentTime - orderTimestamp;
-          const blockDiff = Math.floor(timeDiff / blockTime);
-          const approxBlock = currentBlock - blockDiff;
-
-          const scanStart = Math.max(0, approxBlock - 5000);
-          const scanEnd = Math.min(currentBlock, approxBlock + 5000);
-          const chunkSize = 5000;
-
-          const filter = backupContract.filters['TransactionRecorded'](finalTxId);
-          let found = false;
-
-          for (let start = scanStart; start <= scanEnd; start += chunkSize) {
-            const end = Math.min(start + chunkSize - 1, scanEnd);
-            try {
-              const events = await backupContract.queryFilter(filter, start, end);
-              if (events.length > 0) {
-                eventsFound = events;
-                found = true;
-                break;
-              }
-            } catch {
-              continue;
-            }
-          }
-          if (found) break;
-        } catch {
-          continue;
-        }
-      }
-
-      if (eventsFound.length > 0) {
-        return eventsFound[0].transactionHash;
-      }
       return null;
     } catch (err) {
       console.error('[Blockchain] Loi lay txHash giao dich thu chi:', err);

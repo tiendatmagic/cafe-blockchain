@@ -61,6 +61,9 @@ Các biến dynamic này được biên dịch thành hệ màu chủ đạo c�
 *   **Cột & Lưới (Grid & Flex System)**:
     *   Sử dụng CSS Grid linh hoạt: `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6` để hiển thị danh sách thẻ sản phẩm hoặc các thẻ thống kê.
     *   Layout hai cột chính (Sidebar + Nội dung chính): Sidebar rộng `w-64` cố định ở Desktop, chuyển thành Drawer ẩn trên Mobile.
+*   **Bố cục biểu mẫu (Form Layout)**:
+    *   Tái cấu trúc các trường nhập liệu thành lưới 2 cột trên Desktop (`grid grid-cols-1 md:grid-cols-2 gap-6`) để tối ưu hóa không gian.
+    *   Các trường nội dung dài như **Mô tả cửa hàng** phải hiển thị full-width bằng class `md:col-span-2` để đảm bảo độ rộng rãi và dễ nhập liệu.
 
 ---
 
@@ -81,6 +84,7 @@ Các biến dynamic này được biên dịch thành hệ màu chủ đạo c�
     *   Sử dụng đường viền siêu mảnh, mờ để tạo cảm giác sang trọng (Glassmorphism).
     *   **Chế độ Sáng**: `border border-slate-200/50` hoặc `border-slate-200/40`.
     *   **Chế độ Tối**: `dark:border-slate-800/50` hoặc `dark:border-slate-800/40`.
+    *   **Quy tắc loại bỏ Border thừa (Flat design)**: Tránh lạm dụng các đường kẻ phân chia nằm ngang (`border-t`) giữa các tiểu mục hoặc khối cài đặt. Sử dụng khoảng cách trống đồng bộ (`space-y-6`) để tạo sự mạch lạc tự nhiên cho giao diện.
 
 ---
 
@@ -112,18 +116,28 @@ Các biến dynamic này được biên dịch thành hệ màu chủ đạo c�
 *   **Màu sắc**: Sử dụng tông màu tối nhẹ thống nhất `bg-black/40`.
 *   **Hiệu ứng mờ (Blur)**: Tuyệt đối không sử dụng các hiệu ứng làm mờ nền (loại bỏ hoàn toàn các class `backdrop-blur-*`). Điều này giúp giao diện trở nên đơn giản, nhất quán và không bị phân tán tài nguyên xử lý đồ họa trên các thiết bị cấu hình yếu.
 
-### 6.3. Nút bấm (Buttons)
+### 6.3. Kiến trúc Modal Động & Quy tắc Lược bỏ Animation
+Để tối ưu hóa tốc độ tải trang, đơn giản hóa DOM và cải thiện trải nghiệm người dùng:
+*   **Kiến trúc Dynamic Modal**: Tất cả modal phải được thiết kế và gọi động thông qua `ModalService` và component wrapper (`modal-wrapper.component`), loại bỏ hoàn toàn các thẻ HTML modal tĩnh nhúng cứng trong các module.
+*   **Kích thước Modal Chi tiết**: Sử dụng tham số `size="5xl"` hoặc `size="4xl"` (`max-w-4xl` hoặc `max-w-5xl`) cho các modal nhiều thông tin (như Chi tiết đơn hàng) để giữ bố cục 2 cột song song không bị nén dọc trên Desktop.
+*   **Chính sách không animation (No-Animation Policy)**: Loại bỏ hoàn toàn các class hiệu ứng chuyển động (`animate-in`, `fade-in`, `zoom-in-95`, `duration-150`, `duration-200`...) trên phần content modal. Modal phải hiển thị tức thì ngay khi được gọi để tạo phản hồi nhanh nhất.
+
+### 6.4. Nút bấm (Buttons)
 *   **Nút chính (Primary Button)**: Sử dụng gradient chuyển màu từ màu chủ đạo sang màu phụ trợ:
     *   `bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] text-white font-extrabold`
     *   Có bóng đổ màu tương ứng: `shadow-md shadow-[var(--dynamic-primary)]/20`
 *   **Nút phụ (Secondary/Outline Button)**: Nền trong suốt hoặc mờ, viền màu chủ đạo mảnh:
     *   `bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] border border-[var(--dynamic-primary)]/15`
 
-### 6.4. Bộ chọn ngày cao cấp (Premium Date Pickers)
+### 6.5. Bộ chọn nhóm / Tab Group cao cấp (`<app-tab-group>`)
+*   Sử dụng component `<app-tab-group>` dùng chung của hệ thống cho tất cả các giao diện nút lựa chọn/toggle (như chọn Loại khách hàng, chọn Giới tính, chọn Trạng thái...).
+*   Loại bỏ các nút bấm toggle thủ công tự chế bằng div để đảm bảo tính đồng nhất về kích thước, padding, font-weight và màu sắc kích hoạt (active).
+
+### 6.6. Bộ chọn ngày cao cấp (Premium Date Pickers)
 *   Không sử dụng giao diện lịch mặc định thô của trình duyệt.
 *   Thiết kế khung bọc có icon Lịch (`SVG`), bo góc `rounded-xl`, viền mảnh. Khi click vào sẽ hiển thị lịch động đồng bộ màu sắc thương hiệu.
 
-### 6.5. Bộ tải khung giả lập (Skeleton Loaders)
+### 6.7. Bộ tải khung giả lập (Skeleton Loaders)
 *   Sử dụng component dùng chung `<app-skeleton-loader>` hỗ trợ 5 kiểu bố cục:
     *   `dashboard`: Giả lập các thẻ thống kê số liệu và khung biểu đồ.
     *   `reports`: Giả lập cấu trúc báo cáo chi tiết bao gồm biểu đồ tròn conic-gradient và biểu đồ cột.
@@ -132,18 +146,25 @@ Các biến dynamic này được biên dịch thành hệ màu chủ đạo c�
     *   `form`: Giả lập các ô nhập liệu cấu hình.
 *   Hiệu ứng chuyển động quét mượt mà: `animate-pulse-slow` (chu kỳ xung mạch 3 giây).
 
-### 6.6. Biểu tượng (Icons)
+### 6.8. Biểu tượng (Icons)
 *   **Quy định nghiêm ngặt**: Không sử dụng emoji thô (như ☕, 🛒, 💵, 🏦, v.v.).
 *   **Thay thế**: Sử dụng 100% các biểu tượng vector **inline SVG** có màu sắc đồng bộ (`text-[var(--dynamic-primary)]` hoặc `text-slate-400`).
 
-### 6.7. Chuyển đổi giao diện (Theme Toggler)
+### 6.9. Chuyển đổi giao diện (Theme Toggler)
 *   Bộ chuyển đổi 3 vị trí (Pill theme toggler 3-position) hỗ trợ: **Sáng (Light) / Tối (Dark) / Tự động (Auto)**.
 *   Được đặt cố định ở góc dưới cùng của Sidebar điều hướng.
 
-### 6.8. Trục Timeline Lịch sử Công nợ (Sổ nợ)
+### 6.10. Trục Timeline Lịch sử Công nợ (Sổ nợ)
 *   **Bố cục**: Sử dụng container cha có padding-left `pl-7` (28px) và đường viền trái `border-l-2` làm trục vẽ.
 *   **Chấm tròn hiển thị**: Chấm tròn có đường kính `w-6.5` (26px, bán kính 13px). Để tâm của chấm tròn nằm chính xác trên trục vẽ, chấm tròn được định vị `absolute` với class `-left-[41px]` (được tính bằng `pl-7` + bán kính `13px` = 41px dịch về phía trái).
 
+### 6.11. Cấu hình Toast Alert Progress Bar (Global Scope Rule)
+*   Tất cả mã CSS liên quan đến hoạt ảnh Toast (`toastProgress`, `toastSlideIn`, `.toast-progress-success`, `.toast-animate`) phải được cấu hình hoàn toàn trong tệp phong cách toàn cục `styles.css`.
+*   Tránh đưa các class này vào tệp styles nội bộ (`app.css` hoặc các component-scoped stylesheet) nhằm phá vỡ cơ chế View Encapsulation của Angular, giúp hoạt ảnh tiến trình thanh Toast hoạt động chính xác trên mọi component.
+
+### 6.12. Angular Custom Component Host Display (CRITICAL)
+*   Tất cả các Angular custom component độc lập (như `app-custom-switch`, `app-custom-select`, `app-custom-date-picker`...) phải cấu hình rõ ràng `:host { display: block; }` trong tệp CSS tương ứng.
+*   Thiết lập này giúp trình duyệt không hiểu nhầm component là `display: inline` mặc định, từ đó đảm bảo các class margin/padding dọc của Tailwind hoạt động chính xác, ngăn chặn hiện tượng dính chữ hoặc dính nhãn biểu mẫu kề cận.
 
 ---
 
