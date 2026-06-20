@@ -8,7 +8,7 @@ use Illuminate\Support\Collection;
 
 class EloquentTransactionRepository implements TransactionRepositoryInterface
 {
-    public function find(int $id): ?Transaction
+    public function find(string $id): ?Transaction
     {
         return Transaction::find($id);
     }

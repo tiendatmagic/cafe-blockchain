@@ -10,7 +10,7 @@ interface TransactionRepositoryInterface
     /**
      * Tìm giao dịch thu chi theo ID
      */
-    public function find(int $id): ?Transaction;
+    public function find(string $id): ?Transaction;
 
     /**
      * Tìm giao dịch theo tx hash
