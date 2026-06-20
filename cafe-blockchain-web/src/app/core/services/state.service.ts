@@ -116,6 +116,37 @@ export class StateService {
   public readonly subscriptionStatus = signal<string>('active');
   public readonly planFeatures = signal<any>(null);
 
+  // Theo dõi URL route hiện tại
+  public readonly currentUrl = signal<string>('');
+
+  // Trạng thái đã xác thực đăng nhập backend
+  public readonly isAuthLoggedIn = signal<boolean>(false);
+
+  // Xác định xem trang hiện tại có phải là trang công khai hay không
+  public readonly isPublicLayout = computed(() => {
+    const url = this.currentUrl();
+    return url.includes('/mobile-sign') || 
+           url.includes('/blockchain-explorer') || 
+           url.includes('/store/') || 
+           url.includes('/claim-points') || 
+           url.includes('/marketplace');
+  });
+
+  // Xác định xem gói thuê bao có bị chặn hay không
+  public readonly isSubscriptionBlocked = computed(() => {
+    if (this.isPublicLayout()) return false;
+    if (!this.web3Service.walletConnected()) return false;
+    if (this.isSuperAdmin()) return false;
+    
+    if (this.subscriptionStatus() === 'suspended') return true;
+    
+    const expiresAt = this.subscriptionExpiresAt();
+    if (expiresAt) {
+      return new Date().getTime() > new Date(expiresAt).getTime();
+    }
+    return false;
+  });
+
   // Trạng thái modal chặn và nâng cấp gói cước
   public readonly isUpgradeModalOpen = signal<boolean>(false);
   public readonly upgradeModalStep = signal<number>(1);
@@ -274,6 +305,10 @@ export class StateService {
 
     // Khôi phục vai trò, quyền và gói cước từ localStorage
     if (typeof window !== 'undefined') {
+      this.currentUrl.set(this.router.url);
+      const isLoggedIn = localStorage.getItem('auth_logged_in') === 'true';
+      this.isAuthLoggedIn.set(isLoggedIn);
+
       const savedRole = localStorage.getItem('auth_role');
       const savedPermissions = localStorage.getItem('auth_permissions');
       const savedIsSuperAdmin = localStorage.getItem('auth_is_super_admin');
@@ -339,6 +374,14 @@ export class StateService {
     effect(() => {
       if (this.web3Service.walletConnected()) {
         untracked(() => {
+          // Bổ sung chốt chặn API nếu thuê bao bị khóa!
+          if (this.isSubscriptionBlocked()) {
+            console.warn('[StateService] Gói thuê bao đã hết hạn! Bỏ qua gọi API khởi tạo ví.');
+            this.isInitialLoading.set(false);
+            this.syncSubscriptionFromBackend();
+            return;
+          }
+
           this.isInitialLoading.set(true);
 
           const settings$ = this.hasPermission('settings')
@@ -415,14 +458,18 @@ export class StateService {
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
       this.isInitialSyncDone = true;
-      this.syncTabWithUrl(event.urlAfterRedirects || event.url);
+      const url = event.urlAfterRedirects || event.url;
+      this.currentUrl.set(url);
+      this.syncTabWithUrl(url);
     });
 
     // Cơ chế fallback đồng bộ tab ban đầu
     setTimeout(() => {
       if (!this.isInitialSyncDone) {
         this.isInitialSyncDone = true;
-        this.syncTabWithUrl(this.router.url);
+        const url = this.router.url;
+        this.currentUrl.set(url);
+        this.syncTabWithUrl(url);
       }
     }, 200);
 
@@ -571,6 +618,7 @@ export class StateService {
 
   // Refresh danh sách thực đơn
   public refreshProducts() {
+    if (this.isSubscriptionBlocked()) return;
     this.productStore.refreshProducts(
       this.hasPermission('pos') || this.hasPermission('menu') || this.hasPermission('inventory')
     );
@@ -578,6 +626,7 @@ export class StateService {
 
   // Refresh danh sách đơn hàng
   public refreshOrders(statusFilter: string = 'all', blockchainFilter: string = 'all') {
+    if (this.isSubscriptionBlocked()) return;
     if (!this.web3Service.walletConnected()) return;
     if (!this.hasPermission('pos') && !this.hasPermission('orders')) return;
     this.orderStore.refreshOrders(statusFilter, blockchainFilter);
@@ -585,6 +634,7 @@ export class StateService {
 
   // Refresh dữ liệu dashboard
   public refreshDashboard(force: boolean = false) {
+    if (this.isSubscriptionBlocked()) return;
     this.dashboardStore.refreshDashboard(this.hasPermission('dashboard'), force);
   }
 
@@ -641,6 +691,7 @@ export class StateService {
 
   // Refresh cấu hình + đồng thời sync thông tin subscription từ backend
   public loadSettings() {
+    if (this.isSubscriptionBlocked()) return;
     this.settingStore.loadSettings(this.hasPermission('settings'));
     if (this.web3Service.walletConnected()) {
       this.syncSubscriptionFromBackend();
@@ -694,6 +745,7 @@ export class StateService {
 
   // Refresh danh sách khách hàng
   public refreshCustomers(force: boolean = false) {
+    if (this.isSubscriptionBlocked()) return;
     this.customerStore.refreshCustomers(
       this.hasPermission('pos') || this.hasPermission('customers') || this.hasPermission('reports'),
       force
@@ -702,16 +754,19 @@ export class StateService {
 
   // Refresh danh sách giao dịch tài chính
   public refreshTransactions(typeFilter: string = 'all') {
+    if (this.isSubscriptionBlocked()) return;
     this.transactionStore.refreshTransactions(this.hasPermission('financials'), typeFilter);
   }
 
   // Refresh danh sách phiếu kho
   public refreshInventory(typeFilter: string = 'all') {
+    if (this.isSubscriptionBlocked()) return;
     this.inventoryStore.refreshInventory(this.hasPermission('inventory'), typeFilter);
   }
 
   // Refresh sơ đồ bàn ăn và khu vực
   public refreshTablesAndAreas() {
+    if (this.isSubscriptionBlocked()) return;
     this.tableStore.refreshTablesAndAreas(this.hasPermission('pos') || this.hasPermission('tables'));
   }
 
@@ -733,6 +788,7 @@ export class StateService {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('auth_address');
       localStorage.removeItem('auth_logged_in');
+      this.isAuthLoggedIn.set(false);
       localStorage.removeItem('auth_role');
       localStorage.removeItem('auth_permissions');
       localStorage.removeItem('auth_is_super_admin');
@@ -830,6 +886,11 @@ export class StateService {
       this.isMobileMenuOpen.set(false);
     }
 
+    if (this.isSubscriptionBlocked()) {
+      console.warn(`[StateService] Gói thuê bao đã hết hạn! Chặn tải dữ liệu tab nghiệp vụ: ${tab}`);
+      return;
+    }
+
     if (tab === 'dashboard') {
       this.refreshDashboard(force);
     } else if (tab === 'pos') {
@@ -866,6 +927,7 @@ export class StateService {
 
   // Refresh danh sách nợ khách hàng
   public refreshDebts(searchFilter: string = '', statusFilter: string = 'all') {
+    if (this.isSubscriptionBlocked()) return;
     this.debtStore.refreshDebts(this.hasPermission('debts'), searchFilter, statusFilter);
   }
 
@@ -876,6 +938,7 @@ export class StateService {
 
   // Refresh danh sách nhân viên và vai trò
   public refreshStaffsAndRoles() {
+    if (this.isSubscriptionBlocked()) return;
     this.staffStore.refreshStaffsAndRoles(this.hasPermission('staffs'));
   }
 
@@ -895,6 +958,7 @@ export class StateService {
 
   // --- Quản lý Ca trực ---
   public refreshCurrentShift(onSuccess?: (shift: any) => void) {
+    if (this.isSubscriptionBlocked()) return;
     this.shiftStore.refreshCurrentShift(
       this.hasPermission('shifts') && this.hasFeature('enable_shifts'),
       onSuccess
@@ -902,6 +966,7 @@ export class StateService {
   }
 
   public refreshShifts() {
+    if (this.isSubscriptionBlocked()) return;
     this.shiftStore.refreshShifts(this.hasPermission('shifts') && this.hasFeature('enable_shifts'));
   }
 
@@ -1044,6 +1109,7 @@ export class StateService {
                   if (typeof window !== 'undefined') {
                     localStorage.setItem('auth_address', address);
                     localStorage.setItem('auth_logged_in', 'true');
+                    this.isAuthLoggedIn.set(true);
                     localStorage.setItem('auth_is_super_admin', verifyRes.is_super_admin ? 'true' : 'false');
                     this.isSuperAdmin.set(!!verifyRes.is_super_admin);
 

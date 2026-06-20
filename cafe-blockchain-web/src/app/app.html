@@ -22,27 +22,29 @@
 
 @if (!stateService.isInitialLoading() || isPublicLayout) {
   <!-- CONTAINER CHÍNH -->
-  @if (!isSubscriptionBlocked()) {
-    <div [class]="containerClass" [class.pt-[56px]]="isWrongChain && !isPublicLayout">
+  <div [class]="containerClass" [class.pt-[56px]]="isWrongChain && !isPublicLayout">
+    @if (!isPublicLayout && !isSubscriptionBlocked()) {
+      <!-- Sidebar Menu bên trái -->
+      <app-sidebar></app-sidebar>
+    }
+
+    <!-- Cột nội dung bên phải hiển thị động -->
+    <main
+      [class]="
+        isPublicLayout
+          ? 'w-full min-h-screen relative'
+          : 'flex-1 flex flex-col min-w-0 overflow-y-auto relative h-screen'
+      "
+    >
       @if (!isPublicLayout) {
-        <!-- Sidebar Menu bên trái -->
-        <app-sidebar></app-sidebar>
+        <app-desktop-header></app-desktop-header>
+      } @else if (isCustomerWeb3Route) {
+        <app-web3-public-header></app-web3-public-header>
       }
 
-      <!-- Cột nội dung bên phải hiển thị động -->
-      <main
-        [class]="
-          isPublicLayout
-            ? 'w-full min-h-screen relative'
-            : 'flex-1 flex flex-col min-w-0 overflow-y-auto relative h-screen'
-        "
-      >
-        @if (!isPublicLayout) {
-          <app-desktop-header></app-desktop-header>
-        } @else if (isCustomerWeb3Route) {
-          <app-web3-public-header></app-web3-public-header>
-        }
-
+      @if (isSubscriptionBlocked()) {
+        <app-subscription-blocked class="flex-1 flex flex-col min-h-0 relative"></app-subscription-blocked>
+      } @else {
         @if (stateService.blockedFeatureInRoute()) {
           <div class="flex-1 flex flex-col items-center justify-center p-6 bg-slate-50 dark:bg-slate-950">
             <app-feature-blocked
@@ -54,9 +56,9 @@
         } @else {
           <router-outlet></router-outlet>
         }
-      </main>
-    </div>
-  }
+      }
+    </main>
+  </div>
 }
 
 <!-- CÁC LỚP PHỦ VÀ MODAL WEB3 TOÀN CỤC -->
@@ -64,8 +66,3 @@
 
 <!-- CÁC MODAL QUẢN LÝ CA TRỰC -->
 <app-shift-modals></app-shift-modals>
-
-<!-- MÀN HÌNH KHÓA THUÊ BAO SAAS -->
-@if (isSubscriptionBlocked()) {
-  <app-subscription-blocked></app-subscription-blocked>
-}

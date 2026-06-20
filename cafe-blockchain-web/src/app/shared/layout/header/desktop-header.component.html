@@ -83,7 +83,7 @@
     </div>
 
     <!-- Dropdown Quản lý Ca trực -->
-    @if (web3Service.walletConnected()) {
+    @if (stateService.isAuthLoggedIn() && !stateService.isSubscriptionBlocked() && stateService.hasFeature('enable_shifts')) {
       <div id="shift-dropdown-container" class="relative">
         <button
           type="button"

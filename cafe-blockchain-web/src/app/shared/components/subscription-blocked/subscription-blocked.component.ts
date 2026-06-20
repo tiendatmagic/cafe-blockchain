@@ -7,7 +7,7 @@ import { StateService } from '../../../core/services/state.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="fixed inset-0 z-[9980] flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+    <div class="flex-1 w-full flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-950 transition-colors duration-300 overflow-y-auto">
       <div class="w-full max-w-lg overflow-hidden border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl rounded-[15px] p-6 sm:p-8 text-center text-slate-800 dark:text-slate-100 relative">
         <!-- Glow Effect Background -->
         <div class="absolute -top-20 -left-20 w-40 h-40 bg-[var(--dynamic-primary)]/10 rounded-full blur-3xl"></div>
@@ -71,7 +71,10 @@ import { StateService } from '../../../core/services/state.service';
   `,
   styles: [`
     :host {
-      display: block;
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 0%;
+      min-height: 0;
     }
   `]
 })

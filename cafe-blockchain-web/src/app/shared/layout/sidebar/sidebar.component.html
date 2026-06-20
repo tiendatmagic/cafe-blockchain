@@ -461,12 +461,14 @@
     class="flex items-center justify-between bg-white dark:bg-slate-900 border-b border-slate-200/60 dark:border-slate-800/60 px-4 py-3 sticky top-0 z-40 transition-colors duration-300"
   >
     <div class="flex items-center gap-2.5">
-      <button
-        (click)="isMobileMenuOpen.set(!isMobileMenuOpen())"
-        class="text-slate-600 dark:text-slate-300 focus:outline-none p-1"
-      >
-        <app-icon name="hamburger" class="h-6 w-6" />
-      </button>
+      @if (!stateService.isSubscriptionBlocked()) {
+        <button
+          (click)="isMobileMenuOpen.set(!isMobileMenuOpen())"
+          class="text-slate-600 dark:text-slate-300 focus:outline-none p-1"
+        >
+          <app-icon name="hamburger" class="h-6 w-6" />
+        </button>
+      }
       <img
         src="/assets/logo.png"
         class="h-6.5 w-6.5 object-contain rounded-lg shrink-0 shadow-sm border border-purple-500/10"
@@ -533,7 +535,7 @@
       </div>
 
       <!-- Widget Ca trực trên Mobile -->
-      @if (web3Service.walletConnected()) {
+      @if (stateService.isAuthLoggedIn() && !stateService.isSubscriptionBlocked() && stateService.hasFeature('enable_shifts')) {
         <button
           type="button"
           (click)="handleMobileShiftClick()"

@@ -49,20 +49,7 @@ export class App implements OnInit, OnDestroy {
   }
 
   public get isPublicLayout(): boolean {
-    const isBrowser = typeof window !== 'undefined';
-    const path = isBrowser ? window.location.pathname : '';
-    const routerUrl = this.router.url;
-
-    return path.includes('/mobile-sign') || 
-           routerUrl.includes('/mobile-sign') || 
-           path.includes('/blockchain-explorer') ||
-           routerUrl.includes('/blockchain-explorer') ||
-           path.includes('/store/') ||
-           routerUrl.includes('/store/') ||
-           path.includes('/claim-points') ||
-           routerUrl.includes('/claim-points') ||
-           path.includes('/marketplace') ||
-           routerUrl.includes('/marketplace');
+    return this.stateService.isPublicLayout();
   }
 
   public get containerClass(): string {
@@ -99,17 +86,7 @@ export class App implements OnInit, OnDestroy {
   });
 
   public readonly isSubscriptionBlocked = computed(() => {
-    if (this.isPublicLayout) return false;
-    if (!this.web3Service.walletConnected()) return false;
-    if (this.stateService.isSuperAdmin()) return false;
-    
-    if (this.stateService.subscriptionStatus() === 'suspended') return true;
-    
-    const expiresAt = this.stateService.subscriptionExpiresAt();
-    if (expiresAt) {
-      return new Date().getTime() > new Date(expiresAt).getTime();
-    }
-    return false;
+    return this.stateService.isSubscriptionBlocked();
   });
 
   private routerSub?: any;
