@@ -486,22 +486,22 @@
               <!-- Doughnut Chart Rendered with CSS conic-gradient -->
               <div class="flex-1 flex items-center justify-center my-2 min-h-0">
                 <div
-                  class="w-32 h-32 rounded-full shadow-inner relative flex items-center justify-center transition-all duration-500 hover:scale-105"
+                  class="w-36 h-36 rounded-full shadow-inner relative flex items-center justify-center transition-all duration-500 hover:scale-105"
                   [style.background]="getConicGradient()"
                 >
                   <!-- Center circle to make it a Doughnut Chart -->
                   <div
-                    class="w-22 h-22 rounded-full bg-white dark:bg-slate-900 flex flex-col items-center justify-center shadow-md transition-colors duration-300"
+                    class="w-26 h-26 rounded-full bg-white dark:bg-slate-900 flex flex-col items-center justify-center shadow-md transition-colors duration-300"
                   >
                     <span
-                      class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider"
+                      class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider"
                       >Tổng Đơn</span
                     >
                     <span
-                      class="text-base font-black text-slate-800 dark:text-white leading-none mt-0.5"
+                      class="text-lg font-black text-slate-800 dark:text-white leading-none mt-0.5"
                       >{{ getTotalPaymentOrders() }}</span
                     >
-                    <span class="text-[9px] font-bold text-slate-500 dark:text-slate-400 mt-1">{{
+                    <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-1">{{
                       getTotalRevenue() | vnd
                     }}</span>
                   </div>
@@ -915,7 +915,7 @@
 
                 <div class="flex-1 flex items-center justify-center gap-6">
                   <!-- Ring Chart đại diện bàn đang dùng/trống -->
-                  <div class="relative w-28 h-28 flex items-center justify-center">
+                  <div class="relative w-36 h-36 flex items-center justify-center shrink-0">
                     <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                       <!-- Vòng nền trống -->
                       <circle
@@ -947,12 +947,12 @@
                       />
                     </svg>
                     <div class="absolute flex flex-col items-center justify-center">
-                      <span class="text-sm font-black text-slate-800 dark:text-white">
+                      <span class="text-lg font-black text-slate-800 dark:text-white">
                         {{ dashboardData()?.tables_occupancy?.occupied }}/{{
                           dashboardData()?.tables_occupancy?.total
                         }}
                       </span>
-                      <span class="text-[9px] font-bold text-slate-400 uppercase">Bàn dùng</span>
+                      <span class="text-[10px] font-bold text-slate-400 uppercase">Bàn dùng</span>
                     </div>
                   </div>
 
