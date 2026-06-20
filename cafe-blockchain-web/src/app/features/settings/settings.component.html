@@ -90,111 +90,219 @@
             </div>
 
             <div class="space-y-5">
-              <!-- Tên quán -->
-              <div class="space-y-1.5">
-                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-                  >Tên cửa hàng <span class="text-rose-500">*</span></label
-                >
-                <input
-                  type="text"
-                  [ngModel]="configForm().store_name"
-                  (ngModelChange)="updateConfigForm('store_name', $event)"
-                  [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
-                  class="form-input font-semibold"
-                  placeholder="Nhập tên cửa hàng"
-                />
-              </div>
-
-              <!-- Số điện thoại -->
-              <div class="space-y-1.5">
-                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-                  >Số điện thoại <span class="text-rose-500">*</span></label
-                >
-                <input
-                  type="text"
-                  [ngModel]="configForm().store_phone"
-                  (ngModelChange)="onPhoneChange($event)"
-                  [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
-                  class="form-input font-semibold"
-                  placeholder="Nhập số điện thoại (chỉ nhập số)"
-                />
-                @if (phoneError()) {
-                  <span class="text-xs font-bold text-rose-500 mt-1 block">{{ phoneError() }}</span>
-                }
-              </div>
-
-              <!-- Giờ mở cửa (Datetime range) -->
-              <div class="space-y-1.5">
-                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-                  >Giờ hoạt động (Giờ mở cửa & Đóng cửa)</label
-                >
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div class="space-y-1">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide block"
-                      >Thời gian mở cửa</span
+              <!-- Bố cục lưới 2 cột cho thông tin quán trên Desktop -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Cột trái: Tên cửa hàng, Số điện thoại, Giờ hoạt động -->
+                <div class="space-y-5">
+                  <!-- Tên quán -->
+                  <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                      >Tên cửa hàng <span class="text-rose-500">*</span></label
                     >
                     <input
-                      type="datetime-local"
-                      [ngModel]="storeOpenDateTime()"
-                      (ngModelChange)="onOpenDateTimeChange($event)"
+                      type="text"
+                      [ngModel]="configForm().store_name"
+                      (ngModelChange)="updateConfigForm('store_name', $event)"
                       [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
                       class="form-input font-semibold"
+                      placeholder="Nhập tên cửa hàng"
                     />
                   </div>
-                  <div class="space-y-1">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide block"
-                      >Thời gian đóng cửa</span
+
+                  <!-- Số điện thoại -->
+                  <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                      >Số điện thoại <span class="text-rose-500">*</span></label
                     >
                     <input
-                      type="datetime-local"
-                      [ngModel]="storeCloseDateTime()"
-                      (ngModelChange)="onCloseDateTimeChange($event)"
+                      type="text"
+                      [ngModel]="configForm().store_phone"
+                      (ngModelChange)="onPhoneChange($event)"
                       [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
                       class="form-input font-semibold"
+                      placeholder="Nhập số điện thoại (chỉ nhập số)"
                     />
+                    @if (phoneError()) {
+                      <span class="text-xs font-bold text-rose-500 mt-1 block">{{ phoneError() }}</span>
+                    }
+                  </div>
+
+                  <!-- Giờ hoạt động Custom Time Range Picker -->
+                  <div class="space-y-1.5 relative text-left" id="time-picker-container">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                      >Giờ hoạt động</label
+                    >
+                    <!-- Input trigger -->
+                    <div class="relative cursor-pointer" (click)="toggleTimePicker($event)">
+                      <input
+                        type="text"
+                        readonly
+                        [value]="configForm().store_opening_hours || '08:00 - 17:00'"
+                        [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                        class="form-input font-semibold cursor-pointer pr-10"
+                        placeholder="Chọn giờ hoạt động"
+                      />
+                      <div class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                        <app-icon name="clock" class="h-5 w-5" strokeWidth="2" />
+                      </div>
+                    </div>
+
+                    <!-- Dropdown Time Picker -->
+                    @if (isOpenTimePicker()) {
+                      <div
+                        class="absolute left-0 mt-2 w-full max-w-[500px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 shadow-2xl rounded-2xl p-4 z-[9999] transition-all duration-200"
+                      >
+                        <!-- Header hiển thị giờ đã chọn -->
+                        <div class="grid grid-cols-2 gap-4 pb-3 border-b border-slate-100 dark:border-slate-800/60 text-center font-bold">
+                          <div class="text-[var(--dynamic-primary)] text-sm">
+                            Mở cửa: {{ startHour() }}:{{ startMinute() }}
+                          </div>
+                          <div class="text-[var(--dynamic-primary)] text-sm">
+                            Đóng cửa: {{ endHour() }}:{{ endMinute() }}
+                          </div>
+                        </div>
+
+                        <!-- Layout grid chọn giờ/phút -->
+                        <div class="grid grid-cols-2 gap-4 pt-3">
+                          <!-- Bảng chọn Giờ mở cửa -->
+                          <div class="space-y-2 border-r border-slate-100 dark:border-slate-800/60 pr-2">
+                            <div class="text-[10px] font-black text-center text-slate-400 uppercase tracking-wider">
+                              Mở cửa
+                            </div>
+                            <div class="grid grid-cols-2 gap-1 text-center font-bold text-xs uppercase text-slate-400">
+                              <div>Giờ</div>
+                              <div>Phút</div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-1.5 h-[160px]">
+                              <!-- Cột chọn giờ mở -->
+                              <div class="overflow-y-auto max-h-full space-y-0.5 scrollbar-none">
+                                @for (h of hoursList; track h) {
+                                  <div
+                                    (click)="selectTimeValue('startHour', h)"
+                                    [class]="
+                                      'py-1 text-center text-xs font-bold rounded-lg cursor-pointer transition-all ' +
+                                      (startHour() === h
+                                        ? 'bg-[var(--dynamic-primary)] text-white'
+                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800')
+                                    "
+                                  >
+                                    {{ h }}
+                                  </div>
+                                }
+                              </div>
+                              <!-- Cột chọn phút mở -->
+                              <div class="overflow-y-auto max-h-full space-y-0.5 scrollbar-none">
+                                @for (m of minutesList; track m) {
+                                  <div
+                                    (click)="selectTimeValue('startMinute', m)"
+                                    [class]="
+                                      'py-1 text-center text-xs font-bold rounded-lg cursor-pointer transition-all ' +
+                                      (startMinute() === m
+                                        ? 'bg-[var(--dynamic-primary)] text-white'
+                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800')
+                                    "
+                                  >
+                                    {{ m }}
+                                  </div>
+                                }
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Bảng chọn Giờ đóng cửa -->
+                          <div class="space-y-2 pl-2">
+                            <div class="text-[10px] font-black text-center text-slate-400 uppercase tracking-wider">
+                              Đóng cửa
+                            </div>
+                            <div class="grid grid-cols-2 gap-1 text-center font-bold text-xs uppercase text-slate-400">
+                              <div>Giờ</div>
+                              <div>Phút</div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-1.5 h-[160px]">
+                              <!-- Cột chọn giờ đóng -->
+                              <div class="overflow-y-auto max-h-full space-y-0.5 scrollbar-none">
+                                @for (h of hoursList; track h) {
+                                  <div
+                                    (click)="selectTimeValue('endHour', h)"
+                                    [class]="
+                                      'py-1 text-center text-xs font-bold rounded-lg cursor-pointer transition-all ' +
+                                      (endHour() === h
+                                        ? 'bg-[var(--dynamic-primary)] text-white'
+                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800')
+                                    "
+                                  >
+                                    {{ h }}
+                                  </div>
+                                }
+                              </div>
+                              <!-- Cột chọn phút đóng -->
+                              <div class="overflow-y-auto max-h-full space-y-0.5 scrollbar-none">
+                                @for (m of minutesList; track m) {
+                                  <div
+                                    (click)="selectTimeValue('endMinute', m)"
+                                    [class]="
+                                      'py-1 text-center text-xs font-bold rounded-lg cursor-pointer transition-all ' +
+                                      (endMinute() === m
+                                        ? 'bg-[var(--dynamic-primary)] text-white'
+                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800')
+                                    "
+                                  >
+                                    {{ m }}
+                                  </div>
+                                }
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    }
+
+                    @if (dateTimeError()) {
+                      <span class="text-xs font-bold text-rose-500 mt-1 block">{{ dateTimeError() }}</span>
+                    }
                   </div>
                 </div>
-                @if (dateTimeError()) {
-                  <span class="text-xs font-bold text-rose-500 mt-1 block">{{ dateTimeError() }}</span>
-                }
-              </div>
 
-              <!-- Địa chỉ cửa hàng -->
-              <div class="space-y-1.5">
-                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-                  >Địa chỉ cửa hàng</label
-                >
-                <input
-                  type="text"
-                  [ngModel]="configForm().store_address"
-                  (ngModelChange)="updateConfigForm('store_address', $event)"
-                  [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
-                  class="form-input font-semibold"
-                  placeholder="Nhập địa chỉ cửa hàng"
-                />
-              </div>
+                <!-- Cột phải: Địa chỉ cửa hàng, Mô tả cửa hàng -->
+                <div class="space-y-5">
+                  <!-- Địa chỉ cửa hàng -->
+                  <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                      >Địa chỉ cửa hàng</label
+                    >
+                    <input
+                      type="text"
+                      [ngModel]="configForm().store_address"
+                      (ngModelChange)="updateConfigForm('store_address', $event)"
+                      [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                      class="form-input font-semibold"
+                      placeholder="Nhập địa chỉ cửa hàng"
+                    />
+                  </div>
 
-              <!-- Mô tả cửa hàng -->
-              <div class="space-y-1.5">
-                <div class="flex items-center justify-between">
-                  <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-                    >Mô tả cửa hàng</label
-                  >
-                  <span class="text-xs font-bold" [class]="descriptionWordCount() > 200 ? 'text-rose-500' : 'text-slate-400'">
-                    {{ descriptionWordCount() }}/200 chữ
-                  </span>
+                  <!-- Mô tả cửa hàng -->
+                  <div class="space-y-1.5">
+                    <div class="flex items-center justify-between">
+                      <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                        >Mô tả cửa hàng</label
+                      >
+                      <span class="text-xs font-bold" [class]="descriptionWordCount() > 200 ? 'text-rose-500' : 'text-slate-400'">
+                        {{ descriptionWordCount() }}/200 chữ
+                      </span>
+                    </div>
+                    <textarea
+                      rows="6"
+                      [ngModel]="configForm().store_description"
+                      (ngModelChange)="onDescriptionChange($event)"
+                      [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                      class="form-input font-semibold py-2.5 resize-none animate-none"
+                      placeholder="Nhập mô tả ngắn về cửa hàng (tối đa 200 chữ)..."
+                    ></textarea>
+                    @if (descriptionError()) {
+                      <span class="text-xs font-bold text-rose-500 mt-1 block">{{ descriptionError() }}</span>
+                    }
+                  </div>
                 </div>
-                <textarea
-                  rows="3"
-                  [ngModel]="configForm().store_description"
-                  (ngModelChange)="onDescriptionChange($event)"
-                  [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
-                  class="form-input font-semibold py-2.5 resize-none animate-none"
-                  placeholder="Nhập mô tả ngắn về cửa hàng (tối đa 200 chữ)..."
-                ></textarea>
-                @if (descriptionError()) {
-                  <span class="text-xs font-bold text-rose-500 mt-1 block">{{ descriptionError() }}</span>
-                }
               </div>
 
               <!-- Cho phép thanh toán Crypto -->
@@ -2384,67 +2492,55 @@
         </app-modal>
 
         <!-- MODAL XEM MÃ QR THANH TOÁN -->
-        @if (isQrModalOpen()) {
-          <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <!-- Backdrop -->
-            <div (click)="isQrModalOpen.set(false)" class="fixed inset-0 bg-black/40"></div>
+        <app-modal
+          [isOpen]="isQrModalOpen()"
+          title="Mã QR chuyển khoản"
+          (close)="isQrModalOpen.set(false)"
+          size="sm"
+        >
+          <div class="text-center flex flex-col items-center">
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-bold mb-5 font-mono">
+              {{ selectedPaymentForQr()?.name }} - {{ selectedPaymentForQr()?.account_number }}
+            </p>
 
-            <!-- Content -->
-            <div app-card class="relative max-w-sm w-full text-center flex flex-col items-center">
-              <!-- Close button -->
-              <button
-                (click)="isQrModalOpen.set(false)"
-                class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all"
-              >
-                <app-icon name="close" class="h-5 w-5" strokeWidth="2.5" />
-              </button>
+            <!-- QR Image -->
+            <div class="p-3 bg-white rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-md flex items-center justify-center w-56 h-56 shrink-0">
+              <img
+                [src]="getQrCodeUrl(selectedPaymentForQr())"
+                alt="QR Code"
+                class="w-full h-full object-contain rounded-lg"
+              />
+            </div>
 
-              <h4 class="text-base font-extrabold text-slate-900 dark:text-white uppercase tracking-wider mb-2">
-                Mã QR chuyển khoản
-              </h4>
-              <p class="text-xs text-slate-500 dark:text-slate-400 font-bold mb-5 font-mono">
-                {{ selectedPaymentForQr()?.name }} - {{ selectedPaymentForQr()?.account_number }}
-              </p>
+            <!-- Nút tải ảnh QR -->
+            <button
+              type="button"
+              (click)="downloadQrCode(selectedPaymentForQr())"
+              class="mt-3 btn-secondary text-xs py-1.5 px-4 rounded-xl flex items-center gap-1.5 font-bold border border-slate-200 dark:border-slate-800/60 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all text-slate-700 dark:text-slate-300"
+            >
+              <app-icon name="download" class="h-3.5 w-3.5" strokeWidth="2.5" />
+              <span>Tải ảnh QR</span>
+            </button>
 
-              <!-- QR Image -->
-              <div class="p-3 bg-white rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-md flex items-center justify-center w-56 h-56 shrink-0">
-                <img
-                  [src]="getQrCodeUrl(selectedPaymentForQr())"
-                  alt="QR Code"
-                  class="w-full h-full object-contain rounded-lg"
-                />
+            <!-- Chi tiết thông tin -->
+            <div class="w-full mt-5 p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800/40 text-left space-y-1.5">
+              <div class="flex justify-between text-xs">
+                <span class="text-slate-400 font-bold uppercase tracking-wider">Chủ tài khoản:</span>
+                <span class="font-extrabold text-slate-800 dark:text-white uppercase">{{ selectedPaymentForQr()?.account_holder }}</span>
               </div>
-
-              <!-- Nút tải ảnh QR -->
-              <button
-                type="button"
-                (click)="downloadQrCode(selectedPaymentForQr())"
-                class="mt-3 btn-secondary text-xs py-1.5 px-4 rounded-xl flex items-center gap-1.5 font-bold border border-slate-200 dark:border-slate-800/60 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all text-slate-700 dark:text-slate-300"
-              >
-                <app-icon name="download" class="h-3.5 w-3.5" strokeWidth="2.5" />
-                <span>Tải ảnh QR</span>
-              </button>
-
-              <!-- Chi tiết thông tin -->
-              <div class="w-full mt-5 p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800/40 text-left space-y-1.5">
-                <div class="flex justify-between text-xs">
-                  <span class="text-slate-400 font-bold uppercase tracking-wider">Chủ tài khoản:</span>
-                  <span class="font-extrabold text-slate-800 dark:text-white uppercase">{{ selectedPaymentForQr()?.account_holder }}</span>
-                </div>
-                <div class="flex justify-between text-xs">
-                  <span class="text-slate-400 font-bold uppercase tracking-wider">Số tài khoản:</span>
-                  <span class="font-bold text-slate-800 dark:text-white font-mono">{{ selectedPaymentForQr()?.account_number }}</span>
-                </div>
-                @if (selectedPaymentForQr()?.type === 'bank') {
-                  <div class="flex justify-between text-xs">
-                    <span class="text-slate-400 font-bold uppercase tracking-wider">Ngân hàng:</span>
-                    <span class="font-extrabold text-slate-800 dark:text-white">{{ selectedPaymentForQr()?.name }} ({{ selectedPaymentForQr()?.bank_code }})</span>
-                  </div>
-                }
+              <div class="flex justify-between text-xs">
+                <span class="text-slate-400 font-bold uppercase tracking-wider">Số tài khoản:</span>
+                <span class="font-bold text-slate-800 dark:text-white font-mono">{{ selectedPaymentForQr()?.account_number }}</span>
               </div>
+              @if (selectedPaymentForQr()?.type === 'bank') {
+                <div class="flex justify-between text-xs">
+                  <span class="text-slate-400 font-bold uppercase tracking-wider">Ngân hàng:</span>
+                  <span class="font-extrabold text-slate-800 dark:text-white">{{ selectedPaymentForQr()?.name }} ({{ selectedPaymentForQr()?.bank_code }})</span>
+                </div>
+              }
             </div>
           </div>
-        }
+        </app-modal>
 
         <!-- Modal Confirm: Xóa Phương thức thanh toán -->
         <app-confirm-modal

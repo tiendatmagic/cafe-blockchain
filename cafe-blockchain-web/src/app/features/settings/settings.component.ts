@@ -8,6 +8,7 @@ import {
   effect,
   untracked,
   ChangeDetectionStrategy,
+  HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -82,15 +83,25 @@ export class SettingsComponent implements OnInit {
           });
           this.syncSelectedCategories();
 
-          // Parse giờ mở cửa hoạt động
+          // Parse giờ mở cửa hoạt động (HH:mm - HH:mm)
           const openingHours = settings.store_opening_hours || '';
-          if (openingHours && openingHours.includes(';')) {
-            const parts = openingHours.split(';');
-            this.storeOpenDateTime.set(parts[0]);
-            this.storeCloseDateTime.set(parts[1]);
+          if (openingHours && openingHours.includes(' - ')) {
+            const parts = openingHours.split(' - ');
+            if (parts[0] && parts[0].includes(':')) {
+              const startParts = parts[0].split(':');
+              this.startHour.set(startParts[0] || '08');
+              this.startMinute.set(startParts[1] || '00');
+            }
+            if (parts[1] && parts[1].includes(':')) {
+              const endParts = parts[1].split(':');
+              this.endHour.set(endParts[0] || '17');
+              this.endMinute.set(endParts[1] || '00');
+            }
           } else {
-            this.storeOpenDateTime.set('');
-            this.storeCloseDateTime.set('');
+            this.startHour.set('08');
+            this.startMinute.set('00');
+            this.endHour.set('17');
+            this.endMinute.set('00');
           }
 
           // Reset lỗi
@@ -128,12 +139,19 @@ export class SettingsComponent implements OnInit {
   ];
 
   // Các signals quản lý lỗi và đếm số từ
-  public readonly storeOpenDateTime = signal<string>('');
-  public readonly storeCloseDateTime = signal<string>('');
   public readonly phoneError = signal<string>('');
   public readonly dateTimeError = signal<string>('');
   public readonly descriptionError = signal<string>('');
   public readonly descriptionWordCount = signal<number>(0);
+
+  // Custom Time Picker Signals
+  public readonly hoursList: string[] = Array.from({ length: 24 }, (_, i) => i < 10 ? '0' + i : '' + i);
+  public readonly minutesList: string[] = Array.from({ length: 60 }, (_, i) => i < 10 ? '0' + i : '' + i);
+  public readonly isOpenTimePicker = signal<boolean>(false);
+  public readonly startHour = signal<string>('08');
+  public readonly startMinute = signal<string>('00');
+  public readonly endHour = signal<string>('17');
+  public readonly endMinute = signal<string>('00');
 
   // Form Cấu hình hệ thống
   public readonly configForm = signal<any>({
@@ -187,36 +205,48 @@ export class SettingsComponent implements OnInit {
     }
   }
 
-  // Cập nhật giờ mở cửa
-  public onOpenDateTimeChange(value: string) {
-    this.storeOpenDateTime.set(value);
+  // Toggle time picker dropdown
+  public toggleTimePicker(event: MouseEvent) {
+    event.stopPropagation();
+    if (!this.web3Service.walletConnected() || !this.web3Service.isOwnerContract()) return;
+    this.isOpenTimePicker.update(v => !v);
+  }
+
+  // Chọn giá trị giờ hoặc phút trong bộ chọn custom
+  public selectTimeValue(type: 'startHour' | 'startMinute' | 'endHour' | 'endMinute', value: string) {
+    if (type === 'startHour') this.startHour.set(value);
+    if (type === 'startMinute') this.startMinute.set(value);
+    if (type === 'endHour') this.endHour.set(value);
+    if (type === 'endMinute') this.endMinute.set(value);
+
     this.updateOpeningHoursRange();
   }
 
-  // Cập nhật giờ đóng cửa
-  public onCloseDateTimeChange(value: string) {
-    this.storeCloseDateTime.set(value);
-    this.updateOpeningHoursRange();
-  }
-
-  // Hàm ghép và validate khoảng ngày giờ
+  // Hàm ghép và validate khoảng thời gian HH:mm - HH:mm
   private updateOpeningHoursRange() {
-    const open = this.storeOpenDateTime();
-    const close = this.storeCloseDateTime();
+    const sh = this.startHour();
+    const sm = this.startMinute();
+    const eh = this.endHour();
+    const em = this.endMinute();
 
-    if (open && close) {
-      if (new Date(close) <= new Date(open)) {
-        this.dateTimeError.set('Thời gian đóng cửa phải sau thời gian mở cửa.');
-      } else {
-        this.dateTimeError.set('');
-      }
-      this.updateConfigForm('store_opening_hours', `${open};${close}`);
-    } else if (!open && !close) {
-      this.dateTimeError.set('');
-      this.updateConfigForm('store_opening_hours', '');
+    const startVal = parseInt(sh) * 60 + parseInt(sm);
+    const endVal = parseInt(eh) * 60 + parseInt(em);
+
+    if (endVal <= startVal) {
+      this.dateTimeError.set('Thời gian đóng cửa phải sau thời gian mở cửa.');
     } else {
-      this.dateTimeError.set('Vui lòng chọn đầy đủ cả thời gian mở cửa và đóng cửa.');
-      this.updateConfigForm('store_opening_hours', '');
+      this.dateTimeError.set('');
+    }
+
+    this.updateConfigForm('store_opening_hours', `${sh}:${sm} - ${eh}:${em}`);
+  }
+
+  // Lắng nghe sự kiện click ra ngoài để tự động đóng dropdown bộ chọn giờ
+  @HostListener('document:click', ['$event'])
+  public onClickOutsideTimePicker(event: MouseEvent): void {
+    const timePickerContainer = document.getElementById('time-picker-container');
+    if (timePickerContainer && !timePickerContainer.contains(event.target as Node)) {
+      this.isOpenTimePicker.set(false);
     }
   }
 
