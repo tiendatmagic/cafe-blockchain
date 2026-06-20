@@ -21,14 +21,39 @@
   </div>
 
   <!-- Navigation Menu -->
-  <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto">
+  <nav #navEl class="relative flex-1 p-4 space-y-1.5 overflow-y-auto" [class.sidebar-no-slide]="!useSlidingEffect()">
+    <!-- 
+      [NOTE - LỰA CHỌN HIỆU ỨNG SIDEBAR]:
+      Dự án hỗ trợ 2 loại hiệu ứng. Hiện tại đang kích hoạt HIỆU ỨNG MỚI (Sliding Background).
+      
+      - CẤU HÌNH HIỆU ỨNG MỚI (SLIDING BACKGROUND):
+        + Kích hoạt thẻ <div [style.top]="sliderTop()"...> ở dưới làm nền trượt.
+        + Các mục button/a sử dụng class có "relative z-10" để nổi chữ lên trên.
+        + routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+        
+      - CẤU HÌNH HIỆU ỨNG CŨ (MÀU TĨNH & HOVER XÁM):
+        + Xóa/comment thẻ Sliding Background Indicator ở dưới.
+        + Các mục button/a bỏ class "relative z-10" và thêm class "hover:bg-slate-100 dark:hover:bg-slate-800/50".
+        + routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
+    -->
+    
+    <!-- Sliding Background Indicator (Chỉ hiển thị khi bật hiệu ứng trượt) -->
+    @if (useSlidingEffect()) {
+      <div
+        class="absolute left-4 right-4 bg-purple-50 dark:bg-purple-950/40 rounded-2xl transition-all duration-300 ease-out z-0 pointer-events-none"
+        [style.top]="sliderTop()"
+        [style.height]="sliderHeight()"
+        [style.opacity]="sliderOpacity()"
+      ></div>
+    }
+
     @if (stateService.hasPermission('dashboard')) {
       <button
         [routerLink]="stateService.hasFeature('enable_dashboard') ? '/dashboard' : null"
         (click)="handleTabClick('enable_dashboard', 'Tổng quan', $event)"
-        routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
+        routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
         [routerLinkActiveOptions]="{ exact: true }"
-        class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
+        class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
       >
         <app-icon
           name="dashboard"
@@ -57,8 +82,8 @@
       <button
         [routerLink]="stateService.hasFeature('enable_pos') ? '/pos' : null"
         (click)="handleTabClick('enable_pos', 'Bán hàng POS', $event)"
-        routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
-        class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
+        routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+        class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
       >
         <app-icon name="pos" class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform" />
         <span>Bán hàng POS</span>
@@ -84,8 +109,8 @@
       <button
         [routerLink]="stateService.hasFeature('enable_orders') ? '/orders' : null"
         (click)="handleTabClick('enable_orders', 'Đơn hàng', $event)"
-        routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
-        class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
+        routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+        class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
       >
         <app-icon
           name="orders"
@@ -114,8 +139,8 @@
       <button
         [routerLink]="stateService.hasFeature('enable_tables') ? '/tables' : null"
         (click)="handleTabClick('enable_tables', 'Quản lý sơ đồ bàn', $event)"
-        routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
-        class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
+        routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+        class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
       >
         <app-icon
           name="tables"
@@ -144,8 +169,8 @@
       <button
         [routerLink]="stateService.hasFeature('enable_shifts') ? '/shifts' : null"
         (click)="handleTabClick('enable_shifts', 'Ca làm việc', $event)"
-        routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
-        class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
+        routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+        class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
       >
         <app-icon
           name="clock"
@@ -175,8 +200,8 @@
       <button
         [routerLink]="stateService.hasFeature('enable_menu') ? '/menu' : null"
         (click)="handleTabClick('enable_menu', 'Quản lý Thực đơn', $event)"
-        routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
-        class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
+        routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+        class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
       >
         <app-icon name="menu" class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform" />
         <span>Quản lý Thực đơn</span>
@@ -202,8 +227,8 @@
       <button
         [routerLink]="stateService.hasFeature('enable_inventory') ? '/inventory' : null"
         (click)="handleTabClick('enable_inventory', 'Kho hàng', $event)"
-        routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
-        class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
+        routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+        class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
       >
         <app-icon
           name="inventory"
@@ -232,8 +257,8 @@
       <button
         [routerLink]="stateService.hasFeature('enable_customers') ? '/customers' : null"
         (click)="handleTabClick('enable_customers', 'Khách hàng', $event)"
-        routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
-        class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
+        routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+        class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
       >
         <app-icon
           name="customers"
@@ -262,8 +287,8 @@
       <button
         [routerLink]="stateService.hasFeature('enable_debts') ? '/debts' : null"
         (click)="handleTabClick('enable_debts', 'Sổ nợ', $event)"
-        routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
-        class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
+        routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+        class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
       >
         <app-icon
           name="debts"
@@ -292,8 +317,8 @@
       <button
         [routerLink]="stateService.hasFeature('enable_financials') ? '/financials' : null"
         (click)="handleTabClick('enable_financials', 'Thu chi tài chính', $event)"
-        routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
-        class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
+        routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+        class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
       >
         <app-icon
           name="financials"
@@ -322,8 +347,8 @@
       <button
         [routerLink]="stateService.hasFeature('enable_reports') ? '/reports' : null"
         (click)="handleTabClick('enable_reports', 'Báo cáo', $event)"
-        routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
-        class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
+        routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+        class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
       >
         <app-icon
           name="reports"
@@ -352,8 +377,8 @@
       <button
         [routerLink]="stateService.hasFeature('enable_staffs') ? '/staffs' : null"
         (click)="handleTabClick('enable_staffs', 'Nhân viên', $event)"
-        routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
-        class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
+        routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+        class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
       >
         <app-icon
           name="staffs"
@@ -381,8 +406,8 @@
     @if (stateService.hasPermission('settings')) {
       <button
         routerLink="/settings"
-        routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
-        class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
+        routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+        class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
       >
         <app-icon
           name="settings"
@@ -395,8 +420,8 @@
     @if (stateService.isSuperAdmin()) {
       <button
         routerLink="/admin"
-        routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
-        class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
+        routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+        class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
       >
         <app-icon
           name="server"
@@ -409,11 +434,20 @@
 
   <!-- Blockchain Explorer (Nằm ngoài menu, trên Giao diện) -->
   <div class="px-4 py-2 border-t border-slate-200/60 dark:border-slate-800/60 shrink-0">
+    <!--
+      [NOTE - LỰA CHỌN HIỆU ỨNG BLOCKCHAIN EXPLORER]:
+      - HIỆU ỨNG MỚI (SLIDING BACKGROUND): 
+        + routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+        + class="relative z-10 ... font-medium"
+      - HIỆU ỨNG CŨ (MÀU TĨNH & HOVER XÁM): 
+        + routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
+        + class="... hover:bg-slate-100 dark:hover:bg-slate-800/50 cursor-pointer" (bỏ relative z-10)
+    -->
     <a
       routerLink="/blockchain-explorer"
       target="_blank"
-      routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
-      class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50 cursor-pointer"
+      routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+      class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium cursor-pointer"
     >
       <app-icon
         name="blockchain"
@@ -423,7 +457,7 @@
     </a>
   </div>
 
-  <!-- Sidebar Footer (Theme Toggle 3-position) -->
+  <!-- Sidebar Footer (Theme Toggle + Hiệu ứng Sidebar) -->
   <div class="p-4 border-t border-slate-200/60 dark:border-slate-800/60">
     <div class="flex items-center justify-between">
       <div class="flex flex-col">
@@ -447,8 +481,24 @@
           }}
         </span>
       </div>
-      <!-- Theme Toggle Component -->
-      <app-theme-toggle size="sm"></app-theme-toggle>
+      <div class="flex items-center gap-2">
+        <!-- Nút bật/tắt hiệu ứng trượt sidebar -->
+        <button
+          type="button"
+          (click)="toggleSlidingEffect()"
+          class="flex items-center justify-center w-8 h-8 rounded-xl border transition-all duration-200 cursor-pointer"
+          [class]="useSlidingEffect()
+            ? 'bg-purple-50 dark:bg-purple-950/40 border-purple-200/60 dark:border-purple-800/40 text-purple-600 dark:text-purple-400'
+            : 'bg-slate-100 dark:bg-slate-800/50 border-slate-200/60 dark:border-slate-700/40 text-slate-400 dark:text-slate-500'"
+          [title]="useSlidingEffect() ? 'Hiệu ứng: Trượt (bấm để tắt)' : 'Hiệu ứng: Tĩnh (bấm để bật)'"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="h-4 w-4" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        </button>
+        <!-- Theme Toggle Component -->
+        <app-theme-toggle size="sm"></app-theme-toggle>
+      </div>
     </div>
   </div>
 </aside>

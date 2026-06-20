@@ -133,44 +133,30 @@ export class PosContractService extends BaseContractService {
       let orderTimestamp = 0;
       try {
         const orderData = await contract['getOrder'](finalOrderId);
-        if (!orderData || Number(orderData[0]) === 0) {
-          console.warn('[Blockchain] Order', finalOrderId, 'khong ton tai tren Smart Contract.');
+        if (orderData && Number(orderData[0]) !== 0) {
+          orderTimestamp = Number(orderData[6]);
+        } else {
+          console.warn('[Blockchain] Order', finalOrderId, 'khong ton tai tren Smart Contract (MetaMask RPC).');
           return null;
         }
-        orderTimestamp = Number(orderData[6]);
-      } catch {
-        console.warn('[Blockchain] Khong the goi getOrder() - order co the khong ton tai.');
-        return null;
+      } catch (err) {
+        console.warn('[Blockchain] Khong the goi getOrder() tu MetaMask provider, se tiep tuc fallback:', err);
       }
 
       const chainId = this.web3Service.chainId() || this.web3Service.configuredChainId();
+      const backupRpcUrls = this.web3Service.getBackupRpcUrls(chainId);
 
-      const explorerApiUrl = this.web3Service.getExplorerApiUrl(chainId);
-      const apiKey = this.web3Service.explorerApiKey();
-      if (explorerApiUrl) {
-        try {
-          const cleanHexId = typeof finalOrderId === 'string' ? finalOrderId.replace('0x', '') : finalOrderId.toString(16);
-          const topic1 = '0x' + cleanHexId.padStart(64, '0');
-          const topic0 = contract.interface.getEvent('OrderRecorded')?.topicHash;
-
-          if (topic0) {
-            let url = `${explorerApiUrl}?chainid=${chainId}&module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${this.web3Service.contractAddress()}&topic0=${topic0}&topic1=${topic1}`;
-            if (apiKey && apiKey.trim() !== '') {
-              url += `&apikey=${apiKey}`;
-            }
-            const response = await fetch(url);
-            const data = await response.json();
-
-            if (data.status === '1' && data.result && data.result.length > 0) {
-              return data.result[0].transactionHash;
-            }
-          }
-        } catch (apiErr) {
-          console.error('[Blockchain] Explorer API Error:', apiErr);
-        }
-      }
-
-      return null;
+      return this.getOriginalTxHashWithFallback({
+        contractAddress: this.web3Service.contractAddress(),
+        abi: CAFE_WEB3_POS_ABI,
+        eventName: 'OrderRecorded',
+        finalId: finalOrderId,
+        targetTimestamp: orderTimestamp,
+        configuredChainId: chainId,
+        explorerApiKey: this.web3Service.explorerApiKey() || '',
+        rpcUrl: this.web3Service.rpcUrl(),
+        backupRpcUrls: backupRpcUrls
+      });
     } catch (err) {
       console.error('[Blockchain] Loi lay txHash don hang:', err);
       return null;

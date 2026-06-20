@@ -11,11 +11,21 @@ export const POPULAR_CHAINS = [
  */
 export function getExplorerApiUrl(chainId: string | number): string | null {
   const id = chainId.toString().trim();
-  const supportedChains = ['97', '56', '1', '11155111', '137', '80002', '42161', '421614', '8453', '84532', '10', '11155420'];
-  if (supportedChains.includes(id)) {
-    return 'https://api.etherscan.io/v2/api';
+  switch (id) {
+    case '1': return 'https://api.etherscan.io/api';
+    case '11155111': return 'https://api-sepolia.etherscan.io/api';
+    case '56': return 'https://api.bscscan.com/api';
+    case '97': return 'https://api-testnet.bscscan.com/api';
+    case '137': return 'https://api.polygonscan.com/api';
+    case '80002': return 'https://api-amoy.polygonscan.com/api';
+    case '42161': return 'https://api.arbiscan.io/api';
+    case '421614': return 'https://api-sepolia.arbiscan.io/api';
+    case '8453': return 'https://api.basescan.org/api';
+    case '84532': return 'https://api-sepolia.basescan.org/api';
+    case '10': return 'https://api-optimistic.etherscan.io/api';
+    case '11155420': return 'https://api-sepolia-optimistic.etherscan.io/api';
+    default: return null;
   }
-  return null;
 }
 
 /**
@@ -24,8 +34,8 @@ export function getExplorerApiUrl(chainId: string | number): string | null {
 export function getBackupRpcUrls(chainId: string | number): string[] {
   const id = chainId.toString().trim();
   switch (id) {
-    case '97': return ['https://bsc-testnet-rpc.publicnode.com', 'https://bsc-testnet-rpc.publicnode.com', 'https://bsc-testnet.blockpi.network/v1/rpc/public'];
-    case '56': return ['https://bsc-rpc.publicnode.com', 'https://binance.llamarpc.com', 'https://rpc.ankr.com/bsc'];
+    case '97': return ['https://97.rpc.thirdweb.com', 'https://bsc-testnet.drpc.org', 'https://bsc-testnet-rpc.publicnode.com', 'https://bnb-testnet.api.onfinality.io/public'];
+    case '56': return ['https://56.rpc.thirdweb.com', 'https://bsc.drpc.org', 'https://bsc-rpc.publicnode.com', 'https://binance.llamarpc.com', 'https://rpc.ankr.com/bsc'];
     case '1': return ['https://ethereum-rpc.publicnode.com', 'https://eth.llamarpc.com', 'https://rpc.ankr.com/eth'];
     case '11155111': return ['https://ethereum-sepolia-rpc.publicnode.com', 'https://sepolia.gateway.tenderly.co', 'https://rpc.ankr.com/eth_sepolia'];
     case '137': return ['https://polygon-bor-rpc.publicnode.com', 'https://polygon.llamarpc.com', 'https://rpc.ankr.com/polygon'];

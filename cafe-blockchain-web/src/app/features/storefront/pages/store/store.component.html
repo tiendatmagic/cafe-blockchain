@@ -129,6 +129,17 @@
               containerClass="bg-slate-200/40 dark:bg-slate-950 border-none h-9 w-full sm:w-auto"
             ></app-tab-group>
 
+            <!-- Bộ chọn hiệu ứng danh mục (Trượt / Tĩnh) -->
+            <button
+              type="button"
+              (click)="toggleSlidingEffect()"
+              class="h-9 px-3 rounded-xl bg-slate-200/40 dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:text-[var(--dynamic-primary)] dark:hover:text-[var(--dynamic-primary)] text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer border border-transparent hover:border-[var(--dynamic-primary)]/20 shadow-sm"
+              title="Đổi hiệu ứng danh mục"
+            >
+              <app-icon [name]="useSlidingEffect() ? 'sparkles' : 'cursor-click'" class="h-3.5 w-3.5" [strokeWidth]="2" />
+              <span>{{ useSlidingEffect() ? 'Trượt' : 'Tĩnh' }}</span>
+            </button>
+
             <!-- Standalone Theme Toggle Component -->
             <app-theme-toggle size="md"></app-theme-toggle>
           </div>
@@ -140,18 +151,37 @@
         <!-- CỘT DANH MỤC (DESKTOP: Sidebar bên trái, MOBILE: Trượt ngang phía trên) -->
         @if (!showFavoritesOnly()) {
           <div
+            #categoriesContainer
             app-card
-            class="w-full md:w-56 shrink-0 md:p-3 overflow-x-auto no-scrollbar md:overflow-visible flex md:flex-col gap-2 md:gap-1.5 p-1 mb-2 sticky top-0 md:top-6 z-20 bg-transparent md:bg-white dark:md:bg-slate-900 border-none md:border"
+            class="relative w-full md:w-56 shrink-0 md:p-3 overflow-x-auto no-scrollbar md:overflow-visible flex md:flex-col gap-2 md:gap-1.5 p-1 mb-2 sticky top-0 md:top-6 z-20 bg-transparent md:bg-white dark:md:bg-slate-900 border-none md:border"
           >
+            <!-- Sliding Background Indicator (Chỉ hiển thị khi dùng hiệu ứng trượt) -->
+            @if (useSlidingEffect() && categoryOptions().length > 0 && activeCategoryId() !== undefined) {
+              <div
+                class="absolute bg-[var(--dynamic-primary)]/10 dark:bg-[var(--dynamic-primary)]/20 rounded-xl md:rounded-2xl border border-[var(--dynamic-primary)]/20 dark:border-[var(--dynamic-secondary)]/20 md:border-none transition-all duration-300 ease-out z-0 pointer-events-none"
+                [style.left]="sliderLeft()"
+                [style.width]="sliderWidth()"
+                [style.top]="sliderTop()"
+                [style.height]="sliderHeight()"
+                [style.opacity]="sliderOpacity()"
+              ></div>
+            }
+
             @for (cat of categoryOptions(); track cat.value) {
               <button
+                #categoryBtn
                 type="button"
                 (click)="activeCategoryId.set(cat.value); currentPage.set(1)"
+                [class.relative]="useSlidingEffect()"
+                [class.z-10]="useSlidingEffect()"
                 [class]="
-                  (activeCategoryId() === cat.value
-                    ? 'bg-[var(--dynamic-primary)]/10 dark:bg-[var(--dynamic-primary)]/20 !text-[var(--dynamic-primary)] font-bold border-[var(--dynamic-primary)]/30 dark:border-[var(--dynamic-secondary)]/30 md:border-none'
-                    : 'bg-white dark:bg-slate-900 md:bg-transparent border-slate-200/60 dark:border-slate-800/60 text-slate-700 dark:text-slate-300 font-semibold md:font-medium hover:bg-slate-50 dark:hover:bg-slate-800/50 md:hover:bg-slate-100 dark:md:hover:bg-slate-800/50') +
-                  ' flex items-center justify-center md:justify-start px-4 py-2 md:px-4 md:py-3 rounded-xl md:rounded-2xl text-xs md:text-sm transition-all duration-200 w-auto md:w-full text-center md:text-left active:scale-[0.98] border md:border-none whitespace-nowrap shrink-0'
+                  !useSlidingEffect()
+                    ? (activeCategoryId() === cat.value
+                      ? 'bg-[var(--dynamic-primary)]/10 dark:bg-[var(--dynamic-primary)]/20 !text-[var(--dynamic-primary)] font-bold border-[var(--dynamic-primary)]/30 dark:border-[var(--dynamic-secondary)]/30 md:border-none flex items-center justify-center md:justify-start px-4 py-2 md:px-4 md:py-3 rounded-xl md:rounded-2xl text-xs md:text-sm transition-all duration-200 w-auto md:w-full text-center md:text-left active:scale-[0.98] border md:border-none whitespace-nowrap shrink-0 cursor-pointer'
+                      : 'bg-white dark:bg-slate-900 md:bg-transparent border-slate-200/60 dark:border-slate-800/60 text-slate-700 dark:text-slate-300 font-semibold md:font-medium hover:bg-slate-50 dark:hover:bg-slate-800/50 md:hover:bg-slate-100 dark:md:hover:bg-slate-800/50 flex items-center justify-center md:justify-start px-4 py-2 md:px-4 md:py-3 rounded-xl md:rounded-2xl text-xs md:text-sm transition-all duration-200 w-auto md:w-full text-center md:text-left active:scale-[0.98] border md:border-none whitespace-nowrap shrink-0 cursor-pointer')
+                    : (activeCategoryId() === cat.value
+                      ? '!text-[var(--dynamic-primary)] font-bold flex items-center justify-center md:justify-start px-4 py-2 md:px-4 md:py-3 rounded-xl md:rounded-2xl text-xs md:text-sm transition-all duration-200 w-auto md:w-full text-center md:text-left active:scale-[0.98] whitespace-nowrap shrink-0 cursor-pointer'
+                      : 'text-slate-700 dark:text-slate-300 font-semibold md:font-medium flex items-center justify-center md:justify-start px-4 py-2 md:px-4 md:py-3 rounded-xl md:rounded-2xl text-xs md:text-sm transition-all duration-200 w-auto md:w-full text-center md:text-left active:scale-[0.98] whitespace-nowrap shrink-0 cursor-pointer')
                 "
               >
                 <span>{{ cat.label }}</span>

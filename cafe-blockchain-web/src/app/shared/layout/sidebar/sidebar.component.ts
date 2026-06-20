@@ -5,13 +5,18 @@ import {
   HostListener,
   ElementRef,
   ChangeDetectionStrategy,
+  ViewChild,
+  AfterViewInit,
+  OnDestroy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { StateService } from '@core/services/state.service';
 import { ThemeToggleComponent } from '@shared/components/theme-toggle/theme-toggle.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { BadgeComponent } from '@shared/components/badge/badge.component';
+import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-sidebar',
@@ -20,11 +25,75 @@ import { BadgeComponent } from '@shared/components/badge/badge.component';
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './sidebar.component.html',
 })
-export class SidebarComponent {
+export class SidebarComponent implements AfterViewInit, OnDestroy {
   public readonly stateService = inject(StateService);
   private readonly elementRef = inject(ElementRef);
+  private readonly router = inject(Router);
+
+  @ViewChild('navEl') navEl!: ElementRef<HTMLElement>;
+
+  public readonly sliderTop = signal<string>('0px');
+  public readonly sliderHeight = signal<string>('0px');
+  public readonly sliderOpacity = signal<number>(0);
 
   public readonly isChainDropdownOpen = signal<boolean>(false);
+  private routerSub?: Subscription;
+
+  // Thiết lập hiệu ứng trượt - persist vào localStorage (dùng chung key với Storefront)
+  public readonly useSlidingEffect = signal<boolean>(
+    typeof window !== 'undefined'
+      ? localStorage.getItem('ui_sliding_effect') !== 'false'
+      : true,
+  );
+
+  ngAfterViewInit() {
+    setTimeout(() => this.updateSliderPosition(), 150);
+
+    this.routerSub = this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe(() => {
+        setTimeout(() => this.updateSliderPosition(), 100);
+      });
+  }
+
+  ngOnDestroy() {
+    if (this.routerSub) {
+      this.routerSub.unsubscribe();
+    }
+  }
+
+  @HostListener('window:resize')
+  public onWindowResize() {
+    this.updateSliderPosition();
+  }
+
+  public updateSliderPosition() {
+    if (!this.navEl) return;
+    if (!this.useSlidingEffect()) {
+      this.sliderOpacity.set(0);
+      return;
+    }
+    const activeEl = this.navEl.nativeElement.querySelector('.sidebar-active-item') as HTMLElement;
+    if (activeEl) {
+      this.sliderTop.set(`${activeEl.offsetTop}px`);
+      this.sliderHeight.set(`${activeEl.offsetHeight}px`);
+      this.sliderOpacity.set(1);
+    } else {
+      this.sliderOpacity.set(0);
+    }
+  }
+
+  // Bật/tắt hiệu ứng trượt và lưu vào localStorage
+  public toggleSlidingEffect() {
+    const next = !this.useSlidingEffect();
+    this.useSlidingEffect.set(next);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('ui_sliding_effect', String(next));
+    }
+    // Cập nhật lại vị trí slider sau khi đổi hiệu ứng
+    setTimeout(() => this.updateSliderPosition(), 50);
+  }
+
 
   public handleTabClick(featureKey: string, name: string, event: Event) {
     if (!this.stateService.hasFeature(featureKey)) {

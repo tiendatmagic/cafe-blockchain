@@ -95,44 +95,30 @@ export class FinanceContractService extends BaseContractService {
       let orderTimestamp = 0;
       try {
         const txData = await contract['getTransaction'](finalTxId);
-        if (!txData || Number(txData[0]) === 0) {
-          console.warn('[Blockchain] Transaction', finalTxId, 'khong ton tai tren Smart Contract.');
+        if (txData && Number(txData[0]) !== 0) {
+          orderTimestamp = Number(txData[6]);
+        } else {
+          console.warn('[Blockchain] Transaction', finalTxId, 'khong ton tai tren Smart Contract (MetaMask RPC).');
           return null;
         }
-        orderTimestamp = Number(txData[6]);
-      } catch {
-        console.warn('[Blockchain] Khong the goi getTransaction() - transaction co the khong ton tai.');
-        return null;
+      } catch (err) {
+        console.warn('[Blockchain] Khong the goi getTransaction() tu MetaMask provider, se tiep tuc fallback:', err);
       }
 
       const chainId = this.web3Service.chainId() || this.web3Service.configuredChainId();
+      const backupRpcUrls = this.web3Service.getBackupRpcUrls(chainId);
 
-      const explorerApiUrl = this.web3Service.getExplorerApiUrl(chainId);
-      const apiKey = this.web3Service.explorerApiKey();
-      if (explorerApiUrl) {
-        try {
-          const cleanHexId = typeof finalTxId === 'string' ? finalTxId.replace('0x', '') : finalTxId.toString(16);
-          const topic1 = '0x' + cleanHexId.padStart(64, '0');
-          const topic0 = contract.interface.getEvent('TransactionRecorded')?.topicHash;
-
-          if (topic0) {
-            let url = `${explorerApiUrl}?chainid=${chainId}&module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${this.web3Service.financeContractAddress()}&topic0=${topic0}&topic1=${topic1}`;
-            if (apiKey && apiKey.trim() !== '') {
-              url += `&apikey=${apiKey}`;
-            }
-            const response = await fetch(url);
-            const data = await response.json();
-
-            if (data.status === '1' && data.result && data.result.length > 0) {
-              return data.result[0].transactionHash;
-            }
-          }
-        } catch (apiErr) {
-          console.error('[Blockchain] Explorer API Error:', apiErr);
-        }
-      }
-
-      return null;
+      return this.getOriginalTxHashWithFallback({
+        contractAddress: this.web3Service.financeContractAddress(),
+        abi: CAFE_WEB3_FINANCE_ABI,
+        eventName: 'TransactionRecorded',
+        finalId: finalTxId,
+        targetTimestamp: orderTimestamp,
+        configuredChainId: chainId,
+        explorerApiKey: this.web3Service.explorerApiKey() || '',
+        rpcUrl: this.web3Service.rpcUrl(),
+        backupRpcUrls: backupRpcUrls
+      });
     } catch (err) {
       console.error('[Blockchain] Loi lay txHash giao dich thu chi:', err);
       return null;

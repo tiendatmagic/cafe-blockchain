@@ -5,6 +5,13 @@ import {
   signal,
   computed,
   ChangeDetectionStrategy,
+  ViewChild,
+  ViewChildren,
+  QueryList,
+  ElementRef,
+  AfterViewInit,
+  HostListener,
+  effect,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -55,12 +62,15 @@ interface CartItem {
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: [],
 })
-export class StoreComponent implements OnInit {
+export class StoreComponent implements OnInit, AfterViewInit {
   private readonly route = inject(ActivatedRoute);
   private readonly apiService = inject(ApiService);
   private readonly titleService = inject(Title);
   private readonly stateService = inject(StateService);
   private readonly modalService = inject(ModalService);
+
+  @ViewChild('categoriesContainer') categoriesContainer!: ElementRef<HTMLDivElement>;
+  @ViewChildren('categoryBtn') categoryButtons!: QueryList<ElementRef<HTMLButtonElement>>;
 
   // Dữ liệu quán
   public readonly storeSettings = signal<any>(null);
@@ -72,6 +82,12 @@ export class StoreComponent implements OnInit {
   public readonly errorMessage = signal<string>('');
   public readonly alertModalMessage = signal<string>('');
 
+  public readonly sliderLeft = signal<string>('0px');
+  public readonly sliderWidth = signal<string>('0px');
+  public readonly sliderTop = signal<string>('0px');
+  public readonly sliderHeight = signal<string>('0px');
+  public readonly sliderOpacity = signal<number>(0);
+
   // UI States
   public readonly activeCategoryId = signal<number | null>(null);
   public readonly showFavoritesOnly = signal<boolean>(false);
@@ -82,6 +98,21 @@ export class StoreComponent implements OnInit {
   public readonly searchQuery = signal<string>('');
   public readonly currentPage = signal<number>(1);
   public readonly itemsPerPage = 20;
+  // Thiết lập hiệu ứng trượt danh mục - persist vào localStorage (dùng chung key với Sidebar)
+  public readonly useSlidingEffect = signal<boolean>(
+    typeof window !== 'undefined'
+      ? localStorage.getItem('ui_sliding_effect') !== 'false'
+      : true,
+  );
+
+  constructor() {
+    effect(() => {
+      this.activeCategoryId();
+      this.categoryOptions();
+      this.useSlidingEffect(); // Lắng nghe để cập nhật khi người dùng bật tắt hiệu ứng trượt
+      setTimeout(() => this.updateSliderPosition(), 50);
+    });
+  }
 
   // Bộ lọc storefront nâng cao
   public readonly storeMinPrice = signal<number | null>(null);
@@ -768,6 +799,58 @@ export class StoreComponent implements OnInit {
       return `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https%3A%2F%2Fnhantien.momo.vn%2F${item.account_number}`;
     } else {
       return `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(item.account_number)}`;
+    }
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => this.updateSliderPosition(), 150);
+  }
+
+  @HostListener('window:resize')
+  onResize(): void {
+    this.updateSliderPosition();
+  }
+
+  public updateSliderPosition(): void {
+    if (!this.categoryButtons || !this.categoriesContainer) return;
+
+    const buttons = this.categoryButtons.toArray();
+    const activeIdx = this.categoryOptions().findIndex((opt) => opt.value === this.activeCategoryId());
+
+    if (activeIdx !== -1 && buttons[activeIdx]) {
+      const activeEl = buttons[activeIdx].nativeElement;
+      this.sliderLeft.set(`${activeEl.offsetLeft}px`);
+      this.sliderWidth.set(`${activeEl.offsetWidth}px`);
+      this.sliderTop.set(`${activeEl.offsetTop}px`);
+      this.sliderHeight.set(`${activeEl.offsetHeight}px`);
+      this.sliderOpacity.set(1);
+
+      // Tự động cuộn container để hiển thị tab active nếu bị che khuất
+      const container = this.categoriesContainer.nativeElement;
+      const scrollLeft = container.scrollLeft;
+      const containerWidth = container.clientWidth;
+      const buttonLeft = activeEl.offsetLeft;
+      const buttonWidth = activeEl.offsetWidth;
+
+      if (buttonLeft < scrollLeft) {
+        container.scrollTo({ left: buttonLeft - 8, behavior: 'smooth' });
+      } else if (buttonLeft + buttonWidth > scrollLeft + containerWidth) {
+        container.scrollTo({
+          left: buttonLeft + buttonWidth - containerWidth + 8,
+          behavior: 'smooth',
+        });
+      }
+    } else {
+      this.sliderOpacity.set(0);
+    }
+  }
+
+  // Bật/tắt hiệu ứng trượt danh mục và lưu vào localStorage (đồng bộ với Sidebar)
+  public toggleSlidingEffect() {
+    const next = !this.useSlidingEffect();
+    this.useSlidingEffect.set(next);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('ui_sliding_effect', String(next));
     }
   }
 }
