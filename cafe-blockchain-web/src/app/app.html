@@ -22,39 +22,41 @@
 
 @if (!stateService.isInitialLoading() || isPublicLayout) {
   <!-- CONTAINER CHÍNH -->
-  <div [class]="containerClass" [class.pt-[56px]]="isWrongChain && !isPublicLayout">
-    @if (!isPublicLayout) {
-      <!-- Sidebar Menu bên trái -->
-      <app-sidebar></app-sidebar>
-    }
-
-    <!-- Cột nội dung bên phải hiển thị động -->
-    <main
-      [class]="
-        isPublicLayout
-          ? 'w-full min-h-screen relative'
-          : 'flex-1 flex flex-col min-w-0 overflow-y-auto relative h-screen'
-      "
-    >
+  @if (!isSubscriptionBlocked()) {
+    <div [class]="containerClass" [class.pt-[56px]]="isWrongChain && !isPublicLayout">
       @if (!isPublicLayout) {
-        <app-desktop-header></app-desktop-header>
-      } @else if (isCustomerWeb3Route) {
-        <app-web3-public-header></app-web3-public-header>
+        <!-- Sidebar Menu bên trái -->
+        <app-sidebar></app-sidebar>
       }
 
-      @if (stateService.blockedFeatureInRoute()) {
-        <div class="flex-1 flex flex-col items-center justify-center p-6 bg-slate-50 dark:bg-slate-950">
-          <app-feature-blocked
-            [featureKey]="stateService.blockedFeatureInRoute()?.key ?? ''"
-            [featureName]="stateService.blockedFeatureInRoute()?.name ?? ''"
-            class="w-full max-w-lg block"
-          ></app-feature-blocked>
-        </div>
-      } @else {
-        <router-outlet></router-outlet>
-      }
-    </main>
-  </div>
+      <!-- Cột nội dung bên phải hiển thị động -->
+      <main
+        [class]="
+          isPublicLayout
+            ? 'w-full min-h-screen relative'
+            : 'flex-1 flex flex-col min-w-0 overflow-y-auto relative h-screen'
+        "
+      >
+        @if (!isPublicLayout) {
+          <app-desktop-header></app-desktop-header>
+        } @else if (isCustomerWeb3Route) {
+          <app-web3-public-header></app-web3-public-header>
+        }
+
+        @if (stateService.blockedFeatureInRoute()) {
+          <div class="flex-1 flex flex-col items-center justify-center p-6 bg-slate-50 dark:bg-slate-950">
+            <app-feature-blocked
+              [featureKey]="stateService.blockedFeatureInRoute()?.key ?? ''"
+              [featureName]="stateService.blockedFeatureInRoute()?.name ?? ''"
+              class="w-full max-w-lg block"
+            ></app-feature-blocked>
+          </div>
+        } @else {
+          <router-outlet></router-outlet>
+        }
+      </main>
+    </div>
+  }
 }
 
 <!-- CÁC LỚP PHỦ VÀ MODAL WEB3 TOÀN CỤC -->
