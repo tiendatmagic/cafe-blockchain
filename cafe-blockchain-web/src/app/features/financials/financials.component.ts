@@ -344,7 +344,7 @@ export class FinancialsComponent implements OnInit {
 
   public viewTransactionDetails(tx: any) {
     this.modalService.open(FinancialDetailModalComponent, {
-      title: `Chi tiết phiếu thu/chi`,
+      title: `Chi tiết phiếu thu/chi ${tx.transaction_code || ''}`,
       size: 'lg',
       data: tx
     }).afterClosed$.subscribe(success => {

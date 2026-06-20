@@ -154,7 +154,7 @@ export class PosContractService extends BaseContractService {
           const topic0 = contract.interface.getEvent('OrderRecorded')?.topicHash;
 
           if (topic0) {
-            let url = `${explorerApiUrl}?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${this.web3Service.contractAddress()}&topic0=${topic0}&topic1=${topic1}`;
+            let url = `${explorerApiUrl}?chainid=${chainId}&module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${this.web3Service.contractAddress()}&topic0=${topic0}&topic1=${topic1}`;
             if (apiKey && apiKey.trim() !== '') {
               url += `&apikey=${apiKey}`;
             }

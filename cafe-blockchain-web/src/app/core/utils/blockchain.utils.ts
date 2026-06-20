@@ -11,21 +11,11 @@ export const POPULAR_CHAINS = [
  */
 export function getExplorerApiUrl(chainId: string | number): string | null {
   const id = chainId.toString().trim();
-  switch (id) {
-    case '97': return 'https://api-testnet.bscscan.com/api';
-    case '56': return 'https://api.bscscan.com/api';
-    case '1': return 'https://api.etherscan.io/api';
-    case '11155111': return 'https://api-sepolia.etherscan.io/api';
-    case '137': return 'https://api.polygonscan.com/api';
-    case '80002': return 'https://api-amoy.polygonscan.com/api';
-    case '42161': return 'https://api.arbiscan.io/api';
-    case '421614': return 'https://api-sepolia.arbiscan.io/api';
-    case '8453': return 'https://api.basescan.org/api';
-    case '84532': return 'https://api-sepolia.basescan.org/api';
-    case '10': return 'https://api-optimistic.etherscan.io/api';
-    case '11155420': return 'https://api-sepolia-optimistic.etherscan.io/api';
-    default: return null;
+  const supportedChains = ['97', '56', '1', '11155111', '137', '80002', '42161', '421614', '8453', '84532', '10', '11155420'];
+  if (supportedChains.includes(id)) {
+    return 'https://api.etherscan.io/v2/api';
   }
+  return null;
 }
 
 /**
