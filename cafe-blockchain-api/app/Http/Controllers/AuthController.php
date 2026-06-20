@@ -137,6 +137,9 @@ class AuthController extends Controller
             $superAdmins = array_map('strtolower', array_filter($superAdmins));
             $isSuperAdmin = in_array(strtolower($address), $superAdmins);
 
+            $contactsSetting = DB::table('system_settings')->where('key', 'system_contacts')->first();
+            $contacts = $contactsSetting ? json_decode($contactsSetting->value, true) : [];
+
             return response()->json([
                 'success' => true,
                 'token' => $token,
@@ -149,7 +152,8 @@ class AuthController extends Controller
                     'subscription_expires_at' => $planExpiresAt,
                     'subscription_status' => $planStatus,
                     'features' => $planFeatures
-                ]
+                ],
+                'system_contacts' => $contacts
             ])->withCookie($cookie)->withCookie($loggedCookie);
         }
 
@@ -181,6 +185,9 @@ class AuthController extends Controller
         $superAdmins = array_map('strtolower', array_filter($superAdmins));
         $isSuperAdmin = in_array($address, $superAdmins);
 
+        $contactsSetting = DB::table('system_settings')->where('key', 'system_contacts')->first();
+        $contacts = $contactsSetting ? json_decode($contactsSetting->value, true) : [];
+
         return response()->json([
             'address' => $address,
             'is_super_admin' => $isSuperAdmin,
@@ -189,7 +196,8 @@ class AuthController extends Controller
                 'subscription_expires_at' => $planExpiresAt,
                 'subscription_status' => $planStatus,
                 'features' => $planFeatures
-            ]
+            ],
+            'system_contacts' => $contacts
         ]);
     }
 

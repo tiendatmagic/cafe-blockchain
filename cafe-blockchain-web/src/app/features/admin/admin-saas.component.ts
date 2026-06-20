@@ -84,15 +84,19 @@ export class AdminSaaSComponent implements OnInit {
     { key: 'actions', header: 'Thao tác', sortable: false, class: 'text-right pr-6 whitespace-nowrap', headerClass: 'text-right pr-6' }
   ];
 
-  // Tab: 'tenants' | 'plans' | 'system' | 'sysinfo'
-  public readonly activeSubTab = signal<'tenants' | 'plans' | 'system' | 'sysinfo'>('tenants');
+  // Tab: 'sysconfig' | 'tenants' | 'plans' | 'system' | 'sysinfo'
+  public readonly activeSubTab = signal<'sysconfig' | 'tenants' | 'plans' | 'system' | 'sysinfo'>('sysconfig');
 
   public readonly subTabOptions: TabOption[] = [
+    { value: 'sysconfig', label: 'Cấu hình thông tin hệ thống' },
     { value: 'tenants', label: 'Cửa hàng' },
     { value: 'plans', label: 'Gói cước' },
     { value: 'system', label: 'Hệ thống' },
     { value: 'sysinfo', label: 'Thông tin hệ thống' },
   ];
+
+  public readonly systemContactsList = signal<any[]>([]);
+  public readonly isSavingContacts = signal<boolean>(false);
 
   // Trạng thái Loading và Dữ liệu
   public readonly isDataLoading = signal<boolean>(false);
@@ -271,7 +275,7 @@ export class AdminSaaSComponent implements OnInit {
     // Đồng bộ tab hiện tại với Query Parameter 'tab' trên URL
     this.route.queryParams.subscribe(params => {
       const tab = params['tab'];
-      if (tab && ['tenants', 'plans', 'system', 'sysinfo'].includes(tab)) {
+      if (tab && ['sysconfig', 'tenants', 'plans', 'system', 'sysinfo'].includes(tab)) {
         this.activeSubTab.set(tab as any);
         if (tab === 'sysinfo' && !this.systemInfo()) {
           this.loadSysInfo();
@@ -329,7 +333,7 @@ export class AdminSaaSComponent implements OnInit {
     });
   }
 
-  public setSubTab(tab: 'tenants' | 'plans' | 'system' | 'sysinfo') {
+  public setSubTab(tab: 'sysconfig' | 'tenants' | 'plans' | 'system' | 'sysinfo') {
     this.activeSubTab.set(tab);
     this.searchQuery.set('');
     this.tenantPlanFilter.set('all');
@@ -384,6 +388,7 @@ export class AdminSaaSComponent implements OnInit {
         this.tenantCurrentPage.set(1);
         this.planCurrentPage.set(1);
         this.tokenCleanupDays.set(res.settings?.token_cleanup_days ?? 7);
+        this.systemContactsList.set(res.settings?.system_contacts || []);
         this.isDataLoading.set(false);
       },
       error: (err) => {
@@ -619,6 +624,62 @@ export class AdminSaaSComponent implements OnInit {
       error: (err) => {
         this.stateService.showToast('Không thể lưu cấu hình dọn dẹp.', 'error');
         this.isSavingSettings.set(false);
+      }
+    });
+  }
+
+  // --- Cấu hình Thông tin liên hệ ---
+  public addContact() {
+    this.systemContactsList.update(list => [
+      ...list,
+      {
+        name: '',
+        phone: '',
+        email: '',
+        zalo: '',
+        facebook: '',
+        telegram: ''
+      }
+    ]);
+  }
+
+  public removeContact(index: number) {
+    this.systemContactsList.update(list => list.filter((_, i) => i !== index));
+  }
+
+  public saveSystemContacts() {
+    if (this.isSavingContacts()) return;
+
+    const contacts = this.systemContactsList();
+    for (let i = 0; i < contacts.length; i++) {
+      const c = contacts[i];
+      if (!c.name || !c.name.trim()) {
+        this.stateService.showToast(`Liên hệ thứ ${i + 1}: Họ tên không được để trống.`, 'error');
+        return;
+      }
+      if (!c.phone || !c.phone.trim()) {
+        this.stateService.showToast(`Liên hệ thứ ${i + 1}: Số điện thoại không được để trống.`, 'error');
+        return;
+      }
+    }
+
+    this.isSavingContacts.set(true);
+    this.apiService.updateAdminSystemSettings({
+      token_cleanup_days: this.tokenCleanupDays(),
+      system_contacts: contacts
+    }).subscribe({
+      next: () => {
+        this.stateService.showToast('Lưu cấu hình thông tin hệ thống thành công!', 'success');
+        this.isSavingContacts.set(false);
+        this.stateService.systemContacts.set(contacts);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('auth_system_contacts', JSON.stringify(contacts));
+        }
+      },
+      error: (err) => {
+        const errorMsg = err.error?.message || 'Không thể lưu cấu hình thông tin hệ thống.';
+        this.stateService.showToast(errorMsg, 'error');
+        this.isSavingContacts.set(false);
       }
     });
   }

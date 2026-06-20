@@ -122,6 +122,9 @@ export class StateService {
   // Trạng thái đã xác thực đăng nhập backend
   public readonly isAuthLoggedIn = signal<boolean>(false);
 
+  // Danh sách liên hệ hệ thống
+  public readonly systemContacts = signal<any[]>([]);
+
   // Xác định xem trang hiện tại có phải là trang công khai hay không
   public readonly isPublicLayout = computed(() => {
     const url = this.currentUrl();
@@ -336,6 +339,15 @@ export class StateService {
           this.planFeatures.set(JSON.parse(savedFeatures));
         } catch (e) {
           this.planFeatures.set(null);
+        }
+      }
+
+      const savedContacts = localStorage.getItem('auth_system_contacts');
+      if (savedContacts) {
+        try {
+          this.systemContacts.set(JSON.parse(savedContacts));
+        } catch (e) {
+          this.systemContacts.set([]);
         }
       }
     }
@@ -736,6 +748,19 @@ export class StateService {
             localStorage.setItem('auth_subscription_status', status);
           }
         }
+
+        // Cập nhật system contacts
+        if (res?.system_contacts) {
+          this.systemContacts.set(res.system_contacts);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('auth_system_contacts', JSON.stringify(res.system_contacts));
+          }
+        } else {
+          this.systemContacts.set([]);
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('auth_system_contacts');
+          }
+        }
       },
       error: (err) => {
         console.warn('[StateService] Không thể sync thông tin gói cước:', err?.status);
@@ -796,7 +821,9 @@ export class StateService {
       localStorage.removeItem('auth_subscription_expires_at');
       localStorage.removeItem('auth_subscription_status');
       localStorage.removeItem('auth_plan_features');
+      localStorage.removeItem('auth_system_contacts');
     }
+    this.systemContacts.set([]);
     this.currentUserRole.set('Chủ cửa hàng');
     this.currentUserPermissions.set(null);
     this.isSuperAdmin.set(false);
@@ -1157,6 +1184,14 @@ export class StateService {
                       this.subscriptionStatus.set('active');
                       this.planFeatures.set(null);
                     }
+
+                    if (verifyRes.system_contacts) {
+                      localStorage.setItem('auth_system_contacts', JSON.stringify(verifyRes.system_contacts));
+                      this.systemContacts.set(verifyRes.system_contacts);
+                    } else {
+                      localStorage.removeItem('auth_system_contacts');
+                      this.systemContacts.set([]);
+                    }
                   }
                   this.skipNextSubscriptionSync = true;
                   this.web3Service.walletConnected.set(true);
@@ -1273,6 +1308,14 @@ export class StateService {
                 this.subscriptionExpiresAt.set(null);
                 this.subscriptionStatus.set('active');
                 this.planFeatures.set(null);
+              }
+
+              if (verifyRes.system_contacts) {
+                localStorage.setItem('auth_system_contacts', JSON.stringify(verifyRes.system_contacts));
+                this.systemContacts.set(verifyRes.system_contacts);
+              } else {
+                localStorage.removeItem('auth_system_contacts');
+                this.systemContacts.set([]);
               }
             }
             this.skipNextSubscriptionSync = true;

@@ -338,8 +338,18 @@ class AdminController extends Controller
             $days = $value['days'] ?? 7;
         }
 
+        $contactsSetting = DB::table('system_settings')
+            ->where('key', 'system_contacts')
+            ->first();
+
+        $contacts = [];
+        if ($contactsSetting) {
+            $contacts = json_decode($contactsSetting->value, true) ?: [];
+        }
+
         return response()->json([
-            'token_cleanup_days' => $days
+            'token_cleanup_days' => $days,
+            'system_contacts' => $contacts
         ]);
     }
 
@@ -350,6 +360,13 @@ class AdminController extends Controller
     {
         $validated = $request->validate([
             'token_cleanup_days' => 'required|integer|min:1|max:365',
+            'system_contacts' => 'nullable|array',
+            'system_contacts.*.name' => 'required|string|max:255',
+            'system_contacts.*.phone' => 'required|string|regex:/^[0-9]+$/|max:20',
+            'system_contacts.*.email' => 'nullable|string|max:255',
+            'system_contacts.*.zalo' => 'nullable|string|max:20',
+            'system_contacts.*.facebook' => 'nullable|string|max:255',
+            'system_contacts.*.telegram' => 'nullable|string|max:255',
         ]);
 
         DB::table('system_settings')
@@ -360,6 +377,18 @@ class AdminController extends Controller
                     'updated_at' => now()
                 ]
             );
+
+        if (array_key_exists('system_contacts', $validated)) {
+            $contacts = $validated['system_contacts'] ?: [];
+            DB::table('system_settings')
+                ->updateOrInsert(
+                    ['key' => 'system_contacts'],
+                    [
+                        'value' => json_encode($contacts),
+                        'updated_at' => now()
+                    ]
+                );
+        }
 
         return response()->json([
             'success' => true,

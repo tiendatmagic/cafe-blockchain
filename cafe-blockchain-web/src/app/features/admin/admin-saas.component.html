@@ -103,6 +103,133 @@
       <app-skeleton-loader type="table" [cols]="7" [rows]="5"></app-skeleton-loader>
     } @else {
       
+      <!-- ===== TAB 0: SYSTEM CONFIG (Cấu hình thông tin hệ thống) ===== -->
+      @if (activeSubTab() === 'sysconfig') {
+        <div app-card class="space-y-6 relative overflow-hidden">
+          <div class="pb-4 border-b border-slate-100 dark:border-slate-800/60 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <div>
+              <h4 class="text-base font-black text-slate-800 dark:text-white uppercase tracking-wider">CẤU HÌNH THÔNG TIN HỆ THỐNG</h4>
+              <p class="text-xs text-slate-400 mt-0.5">Thiết lập danh sách thông tin liên hệ hỗ trợ khi quán bị khóa hoặc hết hạn dịch vụ.</p>
+            </div>
+            <button 
+              app-button
+              variant="primary"
+              (click)="addContact()"
+              class="flex items-center gap-1.5 btn-sm w-full sm:w-auto">
+              <app-icon name="plus" class="h-4.5 w-4.5" strokeWidth="2.5"></app-icon>
+              <span>Thêm liên hệ</span>
+            </button>
+          </div>
+
+          @if (systemContactsList().length === 0) {
+            <div class="py-16 flex flex-col items-center justify-center text-center gap-4">
+              <div class="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800/60 flex items-center justify-center text-slate-400">
+                <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+              </div>
+              <div>
+                <p class="font-bold text-slate-700 dark:text-slate-200">Chưa cấu hình thông tin liên hệ</p>
+                <p class="text-sm text-slate-400 mt-1">Bấm nút "Thêm liên hệ" ở góc trên bên phải để bắt đầu thiết lập.</p>
+              </div>
+            </div>
+          } @else {
+            <div class="space-y-6">
+              @for (contact of systemContactsList(); track $index; let idx = $index) {
+                <div class="relative bg-slate-50 dark:bg-slate-950/40 p-5 rounded-[12px] border border-slate-100 dark:border-slate-800/80 space-y-4">
+                  <!-- Remove Button -->
+                  <button 
+                    (click)="removeContact(idx)"
+                    class="absolute top-4 right-4 text-slate-400 hover:text-rose-500 transition-colors p-1"
+                    title="Xóa liên hệ này">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M18 12H6"/></svg>
+                  </button>
+
+                  <div class="text-sm font-bold text-[var(--dynamic-primary)] flex items-center gap-1.5">
+                    <span class="bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] px-2 py-0.5 rounded text-xs font-black">LIÊN HỆ #{{ idx + 1 }}</span>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Họ tên (Required) -->
+                    <div class="space-y-1.5">
+                      <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Họ tên <span class="text-rose-500">*</span></label>
+                      <input 
+                        type="text" 
+                        [(ngModel)]="contact.name"
+                        placeholder="Ví dụ: Nguyễn Văn A"
+                        class="form-input text-sm !h-10" />
+                    </div>
+
+                    <!-- Số điện thoại (Required) -->
+                    <div class="space-y-1.5">
+                      <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Số điện thoại <span class="text-rose-500">*</span></label>
+                      <input 
+                        type="text" 
+                        [(ngModel)]="contact.phone"
+                        placeholder="Ví dụ: 0987654321"
+                        class="form-input text-sm !h-10" />
+                    </div>
+
+                    <!-- Email (Optional) -->
+                    <div class="space-y-1.5">
+                      <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Email (Không bắt buộc)</label>
+                      <input 
+                        type="email" 
+                        [(ngModel)]="contact.email"
+                        placeholder="Ví dụ: founder@cafe.com"
+                        class="form-input text-sm !h-10" />
+                    </div>
+
+                    <!-- Số Zalo (Optional) -->
+                    <div class="space-y-1.5">
+                      <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Số Zalo (Không bắt buộc)</label>
+                      <input 
+                        type="text" 
+                        [(ngModel)]="contact.zalo"
+                        placeholder="Ví dụ: 0987654321"
+                        class="form-input text-sm !h-10" />
+                    </div>
+
+                    <!-- Facebook (Optional) -->
+                    <div class="space-y-1.5">
+                      <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Facebook Link (Không bắt buộc)</label>
+                      <input 
+                        type="text" 
+                        [(ngModel)]="contact.facebook"
+                        placeholder="Ví dụ: https://fb.com/username"
+                        class="form-input text-sm !h-10" />
+                    </div>
+
+                    <!-- Telegram Username (Optional) -->
+                    <div class="space-y-1.5">
+                      <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Telegram (Không bắt buộc)</label>
+                      <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 text-sm font-semibold select-none">&#64;</span>
+                        <input 
+                          type="text" 
+                          [(ngModel)]="contact.telegram"
+                          placeholder="username_telegram"
+                          class="form-input text-sm !h-10 !pl-8" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+
+              <!-- Save Button -->
+              <div class="flex justify-end pt-2">
+                <button 
+                  app-button
+                  variant="primary"
+                  [disabled]="isSavingContacts()"
+                  (click)="saveSystemContacts()"
+                  class="w-full sm:w-auto min-w-[150px]">
+                  <span>Lưu thiết lập</span>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
       <!-- ===== TAB 1: TENANTS ===== -->
       @if (activeSubTab() === 'tenants') {
         <div app-card class="p-0 overflow-hidden">
