@@ -304,6 +304,25 @@ export class Web3Service {
 
 
   /**
+   * Lấy đối tượng mạng của Reown AppKit tương ứng với chainId cấu hình
+   */
+  private getAppKitNetworkByChainId(chainId: string | number): any {
+    const id = chainId.toString().trim();
+    switch (id) {
+      case '1': return mainnet;
+      case '11155111': return sepolia;
+      case '56': return bsc;
+      case '97': return bscTestnet;
+      case '137': return polygon;
+      case '42161': return arbitrum;
+      case '421614': return arbitrumSepolia;
+      case '10': return optimism;
+      case '8453': return base;
+      default: return bscTestnet;
+    }
+  }
+
+  /**
    * Khởi tạo Reown AppKit modal với cấu hình được yêu cầu
    */
   private initAppKit() {
@@ -317,11 +336,12 @@ export class Web3Service {
       }
 
       const ethersAdapter = new EthersAdapter();
+      const defaultNet = this.getAppKitNetworkByChainId(this.configuredChainId());
 
       this.modal = createAppKit({
         adapters: [ethersAdapter],
         networks: [arbitrum, mainnet, bsc, polygon, optimism, base, sepolia, bscTestnet, arbitrumSepolia],
-        defaultNetwork: arbitrum,
+        defaultNetwork: mainnet,
         metadata: {
           name: 'Cafe Blockchain',
           description: 'Cafe Blockchain POS & Storefront DApp',

@@ -69,14 +69,15 @@ export class MobileSignComponent implements OnInit {
 
   public async switchChain(chainId: string) {
     this.isChainDropdownOpen.set(false);
+    this.errorMessage.set('');
 
     // Kiểm tra xem ví đã được kết nối hay chưa
     if (!this.web3Service.walletConnected() || !this.web3Service.currentAccount()) {
-      this.errorMessage.set('Vui lòng kết nối ví Web3 trước khi chọn mạng lưới!');
+      // Cho phép cập nhật cấu hình mạng mong muốn ngay cả khi ví chưa kết nối
+      this.web3Service.configuredChainId.set(chainId);
       return;
     }
 
-    this.errorMessage.set('');
     try {
       const success = await this.web3Service.ensureCorrectNetwork(chainId);
       if (!success) {

@@ -204,22 +204,7 @@ export class Web3PublicHeaderComponent implements OnInit, OnDestroy {
   // Đổi mạng
   public async switchChain(chainId: string) {
     this.isChainDropdownOpen.set(false);
-    if (!this.web3Service.walletConnected() || !this.web3Service.currentAccount()) {
-      this.stateService.showToast('Vui lòng kết nối ví Web3 trước khi chọn mạng lưới!', 'error');
-      return;
-    }
-
-    this.stateService.showToast('Đang yêu cầu chuyển mạng ví...', 'success');
-    try {
-      const success = await this.web3Service.ensureCorrectNetwork(chainId);
-      if (success) {
-        this.stateService.showToast(`Đã chuyển mạng ví sang ${this.web3Service.getNetworkNameByChainId(chainId)}!`, 'success');
-      } else {
-        this.stateService.showToast(this.web3Service.walletError() || 'Chuyển mạng thất bại!', 'error');
-      }
-    } catch (e: any) {
-      this.stateService.showToast(e.message || 'Chuyển mạng thất bại!', 'error');
-    }
+    await this.stateService.switchChain(chainId);
   }
 
   // Lấy màu mạng blockchain

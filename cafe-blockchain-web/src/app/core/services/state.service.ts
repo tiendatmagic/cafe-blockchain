@@ -353,11 +353,17 @@ export class StateService {
     }
 
     // Gọi tải cấu hình public và menu storefront ban đầu khi chưa kết nối ví
-    if (!this.web3Service.walletConnected()) {
-      this.loadPublicSettingsAndMenu();
-    }
+    // Trì hoãn bằng setTimeout để tránh lỗi Circular Dependency (NG0200) trong HTTP Interceptors khi StateService chưa khởi tạo xong
+    setTimeout(() => {
+      if (!this.web3Service.walletConnected()) {
+        this.loadPublicSettingsAndMenu();
+      }
+      if (typeof window !== 'undefined') {
+        this.priceStore.loadCoinPrices();
+      }
+    }, 0);
+
     if (typeof window !== 'undefined') {
-      this.priceStore.loadCoinPrices();
       setInterval(() => {
         this.priceStore.loadCoinPrices();
       }, 10 * 60 * 1000);
@@ -811,17 +817,8 @@ export class StateService {
     });
 
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('auth_address');
-      localStorage.removeItem('auth_logged_in');
+      localStorage.clear();
       this.isAuthLoggedIn.set(false);
-      localStorage.removeItem('auth_role');
-      localStorage.removeItem('auth_permissions');
-      localStorage.removeItem('auth_is_super_admin');
-      localStorage.removeItem('auth_subscription_plan_code');
-      localStorage.removeItem('auth_subscription_expires_at');
-      localStorage.removeItem('auth_subscription_status');
-      localStorage.removeItem('auth_plan_features');
-      localStorage.removeItem('auth_system_contacts');
     }
     this.systemContacts.set([]);
     this.currentUserRole.set('Chủ cửa hàng');
@@ -1108,15 +1105,12 @@ export class StateService {
     });
   }
 
-  // Kết nối và Yêu cầu Ký ví Web3 Auth
-  public async connectWalletAndSign() {
-    if (this.isCurrentlySigning()) return;
-    const isConnected = await this.web3Service.connectWallet();
-    if (isConnected) {
-      const address = this.web3Service.currentAccount();
-      if (!address) return;
+  // Yêu cầu ký xác thực ví với Nonce từ Server cho một địa chỉ ví cụ thể (không mở modal)
+  public async requestSignatureForAddress(address: string): Promise<boolean> {
+    if (this.isCurrentlySigning()) return false;
+    this.isCurrentlySigning.set(true);
 
-      this.isCurrentlySigning.set(true);
+    return new Promise<boolean>((resolve) => {
       this.apiService.getNonce(address).subscribe({
         next: async (res) => {
           this.pendingNonceMessage = res.message;
@@ -1218,6 +1212,9 @@ export class StateService {
                   if (!this.router.url.includes('/dashboard')) {
                     this.router.navigate(['/dashboard']);
                   }
+                  resolve(true);
+                } else {
+                  resolve(false);
                 }
               },
               error: (err) => {
@@ -1225,6 +1222,7 @@ export class StateService {
                 this.isCurrentlySigning.set(false);
                 this.web3Service.disconnectWallet();
                 this.showToast('Xác thực chữ ký thất bại!', 'error');
+                resolve(false);
               }
             });
           } catch (e) {
@@ -1232,6 +1230,7 @@ export class StateService {
             this.isCurrentlySigning.set(false);
             this.web3Service.disconnectWallet();
             this.showToast('Bạn đã từ chối ký xác thực!', 'error');
+            resolve(false);
           }
         },
         error: (err) => {
@@ -1240,8 +1239,20 @@ export class StateService {
           console.error('Lỗi lấy nonce từ server:', err, 'địa chỉ ví:', address);
           this.web3Service.disconnectWallet();
           this.showToast(`Lỗi lấy mã xác thực từ server! (Ví: ${address})`, 'error');
+          resolve(false);
         }
       });
+    });
+  }
+
+  // Kết nối và Yêu cầu Ký ví Web3 Auth
+  public async connectWalletAndSign() {
+    if (this.isCurrentlySigning()) return;
+    const isConnected = await this.web3Service.connectWallet();
+    if (isConnected) {
+      const address = this.web3Service.currentAccount();
+      if (!address) return;
+      await this.requestSignatureForAddress(address);
     }
   }
 
@@ -1375,7 +1386,7 @@ export class StateService {
 
     if (newAccount) {
       this.showToast('Phát hiện tài khoản ví thay đổi. Đang yêu cầu ký xác thực lại...', 'success');
-      this.connectWalletAndSign();
+      this.requestSignatureForAddress(newAccount);
     } else {
       this.showToast('Ví đã ngắt kết nối. Vui lòng kết nối ví để tiếp tục!', 'error');
     }
@@ -1519,7 +1530,9 @@ export class StateService {
   // Chuyển đổi mạng (Chain) trên ví Web3
   public async switchChain(chainId: string) {
     if (!this.web3Service.walletConnected() || !this.web3Service.currentAccount()) {
-      this.showToast('Vui lòng kết nối ví Web3 trước khi chọn mạng lưới!', 'error');
+      // Cho phép cập nhật cấu hình mạng mong muốn ngay cả khi ví chưa kết nối
+      this.web3Service.configuredChainId.set(chainId);
+      this.showToast(`Đã chọn mạng kết nối mong muốn: ${this.web3Service.getNetworkNameByChainId(chainId)}!`, 'success');
       return;
     }
 
