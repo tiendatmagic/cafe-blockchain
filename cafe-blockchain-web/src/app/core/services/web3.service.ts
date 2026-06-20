@@ -41,7 +41,7 @@ export class Web3Service {
   public readonly loyaltyTokenContractAddress = signal<string>('');
   public readonly voucherShopContractAddress = signal<string>('');
   public readonly voucherMarketplaceContractAddress = signal<string>('');
-  public readonly rpcUrl = signal<string>(environment.defaultRpcUrl || 'https://bnb-testnet.api.onfinality.io/public');
+  public readonly rpcUrl = signal<string>(environment.defaultRpcUrl || 'https://bsc-testnet-rpc.publicnode.com');
   public readonly explorerUrl = signal<string>(environment.defaultExplorerUrl || 'https://testnet.bscscan.com');
   public readonly explorerApiKey = signal<string>('');
   public readonly configuredChainId = signal<string>(environment.defaultChainId || '97');
@@ -54,7 +54,7 @@ export class Web3Service {
     { name: 'Optimism Mainnet', chainId: '10', rpcUrl: 'https://mainnet.optimism.io', explorerUrl: 'https://optimistic.etherscan.io' },
     { name: 'Base Mainnet', chainId: '8453', rpcUrl: 'https://mainnet.base.org', explorerUrl: 'https://basescan.org' },
     { name: 'Sepolia Testnet', chainId: '11155111', rpcUrl: 'https://ethereum-sepolia.publicnode.com', explorerUrl: 'https://sepolia.etherscan.io' },
-    { name: 'BSC Testnet', chainId: '97', rpcUrl: 'https://bnb-testnet.api.onfinality.io/public', explorerUrl: 'https://testnet.bscscan.com' },
+    { name: 'BSC Testnet', chainId: '97', rpcUrl: 'https://bsc-testnet-rpc.publicnode.com', explorerUrl: 'https://testnet.bscscan.com' },
     { name: 'Arbitrum Sepolia', chainId: '421614', rpcUrl: 'https://sepolia-rollup.arbitrum.io/rpc', explorerUrl: 'https://sepolia.arbiscan.io/' },
   ];
 
@@ -271,7 +271,7 @@ export class Web3Service {
         return;
       }
 
-      // Thay vì dùng JsonRpcProvider của Ethers (gây ra nhiều request handshake ngầm), 
+      // Thay vì dùng JsonRpcProvider của Ethers (gây ra nhiều request handshake ngầm),
       // ta gửi duy nhất 1 HTTP request POST JSON-RPC lấy gas price để test kết nối RPC.
       const response = await fetch(rpc, {
         method: 'POST',
@@ -284,7 +284,7 @@ export class Web3Service {
         })
       });
       const resData = await response.json();
-      
+
       if (resData && resData.result) {
         const gasPriceHex = resData.result;
         const gasPriceWei = BigInt(gasPriceHex);
@@ -947,9 +947,9 @@ export class Web3Service {
       ];
       const contract = new Contract(usdtAddress, abi, signer);
       const parsedAmount = parseUnits(amount, decimals);
-      
+
       const tx = await contract['transfer'](recipientAddress, parsedAmount);
-      
+
       tx.wait().then(() => {
         if (this.currentAccount()) {
           this.updateBalanceAndStatus(this.currentAccount());
@@ -1254,7 +1254,7 @@ export class Web3Service {
   public getBackupRpcUrls(chainId: string | number): string[] {
     const id = chainId.toString().trim();
     switch (id) {
-      case '97': return ['https://bnb-testnet.api.onfinality.io/public', 'https://bsc-testnet-rpc.publicnode.com', 'https://bsc-testnet.blockpi.network/v1/rpc/public'];
+      case '97': return ['https://bsc-testnet-rpc.publicnode.com', 'https://bsc-testnet-rpc.publicnode.com', 'https://bsc-testnet.blockpi.network/v1/rpc/public'];
       case '56': return ['https://bsc-rpc.publicnode.com', 'https://binance.llamarpc.com', 'https://rpc.ankr.com/bsc'];
       case '1': return ['https://ethereum-rpc.publicnode.com', 'https://eth.llamarpc.com', 'https://rpc.ankr.com/eth'];
       case '11155111': return ['https://ethereum-sepolia-rpc.publicnode.com', 'https://sepolia.gateway.tenderly.co', 'https://rpc.ankr.com/eth_sepolia'];

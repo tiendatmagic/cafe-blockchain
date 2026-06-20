@@ -183,7 +183,7 @@ export class SettingsComponent implements OnInit {
     { name: 'Optimism Mainnet', chainId: '10', rpcUrl: 'https://mainnet.optimism.io', explorerUrl: 'https://optimistic.etherscan.io' },
     { name: 'Base Mainnet', chainId: '8453', rpcUrl: 'https://mainnet.base.org', explorerUrl: 'https://basescan.org' },
     { name: 'Sepolia Testnet', chainId: '11155111', rpcUrl: 'https://ethereum-sepolia.publicnode.com', explorerUrl: 'https://sepolia.etherscan.io' },
-    { name: 'BSC Testnet', chainId: '97', rpcUrl: 'https://bnb-testnet.api.onfinality.io/public', explorerUrl: 'https://testnet.bscscan.com' },
+    { name: 'BSC Testnet', chainId: '97', rpcUrl: 'https://bsc-testnet-rpc.publicnode.com', explorerUrl: 'https://testnet.bscscan.com' },
     { name: 'Arbitrum Sepolia', chainId: '421614', rpcUrl: 'https://sepolia-rollup.arbitrum.io/rpc', explorerUrl: 'https://sepolia.arbiscan.io/' },
   ];
 
@@ -1084,7 +1084,7 @@ export class SettingsComponent implements OnInit {
     const total = this.getPaymentTotalPages();
     const current = this.paymentMethodsPage();
     const pages: number[] = [];
-    
+
     let start = Math.max(1, current - 2);
     let end = Math.min(total, start + 4);
     if (end - start < 4) {
@@ -1186,9 +1186,9 @@ export class SettingsComponent implements OnInit {
     request.subscribe({
       next: () => {
         this.stateService.showToast(
-          this.isEditingPaymentMethod() 
-            ? 'Cập nhật phương thức thanh toán thành công!' 
-            : 'Thêm phương thức thanh toán thành công!', 
+          this.isEditingPaymentMethod()
+            ? 'Cập nhật phương thức thanh toán thành công!'
+            : 'Thêm phương thức thanh toán thành công!',
           'success'
         );
         this.isPaymentFormOpen.set(false);
@@ -1238,7 +1238,7 @@ export class SettingsComponent implements OnInit {
     if (!item) return;
     const url = this.getQrCodeUrl(item);
     const filename = `qrcode-${item.bank_code || item.name}-${item.account_number}.jpg`;
-    
+
     fetch(url)
       .then(response => response.blob())
       .then(blob => {
