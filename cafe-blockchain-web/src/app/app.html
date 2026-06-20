@@ -23,7 +23,7 @@
 @if (!stateService.isInitialLoading() || isPublicLayout) {
   <!-- CONTAINER CHÍNH -->
   <div [class]="containerClass" [class.pt-[56px]]="isWrongChain && !isPublicLayout">
-    @if (!isPublicLayout && !isSubscriptionBlocked()) {
+    @if (!isPublicLayout) {
       <!-- Sidebar Menu bên trái -->
       <app-sidebar></app-sidebar>
     }

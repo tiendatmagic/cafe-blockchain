@@ -1,4 +1,5 @@
 <!-- SIDEBAR (DESKTOP & TABLET) -->
+@if (!stateService.isSubscriptionBlocked()) {
 <aside
   class="hidden lg:flex flex-col w-72 bg-white dark:bg-slate-900 border-r border-slate-200/60 dark:border-slate-800/60 shrink-0 sticky top-0 h-screen transition-colors duration-300"
 >
@@ -451,6 +452,7 @@
     </div>
   </div>
 </aside>
+}
 
 <!-- MOBILE MENU (HAMBURGER BUTTON & OVERLAY) -->
 <div
