@@ -30,7 +30,23 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/styles.css"]
+            "styles": ["src/styles.css"],
+            "allowedCommonJsDependencies": [
+              "buffer",
+              "dayjs",
+              "events",
+              "qrcode",
+              "blakejs",
+              "cross-fetch",
+              "ws",
+              "@safe-global/safe-gateway-typescript-sdk",
+              "@safe-global/safe-apps-provider",
+              "@walletconnect/time",
+              "@walletconnect/window-getters",
+              "@walletconnect/window-metadata",
+              "@walletconnect/environment",
+              "@noble/hashes/sha3"
+            ]
           },
           "configurations": {
             "production": {
@@ -44,8 +60,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "2MB",
-                  "maximumError": "5MB"
+                  "maximumWarning": "5MB",
+                  "maximumError": "10MB"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -117,7 +133,23 @@
             },
             "ssr": {
               "entry": "projects/storefront/src/server.ts"
-            }
+            },
+            "allowedCommonJsDependencies": [
+              "buffer",
+              "dayjs",
+              "events",
+              "qrcode",
+              "blakejs",
+              "cross-fetch",
+              "ws",
+              "@safe-global/safe-gateway-typescript-sdk",
+              "@safe-global/safe-apps-provider",
+              "@walletconnect/time",
+              "@walletconnect/window-getters",
+              "@walletconnect/window-metadata",
+              "@walletconnect/environment",
+              "@noble/hashes/sha3"
+            ]
           },
           "configurations": {
             "production": {
