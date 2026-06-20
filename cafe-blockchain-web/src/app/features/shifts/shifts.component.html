@@ -102,7 +102,7 @@
 
         <!-- THANH LỌC & TIÊU ĐỀ LỊCH SỬ CA TRỰC -->
         <div app-card class="p-4 sm:p-6 flex flex-col gap-6 mb-6">
-          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
             <div>
               <h5 class="text-base font-extrabold text-slate-800 dark:text-white">
                 Lịch sử ca làm việc của nhân viên
@@ -113,14 +113,14 @@
             </div>
 
             <!-- Bộ lọc thời gian -->
-            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-start md:justify-end">
+            <div class="flex flex-wrap items-center gap-3 w-full xl:w-auto justify-start xl:justify-end">
               <app-mini-buttons
                 [options]="datePresets"
                 [activeValue]="activePreset()"
                 (valueChange)="setDatePreset($event)"
               ></app-mini-buttons>
 
-              <div *ngIf="activePreset() === 'custom'" class="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+              <div *ngIf="activePreset() === 'custom'" class="flex items-center gap-2 w-full sm:w-auto mt-2 xl:mt-0">
                 <app-custom-date-picker
                   [(selectedDate)]="tempStartDate"
                   (selectedDateChange)="onCustomDatesChange()"
@@ -137,20 +137,20 @@
             </div>
           </div>
 
-          <div class="flex flex-col xl:flex-row gap-4 justify-between items-stretch xl:items-end border-t border-slate-100 dark:border-slate-800/40 pt-4">
+          <div class="flex flex-col lg:flex-row gap-4 justify-between items-stretch lg:items-end border-t border-slate-100 dark:border-slate-800/40 pt-4">
             <!-- Lọc trạng thái ca trực -->
-            <div class="flex flex-col gap-1.5 w-full xl:w-auto">
+            <div class="flex flex-col gap-1.5 w-full lg:w-auto">
               <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Trạng thái ca trực</span>
               <app-tab-group
                 [options]="statusFilterOptions"
                 [activeValue]="shiftStatusFilter()"
                 (valueChange)="setShiftStatusFilter($event)"
-                containerClass="w-full sm:w-auto"
+                containerClass="w-full sm:w-fit"
               ></app-tab-group>
             </div>
 
             <!-- Tìm kiếm nhân viên -->
-            <div class="flex flex-col gap-1.5 w-full xl:w-80 shrink-0">
+            <div class="flex flex-col gap-1.5 w-full lg:w-80 shrink-0">
               <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Tìm kiếm nhân viên</span>
               <div class="relative w-full">
                 <input

@@ -318,7 +318,7 @@ div.form-input.p-0 {
 /* ==================== HỆ THỐNG BẢNG DÙNG CHUNG (TABLE SYSTEM) ==================== */
 /* Bảng tiêu chuẩn */
 .app-table {
-  @apply w-full text-left border-collapse;
+  @apply w-full text-left border-collapse min-w-[1000px];
 }
 
 .app-table thead tr {
@@ -350,7 +350,7 @@ div.form-input.p-0 {
 
 /* Bảng kích thước nhỏ (Small Table) */
 .app-table-sm {
-  @apply w-full text-left border-collapse;
+  @apply w-full text-left border-collapse min-w-[600px];
 }
 
 .app-table-sm thead tr {

@@ -150,10 +150,18 @@ class ShiftController extends Controller
         
         // Phân quyền bảo mật: Nếu là nhân viên thông thường (không có quyền quản lý nhân sự staffs hoặc báo cáo reports)
         // thì chỉ cho phép họ nhìn thấy lịch sử ca trực của chính mình.
-        $permissions = $user->role ? $user->role->permissions : null;
         $userId = null;
-        if ($permissions !== null && !($permissions['staffs'] ?? false) && !($permissions['reports'] ?? false)) {
-            $userId = $user->id;
+        if ($user->store_owner_address) {
+            // Đây là tài khoản nhân viên, kiểm tra quyền cụ thể của vai trò
+            $staff = $user->staff;
+            $permissions = ($staff && $staff->role) ? $staff->role->permissions : null;
+            if (is_string($permissions)) {
+                $permissions = json_decode($permissions, true);
+            }
+
+            if (!is_array($permissions) || (!($permissions['staffs'] ?? false) && !($permissions['reports'] ?? false))) {
+                $userId = $user->id;
+            }
         }
 
         $shifts = $this->shiftRepository->getHistory($storeOwner, $userId);
