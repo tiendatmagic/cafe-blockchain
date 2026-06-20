@@ -239,7 +239,7 @@ export class OrdersComponent implements OnInit {
     
     const dialogRef = this.modalService.open(OrderDetailModalComponent, {
       title: `Chi tiết hóa đơn ${order.order_code || '#' + order.id}`,
-      size: 'xl',
+      size: '4xl',
       data: {
         order: order,
         settings: this.settings(),
