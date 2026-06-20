@@ -168,8 +168,7 @@
       <div
         class="flex flex-col gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/60"
       >
-        @if (
-          data.order?.status === 'pending' ||
+        @if (data.order?.status === 'pending' ||
           data.order?.status === 'preparing'
         ) {
           <div
@@ -178,7 +177,7 @@
             <app-custom-checkbox
               [checked]="isAutoSync()"
               (checkedChange)="isAutoSync.set($event)"
-              [disabled]="data.isOrderStatusUpdating || data.blockchainSyncLoading"
+              [disabled]="data.isOrderStatusUpdating() || data.blockchainSyncLoading()"
             >
               <span
                 class="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5"
@@ -195,8 +194,8 @@
             <button
               app-button
               variant="danger"
-              (click)="onAction('cancelled')"
-              [loading]="data.isOrderStatusUpdating"
+              (click)="onUpdateStatus('cancelled')"
+              [loading]="data.isOrderStatusUpdating()"
               [disabled]="!data.web3Service.walletConnected()"
             >
               <app-icon name="close" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
@@ -205,8 +204,8 @@
             <button
               app-button
               variant="info"
-              (click)="onAction('preparing')"
-              [loading]="data.isOrderStatusUpdating"
+              (click)="onUpdateStatus('preparing')"
+              [loading]="data.isOrderStatusUpdating()"
               [disabled]="!data.web3Service.walletConnected()"
             >
               <app-icon name="clock" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
@@ -215,8 +214,8 @@
             <button
               app-button
               variant="success"
-              (click)="onAction('completed')"
-              [loading]="data.isOrderStatusUpdating"
+              (click)="onUpdateStatus('completed')"
+              [loading]="data.isOrderStatusUpdating()"
               [disabled]="!data.web3Service.walletConnected()"
             >
               <app-icon
@@ -234,8 +233,8 @@
             <button
               app-button
               variant="danger"
-              (click)="onAction('cancelled')"
-              [loading]="data.isOrderStatusUpdating"
+              (click)="onUpdateStatus('cancelled')"
+              [loading]="data.isOrderStatusUpdating()"
               [disabled]="!data.web3Service.walletConnected()"
             >
               <app-icon name="close" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
@@ -244,8 +243,8 @@
             <button
               app-button
               variant="success"
-              (click)="onAction('completed')"
-              [loading]="data.isOrderStatusUpdating"
+              (click)="onUpdateStatus('completed')"
+              [loading]="data.isOrderStatusUpdating()"
               [disabled]="!data.web3Service.walletConnected()"
             >
               <app-icon
@@ -292,9 +291,9 @@
             <button
               app-button
               variant="primary"
-              [loading]="data.blockchainSyncLoading"
+              [loading]="data.blockchainSyncLoading()"
               [disabled]="!data.web3Service.walletConnected()"
-              (click)="onAction('sync')"
+              (click)="onSyncToBlockchain()"
               class="w-full flex items-center justify-center gap-1.5 shadow-md shadow-[var(--dynamic-primary)]/10"
             >
               <app-icon
@@ -323,8 +322,8 @@
           <button
             app-button
             variant="primary"
-            (click)="onAction('mint_voucher')"
-            [loading]="data.isMintingVoucherManual"
+            (click)="onMintVoucher()"
+            [loading]="data.isMintingVoucherManual()"
             class="w-full hover:scale-[1.01]"
           >
             <app-icon name="gift" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
@@ -342,7 +341,7 @@
           <button
             app-button
             variant="danger-light"
-            (click)="onAction('cancelled')"
+            (click)="onCancelExplanation()"
             class="w-full"
           >
             <app-icon name="trash" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
@@ -354,7 +353,7 @@
           app-button
           variant="info"
           (click)="printOrder()"
-          [disabled]="data.isOrderStatusUpdating || data.blockchainSyncLoading"
+          [disabled]="data.isOrderStatusUpdating() || data.blockchainSyncLoading()"
           class="w-full"
         >
           <app-icon name="print" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
@@ -364,8 +363,8 @@
         <button
           app-button
           variant="cancel"
-          (click)="onCancel()"
-          [disabled]="data.isOrderStatusUpdating"
+          (click)="onClose()"
+          [disabled]="data.isOrderStatusUpdating()"
           class="w-full"
         >
           <span>ĐÓNG CỬA SỔ</span>

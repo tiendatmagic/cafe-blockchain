@@ -244,34 +244,38 @@ export class OrdersComponent implements OnInit {
         order: order,
         settings: this.settings(),
         web3Service: this.web3Service,
-        isOrderStatusUpdating: this.isOrderStatusUpdating(),
-        blockchainSyncLoading: this.blockchainSyncLoading(),
-        isMintingVoucherManual: this.isMintingVoucherManual(),
-        isAutoSyncOnCompleteChecked: this.isAutoSyncOnCompleteChecked()
-      }
-    });
-
-    dialogRef.afterClosed$.subscribe((res: any) => {
-      this.selectedOrderDetails.set(null);
-      if (res) {
-        this.isAutoSyncOnCompleteChecked.set(res.isAutoSync);
-
-        if (res.action === 'preparing' || res.action === 'completed' || res.action === 'cancelled') {
-          if (res.action === 'cancelled' && order.status === 'completed') {
-            // Yêu cầu hủy đơn hàng đã hoàn thành -> Kích hoạt popup giải thích nghiệp vụ
+        // Truyền signal references thay vì giá trị tĩnh để modal đọc reactive state
+        isOrderStatusUpdating: this.isOrderStatusUpdating,
+        blockchainSyncLoading: this.blockchainSyncLoading,
+        isMintingVoucherManual: this.isMintingVoucherManual,
+        isAutoSyncOnCompleteChecked: this.isAutoSyncOnCompleteChecked,
+        // Callback để modal thực thi action mà không cần đóng modal
+        onUpdateStatus: (status: 'preparing' | 'completed' | 'cancelled', isAutoSync: boolean) => {
+          this.isAutoSyncOnCompleteChecked.set(isAutoSync);
+          if (status === 'cancelled' && order.status === 'completed') {
+            // Yêu cầu hủy đơn đã hoàn thành -> hiện modal giải thích nghiệp vụ
             this.triggerCancelExplanation(order);
           } else {
-            // Cập nhật trạng thái đơn thông thường
-            this.updateStatus(order.id, res.action);
+            this.updateStatus(order.id, status);
           }
-        } else if (res.action === 'sync') {
+        },
+        onSyncToBlockchain: () => {
           this.syncToBlockchain(order);
-        } else if (res.action === 'mint_voucher') {
+        },
+        onMintVoucher: () => {
           this.mintVoucherManual(order);
+        },
+        onUpdateOrder: (updatedOrder: any) => {
+          this.updateLocalOrder(updatedOrder);
         }
       }
     });
+
+    dialogRef.afterClosed$.subscribe(() => {
+      this.selectedOrderDetails.set(null);
+    });
   }
+
 
   // Đóng modal xem chi tiết
   public closeOrderDetail() {
@@ -296,7 +300,8 @@ export class OrdersComponent implements OnInit {
       return;
     }
 
-    const order = this.selectedOrderDetails();
+    // Lấy thông tin order từ signal hoặc danh sách orders theo id
+    const order = this.selectedOrderDetails() || this.orders().find((o: any) => o.id === orderId);
     if (!order) return;
 
     this.isOrderStatusUpdating.set(true);
@@ -386,6 +391,7 @@ export class OrdersComponent implements OnInit {
       },
     });
   }
+
 
   // Đồng bộ hóa đơn lên Blockchain EVM
   public async syncToBlockchain(order: any) {

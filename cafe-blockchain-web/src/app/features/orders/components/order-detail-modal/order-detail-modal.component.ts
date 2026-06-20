@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ModalRef, MODAL_DATA } from '@core/services/modal-ref';
 import { ButtonComponent } from '@shared/components/button/button.component';
@@ -6,15 +6,23 @@ import { IconComponent } from '@shared/components/icon/icon.component';
 import { BadgeComponent } from '@shared/components/badge/badge.component';
 import { CustomCheckboxComponent } from '@shared/components/custom-checkbox/custom-checkbox.component';
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
+import { ModalService } from '@core/services/modal.service';
+import { CancelOrderExplanationModalComponent } from '../cancel-order-explanation-modal/cancel-order-explanation-modal.component';
 
 export interface OrderDetailModalData {
   order: any;
   settings: any;
   web3Service: any;
-  isOrderStatusUpdating: boolean;
-  blockchainSyncLoading: boolean;
-  isMintingVoucherManual: boolean;
-  isAutoSyncOnCompleteChecked: boolean;
+  // Signal references thay vì static boolean để modal đọc reactive state
+  isOrderStatusUpdating: Signal<boolean>;
+  blockchainSyncLoading: Signal<boolean>;
+  isMintingVoucherManual: Signal<boolean>;
+  isAutoSyncOnCompleteChecked: Signal<boolean>;
+  // Callback functions để modal thực thi action mà không đóng modal
+  onUpdateStatus: (status: 'preparing' | 'completed' | 'cancelled', isAutoSync: boolean) => void;
+  onSyncToBlockchain: () => void;
+  onMintVoucher: () => void;
+  onUpdateOrder: (order: any) => void;
 }
 
 @Component({
@@ -40,8 +48,10 @@ export interface OrderDetailModalData {
 export class OrderDetailModalComponent {
   public readonly modalRef = inject(ModalRef);
   public readonly data = inject<OrderDetailModalData>(MODAL_DATA);
+  private readonly modalService = inject(ModalService);
 
-  public isAutoSync = signal<boolean>(this.data.isAutoSyncOnCompleteChecked);
+  // Signal cục bộ phản ánh trạng thái tích chọn của checkbox, khởi tạo từ signal của parent
+  public isAutoSync = signal<boolean>(this.data.isAutoSyncOnCompleteChecked());
 
   public getPaymentMethodText(method: string): string {
     const map: any = {
@@ -57,11 +67,33 @@ export class OrderDetailModalComponent {
     return this.data.web3Service.getTxExplorerLink(txHash, chainId);
   }
 
-  public onAction(actionName: 'preparing' | 'completed' | 'cancelled' | 'sync' | 'mint_voucher') {
-    this.modalRef.close({
-      action: actionName,
-      isAutoSync: this.isAutoSync(),
+  /** Gọi callback cập nhật trạng thái - không đóng modal */
+  public onUpdateStatus(status: 'preparing' | 'completed' | 'cancelled') {
+    this.data.onUpdateStatus(status, this.isAutoSync());
+  }
+
+  /** Gọi callback đồng bộ blockchain - không đóng modal */
+  public onSyncToBlockchain() {
+    this.data.onSyncToBlockchain();
+  }
+
+  /** Gọi callback đúc voucher NFT - không đóng modal */
+  public onMintVoucher() {
+    this.data.onMintVoucher();
+  }
+
+  /** Mở modal cảnh báo nghiệp vụ khi yêu cầu hủy đơn đã hoàn thành */
+  public onCancelExplanation() {
+    this.modalService.open(CancelOrderExplanationModalComponent, {
+      title: 'Cảnh báo nghiệp vụ',
+      size: 'md',
+      data: { order: this.data.order }
     });
+  }
+
+  /** Đóng modal (bấm nút ĐÓNG CỬA SỔ) */
+  public onClose() {
+    this.modalRef.close();
   }
 
   public formatVoucherCode(code: string | undefined | null): string {
@@ -202,9 +234,5 @@ export class OrderDetailModalComponent {
       </html>
     `);
     doc.close();
-  }
-
-  public onCancel() {
-    this.modalRef.close(null);
   }
 }
