@@ -1,15 +1,20 @@
 import { HttpInterceptorFn, HttpErrorResponse, HttpResponse, HttpEvent } from '@angular/common/http';
-import { inject, Injector } from '@angular/core';
+import { inject } from '@angular/core';
 import { catchError, map, takeUntil } from 'rxjs/operators';
 import { throwError } from 'rxjs';
-import { StateService } from './state.service';
+import { UiStateService } from './ui-state.service';
+import { AuthService } from './auth.service';
+import { Web3Service } from './web3.service';
+import { ToastService } from './toast.service';
 import { Router } from '@angular/router';
 import { environment } from '@environments/environment';
 
 export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
-  const injector = inject(Injector);
-  const stateService = injector.get(StateService);
-  const router = injector.get(Router);
+  const uiStateService = inject(UiStateService);
+  const authService = inject(AuthService);
+  const web3Service = inject(Web3Service);
+  const toastService = inject(ToastService);
+  const router = inject(Router);
 
   // Kiểm tra xem trang hiện tại có phải là blockchain explorer không
   const isExplorer = router.url.includes('/blockchain-explorer') || 
@@ -22,7 +27,7 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
   const isBackendApi = req.url.startsWith(environment.apiBaseUrl);
 
   // Nếu hệ thống đang trong trạng thái bảo trì và không phải trang explorer, chặn request ngay từ client để chống spam
-  if (stateService.isMaintenance() && isBackendApi && !isExplorer) {
+  if (uiStateService.isMaintenance() && isBackendApi && !isExplorer) {
     return throwError(() => new HttpErrorResponse({
       status: 503,
       statusText: 'Service Unavailable',
@@ -32,7 +37,7 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     // Tự động hủy request này nếu nhận được tín hiệu hủy
-    takeUntil(stateService.cancelRequests$),
+    takeUntil(uiStateService.cancelRequests$),
     map((event: HttpEvent<any>) => {
       if (isBackendApi && event instanceof HttpResponse) {
         const body = event.body;
@@ -53,17 +58,17 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
         // Xử lý lỗi 503 bảo trì hệ thống hoặc lỗi status 0 (CORS block/mất kết nối) từ API backend
         if ((error.status === 503 || error.status === 0) && isBackendApi && !isExplorer) {
           console.warn(`Nhận được lỗi status ${error.status} từ Backend. Kích hoạt trạng thái bảo trì toàn hệ thống...`);
-          stateService.isMaintenance.set(true);
-          stateService.isInitialLoading.set(false); // Ẩn màn hình loading khởi tạo lập tức để hiện màn hình bảo trì
-          stateService.cancelRequests$.next(); // Phát tín hiệu hủy toàn bộ request đang bay
+          uiStateService.isMaintenance.set(true);
+          uiStateService.isInitialLoading.set(false); // Ẩn màn hình loading khởi tạo lập tiếp để hiện màn hình bảo trì
+          uiStateService.cancelRequests$.next(); // Phát tín hiệu hủy toàn bộ request đang bay
         }
 
         const isUnauthenticated = error.status === 401;
 
         if (isUnauthenticated) {
-          if (stateService.web3Service.walletConnected()) {
+          if (web3Service.walletConnected()) {
             console.warn('Nhận được lỗi 401 (Unauthenticated) từ API. Tự động ngắt kết nối ví...');
-            stateService.disconnectWalletAndClose('Phiên làm việc đã hết hạn hoặc không hợp lệ. Vui lòng kết nối lại ví!', true);
+            authService.disconnectWalletAndClose('Phiên làm việc đã hết hạn hoặc không hợp lệ. Vui lòng kết nối lại ví!', true);
           }
         } else if (error.status !== 503 && !(error.status === 0 && isBackendApi)) {
           // 2. Tự động hiển thị Toast báo lỗi từ API (Bỏ qua lỗi 503 và lỗi sập backend vì đã có màn hình bảo trì)
@@ -79,7 +84,7 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
 
             if (isFeatureError && !isStorefront) {
               const featureKey = error.error?.feature || '';
-              const config = stateService.getFeatureConfig(featureKey);
+              const config = authService.getFeatureConfig(featureKey);
               
               // Xác định xem request có phải là GET chạy ngầm ở background không
               const isGetRequest = req.method === 'GET';
@@ -91,19 +96,14 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
               const shouldTriggerModal = !isGetRequest || isCurrentlyOnTargetRoute;
 
               if (shouldTriggerModal && config) {
-                stateService.triggerUpgradeModal(config.key, config.name);
+                uiStateService.triggerUpgradeModal(config.key, config.name);
               }
             }
 
             // Chỉ hiển thị Toast đỏ khi không phải lỗi khóa tính năng (đã hiện modal) và (không phải request GET bị dính limit)
             const isGetRequest = req.method === 'GET';
             if (!isFeatureError && !(isGetRequest && isLimitError)) {
-              stateService.errorMessage.set(errorMsg);
-              
-              // Xóa message sau 4 giây để ẩn Toast
-              setTimeout(() => {
-                stateService.errorMessage.set('');
-              }, 4000);
+              toastService.showToast(errorMsg, 'error');
             }
           }
         }
@@ -112,3 +112,4 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
     })
   );
 };
+

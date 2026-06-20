@@ -1,9 +1,20 @@
 import { Injectable, inject, signal, computed, effect, untracked } from '@angular/core';
 import { ApiService } from './api.service';
 import { Web3Service } from './web3.service';
-import { forkJoin, Subject, Subscription, of } from 'rxjs';
+import { UiStateService } from './ui-state.service';
+import { AuthService, FeatureConfig, FEATURE_CONFIGS, DEFAULT_PLAN_FEATURES } from './auth.service';
+import { ThemeService } from './theme.service';
+import { PosCartService } from './pos-cart.service';
+import { ShiftService } from './shift.service';
+import { ToastService } from './toast.service';
+import { forkJoin, Subscription, of } from 'rxjs';
 import { Router, NavigationEnd } from '@angular/router';
-import { debounceTime, distinctUntilChanged, filter, catchError } from 'rxjs/operators';
+import { filter, catchError } from 'rxjs/operators';
+
+// Expose lại các Type/Interface để các component cũ không lỗi import
+export { FEATURE_CONFIGS, DEFAULT_PLAN_FEATURES };
+export type { FeatureConfig };
+
 import { OrderStore } from '@features/pos/store/order.store';
 import { SettingStore } from '@features/settings/store/setting.store';
 import { ShiftStore } from '@features/shifts/store/shift.store';
@@ -15,53 +26,8 @@ import { PriceStore } from '@features/blockchain/store/price.store';
 import { ProductStore } from '@features/menu/store/product.store';
 import { TransactionStore } from '@features/financials/store/transaction.store';
 import { TableStore } from '@features/tables/store/table.store';
-import { StaffStore } from '@features/staffs/store/staff.store';
 import { DashboardStore } from '@features/dashboard/store/dashboard.store';
-
-export interface FeatureConfig {
-  key: string;
-  tab: string;
-  name: string;
-}
-
-export const FEATURE_CONFIGS: FeatureConfig[] = [
-  { key: 'enable_dashboard', tab: 'dashboard', name: 'Tổng quan' },
-  { key: 'enable_pos', tab: 'pos', name: 'Bán hàng POS' },
-  { key: 'enable_orders', tab: 'orders', name: 'Đơn hàng' },
-  { key: 'enable_tables', tab: 'tables', name: 'Sơ đồ bàn' },
-  { key: 'enable_shifts', tab: 'shifts', name: 'Ca làm việc' },
-  { key: 'enable_menu', tab: 'menu', name: 'Quản lý Thực đơn' },
-  { key: 'enable_inventory', tab: 'inventory', name: 'Kho hàng' },
-  { key: 'enable_customers', tab: 'customers', name: 'Khách hàng' },
-  { key: 'enable_debts', tab: 'debts', name: 'Sổ nợ' },
-  { key: 'enable_financials', tab: 'financials', name: 'Thu chi tài chính' },
-  { key: 'enable_reports', tab: 'reports', name: 'Báo cáo' },
-  { key: 'enable_staffs', tab: 'staffs', name: 'Nhân viên' }
-];
-
-export const DEFAULT_PLAN_FEATURES: Record<string, Record<string, any>> = {
-  'free': {
-    'enable_dashboard': true,
-    'enable_pos': true,
-    'enable_orders': true,
-    'enable_tables': true,
-    'enable_shifts': false,
-    'enable_menu': true,
-    'enable_inventory': false,
-    'enable_customers': true,
-    'enable_debts': false,
-    'enable_financials': false,
-    'enable_reports': false,
-    'enable_excel_export': false,
-    'enable_storefront': false,
-    'enable_staffs': true,
-    'max_products': 20,
-    'max_staffs': 2,
-    'max_customers': 50,
-    'max_transactions': 100,
-    'max_debts': 10
-  }
-};
+import { StaffStore } from '@features/staffs/store/staff.store';
 
 @Injectable({
   providedIn: 'root'
@@ -70,6 +36,16 @@ export class StateService {
   private readonly apiService = inject(ApiService);
   public readonly web3Service = inject(Web3Service);
   private readonly router = inject(Router);
+  
+  // Inject các sub-services
+  private readonly uiStateService = inject(UiStateService);
+  private readonly authService = inject(AuthService);
+  private readonly themeService = inject(ThemeService);
+  private readonly posCartService = inject(PosCartService);
+  private readonly shiftService = inject(ShiftService);
+  private readonly toastService = inject(ToastService);
+
+  // Inject các Stores nghiệp vụ
   private readonly orderStore = inject(OrderStore);
   private readonly settingStore = inject(SettingStore);
   private readonly shiftStore = inject(ShiftStore);
@@ -81,53 +57,163 @@ export class StateService {
   private readonly productStore = inject(ProductStore);
   private readonly transactionStore = inject(TransactionStore);
   private readonly tableStore = inject(TableStore);
-  private readonly staffStore = inject(StaffStore);
   private readonly dashboardStore = inject(DashboardStore);
+  private readonly staffStore = inject(StaffStore);
 
-  // Trạng thái UI toàn cục
-  public readonly activeTab = signal<string>('dashboard');
-  public readonly isDarkMode = signal<boolean>(false);
-  public readonly themeMode = signal<'light' | 'auto' | 'dark'>('light');
-  public readonly isMobileMenuOpen = signal<boolean>(false);
-  public readonly isWalletModalOpen = signal<boolean>(false);
-  public readonly isMaintenance = signal<boolean>(false);
-  public readonly isInitialLoading = signal<boolean>(true);
+  // ----------------------------------------------------
+  // DELEGATED SIGNALS & STATE (ỦY THÁC ĐIỀU PHỐI)
+  // ----------------------------------------------------
 
-  // Trạng thái chờ ký xác thực Web3 và modal gửi token
-  public readonly isWaitingForSignature = signal<boolean>(false);
-  public readonly isCurrentlySigning = signal<boolean>(false);
+  // Trạng thái UI toàn cục (UiStateService)
+  public readonly activeTab = this.uiStateService.activeTab;
+  public readonly isMobileMenuOpen = this.uiStateService.isMobileMenuOpen;
+  public readonly currentUrl = this.uiStateService.currentUrl;
+  public readonly isInitialLoading = this.uiStateService.isInitialLoading;
+  public readonly isLoading = this.uiStateService.isLoading;
+  public readonly isMaintenance = this.uiStateService.isMaintenance;
+  public readonly cancelRequests$ = this.uiStateService.cancelRequests$;
+
+  // Trạng thái modal ví và modal upgrade
+  public readonly isWalletModalOpen = this.uiStateService.isWalletModalOpen;
+  public readonly isUpgradeModalOpen = this.uiStateService.isUpgradeModalOpen;
+  public readonly lockedFeatureKey = this.uiStateService.lockedFeatureKey;
+  public readonly lockedFeatureName = this.uiStateService.lockedFeatureName;
+  public readonly upgradeModalStep = this.uiStateService.upgradeModalStep;
+  public readonly blockedFeatureInRoute = this.uiStateService.blockedFeatureInRoute;
+
+  // Trạng thái Theme (ThemeService)
+  public readonly isDarkMode = this.themeService.isDarkMode;
+  public readonly themeMode = this.themeService.themeMode;
+
+  // Trạng thái Chờ ký và Xác thực ví (AuthService)
+  public readonly isWaitingForSignature = this.authService.isWaitingForSignature;
+  public readonly isCurrentlySigning = this.authService.isCurrentlySigning;
+  public readonly isAuthLoggedIn = this.authService.isAuthLoggedIn;
+  public readonly currentUserRole = this.authService.currentUserRole;
+  public readonly currentUserPermissions = this.authService.currentUserPermissions;
+  public readonly isSuperAdmin = this.authService.isSuperAdmin;
+  public readonly subscriptionPlanCode = this.authService.subscriptionPlanCode;
+  public readonly subscriptionExpiresAt = this.authService.subscriptionExpiresAt;
+  public readonly subscriptionStatus = this.authService.subscriptionStatus;
+  public readonly planFeatures = this.authService.planFeatures;
+  public readonly systemContacts = this.authService.systemContacts;
+
+  public get pendingNonceMessage() { return this.authService.pendingNonceMessage; }
+  public set pendingNonceMessage(val: string) { this.authService.pendingNonceMessage = val; }
+  public get pendingAddress() { return this.authService.pendingAddress; }
+  public set pendingAddress(val: string) { this.authService.pendingAddress = val; }
+
+  // Trạng thái POS & Giỏ hàng (PosCartService & Stores)
+  public readonly products = this.posCartService.products;
+  public readonly posSearchQuery = this.posCartService.posSearchQuery;
+  public readonly posCurrentPage = this.posCartService.posCurrentPage;
+
+  public readonly cart = this.cartStore.cart;
+  public readonly cartTotal = this.cartStore.cartTotal;
+  public readonly tableNumber = this.cartStore.tableNumber;
+  public readonly paymentMethod = this.cartStore.paymentMethod;
+  public readonly posCategoryFilter = this.productStore.posCategoryFilter;
+  public readonly posMinPrice = this.productStore.posMinPrice;
+  public readonly posMaxPrice = this.productStore.posMaxPrice;
+  public readonly posMinVariantPrice = this.productStore.posMinVariantPrice;
+  public readonly posMaxVariantPrice = this.productStore.posMaxVariantPrice;
+  public readonly posFilterStatus = this.productStore.posFilterStatus;
+  public readonly posSelectedCustomer = this.cartStore.posSelectedCustomer;
+  public readonly editingOrderId = this.cartStore.editingOrderId;
+  public readonly isOrderSubmitting = this.cartStore.isOrderSubmitting;
+  public readonly posItemsPerPage = this.productStore.posItemsPerPage;
+  public readonly posProductsList = this.productStore.posProductsList;
+  public readonly paginatedPosProducts = this.productStore.paginatedPosProducts;
+  public readonly posTotalPages = this.productStore.posTotalPages;
+  public readonly posTotalItems = this.productStore.posTotalItems;
+  public get posProductsCache() { return this.productStore.posProductsCache; }
+  public get cacheTTL() { return this.productStore.cacheTTL; }
+
+  // Trạng thái Ca trực (ShiftService & Stores)
+  public readonly currentShift = this.shiftService.currentShift;
+  public readonly shifts = this.shiftService.shifts;
+  public readonly isStartShiftModalOpen = this.shiftService.isStartShiftModalOpen;
+  public readonly isCloseShiftModalOpen = this.shiftService.isCloseShiftModalOpen;
+  public readonly initialCashInput = this.shiftService.initialCashInput;
+  public readonly actualCashInput = this.shiftService.actualCashInput;
+  public readonly closeShiftNote = this.shiftService.closeShiftNote;
+  public readonly isSubmittingShift = this.shiftService.isSubmittingShift;
+  public readonly shiftSummary = this.shiftService.shiftSummary;
+  public readonly isShiftSummaryLoading = this.shiftService.isShiftSummaryLoading;
+  public readonly isShiftsLoading = this.shiftStore.isShiftsLoading;
+  public readonly isCloseShiftModalOpenFromStore = this.shiftStore.isCloseShiftModalOpen;
+  public readonly actualCashFormatted = this.shiftStore.actualCashFormatted;
+  public readonly initialCashFormatted = this.shiftStore.initialCashFormatted;
+  public readonly shiftFiatRevenue = this.shiftStore.shiftFiatRevenue;
+  public readonly shiftBankTransferRevenue = this.shiftStore.shiftBankTransferRevenue;
+  public readonly shiftCryptoRevenue = this.shiftStore.shiftCryptoRevenue;
+  public readonly shiftEWalletRevenue = this.shiftStore.shiftEWalletRevenue;
+  public readonly shiftFiatExpenses = this.shiftStore.shiftFiatExpenses;
+  public readonly shiftExpectedCash = this.shiftStore.shiftExpectedCash;
+  public readonly shiftDurationString = this.shiftStore.shiftDurationString;
+
+  // Trạng thái Loading của các Store khác
+  public readonly isCustomersLoading = this.customerStore.isCustomersLoading;
+  public readonly isTransactionsLoading = this.transactionStore.isTransactionsLoading;
+  public readonly isInventoryLoading = this.inventoryStore.isInventoryLoading;
+  public readonly isTablesLoading = this.tableStore.isTablesLoading;
+  public readonly isSettingsLoading = this.settingStore.isSettingsLoading;
+  public readonly isDebtsLoading = this.debtStore.isDebtsLoading;
+  public readonly isStaffsLoading = this.staffStore.isStaffsLoading;
+  public readonly isDashboardLoading = this.dashboardStore.isDashboardLoading;
+  public readonly isProductsLoading = this.productStore.isProductsLoading;
+  public readonly isOrdersLoading = this.orderStore.isOrdersLoading;
+
+  // Dữ liệu Nhân viên (StaffStore)
+  public readonly staffs = this.staffStore.staffs;
+  public readonly roles = this.staffStore.roles;
+
+  // Dữ liệu Coin Prices (PriceStore)
+  public readonly coingeckoPrices = this.priceStore.coingeckoPrices;
+  public readonly nativeTokenPriceVND = this.priceStore.nativeTokenPriceVND;
+  public readonly usdtPriceVND = this.priceStore.usdtPriceVND;
+
+  // Dữ liệu nạp từ store
+  public readonly dashboardStartDate = this.dashboardStore.dashboardStartDate;
+  public readonly dashboardEndDate = this.dashboardStore.dashboardEndDate;
+  public readonly dashboardData = this.dashboardStore.dashboardData;
+  public readonly orders = this.orderStore.orders;
+  public readonly categoriesList = this.productStore.categoriesList;
+  public readonly customers = this.customerStore.customers;
+  public readonly customerGroups = this.customerStore.customerGroups;
+  public readonly transactions = this.transactionStore.transactions;
+  public readonly inventoryRecords = this.inventoryStore.inventoryRecords;
+  public readonly areas = this.tableStore.areas;
+  public readonly diningTables = this.tableStore.diningTables;
+  public readonly debts = this.debtStore.debts;
+  public readonly settings = this.settingStore.settings;
+
+  // Dữ liệu phương thức thanh toán
+  public readonly paymentMethodsList = signal<any[]>([]);
+  public readonly paymentMethodsTotal = signal<number>(0);
+  public lastPaymentMethodsLoadTimestamp = 0;
+
+  public get lastCustomersLoadTimestamp() { return this.customerStore.lastCustomersLoadTimestamp; }
+  public set lastCustomersLoadTimestamp(val: number) { this.customerStore.lastCustomersLoadTimestamp = val; }
+  public get lastDashboardLoadTimestamp() { return this.dashboardStore.lastDashboardLoadTimestamp; }
+  public set lastDashboardLoadTimestamp(val: number) { this.dashboardStore.lastDashboardLoadTimestamp = val; }
+
+  // Thông điệp Toast
+  public readonly successMessage = this.toastService.successMessage;
+  public readonly errorMessage = this.toastService.errorMessage;
+
+  // Trạng thái modal gửi token native
   public readonly isSendTokenModalOpen = signal<boolean>(false);
   public readonly recipientAddress = signal<string>('');
   public readonly sendAmount = signal<string>('');
   public readonly isSendingToken = signal<boolean>(false);
 
-  public pendingNonceMessage = '';
-  public pendingAddress = '';
-  private accountsChangedSub?: Subscription;
+  // ----------------------------------------------------
+  // COMPUTED PROPERTIES (DỮ LIỆU TÍNH TOÁN)
+  // ----------------------------------------------------
 
-  // Vai trò và quyền truy cập của người dùng hiện tại
-  public readonly currentUserRole = signal<string>('Chủ cửa hàng');
-  public readonly currentUserPermissions = signal<any>(null); // null tức là Chủ cửa hàng (Full quyền)
-
-  // Thông tin thuê bao và Super Admin
-  public readonly isSuperAdmin = signal<boolean>(false);
-  public readonly subscriptionPlanCode = signal<string>('free');
-  public readonly subscriptionExpiresAt = signal<string | null>(null);
-  public readonly subscriptionStatus = signal<string>('active');
-  public readonly planFeatures = signal<any>(null);
-
-  // Theo dõi URL route hiện tại
-  public readonly currentUrl = signal<string>('');
-
-  // Trạng thái đã xác thực đăng nhập backend
-  public readonly isAuthLoggedIn = signal<boolean>(false);
-
-  // Danh sách liên hệ hệ thống
-  public readonly systemContacts = signal<any[]>([]);
-
-  // Xác định xem trang hiện tại có phải là trang công khai hay không
   public readonly isPublicLayout = computed(() => {
-    const url = this.currentUrl();
+    const url = this.uiStateService.currentUrl();
     return url.includes('/mobile-sign') || 
            url.includes('/blockchain-explorer') || 
            url.includes('/store/') || 
@@ -135,7 +221,22 @@ export class StateService {
            url.includes('/marketplace');
   });
 
-  // Xác định xem gói thuê bao có bị chặn hay không
+  public readonly subscriptionDaysLeft = computed(() => {
+    const expiresAt = this.subscriptionExpiresAt();
+    if (!expiresAt) return 0;
+    try {
+      const expires = new Date(expiresAt);
+      const today = new Date();
+      expires.setHours(0, 0, 0, 0);
+      today.setHours(0, 0, 0, 0);
+      const diffTime = expires.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays > 0 ? diffDays : 0;
+    } catch {
+      return 0;
+    }
+  });
+
   public readonly isSubscriptionBlocked = computed(() => {
     if (this.isPublicLayout()) return false;
     if (!this.web3Service.walletConnected()) return false;
@@ -150,249 +251,25 @@ export class StateService {
     return false;
   });
 
-  // Trạng thái modal chặn và nâng cấp gói cước
-  public readonly isUpgradeModalOpen = signal<boolean>(false);
-  public readonly upgradeModalStep = signal<number>(1);
-  public readonly lockedFeatureKey = signal<string>('');
-  public readonly lockedFeatureName = signal<string>('');
-  public readonly blockedFeatureInRoute = signal<{ key: string, name: string } | null>(null);
+  public readonly shortAddress = computed(() => this.web3Service.shortAddress());
+  public readonly addressExplorerLink = computed(() => this.web3Service.addressExplorerLink());
+  public readonly isWrongChain = computed(() => this.web3Service.isWrongChain());
+  public readonly isGasLow = computed(() => this.web3Service.isGasLow());
+  public readonly nativeTokenSymbol = computed(() => this.web3Service.nativeTokenSymbol());
+  public readonly networkName = computed(() => this.web3Service.networkName());
 
-  // Computed signal to calculate the remaining trial days for free plan
-  public readonly freeTrialDaysLeft = computed(() => {
-    if (this.subscriptionPlanCode() !== 'free') return 0;
-    const expiresAt = this.subscriptionExpiresAt();
-    if (!expiresAt) return 0;
-    try {
-      const expires = new Date(expiresAt);
-      const today = new Date();
-      expires.setHours(0, 0, 0, 0);
-      today.setHours(0, 0, 0, 0);
-      const diffTime = expires.getTime() - today.getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays > 0 ? diffDays : 0;
-    } catch (e) {
-      return 0;
-    }
-  });
-
-  // Computed signal to calculate the remaining days for the current subscription plan
-  public readonly subscriptionDaysLeft = computed(() => {
-    const expiresAt = this.subscriptionExpiresAt();
-    if (!expiresAt) return 0;
-    try {
-      const expires = new Date(expiresAt);
-      const today = new Date();
-      expires.setHours(0, 0, 0, 0);
-      today.setHours(0, 0, 0, 0);
-      const diffTime = expires.getTime() - today.getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays > 0 ? diffDays : 0;
-    } catch (e) {
-      return 0;
-    }
-  });
-
-  // Trạng thái Loading
-  public readonly isLoading = signal<boolean>(false);
-  public readonly isDashboardLoading = this.dashboardStore.isDashboardLoading;
-  public readonly isProductsLoading = this.productStore.isProductsLoading;
-  public readonly isOrdersLoading = this.orderStore.isOrdersLoading;
-  public readonly isCustomersLoading = this.customerStore.isCustomersLoading;
-  public readonly isTransactionsLoading = this.transactionStore.isTransactionsLoading;
-  public readonly isInventoryLoading = this.inventoryStore.isInventoryLoading;
-  public readonly isTablesLoading = this.tableStore.isTablesLoading;
-  public readonly isSettingsLoading = this.settingStore.isSettingsLoading;
-  public readonly isDebtsLoading = this.debtStore.isDebtsLoading;
-  public readonly isShiftsLoading = this.shiftStore.isShiftsLoading;
-  public readonly currentShift = this.shiftStore.currentShift;
-
-  // --- Quản lý ca trực (Trạng thái và logic dùng chung) ---
-  public readonly isCloseShiftModalOpen = this.shiftStore.isCloseShiftModalOpen;
-  public readonly isShiftSummaryLoading = this.shiftStore.isShiftSummaryLoading;
-  public readonly shiftSummary = this.shiftStore.shiftSummary;
-  public readonly actualCashInput = this.shiftStore.actualCashInput;
-  public readonly actualCashFormatted = this.shiftStore.actualCashFormatted;
-  public readonly closeShiftNote = this.shiftStore.closeShiftNote;
-
-  public readonly isStartShiftModalOpen = this.shiftStore.isStartShiftModalOpen;
-  public readonly initialCashInput = this.shiftStore.initialCashInput;
-  public readonly initialCashFormatted = this.shiftStore.initialCashFormatted;
-
-  public readonly shiftFiatRevenue = this.shiftStore.shiftFiatRevenue;
-  public readonly shiftBankTransferRevenue = this.shiftStore.shiftBankTransferRevenue;
-  public readonly shiftCryptoRevenue = this.shiftStore.shiftCryptoRevenue;
-  public readonly shiftEWalletRevenue = this.shiftStore.shiftEWalletRevenue;
-  public readonly shiftFiatExpenses = this.shiftStore.shiftFiatExpenses;
-  public readonly shiftExpectedCash = this.shiftStore.shiftExpectedCash;
-
-  public readonly shifts = this.shiftStore.shifts;
-  public readonly shiftDurationString = this.shiftStore.shiftDurationString;
-
-  // Tín hiệu Tỷ giá Coin (Ủy quyền sang PriceStore)
-  public readonly coingeckoPrices = this.priceStore.coingeckoPrices;
-  public readonly nativeTokenPriceVND = this.priceStore.nativeTokenPriceVND;
-  public readonly usdtPriceVND = this.priceStore.usdtPriceVND;
-
-  // Thông điệp Toast
-  public readonly successMessage = signal<string>('');
-  public readonly errorMessage = signal<string>('');
-
-  // Dữ liệu toàn cục tải từ Backend (Ủy quyền sang các Store chuyên biệt)
-  public readonly dashboardStartDate = this.dashboardStore.dashboardStartDate;
-  public readonly dashboardEndDate = this.dashboardStore.dashboardEndDate;
-  public readonly dashboardData = this.dashboardStore.dashboardData;
-  public readonly products = this.productStore.products;
-  public readonly orders = this.orderStore.orders;
-  public readonly categoriesList = this.productStore.categoriesList;
-  public readonly customers = this.customerStore.customers;
-  public readonly customerGroups = this.customerStore.customerGroups;
-  public readonly transactions = this.transactionStore.transactions;
-  public readonly inventoryRecords = this.inventoryStore.inventoryRecords;
-  public readonly areas = this.tableStore.areas;
-  public readonly diningTables = this.tableStore.diningTables;
-  public readonly debts = this.debtStore.debts;
-
-  // Dữ liệu phương thức thanh toán
-  public readonly paymentMethodsList = signal<any[]>([]);
-  public readonly paymentMethodsTotal = signal<number>(0);
-  public lastPaymentMethodsLoadTimestamp = 0;
-
-  public get lastDashboardLoadTimestamp() { return this.dashboardStore.lastDashboardLoadTimestamp; }
-  public set lastDashboardLoadTimestamp(val: number) { this.dashboardStore.lastDashboardLoadTimestamp = val; }
-
-  public readonly settings = this.settingStore.settings;
-
-  // Trạng thái POS (Giỏ hàng) và Lọc (Ủy quyền kết hợp CartStore và ProductStore)
-  public readonly cart = this.cartStore.cart;
-  public readonly cartTotal = this.cartStore.cartTotal;
-  public readonly tableNumber = this.cartStore.tableNumber;
-  public readonly paymentMethod = this.cartStore.paymentMethod;
-  public readonly posCategoryFilter = this.productStore.posCategoryFilter;
-  public readonly posSearchQuery = this.productStore.posSearchQuery;
-  public readonly posMinPrice = this.productStore.posMinPrice;
-  public readonly posMaxPrice = this.productStore.posMaxPrice;
-  public readonly posMinVariantPrice = this.productStore.posMinVariantPrice;
-  public readonly posMaxVariantPrice = this.productStore.posMaxVariantPrice;
-  public readonly posFilterStatus = this.productStore.posFilterStatus;
-  public readonly posSelectedCustomer = this.cartStore.posSelectedCustomer;
-  public readonly editingOrderId = this.cartStore.editingOrderId;
-  public readonly isOrderSubmitting = this.cartStore.isOrderSubmitting;
-
-  // Phân trang sản phẩm ở trang Bán hàng POS
-  public readonly posItemsPerPage = this.productStore.posItemsPerPage;
-  public readonly posCurrentPage = this.productStore.posCurrentPage;
-  public readonly posProductsList = this.productStore.posProductsList;
-  public readonly paginatedPosProducts = this.productStore.paginatedPosProducts;
-  public readonly posTotalPages = this.productStore.posTotalPages;
-  public readonly posTotalItems = this.productStore.posTotalItems;
-
-  // Bộ nhớ đệm Cache cho sản phẩm POS
-  public get posProductsCache() { return this.productStore.posProductsCache; }
-  public get cacheTTL() { return this.productStore.cacheTTL; }
-
+  // ----------------------------------------------------
+  // CONSTRUCTOR & SUBSCRIPTIONS
+  // ----------------------------------------------------
   private isInitialSyncDone = false;
-  private isSettingsFetching = false;
-  private lastSettingsLoadTimestamp = 0;
-  private skipNextSubscriptionSync = false;
-
-  public get lastCustomersLoadTimestamp() { return this.customerStore.lastCustomersLoadTimestamp; }
-  public set lastCustomersLoadTimestamp(val: number) { this.customerStore.lastCustomersLoadTimestamp = val; }
-
-  private searchSubject = new Subject<string>();
-  private searchSubscription?: Subscription;
   private routerSubscription?: Subscription;
-  public readonly cancelRequests$ = new Subject<void>();
+  private accountsChangedSub?: Subscription;
 
   constructor() {
-    this.initTheme();
-
-    // Khôi phục vai trò, quyền và gói cước từ localStorage
-    if (typeof window !== 'undefined') {
-      this.currentUrl.set(this.router.url);
-      const isLoggedIn = localStorage.getItem('auth_logged_in') === 'true';
-      this.isAuthLoggedIn.set(isLoggedIn);
-
-      const savedRole = localStorage.getItem('auth_role');
-      const savedPermissions = localStorage.getItem('auth_permissions');
-      const savedIsSuperAdmin = localStorage.getItem('auth_is_super_admin');
-      const savedPlanCode = localStorage.getItem('auth_subscription_plan_code');
-      const savedExpiresAt = localStorage.getItem('auth_subscription_expires_at');
-      const savedStatus = localStorage.getItem('auth_subscription_status');
-      const savedFeatures = localStorage.getItem('auth_plan_features');
-
-      if (savedRole) {
-        this.currentUserRole.set(savedRole);
-      }
-      if (savedPermissions) {
-        try {
-          this.currentUserPermissions.set(JSON.parse(savedPermissions));
-        } catch (e) {
-          this.currentUserPermissions.set(null);
-        }
-      }
-      this.isSuperAdmin.set(savedIsSuperAdmin === 'true');
-      if (savedPlanCode) this.subscriptionPlanCode.set(savedPlanCode);
-      if (savedExpiresAt) this.subscriptionExpiresAt.set(savedExpiresAt);
-      if (savedStatus) this.subscriptionStatus.set(savedStatus);
-      if (savedFeatures) {
-        try {
-          this.planFeatures.set(JSON.parse(savedFeatures));
-        } catch (e) {
-          this.planFeatures.set(null);
-        }
-      }
-
-      const savedContacts = localStorage.getItem('auth_system_contacts');
-      if (savedContacts) {
-        try {
-          this.systemContacts.set(JSON.parse(savedContacts));
-        } catch (e) {
-          this.systemContacts.set([]);
-        }
-      }
-    }
-
-    // Gọi tải cấu hình public và menu storefront ban đầu khi chưa kết nối ví
-    // Trì hoãn bằng setTimeout để tránh lỗi Circular Dependency (NG0200) trong HTTP Interceptors khi StateService chưa khởi tạo xong
-    setTimeout(() => {
-      if (!this.web3Service.walletConnected()) {
-        this.loadPublicSettingsAndMenu();
-      }
-      if (typeof window !== 'undefined') {
-        this.priceStore.loadCoinPrices();
-      }
-    }, 0);
-
-    if (typeof window !== 'undefined') {
-      setInterval(() => {
-        this.priceStore.loadCoinPrices();
-      }, 10 * 60 * 1000);
-    }
-
-    // Lắng nghe thay đổi của page và category tại POS để tự động load sản phẩm
+    // 1. Tự động nạp cấu hình và dữ liệu của tab hiện tại khi ví đã xác thực thành công
     effect(() => {
-      const page = this.posCurrentPage();
-      const category = this.posCategoryFilter();
-      if (this.activeTab() === 'pos') {
-        this.productStore.loadPosProducts();
-      }
-    }, { allowSignalWrites: true });
-
-    // Tự động đếm thời gian trôi qua của ca làm việc
-    effect(() => {
-      const shift = this.currentShift();
-      if (shift && shift.start_time) {
-        this.shiftStore.startShiftTimer(shift.start_time);
-      } else {
-        this.shiftStore.stopShiftTimer();
-      }
-    }, { allowSignalWrites: true });
-
-    // Tự động nạp cấu hình và dữ liệu của tab hiện tại ngay khi ví kết nối & xác thực thành công
-    effect(() => {
-      if (this.web3Service.walletConnected()) {
+      if (this.web3Service.walletConnected() && this.isAuthLoggedIn()) {
         untracked(() => {
-          // Bổ sung chốt chặn API nếu thuê bao bị khóa!
           if (this.isSubscriptionBlocked()) {
             console.warn('[StateService] Gói thuê bao đã hết hạn! Bỏ qua gọi API khởi tạo ví.');
             this.isInitialLoading.set(false);
@@ -439,17 +316,8 @@ export class StateService {
                 this.shiftSummary.set(null);
               }
 
-              // Nạp dữ liệu cho tab hiện tại với force = true khi ví vừa kết nối
               this.reloadCurrentTab(true);
-
-              // Đồng bộ thông tin gói cước mới nhất từ DB (bỏ qua nếu vừa verify signature thành công)
-              if (this.skipNextSubscriptionSync) {
-                this.skipNextSubscriptionSync = false;
-              } else {
-                this.syncSubscriptionFromBackend();
-              }
-
-              // Tắt loading khởi tạo
+              this.syncSubscriptionFromBackend();
               this.isInitialLoading.set(false);
             },
             error: (err) => {
@@ -461,126 +329,161 @@ export class StateService {
       }
     }, { allowSignalWrites: true });
 
-    // Lắng nghe sự kiện thay đổi từ khóa tìm kiếm có Debounce
-    this.searchSubscription = this.searchSubject.pipe(
-      debounceTime(300),
-      distinctUntilChanged()
-    ).subscribe((val) => {
-      this.posSearchQuery.set(val);
-      this.posCurrentPage.set(1);
-      this.productStore.loadPosProducts();
+    // 2. Lắng nghe thay đổi của page và category tại POS để tự động load sản phẩm
+    effect(() => {
+      const page = this.posCurrentPage();
+      const category = this.posCategoryFilter();
+      if (this.activeTab() === 'pos') {
+        this.productStore.loadPosProducts();
+      }
+    }, { allowSignalWrites: true });
+
+    // 3. Tự động đếm thời gian trôi qua của ca làm việc
+    effect(() => {
+      const shift = this.currentShift();
+      if (shift && shift.start_time) {
+        this.shiftStore.startShiftTimer(shift.start_time);
+      } else {
+        this.shiftStore.stopShiftTimer();
+      }
+    }, { allowSignalWrites: true });
+
+    // 4. Lắng nghe đăng nhập thành công để thiết lập ngày dashboard mặc định
+    effect(() => {
+      if (this.isAuthLoggedIn()) {
+        const today = new Date();
+        const formatDateStr = (d: Date) => {
+          const year = d.getFullYear();
+          const month = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          return `${year}-${month}-${day}`;
+        };
+        untracked(() => {
+          if (!this.dashboardStore.dashboardStartDate()) {
+            const check7 = new Date();
+            check7.setDate(today.getDate() - 6);
+            this.dashboardStore.dashboardStartDate.set(formatDateStr(check7));
+          }
+          if (!this.dashboardStore.dashboardEndDate()) {
+            this.dashboardStore.dashboardEndDate.set(formatDateStr(today));
+          }
+        });
+      }
     });
 
-    // Lắng nghe sự kiện thay đổi route để cập nhật activeTab và tự động refresh dữ liệu tương ứng
+    // 5. Gọi tải cấu hình public và menu storefront ban đầu khi chưa kết nối ví
+    setTimeout(() => {
+      if (!this.web3Service.walletConnected()) {
+        this.loadPublicSettingsAndMenu();
+      }
+      if (typeof window !== 'undefined') {
+        this.priceStore.loadCoinPrices();
+      }
+    }, 0);
+
+    if (typeof window !== 'undefined') {
+      setInterval(() => {
+        this.priceStore.loadCoinPrices();
+      }, 10 * 60 * 1000);
+    }
+
+    // 6. Lắng nghe sự kiện thay đổi route
     this.routerSubscription = this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
       this.isInitialSyncDone = true;
       const url = event.urlAfterRedirects || event.url;
-      this.currentUrl.set(url);
+      this.uiStateService.currentUrl.set(url);
       this.syncTabWithUrl(url);
     });
 
-    // Cơ chế fallback đồng bộ tab ban đầu
     setTimeout(() => {
       if (!this.isInitialSyncDone) {
         this.isInitialSyncDone = true;
         const url = this.router.url;
-        this.currentUrl.set(url);
+        this.uiStateService.currentUrl.set(url);
         this.syncTabWithUrl(url);
       }
     }, 200);
 
-    // Lắng nghe sự kiện thay đổi ví từ Web3Service
+    // 7. Lắng nghe thay đổi tài khoản ví từ Web3Service
     this.accountsChangedSub = this.web3Service.accountsChanged$.subscribe((newAccount) => {
       this.handleAccountSwitch(newAccount);
     });
   }
 
   public destroy() {
-    if (this.searchSubscription) {
-      this.searchSubscription.unsubscribe();
-    }
     if (this.routerSubscription) {
       this.routerSubscription.unsubscribe();
     }
     if (this.accountsChangedSub) {
       this.accountsChangedSub.unsubscribe();
     }
+    this.posCartService.destroy();
   }
 
-  // Toast thông báo bóng bẩy
+  // ----------------------------------------------------
+  // DELEGATED METHODS (ỦY THÁC PHƯƠNG THỨC SANG SUB-SERVICES)
+  // ----------------------------------------------------
+
+  // Toast
   public showToast(msg: string, type: 'success' | 'error' = 'success') {
-    if (type === 'success') {
-      this.successMessage.set(msg);
-      setTimeout(() => this.successMessage.set(''), 3000);
-    } else {
-      this.errorMessage.set(msg);
-      setTimeout(() => this.errorMessage.set(''), 4000);
-    }
+    this.toastService.showToast(msg, type);
   }
 
-  // Khởi tạo Light/Dark/Auto Theme
-  private initTheme() {
-    if (typeof window === 'undefined') return;
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'auto' | null;
-    this.settingStore.applyCachedDynamicColors();
+  // Theme
+  public toggleTheme() { this.themeService.toggleTheme(); }
+  public setThemeMode(mode: 'light' | 'auto' | 'dark') { this.themeService.setThemeMode(mode); }
+  public applyDarkClass(dark: boolean) { this.themeService.applyDarkClass(dark); }
+  public applyAutoTheme() { this.themeService.applyAutoTheme(); }
+  public applyDynamicColors(primary: string, secondary: string) { this.themeService.applyDynamicColors(primary, secondary); }
+  public applyAndCacheDynamicColors(primary: string, secondary: string) { this.themeService.applyAndCacheDynamicColors(primary, secondary); }
 
-    if (savedTheme === 'auto') {
-      this.themeMode.set('auto');
-      this.applyAutoTheme();
-    } else if (savedTheme === 'dark') {
-      this.themeMode.set('dark');
-      this.applyDarkClass(true);
-    } else {
-      this.themeMode.set('light');
-      this.applyDarkClass(false);
-    }
+  // Auth / Wallet
+  public async requestSignatureForAddress(address: string) { return this.authService.requestSignatureForAddress(address); }
+  public async connectWalletAndSign() { return this.authService.connectWalletAndSign(); }
+  public async retrySign() { return this.authService.retrySign(); }
+  public cancelSign() { this.authService.cancelSign(); }
+  public disconnectWalletAndClose(message?: string, isError = false) { this.authService.disconnectWalletAndClose(message, isError); }
+  public hasPermission(module: string): boolean { return this.authService.hasPermission(module); }
+  public hasFeature(featureKey: string): boolean { return this.authService.hasFeature(featureKey); }
+  public getFeatureLimit(featureKey: string): number { return this.authService.getFeatureLimit(featureKey); }
+  public getFeatureConfig(featureKey: string) { return this.authService.getFeatureConfig(featureKey); }
+  public getFeatureConfigByTab(tab: string) { return this.authService.getFeatureConfigByTab(tab); }
+  
+  public triggerUpgradeModal(featureKey: string, featureName: string) { 
+    this.uiStateService.triggerUpgradeModal(featureKey, featureName); 
+  }
+  public triggerUpgradeModalDirectly(featureKey: string, featureName: string) { 
+    this.uiStateService.triggerUpgradeModalDirectly(featureKey, featureName); 
   }
 
-  private isNightTime(): boolean {
-    const hour = new Date().getHours();
-    return hour >= 18 || hour < 6;
-  }
+  // POS / Cart
+  public onSearchQueryChange(query: string) { this.posCartService.onSearchQueryChange(query); }
+  public clearCart() { this.posCartService.clearCart(); }
+  public editOrder(order: any) { this.posCartService.editOrder(order); }
+  public cancelEditOrder() { this.posCartService.cancelEditOrder(); }
+  public loadPosProducts() { this.posCartService.loadPosProducts(); }
+  public resetPosFilters() { this.posCartService.resetPosFilters(); }
+  public clearPosProductsCache() { this.posCartService.clearPosProductsCache(); }
 
-  public applyDarkClass(dark: boolean) {
-    this.isDarkMode.set(dark);
-    if (typeof document !== 'undefined') {
-      if (dark) {
-        document.documentElement.classList.add('dark');
-        document.body.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-        document.body.classList.remove('dark');
-      }
-    }
-  }
+  // Shifts
+  public refreshCurrentShift(onSuccess?: (shift: any) => void) { this.shiftService.refreshCurrentShift(onSuccess); }
+  public refreshShifts() { this.shiftService.refreshShifts(); }
+  public openShift(initialCash: number, onSuccess?: () => void) { this.shiftService.openShift(initialCash, onSuccess); }
+  public closeShift(actualCash: number, note?: string, onSuccess?: () => void) { this.shiftService.closeShift(actualCash, note, onSuccess); }
+  public onActualCashInput(event: any) { this.shiftService.onActualCashInput(event); }
+  public onInitialCashInput(event: any) { this.shiftService.onInitialCashInput(event); }
+  public openStartShiftModal() { this.shiftService.openStartShiftModal(); }
+  public confirmStartShift() { this.shiftService.confirmStartShift(); }
+  public openCloseShiftModal() { this.shiftService.openCloseShiftModal(); }
+  public confirmCloseShift() { this.shiftService.confirmCloseShift(); }
 
-  public applyAutoTheme() {
-    this.applyDarkClass(this.isNightTime());
-  }
+  // ----------------------------------------------------
+  // BUSINESS LOGIC & DATA SYNCHRONIZATION
+  // ----------------------------------------------------
 
-  public setThemeMode(mode: 'light' | 'auto' | 'dark') {
-    this.themeMode.set(mode);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('theme', mode);
-    }
-    if (mode === 'auto') {
-      this.applyAutoTheme();
-    } else {
-      this.applyDarkClass(mode === 'dark');
-    }
-  }
-
-  public applyDynamicColors(primary: string, secondary: string) {
-    this.settingStore.applyDynamicColors(primary, secondary);
-  }
-
-  public applyAndCacheDynamicColors(primary: string, secondary: string) {
-    this.settingStore.applyAndCacheDynamicColors(primary, secondary);
-  }
-
-  // Tải toàn bộ dữ liệu từ Laravel Backend
+  // Tải toàn bộ dữ liệu nghiệp vụ của cửa hàng
   public loadAllData() {
     const connectedAddress = this.web3Service.currentAccount();
     if (typeof window !== 'undefined') {
@@ -601,10 +504,10 @@ export class StateService {
       categories: this.apiService.getCategories()
     }).subscribe({
       next: (res) => {
-        this.dashboardData.set(res.dashboard);
-        this.products.set(res.products);
+        this.dashboardStore.dashboardData.set(res.dashboard);
+        this.productStore.products.set(res.products);
         this.orderStore.orders.set(res.orders || []);
-        this.categoriesList.set(res.categories || []);
+        this.productStore.categoriesList.set(res.categories || []);
 
         if (res.settings) {
           const settings = {
@@ -629,12 +532,10 @@ export class StateService {
     });
   }
 
-  // Tải giá coin thực tế từ CoinGecko
   public loadCoinPrices() {
     this.priceStore.loadCoinPrices();
   }
 
-  // Refresh danh sách thực đơn
   public refreshProducts() {
     if (this.isSubscriptionBlocked()) return;
     this.productStore.refreshProducts(
@@ -642,7 +543,6 @@ export class StateService {
     );
   }
 
-  // Refresh danh sách đơn hàng
   public refreshOrders(statusFilter: string = 'all', blockchainFilter: string = 'all') {
     if (this.isSubscriptionBlocked()) return;
     if (!this.web3Service.walletConnected()) return;
@@ -650,13 +550,11 @@ export class StateService {
     this.orderStore.refreshOrders(statusFilter, blockchainFilter);
   }
 
-  // Refresh dữ liệu dashboard
   public refreshDashboard(force: boolean = false) {
     if (this.isSubscriptionBlocked()) return;
     this.dashboardStore.refreshDashboard(this.hasPermission('dashboard'), force);
   }
 
-  // Tải cấu hình public và menu storefront khi chưa kết nối ví
   public loadPublicSettingsAndMenu() {
     this.apiService.getPublicSettings().subscribe({
       next: (res) => {
@@ -682,7 +580,6 @@ export class StateService {
     });
   }
 
-  // Refresh cấu hình + đồng thời sync thông tin subscription từ backend
   public loadSettings() {
     if (this.isSubscriptionBlocked()) return;
     this.settingStore.loadSettings(this.hasPermission('settings'));
@@ -691,8 +588,7 @@ export class StateService {
     }
   }
 
-  // Đồng bộ thông tin subscription từ backend (gọi /auth/me)
-  private syncSubscriptionFromBackend() {
+  public syncSubscriptionFromBackend() {
     this.apiService.getMe().subscribe({
       next: (res) => {
         if (res?.subscription) {
@@ -701,24 +597,22 @@ export class StateService {
           const expiresAt = sub.subscription_expires_at || null;
           const status = sub.subscription_status || 'active';
 
-          // Cập nhật signals
-          this.subscriptionPlanCode.set(planCode);
-          this.subscriptionExpiresAt.set(expiresAt);
-          this.subscriptionStatus.set(status);
+          this.authService.subscriptionPlanCode.set(planCode);
+          this.authService.subscriptionExpiresAt.set(expiresAt);
+          this.authService.subscriptionStatus.set(status);
 
           if (sub.features) {
-            this.planFeatures.set(sub.features);
+            this.authService.planFeatures.set(sub.features);
             if (typeof window !== 'undefined') {
               localStorage.setItem('auth_plan_features', JSON.stringify(sub.features));
             }
           } else {
-            this.planFeatures.set(null);
+            this.authService.planFeatures.set(null);
             if (typeof window !== 'undefined') {
               localStorage.removeItem('auth_plan_features');
             }
           }
 
-          // Cập nhật localStorage
           if (typeof window !== 'undefined') {
             localStorage.setItem('auth_subscription_plan_code', planCode);
             if (expiresAt) {
@@ -730,14 +624,13 @@ export class StateService {
           }
         }
 
-        // Cập nhật system contacts
         if (res?.system_contacts) {
-          this.systemContacts.set(res.system_contacts);
+          this.authService.systemContacts.set(res.system_contacts);
           if (typeof window !== 'undefined') {
             localStorage.setItem('auth_system_contacts', JSON.stringify(res.system_contacts));
           }
         } else {
-          this.systemContacts.set([]);
+          this.authService.systemContacts.set([]);
           if (typeof window !== 'undefined') {
             localStorage.removeItem('auth_system_contacts');
           }
@@ -749,7 +642,6 @@ export class StateService {
     });
   }
 
-  // Refresh danh sách khách hàng
   public refreshCustomers(force: boolean = false) {
     if (this.isSubscriptionBlocked()) return;
     this.customerStore.refreshCustomers(
@@ -758,587 +650,81 @@ export class StateService {
     );
   }
 
-  // Refresh danh sách giao dịch tài chính
   public refreshTransactions(typeFilter: string = 'all') {
     if (this.isSubscriptionBlocked()) return;
     this.transactionStore.refreshTransactions(this.hasPermission('financials'), typeFilter);
   }
 
-  // Refresh danh sách phiếu kho
   public refreshInventory(typeFilter: string = 'all') {
     if (this.isSubscriptionBlocked()) return;
     this.inventoryStore.refreshInventory(this.hasPermission('inventory'), typeFilter);
   }
 
-  // Refresh sơ đồ bàn ăn và khu vực
   public refreshTablesAndAreas() {
     if (this.isSubscriptionBlocked()) return;
     this.tableStore.refreshTablesAndAreas(this.hasPermission('pos') || this.hasPermission('tables'));
   }
 
-  // Cập nhật trạng thái bàn ăn cục bộ trên client
   public updateTableStatusLocal(tableId: number, status: 'empty' | 'using') {
     this.tableStore.updateTableStatusLocal(tableId, status);
   }
 
-  // Ngắt kết nối ví
-  public disconnectWalletAndClose(message?: string, isError = false) {
-    this.web3Service.disconnectWallet();
-    this.apiService.removeToken();
-
-    this.apiService.logout().subscribe({
-      next: () => { },
-      error: (err) => console.warn('[Auth] Không thể xóa phiên làm việc phía backend:', err)
-    });
-
-    if (typeof window !== 'undefined') {
-      localStorage.clear();
-      this.isAuthLoggedIn.set(false);
-    }
-    this.systemContacts.set([]);
-    this.currentUserRole.set('Chủ cửa hàng');
-    this.currentUserPermissions.set(null);
-    this.isSuperAdmin.set(false);
-    this.subscriptionPlanCode.set('free');
-    this.subscriptionExpiresAt.set(null);
-    this.subscriptionStatus.set('active');
-    this.planFeatures.set(null);
-    this.isWalletModalOpen.set(false);
-    if (message) {
-      this.showToast(message, isError ? 'error' : 'success');
-    } else {
-      this.showToast('Đã ngắt kết nối ví Web3 thành công!', 'success');
-    }
-  }
-
-  // Tải sản phẩm POS (Ủy quyền sang ProductStore)
-  public loadPosProducts() {
-    this.productStore.loadPosProducts();
-  }
-
-  public resetPosFilters() {
-    this.productStore.resetPosFilters();
-  }
-
-  public clearPosProductsCache() {
-    this.productStore.clearPosProductsCache();
-  }
-
-  public toggleTheme() {
-    const current = this.themeMode();
-    if (current === 'light') {
-      this.setThemeMode('auto');
-    } else if (current === 'auto') {
-      this.setThemeMode('dark');
-    } else {
-      this.setThemeMode('light');
-    }
-  }
-
-  public onSearchQueryChange(query: string) {
-    this.searchSubject.next(query);
-  }
-
-  // Quản lý giỏ hàng POS
-  public clearCart() {
-    this.cartStore.clearCart();
-  }
-
-  public editOrder(order: any) {
-    this.cartStore.editOrder(order, this.products(), (msg, type) => this.showToast(msg, type));
-  }
-
-  public cancelEditOrder() {
-    this.cartStore.cancelEditOrder((msg, type) => this.showToast(msg, type));
-  }
-
   public reloadCurrentTab(force: boolean = false) {
-    this.setTabState(this.activeTab(), force);
+    const tab = this.activeTab();
+    if (tab === 'dashboard') this.refreshDashboard(force);
+    else if (tab === 'pos') {
+      this.refreshProducts();
+      this.refreshTablesAndAreas();
+      this.refreshCustomers();
+    } else if (tab === 'orders') this.refreshOrders();
+    else if (tab === 'tables') this.refreshTablesAndAreas();
+    else if (tab === 'shifts') this.refreshShifts();
+    else if (tab === 'menu') this.refreshProducts();
+    else if (tab === 'inventory') this.refreshInventory();
+    else if (tab === 'customers') this.refreshCustomers(force);
+    else if (tab === 'debts') this.refreshDebts();
+    else if (tab === 'financials') this.refreshTransactions();
+    else if (tab === 'staffs') this.refreshStaffsAndRoles();
+    else if (tab === 'settings') this.loadSettings();
   }
 
   private syncTabWithUrl(url: string) {
-    const cleanUrl = url.split('?')[0];
-    let tab = '';
-    if (cleanUrl.includes('/dashboard')) tab = 'dashboard';
-    else if (cleanUrl.includes('/pos')) tab = 'pos';
-    else if (cleanUrl.includes('/menu')) tab = 'menu';
-    else if (cleanUrl.includes('/orders')) tab = 'orders';
-    else if (cleanUrl.includes('/settings')) tab = 'settings';
-    else if (cleanUrl.includes('/customers')) tab = 'customers';
-    else if (cleanUrl.includes('/financials')) tab = 'financials';
-    else if (cleanUrl.includes('/inventory')) tab = 'inventory';
-    else if (cleanUrl.includes('/tables')) tab = 'tables';
-    else if (cleanUrl.includes('/debts')) tab = 'debts';
-    else if (cleanUrl.includes('/staffs')) tab = 'staffs';
-    else if (cleanUrl.includes('/reports')) tab = 'reports';
-    else if (cleanUrl.includes('/shifts')) tab = 'shifts';
-
-    if (tab) {
-      this.setTabState(tab);
+    const tabConfig = FEATURE_CONFIGS.find(cfg => url.includes('/' + cfg.tab));
+    if (tabConfig) {
+      this.setTabState(tabConfig.tab);
+    } else if (url.includes('/settings')) {
+      this.setTabState('settings');
+    } else if (url === '/' || url === '/dashboard') {
+      this.setTabState('dashboard');
     }
   }
 
   private setTabState(tab: string, force: boolean = false) {
-    const isNewTab = this.activeTab() !== tab;
-    if (isNewTab) {
-      this.activeTab.set(tab);
-      this.isMobileMenuOpen.set(false);
-    }
-
-    if (this.isSubscriptionBlocked()) {
-      console.warn(`[StateService] Gói thuê bao đã hết hạn! Chặn tải dữ liệu tab nghiệp vụ: ${tab}`);
-      return;
-    }
-
-    if (tab === 'dashboard') {
-      this.refreshDashboard(force);
-    } else if (tab === 'pos') {
-      if (this.categoriesList().length === 0) {
-        this.refreshProducts();
-      }
-      this.productStore.loadPosProducts();
-      this.refreshTablesAndAreas();
-      this.refreshCurrentShift();
-    } else if (tab === 'orders') {
-      this.refreshOrders();
-    } else if (tab === 'menu') {
-      this.refreshProducts();
-    } else if (tab === 'settings') {
-      this.loadSettings();
-    } else if (tab === 'customers') {
-      this.refreshCustomers();
-    } else if (tab === 'financials') {
-      this.refreshTransactions();
-    } else if (tab === 'inventory') {
-      this.refreshProducts();
-      this.refreshOrders();
-      this.refreshInventory();
-    } else if (tab === 'tables') {
-      this.refreshTablesAndAreas();
-    } else if (tab === 'debts') {
-      this.refreshDebts();
-    } else if (tab === 'staffs') {
-      this.refreshStaffsAndRoles();
-    } else if (tab === 'reports') {
-      this.refreshShifts();
-    }
+    if (this.activeTab() === tab && !force) return;
+    this.uiStateService.activeTab.set(tab);
+    
+    // Nạp dữ liệu tương ứng cho tab vừa mở
+    this.reloadCurrentTab(false);
   }
 
-  // Refresh danh sách nợ khách hàng
   public refreshDebts(searchFilter: string = '', statusFilter: string = 'all') {
     if (this.isSubscriptionBlocked()) return;
     this.debtStore.refreshDebts(this.hasPermission('debts'), searchFilter, statusFilter);
   }
 
-  // Trạng thái dữ liệu nhân viên và vai trò
-  public readonly staffs = this.staffStore.staffs;
-  public readonly roles = this.staffStore.roles;
-  public readonly isStaffsLoading = this.staffStore.isStaffsLoading;
-
-  // Refresh danh sách nhân viên và vai trò
   public refreshStaffsAndRoles() {
     if (this.isSubscriptionBlocked()) return;
     this.staffStore.refreshStaffsAndRoles(this.hasPermission('staffs'));
   }
 
-  // Khôi phục vai trò mặc định
   public resetDefaultRoles() {
     this.staffStore.resetDefaultRoles((msg, type) => this.showToast(msg, type));
   }
 
-  // Kiểm tra quyền truy cập module
-  public hasPermission(module: string): boolean {
-    const permissions = this.currentUserPermissions();
-    if (permissions === null) {
-      return true;
-    }
-    return !!permissions[module];
-  }
+  // ----------------------------------------------------
+  // ACCOUNT SWITCHING & ACTIONS
+  // ----------------------------------------------------
 
-  // --- Quản lý Ca trực ---
-  public refreshCurrentShift(onSuccess?: (shift: any) => void) {
-    if (this.isSubscriptionBlocked()) return;
-    this.shiftStore.refreshCurrentShift(
-      this.hasPermission('shifts') && this.hasFeature('enable_shifts'),
-      onSuccess
-    );
-  }
-
-  public refreshShifts() {
-    if (this.isSubscriptionBlocked()) return;
-    this.shiftStore.refreshShifts(this.hasPermission('shifts') && this.hasFeature('enable_shifts'));
-  }
-
-  public openShift(initialCash: number, onSuccess?: () => void) {
-    if (!this.web3Service.walletConnected()) return;
-    if (!this.hasFeature('enable_shifts')) return;
-    if (this.isLoading()) return;
-    this.isLoading.set(true);
-    this.shiftStore.openShift(initialCash, {
-      onSuccess: (res) => {
-        this.isLoading.set(false);
-        this.showToast('Vào ca làm việc thành công', 'success');
-        if (onSuccess) onSuccess();
-      },
-      onError: (err) => {
-        this.isLoading.set(false);
-        this.showToast(err.error?.message || 'Không thể mở ca làm việc', 'error');
-      }
-    });
-  }
-
-  public closeShift(actualCash: number, note?: string, onSuccess?: () => void) {
-    if (!this.web3Service.walletConnected()) return;
-    if (!this.hasFeature('enable_shifts')) return;
-    if (this.isLoading()) return;
-    this.isLoading.set(true);
-    this.shiftStore.closeShift(actualCash, note, {
-      onSuccess: (res) => {
-        this.isLoading.set(false);
-        this.showToast('Kết thúc ca trực thành công', 'success');
-        if (onSuccess) onSuccess();
-        this.refreshShifts();
-      },
-      onError: (err) => {
-        this.isLoading.set(false);
-        this.showToast(err.error?.message || 'Không thể kết thúc ca làm việc', 'error');
-      }
-    });
-  }
-
-  public onActualCashInput(event: any) {
-    const inputVal = event.target.value;
-    const cleanVal = inputVal.replace(/[^0-9]/g, '');
-    const numVal = Number(cleanVal) || 0;
-    this.shiftStore.actualCashInput.set(numVal);
-    event.target.value = numVal > 0 ? numVal.toLocaleString('en-US') : '';
-  }
-
-  public onInitialCashInput(event: any) {
-    const inputVal = event.target.value;
-    const cleanVal = inputVal.replace(/[^0-9]/g, '');
-    const numVal = Number(cleanVal) || 0;
-    this.shiftStore.initialCashInput.set(numVal);
-    event.target.value = numVal > 0 ? numVal.toLocaleString('en-US') : '';
-  }
-
-  public openStartShiftModal() {
-    if (!this.hasFeature('enable_shifts')) return;
-    this.shiftStore.initialCashInput.set(0);
-    this.shiftStore.isStartShiftModalOpen.set(true);
-  }
-
-  public confirmStartShift() {
-    if (this.isLoading()) return;
-    const cash = this.shiftStore.initialCashInput();
-    this.openShift(cash, () => {
-      this.shiftStore.isStartShiftModalOpen.set(false);
-      this.shiftStore.initialCashInput.set(0);
-    });
-  }
-
-  private lastShiftSummaryLoadedTime = 0;
-
-  public openCloseShiftModal() {
-    if (!this.hasFeature('enable_shifts')) return;
-
-    if (this.shiftStore.isShiftSummaryLoading()) return;
-
-    this.shiftStore.closeShiftNote.set('');
-    this.shiftStore.isCloseShiftModalOpen.set(true);
-
-    const now = Date.now();
-    if (this.shiftStore.shiftSummary() && (now - this.lastShiftSummaryLoadedTime < 5000)) {
-      const expected = this.shiftStore.shiftSummary()?.expected_cash ?? 0;
-      this.shiftStore.actualCashInput.set(expected);
-      return;
-    }
-
-    this.shiftStore.isShiftSummaryLoading.set(true);
-    this.apiService.getShiftSummary().subscribe({
-      next: (res) => {
-        this.shiftStore.shiftSummary.set(res);
-        const expected = res?.expected_cash ?? 0;
-        this.shiftStore.actualCashInput.set(expected);
-        this.lastShiftSummaryLoadedTime = Date.now();
-        this.shiftStore.isShiftSummaryLoading.set(false);
-      },
-      error: (err) => {
-        console.error('Lỗi tải thống kê ca trực:', err);
-        this.shiftStore.isShiftSummaryLoading.set(false);
-      }
-    });
-  }
-
-  public confirmCloseShift() {
-    if (this.isLoading()) return;
-    const actual = this.shiftStore.actualCashInput();
-    const note = this.shiftStore.closeShiftNote();
-    this.closeShift(actual, note, () => {
-      this.shiftStore.isCloseShiftModalOpen.set(false);
-      this.shiftStore.shiftSummary.set(null);
-    });
-  }
-
-  // Yêu cầu ký xác thực ví với Nonce từ Server cho một địa chỉ ví cụ thể (không mở modal)
-  public async requestSignatureForAddress(address: string): Promise<boolean> {
-    if (this.isCurrentlySigning()) return false;
-    this.isCurrentlySigning.set(true);
-
-    return new Promise<boolean>((resolve) => {
-      this.apiService.getNonce(address).subscribe({
-        next: async (res) => {
-          this.pendingNonceMessage = res.message;
-          this.pendingAddress = address;
-          this.isWaitingForSignature.set(true);
-          this.showToast('Vui lòng ký xác thực trên ví của bạn...', 'success');
-
-          try {
-            const signature = await this.web3Service.signMessage(res.message);
-            this.isWaitingForSignature.set(false);
-
-            this.apiService.verifySignature(address, signature).subscribe({
-              next: (verifyRes) => {
-                this.isCurrentlySigning.set(false);
-                if (verifyRes.token) {
-                  this.apiService.setToken(verifyRes.token);
-                  if (typeof window !== 'undefined') {
-                    localStorage.setItem('auth_address', address);
-                    localStorage.setItem('auth_logged_in', 'true');
-                    this.isAuthLoggedIn.set(true);
-                    localStorage.setItem('auth_is_super_admin', verifyRes.is_super_admin ? 'true' : 'false');
-                    this.isSuperAdmin.set(!!verifyRes.is_super_admin);
-
-                    if (verifyRes.role) {
-                      localStorage.setItem('auth_role', verifyRes.role);
-                      this.currentUserRole.set(verifyRes.role);
-                    } else {
-                      localStorage.removeItem('auth_role');
-                      this.currentUserRole.set('Chủ cửa hàng');
-                    }
-                    if (verifyRes.permissions) {
-                      const permStr = JSON.stringify(verifyRes.permissions);
-                      localStorage.setItem('auth_permissions', permStr);
-                      this.currentUserPermissions.set(verifyRes.permissions);
-                    } else {
-                      localStorage.removeItem('auth_permissions');
-                      this.currentUserPermissions.set(null);
-                    }
-
-                    if (verifyRes.subscription) {
-                      const sub = verifyRes.subscription;
-                      localStorage.setItem('auth_subscription_plan_code', sub.plan_code || 'free');
-                      localStorage.setItem('auth_subscription_expires_at', sub.subscription_expires_at || '');
-                      localStorage.setItem('auth_subscription_status', sub.subscription_status || 'active');
-
-                      this.subscriptionPlanCode.set(sub.plan_code || 'free');
-                      this.subscriptionExpiresAt.set(sub.subscription_expires_at || null);
-                      this.subscriptionStatus.set(sub.subscription_status || 'active');
-
-                      if (sub.features) {
-                        localStorage.setItem('auth_plan_features', JSON.stringify(sub.features));
-                        this.planFeatures.set(sub.features);
-                      } else {
-                        localStorage.removeItem('auth_plan_features');
-                        this.planFeatures.set(null);
-                      }
-                    } else {
-                      localStorage.removeItem('auth_subscription_plan_code');
-                      localStorage.removeItem('auth_subscription_expires_at');
-                      localStorage.removeItem('auth_subscription_status');
-                      localStorage.removeItem('auth_plan_features');
-
-                      this.subscriptionPlanCode.set('free');
-                      this.subscriptionExpiresAt.set(null);
-                      this.subscriptionStatus.set('active');
-                      this.planFeatures.set(null);
-                    }
-
-                    if (verifyRes.system_contacts) {
-                      localStorage.setItem('auth_system_contacts', JSON.stringify(verifyRes.system_contacts));
-                      this.systemContacts.set(verifyRes.system_contacts);
-                    } else {
-                      localStorage.removeItem('auth_system_contacts');
-                      this.systemContacts.set([]);
-                    }
-                  }
-                  this.skipNextSubscriptionSync = true;
-                  this.web3Service.walletConnected.set(true);
-                  this.showToast('Kết nối và xác thực ví thành công!', 'success');
-                  this.isWalletModalOpen.set(false);
-
-                  // Thiết lập ngày mặc định cho dashboard nếu chưa có
-                  const today = new Date();
-                  const formatDateStr = (d: Date) => {
-                    const year = d.getFullYear();
-                    const month = String(d.getMonth() + 1).padStart(2, '0');
-                    const day = String(d.getDate()).padStart(2, '0');
-                    return `${year}-${month}-${day}`;
-                  };
-                  if (!this.dashboardStartDate()) {
-                    const check7 = new Date();
-                    check7.setDate(today.getDate() - 6);
-                    this.dashboardStartDate.set(formatDateStr(check7));
-                  }
-                  if (!this.dashboardEndDate()) {
-                    this.dashboardEndDate.set(formatDateStr(today));
-                  }
-
-                  if (!this.router.url.includes('/dashboard')) {
-                    this.router.navigate(['/dashboard']);
-                  }
-                  resolve(true);
-                } else {
-                  resolve(false);
-                }
-              },
-              error: (err) => {
-                this.isWaitingForSignature.set(false);
-                this.isCurrentlySigning.set(false);
-                this.web3Service.disconnectWallet();
-                this.showToast('Xác thực chữ ký thất bại!', 'error');
-                resolve(false);
-              }
-            });
-          } catch (e) {
-            this.isWaitingForSignature.set(false);
-            this.isCurrentlySigning.set(false);
-            this.web3Service.disconnectWallet();
-            this.showToast('Bạn đã từ chối ký xác thực!', 'error');
-            resolve(false);
-          }
-        },
-        error: (err) => {
-          this.isWaitingForSignature.set(false);
-          this.isCurrentlySigning.set(false);
-          console.error('Lỗi lấy nonce từ server:', err, 'địa chỉ ví:', address);
-          this.web3Service.disconnectWallet();
-          this.showToast(`Lỗi lấy mã xác thực từ server! (Ví: ${address})`, 'error');
-          resolve(false);
-        }
-      });
-    });
-  }
-
-  // Kết nối và Yêu cầu Ký ví Web3 Auth
-  public async connectWalletAndSign() {
-    if (this.isCurrentlySigning()) return;
-    const isConnected = await this.web3Service.connectWallet();
-    if (isConnected) {
-      const address = this.web3Service.currentAccount();
-      if (!address) return;
-      await this.requestSignatureForAddress(address);
-    }
-  }
-
-  // Ký lại xác thực khi bấm nút "Ký ngay"
-  public async retrySign() {
-    if (this.isCurrentlySigning()) return;
-    if (!this.pendingNonceMessage || !this.pendingAddress) return;
-    this.isCurrentlySigning.set(true);
-    try {
-      const signature = await this.web3Service.signMessage(this.pendingNonceMessage);
-      this.isWaitingForSignature.set(false);
-
-      this.apiService.verifySignature(this.pendingAddress, signature).subscribe({
-        next: (verifyRes) => {
-          this.isCurrentlySigning.set(false);
-          if (verifyRes.token) {
-            this.apiService.setToken(verifyRes.token);
-            if (typeof window !== 'undefined') {
-              localStorage.setItem('auth_address', this.pendingAddress);
-              localStorage.setItem('auth_logged_in', 'true');
-              localStorage.setItem('auth_is_super_admin', verifyRes.is_super_admin ? 'true' : 'false');
-              this.isSuperAdmin.set(!!verifyRes.is_super_admin);
-
-              if (verifyRes.role) {
-                localStorage.setItem('auth_role', verifyRes.role);
-                this.currentUserRole.set(verifyRes.role);
-              } else {
-                localStorage.removeItem('auth_role');
-                this.currentUserRole.set('Chủ cửa hàng');
-              }
-              if (verifyRes.permissions) {
-                const permStr = JSON.stringify(verifyRes.permissions);
-                localStorage.setItem('auth_permissions', permStr);
-                this.currentUserPermissions.set(verifyRes.permissions);
-              } else {
-                localStorage.removeItem('auth_permissions');
-                this.currentUserPermissions.set(null);
-              }
-
-              if (verifyRes.subscription) {
-                const sub = verifyRes.subscription;
-                localStorage.setItem('auth_subscription_plan_code', sub.plan_code || 'free');
-                localStorage.setItem('auth_subscription_expires_at', sub.subscription_expires_at || '');
-                localStorage.setItem('auth_subscription_status', sub.subscription_status || 'active');
-
-                this.subscriptionPlanCode.set(sub.plan_code || 'free');
-                this.subscriptionExpiresAt.set(sub.subscription_expires_at || null);
-                this.subscriptionStatus.set(sub.subscription_status || 'active');
-
-                if (sub.features) {
-                  localStorage.setItem('auth_plan_features', JSON.stringify(sub.features));
-                  this.planFeatures.set(sub.features);
-                } else {
-                  localStorage.removeItem('auth_plan_features');
-                  this.planFeatures.set(null);
-                }
-              } else {
-                localStorage.removeItem('auth_subscription_plan_code');
-                localStorage.removeItem('auth_subscription_expires_at');
-                localStorage.removeItem('auth_subscription_status');
-                localStorage.removeItem('auth_plan_features');
-
-                this.subscriptionPlanCode.set('free');
-                this.subscriptionExpiresAt.set(null);
-                this.subscriptionStatus.set('active');
-                this.planFeatures.set(null);
-              }
-
-              if (verifyRes.system_contacts) {
-                localStorage.setItem('auth_system_contacts', JSON.stringify(verifyRes.system_contacts));
-                this.systemContacts.set(verifyRes.system_contacts);
-              } else {
-                localStorage.removeItem('auth_system_contacts');
-                this.systemContacts.set([]);
-              }
-            }
-            this.skipNextSubscriptionSync = true;
-            this.web3Service.walletConnected.set(true);
-            this.showToast('Kết nối và xác thực ví thành công!', 'success');
-            this.isWalletModalOpen.set(false);
-            if (!this.router.url.includes('/dashboard')) {
-              this.router.navigate(['/dashboard']);
-            }
-          }
-        },
-        error: () => {
-          this.isWaitingForSignature.set(false);
-          this.isCurrentlySigning.set(false);
-          this.web3Service.disconnectWallet();
-          this.showToast('Phiên ký đã hết hạn. Vui lòng kết nối ví lại!', 'error');
-        }
-      });
-    } catch (e) {
-      this.isCurrentlySigning.set(false);
-      this.showToast('Bạn đã từ chối ký xác thực!', 'error');
-    }
-  }
-
-  // Hủy tiến trình ký
-  public cancelSign() {
-    this.isWaitingForSignature.set(false);
-    this.pendingNonceMessage = '';
-    this.pendingAddress = '';
-    this.web3Service.disconnectWallet();
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('auth_logged_in');
-    }
-    this.showToast('Đã hủy xác thực ví.', 'error');
-  }
-
-  // Xử lý khi tài khoản ví thay đổi
   public handleAccountSwitch(newAccount: string) {
     this.apiService.removeToken();
     this.apiService.logout().subscribe({
@@ -1351,13 +737,31 @@ export class StateService {
       localStorage.removeItem('auth_logged_in');
       localStorage.removeItem('auth_role');
       localStorage.removeItem('auth_permissions');
+      localStorage.removeItem('auth_is_super_admin');
+      localStorage.removeItem('auth_subscription_plan_code');
+      localStorage.removeItem('auth_subscription_expires_at');
+      localStorage.removeItem('auth_subscription_status');
+      localStorage.removeItem('auth_plan_features');
+      localStorage.removeItem('auth_system_contacts');
     }
 
-    this.cart.set([]);
-    this.dashboardData.set(null);
-    this.products.set([]);
-    this.orders.set([]);
-    this.categoriesList.set([]);
+    // Reset Auth signals
+    this.authService.isAuthLoggedIn.set(false);
+    this.authService.currentUserRole.set('Chủ cửa hàng');
+    this.authService.currentUserPermissions.set(null);
+    this.authService.isSuperAdmin.set(false);
+    this.authService.subscriptionPlanCode.set('free');
+    this.authService.subscriptionExpiresAt.set(null);
+    this.authService.subscriptionStatus.set('active');
+    this.authService.planFeatures.set(null);
+    this.authService.systemContacts.set([]);
+
+    // Reset stores data
+    this.cartStore.clearCart();
+    this.dashboardStore.dashboardData.set(null);
+    this.productStore.products.set([]);
+    this.orderStore.orders.set([]);
+    this.productStore.categoriesList.set([]);
 
     if (newAccount) {
       this.showToast('Phát hiện tài khoản ví thay đổi. Đang yêu cầu ký xác thực lại...', 'success');
@@ -1367,7 +771,6 @@ export class StateService {
     }
   }
 
-  // Sao chép địa chỉ ví
   public copyAddress(customAddress?: string) {
     const address = customAddress || this.web3Service.currentAccount();
     if (!address) return;
@@ -1412,100 +815,9 @@ export class StateService {
     }
   }
 
-  public hasFeature(featureKey: string): boolean {
-    if (!this.web3Service.walletConnected()) {
-      return true;
-    }
-
-    let features = this.planFeatures();
-    if (features && typeof features === 'string') {
-      try {
-        features = JSON.parse(features);
-      } catch (e) {
-        features = null;
-      }
-    }
-
-    if (features && features[featureKey] !== undefined) {
-      return !!features[featureKey];
-    }
-
-    const planCode = this.subscriptionPlanCode() || 'free';
-    const defaultFeatures = DEFAULT_PLAN_FEATURES[planCode];
-    if (defaultFeatures && defaultFeatures[featureKey] !== undefined) {
-      return !!defaultFeatures[featureKey];
-    }
-
-    return true;
-  }
-
-  public getFeatureLimit(featureKey: string): number {
-    let features = this.planFeatures();
-    if (features && typeof features === 'string') {
-      try {
-        features = JSON.parse(features);
-      } catch (e) {
-        features = null;
-      }
-    }
-
-    if (features && features[featureKey] !== undefined) {
-      return Number(features[featureKey]);
-    }
-
-    const planCode = this.subscriptionPlanCode() || 'free';
-    const defaultFeatures = DEFAULT_PLAN_FEATURES[planCode];
-    if (defaultFeatures && defaultFeatures[featureKey] !== undefined) {
-      return Number(defaultFeatures[featureKey]);
-    }
-
-    return -1;
-  }
-
-  public getFeatureConfig(featureKey: string): FeatureConfig | undefined {
-    return FEATURE_CONFIGS.find(cfg => cfg.key === featureKey);
-  }
-
-  public getFeatureConfigByTab(tab: string): FeatureConfig | undefined {
-    return FEATURE_CONFIGS.find(cfg => cfg.tab === tab);
-  }
-
-  // Kích hoạt mở modal blocked & nâng cấp tính năng
-  public triggerUpgradeModal(featureKey: string, featureName: string) {
-    this.lockedFeatureKey.set(featureKey);
-    this.lockedFeatureName.set(featureName);
-
-    this.isWalletModalOpen.set(false);
-    this.isWaitingForSignature.set(false);
-    this.isSendTokenModalOpen.set(false);
-    this.isCloseShiftModalOpen.set(false);
-    this.isStartShiftModalOpen.set(false);
-    this.isMobileMenuOpen.set(false);
-
-    this.upgradeModalStep.set(1);
-    this.isUpgradeModalOpen.set(true);
-  }
-
-  // Mở trực tiếp step 2 nâng cấp
-  public triggerUpgradeModalDirectly(featureKey: string, featureName: string) {
-    this.lockedFeatureKey.set(featureKey);
-    this.lockedFeatureName.set(featureName);
-
-    this.isWalletModalOpen.set(false);
-    this.isWaitingForSignature.set(false);
-    this.isSendTokenModalOpen.set(false);
-    this.isCloseShiftModalOpen.set(false);
-    this.isStartShiftModalOpen.set(false);
-    this.isMobileMenuOpen.set(false);
-
-    this.upgradeModalStep.set(2);
-    this.isUpgradeModalOpen.set(true);
-  }
-
   // Chuyển đổi mạng (Chain) trên ví Web3
   public async switchChain(chainId: string) {
     if (!this.web3Service.walletConnected() || !this.web3Service.currentAccount()) {
-      // Cho phép cập nhật cấu hình mạng mong muốn ngay cả khi ví chưa kết nối
       this.web3Service.configuredChainId.set(chainId);
       this.showToast(`Đã chọn mạng kết nối mong muốn: ${this.web3Service.getNetworkNameByChainId(chainId)}!`, 'success');
       return;

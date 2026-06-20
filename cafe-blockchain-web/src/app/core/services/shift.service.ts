@@ -1,0 +1,169 @@
+import { Injectable, inject, signal } from '@angular/core';
+import { ShiftStore } from '@features/shifts/store/shift.store';
+import { Web3Service } from './web3.service';
+import { ApiService } from './api.service';
+import { ToastService } from './toast.service';
+import { AuthService } from './auth.service';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ShiftService {
+  private readonly shiftStore = inject(ShiftStore);
+  private readonly web3Service = inject(Web3Service);
+  private readonly apiService = inject(ApiService);
+  private readonly toastService = inject(ToastService);
+  private readonly authService = inject(AuthService);
+
+  public isLoading = signal<boolean>(false);
+  public readonly currentShift = this.shiftStore.currentShift;
+  public readonly shifts = this.shiftStore.shifts;
+  public readonly isStartShiftModalOpen = this.shiftStore.isStartShiftModalOpen;
+  public readonly isCloseShiftModalOpen = this.shiftStore.isCloseShiftModalOpen;
+  public readonly initialCashInput = this.shiftStore.initialCashInput;
+  public readonly actualCashInput = this.shiftStore.actualCashInput;
+  public readonly closeShiftNote = this.shiftStore.closeShiftNote;
+  public readonly isSubmittingShift = this.isLoading;
+  public readonly shiftSummary = this.shiftStore.shiftSummary;
+  public readonly isShiftSummaryLoading = this.shiftStore.isShiftSummaryLoading;
+
+  private lastShiftSummaryLoadedTime = 0;
+
+  // Trạng thái blocked của subscription (sẽ được delegate hoặc check thông qua AuthService)
+  private isSubscriptionBlocked() {
+    // Để tránh phụ thuộc chéo vòng phức tạp, ta sẽ tự check dựa trên trạng thái thuê bao của AuthService
+    if (this.authService.isSuperAdmin()) return false;
+    if (this.authService.subscriptionStatus() === 'suspended') return true;
+    
+    const expiresAt = this.authService.subscriptionExpiresAt();
+    if (expiresAt) {
+      return new Date().getTime() > new Date(expiresAt).getTime();
+    }
+    return false;
+  }
+
+  public refreshCurrentShift(onSuccess?: (shift: any) => void) {
+    if (this.isSubscriptionBlocked()) return;
+    this.shiftStore.refreshCurrentShift(
+      this.authService.hasPermission('shifts') && this.authService.hasFeature('enable_shifts'),
+      onSuccess
+    );
+  }
+
+  public refreshShifts() {
+    if (this.isSubscriptionBlocked()) return;
+    this.shiftStore.refreshShifts(
+      this.authService.hasPermission('shifts') && this.authService.hasFeature('enable_shifts')
+    );
+  }
+
+  public openShift(initialCash: number, onSuccess?: () => void) {
+    if (!this.web3Service.walletConnected()) return;
+    if (!this.authService.hasFeature('enable_shifts')) return;
+    if (this.isLoading()) return;
+    this.isLoading.set(true);
+
+    this.shiftStore.openShift(initialCash, {
+      onSuccess: (res) => {
+        this.isLoading.set(false);
+        this.toastService.showToast('Vào ca làm việc thành công', 'success');
+        if (onSuccess) onSuccess();
+      },
+      onError: (err) => {
+        this.isLoading.set(false);
+        this.toastService.showToast(err.error?.message || 'Không thể mở ca làm việc', 'error');
+      }
+    });
+  }
+
+  public closeShift(actualCash: number, note?: string, onSuccess?: () => void) {
+    if (!this.web3Service.walletConnected()) return;
+    if (!this.authService.hasFeature('enable_shifts')) return;
+    if (this.isLoading()) return;
+    this.isLoading.set(true);
+
+    this.shiftStore.closeShift(actualCash, note, {
+      onSuccess: (res) => {
+        this.isLoading.set(false);
+        this.toastService.showToast('Kết thúc ca trực thành công', 'success');
+        if (onSuccess) onSuccess();
+        this.refreshShifts();
+      },
+      onError: (err) => {
+        this.isLoading.set(false);
+        this.toastService.showToast(err.error?.message || 'Không thể kết thúc ca làm việc', 'error');
+      }
+    });
+  }
+
+  public onActualCashInput(event: any) {
+    const inputVal = event.target.value;
+    const cleanVal = inputVal.replace(/[^0-9]/g, '');
+    const numVal = Number(cleanVal) || 0;
+    this.shiftStore.actualCashInput.set(numVal);
+    event.target.value = numVal > 0 ? numVal.toLocaleString('en-US') : '';
+  }
+
+  public onInitialCashInput(event: any) {
+    const inputVal = event.target.value;
+    const cleanVal = inputVal.replace(/[^0-9]/g, '');
+    const numVal = Number(cleanVal) || 0;
+    this.shiftStore.initialCashInput.set(numVal);
+    event.target.value = numVal > 0 ? numVal.toLocaleString('en-US') : '';
+  }
+
+  public openStartShiftModal() {
+    if (!this.authService.hasFeature('enable_shifts')) return;
+    this.shiftStore.initialCashInput.set(0);
+    this.shiftStore.isStartShiftModalOpen.set(true);
+  }
+
+  public confirmStartShift() {
+    if (this.isLoading()) return;
+    const cash = this.shiftStore.initialCashInput();
+    this.openShift(cash, () => {
+      this.shiftStore.isStartShiftModalOpen.set(false);
+      this.shiftStore.initialCashInput.set(0);
+    });
+  }
+
+  public openCloseShiftModal() {
+    if (!this.authService.hasFeature('enable_shifts')) return;
+    if (this.shiftStore.isShiftSummaryLoading()) return;
+
+    this.shiftStore.closeShiftNote.set('');
+    this.shiftStore.isCloseShiftModalOpen.set(true);
+
+    const now = Date.now();
+    if (this.shiftStore.shiftSummary() && (now - this.lastShiftSummaryLoadedTime < 5000)) {
+      const expected = this.shiftStore.shiftSummary()?.expected_cash ?? 0;
+      this.shiftStore.actualCashInput.set(expected);
+      return;
+    }
+
+    this.shiftStore.isShiftSummaryLoading.set(true);
+    this.apiService.getShiftSummary().subscribe({
+      next: (res) => {
+        this.shiftStore.shiftSummary.set(res);
+        const expected = res?.expected_cash ?? 0;
+        this.shiftStore.actualCashInput.set(expected);
+        this.lastShiftSummaryLoadedTime = Date.now();
+        this.shiftStore.isShiftSummaryLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Lỗi tải thống kê ca trực:', err);
+        this.shiftStore.isShiftSummaryLoading.set(false);
+      }
+    });
+  }
+
+  public confirmCloseShift() {
+    if (this.isLoading()) return;
+    const actual = this.shiftStore.actualCashInput();
+    const note = this.shiftStore.closeShiftNote();
+    this.closeShift(actual, note, () => {
+      this.shiftStore.isCloseShiftModalOpen.set(false);
+      this.shiftStore.shiftSummary.set(null);
+    });
+  }
+}
