@@ -208,28 +208,18 @@
   } @else {
     <div class="grid grid-cols-1 lg:grid-cols-6 gap-6">
       <!-- CỘT 1 & 2: THỰC ĐƠN (LEFT) -->
-            <!-- BANNER TRẠNG THÁI TRÊN MOBILE (KHI CHƯA SẴN SÀNG BÁN HÀNG) -->
+      <!-- BANNER TRẠNG THÁI TRÊN MOBILE (KHI CHƯA SẴN SÀNG BÁN HÀNG) -->
       @if (!web3Service.walletConnected() || !stateService.hasPermission('pos') || !stateService.currentShift() || !stateService.currentShift().id) {
-        <div app-card class="lg:hidden p-6 mb-6">
-          @if (!web3Service.walletConnected()) {
-            <ng-container *ngTemplateOutlet="walletConnectTemplate"></ng-container>
-          } @else if (!stateService.hasPermission('pos')) {
-            <ng-container *ngTemplateOutlet="accessRestrictedTemplate"></ng-container>
-          } @else {
-            <ng-container *ngTemplateOutlet="startShiftTemplate"></ng-container>
-          }
-        </div>
-      }
-            <!-- BANNER TRẠNG THÁI TRÊN MOBILE (KHI CHƯA SẴN SÀNG BÁN HÀNG) -->
-      @if (!web3Service.walletConnected() || !stateService.hasPermission('pos') || !stateService.currentShift() || !stateService.currentShift().id) {
-        <div app-card class="lg:hidden p-6 mb-6">
-          @if (!web3Service.walletConnected()) {
-            <ng-container *ngTemplateOutlet="walletConnectTemplate"></ng-container>
-          } @else if (!stateService.hasPermission('pos')) {
-            <ng-container *ngTemplateOutlet="accessRestrictedTemplate"></ng-container>
-          } @else {
-            <ng-container *ngTemplateOutlet="startShiftTemplate"></ng-container>
-          }
+        <div class="lg:hidden mb-6">
+          <div app-card class="p-6">
+            @if (!web3Service.walletConnected()) {
+              <ng-container *ngTemplateOutlet="walletConnectTemplate"></ng-container>
+            } @else if (!stateService.hasPermission('pos')) {
+              <ng-container *ngTemplateOutlet="accessRestrictedTemplate"></ng-container>
+            } @else {
+              <ng-container *ngTemplateOutlet="startShiftTemplate"></ng-container>
+            }
+          </div>
         </div>
       }
       <div class="lg:col-span-4 space-y-6">
