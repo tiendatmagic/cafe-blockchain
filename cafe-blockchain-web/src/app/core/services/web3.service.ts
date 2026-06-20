@@ -245,7 +245,6 @@ export class Web3Service {
       // Nếu sau khi khởi tạo AppKit xong mà ví không thực sự kết nối, nhưng DApp vẫn đang ở trạng thái connected (do restore từ localStorage)
       // thì tức là ví đã thực sự bị ngắt kết nối phía ngoài, ta cần reset và đăng xuất.
       if (!this.appKitIsConnected && this.walletConnected()) {
-        console.log('[Web3] AppKit initialization finished and wallet is not connected. Resetting state.');
         this.resetWalletState(true);
         this.emitAccountChange('');
       }
@@ -614,6 +613,11 @@ export class Web3Service {
         return true;
       }
 
+      // Xóa sạch localStorage trước khi mở modal kết nối mới để tránh kẹt session rác gây lỗi Connection declined
+      if (typeof window !== 'undefined') {
+        localStorage.clear();
+      }
+
       // 2. Nếu chưa kết nối, mở modal chọn ví của AppKit
       await this.modal.open();
 
@@ -672,6 +676,9 @@ export class Web3Service {
                   resolved = true;
                   unsubscribeAccount();
                   unsubscribeEvents();
+                  if (typeof window !== 'undefined') {
+                    localStorage.clear();
+                  }
                   resolve(false);
                 }
               }
@@ -682,6 +689,9 @@ export class Web3Service {
     } catch (err: any) {
       console.error('Lỗi khi mở modal kết nối:', err);
       this.walletError.set(err.message || 'Lỗi kết nối ví.');
+      if (typeof window !== 'undefined') {
+        localStorage.clear();
+      }
       return false;
     }
   }
@@ -798,8 +808,7 @@ export class Web3Service {
     this.walletConnected.set(false);
     this.isOwnerContract.set(false);
     if (forceLogout && typeof window !== 'undefined') {
-      localStorage.removeItem('auth_address');
-      localStorage.removeItem('auth_logged_in');
+      localStorage.clear();
     }
   }
 

@@ -670,32 +670,7 @@ export class StateService {
           this.settingStore.settings.set(settings);
           this.settingStore.applyAndCacheDynamicColors(settings.primary_color, settings.secondary_color);
           this.web3Service.updateConfig(settings);
-
-          // Nếu có website_slug, tải menu storefront công khai để hiển thị
-          if (settings.website_slug) {
-            this.apiService.getPublicStoreBySlug(settings.website_slug).subscribe({
-              next: (storeRes) => {
-                if (storeRes) {
-                  const publicProducts = storeRes.products || [];
-                  const publicCategories = storeRes.categories || [];
-
-                  // Chỉ gán nếu ví chưa kết nối
-                  if (!this.web3Service.walletConnected()) {
-                    this.products.set(publicProducts);
-                    this.categoriesList.set(publicCategories);
-                    this.productStore.loadPosProducts();
-                  }
-                }
-                this.isInitialLoading.set(false);
-              },
-              error: (err) => {
-                console.error('[StateService] Lỗi tải menu storefront công khai:', err);
-                this.isInitialLoading.set(false);
-              }
-            });
-          } else {
-            this.isInitialLoading.set(false);
-          }
+          this.isInitialLoading.set(false);
         } else {
           this.isInitialLoading.set(false);
         }
