@@ -661,6 +661,10 @@ export class AdminSaaSComponent implements OnInit {
         this.stateService.showToast(`Liên hệ thứ ${i + 1}: Số điện thoại không được để trống.`, 'error');
         return;
       }
+      if (!/^[0-9]+$/.test(c.phone)) {
+        this.stateService.showToast(`Liên hệ thứ ${i + 1}: Số điện thoại chỉ được chứa các ký số.`, 'error');
+        return;
+      }
     }
 
     this.isSavingContacts.set(true);
