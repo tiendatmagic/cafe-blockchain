@@ -16,7 +16,7 @@ import {
 } from '@angular/forms';
 import { StateService } from '@core/services/state.service';
 import { ApiService } from '@core/services/api.service';
-import { ConfirmModalComponent } from '@shared/components/confirm-modal/confirm-modal.component';
+import { ModalService } from '@core/services/modal.service';
 import { CustomSelectComponent } from '@shared/components/custom-select/custom-select.component';
 import { AccessRestrictedComponent } from '@shared/components/access-restricted/access-restricted.component';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
@@ -26,12 +26,13 @@ import {
   TableColumn,
   TableCellDirective,
 } from '@shared/components/table/table.component';
-import { ModalComponent } from '@shared/components/modal/modal.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { CustomCheckboxComponent } from '@shared/components/custom-checkbox/custom-checkbox.component';
+import { StaffFormModalComponent } from './components/staff-form-modal/staff-form-modal.component';
+import { RoleFormModalComponent } from './components/role-form-modal/role-form-modal.component';
 
 @Component({
   selector: 'app-staffs',
@@ -40,14 +41,12 @@ import { CustomCheckboxComponent } from '@shared/components/custom-checkbox/cust
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    ConfirmModalComponent,
     CustomSelectComponent,
     AccessRestrictedComponent,
     PageHeaderComponent,
     Web3ConnectPromptComponent,
     TableComponent,
     TableCellDirective,
-    ModalComponent,
     IconComponent,
     TabGroupComponent,
     SkeletonLoaderComponent,
@@ -61,6 +60,7 @@ export class StaffsComponent implements OnInit {
   public readonly stateService = inject(StateService);
   private readonly apiService = inject(ApiService);
   private readonly fb = inject(FormBuilder);
+  private readonly modalService = inject(ModalService);
 
   public readonly staffColumns: TableColumn[] = [
     { key: 'name', header: 'Nhân viên', sortable: false, class: 'pl-6 whitespace-nowrap' },
@@ -190,28 +190,6 @@ export class StaffsComponent implements OnInit {
     return maxStaffs >= 0 && (this.stateService.staffs() || []).length >= maxStaffs;
   });
 
-  // Quản lý Nhân viên
-  public staffForm!: FormGroup;
-  public readonly isStaffFormOpen = signal<boolean>(false);
-  public readonly editingStaff = signal<any | null>(null);
-  public readonly isSavingStaff = signal<boolean>(false);
-
-  // Quản lý Vai trò
-  public roleForm!: FormGroup;
-  public readonly isRoleFormOpen = signal<boolean>(false);
-  public readonly editingRole = signal<any | null>(null);
-  public readonly isSavingRole = signal<boolean>(false);
-
-  // Modal xác nhận xóa
-  public readonly confirmDeleteData = signal<{
-    type: 'staff' | 'role';
-    id: number;
-    title: string;
-    desc: string;
-  } | null>(null);
-  public readonly confirmResetRolesOpen = signal<boolean>(false);
-  public readonly isDeleting = signal<boolean>(false);
-
   // Danh sách các module trong Web POS hỗ trợ phân quyền
   public readonly modules = [
     {
@@ -266,33 +244,7 @@ export class StaffsComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.initStaffForm();
-    this.initRoleForm();
     this.stateService.refreshStaffsAndRoles();
-  }
-
-  // Khởi tạo form Nhân viên
-  private initStaffForm() {
-    this.staffForm = this.fb.group({
-      name: ['', [Validators.required, Validators.maxLength(255)]],
-      phone: ['', [Validators.required, Validators.maxLength(20)]],
-      wallet_address: ['', [Validators.required, Validators.pattern(/^0x[a-fA-F0-9]{40}$/i)]],
-      role_id: [null, [Validators.required]],
-    });
-  }
-
-  // Khởi tạo form Vai trò
-  private initRoleForm() {
-    // Tạo group permissions động cho checkbox
-    const permissionsGroup: any = {};
-    this.modules.forEach((mod) => {
-      permissionsGroup[mod.key] = [false];
-    });
-
-    this.roleForm = this.fb.group({
-      name: ['', [Validators.required, Validators.maxLength(255)]],
-      permissions: this.fb.group(permissionsGroup),
-    });
   }
 
   public setSubTab(tab: 'staffs' | 'roles') {
@@ -318,214 +270,143 @@ export class StaffsComponent implements OnInit {
       );
       return;
     }
-    this.editingStaff.set(null);
-    this.staffForm.reset();
-    this.isStaffFormOpen.set(true);
+    this.modalService.open(StaffFormModalComponent, {
+      title: 'Thêm nhân viên mới',
+      size: 'md',
+      data: {
+        editingStaff: null,
+        roleOptions: this.roleOptions,
+        isStaffLimitReached: this.isStaffLimitReached(),
+      },
+    }).afterClosed$.subscribe((success) => {
+      if (success) {
+        this.staffCurrentPage.set(1);
+        this.stateService.refreshStaffsAndRoles();
+      }
+    });
   }
 
   // Mở form sửa nhân viên
   public openEditStaff(staff: any) {
-    this.editingStaff.set(staff);
-    this.staffForm.patchValue({
-      name: staff.name,
-      phone: staff.phone,
-      wallet_address: staff.wallet_address,
-      role_id: staff.role_id,
+    this.modalService.open(StaffFormModalComponent, {
+      title: 'Sửa thông tin nhân viên',
+      size: 'md',
+      data: {
+        editingStaff: staff,
+        roleOptions: this.roleOptions,
+        isStaffLimitReached: this.isStaffLimitReached(),
+      },
+    }).afterClosed$.subscribe((success) => {
+      if (success) {
+        this.stateService.refreshStaffsAndRoles();
+      }
     });
-    this.isStaffFormOpen.set(true);
   }
 
   // Mở form thêm vai trò
   public openAddRole() {
-    this.editingRole.set(null);
-    this.roleForm.reset();
-
-    // Đặt mặc định false cho tất cả checkbox quyền
-    const defaultPerms: any = {};
-    this.modules.forEach((mod) => {
-      defaultPerms[mod.key] = false;
+    this.modalService.open(RoleFormModalComponent, {
+      title: 'Tạo vai trò mới',
+      size: 'xl',
+      data: {
+        editingRole: null,
+        modules: this.modules,
+      },
+    }).afterClosed$.subscribe((success) => {
+      if (success) {
+        this.roleCurrentPage.set(1);
+        this.stateService.refreshStaffsAndRoles();
+      }
     });
-    this.roleForm.patchValue({ name: '', permissions: defaultPerms });
-    this.isRoleFormOpen.set(true);
   }
 
   // Mở form sửa vai trò
   public openEditRole(role: any) {
-    this.editingRole.set(role);
-
-    const perms = role.permissions || {};
-    const formattedPerms: any = {};
-    this.modules.forEach((mod) => {
-      formattedPerms[mod.key] = !!perms[mod.key];
-    });
-
-    this.roleForm.patchValue({
-      name: role.name,
-      permissions: formattedPerms,
-    });
-    this.isRoleFormOpen.set(true);
-  }
-
-  // Lưu thông tin nhân viên (Thêm hoặc Cập nhật)
-  public saveStaff() {
-    if (this.isSavingStaff()) return;
-
-    if (this.staffForm.invalid) {
-      this.staffForm.markAllAsTouched();
-      return;
-    }
-
-    const staffId = this.editingStaff()?.id;
-    if (!staffId) {
-      const maxStaffs = this.stateService.getFeatureLimit('max_staffs');
-      if (maxStaffs >= 0 && (this.stateService.staffs() || []).length >= maxStaffs) {
-        this.stateService.showToast(
-          `Gói cước hiện tại chỉ hỗ trợ tối đa ${maxStaffs} nhân viên. Vui lòng nâng cấp gói cước!`,
-          'error',
-        );
-        return;
+    this.modalService.open(RoleFormModalComponent, {
+      title: 'Thiết lập vai trò & phân quyền',
+      size: 'xl',
+      data: {
+        editingRole: role,
+        modules: this.modules,
+      },
+    }).afterClosed$.subscribe((success) => {
+      if (success) {
+        this.stateService.refreshStaffsAndRoles();
       }
-    }
-
-    this.isSavingStaff.set(true);
-    const data = this.staffForm.value;
-
-    const request = staffId
-      ? this.apiService.updateStaff(staffId, data)
-      : this.apiService.createStaff(data);
-
-    request.subscribe({
-      next: (res) => {
-        this.stateService.showToast(
-          staffId ? 'Cập nhật nhân viên thành công!' : 'Thêm nhân viên mới thành công!',
-          'success',
-        );
-        this.isStaffFormOpen.set(false);
-        if (!staffId) {
-          this.staffCurrentPage.set(1);
-        }
-        this.stateService.refreshStaffsAndRoles();
-        this.isSavingStaff.set(false);
-      },
-      error: (err) => {
-        const errorMsg = err.error?.message || 'Có lỗi xảy ra, vui lòng thử lại.';
-        this.stateService.showToast(errorMsg, 'error');
-        this.isSavingStaff.set(false);
-      },
-    });
-  }
-
-  // Lưu thông tin vai trò
-  public saveRole() {
-    if (this.isSavingRole()) return;
-
-    if (this.roleForm.invalid) {
-      this.roleForm.markAllAsTouched();
-      return;
-    }
-
-    this.isSavingRole.set(true);
-    const data = this.roleForm.value;
-    const roleId = this.editingRole()?.id;
-
-    const request = roleId
-      ? this.apiService.updateRole(roleId, data)
-      : this.apiService.createRole(data);
-
-    request.subscribe({
-      next: (res) => {
-        this.stateService.showToast(
-          roleId ? 'Cập nhật vai trò thành công!' : 'Thêm vai trò mới thành công!',
-          'success',
-        );
-        this.isRoleFormOpen.set(false);
-        if (!roleId) {
-          this.roleCurrentPage.set(1);
-        }
-        this.stateService.refreshStaffsAndRoles();
-        this.isSavingRole.set(false);
-      },
-      error: (err) => {
-        const errorMsg = err.error?.message || 'Có lỗi xảy ra, vui lòng thử lại.';
-        this.stateService.showToast(errorMsg, 'error');
-        this.isSavingRole.set(false);
-      },
     });
   }
 
   // Trigger xác nhận xóa
   public triggerDeleteStaff(staff: any) {
-    this.confirmDeleteData.set({
-      type: 'staff',
-      id: staff.id,
+    this.modalService.confirm({
       title: 'Xóa nhân viên',
-      desc: `Bạn có chắc chắn muốn xóa nhân viên "${staff.name}" không? Ví của nhân viên này sẽ bị ngắt kết nối khỏi hệ thống của quán ngay lập tức.`,
+      description: `Bạn có chắc chắn muốn xóa nhân viên "${staff.name}" không? Ví của nhân viên này sẽ bị ngắt kết nối khỏi hệ thống của quán ngay lập tức.`,
+      confirmText: 'Xóa nhân viên',
+      cancelText: 'Hủy',
+    }).afterClosed$.subscribe((confirm) => {
+      if (confirm) {
+        this.apiService.deleteStaff(staff.id).subscribe({
+          next: () => {
+            this.stateService.showToast('Đã xóa nhân viên thành công!', 'success');
+            this.stateService.refreshStaffsAndRoles();
+            setTimeout(() => {
+              const total = this.stateService.staffs().length;
+              const maxPage = Math.max(1, Math.ceil(total / this.staffsPerPage));
+              if (this.staffCurrentPage() > maxPage) {
+                this.staffCurrentPage.set(maxPage);
+              }
+            }, 300);
+          },
+          error: (err) => {
+            const errorMsg = err.error?.message || 'Không thể xóa tài nguyên này.';
+            this.stateService.showToast(errorMsg, 'error');
+          },
+        });
+      }
     });
   }
 
   public triggerDeleteRole(role: any) {
-    this.confirmDeleteData.set({
-      type: 'role',
-      id: role.id,
+    this.modalService.confirm({
       title: 'Xóa vai trò',
-      desc: `Bạn có chắc chắn muốn xóa vai trò "${role.name}" không? Thao tác này không thể hoàn tác nếu không có nhân viên nào đang sử dụng.`,
-    });
-  }
-
-  // Xử lý xác nhận xóa từ ConfirmModal
-  public onDeleteConfirm() {
-    if (this.isDeleting()) return;
-
-    const data = this.confirmDeleteData();
-    if (!data) return;
-
-    this.isDeleting.set(true);
-
-    const request =
-      data.type === 'staff'
-        ? this.apiService.deleteStaff(data.id)
-        : this.apiService.deleteRole(data.id);
-
-    request.subscribe({
-      next: () => {
-        this.stateService.showToast(
-          data.type === 'staff' ? 'Đã xóa nhân viên thành công!' : 'Đã xóa vai trò thành công!',
-          'success',
-        );
-        this.confirmDeleteData.set(null);
-        this.isDeleting.set(false);
-        this.stateService.refreshStaffsAndRoles();
-
-        // Điều chỉnh trang hiện tại nếu vượt quá số lượng trang tối đa sau khi xóa
-        setTimeout(() => {
-          if (data.type === 'staff') {
-            const total = this.stateService.staffs().length;
-            const maxPage = Math.max(1, Math.ceil(total / this.staffsPerPage));
-            if (this.staffCurrentPage() > maxPage) {
-              this.staffCurrentPage.set(maxPage);
-            }
-          } else {
-            const total = this.stateService.roles().length;
-            const maxPage = Math.max(1, Math.ceil(total / this.rolesPerPage));
-            if (this.roleCurrentPage() > maxPage) {
-              this.roleCurrentPage.set(maxPage);
-            }
-          }
-        }, 300);
-      },
-      error: (err) => {
-        const errorMsg = err.error?.message || 'Không thể xóa tài nguyên này.';
-        this.stateService.showToast(errorMsg, 'error');
-        this.confirmDeleteData.set(null);
-        this.isDeleting.set(false);
-      },
+      description: `Bạn có chắc chắn muốn xóa vai trò "${role.name}" không? Thao tác này không thể hoàn tác nếu không có nhân viên nào đang sử dụng.`,
+      confirmText: 'Xóa vai trò',
+      cancelText: 'Hủy',
+    }).afterClosed$.subscribe((confirm) => {
+      if (confirm) {
+        this.apiService.deleteRole(role.id).subscribe({
+          next: () => {
+            this.stateService.showToast('Đã xóa vai trò thành công!', 'success');
+            this.stateService.refreshStaffsAndRoles();
+            setTimeout(() => {
+              const total = this.stateService.roles().length;
+              const maxPage = Math.max(1, Math.ceil(total / this.rolesPerPage));
+              if (this.roleCurrentPage() > maxPage) {
+                this.roleCurrentPage.set(maxPage);
+              }
+            }, 300);
+          },
+          error: (err) => {
+            const errorMsg = err.error?.message || 'Không thể xóa tài nguyên này.';
+            this.stateService.showToast(errorMsg, 'error');
+          },
+        });
+      }
     });
   }
 
   // Xử lý xác nhận khôi phục vai trò mặc định
-  public onResetRolesConfirm() {
-    this.confirmResetRolesOpen.set(false);
-    this.stateService.resetDefaultRoles();
+  public resetRoles() {
+    this.modalService.confirm({
+      title: 'Khôi phục vai trò mặc định',
+      description: 'Hành động này sẽ tạo lại các vai trò mặc định bị thiếu và cập nhật lại quyền hạn của các vai trò hiện tại (Chủ quán, Quản lý, Thu ngân, Kế toán) về cấu hình ban đầu. Các vai trò tự tạo khác sẽ được giữ nguyên. Bạn có chắc chắn muốn khôi phục?',
+      confirmText: 'Khôi phục',
+      cancelText: 'Hủy',
+    }).afterClosed$.subscribe((confirm) => {
+      if (confirm) {
+        this.stateService.resetDefaultRoles();
+      }
+    });
   }
 
   // Trả về danh sách tên module được kích hoạt quyền để hiển thị tóm tắt

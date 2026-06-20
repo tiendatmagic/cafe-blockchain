@@ -15,7 +15,9 @@ import { RouterModule } from '@angular/router';
 import { StateService } from '@core/services/state.service';
 import { ApiService } from '@core/services/api.service';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
-import { ConfirmModalComponent } from '@shared/components/confirm-modal/confirm-modal.component';
+import { ModalService } from '@core/services/modal.service';
+import { InventoryFormModalComponent } from './components/inventory-form-modal/inventory-form-modal.component';
+import { InventoryDetailModalComponent } from './components/inventory-detail-modal/inventory-detail-modal.component';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
 import { CustomDatePickerComponent } from '@shared/components/custom-date-picker/custom-date-picker.component';
@@ -36,7 +38,6 @@ import { CardComponent } from '@shared/components/card/card.component';
     Web3ConnectPromptComponent,
     AccessRestrictedComponent,
     PaginationComponent,
-    ConfirmModalComponent,
     PageHeaderComponent,
     VNDCurrencyPipe,
     CustomDatePickerComponent,
@@ -54,6 +55,7 @@ export class InventoryComponent implements OnInit {
   public readonly stateService = inject(StateService);
   private readonly apiService = inject(ApiService);
   private readonly router = inject(Router);
+  private readonly modalService = inject(ModalService);
 
   ngOnInit() {}
 
@@ -318,160 +320,54 @@ export class InventoryComponent implements OnInit {
 
   // --- Inventory CRUD ---
   public openAddInventoryModal(type: 'nhap' | 'xuat' | 'kiem' = 'nhap') {
-    this.inventoryForm.set({
-      type: type,
-      note: '',
-      record_date: new Date().toISOString().split('T')[0],
-      items: [{ product_id: 0, product_variant_id: null, quantity: 1, price: 0 }],
+    this.modalService.open(InventoryFormModalComponent, {
+      title: 'Lập phiếu kho mới',
+      size: 'lg',
+      data: { type }
+    }).afterClosed$.subscribe(success => {
+      if (success) {
+        this.refreshInventory();
+      }
     });
-    this.isInventoryModalOpen.set(true);
     this.isInventoryDropdownOpen.set(false);
   }
 
-  public closeInventoryModal() {
-    this.isInventoryModalOpen.set(false);
-  }
-
-  public addInventoryItemRow() {
-    this.inventoryForm.update((form) => ({
-      ...form,
-      items: [...form.items, { product_id: 0, product_variant_id: null, quantity: 1, price: 0 }],
-    }));
-  }
-
-  public removeInventoryItemRow(index: number) {
-    this.inventoryForm.update((form) => {
-      const items = [...form.items];
-      items.splice(index, 1);
-      return { ...form, items };
-    });
-  }
-
-  public updateInventoryItemField(index: number, field: string, value: any) {
-    this.inventoryForm.update((form) => {
-      const items = [...form.items];
-      if (items[index]) {
-        let parsedValue = value;
-        if (field === 'product_id') {
-          parsedValue = Number(value);
-          const prod = this.products().find((p) => p.id === parsedValue);
-          items[index] = {
-            ...items[index],
-            product_id: parsedValue,
-            product_variant_id:
-              prod && prod.variants && prod.variants.length > 0 ? prod.variants[0].id : null,
-            price: prod ? prod.price : 0,
-          };
-        } else if (field === 'product_variant_id') {
-          parsedValue = value ? Number(value) : null;
-          const prodId = items[index].product_id;
-          const prod = this.products().find((p) => p.id === prodId);
-          if (prod && prod.variants && parsedValue) {
-            const variant = prod.variants.find((v: any) => v.id === parsedValue);
-            items[index] = {
-              ...items[index],
-              product_variant_id: parsedValue,
-              price: variant ? variant.price : prod.price,
-            };
-          } else {
-            items[index] = { ...items[index], product_variant_id: parsedValue };
-          }
-        } else {
-          items[index] = {
-            ...items[index],
-            [field]: field === 'price' || field === 'quantity' ? Number(value) : value,
-          };
-        }
-      }
-      return { ...form, items };
-    });
-  }
-
-  public saveInventoryRecord() {
-    const form = this.inventoryForm();
-    if (!form.record_date || form.items.length === 0) {
-      this.stateService.showToast('Vui lòng nhập ngày lập và chọn ít nhất một sản phẩm!', 'error');
-      return;
-    }
-
-    const invalidItem = form.items.some((item: any) => item.product_id <= 0 || item.quantity <= 0);
-    if (invalidItem) {
-      this.stateService.showToast(
-        'Vui lòng chọn sản phẩm và nhập số lượng hợp lệ cho tất cả các dòng!',
-        'error',
-      );
-      return;
-    }
-
-    this.isInventorySaving.set(true);
-    this.apiService.createInventoryRecord(form).subscribe({
-      next: () => {
-        this.stateService.showToast('Tạo phiếu kho thành công!', 'success');
-        this.closeInventoryModal();
-        this.refreshInventory();
-        this.isInventorySaving.set(false);
-      },
-      error: () => {
-        this.stateService.showToast('Tạo phiếu kho thất bại!', 'error');
-        this.isInventorySaving.set(false);
-      },
-    });
-  }
-
   public deleteInventoryRecord(record: any) {
-    this.deletingRecord.set(record);
-    this.isDeleteRecordConfirmOpen.set(true);
+    this.modalService.confirm({
+      title: 'Xóa phiếu kho?',
+      description: `Bạn có chắc chắn muốn xóa phiếu kho "${record.record_code}" không?`,
+      confirmText: 'Xóa',
+      cancelText: 'Hủy bỏ'
+    }).afterClosed$.subscribe(confirmed => {
+      if (confirmed) {
+        this.confirmDeleteInventoryRecord(record);
+      }
+    });
   }
 
-  public confirmDeleteInventoryRecord() {
-    const record = this.deletingRecord();
+  public confirmDeleteInventoryRecord(record: any) {
     if (!record) return;
     const id = record.id;
 
-    this.isDeleteRecordConfirmOpen.set(false);
     this.stateService.isLoading.set(true);
     this.apiService.deleteInventoryRecord(id).subscribe({
       next: () => {
         this.stateService.showToast('Xóa phiếu kho thành công!', 'success');
         this.refreshInventory();
-        this.deletingRecord.set(null);
         this.stateService.isLoading.set(false);
       },
       error: () => {
         this.stateService.showToast('Xóa phiếu kho thất bại!', 'error');
-        this.deletingRecord.set(null);
         this.stateService.isLoading.set(false);
       },
     });
   }
 
   public viewInventoryRecordDetails(record: any) {
-    this.selectedInventoryRecord.set(record);
-    this.isInventoryDetailModalOpen.set(true);
-  }
-
-  public closeInventoryDetailModal() {
-    this.isInventoryDetailModalOpen.set(false);
-    this.selectedInventoryRecord.set(null);
-  }
-
-  // Helpers cho template
-
-  // Tiện ích lấy variants của một sản phẩm
-  public getProductVariants(productId: number): any[] {
-    const prod = this.products().find((p) => p.id === Number(productId));
-    return prod && prod.variants ? prod.variants : [];
-  }
-
-  // Tiện ích lấy danh sách variant options đã được format nhãn kèm giá
-  public getProductVariantsOptions(productId: number): any[] {
-    const variants = this.getProductVariants(productId);
-    return variants.map((v: any) => {
-      const formattedPrice = new Intl.NumberFormat('en-US').format(v.price) + 'đ';
-      return {
-        id: v.id,
-        label: `${v.variant_name} (${formattedPrice})`,
-      };
+    this.modalService.open(InventoryDetailModalComponent, {
+      title: `Chi tiết phiếu kho ${record?.record_code || ''}`,
+      size: 'md',
+      data: record
     });
   }
 }

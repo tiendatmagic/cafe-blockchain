@@ -1,0 +1,307 @@
+<div class="space-y-5 max-h-[80vh] overflow-y-auto px-1">
+  <!-- Loại sản phẩm -->
+  <div class="space-y-1.5 relative focus-within:z-10">
+    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Loại sản phẩm</label>
+    <app-tab-group
+      [options]="productTypeOptions"
+      [activeValue]="form.type"
+      (valueChange)="updateField('type', $event)"
+    ></app-tab-group>
+  </div>
+
+  <!-- Tên món -->
+  <div class="space-y-1.5 relative focus-within:z-10">
+    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Tên món</label>
+    <input
+      type="text"
+      [(ngModel)]="form.name"
+      placeholder="Ví dụ: Bạc xỉu cốt dừa..."
+      class="form-input"
+    />
+  </div>
+
+  <!-- SKU -->
+  <div class="space-y-1.5 relative focus-within:z-10">
+    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Mã sản phẩm (SKU - Tùy chọn)</label>
+    <input
+      type="text"
+      [(ngModel)]="form.sku"
+      placeholder="Ví dụ: CF-BACXIU (Bỏ trống sẽ tự sinh)"
+      class="form-input"
+    />
+  </div>
+
+  <!-- Đơn vị tính -->
+  <div class="space-y-1.5 relative focus-within:z-10">
+    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Đơn vị tính</label>
+    <div class="flex gap-2">
+      <input
+        type="text"
+        [(ngModel)]="form.unit"
+        placeholder="Nhập đơn vị (Ví dụ: Cái, Hộp, Ly...)"
+        class="form-input flex-1"
+      />
+      <app-custom-select
+        [value]="form.unit"
+        (valueChange)="updateField('unit', $event)"
+        [options]="unitSuggestions"
+        valueKey="value"
+        labelKey="label"
+        placeholder="Chọn..."
+        containerClass="w-36 shrink-0"
+        triggerClass="w-full form-input h-[42px]"
+      ></app-custom-select>
+    </div>
+  </div>
+
+  <!-- Mã vạch (Barcode) -->
+  <div class="space-y-1.5 relative focus-within:z-10">
+    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Mã vạch (Barcode)</label>
+    <div class="relative">
+      <input
+        type="text"
+        [(ngModel)]="form.barcode"
+        placeholder="Nhập mã vạch hoặc nhấn quét bằng camera"
+        class="form-input pr-12"
+      />
+      <button
+        type="button"
+        (click)="startBarcodeScan()"
+        class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-xl text-[var(--dynamic-primary)] hover:bg-[var(--dynamic-primary)]/10 dark:text-[var(--dynamic-secondary)] dark:hover:bg-[var(--dynamic-primary)]/20 transition-all shrink-0 cursor-pointer"
+        title="Quét mã vạch bằng camera"
+      >
+        <app-icon name="camera" class="h-4.5 w-4.5" strokeWidth="2" />
+      </button>
+    </div>
+  </div>
+
+  @if (form.type === 'product') {
+    <!-- Đơn giá -->
+    <div class="space-y-1.5 relative focus-within:z-10">
+      <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Đơn giá bán (VND)</label>
+      <input
+        type="number"
+        [(ngModel)]="form.price"
+        class="form-input"
+      />
+    </div>
+  }
+
+  <!-- Giá vốn -->
+  <div class="space-y-1.5 relative focus-within:z-10">
+    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Đơn giá vốn (VND)</label>
+    <input
+      type="number"
+      [(ngModel)]="form.cost_price"
+      class="form-input"
+    />
+  </div>
+
+  <!-- Gắn Danh mục -->
+  <div class="space-y-1.5 relative focus-within:z-10">
+    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Gắn Danh mục (Chọn nhiều)</label>
+    <div class="grid grid-cols-2 gap-2 p-3 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 max-h-36 overflow-y-auto">
+      @for (cat of categoriesList(); track cat.id) {
+        <div class="px-2 py-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all">
+          <app-custom-checkbox
+            [checked]="isCategorySelected(cat.id)"
+            (checkedChange)="toggleFormCategory(cat.id)"
+            [label]="cat.name"
+          ></app-custom-checkbox>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Hình ảnh (URL) -->
+  <div class="space-y-1.5 relative focus-within:z-10">
+    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Đường dẫn hình ảnh (URL)</label>
+    <input
+      type="text"
+      [(ngModel)]="form.image"
+      placeholder="https://images.unsplash.com/..."
+      class="form-input font-mono"
+    />
+  </div>
+
+  <!-- Mô tả ngắn -->
+  <div class="space-y-1.5 relative focus-within:z-10">
+    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Mô tả ngắn</label>
+    <input
+      type="text"
+      [(ngModel)]="form.short_description"
+      placeholder="Ví dụ: Cà phê thơm ngon, vị đậm đà..."
+      class="form-input"
+    />
+  </div>
+
+  <!-- Mô tả chi tiết -->
+  <div class="space-y-1">
+    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Mô tả chi tiết</label>
+    <textarea
+      [(ngModel)]="form.description"
+      placeholder="Ví dụ: Được chế biến từ hạt Robusta Đắk Lắk..."
+      rows="3"
+      class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-sm focus:outline-none focus:border-[var(--color-primary)] text-slate-800 dark:text-white resize-none transition-all duration-200"
+    ></textarea>
+  </div>
+
+  @if (form.type === 'product') {
+    <!-- Định lượng nguyên vật liệu -->
+    <div class="space-y-3 p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200/60 dark:border-slate-800/60">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">Định lượng hao hụt nguyên liệu thô</span>
+        <button
+          type="button"
+          (click)="addRecipeRow()"
+          class="px-2.5 py-1 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 font-extrabold text-[10px] rounded-lg border border-purple-200/25 transition-all cursor-pointer"
+        >
+          + Thêm nguyên liệu
+        </button>
+      </div>
+
+      @if (form.recipes && form.recipes.length > 0) {
+        <div class="space-y-2.5 max-h-48 overflow-y-auto pr-1">
+          @for (recipe of form.recipes; track $index) {
+            <div class="flex items-center gap-2">
+              <app-custom-select
+                [value]="recipe.ingredient_id"
+                (valueChange)="updateRecipeField($index, 'ingredient_id', $event)"
+                [options]="ingredientOptions()"
+                valueKey="id"
+                labelKey="name"
+                placeholder="Chọn..."
+                containerClass="flex-1 min-w-0"
+                triggerClass="w-full form-input-sm h-[34px]"
+              ></app-custom-select>
+
+              @if (form.variants && form.variants.length > 0) {
+                <select
+                  [(ngModel)]="recipe.product_variant_id"
+                  class="w-24 form-input-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 h-[34px] text-xs py-0"
+                >
+                  <option [value]="null">Tất cả size</option>
+                  @for (v of form.variants; track v.id) {
+                    <option [value]="v.id">{{ v.variant_name }}</option>
+                  }
+                </select>
+              }
+
+              <input
+                type="number"
+                [(ngModel)]="recipe.quantity"
+                placeholder="Lượng"
+                class="w-16 form-input-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 h-[34px]"
+              />
+
+              <span class="text-xs text-slate-400 font-semibold shrink-0 min-w-8">
+                {{ getIngredientUnit(recipe.ingredient_id) }}
+              </span>
+
+              <button
+                type="button"
+                (click)="removeRecipeRow($index)"
+                class="text-rose-500 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all shrink-0 cursor-pointer"
+              >
+                <app-icon name="trash" class="h-4 w-4" strokeWidth="2" />
+              </button>
+            </div>
+          }
+        </div>
+      } @else {
+        <span class="text-xs text-slate-400 italic block py-2 text-center">Chưa cấu hình định lượng nguyên liệu cho món này</span>
+      }
+    </div>
+
+    <!-- Cấu hình biến thể size -->
+    <div class="space-y-3 p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200/60 dark:border-slate-800/60">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">Biến thể sản phẩm (Kích thước / Size)</span>
+        <button
+          type="button"
+          (click)="addVariantRow()"
+          class="px-2.5 py-1 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 font-extrabold text-[10px] rounded-lg border border-purple-200/25 transition-all cursor-pointer"
+        >
+          + Thêm size
+        </button>
+      </div>
+
+      @if (form.variants && form.variants.length > 0) {
+        <div class="space-y-2.5 max-h-36 overflow-y-auto pr-1">
+          @for (variant of form.variants; track $index) {
+            <div class="flex items-center gap-2">
+              <input
+                type="text"
+                [(ngModel)]="variant.variant_name"
+                placeholder="Tên (Ví dụ: Size L, Cốc to...)"
+                class="flex-1 min-w-0 form-input-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
+              />
+              <input
+                type="number"
+                [(ngModel)]="variant.price"
+                placeholder="Giá bán"
+                class="w-20 form-input-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
+              />
+              <input
+                type="number"
+                [(ngModel)]="variant.cost_price"
+                placeholder="Giá vốn"
+                class="w-20 form-input-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
+              />
+              <button
+                type="button"
+                (click)="removeVariantRow($index)"
+                class="text-rose-500 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all shrink-0 cursor-pointer"
+              >
+                <app-icon name="trash" class="h-4 w-4" strokeWidth="2" />
+              </button>
+            </div>
+          }
+        </div>
+      } @else {
+        <span class="text-xs text-slate-400 italic block py-2 text-center">Chưa có biến thể (Sản phẩm sẽ bán theo đơn giá gốc)</span>
+      }
+    </div>
+
+    <!-- Trạng thái bán -->
+    <div class="flex items-center justify-between py-1 bg-slate-50 dark:bg-slate-950 px-4 py-3 rounded-[15px] border border-slate-200/40 dark:border-slate-800/40">
+      <span class="text-sm font-extrabold text-slate-600 dark:text-slate-300">Đang phục vụ / bán</span>
+      <app-custom-switch
+        type="compact"
+        [checked]="form.status"
+        (checkedChange)="updateField('status', $event)"
+      ></app-custom-switch>
+    </div>
+  }
+</div>
+
+<!-- Cảnh báo giới hạn sản phẩm theo gói cước -->
+@if (!data.product && isProductLimitReached()) {
+  <div class="flex items-center gap-2.5 p-3.5 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800/20 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-bold mt-4">
+    <app-icon name="warning" class="h-4 w-4 shrink-0" strokeWidth="2" />
+    <span>Gói cước hiện tại chỉ hỗ trợ tối đa {{ stateService.getFeatureLimit('max_products') }} sản phẩm/nguyên liệu. Vui lòng nâng cấp gói cước!</span>
+  </div>
+}
+
+<!-- Actions -->
+<div class="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800 shrink-0 mt-5">
+  <button
+    app-button
+    variant="cancel"
+    (click)="onCancel()"
+    [disabled]="isLoading()"
+    class="flex-1"
+  >
+    Hủy bỏ
+  </button>
+  <button
+    app-button
+    variant="primary"
+    (click)="onSubmit()"
+    [loading]="isLoading()"
+    [disabled]="!data.product && isProductLimitReached()"
+    class="flex-1 shadow-md"
+  >
+    <span>Lưu thông tin</span>
+  </button>
+</div>

@@ -1,0 +1,80 @@
+<div class="space-y-4 text-sm leading-relaxed text-slate-800 dark:text-slate-200">
+  <p class="font-semibold text-slate-600 dark:text-slate-300">
+    Hóa đơn đã ở trạng thái
+    <span class="text-emerald-500 font-bold">"Thành công"</span> không được phép hủy
+    trực tiếp trên hệ thống để bảo toàn tính minh bạch của sổ cái Blockchain và quản lý
+    kho hàng.
+  </p>
+
+  <div
+    class="bg-slate-50 dark:bg-slate-950 p-4.5 rounded-2xl border border-slate-100 dark:border-slate-800/60 space-y-3"
+  >
+    <span
+      class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block"
+      >Hướng dẫn xử lý chuẩn của quán:</span
+    >
+
+    <div class="flex items-start gap-2.5">
+      <span
+        class="w-5 h-5 rounded-full bg-purple-100 dark:bg-purple-950/40 text-purple-600 text-xs font-black flex items-center justify-center shrink-0"
+        >1</span
+      >
+      <p class="text-xs text-slate-600 dark:text-slate-400 font-medium">
+        Vui lòng truy cập vào mục
+        <strong class="text-slate-700 dark:text-slate-200">"Tài chính" (Sổ quỹ)</strong>.
+      </p>
+    </div>
+
+    <div class="flex items-start gap-2.5">
+      <span
+        class="w-5 h-5 rounded-full bg-purple-100 dark:bg-purple-950/40 text-purple-600 text-xs font-black flex items-center justify-center shrink-0"
+        >2</span
+      >
+      <p class="text-xs text-slate-600 dark:text-slate-400 font-medium">
+        Lập một <strong class="text-rose-500">PHIẾU CHI</strong> đối ứng với số tiền:
+        <strong class="text-base text-rose-500 font-black"
+          >{{ data.order?.total_amount | number: '1.0-0' }}đ</strong>
+        để hoàn tiền/bù trừ két tiền mặt của quán.
+      </p>
+    </div>
+
+    <div
+      (click)="
+        copyToClipboard(
+          'Hoàn tiền do thu ngân thao tác nhầm đơn hàng #' + data.order?.id
+        )
+      "
+      class="flex items-start gap-2.5 group/copy cursor-pointer"
+      title="Bấm để tự động sao chép lý do chi"
+    >
+      <span
+        class="w-5 h-5 rounded-full bg-purple-100 dark:bg-purple-950/40 text-purple-600 text-xs font-black flex items-center justify-center shrink-0"
+        >3</span
+      >
+      <div class="text-xs text-slate-600 dark:text-slate-400 font-medium">
+        Ghi rõ lý do chi:
+        <span
+          class="italic font-bold text-rose-500 bg-rose-50 dark:bg-rose-950/40 px-1 py-0.5 rounded border border-rose-100 dark:border-rose-900/30 break-word select-all group-hover/copy:text-rose-600 transition-colors"
+          >"Hoàn tiền do thu ngân thao tác nhầm đơn hàng #{{ data.order?.id }}"</span>
+        <span
+          class="text-xs text-purple-600 font-bold mt-1.5 flex items-center gap-1.5 animate-pulse"
+        >
+          <app-icon name="copy" class="h-3 w-3 shrink-0" strokeWidth="2.5" />
+          (Bấm vào để tự động copy)
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action -->
+  <div class="flex gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+    <button
+      app-button
+      variant="cancel"
+      (click)="onClose()"
+      class="flex-1"
+    >
+      Đóng cửa sổ
+    </button>
+  </div>
+</div>

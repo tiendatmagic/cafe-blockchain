@@ -1,0 +1,239 @@
+<form [formGroup]="planForm" (ngSubmit)="onSubmit()" class="space-y-6">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+    <!-- Cột bên trái: Thông tin cơ bản & Giới hạn số lượng -->
+    <div class="space-y-5">
+      <!-- Plan Code (Only new) -->
+      <div class="space-y-2">
+        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wide">Mã gói cước</label>
+        <input
+          type="text"
+          formControlName="code"
+          placeholder="Ví dụ: free, pro, pro_plus..."
+          class="form-input"
+        />
+        @if (planForm.get('code')?.touched && planForm.get('code')?.invalid) {
+          <span class="text-xs text-rose-500">Mã gói bắt buộc nhập và chỉ gồm chữ thường không dấu, số, dấu gạch dưới.</span>
+        }
+      </div>
+
+      <!-- Plan Name -->
+      <div class="space-y-2">
+        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wide">Tên gói cước</label>
+        <input
+          type="text"
+          formControlName="name"
+          placeholder="Ví dụ: Gói Chuyên Nghiệp"
+          class="form-input"
+        />
+        @if (planForm.get('name')?.touched && planForm.get('name')?.invalid) {
+          <span class="text-xs text-rose-500">Tên gói cước không được bỏ trống.</span>
+        }
+      </div>
+
+      <!-- Active Status -->
+      <div class="space-y-2">
+        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wide">Trạng thái gói</label>
+        <app-custom-select
+          [options]="[
+            { value: true, label: 'Cho phép sử dụng (Active)' },
+            { value: false, label: 'Tạm ẩn gói (Inactive)' }
+          ]"
+          valueKey="value"
+          labelKey="label"
+          formControlName="is_active"
+        >
+        </app-custom-select>
+      </div>
+
+      <!-- Prices -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="space-y-2">
+          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wide">Giá / tháng (VND)</label>
+          <input
+            type="number"
+            formControlName="price_per_month"
+            placeholder="0"
+            class="form-input"
+          />
+          @if (planForm.get('price_per_month')?.touched && planForm.get('price_per_month')?.invalid) {
+            <span class="text-xs text-rose-500">Giá theo tháng không hợp lệ.</span>
+          }
+        </div>
+        <div class="space-y-2">
+          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wide">Giá / năm (VND)</label>
+          <input
+            type="number"
+            formControlName="price_per_year"
+            placeholder="0"
+            class="form-input"
+          />
+          @if (planForm.get('price_per_year')?.touched && planForm.get('price_per_year')?.invalid) {
+            <span class="text-xs text-rose-500">Giá theo năm không hợp lệ.</span>
+          }
+        </div>
+      </div>
+
+      <!-- Limits (Giới hạn số lượng) -->
+      <div
+        formGroupName="features"
+        class="space-y-4 p-5 bg-slate-50/70 dark:bg-slate-950/10 rounded-[15px] border border-slate-100 dark:border-slate-800/60"
+      >
+        <h4 class="text-xs font-black text-slate-450 uppercase tracking-wider border-b border-slate-150 dark:border-slate-800 pb-2.5 mb-1.5">
+          GIỚI HẠN SỐ LƯỢNG
+        </h4>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-slate-600 dark:text-slate-350">Sản phẩm tối đa</label>
+            <input type="number" formControlName="max_products" class="form-input text-sm" />
+            <p class="text-[10px] text-slate-400 italic">Nhập -1 nếu không giới hạn.</p>
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-slate-600 dark:text-slate-350">Nhân viên tối đa</label>
+            <input type="number" formControlName="max_staffs" class="form-input text-sm" />
+            <p class="text-[10px] text-slate-400 italic">Nhập -1 nếu không giới hạn.</p>
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-slate-600 dark:text-slate-350">Khách hàng tối đa</label>
+            <input type="number" formControlName="max_customers" class="form-input text-sm" />
+            <p class="text-[10px] text-slate-400 italic">Nhập -1 nếu không giới hạn.</p>
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-slate-600 dark:text-slate-350">Lượt thu chi tối đa</label>
+            <input type="number" formControlName="max_transactions" class="form-input text-sm" />
+            <p class="text-[10px] text-slate-400 italic">Nhập -1 nếu không giới hạn.</p>
+          </div>
+
+          <div class="space-y-1.5 sm:col-span-2">
+            <label class="block text-xs font-bold text-slate-600 dark:text-slate-350">Lượt ghi nợ tối đa</label>
+            <input type="number" formControlName="max_debts" class="form-input text-sm" />
+            <p class="text-[10px] text-slate-400 italic">Nhập -1 nếu không giới hạn.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cột bên phải: Danh sách phân hệ tính năng (Feature Flags) -->
+    <div
+      formGroupName="features"
+      class="space-y-4 p-5 bg-slate-50/70 dark:bg-slate-950/10 rounded-[15px] border border-slate-100 dark:border-slate-800/60 self-stretch"
+    >
+      <h4 class="text-xs font-black text-slate-450 uppercase tracking-wider border-b border-slate-150 dark:border-slate-800 pb-2.5 mb-3">
+        PHÂN HỆ TÍNH NĂNG (FEATURE FLAGS)
+      </h4>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4.5 pt-1">
+        <app-custom-checkbox
+          formControlName="enable_dashboard"
+          label="Tổng quan"
+          description="Biểu đồ doanh thu, thống kê ca làm việc."
+        >
+        </app-custom-checkbox>
+
+        <app-custom-checkbox
+          formControlName="enable_pos"
+          label="Bán hàng POS"
+          description="Giao diện order, in hóa đơn & thanh toán."
+        >
+        </app-custom-checkbox>
+
+        <app-custom-checkbox
+          formControlName="enable_orders"
+          label="Đơn hàng"
+          description="Quản lý lịch sử và đồng bộ blockchain."
+        >
+        </app-custom-checkbox>
+
+        <app-custom-checkbox
+          formControlName="enable_tables"
+          label="Sơ đồ bàn"
+          description="Quản lý khu vực và sơ đồ bàn ăn."
+        >
+        </app-custom-checkbox>
+
+        <app-custom-checkbox
+          formControlName="enable_shifts"
+          label="Ca làm việc"
+          description="Khai báo mở/kết ca, đối soát két tiền."
+        >
+        </app-custom-checkbox>
+
+        <app-custom-checkbox
+          formControlName="enable_menu"
+          label="Quản lý Thực đơn"
+          description="Danh mục món, món ăn và định lượng."
+        >
+        </app-custom-checkbox>
+
+        <app-custom-checkbox
+          formControlName="enable_inventory"
+          label="Kho hàng"
+          description="Nhập, xuất và kiểm kê nguyên vật liệu."
+        >
+        </app-custom-checkbox>
+
+        <app-custom-checkbox
+          formControlName="enable_customers"
+          label="Khách hàng"
+          description="Quản lý đối tác và phân nhóm khách hàng."
+        >
+        </app-custom-checkbox>
+
+        <app-custom-checkbox
+          formControlName="enable_debts"
+          label="Sổ nợ"
+          description="Theo dõi, thu hồi nợ và lịch sử ghi nợ."
+        >
+        </app-custom-checkbox>
+
+        <app-custom-checkbox
+          formControlName="enable_financials"
+          label="Thu chi tài chính"
+          description="Lập phiếu thu chi và kiểm tra dòng tiền."
+        >
+        </app-custom-checkbox>
+
+        <app-custom-checkbox
+          formControlName="enable_reports"
+          label="Báo cáo"
+          description="Thống kê lãi lỗ chi tiết và biểu đồ."
+        >
+        </app-custom-checkbox>
+
+        <app-custom-checkbox
+          formControlName="enable_staffs"
+          label="Nhân viên"
+          description="Thêm nhân sự mới và cấu hình phân quyền."
+        >
+        </app-custom-checkbox>
+
+        <app-custom-checkbox
+          formControlName="enable_storefront"
+          label="Storefront Website"
+          description="Website đặt món trực tuyến đồng bộ POS."
+        >
+        </app-custom-checkbox>
+
+        <app-custom-checkbox
+          formControlName="enable_excel_export"
+          label="Xuất file Excel"
+          description="Tải các báo cáo, danh sách dạng tệp Excel."
+        >
+        </app-custom-checkbox>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800/60 animate-in fade-in duration-200">
+    <button app-button variant="cancel" type="button" (click)="onCancel()">
+      Hủy
+    </button>
+    <button app-button variant="primary" type="submit" [loading]="isLoading()">
+      {{ data.plan ? 'Lưu thay đổi' : 'Thêm gói cước' }}
+    </button>
+  </div>
+</form>

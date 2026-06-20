@@ -20,13 +20,16 @@ import { PaginationComponent } from '@shared/components/pagination/pagination.co
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
 import { MiniButtonsComponent } from '@shared/components/mini-buttons/mini-buttons.component';
-import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
-import { ModalComponent } from '@shared/components/modal/modal.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { CardComponent } from '@shared/components/card/card.component';
+import { ModalService } from '@core/services/modal.service';
+import { BarcodeScannerModalComponent } from '@shared/components/barcode-scanner-modal/barcode-scanner-modal.component';
+import { VariantSelectModalComponent } from '../../components/variant-select-modal/variant-select-modal.component';
+import { PosConfirmModalComponent } from '../../components/pos-confirm-modal/pos-confirm-modal.component';
+import { SignQrModalComponent } from '../../components/sign-qr-modal/sign-qr-modal.component';
 
 @Component({
   selector: 'app-pos',
@@ -40,7 +43,6 @@ import { CardComponent } from '@shared/components/card/card.component';
     PageHeaderComponent,
     VNDCurrencyPipe,
     MiniButtonsComponent,
-    ModalComponent,
     IconComponent,
     TabGroupComponent,
     SkeletonLoaderComponent,
@@ -54,6 +56,9 @@ export class PosComponent implements OnInit, OnDestroy {
   public readonly stateService = inject(StateService);
   private readonly apiService = inject(ApiService);
   public readonly web3Service = inject(Web3Service);
+  private readonly modalService = inject(ModalService);
+
+  private signQrModalRef: any = null;
 
   // Trạng thái quét barcode tại POS
   public readonly isBarcodeScannerOpen = signal<boolean>(false);
@@ -370,9 +375,18 @@ export class PosComponent implements OnInit, OnDestroy {
     }
 
     if (product.variants && product.variants.length > 0 && !variant) {
-      this.activeSelectingProduct.set(product);
-      this.selectedVariantForCart.set(product.variants[0]);
-      this.isVariantSelectModalOpen.set(true);
+      this.modalService.open(VariantSelectModalComponent, {
+        title: `Chọn size: ${product.name}`,
+        size: 'sm',
+        data: {
+          product,
+          selectedVariant: product.variants[0]
+        }
+      }).afterClosed$.subscribe((chosenVariant) => {
+        if (chosenVariant) {
+          this.addToCart(product, chosenVariant);
+        }
+      });
       return;
     }
 
@@ -491,27 +505,26 @@ export class PosComponent implements OnInit, OnDestroy {
 
   // Mở modal xác nhận thanh toán nâng cao
   public openPosConfirmModal() {
-    this.customerCashGiven.set(this.posFinalTotal());
-    this.isDebtPayment.set(false);
-
-    const currentMethod = this.paymentMethod();
-    if (
-      currentMethod === 'cash' ||
-      currentMethod === 'bank_transfer' ||
-      currentMethod === 'crypto' ||
-      currentMethod === 'e_wallet' ||
-      currentMethod === 'debt'
-    ) {
-      this.posPaymentMethod.set(currentMethod as any);
-      if (currentMethod === 'debt') {
-        this.customerCashGiven.set(0);
-        this.isDebtPayment.set(true);
+    this.modalService.open(PosConfirmModalComponent, {
+      title: 'Xác nhận thanh toán',
+      size: 'md',
+      data: {
+        cartTotal: this.cartTotal(),
+        posTotalQuantity: this.posTotalQuantity(),
+        posSelectedVoucher: this.posSelectedVoucher(),
+        posFinalTotal: this.posFinalTotal(),
+        tableNumber: this.tableNumber(),
+        settings: this.stateService.settings,
+        paymentMethod: this.paymentMethod(),
+        posSelectedCustomer: this.posSelectedCustomer()
       }
-    } else {
-      this.posPaymentMethod.set('cash');
-    }
-
-    this.isPosConfirmModalOpen.set(true);
+    }).afterClosed$.subscribe((res: any) => {
+      if (res) {
+        this.paymentMethod.set(res.paymentMethod);
+        this.customerCashGiven.set(res.customerCashGiven);
+        this.submitOrder();
+      }
+    });
   }
 
   // Chọn nhanh số tiền khách đưa
@@ -919,7 +932,27 @@ export class PosComponent implements OnInit, OnDestroy {
               this.signTokenId.set(selectedVoucher.tokenId);
               this.signQrCodeUrl.set(qrApiUrl);
               this.signLink.set(qrData);
-              this.showSignQrModal.set(true);
+
+              this.signQrModalRef = this.modalService.open(SignQrModalComponent, {
+                title: 'Ký số NFT Voucher',
+                size: 'sm',
+                data: {
+                  signQrCodeUrlSignal: this.signQrCodeUrl,
+                  signLinkSignal: this.signLink,
+                  signOrderCode: orderCode,
+                  signTokenId: selectedVoucher.tokenId
+                }
+              });
+
+              this.signQrModalRef.afterClosed$.subscribe((res: any) => {
+                if (res === 'cancel_sign') {
+                  this.closeSignQrModal();
+                } else {
+                  this.stopSignaturePolling();
+                  this.signQrModalRef = null;
+                  this.isOrderSubmitting.set(false);
+                }
+              });
 
               // 5. Bắt đầu polling
               this.startSignaturePolling(orderCode, orderData);
@@ -952,7 +985,10 @@ export class PosComponent implements OnInit, OnDestroy {
         next: (res) => {
           if (res && res.status === 'signed' && res.signature) {
             this.stopSignaturePolling();
-            this.showSignQrModal.set(false);
+            if (this.signQrModalRef) {
+              this.signQrModalRef.close();
+              this.signQrModalRef = null;
+            }
             this.stateService.showToast(
               'Khách hàng đã ký số và chốt đơn hàng thành công!',
               'success',
@@ -988,7 +1024,10 @@ export class PosComponent implements OnInit, OnDestroy {
   // Đóng modal QR ký số và hủy bỏ luồng
   public closeSignQrModal() {
     this.stopSignaturePolling();
-    this.showSignQrModal.set(false);
+    if (this.signQrModalRef) {
+      this.signQrModalRef.close();
+      this.signQrModalRef = null;
+    }
 
     // Gọi API để hủy và xóa yêu cầu ký số cùng đơn hàng tạm thời trên Backend
     const code = this.signOrderCode();
@@ -1001,12 +1040,6 @@ export class PosComponent implements OnInit, OnDestroy {
     this.signLink.set('');
     this.isOrderSubmitting.set(false);
     this.stateService.showToast('Đã hủy áp dụng ký số voucher NFT.');
-  }
-
-  // Xác nhận hủy yêu cầu ký số
-  public confirmCancelSign() {
-    this.showCancelSignConfirmModal.set(false);
-    this.closeSignQrModal();
   }
 
   // Sao chép liên kết ký số
@@ -1105,195 +1138,25 @@ export class PosComponent implements OnInit, OnDestroy {
    * Quét mã vạch sản phẩm bằng camera tại POS bán hàng
    */
   public startPosBarcodeScan() {
-    this.isBarcodeScannerOpen.set(true);
-    this.isScannerLoading.set(true);
-    this.scannerError.set('');
-
-    setTimeout(() => {
-      this.initPosScanner();
-    }, 300);
-  }
-
-  private initPosScanner() {
-    try {
-      this.html5Qrcode = new Html5Qrcode('pos-barcode-scanner-reader', {
-        formatsToSupport: [
-          Html5QrcodeSupportedFormats.EAN_13,
-          Html5QrcodeSupportedFormats.EAN_8,
-          Html5QrcodeSupportedFormats.CODE_128,
-          Html5QrcodeSupportedFormats.CODE_39,
-          Html5QrcodeSupportedFormats.UPC_A,
-          Html5QrcodeSupportedFormats.UPC_E,
-          Html5QrcodeSupportedFormats.QR_CODE,
-        ],
-        verbose: false,
-      });
-
-      const config = {
-        fps: 10,
-        qrbox: (width: number, height: number) => {
-          return { width: Math.min(width * 0.8, 250), height: Math.min(height * 0.4, 100) };
-        },
-        aspectRatio: 1.777778,
-      };
-
-      this.html5Qrcode
-        .start(
-          { facingMode: 'environment' },
-          config,
-          (decodedText: string, decodedResult: any) => {
-            const barcode = decodedText.trim();
-            const foundProduct = this.products().find(
-              (p: any) => p.barcode && p.barcode.trim() === barcode,
-            );
-            if (foundProduct) {
-              this.addToCart(foundProduct);
-              this.stopPosBarcodeScan();
-            } else {
-              this.stateService.showToast(
-                `Không tìm thấy sản phẩm có mã vạch: ${barcode}`,
-                'error',
-              );
-              this.stateService.onSearchQueryChange(barcode);
-              this.stopPosBarcodeScan();
-            }
-          },
-          (errorMessage: string) => {
-            // Bỏ qua lỗi quét
-          },
-        )
-        .then(() => {
-          this.isScannerLoading.set(false);
-        })
-        .catch((err: any) => {
-          console.error('Không khởi động được camera:', err);
-          this.scannerError.set(
-            'Không thể truy cập camera. Vui lòng cấp quyền camera cho trình duyệt.',
-          );
-          this.isScannerLoading.set(false);
-        });
-    } catch (e: any) {
-      console.error('Lỗi khởi tạo quét:', e);
-      this.scannerError.set('Có lỗi xảy ra: ' + e.message);
-      this.isScannerLoading.set(false);
-    }
-  }
-
-  public onPosBarcodeFileSelected(event: any) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    this.isScannerLoading.set(true);
-    this.scannerError.set('');
-
-    const runFileScan = async (fileToScan: File) => {
-      try {
-        // Tắt camera nếu đang chạy
-        if (this.html5Qrcode && this.html5Qrcode.isScanning) {
-          await this.html5Qrcode.stop();
-        }
-
-        // Tạo thực thể mới nếu chưa có
-        if (!this.html5Qrcode) {
-          this.html5Qrcode = new Html5Qrcode('pos-barcode-scanner-reader', {
-            formatsToSupport: [
-              Html5QrcodeSupportedFormats.EAN_13,
-              Html5QrcodeSupportedFormats.EAN_8,
-              Html5QrcodeSupportedFormats.CODE_128,
-              Html5QrcodeSupportedFormats.CODE_39,
-              Html5QrcodeSupportedFormats.UPC_A,
-              Html5QrcodeSupportedFormats.UPC_E,
-              Html5QrcodeSupportedFormats.QR_CODE,
-            ],
-            verbose: false,
-          });
-        }
-
-        const decodedText = await this.html5Qrcode.scanFile(fileToScan, false);
+    this.modalService.open(BarcodeScannerModalComponent, {
+      title: 'Quét mã vạch sản phẩm',
+      size: 'sm'
+    }).afterClosed$.subscribe((decodedText: string | null) => {
+      if (decodedText) {
         const barcode = decodedText.trim();
         const foundProduct = this.products().find(
           (p: any) => p.barcode && p.barcode.trim() === barcode,
         );
         if (foundProduct) {
           this.addToCart(foundProduct);
-          this.stopPosBarcodeScan();
         } else {
-          this.stateService.showToast(`Không tìm thấy sản phẩm có mã vạch: ${barcode}`, 'error');
+          this.stateService.showToast(
+            `Không tìm thấy sản phẩm có mã vạch: ${barcode}`,
+            'error',
+          );
           this.stateService.onSearchQueryChange(barcode);
-          this.stopPosBarcodeScan();
         }
-      } catch (err: any) {
-        console.error('Lỗi quét file ảnh POS:', err);
-        this.scannerError.set(
-          'Không tìm thấy mã vạch hợp lệ trong ảnh này. Vui lòng chụp rõ nét hơn!',
-        );
-        this.isScannerLoading.set(false);
       }
-    };
-
-    // Tự động vẽ thêm viền trắng (Quiet Zone) xung quanh ảnh mã vạch trước khi giải mã
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      const img = new Image();
-      img.onload = () => {
-        try {
-          const canvas = document.createElement('canvas');
-          const padding = 40; // Quiet Zone 40px ở mỗi phía
-          canvas.width = img.width + padding * 2;
-          canvas.height = img.height + padding * 2;
-
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            throw new Error('Không thể khởi tạo Canvas 2D Context');
-          }
-
-          // Tô màu nền trắng
-          ctx.fillStyle = '#FFFFFF';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-          // Vẽ ảnh gốc vào chính giữa canvas
-          ctx.drawImage(img, padding, padding);
-
-          canvas.toBlob((blob) => {
-            if (blob) {
-              const processedFile = new File([blob], file.name, {
-                type: file.type || 'image/jpeg',
-                lastModified: Date.now(),
-              });
-              runFileScan(processedFile);
-            } else {
-              runFileScan(file); // Fallback quét file gốc nếu tạo blob lỗi
-            }
-          }, file.type || 'image/jpeg');
-        } catch (canvasErr) {
-          console.error('Lỗi xử lý canvas Quiet Zone ở POS:', canvasErr);
-          runFileScan(file); // Fallback
-        }
-      };
-      img.onerror = () => runFileScan(file);
-      img.src = e.target.result;
-    };
-    reader.onerror = () => runFileScan(file);
-    reader.readAsDataURL(file);
-  }
-
-  public stopPosBarcodeScan() {
-    if (this.html5Qrcode && this.html5Qrcode.isScanning) {
-      this.html5Qrcode
-        .stop()
-        .then(() => {
-          this.html5Qrcode.clear();
-          this.html5Qrcode = null;
-          this.isBarcodeScannerOpen.set(false);
-        })
-        .catch((err: any) => {
-          console.error('Lỗi tắt camera:', err);
-          this.html5Qrcode = null;
-          this.isBarcodeScannerOpen.set(false);
-        });
-    } else {
-      this.html5Qrcode = null;
-      this.isBarcodeScannerOpen.set(false);
-    }
+    });
   }
 }

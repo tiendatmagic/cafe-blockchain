@@ -1,0 +1,145 @@
+<div class="space-y-4 text-slate-800 dark:text-slate-200">
+  <!-- Khách hàng -->
+  <div class="space-y-1.5">
+    <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5"
+      >Khách hàng</label
+    >
+    <div class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-slate-800/80 font-extrabold text-slate-900 dark:text-white text-sm">
+      {{ selectedCustomer?.name }}
+      @if (selectedCustomer?.phone) {
+        ({{ selectedCustomer?.phone }})
+      }
+    </div>
+  </div>
+
+  <!-- Dư nợ hiện tại -->
+  <div class="space-y-1.5">
+    <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5"
+      >Dư nợ hiện tại</label
+    >
+    <div class="w-full px-4 py-2.5 rounded-xl bg-rose-500/5 border border-rose-500/10 font-black text-rose-500 text-sm">
+      {{ selectedCustomer?.debt_balance | vnd }}
+    </div>
+  </div>
+
+  <!-- Số tiền thu hồi -->
+  <div class="space-y-1.5">
+    <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5"
+      >Số tiền thu hồi (đ)</label
+    >
+    <div class="relative">
+      <input
+        type="number"
+        [(ngModel)]="paymentForm().amount"
+        placeholder="Nhập số tiền đã thu..."
+        class="form-input pr-20 font-bold"
+      />
+      <button
+        type="button"
+        (click)="paymentForm().amount = Number(selectedCustomer?.debt_balance || 0)"
+        class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-extrabold text-[var(--dynamic-primary)] hover:opacity-80"
+      >
+        Thu hết
+      </button>
+    </div>
+  </div>
+
+  <!-- Phương thức thanh toán -->
+  <div class="space-y-1.5">
+    <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5"
+      >Phương thức thanh toán</label
+    >
+    <div class="grid grid-cols-2 gap-2">
+      <button
+        type="button"
+        (click)="paymentForm().payment_method = 'cash'"
+        [class]="
+          paymentForm().payment_method === 'cash'
+            ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] font-extrabold'
+            : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+        "
+        class="py-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all"
+      >
+        Tiền mặt
+      </button>
+      <button
+        type="button"
+        (click)="paymentForm().payment_method = 'bank_transfer'"
+        [class]="
+          paymentForm().payment_method === 'bank_transfer'
+            ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] font-extrabold'
+            : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+        "
+        class="py-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all"
+      >
+        Chuyển khoản
+      </button>
+      <button
+        type="button"
+        (click)="paymentForm().payment_method = 'e_wallet'"
+        [class]="
+          paymentForm().payment_method === 'e_wallet'
+            ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] font-extrabold'
+            : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+        "
+        class="py-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all"
+      >
+        Ví điện tử
+      </button>
+      <button
+        type="button"
+        (click)="paymentForm().payment_method = 'crypto'"
+        [class]="
+          paymentForm().payment_method === 'crypto'
+            ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)] font-extrabold'
+            : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+        "
+        class="py-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all"
+      >
+        Tiền mã hóa
+      </button>
+    </div>
+  </div>
+
+  <!-- Ngày ghi nhận -->
+  <div class="space-y-1.5">
+    <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5"
+      >Ngày ghi nhận</label
+    >
+    <app-custom-date-picker
+      [selectedDate]="paymentForm().recorded_at"
+      (selectedDateChange)="paymentForm.update((f) => ({ ...f, recorded_at: $event }))"
+      placeholder="Chọn ngày ghi nhận"
+    ></app-custom-date-picker>
+  </div>
+
+  <!-- Ghi chú -->
+  <div class="space-y-1.5">
+    <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5"
+      >Ghi chú thu nợ</label
+    >
+    <textarea
+      [(ngModel)]="paymentForm().note"
+      rows="2"
+      placeholder="Mô tả hoặc ghi nhận số chứng từ..."
+      class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200/40 dark:border-slate-800/40 bg-slate-50 dark:bg-slate-950/40 focus:outline-none focus:border-[var(--color-primary)] transition-all font-semibold text-slate-800 dark:text-white resize-none duration-200"
+    ></textarea>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex gap-3 shrink-0">
+    <button app-button variant="cancel" (click)="modalRef.close()" class="flex-1">
+      Hủy bỏ
+    </button>
+    <button
+      app-button
+      variant="primary"
+      (click)="savePayment()"
+      [loading]="isPaymentSaving()"
+      [disabled]="stateService.isLoading()"
+      class="flex-1 shadow-md"
+    >
+      <span>Ghi nhận phiếu thu</span>
+    </button>
+  </div>
+</div>

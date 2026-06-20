@@ -1,0 +1,49 @@
+<div class="relative w-full max-w-sm rounded-[15px] flex flex-col overflow-hidden">
+  <!-- Modal Header with mini card preview -->
+  <div
+    class="relative h-28 overflow-hidden rounded-t-[15px]"
+    [ngClass]="'bg-gradient-to-br ' + (data.gradientClass || 'from-violet-500/80 to-fuchsia-400/60')"
+  >
+    <div class="absolute inset-0 flex items-center justify-center">
+      <span class="text-2xl font-black text-white drop-shadow-md">NFT #{{ data.tokenId }}</span>
+    </div>
+  </div>
+
+  <div class="p-5">
+    <p class="text-xs text-slate-400 dark:text-slate-500 mt-1.5 leading-relaxed">
+      NFT sẽ được ký gửi vào hợp đồng sàn cho đến khi giao dịch thành công hoặc bạn hủy bán.
+    </p>
+
+    <!-- Nhập giá bán -->
+    <div class="mt-5 flex flex-col gap-2">
+      <label class="text-xs font-extrabold uppercase text-slate-400 dark:text-slate-500 tracking-wider"
+        >Giá bán ($CAFE)</label
+      >
+      <input
+        type="text"
+        [(ngModel)]="listingPrice"
+        placeholder="Nhập số lượng $CAFE"
+        class="w-full h-12 px-4 rounded-[12px] border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 text-slate-800 dark:text-slate-200 text-sm font-semibold focus:border-[var(--dynamic-primary)] focus:ring-1 focus:ring-[var(--dynamic-primary)] outline-none transition-all duration-200 placeholder-slate-400"
+        required
+      />
+    </div>
+
+    <div class="mt-5 flex gap-3">
+      <button
+        type="button"
+        (click)="onClose()"
+        class="flex-1 h-10 rounded-[10px] text-xs font-extrabold text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/30 hover:bg-slate-100 dark:hover:bg-slate-800/50 active:scale-[0.98] transition-all cursor-pointer"
+      >
+        Hủy
+      </button>
+      <button
+        type="button"
+        (click)="onSubmit()"
+        [disabled]="!listingPrice().trim()"
+        class="btn-primary flex-1 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Treo bán
+      </button>
+    </div>
+  </div>
+</div>

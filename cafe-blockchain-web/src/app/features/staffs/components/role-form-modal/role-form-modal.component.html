@@ -1,0 +1,56 @@
+<form [formGroup]="roleForm" class="space-y-6">
+  <!-- Tên vai trò -->
+  <div class="space-y-1.5">
+    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Tên vai trò / Chức vụ <span class="text-red-500">*</span></label>
+    <input
+      type="text"
+      formControlName="name"
+      class="form-input w-full"
+      placeholder="Ví dụ: Thu ngân, Nhân viên phục vụ..."
+      [class.border-red-500]="roleForm.get('name')?.touched && roleForm.get('name')?.invalid"
+    />
+    @if (roleForm.get('name')?.touched && roleForm.get('name')?.hasError('required')) {
+      <p class="text-[11px] text-red-500 font-semibold">Vui lòng nhập tên vai trò.</p>
+    }
+  </div>
+
+  <!-- BẢNG PHÂN QUYỀN TRUY CẬP MODULE -->
+  <div class="space-y-3">
+    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Chọn các module được phép truy cập:</label>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto pr-1 no-scrollbar" formGroupName="permissions">
+      @for (mod of modules; track mod.key) {
+        <div class="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/10 transition-all active:scale-[0.995]">
+          <app-custom-checkbox
+            [formControlName]="mod.key"
+            [label]="mod.name"
+            [description]="mod.desc">
+          </app-custom-checkbox>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Modal Footer Actions -->
+  <div class="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800/60 mt-5">
+    <button
+      app-button
+      variant="cancel"
+      type="button"
+      (click)="modalRef.close(false)"
+      class="flex-1"
+    >
+      Hủy
+    </button>
+    <button
+      app-button
+      variant="primary"
+      type="button"
+      (click)="saveRole()"
+      class="flex-1"
+      [loading]="isSavingRole()"
+    >
+      Lưu vai trò
+    </button>
+  </div>
+</form>

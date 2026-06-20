@@ -1,0 +1,235 @@
+<div class="flex-1 overflow-y-auto py-4 space-y-4 no-scrollbar">
+  <!-- Tổng sản phẩm -->
+  <div
+    class="flex justify-between items-center text-sm font-semibold text-slate-500 dark:text-slate-400"
+  >
+    <span>Tổng {{ data.posTotalQuantity }} sản phẩm</span>
+    <span class="font-bold text-slate-700 dark:text-slate-300">{{
+      data.cartTotal | vnd
+    }}</span>
+  </div>
+
+  @if (data.posSelectedVoucher) {
+    <!-- Voucher giảm giá -->
+    <div
+      class="flex justify-between items-center text-sm font-semibold text-emerald-600 dark:text-emerald-400 animate-in fade-in duration-150"
+    >
+      <span class="flex items-center gap-1">
+        <span>Voucher giảm giá</span>
+        <span
+          class="text-[10px] uppercase bg-emerald-100 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded font-black"
+        >
+          {{ formatVoucherCode(data.posSelectedVoucher.code) }}
+          @if (data.posSelectedVoucher.isNft) {
+            <span class="text-[10px] font-black text-emerald-700 dark:text-emerald-300 ml-1"
+              >#{{ data.posSelectedVoucher.tokenId }}</span
+            >
+          }
+        </span>
+      </span>
+      <span class="font-bold">-{{ data.posSelectedVoucher.discount_amount | vnd }}</span>
+    </div>
+  }
+
+  <hr class="border-slate-100 dark:border-slate-800" />
+
+  <!-- Tổng cộng -->
+  <div class="flex justify-between items-center">
+    <span class="text-sm font-extrabold text-slate-700 dark:text-slate-300">Tổng cộng</span>
+    <span class="text-2xl font-black text-rose-500 dark:text-rose-400">
+      {{ data.posFinalTotal | vnd }}
+    </span>
+  </div>
+
+  <!-- Khách đã đưa -->
+  <div class="space-y-1.5" [class.opacity-55]="posPaymentMethod() === 'debt'">
+    <label
+      class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block"
+    >
+      Khách đã đưa
+    </label>
+    <div
+      class="relative rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 overflow-hidden focus-within:border-purple-500/50 transition-all"
+    >
+      <input
+        type="text"
+        inputmode="numeric"
+        [disabled]="posPaymentMethod() === 'debt'"
+        [value]="posPaymentMethod() === 'debt' ? '0' : customerCashGivenFormatted()"
+        (input)="onCustomerCashGivenInput($event)"
+        class="w-full pl-4 pr-12 py-3 bg-transparent text-lg font-black text-blue-600 dark:text-blue-400 focus:outline-none disabled:cursor-not-allowed"
+        placeholder="0"
+      />
+      <span
+        class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400"
+        >đ</span
+      >
+    </div>
+  </div>
+
+  <!-- Tiền thừa / Nợ -->
+  <div class="flex flex-col pt-1">
+    <span
+      class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider"
+    >
+      {{
+        posPaymentMethod() === 'debt'
+          ? 'Số tiền ghi nợ (Chờ trả sau)'
+          : 'Tiền thừa trả khách'
+      }}
+    </span>
+    <span
+      class="text-lg font-black"
+      [class]="
+        posPaymentMethod() === 'debt'
+          ? 'text-[var(--dynamic-primary)]'
+          : 'text-emerald-500 dark:text-emerald-400'
+      "
+    >
+      {{ (posPaymentMethod() === 'debt' ? data.posFinalTotal : posCashReturn()) | vnd }}
+    </span>
+  </div>
+
+  <hr class="border-slate-100 dark:border-slate-800" />
+
+  <!-- Phương thức thanh toán -->
+  <div class="space-y-1.5">
+    <label
+      class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block"
+    >
+      Phương thức thanh toán
+    </label>
+    <div
+      [class]="
+        data.settings().show_crypto_payment === '1'
+          ? 'grid grid-cols-2 sm:grid-cols-5 gap-2'
+          : 'grid grid-cols-2 sm:grid-cols-4 gap-2'
+      "
+    >
+      <button
+        type="button"
+        (click)="setPaymentMethod('cash')"
+        [class]="
+          posPaymentMethod() === 'cash'
+            ? 'border-purple-500/50 bg-purple-500/5 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 font-extrabold'
+            : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+        "
+        class="py-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all"
+      >
+        Tiền mặt
+      </button>
+      <button
+        type="button"
+        (click)="setPaymentMethod('bank_transfer')"
+        [class]="
+          posPaymentMethod() === 'bank_transfer'
+            ? 'border-purple-500/50 bg-purple-500/5 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 font-extrabold'
+            : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+        "
+        class="py-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all"
+      >
+        Ngân hàng
+      </button>
+      <button
+        type="button"
+        (click)="setPaymentMethod('e_wallet')"
+        [class]="
+          posPaymentMethod() === 'e_wallet'
+            ? 'border-purple-500/50 bg-purple-500/5 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 font-extrabold'
+            : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+        "
+        class="py-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all"
+      >
+        Ví điện tử
+      </button>
+      <button
+        type="button"
+        (click)="setPaymentMethod('debt')"
+        [class]="
+          posPaymentMethod() === 'debt'
+            ? 'border-purple-500/50 bg-purple-500/5 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 font-extrabold'
+            : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+        "
+        class="py-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all"
+      >
+        Ghi nợ
+      </button>
+      @if (data.settings().show_crypto_payment === '1') {
+        <button
+          type="button"
+          (click)="setPaymentMethod('crypto')"
+          [class]="
+            posPaymentMethod() === 'crypto'
+              ? 'border-purple-500/50 bg-purple-500/5 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 font-extrabold'
+              : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+          "
+          class="py-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition-all"
+        >
+          Crypto
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Gợi ý số tiền nhanh (ẩn khi ghi nợ) -->
+  @if (posPaymentMethod() !== 'debt') {
+    <div class="space-y-1.5 animate-in fade-in duration-200">
+      <label
+        class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block"
+      >
+        Gợi ý nhanh số tiền khách đưa
+      </label>
+      <div class="grid grid-cols-4 gap-1.5">
+        @for (
+          amount of [50000, 100000, 200000, 300000, 400000, 500000, 600000, 700000];
+          track amount
+        ) {
+          <button
+            type="button"
+            (click)="selectCashGivenQuick(amount)"
+            class="py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-all border border-transparent hover:border-slate-300 dark:hover:border-slate-700"
+          >
+            {{
+              amount >= 1000000
+                ? amount / 1000000 + 'M'
+                : amount >= 1000
+                  ? amount / 1000 + 'k'
+                  : (amount | number)
+            }}
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Cảnh báo thiếu khách hàng khi ghi nợ trong modal -->
+  @if (posPaymentMethod() === 'debt' && !data.posSelectedCustomer) {
+    <div
+      class="p-2.5 rounded-xl bg-[var(--dynamic-primary)]/10 border border-[var(--dynamic-primary)]/20 text-[var(--dynamic-primary)] text-xs font-semibold flex items-start gap-1.5 animate-pulse"
+    >
+      <app-icon name="warning" class="h-4 w-4 shrink-0 mt-0.5" strokeWidth="2" />
+      <span>Bắt buộc chọn khách hàng khi ghi nợ!</span>
+    </div>
+  }
+</div>
+
+<!-- Footer Actions -->
+<div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex gap-3 shrink-0">
+  <button
+    app-button
+    variant="cancel"
+    (click)="onCancel()"
+    class="flex-1"
+  >
+    Quay lại
+  </button>
+  <button
+    app-button
+    variant="success"
+    (click)="onConfirm()"
+    [disabled]="posPaymentMethod() === 'debt' && !data.posSelectedCustomer"
+    class="flex-1 font-extrabold"
+  >
+    Xác nhận
+  </button>
+</div>

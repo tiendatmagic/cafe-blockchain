@@ -24,9 +24,11 @@ import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
-import { CustomCheckboxComponent } from '@shared/components/custom-checkbox/custom-checkbox.component';
 import { CardComponent } from '@shared/components/card/card.component';
 import { BadgeComponent } from '@shared/components/badge/badge.component';
+import { ModalService } from '@core/services/modal.service';
+import { OrderDetailModalComponent } from './components/order-detail-modal/order-detail-modal.component';
+import { CancelOrderExplanationModalComponent } from './components/cancel-order-explanation-modal/cancel-order-explanation-modal.component';
 
 @Component({
   selector: 'app-orders',
@@ -45,7 +47,6 @@ import { BadgeComponent } from '@shared/components/badge/badge.component';
     TabGroupComponent,
     SkeletonLoaderComponent,
     ButtonComponent,
-    CustomCheckboxComponent,
     CardComponent,
     BadgeComponent,
   ],
@@ -96,6 +97,7 @@ export class OrdersComponent implements OnInit {
   ];
   public readonly stateService = inject(StateService);
   private readonly apiService = inject(ApiService);
+  private readonly modalService = inject(ModalService);
 
   // Lọc và Phân trang Sổ đơn hàng
   public readonly orderStatusFilter = signal<string>('all');
@@ -234,12 +236,39 @@ export class OrdersComponent implements OnInit {
   // Mở modal xem chi tiết đơn hàng
   public viewOrderDetail(order: any) {
     this.selectedOrderDetails.set(order);
-    this.isOrderDetailModalOpen.set(true);
+    
+    const dialogRef = this.modalService.open(OrderDetailModalComponent, {
+      title: `Chi tiết hóa đơn ${order.order_code || '#' + order.id}`,
+      size: 'xl',
+      data: {
+        order: order,
+        settings: this.settings(),
+        web3Service: this.web3Service,
+        isOrderStatusUpdating: this.isOrderStatusUpdating(),
+        blockchainSyncLoading: this.blockchainSyncLoading(),
+        isMintingVoucherManual: this.isMintingVoucherManual(),
+        isAutoSyncOnCompleteChecked: this.isAutoSyncOnCompleteChecked()
+      }
+    });
+
+    dialogRef.afterClosed$.subscribe((res: any) => {
+      this.selectedOrderDetails.set(null);
+      if (res) {
+        this.isAutoSyncOnCompleteChecked.set(res.isAutoSync);
+        
+        if (res.action === 'status') {
+          this.updateStatus(order.id, res.status);
+        } else if (res.action === 'sync') {
+          this.syncToBlockchain(order);
+        } else if (res.action === 'mint_voucher') {
+          this.mintVoucherManual(order);
+        }
+      }
+    });
   }
 
   // Đóng modal xem chi tiết
   public closeOrderDetail() {
-    this.isOrderDetailModalOpen.set(false);
     this.selectedOrderDetails.set(null);
   }
 
@@ -520,8 +549,13 @@ export class OrdersComponent implements OnInit {
 
   // Kích hoạt popup cảnh báo nghiệp vụ khi hủy đơn đã thành công
   public triggerCancelExplanation(order: any) {
-    this.explanationOrderDetails.set(order);
-    this.isCancelExplanationOpen.set(true);
+    this.modalService.open(CancelOrderExplanationModalComponent, {
+      title: 'Cảnh báo nghiệp vụ',
+      size: 'md',
+      data: {
+        order: order
+      }
+    });
   }
 
   // Sao chép lý do hoàn tiền đối ứng

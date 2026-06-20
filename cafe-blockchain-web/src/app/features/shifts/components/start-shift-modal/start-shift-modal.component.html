@@ -1,0 +1,93 @@
+<div class="space-y-5">
+  <div class="space-y-2 text-center py-2">
+    <div
+      class="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500/20 to-purple-500/10 flex items-center justify-center mx-auto"
+    >
+      <app-icon
+        name="lock"
+        class="h-7 w-7 text-purple-600 dark:text-purple-400"
+        strokeWidth="2.5"
+      />
+    </div>
+    <p class="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+      Vui lòng khai báo số tiền mặt ban đầu trong két để bắt đầu ghi nhận doanh thu và bán hàng
+      POS.
+    </p>
+  </div>
+
+  <div class="space-y-4 text-left">
+    <div class="space-y-1.5 relative">
+      <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1"
+        >Số tiền mặt đầu ca (két tiền)</label
+      >
+      <div class="relative">
+        <input
+          type="text"
+          [value]="shiftService.initialCashFormatted()"
+          (input)="onInitialCashInput($event)"
+          placeholder="Nhập số tiền mặt (Ví dụ: 1,000,000)"
+          class="form-input pr-12 text-base font-extrabold text-[var(--dynamic-primary)]"
+        />
+        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400"
+          >đ</span
+        >
+      </div>
+    </div>
+
+    <!-- Gợi ý nhanh số tiền đầu ca -->
+    <div class="flex flex-wrap gap-2 pt-1">
+      <button
+        type="button"
+        (click)="setInitialCash(0)"
+        class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-400 transition-all cursor-pointer"
+      >
+        Két trống
+      </button>
+      <button
+        type="button"
+        (click)="setInitialCash(500000)"
+        class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-400 transition-all cursor-pointer"
+      >
+        500K
+      </button>
+      <button
+        type="button"
+        (click)="setInitialCash(1000000)"
+        class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-400 transition-all cursor-pointer"
+      >
+        1 Triệu
+      </button>
+      <button
+        type="button"
+        (click)="setInitialCash(2000000)"
+        class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-400 transition-all cursor-pointer"
+      >
+        2 Triệu
+      </button>
+    </div>
+  </div>
+
+  <!-- Actions button -->
+  <div class="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800 shrink-0 mt-5">
+    <button
+      app-button
+      variant="cancel"
+      type="button"
+      (click)="modalRef.close(false)"
+      class="flex-1"
+    >
+      Hủy bỏ
+    </button>
+    <button
+      app-button
+      variant="primary"
+      type="button"
+      (click)="confirmStartShift()"
+      [loading]="shiftService.isLoading()"
+      class="flex-1 font-black text-white flex items-center justify-center gap-1.5 bg-[var(--dynamic-primary)] cursor-pointer"
+    >
+      <app-icon name="lock-open" class="h-4 w-4 shrink-0" strokeWidth="2" />
+      <span>Mở ca & Bắt đầu</span>
+    </button>
+  </div>
+</div>

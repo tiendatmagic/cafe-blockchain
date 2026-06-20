@@ -1,0 +1,35 @@
+<div class="space-y-4">
+  <div class="space-y-1.5">
+    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+      >Tên nhóm khách hàng <span class="text-rose-500">*</span></label
+    >
+    <input
+      type="text"
+      [(ngModel)]="customerGroupForm().name"
+      placeholder="Ví dụ: Khách VIP, Khách Quen..."
+      class="form-input"
+    />
+  </div>
+
+  <!-- Footer Buttons -->
+  <div class="flex gap-3 pt-2">
+    <button
+      app-button
+      variant="cancel"
+      (click)="modalRef.close()"
+      [disabled]="isCustomerGroupSaving()"
+      class="flex-1"
+    >
+      Hủy
+    </button>
+    <button
+      app-button
+      variant="primary"
+      (click)="saveCustomerGroup()"
+      [loading]="isCustomerGroupSaving()"
+      class="flex-1"
+    >
+      <span>Lưu</span>
+    </button>
+  </div>
+</div>

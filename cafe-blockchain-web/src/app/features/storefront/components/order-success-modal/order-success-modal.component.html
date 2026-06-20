@@ -1,0 +1,52 @@
+<div class="text-center space-y-6">
+  <!-- Icon thành công -->
+  <div
+    class="w-16 h-16 rounded-full bg-emerald-500 text-white flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20"
+  >
+    <app-icon name="check" class="h-8 w-8 text-white" [strokeWidth]="2.5"></app-icon>
+  </div>
+
+  <div class="space-y-2">
+    <h3
+      class="text-md font-extrabold text-slate-800 dark:text-white uppercase tracking-tight"
+    >
+      Đặt đơn hàng thành công!
+    </h3>
+    <p class="text-xs text-slate-400 font-semibold leading-relaxed">
+      Cảm ơn bạn đã lựa chọn cửa hàng! Đơn hàng của bạn đã được gửi trực tiếp tới hệ thống
+      POS của quán.
+    </p>
+  </div>
+
+  <!-- Thông tin mã đơn hàng -->
+  <div
+    class="bg-slate-50 dark:bg-slate-950 p-4 rounded-[15px] border border-slate-100 dark:border-slate-900"
+  >
+    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block"
+      >Mã đơn hàng</span
+    >
+    <span class="text-lg font-black text-[var(--dynamic-primary)] font-mono block mt-1">
+      {{ data.orderCode }}
+    </span>
+    <app-badge
+      variant="warning"
+      size="sm"
+      rounded="full"
+      class="mt-2 uppercase tracking-wider"
+    >
+      Chờ quán duyệt
+    </app-badge>
+  </div>
+
+  <div class="pt-2">
+    <button
+      app-button
+      variant="primary"
+      type="button"
+      (click)="onContinue()"
+      class="w-full h-12 text-sm uppercase tracking-wider shadow-md shadow-[var(--dynamic-primary)]/20"
+    >
+      Tiếp tục mua hàng
+    </button>
+  </div>
+</div>

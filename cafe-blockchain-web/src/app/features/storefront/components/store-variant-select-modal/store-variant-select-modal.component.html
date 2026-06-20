@@ -1,0 +1,93 @@
+<div class="space-y-4">
+  <span class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+    >Kích thước khả dụng</span
+  >
+  <div class="space-y-2">
+    @for (variant of data.product?.variants; track variant.id) {
+      <button
+        (click)="selectVariant(variant)"
+        [class]="
+          selectedVariant()?.id === variant.id
+            ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)]'
+            : 'border-slate-200 dark:border-slate-800 hover:border-[var(--dynamic-primary)] bg-slate-50/50 dark:bg-slate-950/20 text-slate-700 dark:text-slate-300'
+        "
+        class="w-full flex items-center justify-between p-4 rounded-2xl border-2 font-bold text-left transition-all active:scale-[0.98]"
+      >
+        <div class="flex items-center gap-3">
+          <!-- Custom Radio Circle -->
+          <div
+            [class]="
+              selectedVariant()?.id === variant.id
+                ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]'
+                : 'border-slate-300 dark:border-slate-700'
+            "
+            class="w-4 h-4 rounded-full border border-2 flex items-center justify-center transition-all shrink-0"
+          >
+            @if (selectedVariant()?.id === variant.id) {
+              <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+            }
+          </div>
+          <span class="text-sm font-bold">{{ variant.variant_name }}</span>
+        </div>
+        <span class="text-sm font-extrabold text-[var(--dynamic-primary)]"
+          >{{ variant.price | number: '1.0-0' }}đ</span
+        >
+      </button>
+    }
+  </div>
+
+  <!-- Note -->
+  <div class="space-y-1.5 pt-2">
+    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+      >Ghi chú cho món ăn (tùy chọn)</label
+    >
+    <input
+      type="text"
+      [(ngModel)]="variantNote"
+      placeholder="Ví dụ: Ít đường, nhiều đá..."
+      class="form-input text-xs font-semibold"
+    />
+  </div>
+
+  <!-- Quantity -->
+  <div class="flex justify-between items-center py-2.5">
+    <span class="text-xs font-bold text-slate-400 uppercase tracking-wide"
+      >Số lượng đặt mua</span
+    >
+    <div class="flex items-center gap-1.5">
+      <button
+        type="button"
+        (click)="adjustQty(-1)"
+        [disabled]="variantQuantity() <= 1"
+        class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+      >
+        <app-icon name="minus" class="h-4 w-4" strokeWidth="2.5" />
+      </button>
+      <span class="w-8 text-center text-sm font-extrabold text-slate-800 dark:text-white">{{
+        variantQuantity()
+      }}</span>
+      <button
+        type="button"
+        (click)="adjustQty(1)"
+        class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center active:scale-95 transition-all"
+      >
+        <app-icon name="plus" class="h-4 w-4" strokeWidth="2.5" />
+      </button>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="flex gap-3 pt-3 border-t border-slate-100 dark:border-slate-800/60">
+    <button app-button variant="cancel" (click)="onCancel()" class="flex-1">
+      Hủy bỏ
+    </button>
+    <button
+      app-button
+      variant="primary"
+      (click)="onConfirm()"
+      class="flex-1 font-bold"
+    >
+      Thêm vào giỏ
+    </button>
+  </div>
+</div>

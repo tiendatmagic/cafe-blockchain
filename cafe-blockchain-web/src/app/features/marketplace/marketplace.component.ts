@@ -14,6 +14,8 @@ import { Web3Service } from '@core/services/web3.service';
 import { ApiService } from '@core/services/api.service';
 import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prompt/web3-connect-prompt.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
+import { ModalService } from '@core/services/modal.service';
+import { ListVoucherModalComponent } from './components/list-voucher-modal/list-voucher-modal.component';
 import { Contract, JsonRpcProvider, formatEther } from 'ethers';
 import { CAFE_VOUCHER_NFT_ABI } from '@core/services/voucher-contract-abi';
 
@@ -29,6 +31,7 @@ export class MarketplaceComponent implements OnInit {
   public readonly stateService = inject(StateService);
   public readonly web3Service = inject(Web3Service);
   private readonly apiService = inject(ApiService);
+  private readonly modalService = inject(ModalService);
 
   // Tab: 'shop' (Đổi Voucher) | 'market' (Chợ giao dịch) | 'my-vouchers' (Voucher của tôi)
   public readonly activeTab = signal<'shop' | 'market' | 'my-vouchers'>('shop');
@@ -50,10 +53,7 @@ export class MarketplaceComponent implements OnInit {
   public readonly isLoadingData = signal<boolean>(false);
   public readonly isActionPending = signal<boolean>(false);
 
-  // Quản lý Modal treo bán
-  public readonly isListModalOpen = signal<boolean>(false);
-  public readonly listingTokenId = signal<number | null>(null);
-  public readonly listingPrice = signal<string>('');
+
 
   // Computed stats cho Hero Banner
   public readonly totalOwnedNFTs = computed(() => this.myNFTVouchers().length);
@@ -261,30 +261,29 @@ export class MarketplaceComponent implements OnInit {
    * Mở modal thiết lập giá treo bán
    */
   public openListModal(tokenId: number) {
-    this.listingTokenId.set(tokenId);
-    this.listingPrice.set('');
-    this.isListModalOpen.set(true);
-  }
-
-  public closeListModal() {
-    this.isListModalOpen.set(false);
-    this.listingTokenId.set(null);
-    this.listingPrice.set('');
+    this.modalService.open(ListVoucherModalComponent, {
+      title: 'Treo bán Voucher',
+      size: 'sm',
+      data: {
+        tokenId,
+        gradientClass: this.getCardGradient(tokenId)
+      }
+    }).afterClosed$.subscribe((price) => {
+      if (price) {
+        this.executeListing(tokenId, price);
+      }
+    });
   }
 
   /**
    * Gửi giao dịch treo bán NFT Voucher lên Marketplace
    */
-  public async submitListing() {
-    const tokenId = this.listingTokenId();
-    const price = this.listingPrice().trim();
-
+  public async executeListing(tokenId: number, price: string) {
     if (tokenId === null || !price || isNaN(Number(price)) || Number(price) <= 0) {
       this.stateService.showToast('Vui lòng nhập giá treo bán hợp lệ!', 'error');
       return;
     }
 
-    this.closeListModal();
     this.isActionPending.set(true);
     this.stateService.showToast(
       'Vui lòng phê duyệt NFT và xác nhận treo bán trên ví...',

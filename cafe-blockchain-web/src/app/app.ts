@@ -15,7 +15,6 @@ import { SidebarComponent } from '@shared/layout/sidebar/sidebar.component';
 import { MaintenanceComponent } from '@shared/components/maintenance/maintenance.component';
 import { DesktopHeaderComponent } from '@shared/layout/header/desktop-header.component';
 import { Web3OverlaysComponent } from '@features/blockchain/components/web3-overlays/web3-overlays.component';
-import { ShiftModalsComponent } from '@features/shifts/components/shift-modals/shift-modals.component';
 import { Web3PublicHeaderComponent } from '@features/marketplace/components/web3-public-header/web3-public-header.component';
 import { SubscriptionBlockedComponent } from './shared/components/subscription-blocked/subscription-blocked.component';
 import { ToastComponent } from './shared/components/toast/toast.component';
@@ -31,7 +30,6 @@ import { FeatureBlockedComponent } from '@shared/components/feature-blocked/feat
     MaintenanceComponent,
     DesktopHeaderComponent,
     Web3OverlaysComponent,
-    ShiftModalsComponent,
     Web3PublicHeaderComponent,
     SubscriptionBlockedComponent,
     ToastComponent,

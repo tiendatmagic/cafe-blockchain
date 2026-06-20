@@ -475,9 +475,7 @@ export class StateService {
   public onActualCashInput(event: any) { this.shiftService.onActualCashInput(event); }
   public onInitialCashInput(event: any) { this.shiftService.onInitialCashInput(event); }
   public openStartShiftModal() { this.shiftService.openStartShiftModal(); }
-  public confirmStartShift() { this.shiftService.confirmStartShift(); }
   public openCloseShiftModal() { this.shiftService.openCloseShiftModal(); }
-  public confirmCloseShift() { this.shiftService.confirmCloseShift(); }
 
   // ----------------------------------------------------
   // BUSINESS LOGIC & DATA SYNCHRONIZATION

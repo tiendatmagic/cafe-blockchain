@@ -14,10 +14,11 @@ import { ApiService } from '@core/services/api.service';
 import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prompt/web3-connect-prompt.component';
 import { AccessRestrictedComponent } from '@shared/components/access-restricted/access-restricted.component';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
+import { ModalService } from '@core/services/modal.service';
+import { CustomerFormModalComponent } from './components/customer-form-modal/customer-form-modal.component';
+import { CustomerGroupModalComponent } from './components/customer-group-modal/customer-group-modal.component';
 import { ShortAddressPipe } from '@shared/pipes/short-address.pipe';
-import { ConfirmModalComponent } from '@shared/components/confirm-modal/confirm-modal.component';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
-import { CustomDatePickerComponent } from '@shared/components/custom-date-picker/custom-date-picker.component';
 import {
   TableComponent,
   TableCellDirective,
@@ -41,9 +42,7 @@ import { BadgeComponent } from '@shared/components/badge/badge.component';
     AccessRestrictedComponent,
     PaginationComponent,
     ShortAddressPipe,
-    ConfirmModalComponent,
     PageHeaderComponent,
-    CustomDatePickerComponent,
     TableComponent,
     TableCellDirective,
     IconComponent,
@@ -106,6 +105,7 @@ export class CustomersComponent implements OnInit {
   ];
   public readonly stateService = inject(StateService);
   private readonly apiService = inject(ApiService);
+  private readonly modalService = inject(ModalService);
 
   // Bộ lọc, phân trang khách hàng
   public readonly customerCurrentPage = signal<number>(1);
@@ -117,48 +117,7 @@ export class CustomersComponent implements OnInit {
   public readonly customerSearchQuery = signal<string>('');
 
   // Form & Modals Khách hàng
-  public readonly isCustomerModalOpen = signal<boolean>(false);
-  public readonly isCustomerGroupModalOpen = signal<boolean>(false);
-  public readonly customerModalType = signal<'add' | 'edit'>('add');
-  public readonly customerGroupModalType = signal<'add' | 'edit'>('add');
-  public readonly editingCustomer = signal<any>(null);
-  public readonly editingCustomerGroup = signal<any>(null);
-  public readonly isCustomerSaving = signal<boolean>(false);
-  public readonly isCustomerGroupSaving = signal<boolean>(false);
   public readonly isCustomerDropdownOpen = signal<boolean>(false);
-
-  // Trạng thái modal xác nhận xóa khách hàng & nhóm
-  public readonly isDeleteCustomerConfirmOpen = signal<boolean>(false);
-  public readonly deletingCustomer = signal<any>(null);
-  public readonly isDeleteGroupConfirmOpen = signal<boolean>(false);
-  public readonly deletingGroup = signal<any>(null);
-
-  // Tra cứu mã số thuế (VietQR API)
-  public readonly isSearchingTax = signal<boolean>(false);
-  private taxLookupTimeout: any = null;
-  private lastSearchedTaxCode: string = '';
-  private taxLookupCache: { [key: string]: any } = {};
-
-  public readonly customerForm = signal<any>({
-    name: '',
-    phone: '',
-    email: '',
-    dob: '',
-    gender: 'Nam',
-    address: '',
-    group_ids: [],
-    type: 'individual',
-    company_name: '',
-    tax_code: '',
-    representative_name: '',
-    website: '',
-    business_status: 'Đang hoạt động',
-    wallet_address: '',
-  });
-
-  public readonly customerGroupForm = signal<any>({
-    name: '',
-  });
 
   // Getters từ StateService
   public get customers() {
@@ -244,77 +203,6 @@ export class CustomersComponent implements OnInit {
     this.stateService.refreshCustomers(true);
   }
 
-  // --- Tra cứu mã số thuế ---
-  public onTaxCodeChange(taxCode: string) {
-    if (!taxCode) return;
-    const cleanTax = taxCode.replace(/\s+/g, '');
-
-    // Chỉ xử lý khi độ dài chính xác là 10 hoặc 13 ký tự (MST Việt Nam)
-    if (cleanTax.length !== 10 && cleanTax.length !== 13) {
-      return;
-    }
-
-    // Nếu trùng với mã số thuế vừa tìm kiếm gần nhất thì không gọi lại
-    if (cleanTax === this.lastSearchedTaxCode) {
-      return;
-    }
-
-    // Hủy timeout cũ nếu người dùng vẫn đang tiếp tục gõ
-    if (this.taxLookupTimeout) {
-      clearTimeout(this.taxLookupTimeout);
-    }
-
-    // Thiết lập debounce 1s (1000ms)
-    this.taxLookupTimeout = setTimeout(() => {
-      // 1. Kiểm tra kết quả trong bộ nhớ đệm (Local Cache) trước
-      if (this.taxLookupCache[cleanTax]) {
-        const cachedData = this.taxLookupCache[cleanTax];
-        this.customerForm.update((form) => ({
-          ...form,
-          company_name: cachedData.name || form.company_name,
-          address: cachedData.address || form.address,
-          representative_name: cachedData.representative || form.representative_name,
-          business_status: cachedData.status || 'Đang hoạt động',
-        }));
-        this.lastSearchedTaxCode = cleanTax;
-        this.stateService.showToast('Đã khôi phục thông tin từ bộ nhớ đệm!', 'success');
-        return;
-      }
-
-      // 2. Nếu không có trong cache, tiến hành gọi API mạng
-      this.isSearchingTax.set(true);
-      fetch(`https://api.vietqr.io/v2/business/${cleanTax}`)
-        .then((res) => res.json())
-        .then((res) => {
-          this.isSearchingTax.set(false);
-          if (res && res.code === '00' && res.data) {
-            // Lưu dữ liệu vào cache để tái sử dụng
-            this.taxLookupCache[cleanTax] = res.data;
-            this.lastSearchedTaxCode = cleanTax;
-
-            this.customerForm.update((form) => ({
-              ...form,
-              company_name: res.data.name || form.company_name,
-              address: res.data.address || form.address,
-              representative_name: res.data.representative || form.representative_name,
-              business_status: res.data.status || 'Đang hoạt động',
-            }));
-            this.stateService.showToast('Đã tìm thấy thông tin doanh nghiệp!', 'success');
-          } else {
-            this.stateService.showToast(
-              'Không tìm thấy thông tin doanh nghiệp cho mã số thuế này.',
-              'error',
-            );
-          }
-        })
-        .catch((err) => {
-          this.isSearchingTax.set(false);
-          console.error('Lỗi tra cứu mã số thuế:', err);
-          this.stateService.showToast('Lỗi kết nối khi tra cứu mã số thuế!', 'error');
-        });
-    }, 1000);
-  }
-
   public getBusinessStatusColor(status: string): 'emerald' | 'amber' | 'rose' {
     if (!status) return 'emerald';
     const s = status.toLowerCase();
@@ -340,156 +228,56 @@ export class CustomersComponent implements OnInit {
 
   // --- Customer CRUD ---
   public openAddCustomerModal(type: 'individual' | 'business' = 'individual') {
-    this.customerModalType.set('add');
-    this.editingCustomer.set(null);
-    this.customerForm.set({
-      name: '',
-      phone: '',
-      email: '',
-      dob: '',
-      gender: 'Nam',
-      address: '',
-      group_ids: [],
-      type: type,
-      company_name: '',
-      tax_code: '',
-      representative_name: '',
-      website: '',
-      business_status: 'Đang hoạt động',
-      wallet_address: '',
+    this.modalService.open(CustomerFormModalComponent, {
+      title: 'Thêm khách hàng mới',
+      size: 'md',
+      data: { type }
+    }).afterClosed$.subscribe(success => {
+      if (success) {
+        this.refreshCustomers();
+      }
     });
-    this.isCustomerModalOpen.set(true);
     this.isCustomerDropdownOpen.set(false);
   }
 
   public openEditCustomerModal(customer: any) {
-    this.customerModalType.set('edit');
-    this.editingCustomer.set(customer);
-    this.customerForm.set({
-      name: customer.name,
-      phone: customer.phone || '',
-      email: customer.email || '',
-      dob: customer.dob || '',
-      gender: customer.gender || 'Nam',
-      address: customer.address || '',
-      group_ids: customer.groups ? customer.groups.map((g: any) => g.id) : [],
-      type: customer.type || 'individual',
-      company_name: customer.company_name || '',
-      tax_code: customer.tax_code || '',
-      representative_name: customer.representative_name || '',
-      website: customer.website || '',
-      business_status: customer.business_status || 'Đang hoạt động',
-      wallet_address: customer.wallet_address || '',
+    this.modalService.open(CustomerFormModalComponent, {
+      title: 'Cập nhật thông tin khách hàng',
+      size: 'md',
+      data: { customer }
+    }).afterClosed$.subscribe(success => {
+      if (success) {
+        this.refreshCustomers();
+      }
     });
-    this.isCustomerModalOpen.set(true);
-  }
-
-  public closeCustomerModal() {
-    this.isCustomerModalOpen.set(false);
-    this.editingCustomer.set(null);
-  }
-
-  public toggleCustomerFormGroup(groupId: number) {
-    this.customerForm.update((form) => {
-      const ids = [...(form.group_ids || [])];
-      const index = ids.indexOf(groupId);
-      if (index > -1) {
-        ids.splice(index, 1);
-      } else {
-        ids.push(groupId);
-      }
-      return { ...form, group_ids: ids };
-    });
-  }
-
-  public saveCustomer() {
-    const form = { ...this.customerForm() };
-
-    // Nếu là doanh nghiệp và người đại diện trống, tự động lấy tên công ty
-    if (form.type === 'business') {
-      if (!form.company_name || !form.company_name.trim()) {
-        this.stateService.showToast('Tên công ty / Doanh nghiệp là bắt buộc!', 'error');
-        return;
-      }
-      if (!form.name || !form.name.trim()) {
-        form.name = form.company_name;
-      }
-    } else {
-      // Cá nhân bắt buộc có tên
-      if (!form.name || !form.name.trim()) {
-        this.stateService.showToast('Tên khách hàng là bắt buộc!', 'error');
-        return;
-      }
-    }
-
-    this.isCustomerSaving.set(true);
-
-    // Validate địa chỉ ví EVM nếu có nhập: phải đúng 42 ký tự (0x + 40 hex)
-    if (form.wallet_address && form.wallet_address.trim()) {
-      const walletTrimmed = form.wallet_address.trim();
-      const isValidEvmWallet = /^0x[a-fA-F0-9]{40}$/.test(walletTrimmed);
-      if (!isValidEvmWallet) {
-        this.stateService.showToast(
-          `Địa chỉ ví Web3 không hợp lệ! Phải đúng 42 ký tự (hiện ${walletTrimmed.length}/42), bắt đầu bằng 0x.`,
-          'error',
-        );
-        this.isCustomerSaving.set(false);
-        return;
-      }
-    }
-
-    if (this.customerModalType() === 'add') {
-      this.apiService.createCustomer(form).subscribe({
-        next: () => {
-          this.stateService.showToast('Thêm khách hàng thành công!', 'success');
-          this.closeCustomerModal();
-          this.refreshCustomers();
-          this.isCustomerSaving.set(false);
-        },
-        error: () => {
-          this.stateService.showToast('Thêm khách hàng thất bại!', 'error');
-          this.isCustomerSaving.set(false);
-        },
-      });
-    } else {
-      const id = this.editingCustomer().id;
-      this.apiService.updateCustomer(id, form).subscribe({
-        next: () => {
-          this.stateService.showToast('Cập nhật khách hàng thành công!', 'success');
-          this.closeCustomerModal();
-          this.refreshCustomers();
-          this.isCustomerSaving.set(false);
-        },
-        error: () => {
-          this.stateService.showToast('Cập nhật khách hàng thất bại!', 'error');
-          this.isCustomerSaving.set(false);
-        },
-      });
-    }
   }
 
   public deleteCustomer(cust: any) {
-    this.deletingCustomer.set(cust);
-    this.isDeleteCustomerConfirmOpen.set(true);
+    this.modalService.confirm({
+      title: 'Xóa khách hàng?',
+      description: `Bạn có chắc chắn muốn xóa khách hàng "${cust.name}" khỏi hệ thống? Hành động này không thể hoàn tác.`,
+      confirmText: 'Xóa',
+      cancelText: 'Hủy bỏ'
+    }).afterClosed$.subscribe(confirmed => {
+      if (confirmed) {
+        this.confirmDeleteCustomer(cust);
+      }
+    });
   }
 
-  public confirmDeleteCustomer() {
-    const cust = this.deletingCustomer();
+  public confirmDeleteCustomer(cust: any) {
     if (!cust) return;
     const id = cust.id;
 
-    this.isDeleteCustomerConfirmOpen.set(false);
     this.stateService.isLoading.set(true);
     this.apiService.deleteCustomer(id).subscribe({
       next: () => {
         this.stateService.showToast('Xóa khách hàng thành công!', 'success');
         this.refreshCustomers();
-        this.deletingCustomer.set(null);
         this.stateService.isLoading.set(false);
       },
       error: () => {
         this.stateService.showToast('Xóa khách hàng thất bại!', 'error');
-        this.deletingCustomer.set(null);
         this.stateService.isLoading.set(false);
       },
     });
@@ -497,84 +285,54 @@ export class CustomersComponent implements OnInit {
 
   // --- Customer Group CRUD ---
   public openAddCustomerGroupModal() {
-    this.customerGroupModalType.set('add');
-    this.editingCustomerGroup.set(null);
-    this.customerGroupForm.set({ name: '' });
-    this.isCustomerGroupModalOpen.set(true);
+    this.modalService.open(CustomerGroupModalComponent, {
+      title: 'Thêm nhóm khách hàng',
+      size: 'sm'
+    }).afterClosed$.subscribe(success => {
+      if (success) {
+        this.refreshCustomers();
+      }
+    });
   }
 
   public openEditCustomerGroupModal(group: any) {
-    this.customerGroupModalType.set('edit');
-    this.editingCustomerGroup.set(group);
-    this.customerGroupForm.set({ name: group.name });
-    this.isCustomerGroupModalOpen.set(true);
-  }
-
-  public closeCustomerGroupModal() {
-    this.isCustomerGroupModalOpen.set(false);
-    this.editingCustomerGroup.set(null);
-  }
-
-  public saveCustomerGroup() {
-    const form = this.customerGroupForm();
-    if (!form.name || !form.name.trim()) {
-      this.stateService.showToast('Tên nhóm khách hàng là bắt buộc!', 'error');
-      return;
-    }
-
-    this.isCustomerGroupSaving.set(true);
-    if (this.customerGroupModalType() === 'add') {
-      this.apiService.createCustomerGroup(form).subscribe({
-        next: () => {
-          this.stateService.showToast('Thêm nhóm khách hàng thành công!', 'success');
-          this.closeCustomerGroupModal();
-          this.refreshCustomers();
-          this.isCustomerGroupSaving.set(false);
-        },
-        error: () => {
-          this.stateService.showToast('Thêm nhóm thất bại hoặc tên nhóm đã tồn tại!', 'error');
-          this.isCustomerGroupSaving.set(false);
-        },
-      });
-    } else {
-      const id = this.editingCustomerGroup().id;
-      this.apiService.updateCustomerGroup(id, form).subscribe({
-        next: () => {
-          this.stateService.showToast('Cập nhật nhóm khách hàng thành công!', 'success');
-          this.closeCustomerGroupModal();
-          this.refreshCustomers();
-          this.isCustomerGroupSaving.set(false);
-        },
-        error: () => {
-          this.stateService.showToast('Cập nhật nhóm thất bại!', 'error');
-          this.isCustomerGroupSaving.set(false);
-        },
-      });
-    }
+    this.modalService.open(CustomerGroupModalComponent, {
+      title: 'Cập nhật nhóm khách hàng',
+      size: 'sm',
+      data: { group }
+    }).afterClosed$.subscribe(success => {
+      if (success) {
+        this.refreshCustomers();
+      }
+    });
   }
 
   public deleteCustomerGroup(group: any) {
-    this.deletingGroup.set(group);
-    this.isDeleteGroupConfirmOpen.set(true);
+    this.modalService.confirm({
+      title: 'Xóa nhóm khách hàng?',
+      description: `Bạn có chắc chắn muốn xóa nhóm "${group.name}"? Các khách hàng trong nhóm sẽ không bị xóa mà chỉ bị gỡ khỏi nhóm này.`,
+      confirmText: 'Xóa',
+      cancelText: 'Hủy bỏ'
+    }).afterClosed$.subscribe(confirmed => {
+      if (confirmed) {
+        this.confirmDeleteCustomerGroup(group);
+      }
+    });
   }
 
-  public confirmDeleteCustomerGroup() {
-    const group = this.deletingGroup();
+  public confirmDeleteCustomerGroup(group: any) {
     if (!group) return;
     const id = group.id;
 
-    this.isDeleteGroupConfirmOpen.set(false);
     this.stateService.isLoading.set(true);
     this.apiService.deleteCustomerGroup(id).subscribe({
       next: () => {
         this.stateService.showToast('Xóa nhóm khách hàng thành công!', 'success');
         this.refreshCustomers();
-        this.deletingGroup.set(null);
         this.stateService.isLoading.set(false);
       },
       error: () => {
         this.stateService.showToast('Xóa nhóm thất bại!', 'error');
-        this.deletingGroup.set(null);
         this.stateService.isLoading.set(false);
       },
     });

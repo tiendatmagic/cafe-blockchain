@@ -1,0 +1,120 @@
+<form [formGroup]="subscriptionForm" (ngSubmit)="onSubmit()" class="space-y-6">
+  <!-- General Info -->
+  <div class="bg-slate-50 dark:bg-slate-950/20 p-4 rounded-xl border border-slate-100 dark:border-slate-800/60 text-sm space-y-2.5">
+    <div class="flex justify-between">
+      <span class="text-slate-500">Ví chủ quán:</span>
+      <span class="font-mono text-purple-650 dark:text-purple-400 text-xs">{{ data.tenant?.wallet_address }}</span>
+    </div>
+  </div>
+
+  <!-- Store Name Input -->
+  <div class="space-y-2">
+    <label class="block text-sm font-bold text-slate-400 uppercase tracking-wide">Tên cửa hàng</label>
+    <input
+      type="text"
+      formControlName="store_name"
+      placeholder="Nhập tên cửa hàng..."
+      class="form-input text-base"
+    />
+    @if (subscriptionForm.get('store_name')?.touched && subscriptionForm.get('store_name')?.invalid) {
+      <span class="text-xs text-rose-500 block mt-1">Tên cửa hàng là bắt buộc, không được để trống và tối đa 255 ký tự.</span>
+    }
+  </div>
+
+  <!-- Plan Selection -->
+  <div class="space-y-2">
+    <label class="block text-sm font-bold text-slate-400 uppercase tracking-wide">Gói cước phân bổ</label>
+    <app-custom-select
+      [options]="data.planOptions"
+      valueKey="value"
+      labelKey="label"
+      formControlName="plan_code"
+    >
+    </app-custom-select>
+  </div>
+
+  <!-- Expires At DatePicker -->
+  <div class="space-y-2">
+    <label class="block text-sm font-bold text-slate-400 uppercase tracking-wide">Ngày hết hạn</label>
+    <app-custom-date-picker
+      [selectedDate]="subscriptionForm.get('subscription_expires_at')?.value"
+      (selectedDateChange)="subscriptionForm.get('subscription_expires_at')?.setValue($event)"
+      [minDate]="todayStr"
+      placeholder="Chọn ngày hết hạn"
+    >
+    </app-custom-date-picker>
+
+    <!-- Nút chọn nhanh thời hạn -->
+    <div class="flex flex-wrap gap-2 mt-2">
+      <button
+        type="button"
+        (click)="setSubscriptionDuration(7, 'days')"
+        class="px-2 py-1 rounded bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-900/40 text-purple-600 dark:text-purple-400 text-xs font-bold transition active:scale-95 cursor-pointer"
+      >
+        7 ngày
+      </button>
+      <button
+        type="button"
+        (click)="setSubscriptionDuration(1)"
+        class="px-2 py-1 rounded bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-900/40 text-purple-600 dark:text-purple-400 text-xs font-bold transition active:scale-95 cursor-pointer"
+      >
+        1 tháng
+      </button>
+      <button
+        type="button"
+        (click)="setSubscriptionDuration(3)"
+        class="px-2 py-1 rounded bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-900/40 text-purple-600 dark:text-purple-400 text-xs font-bold transition active:scale-95 cursor-pointer"
+      >
+        3 tháng
+      </button>
+      <button
+        type="button"
+        (click)="setSubscriptionDuration(6)"
+        class="px-2 py-1 rounded bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-900/40 text-purple-600 dark:text-purple-400 text-xs font-bold transition active:scale-95 cursor-pointer"
+      >
+        6 tháng
+      </button>
+      <button
+        type="button"
+        (click)="setSubscriptionDuration(12)"
+        class="px-2 py-1 rounded bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-900/40 text-purple-600 dark:text-purple-400 text-xs font-bold transition active:scale-95 cursor-pointer"
+      >
+        1 năm
+      </button>
+    </div>
+
+    @if (subscriptionForm.get('subscription_expires_at')?.touched && subscriptionForm.get('subscription_expires_at')?.invalid) {
+      <span class="text-xs text-rose-500 block mt-1">Ngày hết hạn là bắt buộc, không được bỏ trống.</span>
+    }
+  </div>
+
+  <!-- Subscription Status -->
+  <div class="space-y-2">
+    <label class="block text-sm font-bold text-slate-400 uppercase tracking-wide">Trạng thái thuê bao</label>
+    <app-custom-select
+      [options]="[
+        { value: 'active', label: 'Hoạt động (Active)' },
+        { value: 'suspended', label: 'Bị khóa / Đình chỉ (Suspended)' }
+      ]"
+      valueKey="value"
+      labelKey="label"
+      formControlName="subscription_status"
+    >
+    </app-custom-select>
+  </div>
+
+  <!-- Actions -->
+  <div class="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800/60 animate-in fade-in duration-200">
+    <button
+      app-button
+      variant="cancel"
+      type="button"
+      (click)="onCancel()"
+    >
+      Hủy
+    </button>
+    <button app-button variant="primary" type="submit" [loading]="isLoading()">
+      Lưu thay đổi
+    </button>
+  </div>
+</form>

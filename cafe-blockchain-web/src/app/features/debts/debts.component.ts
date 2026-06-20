@@ -18,16 +18,17 @@ import { AccessRestrictedComponent } from '@shared/components/access-restricted/
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
 import { ShortAddressPipe } from '@shared/pipes/short-address.pipe';
-import { ConfirmModalComponent } from '@shared/components/confirm-modal/confirm-modal.component';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
 import { DrawerComponent } from '@shared/components/drawer/drawer.component';
 import * as XLSX from 'xlsx';
-import { CustomDatePickerComponent } from '@shared/components/custom-date-picker/custom-date-picker.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { CardComponent } from '@shared/components/card/card.component';
+import { ModalService } from '@core/services/modal.service';
+import { ManualDebtModalComponent } from './components/manual-debt-modal/manual-debt-modal.component';
+import { DebtPaymentModalComponent } from './components/debt-payment-modal/debt-payment-modal.component';
 
 @Component({
   selector: 'app-debts',
@@ -41,11 +42,9 @@ import { CardComponent } from '@shared/components/card/card.component';
     SkeletonLoaderComponent,
     PaginationComponent,
     ShortAddressPipe,
-    ConfirmModalComponent,
     PageHeaderComponent,
     VNDCurrencyPipe,
     DrawerComponent,
-    CustomDatePickerComponent,
     IconComponent,
     TabGroupComponent,
     ButtonComponent,
@@ -58,6 +57,8 @@ export class DebtsComponent implements OnInit {
   public readonly stateService = inject(StateService);
   private readonly apiService = inject(ApiService);
   private readonly router = inject(Router);
+  private readonly modalService = inject(ModalService);
+
   public readonly Number = Number;
 
   constructor() {
@@ -91,38 +92,13 @@ export class DebtsComponent implements OnInit {
   public readonly sortField = signal<string>('debt_balance');
   public readonly sortDesc = signal<boolean>(true);
 
-  // Modals & Drawer State
-  public readonly isManualDebtModalOpen = signal<boolean>(false);
-  public readonly isPaymentModalOpen = signal<boolean>(false);
+  // Drawer & Logs State
   public readonly isHistoryDrawerOpen = signal<boolean>(false);
-  public readonly isDeleteConfirmOpen = signal<boolean>(false);
-  public readonly isManualDebtSaving = signal<boolean>(false);
-  public readonly isPaymentSaving = signal<boolean>(false);
-
   public readonly selectedCustomer = signal<any>(null);
   public readonly selectedDebtLog = signal<any>(null);
   public readonly customerLogs = signal<any[]>([]);
   public readonly isLogsLoading = signal<boolean>(false);
 
-  // Form states
-  public readonly manualDebtForm = signal<any>({
-    customer_id: null,
-    amount: null,
-    note: '',
-    recorded_at: '',
-  });
-
-  public readonly paymentForm = signal<any>({
-    customer_id: null,
-    amount: null,
-    payment_method: 'cash',
-    note: '',
-    recorded_at: '',
-  });
-
-  // Tìm kiếm khách hàng khi lập phiếu nợ thủ công
-  public readonly modalCustomerSearch = signal<string>('');
-  public readonly isModalCustomerDropdownOpen = signal<boolean>(false);
 
   // Getters từ StateService
   public get debts() {
@@ -269,156 +245,29 @@ export class DebtsComponent implements OnInit {
     this.debtPage.set(1);
   }
 
-  // --- Lọc Khách hàng trong modal khi chọn lập phiếu nợ ---
-  public readonly modalFilteredCustomers = computed(() => {
-    const search = this.modalCustomerSearch().trim().toLowerCase();
-    const allCusts = this.customers();
-    if (!search) return allCusts.slice(0, 10); // Chỉ hiện 10 khách đầu khi chưa gõ
 
-    const searchClean = this.removeSign(search);
-    return allCusts
-      .filter((c) => {
-        const nameClean = c.name ? this.removeSign(c.name.toLowerCase()) : '';
-        const phoneClean = c.phone ? c.phone.toLowerCase() : '';
-        const codeClean = c.customer_code ? c.customer_code.toLowerCase() : '';
-        return (
-          nameClean.includes(searchClean) ||
-          phoneClean.includes(searchClean) ||
-          codeClean.includes(searchClean)
-        );
-      })
-      .slice(0, 10);
-  });
-
-  public selectModalCustomer(customer: any) {
-    this.manualDebtForm.update((form) => ({
-      ...form,
-      customer_id: customer.id,
-    }));
-    this.modalCustomerSearch.set(customer.name + (customer.phone ? ` - ${customer.phone}` : ''));
-    this.isModalCustomerDropdownOpen.set(false);
-  }
-
-  // --- Ghi nợ thủ công Modal ---
   public openManualDebtModal() {
-    if (this.customers().length === 0 && this.web3Service.walletConnected()) {
-      this.stateService.refreshCustomers();
-    }
-    this.manualDebtForm.set({
-      customer_id: null,
-      amount: null,
-      note: '',
-      recorded_at: this.getTodayDateString(),
-    });
-    this.modalCustomerSearch.set('');
-    this.isModalCustomerDropdownOpen.set(false);
-    this.isManualDebtModalOpen.set(true);
-  }
-
-  public closeManualDebtModal() {
-    this.isManualDebtModalOpen.set(false);
-  }
-
-  public saveManualDebt() {
-    if (this.isManualDebtSaving()) return;
-
-    const form = this.manualDebtForm();
-    if (!form.customer_id) {
-      this.stateService.showToast('Vui lòng chọn khách hàng để ghi nợ!', 'error');
-      return;
-    }
-    if (!form.amount || form.amount <= 0) {
-      this.stateService.showToast('Số tiền ghi nợ phải lớn hơn 0!', 'error');
-      return;
-    }
-    if (!form.recorded_at) {
-      this.stateService.showToast('Vui lòng chọn ngày ghi nhận!', 'error');
-      return;
-    }
-
-    this.isManualDebtSaving.set(true);
-    this.stateService.isLoading.set(true);
-    this.apiService.createManualDebt(form).subscribe({
-      next: () => {
-        this.stateService.showToast('Lập phiếu ghi nợ thành công!', 'success');
-        this.closeManualDebtModal();
+    this.modalService.open(ManualDebtModalComponent, {
+      title: 'Lập phiếu ghi nợ mới',
+      size: 'md',
+    }).afterClosed$.subscribe((success) => {
+      if (success) {
         this.refreshDebts();
         this.stateService.refreshCustomers(true);
-        this.isManualDebtSaving.set(false);
-        this.stateService.isLoading.set(false);
-      },
-      error: (err) => {
-        console.error('Lỗi ghi nợ thủ công:', err);
-        const errMsg = err.error?.message || 'Lập phiếu ghi nợ thất bại!';
-        this.stateService.showToast(errMsg, 'error');
-        this.isManualDebtSaving.set(false);
-        this.stateService.isLoading.set(false);
-      },
+      }
     });
   }
 
-  // --- Thu nợ Modal ---
   public openPaymentModal(customer: any) {
-    this.selectedCustomer.set(customer);
-    this.paymentForm.set({
-      customer_id: customer.id,
-      amount: null,
-      payment_method: 'cash',
-      note: '',
-      recorded_at: this.getTodayDateString(),
-    });
-    this.isPaymentModalOpen.set(true);
-  }
-
-  public closePaymentModal() {
-    this.isPaymentModalOpen.set(false);
-    this.selectedCustomer.set(null);
-  }
-
-  public savePayment() {
-    if (this.isPaymentSaving()) return;
-
-    const form = this.paymentForm();
-    const customer = this.selectedCustomer();
-    if (!customer) return;
-
-    if (!form.amount || form.amount <= 0) {
-      this.stateService.showToast('Số tiền thu nợ phải lớn hơn 0!', 'error');
-      return;
-    }
-
-    // Validate không vượt quá dư nợ hiện tại
-    if (form.amount > Number(customer.debt_balance)) {
-      this.stateService.showToast(
-        `Số tiền thu nợ không được vượt quá số dư nợ hiện tại (${Number(customer.debt_balance).toLocaleString()}đ)!`,
-        'error',
-      );
-      return;
-    }
-
-    if (!form.recorded_at) {
-      this.stateService.showToast('Vui lòng chọn ngày ghi nhận!', 'error');
-      return;
-    }
-
-    this.isPaymentSaving.set(true);
-    this.stateService.isLoading.set(true);
-    this.apiService.createDebtPayment(form).subscribe({
-      next: () => {
-        this.stateService.showToast('Lập phiếu thu nợ thành công! Đã cập nhật sổ quỹ.', 'success');
-        this.closePaymentModal();
+    this.modalService.open(DebtPaymentModalComponent, {
+      title: 'Thu hồi công nợ khách hàng',
+      size: 'md',
+      data: { customer },
+    }).afterClosed$.subscribe((success) => {
+      if (success) {
         this.refreshDebts();
         this.stateService.refreshCustomers(true);
-        this.isPaymentSaving.set(false);
-        this.stateService.isLoading.set(false);
-      },
-      error: (err) => {
-        console.error('Lỗi thu nợ:', err);
-        const errMsg = err.error?.message || 'Lập phiếu thu nợ thất bại!';
-        this.stateService.showToast(errMsg, 'error');
-        this.isPaymentSaving.set(false);
-        this.stateService.isLoading.set(false);
-      },
+      }
     });
   }
 
@@ -443,7 +292,6 @@ export class DebtsComponent implements OnInit {
     this.isLogsLoading.set(true);
     this.apiService.getCustomerDebtLogs(customer.id).subscribe({
       next: (res: any) => {
-        // Cập nhật lại thông tin khách hàng mới nhất (để đồng bộ số nợ)
         if (res.customer) {
           this.selectedCustomer.set(res.customer);
         }
@@ -468,7 +316,6 @@ export class DebtsComponent implements OnInit {
       return;
     }
 
-    // Nếu là log trả nợ và transaction đã đồng bộ blockchain
     if (log.type === 'payment' && log.transaction?.blockchain_status === 'success') {
       this.stateService.showToast(
         'Giao dịch thu nợ đã đồng bộ lên Blockchain, không thể hủy bỏ!',
@@ -477,21 +324,23 @@ export class DebtsComponent implements OnInit {
       return;
     }
 
-    this.selectedDebtLog.set(log);
-    this.isDeleteConfirmOpen.set(true);
+    this.modalService.confirm({
+      title: 'Xác nhận hủy bản ghi công nợ',
+      description: 'Hành động này sẽ xóa bản ghi công nợ này, hoàn tác lại số dư nợ của khách hàng, và tự động xóa bỏ giao dịch liên quan trong sổ quỹ thu chi (nếu có). Bạn chắc chắn muốn tiếp tục?',
+      confirmText: 'Hủy ghi nhận',
+      cancelText: 'Bỏ qua',
+    }).afterClosed$.subscribe((confirmed) => {
+      if (confirmed) {
+        this.confirmDeleteDebtLog(log);
+      }
+    });
   }
 
-  public confirmDeleteDebtLog() {
-    const log = this.selectedDebtLog();
-    if (!log) return;
-
-    this.isDeleteConfirmOpen.set(false);
+  private confirmDeleteDebtLog(log: any) {
     this.stateService.isLoading.set(true);
-
     this.apiService.deleteDebtLog(log.id).subscribe({
       next: (res: any) => {
         this.stateService.showToast(res.message || 'Đã hủy bản ghi công nợ thành công!', 'success');
-        this.selectedDebtLog.set(null);
         this.loadCustomerDebtLogs(); // Reload timeline
         this.refreshDebts(); // Reload bảng tổng
         this.stateService.refreshCustomers(true);

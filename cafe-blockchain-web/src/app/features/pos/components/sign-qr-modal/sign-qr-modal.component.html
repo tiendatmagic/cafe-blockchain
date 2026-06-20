@@ -1,0 +1,108 @@
+<div class="flex flex-col items-center text-center">
+  <!-- Icon & Title -->
+  <div
+    class="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center text-2xl mb-3 shrink-0"
+  >
+    <app-icon name="shield-check" class="h-4 w-4 shrink-0 inline-block" strokeWidth="2" />
+  </div>
+  <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 px-2">
+    Khách hàng quét mã QR dưới đây bằng điện thoại di động để kết nối ví và ký xác thực sử
+    dụng Voucher NFT.
+  </p>
+
+  <!-- QR Code Image -->
+  <div
+    class="my-5 p-3 bg-white dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-inner flex items-center justify-center w-64 h-64 relative group transition-colors duration-300"
+  >
+    @if (getSignQrCodeUrl()) {
+      <img
+        [src]="getSignQrCodeUrl()"
+        alt="Mã QR Ký số"
+        class="w-full h-full object-contain rounded-xl dark:invert transition-all duration-300"
+      />
+    } @else {
+      <div class="flex flex-col items-center justify-center text-slate-400 gap-2">
+        <div
+          class="w-8 h-8 rounded-full border-3 border-purple-500/20 border-t-purple-500 animate-spin"
+        ></div>
+        <span class="text-xs font-bold">Đang tạo mã QR...</span>
+      </div>
+    }
+  </div>
+
+  <!-- Đường link ký số và nút copy -->
+  @if (getSignLink()) {
+    <div class="w-full mb-5 px-1">
+      <label
+        class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider block text-left mb-1.5"
+      >
+        Đường link ký số
+      </label>
+      <div class="flex gap-2">
+        <input
+          type="text"
+          readonly
+          [value]="getSignLink()"
+          class="flex-1 form-input-sm truncate text-slate-600 dark:text-slate-300"
+        />
+        <button
+          type="button"
+          (click)="copySignLink()"
+          class="btn-primary btn-sm shrink-0"
+          title="Sao chép liên kết"
+        >
+          <app-icon name="copy" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
+          <span>Copy</span>
+        </button>
+        <a
+          [href]="getSignLink()"
+          target="_blank"
+          class="btn btn-sm shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+          title="Mở liên kết ký số"
+        >
+          <app-icon name="external-link" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
+          <span>Mở link</span>
+        </a>
+      </div>
+    </div>
+  }
+
+  <!-- Order details summary -->
+  <div
+    class="w-full bg-slate-50 dark:bg-slate-950/50 rounded-2xl p-3 border border-slate-100 dark:border-slate-800 text-left mb-5 space-y-1.5"
+  >
+    <div class="flex justify-between items-center text-xs font-bold">
+      <span class="text-slate-400">Mã đơn hàng:</span>
+      <span class="text-slate-700 dark:text-slate-300 font-extrabold">{{
+        data.signOrderCode
+      }}</span>
+    </div>
+    <div class="flex justify-between items-center text-xs font-bold">
+      <span class="text-slate-400">Token ID NFT:</span>
+      <span class="text-purple-600 dark:text-purple-400 font-extrabold"
+        >#{{ data.signTokenId }}</span
+      >
+    </div>
+    <div
+      class="flex justify-between items-center text-xs font-bold pt-1.5 border-t border-slate-200/50 dark:border-slate-800/50"
+    >
+      <span class="text-slate-400">Trạng thái POS:</span>
+      <span
+        class="text-purple-600 dark:text-purple-400 font-extrabold flex items-center gap-1.5"
+      >
+        <span class="w-2 h-2 rounded-full bg-purple-500 animate-ping"></span>
+        Đang chờ quét và ký...
+      </span>
+    </div>
+  </div>
+
+  <!-- Action buttons -->
+  <button
+    app-button
+    variant="cancel"
+    (click)="onCancelSign()"
+    class="w-full"
+  >
+    Hủy áp dụng
+  </button>
+</div>

@@ -4,6 +4,7 @@ import { Web3Service } from './web3.service';
 import { ApiService } from './api.service';
 import { ToastService } from './toast.service';
 import { AuthService } from './auth.service';
+import { ModalService } from './modal.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,6 +15,7 @@ export class ShiftService {
   private readonly apiService = inject(ApiService);
   private readonly toastService = inject(ToastService);
   private readonly authService = inject(AuthService);
+  private readonly modalService = inject(ModalService);
 
   public isLoading = signal<boolean>(false);
   public readonly currentShift = this.shiftStore.currentShift;
@@ -22,6 +24,8 @@ export class ShiftService {
   public readonly isCloseShiftModalOpen = this.shiftStore.isCloseShiftModalOpen;
   public readonly initialCashInput = this.shiftStore.initialCashInput;
   public readonly actualCashInput = this.shiftStore.actualCashInput;
+  public readonly initialCashFormatted = this.shiftStore.initialCashFormatted;
+  public readonly actualCashFormatted = this.shiftStore.actualCashFormatted;
   public readonly closeShiftNote = this.shiftStore.closeShiftNote;
   public readonly isSubmittingShift = this.isLoading;
   public readonly shiftSummary = this.shiftStore.shiftSummary;
@@ -112,27 +116,42 @@ export class ShiftService {
     event.target.value = numVal > 0 ? numVal.toLocaleString('en-US') : '';
   }
 
-  public openStartShiftModal() {
+  public async openStartShiftModal() {
     if (!this.authService.hasFeature('enable_shifts')) return;
     this.shiftStore.initialCashInput.set(0);
-    this.shiftStore.isStartShiftModalOpen.set(true);
-  }
 
-  public confirmStartShift() {
-    if (this.isLoading()) return;
-    const cash = this.shiftStore.initialCashInput();
-    this.openShift(cash, () => {
-      this.shiftStore.isStartShiftModalOpen.set(false);
-      this.shiftStore.initialCashInput.set(0);
+    const { StartShiftModalComponent } = await import(
+      '@features/shifts/components/start-shift-modal/start-shift-modal.component'
+    );
+    this.modalService.open(StartShiftModalComponent, {
+      title: 'Bắt đầu ca làm việc mới',
+      size: 'md',
+    }).afterClosed$.subscribe((success) => {
+      if (success) {
+        this.refreshCurrentShift();
+        this.refreshShifts();
+      }
     });
   }
 
-  public openCloseShiftModal() {
+  public async openCloseShiftModal() {
     if (!this.authService.hasFeature('enable_shifts')) return;
     if (this.shiftStore.isShiftSummaryLoading()) return;
 
     this.shiftStore.closeShiftNote.set('');
-    this.shiftStore.isCloseShiftModalOpen.set(true);
+
+    const { EndShiftModalComponent } = await import(
+      '@features/shifts/components/end-shift-modal/end-shift-modal.component'
+    );
+    this.modalService.open(EndShiftModalComponent, {
+      title: 'Kết thúc ca làm việc & Đối soát két',
+      size: 'md',
+    }).afterClosed$.subscribe((success) => {
+      if (success) {
+        this.refreshCurrentShift();
+        this.refreshShifts();
+      }
+    });
 
     const now = Date.now();
     if (this.shiftStore.shiftSummary() && (now - this.lastShiftSummaryLoadedTime < 5000)) {
@@ -154,16 +173,6 @@ export class ShiftService {
         console.error('Lỗi tải thống kê ca trực:', err);
         this.shiftStore.isShiftSummaryLoading.set(false);
       }
-    });
-  }
-
-  public confirmCloseShift() {
-    if (this.isLoading()) return;
-    const actual = this.shiftStore.actualCashInput();
-    const note = this.shiftStore.closeShiftNote();
-    this.closeShift(actual, note, () => {
-      this.shiftStore.isCloseShiftModalOpen.set(false);
-      this.shiftStore.shiftSummary.set(null);
     });
   }
 }

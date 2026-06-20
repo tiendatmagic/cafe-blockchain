@@ -22,6 +22,9 @@ import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-g
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { CardComponent } from '@shared/components/card/card.component';
 import { BadgeComponent } from '@shared/components/badge/badge.component';
+import { ModalService } from '@core/services/modal.service';
+import { StoreVariantSelectModalComponent } from '../../components/store-variant-select-modal/store-variant-select-modal.component';
+import { OrderSuccessModalComponent } from '../../components/order-success-modal/order-success-modal.component';
 
 interface CartItem {
   product: any;
@@ -57,6 +60,7 @@ export class StoreComponent implements OnInit {
   private readonly apiService = inject(ApiService);
   private readonly titleService = inject(Title);
   private readonly stateService = inject(StateService);
+  private readonly modalService = inject(ModalService);
 
   // Dữ liệu quán
   public readonly storeSettings = signal<any>(null);
@@ -366,10 +370,20 @@ export class StoreComponent implements OnInit {
   public addToCart(product: any) {
     // Nếu sản phẩm có biến thể, mở modal chọn biến thể
     if (product.variants && product.variants.length > 0) {
-      this.selectedProductForVariant.set(product);
-      this.selectedVariantId.set(product.variants[0].id);
-      this.variantQuantity.set(1);
-      this.variantNote.set('');
+      this.modalService.open(StoreVariantSelectModalComponent, {
+        title: `Chọn size: ${product.name}`,
+        size: 'sm',
+        data: {
+          product,
+          selectedVariant: product.variants[0],
+          variantQuantity: 1,
+          variantNote: ''
+        }
+      }).afterClosed$.subscribe((res: any) => {
+        if (res) {
+          this.addVariantItemToCart(product, res.variant, res.quantity, res.note);
+        }
+      });
       return;
     }
 
@@ -393,6 +407,34 @@ export class StoreComponent implements OnInit {
     this.cart.set(currentCart);
     this.saveCartToStorage(currentCart);
     this.showFloatingToastSuccess(`Đã thêm ${product.name} vào giỏ hàng!`);
+  }
+
+  private addVariantItemToCart(product: any, variant: any, qty: number, note: string) {
+    const currentCart = [...this.cart()];
+    const existIndex = currentCart.findIndex(
+      (item) =>
+        item.product.id === product.id &&
+        item.variant &&
+        item.variant.id === variant.id &&
+        item.note === note,
+    );
+
+    if (existIndex > -1) {
+      currentCart[existIndex].quantity += qty;
+    } else {
+      currentCart.push({
+        product,
+        variant,
+        quantity: qty,
+        note,
+      });
+    }
+
+    this.cart.set(currentCart);
+    this.saveCartToStorage(currentCart);
+    this.showFloatingToastSuccess(
+      `Đã thêm ${product.name} (${variant.variant_name}) vào giỏ hàng!`,
+    );
   }
 
   public submitVariantSelection() {
@@ -498,21 +540,43 @@ export class StoreComponent implements OnInit {
 
     const form = this.orderForm();
     if (!form.customer_name.trim()) {
-      this.alertModalMessage.set('Vui lòng nhập Tên của bạn!');
+      this.modalService.confirm({
+        title: 'Thông báo',
+        description: 'Vui lòng nhập Tên của bạn!',
+        confirmText: 'Đóng',
+        cancelText: '',
+        confirmButtonClass: 'btn-primary'
+      });
       return;
     }
     if (!form.customer_phone.trim()) {
-      this.alertModalMessage.set('Vui lòng nhập Số điện thoại liên hệ!');
+      this.modalService.confirm({
+        title: 'Thông báo',
+        description: 'Vui lòng nhập Số điện thoại liên hệ!',
+        confirmText: 'Đóng',
+        cancelText: '',
+        confirmButtonClass: 'btn-primary'
+      });
       return;
     }
     if (!form.table_number.trim()) {
-      this.alertModalMessage.set('Vui lòng nhập Địa chỉ giao hàng!');
+      this.modalService.confirm({
+        title: 'Thông báo',
+        description: 'Vui lòng nhập Địa chỉ giao hàng!',
+        confirmText: 'Đóng',
+        cancelText: '',
+        confirmButtonClass: 'btn-primary'
+      });
       return;
     }
     if (form.payment_method === 'bank_transfer' && !form.selected_payment_method_id) {
-      this.alertModalMessage.set(
-        'Vui lòng chọn tài khoản ngân hàng hoặc ví điện tử để chuyển khoản!',
-      );
+      this.modalService.confirm({
+        title: 'Thông báo',
+        description: 'Vui lòng chọn tài khoản ngân hàng hoặc ví điện tử để chuyển khoản!',
+        confirmText: 'Đóng',
+        cancelText: '',
+        confirmButtonClass: 'btn-primary'
+      });
       return;
     }
 
@@ -549,7 +613,6 @@ export class StoreComponent implements OnInit {
       next: (res) => {
         if (res && res.data) {
           this.lastOrderCode.set(res.data.order_code || 'HD-XXXXXX');
-          this.isOrderSuccess.set(true);
           this.clearCart();
           this.isCartOpen.set(false);
           // Reset form
@@ -561,13 +624,27 @@ export class StoreComponent implements OnInit {
             note: '',
             selected_payment_method_id: null,
           });
+
+          this.modalService.open(OrderSuccessModalComponent, {
+            title: 'Đặt đơn hàng thành công',
+            size: 'sm',
+            data: {
+              orderCode: this.lastOrderCode()
+            }
+          });
         }
         this.isSubmittingOrder.set(false);
       },
       error: (err) => {
         console.error(err);
         const translatedMsg = this.translateErrorMessage(err.error?.message);
-        this.alertModalMessage.set(translatedMsg);
+        this.modalService.confirm({
+          title: 'Thông báo',
+          description: translatedMsg,
+          confirmText: 'Đóng',
+          cancelText: '',
+          confirmButtonClass: 'btn-primary'
+        });
         this.isSubmittingOrder.set(false);
       },
     });

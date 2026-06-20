@@ -15,13 +15,14 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { StateService } from '@core/services/state.service';
 import { ApiService } from '@core/services/api.service';
-import { ConfirmModalComponent } from '@shared/components/confirm-modal/confirm-modal.component';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { CustomSelectComponent } from '@shared/components/custom-select/custom-select.component';
 import { CustomSwitchComponent } from '@shared/components/custom-switch/custom-switch.component';
-import { ModalComponent } from '@shared/components/modal/modal.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
+import { ModalService } from '@core/services/modal.service';
+import { PaymentFormModalComponent } from './components/payment-form-modal/payment-form-modal.component';
+import { QrCodeModalComponent } from './components/qr-code-modal/qr-code-modal.component';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 import {
   TableComponent,
@@ -43,11 +44,9 @@ import { POPULAR_CHAINS } from '@core/utils/blockchain.utils';
     RouterModule,
     Web3ConnectPromptComponent,
     AccessRestrictedComponent,
-    ConfirmModalComponent,
     PageHeaderComponent,
     CustomSelectComponent,
     CustomSwitchComponent,
-    ModalComponent,
     IconComponent,
     TabGroupComponent,
     SkeletonLoaderComponent,
@@ -66,6 +65,7 @@ export class SettingsComponent implements OnInit {
   private readonly apiService = inject(ApiService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly modalService = inject(ModalService);
 
   public get isSettingsLoading() {
     return this.stateService.isSettingsLoading;
@@ -288,27 +288,19 @@ export class SettingsComponent implements OnInit {
   public readonly ownersFromChain = signal<string[]>([]);
   public readonly newOwnerAddress = signal<string>('');
   public readonly isOwnerActionLoading = signal<boolean>(false);
-  public readonly isDeleteOwnerConfirmOpen = signal<boolean>(false);
-  public readonly deletingOwnerAddress = signal<string>('');
   public readonly isOwnersLoading = signal<boolean>(false);
 
   public readonly financeOwnersFromChain = signal<string[]>([]);
   public readonly newFinanceOwnerAddress = signal<string>('');
   public readonly isFinanceOwnerActionLoading = signal<boolean>(false);
-  public readonly isDeleteFinanceOwnerConfirmOpen = signal<boolean>(false);
-  public readonly deletingFinanceOwnerAddress = signal<string>('');
 
   public readonly menuOwnersFromChain = signal<string[]>([]);
   public readonly newMenuOwnerAddress = signal<string>('');
   public readonly isMenuOwnerActionLoading = signal<boolean>(false);
-  public readonly isDeleteMenuOwnerConfirmOpen = signal<boolean>(false);
-  public readonly deletingMenuOwnerAddress = signal<string>('');
 
   public readonly voucherOwnersFromChain = signal<string[]>([]);
   public readonly newVoucherOwnerAddress = signal<string>('');
   public readonly isVoucherOwnerActionLoading = signal<boolean>(false);
-  public readonly isDeleteVoucherOwnerConfirmOpen = signal<boolean>(false);
-  public readonly deletingVoucherOwnerAddress = signal<string>('');
   public readonly isFinanceOwnersLoading = signal<boolean>(false);
   public readonly isMenuOwnersLoading = signal<boolean>(false);
   public readonly isVoucherOwnersLoading = signal<boolean>(false);
@@ -934,15 +926,19 @@ export class SettingsComponent implements OnInit {
       return;
     }
 
-    this.deletingFinanceOwnerAddress.set(address);
-    this.isDeleteFinanceOwnerConfirmOpen.set(true);
+    this.modalService.confirm({
+      title: 'Gỡ quyền ví Kế toán?',
+      descriptionHtml: `Bạn có chắc chắn muốn gỡ bỏ quyền của ví kế toán này?<br><span class="font-mono text-xs bg-slate-100 dark:bg-slate-950 p-1.5 rounded-lg text-slate-600 dark:text-slate-400 mt-2 block break-all font-bold">${address}</span>`,
+      confirmText: 'Gỡ quyền'
+    }).afterClosed$.subscribe(confirmed => {
+      if (confirmed) {
+        this.confirmDeleteFinanceOwner(address);
+      }
+    });
   }
 
-  public async confirmDeleteFinanceOwner() {
+  public async confirmDeleteFinanceOwner(address: string) {
     if (this.isFinanceOwnerActionLoading()) return;
-
-    const address = this.deletingFinanceOwnerAddress();
-    if (!address) return;
 
     this.isFinanceOwnerActionLoading.set(true);
     this.stateService.showToast(
@@ -956,8 +952,6 @@ export class SettingsComponent implements OnInit {
         `Giao dịch xóa ví Kế toán thành công! TxHash: ${res.txHash}`,
         'success',
       );
-      this.isDeleteFinanceOwnerConfirmOpen.set(false);
-      this.deletingFinanceOwnerAddress.set('');
 
       // Đồng bộ gỡ ví kế toán khỏi Laravel Backend
       this.apiService.removeCashier(address).subscribe({
@@ -982,15 +976,19 @@ export class SettingsComponent implements OnInit {
       return;
     }
 
-    this.deletingOwnerAddress.set(address);
-    this.isDeleteOwnerConfirmOpen.set(true);
+    this.modalService.confirm({
+      title: 'Gỡ quyền ví Thu ngân?',
+      descriptionHtml: `Bạn có chắc chắn muốn gỡ bỏ quyền của ví thu ngân này?<br><span class="font-mono text-xs bg-slate-100 dark:bg-slate-950 p-1.5 rounded-lg text-slate-600 dark:text-slate-400 mt-2 block break-all font-bold">${address}</span>`,
+      confirmText: 'Gỡ quyền'
+    }).afterClosed$.subscribe(confirmed => {
+      if (confirmed) {
+        this.confirmDeleteOwner(address);
+      }
+    });
   }
 
-  public async confirmDeleteOwner() {
+  public async confirmDeleteOwner(address: string) {
     if (this.isOwnerActionLoading()) return;
-
-    const address = this.deletingOwnerAddress();
-    if (!address) return;
 
     this.isOwnerActionLoading.set(true);
     this.stateService.showToast(
@@ -1004,8 +1002,6 @@ export class SettingsComponent implements OnInit {
         `Giao dịch xóa Owner thành công! TxHash: ${res.txHash}`,
         'success',
       );
-      this.isDeleteOwnerConfirmOpen.set(false);
-      this.deletingOwnerAddress.set('');
 
       // Đồng bộ gỡ bỏ ví thu ngân khỏi Laravel Backend
       this.apiService.removeCashier(address).subscribe({
@@ -1123,15 +1119,19 @@ export class SettingsComponent implements OnInit {
       return;
     }
 
-    this.deletingMenuOwnerAddress.set(address);
-    this.isDeleteMenuOwnerConfirmOpen.set(true);
+    this.modalService.confirm({
+      title: 'Gỡ quyền ví Quản trị Thực đơn?',
+      descriptionHtml: `Bạn có chắc chắn muốn gỡ bỏ quyền của ví quản trị Thực đơn này?<br><span class="font-mono text-xs bg-slate-100 dark:bg-slate-950 p-1.5 rounded-lg text-slate-600 dark:text-slate-400 mt-2 block break-all font-bold">${address}</span>`,
+      confirmText: 'Gỡ quyền'
+    }).afterClosed$.subscribe(confirmed => {
+      if (confirmed) {
+        this.confirmDeleteMenuOwner(address);
+      }
+    });
   }
 
-  public async confirmDeleteMenuOwner() {
+  public async confirmDeleteMenuOwner(address: string) {
     if (this.isMenuOwnerActionLoading()) return;
-
-    const address = this.deletingMenuOwnerAddress();
-    if (!address) return;
 
     this.isMenuOwnerActionLoading.set(true);
     this.stateService.showToast(
@@ -1145,8 +1145,6 @@ export class SettingsComponent implements OnInit {
         `Giao dịch xóa ví Quản trị Thực đơn thành công! TxHash: ${res.txHash}`,
         'success',
       );
-      this.isDeleteMenuOwnerConfirmOpen.set(false);
-      this.deletingMenuOwnerAddress.set('');
 
       // Đồng bộ gỡ ví khỏi Laravel Backend
       this.apiService.removeCashier(address).subscribe({
@@ -1231,15 +1229,19 @@ export class SettingsComponent implements OnInit {
       return;
     }
 
-    this.deletingVoucherOwnerAddress.set(address);
-    this.isDeleteVoucherOwnerConfirmOpen.set(true);
+    this.modalService.confirm({
+      title: 'Gỡ quyền ví Quản trị Voucher?',
+      descriptionHtml: `Bạn có chắc chắn muốn gỡ bỏ quyền của ví quản trị Voucher này?<br><span class="font-mono text-xs bg-slate-100 dark:bg-slate-950 p-1.5 rounded-lg text-slate-600 dark:text-slate-400 mt-2 block break-all font-bold">${address}</span>`,
+      confirmText: 'Gỡ quyền'
+    }).afterClosed$.subscribe(confirmed => {
+      if (confirmed) {
+        this.confirmDeleteVoucherOwner(address);
+      }
+    });
   }
 
-  public async confirmDeleteVoucherOwner() {
+  public async confirmDeleteVoucherOwner(address: string) {
     if (this.isVoucherOwnerActionLoading()) return;
-
-    const address = this.deletingVoucherOwnerAddress();
-    if (!address) return;
 
     this.isVoucherOwnerActionLoading.set(true);
     this.stateService.showToast(
@@ -1253,8 +1255,6 @@ export class SettingsComponent implements OnInit {
         `Giao dịch xóa ví Quản trị Voucher thành công! TxHash: ${res.txHash}`,
         'success',
       );
-      this.isDeleteVoucherOwnerConfirmOpen.set(false);
-      this.deletingVoucherOwnerAddress.set('');
 
       // Đồng bộ gỡ ví khỏi Laravel Backend
       this.apiService.removeCashier(address).subscribe({
@@ -1316,42 +1316,6 @@ export class SettingsComponent implements OnInit {
   public readonly paymentMethodsSearch = signal<string>('');
   public readonly isPaymentMethodsLoading = signal<boolean>(false);
   public readonly isPaymentActionLoading = signal<boolean>(false);
-  public readonly isPaymentFormOpen = signal<boolean>(false);
-  public readonly isEditingPaymentMethod = signal<boolean>(false);
-  public readonly editingPaymentMethodId = signal<number | null>(null);
-  public readonly paymentForm = signal<any>({
-    type: 'bank',
-    name: '',
-    account_number: '',
-    account_holder: '',
-    bank_code: '',
-    is_active: true,
-  });
-
-  public readonly POPULAR_BANKS = [
-    { code: 'VCB', name: 'Vietcombank' },
-    { code: 'MB', name: 'MB Bank' },
-    { code: 'TCB', name: 'Techcombank' },
-    { code: 'BIDV', name: 'BIDV' },
-    { code: 'VTB', name: 'VietinBank' },
-    { code: 'ACB', name: 'ACB' },
-    { code: 'VPB', name: 'VPBank' },
-    { code: 'TPB', name: 'TPBank' },
-    { code: 'STB', name: 'Sacombank' },
-    { code: 'SHB', name: 'SHB' },
-    { code: 'VBA', name: 'Agribank' },
-  ];
-
-  public readonly POPULAR_WALLETS = [
-    { name: 'Momo' },
-    { name: 'ZaloPay' },
-    { name: 'Viettel Money' },
-  ];
-
-  public readonly isQrModalOpen = signal<boolean>(false);
-  public readonly selectedPaymentForQr = signal<any>(null);
-
-  public readonly isDeletePaymentConfirmOpen = signal<boolean>(false);
   public readonly deletingPaymentMethodId = signal<number | null>(null);
 
   public loadPaymentMethods(force = false) {
@@ -1420,127 +1384,69 @@ export class SettingsComponent implements OnInit {
   }
 
   public openAddPaymentModal() {
-    this.paymentForm.set({
-      type: 'bank',
-      name: '',
-      account_number: '',
-      account_holder: '',
-      bank_code: '',
-      is_active: true,
+    this.modalService.open(PaymentFormModalComponent, {
+      title: 'Thêm phương thức mới',
+      size: 'md',
+      data: {
+        isEdit: false,
+        form: {
+          type: 'bank',
+          name: '',
+          account_number: '',
+          account_holder: '',
+          bank_code: '',
+          is_active: true,
+        }
+      }
+    }).afterClosed$.subscribe(success => {
+      if (success) {
+        this.loadPaymentMethods(true);
+      }
     });
-    this.isEditingPaymentMethod.set(false);
-    this.editingPaymentMethodId.set(null);
-    this.isPaymentFormOpen.set(true);
   }
 
   public openEditPaymentModal(item: any) {
-    this.paymentForm.set({
-      type: item.type,
-      name: item.name,
-      account_number: item.account_number,
-      account_holder: item.account_holder,
-      bank_code: item.bank_code || '',
-      is_active: item.is_active,
-    });
-    this.isEditingPaymentMethod.set(true);
-    this.editingPaymentMethodId.set(item.id);
-    this.isPaymentFormOpen.set(true);
-  }
-
-  public selectPopularBank(bank: { code: string; name: string }) {
-    this.paymentForm.update((form) => ({
-      ...form,
-      name: bank.name,
-      bank_code: bank.code,
-    }));
-  }
-
-  public onBankSelectChange(bankCode: string) {
-    const bank = this.POPULAR_BANKS.find((b) => b.code === bankCode);
-    if (bank) {
-      this.paymentForm.update((form) => ({
-        ...form,
-        name: bank.name,
-        bank_code: bank.code,
-      }));
-    } else {
-      this.paymentForm.update((form) => ({
-        ...form,
-        bank_code: bankCode,
-      }));
-    }
-  }
-
-  public selectPopularWallet(wallet: { name: string }) {
-    this.paymentForm.update((form) => ({
-      ...form,
-      name: wallet.name,
-      bank_code: '',
-    }));
-  }
-
-  public onWalletSelectChange(walletName: string) {
-    this.paymentForm.update((form) => ({
-      ...form,
-      name: walletName,
-      bank_code: '',
-    }));
-  }
-
-  public savePaymentMethod() {
-    const data = this.paymentForm();
-    if (!data.name || !data.account_number || !data.account_holder) {
-      this.stateService.showToast('Vui lòng nhập đầy đủ thông tin bắt buộc!', 'error');
-      return;
-    }
-
-    if (data.type === 'bank' && !data.bank_code) {
-      this.stateService.showToast('Vui lòng chọn hoặc nhập mã ngân hàng!', 'error');
-      return;
-    }
-
-    if (this.isPaymentActionLoading()) return;
-    this.isPaymentActionLoading.set(true);
-
-    const request = this.isEditingPaymentMethod()
-      ? this.apiService.updatePaymentMethod(this.editingPaymentMethodId()!, data)
-      : this.apiService.createPaymentMethod(data);
-
-    request.subscribe({
-      next: () => {
-        this.stateService.showToast(
-          this.isEditingPaymentMethod()
-            ? 'Cập nhật phương thức thanh toán thành công!'
-            : 'Thêm phương thức thanh toán thành công!',
-          'success',
-        );
-        this.isPaymentFormOpen.set(false);
-        this.isPaymentActionLoading.set(false);
+    this.modalService.open(PaymentFormModalComponent, {
+      title: 'Chỉnh sửa phương thức',
+      size: 'md',
+      data: {
+        isEdit: true,
+        id: item.id,
+        form: {
+          type: item.type,
+          name: item.name,
+          account_number: item.account_number,
+          account_holder: item.account_holder,
+          bank_code: item.bank_code || '',
+          is_active: item.is_active,
+        }
+      }
+    }).afterClosed$.subscribe(success => {
+      if (success) {
         this.loadPaymentMethods(true);
-      },
-      error: (err) => {
-        this.stateService.showToast(err.error?.message || 'Có lỗi xảy ra khi lưu!', 'error');
-        this.isPaymentActionLoading.set(false);
-      },
+      }
     });
   }
 
   public deletePaymentMethod(id: number) {
-    this.deletingPaymentMethodId.set(id);
-    this.isDeletePaymentConfirmOpen.set(true);
+    this.modalService.confirm({
+      title: 'Xóa phương thức thanh toán?',
+      description: 'Bạn có chắc chắn muốn xóa phương thức thanh toán này khỏi hệ thống? Hành động này sẽ gỡ bỏ phương thức khỏi website Storefront ngay lập tức.',
+      confirmText: 'Xác nhận xóa'
+    }).afterClosed$.subscribe(confirmed => {
+      if (confirmed) {
+        this.confirmDeletePaymentMethod(id);
+      }
+    });
   }
 
-  public confirmDeletePaymentMethod() {
-    const id = this.deletingPaymentMethodId();
-    if (!id) return;
-
+  public confirmDeletePaymentMethod(id: number) {
     if (this.isPaymentActionLoading()) return;
     this.isPaymentActionLoading.set(true);
 
     this.apiService.deletePaymentMethod(id).subscribe({
       next: () => {
         this.stateService.showToast('Xóa phương thức thanh toán thành công!', 'success');
-        this.isDeletePaymentConfirmOpen.set(false);
         this.deletingPaymentMethodId.set(null);
         this.isPaymentActionLoading.set(false);
         this.loadPaymentMethods(true);
@@ -1553,40 +1459,12 @@ export class SettingsComponent implements OnInit {
   }
 
   public showQrCode(item: any) {
-    this.selectedPaymentForQr.set(item);
-    this.isQrModalOpen.set(true);
-  }
-
-  public downloadQrCode(item: any) {
-    if (!item) return;
-    const url = this.getQrCodeUrl(item);
-    const filename = `qrcode-${item.bank_code || item.name}-${item.account_number}.jpg`;
-
-    fetch(url)
-      .then((response) => response.blob())
-      .then((blob) => {
-        const blobUrl = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(blobUrl);
-      })
-      .catch(() => {
-        window.open(url, '_blank');
-      });
-  }
-
-  public getQrCodeUrl(item: any): string {
-    if (!item) return '';
-    if (item.type === 'bank') {
-      return `https://img.vietqr.io/image/${item.bank_code}-${item.account_number}-compact.jpg?accountName=${encodeURIComponent(item.account_holder)}`;
-    } else if (item.type === 'wallet' && item.name.toLowerCase() === 'momo') {
-      return `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https%3A%2F%2Fnhantien.momo.vn%2F${item.account_number}`;
-    } else {
-      return `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(item.account_number)}`;
-    }
+    this.modalService.open(QrCodeModalComponent, {
+      title: 'Mã QR chuyển khoản',
+      size: 'sm',
+      data: {
+        payment: item
+      }
+    });
   }
 }

@@ -14,7 +14,9 @@ import { RouterModule, Router } from '@angular/router';
 import { StateService } from '@core/services/state.service';
 import { ApiService } from '@core/services/api.service';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
-import { ConfirmModalComponent } from '@shared/components/confirm-modal/confirm-modal.component';
+import { ModalService } from '@core/services/modal.service';
+import { FinancialTransactionModalComponent } from './components/financial-transaction-modal/financial-transaction-modal.component';
+import { FinancialDetailModalComponent } from './components/financial-detail-modal/financial-detail-modal.component';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
 import { CustomDatePickerComponent } from '@shared/components/custom-date-picker/custom-date-picker.component';
@@ -35,7 +37,6 @@ import { CardComponent } from '@shared/components/card/card.component';
     Web3ConnectPromptComponent,
     AccessRestrictedComponent,
     PaginationComponent,
-    ConfirmModalComponent,
     PageHeaderComponent,
     VNDCurrencyPipe,
     CustomDatePickerComponent,
@@ -53,6 +54,7 @@ export class FinancialsComponent implements OnInit {
   public readonly stateService = inject(StateService);
   private readonly apiService = inject(ApiService);
   private readonly router = inject(Router);
+  private readonly modalService = inject(ModalService);
 
   ngOnInit() {}
 
@@ -75,31 +77,9 @@ export class FinancialsComponent implements OnInit {
   // Bộ tìm kiếm tài chính
   public readonly transactionSearchQuery = signal<string>('');
 
-  // Form Lập Phiếu Thu Chi
-  public readonly isTransactionModalOpen = signal<boolean>(false);
-  public readonly transactionModalType = signal<'add' | 'edit'>('add');
-  public readonly editingTransaction = signal<any>(null);
-  public readonly isTransactionSaving = signal<boolean>(false);
+  // Form & Modals
   public readonly isTransactionDropdownOpen = signal<boolean>(false);
-  public readonly isCategoryDropdownOpen = signal<boolean>(false);
-  public readonly isSyncFinanceToBlockchainChecked = signal<boolean>(false);
-
-  public readonly transactionForm = signal<any>({
-    type: 'thu',
-    amount: 0,
-    category: '',
-    description: '',
-    transaction_date: '',
-  });
-
-  // Xem chi tiết giao dịch
-  public readonly selectedTransactionDetails = signal<any>(null);
-  public readonly isTransactionDetailModalOpen = signal<boolean>(false);
   public readonly blockchainSyncLoading = signal<boolean>(false);
-
-  // Trạng thái modal xác nhận xóa
-  public readonly isDeleteTransactionConfirmOpen = signal<boolean>(false);
-  public readonly deletingTransaction = signal<any>(null);
 
   // Getters từ StateService
   public get web3Service() {
@@ -176,201 +156,56 @@ export class FinancialsComponent implements OnInit {
 
   // --- CRUD Transactions ---
   public openAddTransactionModal(type: 'thu' | 'chi' = 'thu') {
-    this.transactionModalType.set('add');
-    this.editingTransaction.set(null);
-    this.isSyncFinanceToBlockchainChecked.set(false);
-    this.isCategoryDropdownOpen.set(false);
-    this.transactionForm.set({
-      type: type,
-      amount: 0,
-      category: '',
-      description: '',
-      transaction_date: new Date().toISOString().split('T')[0],
+    this.modalService.open(FinancialTransactionModalComponent, {
+      title: 'Lập phiếu thu chi mới',
+      size: 'md',
+      data: { type }
+    }).afterClosed$.subscribe(success => {
+      if (success) {
+        this.refreshTransactions();
+      }
     });
-    this.isTransactionModalOpen.set(true);
     this.isTransactionDropdownOpen.set(false);
   }
 
   public openEditTransactionModal(transaction: any) {
-    this.transactionModalType.set('edit');
-    this.editingTransaction.set(transaction);
-    this.isCategoryDropdownOpen.set(false);
-    this.transactionForm.set({
-      type: transaction.type,
-      amount: transaction.amount,
-      category: transaction.category,
-      description: transaction.description || '',
-      transaction_date: transaction.transaction_date,
+    this.modalService.open(FinancialTransactionModalComponent, {
+      title: 'Cập nhật phiếu thu chi',
+      size: 'md',
+      data: { transaction }
+    }).afterClosed$.subscribe(success => {
+      if (success) {
+        this.refreshTransactions();
+      }
     });
-    this.isTransactionModalOpen.set(true);
-  }
-
-  public closeTransactionModal() {
-    this.isTransactionModalOpen.set(false);
-    this.editingTransaction.set(null);
-    this.isCategoryDropdownOpen.set(false);
-  }
-
-  public selectCategory(category: string) {
-    this.transactionForm.update((form) => ({
-      ...form,
-      category: category,
-    }));
-    this.isCategoryDropdownOpen.set(false);
-  }
-
-  public updateTransactionForm(field: string, value: any) {
-    this.transactionForm.update((form) => ({
-      ...form,
-      [field]: field === 'amount' ? Number(value) : value,
-    }));
-  }
-
-  public saveTransaction() {
-    const form = this.transactionForm();
-    if (form.amount <= 0 || !form.category || !form.category.trim() || !form.transaction_date) {
-      this.stateService.showToast(
-        'Vui lòng nhập số tiền (>0), hạng mục và ngày giao dịch hợp lệ!',
-        'error',
-      );
-      return;
-    }
-
-    this.isTransactionSaving.set(true);
-    if (this.transactionModalType() === 'add') {
-      this.apiService.createTransaction(form).subscribe({
-        next: (res) => {
-          if (this.isSyncFinanceToBlockchainChecked()) {
-            this.syncTransactionImmediatelyAfterCreate(res.transaction);
-          } else {
-            this.stateService.showToast('Ghi nhận thu chi thành công!', 'success');
-            this.closeTransactionModal();
-            this.stateService.refreshTransactions();
-            this.isTransactionSaving.set(false);
-          }
-        },
-        error: () => {
-          this.stateService.showToast('Ghi nhận thu chi thất bại!', 'error');
-          this.isTransactionSaving.set(false);
-        },
-      });
-    } else {
-      const id = this.editingTransaction().id;
-      this.apiService.updateTransaction(id, form).subscribe({
-        next: () => {
-          this.stateService.showToast('Cập nhật giao dịch thành công!', 'success');
-          this.closeTransactionModal();
-          this.stateService.refreshTransactions();
-          this.isTransactionSaving.set(false);
-        },
-        error: () => {
-          this.stateService.showToast('Cập nhật giao dịch thất bại!', 'error');
-          this.isTransactionSaving.set(false);
-        },
-      });
-    }
-  }
-
-  public async syncTransactionImmediatelyAfterCreate(tx: any) {
-    if (!this.web3Service.walletConnected()) {
-      this.stateService.showToast(
-        'Ghi nhận thu chi thành công cục bộ! Chưa kết nối ví Web3 để đồng bộ Blockchain.',
-        'error',
-      );
-      this.closeTransactionModal();
-      this.stateService.refreshTransactions();
-      this.isTransactionSaving.set(false);
-      return;
-    }
-
-    if (
-      !this.web3Service.financeContractAddress() ||
-      this.web3Service.financeContractAddress().trim() === ''
-    ) {
-      this.stateService.showToast(
-        'Ghi nhận thu chi thành công cục bộ! Chưa cấu hình Smart Contract để đồng bộ Blockchain.',
-        'error',
-      );
-      this.closeTransactionModal();
-      this.stateService.refreshTransactions();
-      this.isTransactionSaving.set(false);
-      return;
-    }
-
-    this.stateService.showToast(
-      'Bắt đầu đồng bộ Blockchain. Vui lòng xác nhận trên ví của bạn...',
-      'success',
-    );
-
-    const result = await this.web3Service.recordTransactionOnChain(
-      tx.id,
-      tx.transaction_code || '',
-      tx.type,
-      tx.amount,
-      tx.category,
-      tx.description || '',
-    );
-
-    if (result.success && result.txHash) {
-      this.stateService.showToast(
-        'Giao dịch Blockchain đã được gửi! Đang đồng bộ trạng thái...',
-        'success',
-      );
-
-      this.apiService
-        .syncTransactionBlockchain(tx.id, result.txHash, 'success', this.web3Service.chainId())
-        .subscribe({
-          next: () => {
-            this.stateService.showToast(
-              'Ghi nhận thu chi và đồng bộ Blockchain thành công!',
-              'success',
-            );
-            this.closeTransactionModal();
-            this.stateService.refreshTransactions();
-            this.isTransactionSaving.set(false);
-          },
-          error: (err) => {
-            console.error('Loi cap nhat TxHash len DB:', err);
-            this.closeTransactionModal();
-            this.stateService.refreshTransactions();
-            this.isTransactionSaving.set(false);
-          },
-        });
-    } else {
-      console.warn('[Blockchain] Giao dịch Blockchain thất bại hoặc bị từ chối:', result.error);
-      this.stateService.showToast(
-        'Phiếu thu chi đã lưu cục bộ thành công! Giao dịch blockchain thất bại hoặc bị từ chối.',
-        'error',
-      );
-
-      this.closeTransactionModal();
-      this.stateService.refreshTransactions();
-      this.isTransactionSaving.set(false);
-    }
   }
 
   public deleteTransaction(transaction: any) {
-    this.deletingTransaction.set(transaction);
-    this.isDeleteTransactionConfirmOpen.set(true);
+    this.modalService.confirm({
+      title: 'Xóa phiếu thu chi?',
+      description: `Bạn có chắc chắn muốn xóa phiếu thu chi "${transaction.transaction_code}" khỏi hệ thống? Hành động này không thể hoàn tác.`,
+      confirmText: 'Xóa',
+      cancelText: 'Hủy bỏ'
+    }).afterClosed$.subscribe(confirmed => {
+      if (confirmed) {
+        this.confirmDeleteTransaction(transaction);
+      }
+    });
   }
 
-  public confirmDeleteTransaction() {
-    const transaction = this.deletingTransaction();
+  public confirmDeleteTransaction(transaction: any) {
     if (!transaction) return;
     const id = transaction.id;
 
-    this.isDeleteTransactionConfirmOpen.set(false);
     this.stateService.isLoading.set(true);
     this.apiService.deleteTransaction(id).subscribe({
       next: () => {
         this.stateService.showToast('Xóa giao dịch thành công!', 'success');
         this.stateService.refreshTransactions();
-        this.deletingTransaction.set(null);
         this.stateService.isLoading.set(false);
       },
       error: () => {
         this.stateService.showToast('Xóa giao dịch thất bại!', 'error');
-        this.deletingTransaction.set(null);
         this.stateService.isLoading.set(false);
       },
     });
@@ -511,15 +346,16 @@ export class FinancialsComponent implements OnInit {
     );
   }
 
-  // Xem chi tiết phiếu thu chi
   public viewTransactionDetails(tx: any) {
-    this.selectedTransactionDetails.set(tx);
-    this.isTransactionDetailModalOpen.set(true);
-  }
-
-  public closeTransactionDetailModal() {
-    this.selectedTransactionDetails.set(null);
-    this.isTransactionDetailModalOpen.set(false);
+    this.modalService.open(FinancialDetailModalComponent, {
+      title: `Chi tiết phiếu thu/chi`,
+      size: 'lg',
+      data: tx
+    }).afterClosed$.subscribe(success => {
+      if (success) {
+        this.refreshTransactions();
+      }
+    });
   }
 
   // Helpers cho template HTML

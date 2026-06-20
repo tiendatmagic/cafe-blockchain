@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { StateService } from '@core/services/state.service';
+import { ModalService } from '@core/services/modal.service';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prompt/web3-connect-prompt.component';
@@ -61,6 +62,7 @@ import { BadgeComponent } from '@shared/components/badge/badge.component';
 export class ShiftsComponent implements OnInit {
   public readonly stateService = inject(StateService);
   private readonly router = inject(Router);
+  private readonly modalService = inject(ModalService);
   public readonly datePresets = DATE_FILTER_OPTIONS;
 
   public readonly shiftColumns: TableColumn[] = [
@@ -133,9 +135,7 @@ export class ShiftsComponent implements OnInit {
     { value: 'closed', label: 'Đã đóng' },
   ];
 
-  // Chi tiết ca trực (Modal)
-  public readonly selectedShiftDetails = signal<any>(null);
-  public readonly isShiftDetailModalOpen = signal<boolean>(false);
+
 
   public get web3Service() {
     return this.stateService.web3Service;
@@ -425,15 +425,18 @@ export class ShiftsComponent implements OnInit {
   }
 
   // Mở modal xem chi tiết ca trực
-  public viewShiftDetail(shift: any) {
-    this.selectedShiftDetails.set(shift);
-    this.isShiftDetailModalOpen.set(true);
-  }
-
-  // Đóng modal xem chi tiết ca trực
-  public closeShiftDetail() {
-    this.isShiftDetailModalOpen.set(false);
-    this.selectedShiftDetails.set(null);
+  public async viewShiftDetail(shift: any) {
+    const { ShiftDetailModalComponent } = await import(
+      './components/shift-detail-modal/shift-detail-modal.component'
+    );
+    this.modalService.open(ShiftDetailModalComponent, {
+      title: `Chi tiết ca trực #${shift.id}`,
+      size: 'xl',
+      data: {
+        shift: shift,
+        onPrint: (s: any) => this.printShiftReceipt(s),
+      },
+    });
   }
 
   // Tính thời lượng làm việc (dành cho ca đã kết thúc)

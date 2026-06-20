@@ -17,9 +17,10 @@ import {
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { StateService } from '@core/services/state.service';
 import { ApiService } from '@core/services/api.service';
-import { ConfirmModalComponent } from '@shared/components/confirm-modal/confirm-modal.component';
+import { ModalService } from '@core/services/modal.service';
+import { TenantSubscriptionModalComponent } from './components/tenant-subscription-modal/tenant-subscription-modal.component';
+import { SubscriptionPlanModalComponent } from './components/subscription-plan-modal/subscription-plan-modal.component';
 import { CustomSelectComponent } from '@shared/components/custom-select/custom-select.component';
-import { CustomDatePickerComponent } from '@shared/components/custom-date-picker/custom-date-picker.component';
 import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prompt/web3-connect-prompt.component';
 import { AccessRestrictedComponent } from '@shared/components/access-restricted/access-restricted.component';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
@@ -28,7 +29,6 @@ import {
   TableColumn,
   TableCellDirective,
 } from '@shared/components/table/table.component';
-import { ModalComponent } from '@shared/components/modal/modal.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
@@ -46,15 +46,12 @@ import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
     FormsModule,
     ReactiveFormsModule,
     RouterModule,
-    ConfirmModalComponent,
     CustomSelectComponent,
-    CustomDatePickerComponent,
     Web3ConnectPromptComponent,
     AccessRestrictedComponent,
     PageHeaderComponent,
     TableComponent,
     TableCellDirective,
-    ModalComponent,
     IconComponent,
     TabGroupComponent,
     SkeletonLoaderComponent,
@@ -79,6 +76,7 @@ export class AdminSaaSComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly modalService = inject(ModalService);
 
   // Expose Math to template
   public readonly Math = Math;
@@ -205,32 +203,13 @@ export class AdminSaaSComponent implements OnInit {
     return list.slice(startIndex, startIndex + this.planItemsPerPage);
   });
 
-  // Forms
-  public subscriptionForm!: FormGroup;
-  public readonly isSubscriptionModalOpen = signal<boolean>(false);
-  public readonly selectedTenant = signal<any | null>(null);
-  public readonly isSavingSubscription = signal<boolean>(false);
-
-  public planForm!: FormGroup;
-  public readonly isPlanModalOpen = signal<boolean>(false);
-  public readonly editingPlan = signal<any | null>(null);
-  public readonly isSavingPlan = signal<boolean>(false);
-
   // Settings
   public readonly isSavingSettings = signal<boolean>(false);
 
-  // Modals xác nhận
-  public readonly confirmDeletePlanData = signal<any | null>(null);
+  // Trạng thái Loading của các tiến trình chạy ngầm
   public readonly isDeletingPlan = signal<boolean>(false);
-
-  public readonly confirmCleanTokensOpen = signal<boolean>(false);
   public readonly isCleaningTokens = signal<boolean>(false);
-
-  public readonly confirmCleanAllTokensOpen = signal<boolean>(false);
   public readonly isCleaningAllTokens = signal<boolean>(false);
-
-  // Khôi phục gói mặc định
-  public readonly confirmResetDefaultPlansOpen = signal<boolean>(false);
   public readonly isResettingDefaultPlans = signal<boolean>(false);
 
   // System Info & Packages
@@ -270,31 +249,7 @@ export class AdminSaaSComponent implements OnInit {
       }));
   }
 
-  // Định dạng ngày hôm nay (YYYY-MM-DD) làm minDate
-  public get todayStr(): string {
-    const today = new Date();
-    const y = today.getFullYear();
-    const m = today.getMonth() + 1;
-    const d = today.getDate();
-    return `${y}-${m < 10 ? '0' + m : m}-${d < 10 ? '0' + d : d}`;
-  }
-
-  // Hàm chọn nhanh thời hạn (đơn vị: tháng hoặc ngày)
-  public setSubscriptionDuration(value: number, unit: 'days' | 'months' = 'months') {
-    const today = new Date();
-    if (unit === 'months') {
-      today.setMonth(today.getMonth() + value);
-    } else {
-      today.setDate(today.getDate() + value);
-    }
-    const y = today.getFullYear();
-    const m = today.getMonth() + 1;
-    const d = today.getDate();
-    const dateStr = `${y}-${m < 10 ? '0' + m : m}-${d < 10 ? '0' + d : d}`;
-    this.subscriptionForm.patchValue({
-      subscription_expires_at: dateStr,
-    });
-  }
+  // Note: Các hàm ngày tháng phục vụ form modal đã được đóng gói trong các component modal động tương ứng
 
   // Khử dấu tiếng Việt
   private removeSign(str: string): string {
@@ -341,8 +296,6 @@ export class AdminSaaSComponent implements OnInit {
   });
 
   ngOnInit() {
-    this.initForms();
-
     // Đồng bộ tab hiện tại với Query Parameter 'tab' trên URL
     this.route.queryParams.subscribe((params) => {
       const tab = params['tab'];
@@ -357,51 +310,6 @@ export class AdminSaaSComponent implements OnInit {
     if (this.stateService.isSuperAdmin()) {
       this.loadAllAdminData();
     }
-  }
-
-  private initForms() {
-    this.subscriptionForm = this.fb.group({
-      store_name: ['', [Validators.required, Validators.maxLength(255)]],
-      plan_code: ['free', [Validators.required]],
-      subscription_expires_at: [null, [Validators.required]],
-      subscription_status: ['active', [Validators.required]],
-    });
-
-    // Tự động set 7 ngày nếu admin đổi gói cước sang gói 'free'
-    this.subscriptionForm.get('plan_code')?.valueChanges.subscribe((planCode) => {
-      if (planCode === 'free') {
-        this.setSubscriptionDuration(7, 'days');
-      }
-    });
-
-    this.planForm = this.fb.group({
-      code: ['', [Validators.required, Validators.pattern(/^[a-z0-9_-]+$/)]],
-      name: ['', [Validators.required, Validators.maxLength(255)]],
-      is_active: [true, [Validators.required]],
-      price_per_month: [0, [Validators.required, Validators.min(0)]],
-      price_per_year: [0, [Validators.required, Validators.min(0)]],
-      features: this.fb.group({
-        max_products: [20, [Validators.required]],
-        max_staffs: [2, [Validators.required]],
-        max_customers: [50, [Validators.required]],
-        max_transactions: [100, [Validators.required]],
-        max_debts: [10, [Validators.required]],
-        enable_dashboard: [true, [Validators.required]],
-        enable_pos: [true, [Validators.required]],
-        enable_orders: [true, [Validators.required]],
-        enable_tables: [true, [Validators.required]],
-        enable_shifts: [true, [Validators.required]],
-        enable_menu: [true, [Validators.required]],
-        enable_inventory: [false, [Validators.required]],
-        enable_customers: [true, [Validators.required]],
-        enable_debts: [false, [Validators.required]],
-        enable_financials: [false, [Validators.required]],
-        enable_staffs: [true, [Validators.required]],
-        enable_storefront: [false, [Validators.required]],
-        enable_reports: [false, [Validators.required]],
-        enable_excel_export: [false, [Validators.required]],
-      }),
-    });
   }
 
   public setSubTab(tab: 'sysconfig' | 'tenants' | 'plans' | 'system' | 'sysinfo') {
@@ -472,207 +380,91 @@ export class AdminSaaSComponent implements OnInit {
 
   // --- Quản lý Thuê bao Quán ---
   public openEditSubscription(tenant: any) {
-    this.selectedTenant.set(tenant);
-
-    // Format ngày hết hạn thành YYYY-MM-DD để input date hiển thị đúng
-    let dateStr = null;
-    if (tenant.subscription_expires_at) {
-      dateStr = tenant.subscription_expires_at.split(/[T ]/)[0];
-    }
-
-    this.subscriptionForm.patchValue({
-      store_name: tenant.store_name || '',
-      plan_code: tenant.plan_code || 'free',
-      subscription_expires_at: dateStr,
-      subscription_status: tenant.subscription_status || 'active',
-    });
-    this.isSubscriptionModalOpen.set(true);
-  }
-
-  public saveSubscription() {
-    if (this.isSavingSubscription()) return;
-
-    if (this.subscriptionForm.invalid) {
-      this.subscriptionForm.markAllAsTouched();
-      return;
-    }
-
-    const tenant = this.selectedTenant();
-    if (!tenant) return;
-
-    this.isSavingSubscription.set(true);
-    const data = this.subscriptionForm.value;
-
-    this.apiService.updateTenantSubscription(tenant.id, data).subscribe({
-      next: () => {
-        this.stateService.showToast('Cập nhật thuê bao quán thành công!', 'success');
-        this.isSubscriptionModalOpen.set(false);
+    this.modalService.open(TenantSubscriptionModalComponent, {
+      title: 'Thay đổi thông tin thuê bao',
+      size: 'md',
+      data: {
+        tenant,
+        planOptions: this.planOptions,
+      }
+    }).afterClosed$.subscribe((success) => {
+      if (success) {
         this.loadAllAdminData();
-        this.isSavingSubscription.set(false);
-      },
-      error: (err) => {
-        const errorMsg = err.error?.message || 'Có lỗi xảy ra, vui lòng thử lại.';
-        this.stateService.showToast(errorMsg, 'error');
-        this.isSavingSubscription.set(false);
-      },
+      }
     });
   }
 
   // --- Quản lý Gói cước ---
   public openAddPlan() {
-    this.editingPlan.set(null);
-    this.planForm.reset();
-
-    this.planForm.get('code')?.enable();
-    this.planForm.patchValue({
-      is_active: true,
-      price_per_month: 0,
-      price_per_year: 0,
-      features: {
-        max_products: 20,
-        max_staffs: 2,
-        max_customers: 50,
-        max_transactions: 100,
-        max_debts: 10,
-        enable_dashboard: true,
-        enable_pos: true,
-        enable_orders: true,
-        enable_tables: true,
-        enable_shifts: true,
-        enable_menu: true,
-        enable_inventory: false,
-        enable_customers: true,
-        enable_debts: false,
-        enable_financials: false,
-        enable_staffs: true,
-        enable_storefront: false,
-        enable_reports: false,
-        enable_excel_export: false,
-      },
+    this.modalService.open(SubscriptionPlanModalComponent, {
+      title: 'Thêm gói cước mới',
+      size: 'lg',
+      data: { plan: null }
+    }).afterClosed$.subscribe((success) => {
+      if (success) {
+        this.loadAllAdminData();
+      }
     });
-    this.isPlanModalOpen.set(true);
   }
 
   public openEditPlan(plan: any) {
-    this.editingPlan.set(plan);
-    this.planForm.reset();
-
-    // Khóa mã gói khi sửa
-    this.planForm.get('code')?.disable();
-
-    this.planForm.patchValue({
-      code: plan.code,
-      name: plan.name,
-      is_active: plan.is_active,
-      price_per_month: plan.price_per_month ?? 0,
-      price_per_year: plan.price_per_year ?? 0,
-      features: {
-        max_products: plan.features?.max_products ?? 20,
-        max_staffs: plan.features?.max_staffs ?? 2,
-        max_customers: plan.features?.max_customers ?? 50,
-        max_transactions: plan.features?.max_transactions ?? 100,
-        max_debts: plan.features?.max_debts ?? 10,
-        enable_dashboard: plan.features?.enable_dashboard !== false,
-        enable_pos: plan.features?.enable_pos !== false,
-        enable_orders: plan.features?.enable_orders !== false,
-        enable_tables: plan.features?.enable_tables !== false,
-        enable_shifts: plan.features?.enable_shifts !== false,
-        enable_menu: plan.features?.enable_menu !== false,
-        enable_inventory: !!plan.features?.enable_inventory,
-        enable_customers: plan.features?.enable_customers !== false,
-        enable_debts: !!plan.features?.enable_debts,
-        enable_financials: !!plan.features?.enable_financials,
-        enable_staffs: plan.features?.enable_staffs !== false,
-        enable_storefront: !!plan.features?.enable_storefront,
-        enable_reports: !!plan.features?.enable_reports,
-        enable_excel_export: !!plan.features?.enable_excel_export,
-      },
-    });
-    this.isPlanModalOpen.set(true);
-  }
-
-  public savePlan() {
-    if (this.isSavingPlan()) return;
-
-    if (this.planForm.invalid) {
-      this.planForm.markAllAsTouched();
-      return;
-    }
-
-    this.isSavingPlan.set(true);
-
-    // Lấy value bao gồm cả disabled controls (như 'code' khi sửa)
-    const data = this.planForm.getRawValue();
-    const editing = this.editingPlan();
-
-    const request = editing
-      ? this.apiService.updateAdminPlan(editing.id, data)
-      : this.apiService.createAdminPlan(data);
-
-    request.subscribe({
-      next: () => {
-        this.stateService.showToast(
-          editing ? 'Cập nhật gói cước thành công!' : 'Tạo gói cước mới thành công!',
-          'success',
-        );
-        this.isPlanModalOpen.set(false);
+    this.modalService.open(SubscriptionPlanModalComponent, {
+      title: 'Cấu hình chi tiết gói cước',
+      size: 'lg',
+      data: { plan }
+    }).afterClosed$.subscribe((success) => {
+      if (success) {
         this.loadAllAdminData();
-        this.isSavingPlan.set(false);
-      },
-      error: (err) => {
-        const errorMsg = err.error?.message || 'Có lỗi xảy ra, vui lòng thử lại.';
-        this.stateService.showToast(errorMsg, 'error');
-        this.isSavingPlan.set(false);
-      },
+      }
     });
   }
 
   public triggerDeletePlan(plan: any) {
-    this.confirmDeletePlanData.set(plan);
-  }
-
-  public onDeletePlanConfirm() {
-    if (this.isDeletingPlan()) return;
-    const plan = this.confirmDeletePlanData();
-    if (!plan) return;
-
-    this.isDeletingPlan.set(true);
-    this.apiService.deleteAdminPlan(plan.id).subscribe({
-      next: () => {
-        this.stateService.showToast('Xóa gói cước thành công!', 'success');
-        this.confirmDeletePlanData.set(null);
-        this.isDeletingPlan.set(false);
-        this.loadAllAdminData();
-      },
-      error: (err) => {
-        const errorMsg = err.error?.message || 'Không thể xóa gói cước này.';
-        this.stateService.showToast(errorMsg, 'error');
-        this.confirmDeletePlanData.set(null);
-        this.isDeletingPlan.set(false);
-      },
+    this.modalService.confirm({
+      title: 'Xóa gói cước',
+      description: `Bạn có chắc chắn muốn xóa gói cước "${plan.name}" không? Thao tác này không thể hoàn tác.`,
+      confirmText: 'Xóa gói',
+      cancelText: 'Hủy',
+    }).afterClosed$.subscribe((confirmed) => {
+      if (confirmed) {
+        this.isDeletingPlan.set(true);
+        this.apiService.deleteAdminPlan(plan.id).subscribe({
+          next: () => {
+            this.stateService.showToast('Xóa gói cước thành công!', 'success');
+            this.isDeletingPlan.set(false);
+            this.loadAllAdminData();
+          },
+          error: (err) => {
+            const errorMsg = err.error?.message || 'Không thể xóa gói cước này.';
+            this.stateService.showToast(errorMsg, 'error');
+            this.isDeletingPlan.set(false);
+          },
+        });
+      }
     });
   }
 
   public triggerResetDefaultPlans() {
-    this.confirmResetDefaultPlansOpen.set(true);
-  }
-
-  public onResetDefaultPlansConfirm() {
-    if (this.isResettingDefaultPlans()) return;
-    this.isResettingDefaultPlans.set(true);
-
-    this.apiService.resetAdminDefaultPlans().subscribe({
-      next: (res) => {
-        this.stateService.showToast(res.message || 'Khôi phục gói mặc định thành công!', 'success');
-        this.confirmResetDefaultPlansOpen.set(false);
-        this.isResettingDefaultPlans.set(false);
-        this.loadAllAdminData();
-      },
-      error: () => {
-        this.stateService.showToast('Có lỗi xảy ra khi khôi phục gói mặc định.', 'error');
-        this.confirmResetDefaultPlansOpen.set(false);
-        this.isResettingDefaultPlans.set(false);
-      },
+    this.modalService.confirm({
+      title: 'Khôi phục gói mặc định',
+      description: 'Bạn có chắc chắn muốn khôi phục các gói cước mặc định (free, pro, ultra) về trạng thái ban đầu? Các tùy chỉnh hiện tại của các gói này sẽ bị ghi đè.',
+      confirmText: 'Khôi phục',
+      cancelText: 'Hủy',
+    }).afterClosed$.subscribe((confirmed) => {
+      if (confirmed) {
+        this.isResettingDefaultPlans.set(true);
+        this.apiService.resetAdminDefaultPlans().subscribe({
+          next: (res) => {
+            this.stateService.showToast(res.message || 'Khôi phục gói mặc định thành công!', 'success');
+            this.isResettingDefaultPlans.set(false);
+            this.loadAllAdminData();
+          },
+          error: () => {
+            this.stateService.showToast('Có lỗi xảy ra khi khôi phục gói mặc định.', 'error');
+            this.isResettingDefaultPlans.set(false);
+          },
+        });
+      }
     });
   }
 
@@ -767,43 +559,57 @@ export class AdminSaaSComponent implements OnInit {
       });
   }
 
-  public confirmCleanTokens() {
-    if (this.isCleaningTokens()) return;
-    this.isCleaningTokens.set(true);
+  public triggerCleanTokens() {
+    this.modalService.confirm({
+      title: 'Dọn dẹp Token hết hạn',
+      description: `Bạn có chắc chắn muốn dọn dẹp các token Sanctum đã hết hạn không? Hệ thống sẽ xóa các token cũ hơn ${this.tokenCleanupDays()} ngày.`,
+      confirmText: 'Dọn dẹp',
+      cancelText: 'Hủy',
+    }).afterClosed$.subscribe((confirmed) => {
+      if (confirmed) {
+        if (this.isCleaningTokens()) return;
+        this.isCleaningTokens.set(true);
 
-    this.apiService.cleanTokens().subscribe({
-      next: (res) => {
-        this.stateService.showToast(res.message || 'Dọn dẹp token thành công!', 'success');
-        this.confirmCleanTokensOpen.set(false);
-        this.isCleaningTokens.set(false);
-      },
-      error: (err) => {
-        this.stateService.showToast('Lỗi khi dọn dẹp token hệ thống.', 'error');
-        this.confirmCleanTokensOpen.set(false);
-        this.isCleaningTokens.set(false);
-      },
+        this.apiService.cleanTokens().subscribe({
+          next: (res) => {
+            this.stateService.showToast(res.message || 'Dọn dẹp token thành công!', 'success');
+            this.isCleaningTokens.set(false);
+          },
+          error: (err) => {
+            this.stateService.showToast('Lỗi khi dọn dẹp token hệ thống.', 'error');
+            this.isCleaningTokens.set(false);
+          },
+        });
+      }
     });
   }
 
-  public onCleanAllTokensConfirm() {
-    if (this.isCleaningAllTokens()) return;
-    this.isCleaningAllTokens.set(true);
+  public triggerCleanAllTokens() {
+    this.modalService.confirm({
+      title: 'Xóa tất cả Token',
+      description: 'CẢNH BÁO: Thao tác này sẽ đăng xuất TẤT CẢ người dùng và yêu cầu tất cả các quán/nhân viên đăng nhập lại bằng cách ký lại ví. Bạn có chắc chắn muốn tiếp tục không?',
+      confirmText: 'Xóa tất cả',
+      cancelText: 'Hủy',
+    }).afterClosed$.subscribe((confirmed) => {
+      if (confirmed) {
+        if (this.isCleaningAllTokens()) return;
+        this.isCleaningAllTokens.set(true);
 
-    this.apiService.cleanAllTokens().subscribe({
-      next: (res) => {
-        this.stateService.showToast(res.message || 'Xóa tất cả token thành công!', 'success');
-        this.confirmCleanAllTokensOpen.set(false);
-        this.isCleaningAllTokens.set(false);
-        this.stateService.disconnectWalletAndClose(
-          'Tất cả token đã bị xóa. Vui lòng kết nối lại ví.',
-        );
-        this.router.navigate(['/']);
-      },
-      error: (err) => {
-        this.stateService.showToast('Lỗi khi xóa tất cả token hệ thống.', 'error');
-        this.confirmCleanAllTokensOpen.set(false);
-        this.isCleaningAllTokens.set(false);
-      },
+        this.apiService.cleanAllTokens().subscribe({
+          next: (res) => {
+            this.stateService.showToast(res.message || 'Xóa tất cả token thành công!', 'success');
+            this.isCleaningAllTokens.set(false);
+            this.stateService.disconnectWalletAndClose(
+              'Tất cả token đã bị xóa. Vui lòng kết nối lại ví.',
+            );
+            this.router.navigate(['/']);
+          },
+          error: (err) => {
+            this.stateService.showToast('Lỗi khi xóa tất cả token hệ thống.', 'error');
+            this.isCleaningAllTokens.set(false);
+          },
+        });
+      }
     });
   }
 

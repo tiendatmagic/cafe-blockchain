@@ -1,0 +1,101 @@
+<form [formGroup]="staffForm" class="space-y-4">
+  <!-- Tên nhân viên -->
+  <div class="space-y-1.5">
+    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Tên nhân viên <span class="text-red-500">*</span></label>
+    <input
+      type="text"
+      formControlName="name"
+      class="form-input w-full"
+      placeholder="Ví dụ: Nguyễn Văn A"
+      [class.border-red-500]="staffForm.get('name')?.touched && staffForm.get('name')?.invalid"
+    />
+    @if (staffForm.get('name')?.touched && staffForm.get('name')?.hasError('required')) {
+      <p class="text-[11px] text-red-500 font-semibold">Vui lòng nhập tên nhân viên.</p>
+    }
+  </div>
+
+  <!-- Số điện thoại -->
+  <div class="space-y-1.5">
+    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Số điện thoại <span class="text-red-500">*</span></label>
+    <input
+      type="text"
+      formControlName="phone"
+      class="form-input w-full"
+      placeholder="Ví dụ: 0987654321"
+      [class.border-red-500]="staffForm.get('phone')?.touched && staffForm.get('phone')?.invalid"
+    />
+    @if (staffForm.get('phone')?.touched && staffForm.get('phone')?.hasError('required')) {
+      <p class="text-[11px] text-red-500 font-semibold">Vui lòng nhập số điện thoại.</p>
+    }
+  </div>
+
+  <!-- Địa chỉ ví Web3 (Bắt buộc) -->
+  <div class="space-y-1.5">
+    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide flex items-center justify-between mb-1.5">
+      <span>Địa chỉ ví MetaMask nhân viên <span class="text-red-500">*</span></span>
+    </label>
+    <input
+      type="text"
+      formControlName="wallet_address"
+      class="form-input w-full font-mono text-xs"
+      placeholder="Ví dụ: 0x123...456"
+      [class.border-red-500]="staffForm.get('wallet_address')?.touched && staffForm.get('wallet_address')?.invalid"
+    />
+    <p class="text-[10px] text-slate-400 leading-normal">
+      Bắt buộc phải nhập chính xác địa chỉ ví (0x...) của nhân viên. Nhân viên sẽ dùng ví này để ký xác thực đăng nhập làm việc tại hệ thống.
+    </p>
+    @if (staffForm.get('wallet_address')?.touched && staffForm.get('wallet_address')?.hasError('required')) {
+      <p class="text-[11px] text-red-500 font-semibold">Vui lòng nhập địa chỉ ví.</p>
+    }
+    @if (staffForm.get('wallet_address')?.touched && staffForm.get('wallet_address')?.hasError('pattern')) {
+      <p class="text-[11px] text-red-500 font-semibold">Địa chỉ ví không đúng định dạng EVM (0x + 40 ký tự hexa).</p>
+    }
+  </div>
+
+  <!-- Chọn vai trò -->
+  <div class="space-y-1.5">
+    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Vai trò / Chức vụ <span class="text-red-500">*</span></label>
+    <app-custom-select
+      formControlName="role_id"
+      [options]="roleOptions"
+      valueKey="value"
+      labelKey="label"
+      placeholder="-- Chọn vai trò cho nhân viên --"
+    ></app-custom-select>
+    @if (staffForm.get('role_id')?.touched && staffForm.get('role_id')?.hasError('required')) {
+      <p class="text-[11px] text-red-500 font-semibold">Vui lòng chọn vai trò cho nhân viên.</p>
+    }
+  </div>
+
+  <!-- Cảnh báo giới hạn nhân viên theo gói cước -->
+  @if (!editingStaff() && isStaffLimitReached()) {
+    <div class="flex items-center gap-2.5 p-3.5 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800/20 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-bold mb-3">
+      <app-icon name="warning" class="h-4 w-4 shrink-0" strokeWidth="2" />
+      <span>Gói cước hiện tại chỉ hỗ trợ tối đa {{ stateService.getFeatureLimit('max_staffs') }} nhân viên. Vui lòng nâng cấp gói cước!</span>
+    </div>
+  }
+
+  <!-- Modal Footer Actions -->
+  <div class="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800/60 mt-5">
+    <button
+      app-button
+      variant="cancel"
+      type="button"
+      (click)="modalRef.close(false)"
+      class="flex-1"
+    >
+      Hủy
+    </button>
+    <button
+      app-button
+      variant="primary"
+      type="button"
+      (click)="saveStaff()"
+      class="flex-1"
+      [loading]="isSavingStaff()"
+      [disabled]="!editingStaff() && isStaffLimitReached()"
+    >
+      Lưu thông tin
+    </button>
+  </div>
+</form>

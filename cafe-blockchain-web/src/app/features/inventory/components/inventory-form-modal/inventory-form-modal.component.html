@@ -1,0 +1,180 @@
+<div class="space-y-4">
+  <!-- Phân loại & Ngày lập -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div class="space-y-1.5">
+      <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+        >Phân loại phiếu</label
+      >
+      <app-tab-group
+        [options]="inventoryFormTypeOptions"
+        [activeValue]="inventoryForm().type"
+        (valueChange)="inventoryForm.update((f) => ({ ...f, type: $event }))"
+      ></app-tab-group>
+    </div>
+
+    <div class="space-y-1.5">
+      <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+        >Ngày lập phiếu</label
+      >
+      <app-custom-date-picker
+        [selectedDate]="inventoryForm().record_date"
+        (selectedDateChange)="
+          inventoryForm.update((f) => ({ ...f, record_date: $event }))
+        "
+        placeholder="Chọn ngày lập phiếu"
+      ></app-custom-date-picker>
+    </div>
+  </div>
+
+  <!-- Ghi chú phiếu kho -->
+  <div class="space-y-1.5">
+    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+      >Ghi chú phiếu kho</label
+    >
+    <input
+      type="text"
+      [(ngModel)]="inventoryForm().note"
+      placeholder="Nhập nội dung ghi chú (Ví dụ: Nhập trà nhãn, kiểm kê sữa tươi)..."
+      class="form-input"
+    />
+  </div>
+
+  <!-- DANH SÁCH MÓN KHO ĐA DÒNG -->
+  <div class="space-y-3 pt-2">
+    <div
+      class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2"
+    >
+      <span class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+        >Sản phẩm / Món trong phiếu kho</span
+      >
+      <button
+        type="button"
+        (click)="addInventoryItemRow()"
+        class="text-xs font-bold text-purple-600 dark:text-purple-400 hover:underline flex items-center gap-1"
+      >
+        + Thêm dòng
+      </button>
+    </div>
+
+    <!-- Header cột form item -->
+    <div class="flex items-center gap-2 px-1 pb-0.5">
+      <div
+        class="flex-1 min-w-0 text-[10px] font-black text-slate-400 uppercase tracking-wider"
+      >
+        Sản phẩm / Biến thể
+      </div>
+      <div
+        class="w-20 shrink-0 text-[10px] font-black text-slate-400 uppercase tracking-wider text-center"
+      >
+        Số lượng
+      </div>
+      <div
+        class="w-28 shrink-0 text-[10px] font-black text-slate-400 uppercase tracking-wider text-center"
+      >
+        Đơn giá (VNĐ)
+      </div>
+      <div class="w-9 shrink-0"></div>
+    </div>
+
+    <div class="space-y-3 pr-1">
+      @if (inventoryForm().items.length === 0) {
+        <div class="text-center py-6 text-xs text-slate-400 italic">
+          Chưa có sản phẩm nào được chọn. Nhấn + Thêm dòng ở trên để bắt đầu!
+        </div>
+      }
+      @for (item of inventoryForm().items; track $index) {
+        <div
+          class="flex items-stretch gap-2 bg-slate-50 dark:bg-slate-950 p-3 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 relative animate-in fade-in duration-150"
+        >
+          <!-- Dropdown chọn sản phẩm -->
+          <div class="flex-1 min-w-0 flex flex-col justify-center gap-2">
+            <app-custom-select
+              [value]="item.product_id"
+              (valueChange)="updateInventoryItemField($index, 'product_id', $event)"
+              [options]="inventoryProductOptions()"
+              valueKey="id"
+              labelKey="name"
+              placeholder="-- Chọn món --"
+              [showSearch]="true"
+              triggerClass="w-full form-input cursor-pointer font-semibold"
+            ></app-custom-select>
+
+            <!-- Chọn biến thể nếu sản phẩm đó có biến thể -->
+            @if (
+              item.product_id > 0 && getProductVariants(item.product_id).length > 0
+            ) {
+              <app-custom-select
+                [value]="item.product_variant_id"
+                (valueChange)="
+                  updateInventoryItemField($index, 'product_variant_id', $event)
+                "
+                [options]="getProductVariantsOptions(item.product_id)"
+                valueKey="id"
+                labelKey="label"
+                placeholder="Chọn size..."
+                triggerClass="w-full form-input cursor-pointer font-bold text-purple-600"
+              ></app-custom-select>
+            }
+          </div>
+
+          <!-- Nhập Số lượng -->
+          <div class="w-20 shrink-0 flex items-center">
+            <input
+              type="number"
+              min="0"
+              [ngModel]="item.quantity"
+              (ngModelChange)="updateInventoryItemField($index, 'quantity', $event)"
+              placeholder="0"
+              title="Số lượng"
+              class="w-full form-input text-center font-bold"
+            />
+          </div>
+
+          <!-- Nhập Đơn giá -->
+          <div class="w-28 shrink-0 flex items-center">
+            <input
+              type="number"
+              min="0"
+              [ngModel]="item.price"
+              (ngModelChange)="updateInventoryItemField($index, 'price', $event)"
+              placeholder="0đ"
+              title="Đơn giá (VNĐ)"
+              class="w-full form-input text-center font-extrabold"
+            />
+          </div>
+
+          <!-- Nút xóa dòng -->
+          <button
+            type="button"
+            (click)="removeInventoryItemRow($index)"
+            class="text-rose-500 hover:text-rose-600 p-2 hover:bg-rose-100 dark:hover:bg-rose-950/40 rounded-xl transition-all shrink-0 self-center"
+          >
+            <app-icon name="trash" class="h-4 w-4" strokeWidth="2" />
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Footer Buttons -->
+  <div class="flex gap-3 pt-3.5 border-t border-slate-100 dark:border-slate-800 shrink-0">
+    <button
+      app-button
+      variant="cancel"
+      (click)="modalRef.close()"
+      [disabled]="isInventorySaving()"
+      class="flex-1"
+    >
+      Hủy bỏ
+    </button>
+    <button
+      app-button
+      variant="primary"
+      (click)="saveInventoryRecord()"
+      [loading]="isInventorySaving()"
+      class="flex-1"
+    >
+      Lập phiếu kho
+    </button>
+  </div>
+</div>

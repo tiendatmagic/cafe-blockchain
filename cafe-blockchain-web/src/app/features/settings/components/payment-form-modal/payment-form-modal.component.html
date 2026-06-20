@@ -1,0 +1,187 @@
+<div class="space-y-5">
+  <!-- Loại phương thức -->
+  <div class="space-y-1.5 font-bold">
+    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+      >Loại phương thức</label
+    >
+    <div class="grid grid-cols-2 gap-3">
+      <button
+        type="button"
+        (click)="
+          paymentForm.update((f) => ({ ...f, type: 'bank', bank_code: '', name: '' }))
+        "
+        [class]="
+          'py-2.5 rounded-xl border-2 font-bold text-xs uppercase transition-all ' +
+          (paymentForm().type === 'bank'
+            ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)]'
+            : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-600 dark:text-slate-400')
+        "
+      >
+        Ngân hàng
+      </button>
+      <button
+        type="button"
+        (click)="
+          paymentForm.update((f) => ({ ...f, type: 'wallet', bank_code: '', name: '' }))
+        "
+        [class]="
+          'py-2.5 rounded-xl border-2 font-bold text-xs uppercase transition-all ' +
+          (paymentForm().type === 'wallet'
+            ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 text-[var(--dynamic-primary)] dark:text-[var(--dynamic-secondary)]'
+            : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-600 dark:text-slate-400')
+        "
+      >
+        Ví điện tử
+      </button>
+    </div>
+  </div>
+
+  <!-- Dropdown chọn nhanh Ngân hàng -->
+  @if (paymentForm().type === 'bank') {
+    <div class="space-y-1.5 font-bold">
+      <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+        >Chọn nhanh Ngân hàng</label
+      >
+      <app-custom-select
+        [value]="paymentForm().bank_code"
+        (valueChange)="onBankSelectChange($event)"
+        [options]="POPULAR_BANKS"
+        valueKey="code"
+        labelKey="name"
+        placeholder="Chọn ngân hàng từ danh sách..."
+        [showSearch]="true"
+      ></app-custom-select>
+    </div>
+
+    <div class="space-y-1.5">
+      <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+        >Mã Ngân hàng (VietQR Code)</label
+      >
+      <input
+        type="text"
+        [ngModel]="paymentForm().bank_code"
+        (ngModelChange)="paymentForm.update((f) => ({ ...f, bank_code: $event }))"
+        placeholder="Ví dụ: VCB, MB, TCB"
+        class="form-input font-mono uppercase"
+      />
+    </div>
+
+    <div class="space-y-1.5">
+      <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+        >Tên Ngân hàng <span class="text-red-500">*</span></label
+      >
+      <input
+        type="text"
+        [ngModel]="paymentForm().name"
+        (ngModelChange)="paymentForm.update((f) => ({ ...f, name: $event }))"
+        placeholder="Ví dụ: Vietcombank"
+        class="form-input"
+      />
+    </div>
+  }
+
+  <!-- Chọn nhanh ví điện tử -->
+  @if (paymentForm().type === 'wallet') {
+    <div class="space-y-1.5 font-bold">
+      <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+        >Chọn nhanh Ví</label
+      >
+      <app-custom-select
+        [value]="paymentForm().name"
+        (valueChange)="onWalletSelectChange($event)"
+        [options]="POPULAR_WALLETS"
+        valueKey="name"
+        labelKey="name"
+        placeholder="Chọn ví điện tử..."
+      ></app-custom-select>
+    </div>
+
+    <div class="space-y-1.5">
+      <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+        >Tên Ví điện tử <span class="text-red-500">*</span></label
+      >
+      <input
+        type="text"
+        [ngModel]="paymentForm().name"
+        (ngModelChange)="paymentForm.update((f) => ({ ...f, name: $event }))"
+        placeholder="Ví dụ: Momo"
+        class="form-input"
+      />
+    </div>
+  }
+
+  <!-- Số tài khoản / Số điện thoại -->
+  <div class="space-y-1.5">
+    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block">
+      {{ paymentForm().type === 'bank' ? 'Số tài khoản' : 'Số điện thoại ví' }}
+      <span class="text-red-500">*</span>
+    </label>
+    <input
+      type="text"
+      [ngModel]="paymentForm().account_number"
+      (ngModelChange)="paymentForm.update((f) => ({ ...f, account_number: $event }))"
+      placeholder="Nhập số tài khoản hoặc số điện thoại..."
+      class="form-input font-mono"
+    />
+  </div>
+
+  <!-- Tên chủ tài khoản -->
+  <div class="space-y-1.5">
+    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+      >Tên chủ tài khoản (Không dấu) <span class="text-red-500">*</span></label
+    >
+    <input
+      type="text"
+      [ngModel]="paymentForm().account_holder"
+      (ngModelChange)="paymentForm.update((f) => ({ ...f, account_holder: $event }))"
+      placeholder="Ví dụ: NGUYEN VAN A"
+      class="form-input uppercase"
+    />
+  </div>
+
+  <!-- Trạng thái kích hoạt -->
+  <app-custom-switch
+    type="full"
+    label="Kích hoạt sử dụng"
+    description="Kích hoạt phương thức này để hiển thị trên website Storefront."
+    [checked]="paymentForm().is_active"
+    (checkedChange)="paymentForm.update((f) => ({ ...f, is_active: $event }))"
+  ></app-custom-switch>
+
+  <!-- Nút xác nhận lưu -->
+  <div class="pt-5 border-t border-slate-100 dark:border-slate-800/60">
+    <button
+      type="button"
+      [disabled]="isPaymentActionLoading()"
+      (click)="savePaymentMethod()"
+      class="btn-primary w-full h-11 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      @if (isPaymentActionLoading()) {
+        <svg
+          class="animate-spin h-4.5 w-4.5 text-white"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
+        <span>Đang xử lý...</span>
+      } @else {
+        <app-icon name="save" class="h-4.5 w-4.5 shrink-0" strokeWidth="2.5" />
+        <span>Xác nhận lưu</span>
+      }
+    </button>
+  </div>
+</div>
