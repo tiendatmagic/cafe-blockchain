@@ -128,6 +128,24 @@ export class StaffsComponent implements OnInit {
       .replace(/Đ/g, 'D');
   }
 
+  // Row chủ quán cố định (chỉ hiện khi người dùng hiện tại là chủ quán, không phải nhân viên)
+  public readonly ownerRow = computed(() => {
+    const addr = this.stateService.web3Service.currentAccount();
+    const role = this.stateService.currentUserRole();
+    // Chủ quán là người có role "Chủ cửa hàng" (không phải nhân viên được phân quyền)
+    const isOwner = role === 'Chủ cửa hàng';
+    if (!isOwner || !addr) return null;
+    return {
+      id: null,
+      name: this.stateService.currentUserName() || 'Chủ quán',
+      phone: this.stateService.currentUserPhone() || '—',
+      wallet_address: addr,
+      role: { name: 'Chủ quán' },
+      created_at: null,
+      isOwnerRow: true,
+    };
+  });
+
   // Lọc danh sách nhân viên theo từ khóa tìm kiếm
   public readonly filteredStaffs = computed(() => {
     let list = this.stateService.staffs() || [];

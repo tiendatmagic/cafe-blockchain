@@ -81,6 +81,57 @@
       <div class="space-y-6">
       <!-- TAB NHÂN VIÊN -->
       @if (activeSubTab() === 'staffs') {
+        <!-- ROW CHỦ QUÁN CỐ ĐỊNH (Hiện ở đầu, chỉ đọc) -->
+        @if (ownerRow()) {
+          <div class="overflow-x-auto rounded-[15px] border border-slate-200/60 dark:border-slate-800/50 bg-white dark:bg-slate-900 mb-0">
+            <table class="w-full">
+              <tbody>
+                <tr class="border-b border-slate-100/60 dark:border-slate-800/30 bg-amber-50/40 dark:bg-amber-950/10">
+                  <!-- Tên -->
+                  <td class="pl-6 py-4 whitespace-nowrap w-[260px]">
+                    <div class="flex items-center gap-3.5">
+                      <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-400 to-orange-400 text-white flex items-center justify-center font-extrabold text-sm shadow-sm shrink-0">
+                        {{ (ownerRow()!.name || '').substring(0, 1) | uppercase }}
+                      </div>
+                      <div>
+                        <div class="flex items-center gap-1.5">
+                          <span class="text-sm font-extrabold text-slate-800 dark:text-white leading-tight">{{ ownerRow()!.name }}</span>
+                          <span class="text-[10px] font-black px-1.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200/30">Bạn</span>
+                        </div>
+                        <div class="text-xs text-slate-400 font-mono font-bold mt-0.5">Chủ sở hữu</div>
+                      </div>
+                    </div>
+                  </td>
+                  <!-- SĐT -->
+                  <td class="py-4 whitespace-nowrap w-[160px]">
+                    <span class="text-sm text-slate-600 dark:text-slate-300 font-medium">{{ ownerRow()!.phone }}</span>
+                  </td>
+                  <!-- Ví -->
+                  <td class="py-4 whitespace-nowrap w-[200px]">
+                    <span class="text-xs font-mono font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 px-2.5 py-1.5 rounded-lg border border-amber-200/30 dark:border-amber-800/30">
+                      {{ shortAddress(ownerRow()!.wallet_address) }}
+                    </span>
+                  </td>
+                  <!-- Vai trò -->
+                  <td class="py-4 whitespace-nowrap">
+                    <span class="inline-flex items-center text-xs font-bold px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200/20 dark:border-amber-800/30">
+                      👑 Chủ quán
+                    </span>
+                  </td>
+                  <!-- Ngày tham gia -->
+                  <td class="py-4 whitespace-nowrap">
+                    <span class="text-xs text-slate-400 dark:text-slate-500 font-medium italic">Vĩnh viễn</span>
+                  </td>
+                  <!-- Thao tác (trống — không cho sửa/xóa) -->
+                  <td class="py-4 pr-6 text-right whitespace-nowrap">
+                    <span class="text-xs text-slate-300 dark:text-slate-600 font-medium italic select-none">—</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        }
+
         <app-table
           [data]="paginatedStaffs()"
           [columns]="staffColumns"

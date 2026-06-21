@@ -69,7 +69,22 @@ class AuthController extends Controller
                 $user->plan_code = 'free';
                 $user->subscription_expires_at = now()->addDays(7);
                 $user->subscription_status = 'active';
+                // Populate profile từ staffs nếu ví đã được đăng ký là nhân viên
+                if ($staff) {
+                    $user->name  = $staff->name ?: null;
+                    $user->phone = $staff->phone ?: null;
+                }
                 $user->save();
+            } elseif ($staff) {
+                // User đã tồn tại nhưng chưa có tên — đồng bộ từ staffs một lần
+                if (empty($user->name) && !empty($staff->name)) {
+                    $user->name = $staff->name;
+                    $user->save();
+                }
+                if (empty($user->phone) && !empty($staff->phone)) {
+                    $user->phone = $staff->phone;
+                    $user->save();
+                }
             }
 
             $roleName = 'Chủ cửa hàng';
@@ -140,6 +155,11 @@ class AuthController extends Controller
             $contactsSetting = DB::table('system_settings')->where('key', 'system_contacts')->first();
             $contacts = $contactsSetting ? json_decode($contactsSetting->value, true) : [];
 
+            // Fallback: ưu tiên users table, dùng staffs nếu users còn trống
+            $displayName  = $user->name  ?: ($staff?->name  ?? null);
+            $displayPhone = $user->phone ?: ($staff?->phone ?? null);
+            $displayEmail = $user->email ?? null;
+
             return response()->json([
                 'success' => true,
                 'token' => $token,
@@ -147,9 +167,9 @@ class AuthController extends Controller
                 'role' => $roleName,
                 'permissions' => $permissions,
                 'is_super_admin' => $isSuperAdmin,
-                'name' => $user->name,
-                'email' => $user->email,
-                'phone' => $user->phone,
+                'name' => $displayName,
+                'email' => $displayEmail,
+                'phone' => $displayPhone,
                 'subscription' => [
                     'plan_code' => $planCode,
                     'subscription_expires_at' => $planExpiresAt,
@@ -191,12 +211,18 @@ class AuthController extends Controller
         $contactsSetting = DB::table('system_settings')->where('key', 'system_contacts')->first();
         $contacts = $contactsSetting ? json_decode($contactsSetting->value, true) : [];
 
+        // Fallback: nếu users.name/phone trống thì lấy từ staffs
+        $staff = Staff::where('wallet_address', $address)->first();
+        $displayName  = $user->name  ?: ($staff?->name  ?? null);
+        $displayPhone = $user->phone ?: ($staff?->phone ?? null);
+        $displayEmail = $user->email ?? null;
+
         return response()->json([
             'address' => $address,
             'is_super_admin' => $isSuperAdmin,
-            'name' => $user->name,
-            'email' => $user->email,
-            'phone' => $user->phone,
+            'name' => $displayName,
+            'email' => $displayEmail,
+            'phone' => $displayPhone,
             'subscription' => [
                 'plan_code' => $planCode,
                 'subscription_expires_at' => $planExpiresAt,
