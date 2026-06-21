@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { StateService } from '@core/services/state.service';
+import { ShiftService } from '@core/services/shift.service';
 import { ModalService } from '@core/services/modal.service';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
@@ -61,6 +62,7 @@ import { BadgeComponent } from '@shared/components/badge/badge.component';
 })
 export class ShiftsComponent implements OnInit {
   public readonly stateService = inject(StateService);
+  public readonly shiftService = inject(ShiftService);
   private readonly router = inject(Router);
   private readonly modalService = inject(ModalService);
   public readonly datePresets = DATE_FILTER_OPTIONS;
@@ -148,8 +150,8 @@ export class ShiftsComponent implements OnInit {
 
     this.setDatePreset('7days');
     if (this.web3Service.walletConnected()) {
-      this.stateService.refreshShifts();
-      this.stateService.refreshCurrentShift();
+      this.shiftService.refreshShifts();
+      this.shiftService.refreshCurrentShift();
     }
   }
 
@@ -207,7 +209,7 @@ export class ShiftsComponent implements OnInit {
 
   // Lọc cục bộ theo ngày, từ khóa tìm kiếm nhân viên và trạng thái ca
   public readonly filteredShifts = computed(() => {
-    const list = this.stateService.shifts() || [];
+    const list = this.shiftService.shifts() || [];
     const start = this.reportsStartDate();
     const end = this.reportsEndDate();
     const search = this.shiftSearchQuery().trim().toLowerCase();
@@ -297,11 +299,11 @@ export class ShiftsComponent implements OnInit {
 
   // Mở modal bắt đầu / kết ca
   public openStartShiftModal() {
-    this.stateService.openStartShiftModal();
+    this.shiftService.openStartShiftModal();
   }
 
   public openCloseShiftModal() {
-    this.stateService.openCloseShiftModal();
+    this.shiftService.openCloseShiftModal();
   }
 
   // Định dạng hiển thị thời gian

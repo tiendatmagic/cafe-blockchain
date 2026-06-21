@@ -15,11 +15,11 @@
   @if (web3Service.walletConnected()) {
     @if (stateService.hasPermission('shifts')) {
       <!-- WIDGET CA TRỰC ĐANG HOẠT ĐỘNG / CHƯA VÀO CA SKELETON -->
-      @if (stateService.isShiftsLoading()) {
+      @if (shiftService.isShiftsLoading()) {
         <app-skeleton-loader type="shifts"></app-skeleton-loader>
       } @else {
         <!-- WIDGET CA TRỰC ĐANG HOẠT ĐỘNG (Dành cho Thu ngân tự đối soát nhanh) -->
-        @if (stateService.isCurrentShiftLoading()) {
+        @if (shiftService.isCurrentShiftLoading()) {
           <div app-card class="p-6 mb-6 animate-pulse border-l-4 border-l-slate-350 dark:border-l-slate-750">
             <div class="flex space-x-4">
               <div class="rounded-full bg-slate-200 dark:bg-slate-800 h-10 w-10 shrink-0"></div>
@@ -32,7 +32,7 @@
               </div>
             </div>
           </div>
-        } @else if (stateService.currentShift() && stateService.currentShift().id) {
+        } @else if (shiftService.currentShift() && shiftService.currentShift().id) {
           <div app-card class="border-l-4 border-l-emerald-500 overflow-hidden relative mb-6">
             <!-- Background SVG trang trí mờ ảo -->
             <div class="absolute right-0 bottom-0 opacity-[0.03] pointer-events-none">
@@ -48,7 +48,7 @@
                     Ca trực của bạn đang hoạt động
                   </app-badge>
                   <span class="text-xs text-slate-400 font-bold font-mono"
-                    >ID ca: #{{ stateService.currentShift().id }}</span
+                    >ID ca: #{{ shiftService.currentShift().id }}</span
                   >
                 </div>
 
@@ -59,7 +59,7 @@
                       >Thời gian vào ca</span
                     >
                     <span class="text-sm font-extrabold text-slate-800 dark:text-white">
-                      {{ formatShiftTime(stateService.currentShift().start_time) }}
+                      {{ formatShiftTime(shiftService.currentShift().start_time) }}
                     </span>
                   </div>
                   <div>
@@ -70,7 +70,7 @@
                     <span
                       class="text-sm font-extrabold text-purple-600 dark:text-purple-400 font-mono animate-pulse"
                     >
-                      {{ stateService.shiftDurationString() }}
+                      {{ shiftService.shiftDurationString() }}
                     </span>
                   </div>
                   <div>
@@ -79,7 +79,7 @@
                       >Tiền mặt két ban đầu</span
                     >
                     <span class="text-sm font-extrabold text-slate-800 dark:text-white">
-                      {{ stateService.currentShift().initial_cash || 0 | number }}đ
+                      {{ shiftService.currentShift().initial_cash || 0 | number }}đ
                     </span>
                   </div>
                 </div>
@@ -217,7 +217,7 @@
       <app-table
         [data]="shiftsPaged()"
         [columns]="shiftColumns"
-        [isLoading]="stateService.isShiftsLoading()"
+        [isLoading]="shiftService.isShiftsLoading()"
         [showPagination]="true"
         [totalItems]="sortedShifts().length"
         [itemsPerPage]="shiftLimit"

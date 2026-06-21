@@ -12,6 +12,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { StateService } from '@core/services/state.service';
+import { ShiftService } from '@core/services/shift.service';
 import { ApiService } from '@core/services/api.service';
 import { Web3Service } from '@core/services/web3.service';
 import { Subject, Subscription } from 'rxjs';
@@ -54,6 +55,7 @@ import { SignQrModalComponent } from '../../components/sign-qr-modal/sign-qr-mod
 })
 export class PosComponent implements OnInit, OnDestroy {
   public readonly stateService = inject(StateService);
+  public readonly shiftService = inject(ShiftService);
   private readonly apiService = inject(ApiService);
   public readonly web3Service = inject(Web3Service);
   private readonly modalService = inject(ModalService);
@@ -127,9 +129,9 @@ export class PosComponent implements OnInit, OnDestroy {
   }
 
   public startShift() {
-    if (this.stateService.isLoading()) return;
+    if (this.stateService.isLoading() || this.shiftService.isLoading()) return;
     const cash = this.initialCashInput();
-    this.stateService.openShift(cash, () => {
+    this.shiftService.openShift(cash, () => {
       this.initialCashInput.set(0);
     });
   }
@@ -369,7 +371,7 @@ export class PosComponent implements OnInit, OnDestroy {
   // Thêm sản phẩm vào giỏ
   public addToCart(product: any, variant: any = null) {
     if (!this.web3Service.walletConnected()) return;
-    if (!this.stateService.currentShift() || !this.stateService.currentShift()?.id) {
+    if (!this.shiftService.currentShift() || !this.shiftService.currentShift()?.id) {
       this.stateService.showToast('Vui lòng mở ca trực trước khi chọn món bán hàng!', 'error');
       return;
     }

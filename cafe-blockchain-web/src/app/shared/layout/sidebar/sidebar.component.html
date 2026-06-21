@@ -618,7 +618,7 @@
         !stateService.isSubscriptionBlocked() &&
         stateService.hasFeature('enable_shifts')
       ) {
-        @if (stateService.isCurrentShiftLoading()) {
+        @if (shiftService.isCurrentShiftLoading()) {
           <button
             type="button"
             class="flex items-center justify-center w-9.5 h-9.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-slate-400 cursor-default shadow-sm shrink-0"
@@ -650,18 +650,18 @@
             (click)="handleMobileShiftClick()"
             class="flex items-center justify-center w-9.5 h-9.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-[var(--dynamic-primary)] dark:hover:text-[var(--dynamic-primary)] transition-all duration-200 active:scale-95 cursor-pointer shadow-sm relative shrink-0"
             [class.text-[var(--dynamic-primary)]]="
-              stateService.currentShift() && stateService.currentShift().id
+              shiftService.currentShift() && shiftService.currentShift().id
             "
             [class.text-slate-500]="
-              !(stateService.currentShift() && stateService.currentShift().id)
+              !(shiftService.currentShift() && shiftService.currentShift().id)
             "
             [class.dark:text-slate-400]="
-              !(stateService.currentShift() && stateService.currentShift().id)
+              !(shiftService.currentShift() && shiftService.currentShift().id)
             "
             title="Quản lý ca trực"
           >
             <app-icon name="clock" class="h-4.5 w-4.5" strokeWidth="2.2" />
-            @if (stateService.currentShift() && stateService.currentShift().id) {
+            @if (shiftService.currentShift() && shiftService.currentShift().id) {
               <span
                 class="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-500 animate-pulse"
               ></span>

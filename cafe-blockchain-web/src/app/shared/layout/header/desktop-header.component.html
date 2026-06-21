@@ -91,16 +91,16 @@
           (click)="isShiftDropdownOpen.set(!isShiftDropdownOpen())"
           class="flex items-center justify-center w-9.5 h-9.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-[var(--dynamic-primary)] dark:hover:text-[var(--dynamic-primary)] transition-all duration-200 active:scale-95 cursor-pointer shadow-sm relative"
           [class.text-[var(--dynamic-primary)]]="
-            stateService.currentShift() && stateService.currentShift().id
+            shiftService.currentShift() && shiftService.currentShift().id
           "
-          [class.text-slate-500]="!(stateService.currentShift() && stateService.currentShift().id)"
+          [class.text-slate-500]="!(shiftService.currentShift() && shiftService.currentShift().id)"
           [class.dark:text-slate-400]="
-            !(stateService.currentShift() && stateService.currentShift().id)
+            !(shiftService.currentShift() && shiftService.currentShift().id)
           "
           title="Quản lý ca trực"
         >
           <app-icon name="clock" class="h-4.5 w-4.5 shrink-0" strokeWidth="2.2" />
-          @if (stateService.currentShift() && stateService.currentShift().id) {
+          @if (shiftService.currentShift() && shiftService.currentShift().id) {
             <span
               class="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-500 animate-pulse"
             ></span>
@@ -115,7 +115,7 @@
               Quản lý ca làm việc
             </div>
 
-            @if (stateService.isCurrentShiftLoading()) {
+            @if (shiftService.isCurrentShiftLoading()) {
               <div class="flex flex-col items-center justify-center py-6 gap-2">
                 <svg class="animate-spin h-5 w-5 text-[var(--dynamic-primary)]" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -123,14 +123,14 @@
                 </svg>
                 <span class="text-xs text-slate-400 font-bold">Đang kiểm tra ca trực...</span>
               </div>
-            } @else if (stateService.currentShift() && stateService.currentShift().id) {
+            } @else if (shiftService.currentShift() && shiftService.currentShift().id) {
               <div class="space-y-3">
                 <div class="flex items-center justify-between text-xs font-bold">
                   <span class="text-slate-400">Ca trực mở từ:</span>
                   <span
                     class="text-[var(--color-primary)] dark:text-[var(--color-secondary)] font-extrabold"
                   >
-                    {{ formatShiftTime(stateService.currentShift().start_time) }}
+                    {{ formatShiftTime(shiftService.currentShift().start_time) }}
                   </span>
                 </div>
                 <div class="flex items-center justify-between text-xs font-bold">
@@ -138,13 +138,13 @@
                   <span
                     class="text-purple-600 dark:text-purple-400 font-mono font-black animate-pulse"
                   >
-                    {{ stateService.shiftDurationString() }}
+                    {{ shiftService.shiftDurationString() }}
                   </span>
                 </div>
                 <div class="flex items-center justify-between text-xs font-bold">
                   <span class="text-slate-400">Két ban đầu:</span>
                   <span class="text-slate-700 dark:text-slate-300 font-black">
-                    {{ stateService.currentShift().initial_cash || 0 | number }}đ
+                    {{ shiftService.currentShift().initial_cash || 0 | number }}đ
                   </span>
                 </div>
                 <button

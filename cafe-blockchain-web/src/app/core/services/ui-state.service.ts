@@ -29,8 +29,8 @@ export class UiStateService {
   // Hiệu ứng trượt menu/sidebar (sliding background) toàn cục
   public readonly useSlidingEffect = signal<boolean>(
     typeof window !== 'undefined'
-      ? localStorage.getItem('ui_sliding_effect') !== 'false'
-      : true
+      ? localStorage.getItem('ui_sliding_effect') === 'true'
+      : false
   );
 
   public setSlidingEffect(enabled: boolean) {

@@ -135,29 +135,7 @@ export class StateService {
   public get posProductsCache() { return this.productStore.posProductsCache; }
   public get cacheTTL() { return this.productStore.cacheTTL; }
 
-  // Trạng thái Ca trực (ShiftService & Stores)
-  public readonly currentShift = this.shiftService.currentShift;
-  public readonly isCurrentShiftLoading = this.shiftService.isCurrentShiftLoading;
-  public readonly shifts = this.shiftService.shifts;
-  public readonly isStartShiftModalOpen = this.shiftService.isStartShiftModalOpen;
-  public readonly isCloseShiftModalOpen = this.shiftService.isCloseShiftModalOpen;
-  public readonly initialCashInput = this.shiftService.initialCashInput;
-  public readonly actualCashInput = this.shiftService.actualCashInput;
-  public readonly closeShiftNote = this.shiftService.closeShiftNote;
-  public readonly isSubmittingShift = this.shiftService.isSubmittingShift;
-  public readonly shiftSummary = this.shiftService.shiftSummary;
-  public readonly isShiftSummaryLoading = this.shiftService.isShiftSummaryLoading;
-  public readonly isShiftsLoading = this.shiftStore.isShiftsLoading;
-  public readonly isCloseShiftModalOpenFromStore = this.shiftStore.isCloseShiftModalOpen;
-  public readonly actualCashFormatted = this.shiftStore.actualCashFormatted;
-  public readonly initialCashFormatted = this.shiftStore.initialCashFormatted;
-  public readonly shiftFiatRevenue = this.shiftStore.shiftFiatRevenue;
-  public readonly shiftBankTransferRevenue = this.shiftStore.shiftBankTransferRevenue;
-  public readonly shiftCryptoRevenue = this.shiftStore.shiftCryptoRevenue;
-  public readonly shiftEWalletRevenue = this.shiftStore.shiftEWalletRevenue;
-  public readonly shiftFiatExpenses = this.shiftStore.shiftFiatExpenses;
-  public readonly shiftExpectedCash = this.shiftStore.shiftExpectedCash;
-  public readonly shiftDurationString = this.shiftStore.shiftDurationString;
+
 
   // Trạng thái Loading của các Store khác
   public readonly isCustomersLoading = this.customerStore.isCustomersLoading;
@@ -303,14 +281,10 @@ export class StateService {
               this.reloadCurrentTab(true);
               this.syncSubscriptionFromBackend();
               this.isInitialLoading.set(false);
-
-              // Tải thông tin ca làm việc sau cùng ở chế độ bất đồng bộ (không chặn UI)
-              this.loadShiftDataInitially();
             },
             error: (err) => {
               console.error('[StateService] Lỗi tải dữ liệu khởi tạo ví:', err);
               this.isInitialLoading.set(false);
-              this.loadShiftDataInitially();
             }
           });
         });
@@ -326,15 +300,7 @@ export class StateService {
       }
     }, { allowSignalWrites: true });
 
-    // 3. Tự động đếm thời gian trôi qua của ca làm việc
-    effect(() => {
-      const shift = this.currentShift();
-      if (shift && shift.start_time) {
-        this.shiftStore.startShiftTimer(shift.start_time);
-      } else {
-        this.shiftStore.stopShiftTimer();
-      }
-    }, { allowSignalWrites: true });
+
 
     // 4. Lắng nghe đăng nhập thành công để thiết lập ngày dashboard mặc định
     effect(() => {
@@ -460,25 +426,7 @@ export class StateService {
   public resetPosFilters() { this.posCartService.resetPosFilters(); }
   public clearPosProductsCache() { this.posCartService.clearPosProductsCache(); }
 
-  // Shifts
-  public refreshCurrentShift(onSuccess?: (shift: any) => void) { this.shiftService.refreshCurrentShift(onSuccess); }
-  public refreshShifts() { this.shiftService.refreshShifts(); }
-  public openShift(initialCash: number, onSuccess?: () => void) { this.shiftService.openShift(initialCash, onSuccess); }
-  public closeShift(actualCash: number, note?: string, onSuccess?: () => void) { this.shiftService.closeShift(actualCash, note, onSuccess); }
-  public onActualCashInput(event: any) { this.shiftService.onActualCashInput(event); }
-  public onInitialCashInput(event: any) { this.shiftService.onInitialCashInput(event); }
-  public openStartShiftModal() { this.shiftService.openStartShiftModal(); }
-  public openCloseShiftModal() { this.shiftService.openCloseShiftModal(); }
 
-  private loadShiftDataInitially() {
-    if (this.hasPermission('shifts') && this.hasFeature('enable_shifts')) {
-      this.refreshCurrentShift();
-    } else {
-      this.currentShift.set(null);
-      this.shiftSummary.set(null);
-      this.shiftService.isCurrentShiftLoading.set(false);
-    }
-  }
 
   // ----------------------------------------------------
   // BUSINESS LOGIC & DATA SYNCHRONIZATION
@@ -706,7 +654,7 @@ export class StateService {
       this.refreshCustomers();
     } else if (tab === 'orders') this.refreshOrders();
     else if (tab === 'tables') this.refreshTablesAndAreas();
-    else if (tab === 'shifts') this.refreshShifts();
+    else if (tab === 'shifts') this.shiftService.refreshShifts();
     else if (tab === 'menu') this.refreshProducts();
     else if (tab === 'inventory') this.refreshInventory();
     else if (tab === 'customers') this.refreshCustomers(force);

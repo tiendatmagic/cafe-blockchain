@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { StateService } from '@core/services/state.service';
 import { Web3Service } from '@core/services/web3.service';
+import { ShiftService } from '@core/services/shift.service';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { CardComponent } from '@shared/components/card/card.component';
@@ -25,6 +26,7 @@ import { BadgeComponent } from '@shared/components/badge/badge.component';
 export class DesktopHeaderComponent {
   public readonly stateService = inject(StateService);
   public readonly web3Service = inject(Web3Service);
+  public readonly shiftService = inject(ShiftService);
   private readonly elementRef = inject(ElementRef);
 
   public readonly isPriceDropdownOpen = signal<boolean>(false);
@@ -93,12 +95,12 @@ export class DesktopHeaderComponent {
 
   public openStartShiftModal() {
     this.isShiftDropdownOpen.set(false);
-    this.stateService.openStartShiftModal();
+    this.shiftService.openStartShiftModal();
   }
 
   public openCloseShiftModal() {
     this.isShiftDropdownOpen.set(false);
-    this.stateService.openCloseShiftModal();
+    this.shiftService.openCloseShiftModal();
   }
 
   public goToProfile() {

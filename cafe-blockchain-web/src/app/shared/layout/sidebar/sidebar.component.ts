@@ -13,6 +13,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { StateService } from '@core/services/state.service';
+import { ShiftService } from '@core/services/shift.service';
 import { ThemeToggleComponent } from '@shared/components/theme-toggle/theme-toggle.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { BadgeComponent } from '@shared/components/badge/badge.component';
@@ -28,6 +29,7 @@ import { filter } from 'rxjs/operators';
 })
 export class SidebarComponent implements AfterViewInit, OnDestroy {
   public readonly stateService = inject(StateService);
+  public readonly shiftService = inject(ShiftService);
   private readonly elementRef = inject(ElementRef);
   private readonly router = inject(Router);
 
@@ -98,10 +100,10 @@ export class SidebarComponent implements AfterViewInit, OnDestroy {
   }
 
   public handleMobileShiftClick() {
-    if (this.stateService.currentShift() && this.stateService.currentShift().id) {
-      this.stateService.openCloseShiftModal();
+    if (this.shiftService.currentShift() && this.shiftService.currentShift().id) {
+      this.shiftService.openCloseShiftModal();
     } else {
-      this.stateService.openStartShiftModal();
+      this.shiftService.openStartShiftModal();
     }
   }
 

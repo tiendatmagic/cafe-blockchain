@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject, signal, effect, untracked } from '@angular/core';
 import { ShiftStore } from '@features/shifts/store/shift.store';
 import { Web3Service } from './web3.service';
 import { ApiService } from './api.service';
@@ -31,8 +31,42 @@ export class ShiftService {
   public readonly isSubmittingShift = this.isLoading;
   public readonly shiftSummary = this.shiftStore.shiftSummary;
   public readonly isShiftSummaryLoading = this.shiftStore.isShiftSummaryLoading;
+  public readonly shiftDurationString = this.shiftStore.shiftDurationString;
+  public readonly isShiftsLoading = this.shiftStore.isShiftsLoading;
+  public readonly shiftExpectedCash = this.shiftStore.shiftExpectedCash;
 
   private lastShiftSummaryLoadedTime = 0;
+
+  constructor() {
+    // 1. Tự động nạp ca trực ban đầu dưới nền khi đăng nhập ví thành công
+    effect(() => {
+      if (this.web3Service.walletConnected() && this.authService.isAuthLoggedIn()) {
+        untracked(() => {
+          this.loadShiftDataInitially();
+        });
+      }
+    }, { allowSignalWrites: true });
+
+    // 2. Tự động đếm thời gian trôi qua của ca làm việc
+    effect(() => {
+      const shift = this.currentShift();
+      if (shift && shift.start_time) {
+        this.shiftStore.startShiftTimer(shift.start_time);
+      } else {
+        this.shiftStore.stopShiftTimer();
+      }
+    }, { allowSignalWrites: true });
+  }
+
+  private loadShiftDataInitially() {
+    if (this.authService.hasPermission('shifts') && this.authService.hasFeature('enable_shifts')) {
+      this.refreshCurrentShift();
+    } else {
+      this.shiftStore.currentShift.set(null);
+      this.shiftStore.shiftSummary.set(null);
+      this.shiftStore.isCurrentShiftLoading.set(false);
+    }
+  }
 
   // Trạng thái blocked của subscription (sẽ được delegate hoặc check thông qua AuthService)
   private isSubscriptionBlocked() {

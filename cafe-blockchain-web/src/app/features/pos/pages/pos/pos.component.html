@@ -212,9 +212,9 @@
       @if (
         !web3Service.walletConnected() ||
         !stateService.hasPermission('pos') ||
-        stateService.isCurrentShiftLoading() ||
-        !stateService.currentShift() ||
-        !stateService.currentShift().id
+        shiftService.isCurrentShiftLoading() ||
+        !shiftService.currentShift() ||
+        !shiftService.currentShift().id
       ) {
         <div class="lg:hidden mb-6">
           <div app-card class="p-6">
@@ -222,7 +222,7 @@
               <ng-container *ngTemplateOutlet="walletConnectTemplate"></ng-container>
             } @else if (!stateService.hasPermission('pos')) {
               <ng-container *ngTemplateOutlet="accessRestrictedTemplate"></ng-container>
-            } @else if (stateService.isCurrentShiftLoading()) {
+            } @else if (shiftService.isCurrentShiftLoading()) {
               <div class="flex flex-col items-center justify-center py-10 gap-2">
                 <svg class="animate-spin h-6 w-6 text-[var(--dynamic-primary)]" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -355,7 +355,7 @@
       >
         @if (web3Service.walletConnected()) {
           @if (stateService.hasPermission('pos')) {
-            @if (stateService.isCurrentShiftLoading()) {
+            @if (shiftService.isCurrentShiftLoading()) {
               <!-- Hiển thị Loading ca trực trong Cart -->
               <div class="flex flex-col items-center justify-center h-full py-20 text-center gap-3">
                 <svg class="animate-spin h-8 w-8 text-[var(--dynamic-primary)]" fill="none" viewBox="0 0 24 24">
@@ -364,7 +364,7 @@
                 </svg>
                 <span class="text-xs text-slate-400 font-bold">Đang kiểm tra ca làm việc...</span>
               </div>
-            } @else if (stateService.currentShift() && stateService.currentShift().id) {
+            } @else if (shiftService.currentShift() && shiftService.currentShift().id) {
               <ng-container *ngTemplateOutlet="cartContentTemplate"></ng-container>
             } @else {
               <ng-container *ngTemplateOutlet="startShiftTemplate"></ng-container>
@@ -429,8 +429,8 @@
   @if (
     web3Service.walletConnected() &&
     stateService.hasPermission('pos') &&
-    stateService.currentShift() &&
-    stateService.currentShift().id &&
+    shiftService.currentShift() &&
+    shiftService.currentShift().id &&
     cart().length > 0
   ) {
     <div
@@ -1244,13 +1244,13 @@
           variant="primary"
           type="button"
           (click)="startShift()"
-          [loading]="stateService.isLoading()"
+          [loading]="shiftService.isLoading()"
           class="w-full h-12 shadow-lg shadow-[var(--color-primary)]/20"
         >
-          @if (!stateService.isLoading()) {
+          @if (!shiftService.isLoading()) {
             <app-icon name="lock-open" class="h-4 w-4 shrink-0" strokeWidth="2" />
           }
-          <span>{{ stateService.isLoading() ? 'Đang mở ca...' : 'Mở ca' }}</span>
+          <span>{{ shiftService.isLoading() ? 'Đang mở ca...' : 'Mở ca' }}</span>
         </button>
       </div>
     </div>

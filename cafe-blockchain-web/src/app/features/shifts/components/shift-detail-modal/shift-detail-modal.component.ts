@@ -1,7 +1,7 @@
 import { Component, Inject, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MODAL_DATA, ModalRef } from '@core/services/modal-ref';
-import { StateService } from '@core/services/state.service';
+import { ShiftService } from '@core/services/shift.service';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { BadgeComponent } from '@shared/components/badge/badge.component';
@@ -20,7 +20,7 @@ import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
   templateUrl: './shift-detail-modal.component.html',
 })
 export class ShiftDetailModalComponent {
-  public readonly stateService = inject(StateService);
+  public readonly shiftService = inject(ShiftService);
   public readonly modalRef = inject(ModalRef);
 
   constructor(@Inject(MODAL_DATA) public data: any) {}

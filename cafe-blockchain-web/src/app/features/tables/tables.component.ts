@@ -12,6 +12,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { StateService } from '@core/services/state.service';
+import { ShiftService } from '@core/services/shift.service';
 import { ApiService } from '@core/services/api.service';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
@@ -47,6 +48,7 @@ import { TableQrModalComponent } from './components/table-qr-modal/table-qr-moda
 })
 export class TablesComponent implements OnInit {
   public readonly stateService = inject(StateService);
+  public readonly shiftService = inject(ShiftService);
   private readonly apiService = inject(ApiService);
   private readonly router = inject(Router);
   private readonly modalService = inject(ModalService);
@@ -179,7 +181,7 @@ export class TablesComponent implements OnInit {
 
   public openPosForTable(table: any) {
     this.activeDropdownTableId.set(null);
-    if (!this.stateService.currentShift() || !this.stateService.currentShift()?.id) {
+    if (!this.shiftService.currentShift() || !this.shiftService.currentShift()?.id) {
       this.stateService.showToast(
         'Vui lòng mở ca làm việc trước khi thực hiện nghiệp vụ bán hàng POS!',
         'error',

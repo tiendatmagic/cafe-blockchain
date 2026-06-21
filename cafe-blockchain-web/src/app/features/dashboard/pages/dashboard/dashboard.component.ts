@@ -4,6 +4,7 @@ import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StateService } from '@core/services/state.service';
+import { ShiftService } from '@core/services/shift.service';
 import { ShortAddressPipe } from '@shared/pipes/short-address.pipe';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
@@ -45,6 +46,7 @@ import { BadgeComponent } from '@shared/components/badge/badge.component';
 })
 export class DashboardComponent implements OnInit {
   public readonly stateService = inject(StateService);
+  public readonly shiftService = inject(ShiftService);
 
   public readonly datePresets = DASHBOARD_DATE_OPTIONS;
   public activeDatePreset = '7days'; // 'today' | '7days' | '30days' | 'thisMonth' | 'custom'
@@ -78,7 +80,7 @@ export class DashboardComponent implements OnInit {
   public loadAllData() {
     this.stateService.refreshDashboard(true);
     this.stateService.loadSettings();
-    this.stateService.refreshCurrentShift();
+    this.shiftService.refreshCurrentShift();
   }
 
   public getTxExplorerLink(

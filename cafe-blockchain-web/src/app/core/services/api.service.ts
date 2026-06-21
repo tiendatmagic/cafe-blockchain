@@ -462,12 +462,15 @@ export class ApiService {
 
   // --- Shifts (Ca làm việc) API ---
   public getCurrentShift(ttl?: number, force?: boolean): Observable<any> {
-    const headers = this.getCacheHeaders(ttl, force);
+    let headers = this.getCacheHeaders(ttl, force);
+    headers = headers.set('X-Silent-Request', 'true');
     return this.http.get(`${this.baseUrl}/shifts/current`, { headers });
   }
 
   public getShiftSummary(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/shifts/current/summary`, { headers: this.getHeaders() });
+    let headers = this.getHeaders();
+    headers = headers.set('X-Silent-Request', 'true');
+    return this.http.get(`${this.baseUrl}/shifts/current/summary`, { headers });
   }
 
   public openShift(initialCash: number): Observable<any> {
