@@ -21,6 +21,7 @@ import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skel
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { CardComponent } from '@shared/components/card/card.component';
 import { BadgeComponent } from '@shared/components/badge/badge.component';
+import { CustomSearchInputComponent } from '@shared/components/custom-search-input/custom-search-input.component';
 import { ModalService } from '@core/services/modal.service';
 import { AreaFormModalComponent } from './components/area-form-modal/area-form-modal.component';
 import { TableFormModalComponent } from './components/table-form-modal/table-form-modal.component';
@@ -42,6 +43,7 @@ import { TableQrModalComponent } from './components/table-qr-modal/table-qr-moda
     ButtonComponent,
     CardComponent,
     BadgeComponent,
+    CustomSearchInputComponent,
   ],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './tables.component.html',

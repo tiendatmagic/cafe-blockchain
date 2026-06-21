@@ -29,30 +29,22 @@
       }
 
       <div class="flex items-center gap-2 w-full sm:w-auto relative">
-        <div class="relative w-full sm:w-72">
-          <input
-            type="text"
-            [ngModel]="posSearchQuery()"
-            (ngModelChange)="onSearchQueryChange($event)"
-            placeholder="Tìm món, mã vạch..."
-            class="w-full search-input pr-10"
-          />
-          @if (web3Service.walletConnected()) {
-            <button
-              type="button"
-              (click)="startPosBarcodeScan()"
-              class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-xl text-[var(--dynamic-primary)] hover:bg-[var(--dynamic-primary)]/10 dark:text-[var(--dynamic-secondary)] dark:hover:bg-[var(--dynamic-primary)]/20 transition-all shrink-0 cursor-pointer"
-              title="Quét mã vạch bằng camera"
-            >
-              <app-icon name="camera" class="h-4.5 w-4.5" strokeWidth="2" />
-            </button>
-          }
-          <app-icon
-            name="search"
-            class="absolute left-3 top-3 h-4 w-4 text-slate-400"
-            strokeWidth="2.5"
-          />
-        </div>
+        <app-custom-search-input
+          [ngModel]="posSearchQuery()"
+          (ngModelChange)="onSearchQueryChange($event)"
+          placeholder="Tìm món, mã vạch..."
+          containerClass="w-full sm:w-72"
+        ></app-custom-search-input>
+        @if (web3Service.walletConnected()) {
+          <button
+            type="button"
+            (click)="startPosBarcodeScan()"
+            class="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-200/60 dark:border-slate-800/60 text-[var(--dynamic-primary)] hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-all shrink-0 cursor-pointer"
+            title="Quét mã vạch bằng camera"
+          >
+            <app-icon name="camera" class="h-4.5 w-4.5" strokeWidth="2" />
+          </button>
+        }
 
         <!-- Nút Lọc POS -->
         <div class="relative shrink-0">
@@ -481,34 +473,12 @@
     <div class="py-3 border-b border-slate-200/50 dark:border-slate-800/80 relative shrink-0">
       <!-- Trường hợp CHƯA CHỌN KHÁCH HÀNG: Hiển thị ô input search -->
       @if (!posSelectedCustomer()) {
-        <div class="relative">
-          <input
-            type="text"
-            [ngModel]="posCustomerSearchQuery()"
-            (ngModelChange)="onCustomerSearchChange($event)"
-            placeholder="Tìm họ tên, số điện thoại hoặc email khách..."
-            class="w-full search-input pr-8"
-          />
-          <app-icon
-            name="search"
-            class="absolute left-3 top-3 h-4 w-4 text-slate-400"
-            strokeWidth="2.5"
-          />
-          @if (isCustomerSearching()) {
-            <span
-              class="absolute right-3.5 top-3 w-4 h-4 rounded-full border-2 border-slate-200 border-t-purple-650 animate-spin"
-            ></span>
-          } @else if (posCustomerSearchQuery()) {
-            <button
-              type="button"
-              (click)="onCustomerSearchChange(''); isCustomerDropdownOpen.set(false)"
-              class="absolute right-3.5 top-2.5 text-slate-400 hover:text-slate-650 flex items-center justify-center p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
-              title="Xóa tìm kiếm"
-            >
-              <app-icon name="close" class="h-3.5 w-3.5" strokeWidth="2.5" />
-            </button>
-          }
-        </div>
+        <app-custom-search-input
+          [ngModel]="posCustomerSearchQuery()"
+          (ngModelChange)="onCustomerSearchChange($event)"
+          placeholder="Tìm họ tên, số điện thoại hoặc email khách..."
+          [loading]="isCustomerSearching()"
+        ></app-custom-search-input>
 
         <!-- Dropdown Kết quả tìm kiếm khách hàng tải từ máy chủ -->
         @if (isCustomerDropdownOpen() && posCustomerSearchQuery().trim() !== '') {

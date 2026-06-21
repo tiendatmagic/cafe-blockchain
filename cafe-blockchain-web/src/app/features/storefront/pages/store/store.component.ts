@@ -34,6 +34,7 @@ import { StoreVariantSelectModalComponent } from '../../components/store-variant
 import { OrderSuccessModalComponent } from '../../components/order-success-modal/order-success-modal.component';
 import { FloatingCartBarComponent } from '../../components/floating-cart-bar/floating-cart-bar.component';
 import { StoreCartDrawerComponent } from '../../components/store-cart-drawer/store-cart-drawer.component';
+import { CustomSearchInputComponent } from '@shared/components/custom-search-input/custom-search-input.component';
 
 interface CartItem {
   product: any;
@@ -60,6 +61,7 @@ interface CartItem {
     BadgeComponent,
     FloatingCartBarComponent,
     StoreCartDrawerComponent,
+    CustomSearchInputComponent,
   ],
   templateUrl: './store.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,

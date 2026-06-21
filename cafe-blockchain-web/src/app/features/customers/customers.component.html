@@ -110,20 +110,12 @@
                 Danh sách khách hàng
               </h4>
               <!-- Search input -->
-              <div class="relative w-full sm:w-60">
-                <input
-                  type="text"
-                  [ngModel]="customerSearchQuery()"
-                  (ngModelChange)="customerSearchQuery.set($event); customerCurrentPage.set(1)"
-                  placeholder="Tìm tên, SĐT, công ty..."
-                  class="w-full search-input"
-                />
-                <app-icon
-                  name="search"
-                  class="absolute left-3 top-3 h-4 w-4 text-slate-400"
-                  strokeWidth="2.5"
-                />
-              </div>
+              <app-custom-search-input
+                [ngModel]="customerSearchQuery()"
+                (ngModelChange)="customerSearchQuery.set($event); customerCurrentPage.set(1)"
+                placeholder="Tìm tên, SĐT, công ty..."
+                containerClass="w-full sm:w-60"
+              ></app-custom-search-input>
             </div>
 
             <app-table

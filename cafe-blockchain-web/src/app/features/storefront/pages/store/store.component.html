@@ -185,20 +185,12 @@
           <div app-card class="p-4.5 space-y-4">
             <!-- Hàng 1: Ô tìm kiếm và nút Lọc -->
             <div class="flex items-center gap-3 w-full">
-              <div class="relative flex-1">
-                <input
-                  type="text"
-                  [ngModel]="searchQuery()"
-                  (ngModelChange)="searchQuery.set($event); currentPage.set(1)"
-                  placeholder="Tìm món ngon của quán..."
-                  class="w-full search-input pr-10"
-                />
-                <app-icon
-                  name="search"
-                  class="absolute left-3 top-3 h-4 w-4 text-slate-400 dark:text-slate-500"
-                  [strokeWidth]="2.5"
-                ></app-icon>
-              </div>
+              <app-custom-search-input
+                [ngModel]="searchQuery()"
+                (ngModelChange)="searchQuery.set($event); currentPage.set(1)"
+                placeholder="Tìm món ngon của quán..."
+                containerClass="relative flex-1"
+              ></app-custom-search-input>
 
               <!-- Nút Lọc Store -->
               <div class="relative shrink-0">

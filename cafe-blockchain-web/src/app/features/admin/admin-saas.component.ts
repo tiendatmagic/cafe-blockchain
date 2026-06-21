@@ -45,6 +45,7 @@ import { CardComponent } from '@shared/components/card/card.component';
 import { CustomSwitchComponent } from '@shared/components/custom-switch/custom-switch.component';
 import { forkJoin } from 'rxjs';
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
+import { CustomSearchInputComponent } from '@shared/components/custom-search-input/custom-search-input.component';
 
 @Component({
   selector: 'app-admin-saas',
@@ -67,6 +68,7 @@ import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
     CardComponent,
     CustomSwitchComponent,
     VNDCurrencyPipe,
+    CustomSearchInputComponent,
   ],
   templateUrl: './admin-saas.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,

@@ -111,20 +111,12 @@
                 class="flex items-center gap-4 w-full sm:w-auto shrink-0 flex-wrap sm:flex-nowrap"
               >
                 <!-- Search input -->
-                <div class="relative w-full sm:w-60">
-                  <input
-                    type="text"
-                    [ngModel]="inventorySearchQuery()"
-                    (ngModelChange)="inventorySearchQuery.set($event); inventoryCurrentPage.set(1)"
-                    placeholder="Tìm ghi chú, mã phiếu, món..."
-                    class="w-full search-input"
-                  />
-                  <app-icon
-                    name="search"
-                    class="absolute left-3 top-3 h-4 w-4 text-slate-400"
-                    strokeWidth="2.5"
-                  />
-                </div>
+                <app-custom-search-input
+                  [ngModel]="inventorySearchQuery()"
+                  (ngModelChange)="inventorySearchQuery.set($event); inventoryCurrentPage.set(1)"
+                  placeholder="Tìm ghi chú, mã phiếu, món..."
+                  containerClass="w-full sm:w-60"
+                ></app-custom-search-input>
 
                 <span class="text-xs font-bold text-slate-400 whitespace-nowrap"
                   >Tìm thấy {{ filteredInventoryRecords().length }} phiếu kho</span
@@ -242,22 +234,12 @@
                   </div>
                   <!-- Search + count -->
                   <div class="flex items-center gap-3 flex-wrap sm:flex-nowrap shrink-0">
-                    <div class="relative">
-                      <input
-                        type="text"
-                        [ngModel]="stockReportSearch()"
-                        (ngModelChange)="
-                          stockReportSearch.set($event); stockReportCurrentPage.set(1)
-                        "
-                        placeholder="Tìm sản phẩm..."
-                        class="w-48 sm:w-64 search-input"
-                      />
-                      <app-icon
-                        name="search"
-                        class="absolute left-3 top-3 h-4 w-4 text-slate-400"
-                        strokeWidth="2.5"
-                      />
-                    </div>
+                    <app-custom-search-input
+                      [ngModel]="stockReportSearch()"
+                      (ngModelChange)="stockReportSearch.set($event); stockReportCurrentPage.set(1)"
+                      placeholder="Tìm sản phẩm..."
+                      containerClass="w-48 sm:w-64"
+                    ></app-custom-search-input>
                     <span
                       class="text-xs font-bold text-purple-600 bg-purple-50 dark:bg-purple-950/40 dark:text-purple-400 px-3 py-1 rounded-xl whitespace-nowrap"
                     >

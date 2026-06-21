@@ -29,6 +29,7 @@ import { CardComponent } from '@shared/components/card/card.component';
 import { ModalService } from '@core/services/modal.service';
 import { ManualDebtModalComponent } from './components/manual-debt-modal/manual-debt-modal.component';
 import { DebtPaymentModalComponent } from './components/debt-payment-modal/debt-payment-modal.component';
+import { CustomSearchInputComponent } from '@shared/components/custom-search-input/custom-search-input.component';
 
 @Component({
   selector: 'app-debts',
@@ -49,6 +50,7 @@ import { DebtPaymentModalComponent } from './components/debt-payment-modal/debt-
     TabGroupComponent,
     ButtonComponent,
     CardComponent,
+    CustomSearchInputComponent,
   ],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './debts.component.html',

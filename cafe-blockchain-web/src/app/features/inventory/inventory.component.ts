@@ -25,6 +25,7 @@ import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-g
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { CardComponent } from '@shared/components/card/card.component';
+import { CustomSearchInputComponent } from '@shared/components/custom-search-input/custom-search-input.component';
 
 @Component({
   selector: 'app-inventory',
@@ -43,6 +44,7 @@ import { CardComponent } from '@shared/components/card/card.component';
     SkeletonLoaderComponent,
     ButtonComponent,
     CardComponent,
+    CustomSearchInputComponent,
   ],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './inventory.component.html',

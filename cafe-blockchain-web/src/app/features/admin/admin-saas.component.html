@@ -65,18 +65,13 @@
           </div>
 
           <!-- Search Field -->
-          <div class="relative w-full sm:w-64">
-            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-              <app-icon name="search" class="h-4.5 w-4.5 text-slate-400"></app-icon>
-            </div>
-            <input
-              type="text"
-              [ngModel]="searchQuery()"
-              (ngModelChange)="onSearchQueryChange($event)"
-              placeholder="Tìm theo ví, tên quán..."
-              class="search-input !pl-10 !h-10 !text-sm"
-            />
-          </div>
+          <app-custom-search-input
+            [ngModel]="searchQuery()"
+            (ngModelChange)="onSearchQueryChange($event)"
+            placeholder="Tìm theo ví, tên quán..."
+            containerClass="w-full sm:w-64"
+            inputClass="search-input !pl-10 !h-10 !text-sm"
+          ></app-custom-search-input>
         </div>
       } @else if (activeSubTab() === 'plans') {
         <!-- Plans Tab Buttons -->
@@ -110,18 +105,13 @@
           class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto ml-auto"
         >
           <!-- Search Field -->
-          <div class="relative w-full sm:w-64">
-            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-              <app-icon name="search" class="h-4.5 w-4.5 text-slate-400"></app-icon>
-            </div>
-            <input
-              type="text"
-              [ngModel]="systemPaymentSearch()"
-              (ngModelChange)="systemPaymentSearch.set($event); onSystemPaymentSearchChange()"
-              placeholder="Tìm phương thức..."
-              class="search-input !pl-10 !h-10 !text-sm"
-            />
-          </div>
+          <app-custom-search-input
+            [ngModel]="systemPaymentSearch()"
+            (ngModelChange)="systemPaymentSearch.set($event); onSystemPaymentSearchChange()"
+            placeholder="Tìm phương thức..."
+            containerClass="w-full sm:w-64"
+            inputClass="search-input !pl-10 !h-10 !text-sm"
+          ></app-custom-search-input>
           @if (stateService.isSuperAdmin()) {
             <button
               app-button
@@ -1133,30 +1123,13 @@
                     </p>
                   </div>
                 </div>
-                <div class="relative w-full sm:w-64">
-                  <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                    <svg
-                      class="h-4 w-4 text-slate-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                      />
-                    </svg>
-                  </div>
-                  <input
-                    type="text"
-                    [ngModel]="packageSearch()"
-                    (ngModelChange)="onPackageSearchChange($event)"
-                    placeholder="Tìm thư viện..."
-                    class="search-input !pl-9 !h-9 !text-sm"
-                  />
-                </div>
+                <app-custom-search-input
+                  [ngModel]="packageSearch()"
+                  (ngModelChange)="onPackageSearchChange($event)"
+                  placeholder="Tìm thư viện..."
+                  containerClass="w-full sm:w-64"
+                  inputClass="search-input !pl-9 !h-9 !text-sm"
+                ></app-custom-search-input>
               </div>
 
               <!-- Package List -->
@@ -1785,22 +1758,17 @@
             </div>
 
             <!-- Search Field -->
-            <div class="relative w-full sm:w-64">
-              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-                <app-icon name="search" class="h-4.5 w-4.5 text-slate-400"></app-icon>
-              </div>
-              <input
-                type="text"
-                [ngModel]="subscriptionSearch()"
-                (ngModelChange)="
-                  subscriptionSearch.set($event);
-                  subscriptionPage.set(1);
-                  loadSubscriptionRequests()
-                "
-                placeholder="Tìm theo ví, TxHash..."
-                class="search-input !pl-10 !h-10 !text-sm"
-              />
-            </div>
+            <app-custom-search-input
+              [ngModel]="subscriptionSearch()"
+              (ngModelChange)="
+                subscriptionSearch.set($event);
+                subscriptionPage.set(1);
+                loadSubscriptionRequests()
+              "
+              placeholder="Tìm theo ví, TxHash..."
+              containerClass="w-full sm:w-64"
+              inputClass="search-input !pl-10 !h-10 !text-sm"
+            ></app-custom-search-input>
           </div>
         </div>
 
@@ -2013,20 +1981,15 @@
             class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto"
           >
             <!-- Search Field -->
-            <div class="relative w-full sm:w-64">
-              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-                <app-icon name="search" class="h-4.5 w-4.5 text-slate-400"></app-icon>
-              </div>
-              <input
-                type="text"
-                [ngModel]="systemStaffsSearch()"
-                (ngModelChange)="
-                  systemStaffsSearch.set($event); systemStaffsPage.set(1); loadSystemStaffs()
-                "
-                placeholder="Tìm theo tên, ví..."
-                class="search-input !pl-10 !h-10 !text-sm"
-              />
-            </div>
+            <app-custom-search-input
+              [ngModel]="systemStaffsSearch()"
+              (ngModelChange)="
+                systemStaffsSearch.set($event); systemStaffsPage.set(1); loadSystemStaffs()
+              "
+              placeholder="Tìm theo tên, ví..."
+              containerClass="w-full sm:w-64"
+              inputClass="search-input !pl-10 !h-10 !text-sm"
+            ></app-custom-search-input>
 
             @if (stateService.isSuperAdmin()) {
               <button

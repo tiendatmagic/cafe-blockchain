@@ -61,20 +61,12 @@
         ></app-tab-group>
 
         <!-- Search input -->
-        <div class="relative w-full sm:w-60">
-          <input
-            type="text"
-            [ngModel]="searchQuery()"
-            (ngModelChange)="onSearchQueryChange($event)"
-            [placeholder]="activeSubTab() === 'staffs' ? 'Tìm tên, SĐT, ví nhân viên...' : 'Tìm tên vai trò...'"
-            class="w-full search-input"
-          />
-          <app-icon
-            name="search"
-            class="absolute left-3 top-3 h-4 w-4 text-slate-400"
-            strokeWidth="2.5"
-          />
-        </div>
+        <app-custom-search-input
+          [ngModel]="searchQuery()"
+          (ngModelChange)="onSearchQueryChange($event)"
+          [placeholder]="activeSubTab() === 'staffs' ? 'Tìm tên, SĐT, ví nhân viên...' : 'Tìm tên vai trò...'"
+          containerClass="w-full sm:w-60"
+        ></app-custom-search-input>
       </div>
 
       <!-- NỘI DUNG CHÍNH -->

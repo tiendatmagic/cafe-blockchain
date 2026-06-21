@@ -31,6 +31,7 @@ import { BarcodeScannerModalComponent } from '@shared/components/barcode-scanner
 import { VariantSelectModalComponent } from '../../components/variant-select-modal/variant-select-modal.component';
 import { PosConfirmModalComponent } from '../../components/pos-confirm-modal/pos-confirm-modal.component';
 import { SignQrModalComponent } from '../../components/sign-qr-modal/sign-qr-modal.component';
+import { CustomSearchInputComponent } from '@shared/components/custom-search-input/custom-search-input.component';
 
 @Component({
   selector: 'app-pos',
@@ -49,6 +50,7 @@ import { SignQrModalComponent } from '../../components/sign-qr-modal/sign-qr-mod
     SkeletonLoaderComponent,
     ButtonComponent,
     CardComponent,
+    CustomSearchInputComponent,
   ],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './pos.component.html',

@@ -31,6 +31,7 @@ import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skel
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { StaffFormModalComponent } from './components/staff-form-modal/staff-form-modal.component';
 import { RoleFormModalComponent } from './components/role-form-modal/role-form-modal.component';
+import { CustomSearchInputComponent } from '@shared/components/custom-search-input/custom-search-input.component';
 
 @Component({
   selector: 'app-staffs',
@@ -48,6 +49,7 @@ import { RoleFormModalComponent } from './components/role-form-modal/role-form-m
     TabGroupComponent,
     SkeletonLoaderComponent,
     ButtonComponent,
+    CustomSearchInputComponent,
   ],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './staffs.component.html',

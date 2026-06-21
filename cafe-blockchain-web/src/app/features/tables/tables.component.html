@@ -144,20 +144,12 @@
                   >Tìm kiếm bàn ăn</span
                 >
                 <div class="flex items-center gap-2 w-full">
-                  <div class="relative flex-1">
-                    <input
-                      type="text"
-                      [ngModel]="tableSearchQuery()"
-                      (ngModelChange)="tableSearchQuery.set($event)"
-                      placeholder="Tìm bàn ăn..."
-                      class="w-full search-input"
-                    />
-                    <app-icon
-                      name="search"
-                      class="absolute left-3 top-3.5 h-4 w-4 text-slate-400"
-                      strokeWidth="2.5"
-                    />
-                  </div>
+                  <app-custom-search-input
+                    [ngModel]="tableSearchQuery()"
+                    (ngModelChange)="tableSearchQuery.set($event)"
+                    placeholder="Tìm bàn ăn..."
+                    containerClass="relative flex-1"
+                  ></app-custom-search-input>
                   <button
                     app-button
                     variant="primary"

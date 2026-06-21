@@ -26,6 +26,7 @@ import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skel
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { CardComponent } from '@shared/components/card/card.component';
 import { BadgeComponent } from '@shared/components/badge/badge.component';
+import { CustomSearchInputComponent } from '@shared/components/custom-search-input/custom-search-input.component';
 import { ModalService } from '@core/services/modal.service';
 import { OrderDetailModalComponent } from './components/order-detail-modal/order-detail-modal.component';
 import { CancelOrderExplanationModalComponent } from './components/cancel-order-explanation-modal/cancel-order-explanation-modal.component';
@@ -49,6 +50,7 @@ import { CancelOrderExplanationModalComponent } from './components/cancel-order-
     ButtonComponent,
     CardComponent,
     BadgeComponent,
+    CustomSearchInputComponent,
   ],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './orders.component.html',
