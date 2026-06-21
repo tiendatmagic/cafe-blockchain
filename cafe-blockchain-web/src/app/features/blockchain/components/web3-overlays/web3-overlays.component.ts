@@ -28,6 +28,11 @@ export class Web3OverlaysComponent {
   public readonly durationMonths = signal<number>(1); // 1, 3, 6, 12
   public readonly isUpgrading = signal<boolean>(false);
 
+  // Quản lý phương thức thanh toán hệ thống
+  public readonly systemPaymentMethods = signal<any[]>([]);
+  public readonly selectedSystemPayment = signal<any>(null);
+  public readonly isSystemPaymentsLoading = signal<boolean>(false);
+
   /**
    * Kiểm tra gói cước có bị vô hiệu hóa trên giao diện hay không
    */
@@ -71,11 +76,35 @@ export class Web3OverlaysComponent {
   }
 
   /**
+   * Tải danh sách phương thức thanh toán của nhà sáng lập (hệ thống)
+   */
+  public loadSystemPaymentMethods() {
+    this.isSystemPaymentsLoading.set(true);
+    this.apiService.getSystemPaymentMethods().subscribe({
+      next: (data) => {
+        const activePayments = (data || []).filter((p) => p.is_active);
+        this.systemPaymentMethods.set(activePayments);
+        if (activePayments.length > 0) {
+          this.selectedSystemPayment.set(activePayments[0]);
+        } else {
+          this.selectedSystemPayment.set(null);
+        }
+        this.isSystemPaymentsLoading.set(false);
+      },
+      error: (err) => {
+        console.error('[Upgrade] Lỗi tải phương thức thanh toán hệ thống:', err);
+        this.isSystemPaymentsLoading.set(false);
+      },
+    });
+  }
+
+  /**
    * Chuyển sang bước 2 (Modal Pricing) và load danh sách các gói
    */
   public handleUpgradeNowClick() {
     this.stateService.upgradeModalStep.set(2);
     this.loadPlans();
+    this.loadSystemPaymentMethods();
   }
 
   /**
@@ -90,6 +119,20 @@ export class Web3OverlaysComponent {
       return Number(plan.price_per_year) || 0;
     }
     return (Number(plan.price_per_month) || 0) * duration;
+  }
+
+  /**
+   * Lấy link ảnh mã QR code tương ứng của phương thức thanh toán
+   */
+  public getQrCodeUrl(item: any): string {
+    if (!item) return '';
+    if (item.type === 'bank') {
+      return `https://img.vietqr.io/image/${item.bank_code}-${item.account_number}-compact.jpg?accountName=${encodeURIComponent(item.account_holder)}`;
+    } else if (item.type === 'wallet' && item.name.toLowerCase() === 'momo') {
+      return `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https%3A%2F%2Fnhantien.momo.vn%2F${item.account_number}`;
+    } else {
+      return `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(item.account_number)}`;
+    }
   }
 
   /**

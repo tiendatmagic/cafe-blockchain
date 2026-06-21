@@ -560,9 +560,41 @@ export class ApiService {
     return this.http.delete(`${this.baseUrl}/payment-methods/${id}`, { headers: this.getHeaders() });
   }
 
+  public getSystemPaymentMethods(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/auth/system-payment-methods`, { headers: this.getHeaders() });
+  }
+
   // --- Super Admin SaaS APIs ---
   public getAdminTenants(): Observable<any[]> {
     return this.http.get<any[]>(`${this.baseUrl}/admin/tenants`, { headers: this.getHeaders() });
+  }
+
+  public getAdminPaymentMethods(params?: { page?: number; per_page?: number; search?: string }): Observable<any> {
+    let httpParams = new HttpParams();
+    if (params) {
+      if (params.page !== undefined) {
+        httpParams = httpParams.set('page', params.page.toString());
+      }
+      if (params.per_page !== undefined) {
+        httpParams = httpParams.set('per_page', params.per_page.toString());
+      }
+      if (params.search !== undefined && params.search.trim() !== '') {
+        httpParams = httpParams.set('search', params.search.trim());
+      }
+    }
+    return this.http.get<any>(`${this.baseUrl}/admin/payment-methods`, { params: httpParams, headers: this.getHeaders() });
+  }
+
+  public createAdminPaymentMethod(paymentMethod: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/admin/payment-methods`, paymentMethod, { headers: this.getHeaders() });
+  }
+
+  public updateAdminPaymentMethod(id: number | string, paymentMethod: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/admin/payment-methods/${id}`, paymentMethod, { headers: this.getHeaders() });
+  }
+
+  public deleteAdminPaymentMethod(id: number | string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/admin/payment-methods/${id}`, { headers: this.getHeaders() });
   }
 
   public updateTenantSubscription(id: number, data: any): Observable<any> {

@@ -46,6 +46,7 @@ export class PaymentFormModalComponent {
 
   public readonly isEditing = signal<boolean>(false);
   public readonly editingId = signal<number | null>(null);
+  public readonly isSystem = signal<boolean>(false);
   public readonly isPaymentActionLoading = signal<boolean>(false);
   
   public readonly paymentForm = signal<any>({
@@ -64,6 +65,7 @@ export class PaymentFormModalComponent {
     if (data) {
       this.isEditing.set(data.isEdit || false);
       this.editingId.set(data.id || null);
+      this.isSystem.set(data.isSystem || false);
       if (data.form) {
         this.paymentForm.set({ ...data.form });
       }
@@ -109,9 +111,13 @@ export class PaymentFormModalComponent {
     if (this.isPaymentActionLoading()) return;
     this.isPaymentActionLoading.set(true);
 
-    const request = this.isEditing()
-      ? this.apiService.updatePaymentMethod(this.editingId()!, data)
-      : this.apiService.createPaymentMethod(data);
+    const request = this.isSystem()
+      ? (this.isEditing()
+          ? this.apiService.updateAdminPaymentMethod(this.editingId()!, data)
+          : this.apiService.createAdminPaymentMethod(data))
+      : (this.isEditing()
+          ? this.apiService.updatePaymentMethod(this.editingId()!, data)
+          : this.apiService.createPaymentMethod(data));
 
     request.subscribe({
       next: () => {

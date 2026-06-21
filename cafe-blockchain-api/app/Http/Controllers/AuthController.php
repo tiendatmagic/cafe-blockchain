@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Domain\Entities\User;
 use App\Domain\Entities\Staff;
+use App\Domain\Entities\SystemPaymentMethod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -475,5 +476,16 @@ class AuthController extends Controller
             'success' => true,
             'message' => 'Cashier removed successfully.'
         ]);
+    }
+
+    /**
+     * Lấy danh sách các phương thức thanh toán đang hoạt động của hệ thống
+     */
+    public function getSystemPaymentMethods()
+    {
+        $methods = SystemPaymentMethod::where('is_active', true)
+            ->orderBy('created_at', 'asc')
+            ->get();
+        return response()->json($methods);
     }
 }

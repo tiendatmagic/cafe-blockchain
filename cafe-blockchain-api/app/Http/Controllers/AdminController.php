@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Domain\Entities\User;
 use App\Domain\Entities\SubscriptionPlan;
+use App\Domain\Entities\SystemPaymentMethod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -675,6 +676,96 @@ class AdminController extends Controller
     {
         \Artisan::call('optimize:clear');
         return response()->json(['success' => true, 'message' => 'Optimization cache cleared successfully.']);
+    }
+
+    /**
+     * Lấy danh sách các phương thức thanh toán của hệ thống
+     */
+    public function indexPaymentMethods(Request $request)
+    {
+        $search = $request->query('search', '');
+        $perPage = (int)$request->query('per_page', 10);
+
+        $query = SystemPaymentMethod::query();
+
+        if (!empty($search)) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('account_number', 'like', "%{$search}%")
+                  ->orWhere('account_holder', 'like', "%{$search}%");
+            });
+        }
+
+        $paymentMethods = $query->orderBy('created_at', 'desc')->paginate($perPage);
+
+        return response()->json([
+            'data' => $paymentMethods->items(),
+            'total' => $paymentMethods->total(),
+            'current_page' => $paymentMethods->currentPage(),
+            'per_page' => $paymentMethods->perPage(),
+        ]);
+    }
+
+    /**
+     * Thêm phương thức thanh toán hệ thống mới
+     */
+    public function storePaymentMethod(Request $request)
+    {
+        $validated = $request->validate([
+            'type' => 'required|string|in:bank,wallet',
+            'name' => 'required|string|max:255',
+            'account_number' => 'required|string|max:255',
+            'account_holder' => 'required|string|max:255',
+            'bank_code' => 'nullable|string|max:255',
+            'is_active' => 'required|boolean',
+        ]);
+
+        $paymentMethod = SystemPaymentMethod::create($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'System payment method created successfully.',
+            'data' => $paymentMethod
+        ]);
+    }
+
+    /**
+     * Cập nhật phương thức thanh toán hệ thống
+     */
+    public function updatePaymentMethod(Request $request, $id)
+    {
+        $paymentMethod = SystemPaymentMethod::findOrFail($id);
+
+        $validated = $request->validate([
+            'type' => 'required|string|in:bank,wallet',
+            'name' => 'required|string|max:255',
+            'account_number' => 'required|string|max:255',
+            'account_holder' => 'required|string|max:255',
+            'bank_code' => 'nullable|string|max:255',
+            'is_active' => 'required|boolean',
+        ]);
+
+        $paymentMethod->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'System payment method updated successfully.',
+            'data' => $paymentMethod
+        ]);
+    }
+
+    /**
+     * Xóa phương thức thanh toán hệ thống
+     */
+    public function destroyPaymentMethod($id)
+    {
+        $paymentMethod = SystemPaymentMethod::findOrFail($id);
+        $paymentMethod->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'System payment method deleted successfully.'
+        ]);
     }
 }
 

@@ -615,16 +615,84 @@
                 </div>
               </div>
 
-              <!-- Payment Method (Tiền mặt / Chuyển khoản VND) -->
-              <div>
-                <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">
-                  Phương thức thanh toán
-                </label>
-                <div class="p-3 bg-purple-50 dark:bg-purple-950/20 border border-[var(--dynamic-primary)]/20 rounded-xl flex items-center gap-2.5 rounded-[10px]">
-                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
-                  <span class="text-xs font-extrabold text-[var(--dynamic-primary)]">Tiền mặt / Chuyển khoản (VND)</span>
+              <!-- Payment Method Selector -->
+              @if (selectedPlan()?.code !== 'free') {
+                <div>
+                  <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">
+                    Phương thức thanh toán
+                  </label>
+                  
+                  @if (isSystemPaymentsLoading()) {
+                    <div class="py-4 flex justify-center">
+                      <svg class="animate-spin h-5 w-5 text-[var(--dynamic-primary)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    </div>
+                  } @else if (systemPaymentMethods().length === 0) {
+                    <div class="p-3 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/20 rounded-xl text-xs text-rose-600 dark:text-rose-400 font-bold rounded-[10px]">
+                      Hệ thống chưa cấu hình phương thức thanh toán. Vui lòng liên hệ Admin!
+                    </div>
+                  } @else {
+                    <div class="flex flex-wrap gap-2 mb-3">
+                      @for (item of systemPaymentMethods(); track item.id) {
+                        <button
+                          (click)="!isUpgrading() && selectedSystemPayment.set(item)"
+                          [disabled]="isUpgrading()"
+                          class="px-3 py-2 text-xs font-bold rounded-xl border transition-all cursor-pointer rounded-[10px]"
+                          [class.border-[var(--dynamic-primary)]]="selectedSystemPayment()?.id === item.id"
+                          [class.bg-[var(--dynamic-primary)]/10]="selectedSystemPayment()?.id === item.id"
+                          [class.text-[var(--dynamic-primary)]]="selectedSystemPayment()?.id === item.id"
+                          [class.border-slate-200]="selectedSystemPayment()?.id !== item.id"
+                          [class.dark:border-slate-800]="selectedSystemPayment()?.id !== item.id"
+                          [class.text-slate-600]="selectedSystemPayment()?.id !== item.id"
+                          [class.dark:text-slate-400]="selectedSystemPayment()?.id !== item.id"
+                        >
+                          {{ item.name }}
+                        </button>
+                      }
+                    </div>
+
+                    <!-- Payment Information Display & QR Code -->
+                    @if (selectedSystemPayment(); as payment) {
+                      <div class="grid grid-cols-1 sm:grid-cols-[1fr_110px] gap-4 p-4 bg-purple-50/50 dark:bg-purple-950/10 border border-[var(--dynamic-primary)]/10 rounded-xl rounded-[10px] animate-in fade-in duration-200">
+                        <div class="space-y-2 text-xs font-semibold text-slate-600 dark:text-slate-400">
+                          <div class="flex items-center gap-1.5 text-[var(--dynamic-primary)] font-extrabold uppercase text-[10px] tracking-wider">
+                            <span>Thông tin thanh toán</span>
+                          </div>
+                          <div>
+                            <span class="text-slate-450 mr-1">Chủ tài khoản:</span>
+                            <span class="text-slate-800 dark:text-slate-100 font-extrabold uppercase">{{ payment.account_holder }}</span>
+                          </div>
+                          <div>
+                            <span class="text-slate-450 mr-1">{{ payment.type === 'bank' ? 'Số tài khoản' : 'Số điện thoại' }}:</span>
+                            <span class="text-slate-850 dark:text-slate-100 font-mono font-bold">{{ payment.account_number }}</span>
+                          </div>
+                          <div>
+                            <span class="text-slate-450 mr-1">Ngân hàng/Ví:</span>
+                            <span class="text-slate-850 dark:text-slate-100 font-bold">
+                              {{ payment.name }}
+                              @if (payment.bank_code) {
+                                <span class="text-[10px] font-mono text-slate-450 font-bold ml-1">({{ payment.bank_code }})</span>
+                              }
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <!-- QR Code Thumbnail -->
+                        <div class="flex flex-col items-center justify-center bg-white dark:bg-slate-900 p-2 rounded-xl border border-slate-200/40 dark:border-slate-800/40 rounded-[10px] shrink-0">
+                          <img 
+                            [src]="getQrCodeUrl(payment)" 
+                            alt="QR Chuyển khoản"
+                            class="w-20 h-20 object-contain rounded-lg"
+                          />
+                          <span class="text-[8px] text-slate-400 mt-1 font-bold text-center">Quét mã chuyển</span>
+                        </div>
+                      </div>
+                    }
+                  }
                 </div>
-              </div>
+              }
             </div>
 
             <!-- Price breakdown -->

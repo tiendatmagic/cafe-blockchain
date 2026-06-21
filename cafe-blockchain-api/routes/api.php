@@ -44,6 +44,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/auth/profile', [AuthController::class, 'updateProfile']); // Cập nhật thông tin cá nhân
     Route::get('/auth/subscription/plans', [AuthController::class, 'getPublicPlans']); // Lấy danh sách gói cước để nâng cấp
     Route::post('/auth/subscription/upgrade', [AuthController::class, 'upgradeSubscription']);
+    Route::get('/auth/system-payment-methods', [AuthController::class, 'getSystemPaymentMethods']);
 
 
     // Super Admin Routes (Bypass CheckSubscription)
@@ -61,6 +62,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/system-settings', [AdminController::class, 'updateSystemSettings']);
         Route::post('/clean-tokens', [AdminController::class, 'cleanTokens']);
         Route::post('/clean-all-tokens', [AdminController::class, 'cleanAllTokens']);
+
+        // System Payment Methods CRUD
+        Route::get('/payment-methods', [AdminController::class, 'indexPaymentMethods']);
+        Route::post('/payment-methods', [AdminController::class, 'storePaymentMethod']);
+        Route::put('/payment-methods/{id}', [AdminController::class, 'updatePaymentMethod']);
+        Route::delete('/payment-methods/{id}', [AdminController::class, 'destroyPaymentMethod']);
 
         // System Info & Packages
         Route::get('/system-info', [AdminController::class, 'getSystemInfo']);

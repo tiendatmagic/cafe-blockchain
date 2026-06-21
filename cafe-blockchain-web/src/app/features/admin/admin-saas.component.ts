@@ -20,6 +20,8 @@ import { ApiService } from '@core/services/api.service';
 import { ModalService } from '@core/services/modal.service';
 import { TenantSubscriptionModalComponent } from './components/tenant-subscription-modal/tenant-subscription-modal.component';
 import { SubscriptionPlanModalComponent } from './components/subscription-plan-modal/subscription-plan-modal.component';
+import { PaymentFormModalComponent } from '../settings/components/payment-form-modal/payment-form-modal.component';
+import { QrCodeModalComponent } from '../settings/components/qr-code-modal/qr-code-modal.component';
 import { CustomSelectComponent } from '@shared/components/custom-select/custom-select.component';
 import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prompt/web3-connect-prompt.component';
 import { AccessRestrictedComponent } from '@shared/components/access-restricted/access-restricted.component';
@@ -149,18 +151,63 @@ export class AdminSaaSComponent implements OnInit {
     },
   ];
 
-  // Tab: 'sysconfig' | 'tenants' | 'plans' | 'system' | 'sysinfo'
-  public readonly activeSubTab = signal<'sysconfig' | 'tenants' | 'plans' | 'system' | 'sysinfo'>(
-    'sysconfig',
-  );
+  // Tab: 'sysconfig' | 'tenants' | 'plans' | 'system' | 'sysinfo' | 'payment'
+  public readonly activeSubTab = signal<
+    'sysconfig' | 'tenants' | 'plans' | 'system' | 'sysinfo' | 'payment'
+  >('sysconfig');
 
   public readonly subTabOptions: TabOption[] = [
     { value: 'sysconfig', label: 'Cấu hình thông tin hệ thống' },
     { value: 'tenants', label: 'Cửa hàng' },
     { value: 'plans', label: 'Gói cước' },
+    { value: 'payment', label: 'Thanh toán' },
     { value: 'system', label: 'Hệ thống' },
     { value: 'sysinfo', label: 'Thông tin hệ thống' },
   ];
+
+  // Cấu hình Phương thức thanh toán Hệ thống (Super Admin)
+  public readonly paymentColumns: TableColumn[] = [
+    {
+      key: 'type',
+      header: 'Loại',
+      sortable: false,
+      class: 'font-semibold text-slate-700 dark:text-slate-300 pl-6',
+    },
+    {
+      key: 'name',
+      header: 'Tên Ngân hàng / Ví',
+      sortable: false,
+      class: 'font-extrabold text-slate-800 dark:text-white',
+    },
+    {
+      key: 'account_number',
+      header: 'Số tài khoản / Số điện thoại',
+      sortable: false,
+      class: 'font-mono font-bold text-slate-700 dark:text-slate-300',
+    },
+    {
+      key: 'account_holder',
+      header: 'Chủ tài khoản',
+      sortable: false,
+      class: 'font-bold uppercase text-slate-700 dark:text-slate-300',
+    },
+    { key: 'is_active', header: 'Trạng thái', sortable: false },
+    {
+      key: 'actions',
+      header: 'Thao tác',
+      sortable: false,
+      class: 'text-right pr-6 whitespace-nowrap',
+      headerClass: 'text-right pr-6',
+    },
+  ];
+
+  public readonly systemPaymentMethods = signal<any[]>([]);
+  public readonly systemPaymentTotal = signal<number>(0);
+  public readonly systemPaymentPage = signal<number>(1);
+  public readonly systemPaymentPerPage = signal<number>(10);
+  public readonly systemPaymentSearch = signal<string>('');
+  public readonly isSystemPaymentsLoading = signal<boolean>(false);
+  public readonly isSystemPaymentActionLoading = signal<boolean>(false);
 
   public readonly systemContactsList = signal<any[]>([]);
   public readonly isSavingContacts = signal<boolean>(false);
@@ -302,10 +349,13 @@ export class AdminSaaSComponent implements OnInit {
     // Đồng bộ tab hiện tại với Query Parameter 'tab' trên URL
     this.route.queryParams.subscribe((params) => {
       const tab = params['tab'];
-      if (tab && ['sysconfig', 'tenants', 'plans', 'system', 'sysinfo'].includes(tab)) {
+      if (tab && ['sysconfig', 'tenants', 'plans', 'system', 'sysinfo', 'payment'].includes(tab)) {
         this.activeSubTab.set(tab as any);
         if (tab === 'sysinfo' && !this.systemInfo()) {
           this.loadSysInfo();
+        }
+        if (tab === 'payment') {
+          this.loadSystemPaymentMethods();
         }
       }
     });
@@ -315,17 +365,23 @@ export class AdminSaaSComponent implements OnInit {
     }
   }
 
-  public setSubTab(tab: 'sysconfig' | 'tenants' | 'plans' | 'system' | 'sysinfo') {
+  public setSubTab(tab: 'sysconfig' | 'tenants' | 'plans' | 'system' | 'sysinfo' | 'payment') {
     this.activeSubTab.set(tab);
     this.searchQuery.set('');
     this.tenantPlanFilter.set('all');
     this.tenantStatusFilter.set('all');
     this.tenantCurrentPage.set(1);
     this.planCurrentPage.set(1);
+    this.systemPaymentPage.set(1);
+    this.systemPaymentSearch.set('');
 
     // Lazy load sysinfo khi chuyển sang tab
     if (tab === 'sysinfo' && !this.systemInfo()) {
       this.loadSysInfo();
+    }
+
+    if (tab === 'payment') {
+      this.loadSystemPaymentMethods();
     }
 
     // Cập nhật query parameter tab trên URL
@@ -716,6 +772,147 @@ export class AdminSaaSComponent implements OnInit {
         this.stateService.showToast(msg, 'error');
         this.runningMaintenance.set('');
       },
+    });
+  }
+
+  // --- Quản lý Phương thức thanh toán Hệ thống (Super Admin) ---
+  public loadSystemPaymentMethods(force = false) {
+    this.isSystemPaymentsLoading.set(true);
+    this.apiService
+      .getAdminPaymentMethods({
+        page: this.systemPaymentPage(),
+        per_page: this.systemPaymentPerPage(),
+        search: this.systemPaymentSearch(),
+      })
+      .subscribe({
+        next: (res) => {
+          if (res) {
+            this.systemPaymentMethods.set(res.data || []);
+            this.systemPaymentTotal.set(res.total || 0);
+          }
+          this.isSystemPaymentsLoading.set(false);
+        },
+        error: () => {
+          this.stateService.showToast('Không thể tải danh sách phương thức thanh toán!', 'error');
+          this.isSystemPaymentsLoading.set(false);
+        },
+      });
+  }
+
+  public onSystemPaymentSearchChange() {
+    this.systemPaymentPage.set(1);
+    this.loadSystemPaymentMethods(true);
+  }
+
+  public setSystemPaymentPage(page: number) {
+    if (page < 1 || page > this.getSystemPaymentTotalPages()) return;
+    this.systemPaymentPage.set(page);
+    this.loadSystemPaymentMethods(true);
+  }
+
+  public getSystemPaymentTotalPages(): number {
+    return Math.ceil(this.systemPaymentTotal() / this.systemPaymentPerPage()) || 1;
+  }
+
+  public getSystemPaymentPagesArray(): number[] {
+    const total = this.getSystemPaymentTotalPages();
+    const current = this.systemPaymentPage();
+    const pages: number[] = [];
+
+    let start = Math.max(1, current - 2);
+    let end = Math.min(total, start + 4);
+    if (end - start < 4) {
+      start = Math.max(1, end - 4);
+    }
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  public openAddSystemPaymentModal() {
+    this.modalService.open(PaymentFormModalComponent, {
+      title: 'Thêm phương thức hệ thống mới',
+      size: 'md',
+      data: {
+        isEdit: false,
+        isSystem: true,
+        form: {
+          type: 'bank',
+          name: '',
+          account_number: '',
+          account_holder: '',
+          bank_code: '',
+          is_active: true,
+        }
+      }
+    }).afterClosed$.subscribe(success => {
+      if (success) {
+        this.loadSystemPaymentMethods(true);
+      }
+    });
+  }
+
+  public openEditSystemPaymentModal(item: any) {
+    this.modalService.open(PaymentFormModalComponent, {
+      title: 'Chỉnh sửa phương thức hệ thống',
+      size: 'md',
+      data: {
+        isEdit: true,
+        isSystem: true,
+        id: item.id,
+        form: {
+          type: item.type,
+          name: item.name,
+          account_number: item.account_number,
+          account_holder: item.account_holder,
+          bank_code: item.bank_code || '',
+          is_active: item.is_active,
+        }
+      }
+    }).afterClosed$.subscribe(success => {
+      if (success) {
+        this.loadSystemPaymentMethods(true);
+      }
+    });
+  }
+
+  public deleteSystemPaymentMethod(id: number) {
+    this.modalService.confirm({
+      title: 'Xóa phương thức thanh toán hệ thống?',
+      description: 'Bạn có chắc chắn muốn xóa phương thức thanh toán này? Chủ quán sẽ không thể chuyển khoản nâng cấp qua tài khoản này nữa.',
+      confirmText: 'Xác nhận xóa'
+    }).afterClosed$.subscribe(confirmed => {
+      if (confirmed) {
+        this.confirmDeleteSystemPaymentMethod(id);
+      }
+    });
+  }
+
+  public confirmDeleteSystemPaymentMethod(id: number) {
+    if (this.isSystemPaymentActionLoading()) return;
+    this.isSystemPaymentActionLoading.set(true);
+
+    this.apiService.deleteAdminPaymentMethod(id).subscribe({
+      next: () => {
+        this.stateService.showToast('Xóa phương thức thanh toán thành công!', 'success');
+        this.isSystemPaymentActionLoading.set(false);
+        this.loadSystemPaymentMethods(true);
+      },
+      error: () => {
+        this.stateService.showToast('Xóa phương thức thanh toán thất bại!', 'error');
+        this.isSystemPaymentActionLoading.set(false);
+      },
+    });
+  }
+
+  public showSystemQrCode(item: any) {
+    this.modalService.open(QrCodeModalComponent, {
+      title: 'Mã QR chuyển khoản',
+      size: 'sm',
+      data: {
+        payment: item
+      }
     });
   }
 }

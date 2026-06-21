@@ -101,6 +101,26 @@
         >
           <span>Làm mới</span>
         </button>
+      } @else if (activeSubTab() === 'payment') {
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto ml-auto">
+          <!-- Search Field -->
+          <div class="relative w-full sm:w-64">
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+              <app-icon name="search" class="h-4.5 w-4.5 text-slate-400"></app-icon>
+            </div>
+            <input
+              type="text"
+              [ngModel]="systemPaymentSearch()"
+              (ngModelChange)="systemPaymentSearch.set($event); onSystemPaymentSearchChange()"
+              placeholder="Tìm phương thức..."
+              class="search-input !pl-10 !h-10 !text-sm"
+            />
+          </div>
+          <button app-button variant="primary" class="whitespace-nowrap flex items-center gap-1.5" (click)="openAddSystemPaymentModal()">
+            <app-icon name="plus" class="h-4.5 w-4.5" strokeWidth="2.5"></app-icon>
+            <span>Thêm phương thức mới</span>
+          </button>
+        </div>
       }
     </div>
 
@@ -594,6 +614,97 @@
               </div>
             </ng-template>
           </app-table>
+        </div>
+      }
+
+      <!-- ===== TAB: PAYMENT (Phương thức thanh toán hệ thống) ===== -->
+      @if (activeSubTab() === 'payment') {
+        <div app-card class="p-0 overflow-hidden">
+          @if (isSystemPaymentsLoading()) {
+            <app-skeleton-loader type="table" [cols]="6" [rows]="5"></app-skeleton-loader>
+          } @else {
+            <app-table
+              [columns]="paymentColumns"
+              [data]="systemPaymentMethods()"
+              [totalItems]="systemPaymentTotal()"
+              [itemsPerPage]="systemPaymentPerPage()"
+              [currentPage]="systemPaymentPage()"
+              [showPagination]="true"
+              [itemName]="'phương thức thanh toán'"
+              (pageChange)="setSystemPaymentPage($event)"
+            >
+              <ng-template appCell="type" let-row>
+                <span
+                  class="inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-black uppercase tracking-wider pl-6"
+                  [ngClass]="{
+                    'bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20':
+                      row.type === 'bank',
+                    'bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20':
+                      row.type === 'wallet',
+                  }"
+                >
+                  {{ row.type === 'bank' ? 'Ngân hàng' : 'Ví điện tử' }}
+                </span>
+              </ng-template>
+
+              <ng-template appCell="name" let-row>
+                <div class="font-extrabold text-slate-800 dark:text-slate-200 text-sm">
+                  {{ row.name }}
+                  @if (row.bank_code) {
+                    <span class="text-xs font-mono font-bold text-slate-400 ml-1">({{ row.bank_code }})</span>
+                  }
+                </div>
+              </ng-template>
+
+              <ng-template appCell="account_number" let-row>
+                <span class="font-mono font-bold text-slate-700 dark:text-slate-350">{{ row.account_number }}</span>
+              </ng-template>
+
+              <ng-template appCell="account_holder" let-row>
+                <span class="font-bold uppercase text-slate-700 dark:text-slate-350">{{ row.account_holder }}</span>
+              </ng-template>
+
+              <ng-template appCell="is_active" let-row>
+                <span
+                  class="inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-bold"
+                  [ngClass]="{
+                    'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20':
+                      row.is_active,
+                    'bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700':
+                      !row.is_active,
+                  }"
+                >
+                  {{ row.is_active ? 'Hoạt động' : 'Tạm dừng' }}
+                </span>
+              </ng-template>
+
+              <ng-template appCell="actions" let-row>
+                <div class="flex justify-end gap-2 pr-6">
+                  <button
+                    (click)="showSystemQrCode(row)"
+                    class="btn-secondary btn-sm"
+                    title="Xem mã QR"
+                  >
+                    <span>Mã QR</span>
+                  </button>
+                  <button
+                    (click)="openEditSystemPaymentModal(row)"
+                    class="btn-secondary btn-sm"
+                    title="Chỉnh sửa"
+                  >
+                    <span>Sửa</span>
+                  </button>
+                  <button
+                    (click)="deleteSystemPaymentMethod(row.id)"
+                    class="btn-danger-light btn-sm"
+                    title="Xóa"
+                  >
+                    <span>Xóa</span>
+                  </button>
+                </div>
+              </ng-template>
+            </app-table>
+          }
         </div>
       }
 
