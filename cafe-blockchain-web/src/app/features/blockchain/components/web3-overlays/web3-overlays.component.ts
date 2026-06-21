@@ -29,6 +29,18 @@ export class Web3OverlaysComponent {
   public readonly isUpgrading = signal<boolean>(false);
 
   /**
+   * Kiểm tra gói cước có bị vô hiệu hóa trên giao diện hay không
+   */
+  public isPlanDisabled(planCode: string): boolean {
+    if (planCode === 'free') {
+      const currentPlanCode = this.stateService.subscriptionPlanCode();
+      const isExpired = this.stateService.isSubscriptionBlocked();
+      return currentPlanCode !== 'free' || isExpired;
+    }
+    return false;
+  }
+
+  /**
    * Tải danh sách các gói cước đang hoạt động
    */
   public loadPlans() {
@@ -38,10 +50,16 @@ export class Web3OverlaysComponent {
         this.plans.set(data);
         const currentPlanCode = this.stateService.subscriptionPlanCode();
         const currentPlan = data.find((p) => p.code === currentPlanCode);
-        if (currentPlan) {
+        
+        if (currentPlan && !this.isPlanDisabled(currentPlan.code)) {
           this.selectedPlan.set(currentPlan);
-        } else if (data.length > 0) {
-          this.selectedPlan.set(data[0]);
+        } else {
+          const availablePlan = data.find((p) => !this.isPlanDisabled(p.code));
+          if (availablePlan) {
+            this.selectedPlan.set(availablePlan);
+          } else if (data.length > 0) {
+            this.selectedPlan.set(data[0]);
+          }
         }
         this.isPlansLoading.set(false);
       },

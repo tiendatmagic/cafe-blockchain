@@ -272,14 +272,39 @@ class AuthController extends Controller
         $planCode = $validated['plan_code'];
         $months = (int)$validated['duration_months'];
 
-        // Tính toán hạn sử dụng mới
+        // 1. Chặn tuyệt đối nâng cấp hoặc gia hạn về gói dùng thử (free)
+        if ($planCode === 'free') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Trial plan cannot be purchased or renewed.'
+            ], 400);
+        }
+
         $currentExpiresAt = $user->subscription_expires_at;
-        
-        if ($currentExpiresAt && now()->lessThan($currentExpiresAt)) {
-            // Nếu chưa hết hạn, cộng nối tiếp vào ngày hết hạn cũ
-            $newExpiresAt = \Carbon\Carbon::parse($currentExpiresAt)->addMonths($months);
+        $isExpired = !$currentExpiresAt || now()->greaterThan($currentExpiresAt);
+
+        // 2. Kiểm tra hạn gói cước và ràng buộc gói trả phí
+        if (!$isExpired) {
+            // Nếu gói cước hiện tại chưa hết hạn
+            if ($user->plan_code !== 'free') {
+                // Nếu gói cước hiện tại là gói trả phí (pro/ultra), họ phải trùng gói cước hiện tại (chỉ được phép gia hạn thêm)
+                if ($planCode !== $user->plan_code) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'You cannot change your subscription plan before the current one expires. You can only renew your active plan.'
+                    ], 400);
+                }
+                
+                // Nếu trùng gói cước, cộng nối tiếp vào ngày hết hạn cũ
+                $newExpiresAt = \Carbon\Carbon::parse($currentExpiresAt)->addMonths($months);
+            } else {
+                // Gói cước hiện tại là gói dùng thử (free) và chưa hết hạn, cho phép nâng cấp lên gói pro/ultra
+                // Hạn sử dụng mới tính từ hôm nay
+                $newExpiresAt = now()->addMonths($months);
+            }
         } else {
-            // Nếu đã hết hạn hoặc chưa có, tính từ hôm nay
+            // Gói cước hiện tại đã hết hạn, cho phép đăng ký gói pro hoặc ultra bất kỳ
+            // Hạn sử dụng mới tính từ hôm nay
             $newExpiresAt = now()->addMonths($months);
         }
 

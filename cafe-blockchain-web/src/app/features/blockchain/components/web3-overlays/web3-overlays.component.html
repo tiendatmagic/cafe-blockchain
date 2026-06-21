@@ -498,18 +498,24 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
               <!-- Pricing Cards -->
               @for (plan of plans(); track plan.id) {
+                @let disabled = isPlanDisabled(plan.code);
                 <div
-                  (click)="!isUpgrading() && selectedPlan.set(plan)"
-                  class="p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between relative group rounded-[15px]"
-                  [class.border-purple-500]="selectedPlan()?.id === plan.id"
-                  [class.bg-purple-50]="selectedPlan()?.id === plan.id"
-                  [class.dark:bg-purple-950/20]="selectedPlan()?.id === plan.id"
-                  [class.border-slate-200]="selectedPlan()?.id !== plan.id"
-                  [class.dark:border-slate-800]="selectedPlan()?.id !== plan.id"
-                  [class.hover:border-purple-350]="!isUpgrading() && selectedPlan()?.id !== plan.id"
+                  (click)="!isUpgrading() && !disabled && selectedPlan.set(plan)"
+                  class="p-4 rounded-2xl border transition-all flex flex-col justify-between relative group rounded-[15px]"
+                  [class.cursor-not-allowed]="disabled"
+                  [class.opacity-50]="disabled"
+                  [class.bg-slate-50]="disabled"
+                  [class.dark:bg-slate-900/40]="disabled"
+                  [class.border-slate-200]="disabled || selectedPlan()?.id !== plan.id"
+                  [class.dark:border-slate-800]="disabled || selectedPlan()?.id !== plan.id"
+                  [class.cursor-pointer]="!disabled"
+                  [class.border-purple-500]="!disabled && selectedPlan()?.id === plan.id"
+                  [class.bg-purple-50]="!disabled && selectedPlan()?.id === plan.id"
+                  [class.dark:bg-purple-950/20]="!disabled && selectedPlan()?.id === plan.id"
+                  [class.hover:border-purple-350]="!isUpgrading() && !disabled && selectedPlan()?.id !== plan.id"
                 >
                   <!-- Active Indicator Badge -->
-                  @if (selectedPlan()?.id === plan.id) {
+                  @if (!disabled && selectedPlan()?.id === plan.id) {
                     <span class="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-[var(--dynamic-primary)] text-white flex items-center justify-center">
                       <app-icon name="check" class="h-3 w-3" strokeWidth="3" />
                     </span>
@@ -517,7 +523,13 @@
 
                   <div>
                     <div class="flex items-center gap-1.5 flex-wrap">
-                      <h4 class="text-sm font-black text-slate-850 dark:text-slate-100 uppercase tracking-wide">
+                      <h4 
+                        class="text-sm font-black uppercase tracking-wide"
+                        [class.text-slate-850]="!disabled"
+                        [class.dark:text-slate-100]="!disabled"
+                        [class.text-slate-400]="disabled"
+                        [class.dark:text-slate-500]="disabled"
+                      >
                         {{ plan.name }}
                       </h4>
                       @if (plan.code === stateService.subscriptionPlanCode()) {
@@ -526,7 +538,13 @@
                         </span>
                       }
                     </div>
-                    <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1 font-semibold leading-snug">
+                    <p 
+                      class="text-[11px] mt-1 font-semibold leading-snug"
+                      [class.text-slate-400]="!disabled"
+                      [class.dark:text-slate-500]="!disabled"
+                      [class.text-slate-400/70]="disabled"
+                      [class.dark:text-slate-600]="disabled"
+                    >
                       {{ plan.code === 'free' ? 'Trải nghiệm cơ bản hệ thống POS trong 7 ngày.' : (plan.code === 'pro' ? 'Đầy đủ tính năng, tối ưu chi phí cho quán nhỏ.' : 'Không giới hạn dữ liệu, phù hợp chuỗi lớn.') }}
                     </p>
                   </div>
@@ -534,11 +552,23 @@
                   <div class="mt-4 pt-3 border-t border-dashed border-slate-100 dark:border-slate-800/40">
                     @if (plan.code === 'free') {
                       <div class="flex items-baseline gap-1">
-                        <span class="text-base font-black text-purple-600 dark:text-purple-400">
+                        <span 
+                          class="text-base font-black"
+                          [class.text-purple-600]="!disabled"
+                          [class.dark:text-purple-400]="!disabled"
+                          [class.text-slate-400]="disabled"
+                          [class.dark:text-slate-500]="disabled"
+                        >
                           Miễn phí
                         </span>
                       </div>
-                      <div class="text-[10px] text-slate-500 dark:text-slate-400 font-semibold mt-1">
+                      <div 
+                        class="text-[10px] font-semibold mt-1"
+                        [class.text-slate-500]="!disabled"
+                        [class.dark:text-slate-400]="!disabled"
+                        [class.text-slate-400/80]="disabled"
+                        [class.dark:text-slate-600]="disabled"
+                      >
                         Mặc định dùng thử
                       </div>
                     } @else {
