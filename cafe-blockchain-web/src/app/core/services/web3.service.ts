@@ -236,6 +236,15 @@ export class Web3Service {
       // Nếu sau khi khởi tạo AppKit xong mà ví không thực sự kết nối, nhưng DApp vẫn đang ở trạng thái connected (do restore từ localStorage)
       // thì tức là ví đã thực sự bị ngắt kết nối phía ngoài, ta cần reset và đăng xuất.
       if (!this.appKitIsConnected && this.walletConnected()) {
+        const eth = typeof window !== 'undefined' ? (window as any).ethereum : null;
+        const extensionAccount = eth?.selectedAddress || eth?.accounts?.[0];
+        const savedAddress = typeof window !== 'undefined' ? localStorage.getItem('auth_address') : null;
+        if (extensionAccount && savedAddress && extensionAccount.toLowerCase() === savedAddress.toLowerCase()) {
+          console.log('[Web3] Phát hiện ví extension vẫn đang kết nối trùng khớp. Bảo toàn session.');
+          this.currentAccount.set(extensionAccount);
+          this.walletConnected.set(true);
+          return;
+        }
         this.resetWalletState(true);
         this.emitAccountChange('');
       }
@@ -795,7 +804,19 @@ export class Web3Service {
     this.walletConnected.set(false);
     this.isOwnerContract.set(false);
     if (forceLogout && typeof window !== 'undefined') {
-      localStorage.clear();
+      localStorage.removeItem('auth_address');
+      localStorage.removeItem('auth_logged_in');
+      localStorage.removeItem('auth_role');
+      localStorage.removeItem('auth_permissions');
+      localStorage.removeItem('auth_is_super_admin');
+      localStorage.removeItem('auth_subscription_plan_code');
+      localStorage.removeItem('auth_subscription_expires_at');
+      localStorage.removeItem('auth_subscription_status');
+      localStorage.removeItem('auth_plan_features');
+      localStorage.removeItem('auth_system_contacts');
+      localStorage.removeItem('auth_user_name');
+      localStorage.removeItem('auth_user_email');
+      localStorage.removeItem('auth_user_phone');
     }
   }
 

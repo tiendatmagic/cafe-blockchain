@@ -431,7 +431,19 @@ export class AuthService {
     });
 
     if (typeof window !== 'undefined') {
-      localStorage.clear();
+      localStorage.removeItem('auth_address');
+      localStorage.removeItem('auth_logged_in');
+      localStorage.removeItem('auth_role');
+      localStorage.removeItem('auth_permissions');
+      localStorage.removeItem('auth_is_super_admin');
+      localStorage.removeItem('auth_subscription_plan_code');
+      localStorage.removeItem('auth_subscription_expires_at');
+      localStorage.removeItem('auth_subscription_status');
+      localStorage.removeItem('auth_plan_features');
+      localStorage.removeItem('auth_system_contacts');
+      localStorage.removeItem('auth_user_name');
+      localStorage.removeItem('auth_user_email');
+      localStorage.removeItem('auth_user_phone');
       this.isAuthLoggedIn.set(false);
     }
     this.currentUserName.set('');

@@ -702,6 +702,21 @@ export class StateService {
   // ----------------------------------------------------
 
   public handleAccountSwitch(newAccount: string) {
+    if (typeof window !== 'undefined') {
+      const savedAddress = localStorage.getItem('auth_address');
+      const isLoggedIn = localStorage.getItem('auth_logged_in') === 'true';
+      if (
+        newAccount &&
+        savedAddress &&
+        newAccount.toLowerCase() === savedAddress.toLowerCase() &&
+        isLoggedIn &&
+        this.apiService.getToken()
+      ) {
+        console.log('[Auth] Tài khoản ví trùng khớp với phiên đăng nhập hiện tại. Bỏ qua yêu cầu ký lại.');
+        return;
+      }
+    }
+
     this.apiService.removeToken();
     this.apiService.logout().subscribe({
       next: () => { },
