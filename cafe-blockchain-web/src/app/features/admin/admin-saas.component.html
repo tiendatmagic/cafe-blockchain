@@ -1839,7 +1839,7 @@
       }
 
       <!-- ===== TAB 6: SYSTEM STAFFS (Nhân viên hệ thống) ===== -->
-      @if (activeSubTab() === 'staffs' && stateService.isSuperAdmin()) {
+      @if (activeSubTab() === 'staffs' && (stateService.isSuperAdmin() || stateService.currentUserAdminRole() === 'admin')) {
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div class="min-w-0">
             <h4 class="text-base font-black text-slate-800 dark:text-white uppercase tracking-wider">

@@ -1011,6 +1011,9 @@ export class AdminSaaSComponent implements OnInit {
         this.tenantCurrentPage.set(1);
         this.loadSubscriptionRequests();
         this.isDataLoading.set(false);
+        // Sau khi isDataLoading = false, trigger load tab-specific data
+        // để tránh race condition giữa loadSystemStaffs và isDataLoading
+        this.triggerTabLoad(this.activeSubTab());
       },
       error: (err) => {
         console.error('[AdminSaaS] Lỗi tải dữ liệu cho Staff:', err);
@@ -1019,6 +1022,7 @@ export class AdminSaaSComponent implements OnInit {
       },
     });
   }
+
 
   private triggerTabLoad(tab: string) {
     const isSuperAdmin = this.stateService.isSuperAdmin();
