@@ -28,14 +28,14 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Public routes for Authentication
-Route::get('/auth/nonce', [AuthController::class, 'getNonce']);
-Route::post('/auth/verify', [AuthController::class, 'verifySignature']);
+Route::get('/auth/nonce', [AuthController::class, 'getNonce'])->middleware('throttle:auth_endpoints');
+Route::post('/auth/verify', [AuthController::class, 'verifySignature'])->middleware('throttle:auth_endpoints');
 Route::get('/vouchers/metadata/{code}', [\App\Http\Controllers\VoucherController::class, 'metadata']);
 Route::post('/vouchers/submit-signature', [\App\Http\Controllers\VoucherController::class, 'submitSignature']);
 Route::get('/settings/public', [SettingController::class, 'getPublicSettings']);
 Route::get('/store/{slug}', [SettingController::class, 'getStoreDetailsBySlug']);
-Route::post('/store/{slug}/orders', [SettingController::class, 'createStoreOrderBySlug']);
-Route::post('/orders/claim-points', [\App\Http\Controllers\ClaimController::class, 'claimPoints']);
+Route::post('/store/{slug}/orders', [SettingController::class, 'createStoreOrderBySlug'])->middleware('throttle:public_orders');
+Route::post('/orders/claim-points', [\App\Http\Controllers\ClaimController::class, 'claimPoints'])->middleware('throttle:auth_endpoints');
 
 // Protected routes (require valid Sanctum token)
 Route::middleware('auth:sanctum')->group(function () {

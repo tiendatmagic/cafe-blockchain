@@ -34,6 +34,7 @@ import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-g
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { CardComponent } from '@shared/components/card/card.component';
+import { CustomSwitchComponent } from '@shared/components/custom-switch/custom-switch.component';
 import { forkJoin } from 'rxjs';
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
 
@@ -56,6 +57,7 @@ import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
     SkeletonLoaderComponent,
     ButtonComponent,
     CardComponent,
+    CustomSwitchComponent,
     VNDCurrencyPipe,
   ],
   templateUrl: './admin-saas.component.html',
@@ -168,6 +170,9 @@ export class AdminSaaSComponent implements OnInit {
   public readonly tenants = signal<any[]>([]);
   public readonly plans = signal<any[]>([]);
   public readonly tokenCleanupDays = signal<number>(7);
+  public readonly turnstileEnabled = signal<boolean>(false);
+  public readonly turnstileHasKey = signal<boolean>(false);
+  public readonly isTogglingTurnstile = signal<boolean>(false);
 
   public readonly searchQuery = signal<string>('');
   public readonly tenantPlanFilter = signal<string>('all');
@@ -365,6 +370,8 @@ export class AdminSaaSComponent implements OnInit {
         this.tenantCurrentPage.set(1);
         this.planCurrentPage.set(1);
         this.tokenCleanupDays.set(res.settings?.token_cleanup_days ?? 7);
+        this.turnstileEnabled.set(res.settings?.turnstile_enabled ?? false);
+        this.turnstileHasKey.set(res.settings?.turnstile_has_key ?? false);
         this.systemContactsList.set(res.settings?.system_contacts || []);
         this.isDataLoading.set(false);
       },
@@ -487,6 +494,41 @@ export class AdminSaaSComponent implements OnInit {
         this.isSavingSettings.set(false);
       },
     });
+  }
+
+  // --- Bật/Tắt Cloudflare Turnstile ---
+  public toggleTurnstile(enabled: boolean) {
+    if (this.isTogglingTurnstile()) return;
+
+    if (enabled && !this.turnstileHasKey()) {
+      this.stateService.showToast(
+        'Không thể bật Turnstile: Chưa cấu hình TURNSTILE_SECRET_KEY trong biến môi trường server.',
+        'error',
+      );
+      return;
+    }
+
+    this.isTogglingTurnstile.set(true);
+    this.apiService
+      .updateAdminSystemSettings({
+        token_cleanup_days: this.tokenCleanupDays(),
+        turnstile_enabled: enabled,
+      })
+      .subscribe({
+        next: () => {
+          this.turnstileEnabled.set(enabled);
+          this.stateService.showToast(
+            enabled ? 'Đã bật Cloudflare Turnstile!' : 'Đã tắt Cloudflare Turnstile!',
+            'success',
+          );
+          this.isTogglingTurnstile.set(false);
+        },
+        error: (err) => {
+          const msg = err?.error?.message || 'Không thể cập nhật cấu hình Turnstile.';
+          this.stateService.showToast(msg, 'error');
+          this.isTogglingTurnstile.set(false);
+        },
+      });
   }
 
   // --- Cấu hình Thông tin liên hệ ---

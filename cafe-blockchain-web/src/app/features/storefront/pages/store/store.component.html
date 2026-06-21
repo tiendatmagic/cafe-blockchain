@@ -1092,6 +1092,13 @@
               </span>
             </div>
 
+            <!-- Turnstile Widget (Chống Bot Spam) -->
+            @if (turnstileSiteKey) {
+              <div class="flex justify-center py-2.5 bg-slate-50 dark:bg-slate-950/40 rounded-2xl border border-slate-100 dark:border-slate-800/40 my-3 shrink-0">
+                <div id="turnstile-container"></div>
+              </div>
+            }
+
             <button
               app-button
               variant="primary"

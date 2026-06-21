@@ -23,6 +23,7 @@ import { PaginationComponent } from '@shared/components/pagination/pagination.co
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
 import { ThemeToggleComponent } from '@shared/components/theme-toggle/theme-toggle.component';
 import { DrawerComponent } from '@shared/components/drawer/drawer.component';
+import { environment } from '@environments/environment';
 import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prompt/web3-connect-prompt.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
@@ -101,12 +102,23 @@ export class StoreComponent implements OnInit, AfterViewInit {
   // Thiết lập hiệu ứng trượt danh mục toàn cục từ StateService
   public readonly useSlidingEffect = this.stateService.useSlidingEffect;
 
+  public turnstileSiteKey: string | null = null;
+  private turnstileToken: string | null = null;
+
   constructor() {
     effect(() => {
       this.activeCategoryId();
       this.categoryOptions();
       this.useSlidingEffect(); // Lắng nghe để cập nhật khi người dùng bật tắt hiệu ứng trượt
       setTimeout(() => this.updateSliderPosition(), 50);
+    });
+
+    effect(() => {
+      if (this.isCartOpen()) {
+        this.loadTurnstileScript();
+      } else {
+        this.turnstileToken = null;
+      }
     });
   }
 
@@ -304,6 +316,7 @@ export class StoreComponent implements OnInit, AfterViewInit {
       next: (res) => {
         if (res && res.store) {
           this.storeSettings.set(res.store);
+          this.turnstileSiteKey = res.store.turnstile_site_key || null;
           this.categories.set(res.categories || []);
           this.products.set(res.products || []);
           this.paymentMethods.set(res.payment_methods || []);
@@ -607,6 +620,17 @@ export class StoreComponent implements OnInit, AfterViewInit {
       return;
     }
 
+    if (this.turnstileSiteKey && !this.turnstileToken) {
+      this.modalService.confirm({
+        title: 'Xác minh bảo mật',
+        description: 'Vui lòng xác minh bảo mật (Turnstile) trước khi xác nhận đặt hàng!',
+        confirmText: 'Đóng',
+        cancelText: '',
+        confirmButtonClass: 'btn-primary'
+      });
+      return;
+    }
+
     this.isSubmittingOrder.set(true);
 
     // Chuẩn bị danh sách món
@@ -633,6 +657,7 @@ export class StoreComponent implements OnInit, AfterViewInit {
       table_number: tableInfo,
       payment_method: form.payment_method === 'e_wallet' ? 'bank_transfer' : form.payment_method,
       items,
+      turnstile_token: this.turnstileToken,
     };
 
     const slug = this.storeSettings().website_slug;
@@ -642,6 +667,7 @@ export class StoreComponent implements OnInit, AfterViewInit {
           this.lastOrderCode.set(res.data.order_code || 'HD-XXXXXX');
           this.clearCart();
           this.isCartOpen.set(false);
+          this.turnstileToken = null;
           // Reset form
           this.orderForm.set({
             customer_name: '',
@@ -673,6 +699,7 @@ export class StoreComponent implements OnInit, AfterViewInit {
           confirmButtonClass: 'btn-primary'
         });
         this.isSubmittingOrder.set(false);
+        this.renderTurnstile(); // Reset captcha khi lỗi
       },
     });
   }
@@ -841,5 +868,53 @@ export class StoreComponent implements OnInit, AfterViewInit {
     }
   }
 
+  private loadTurnstileScript() {
+    if (typeof window === 'undefined') return;
+
+    if ((window as any).turnstile) {
+      this.renderTurnstile();
+      return;
+    }
+
+    if (document.getElementById('cloudflare-turnstile-script')) {
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.id = 'cloudflare-turnstile-script';
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      this.renderTurnstile();
+    };
+    document.head.appendChild(script);
+  }
+
+  private renderTurnstile() {
+    if (typeof window === 'undefined') return;
+    const turnstile = (window as any).turnstile;
+    if (turnstile && this.turnstileSiteKey) {
+      (window as any).onTurnstileSuccess = (token: string) => {
+        this.turnstileToken = token;
+      };
+
+      setTimeout(() => {
+        const container = document.getElementById('turnstile-container');
+        if (container) {
+          container.innerHTML = '';
+          try {
+            turnstile.render('#turnstile-container', {
+              sitekey: this.turnstileSiteKey,
+              callback: 'onTurnstileSuccess',
+              theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+            });
+          } catch (e) {
+            console.warn('Turnstile render failed:', e);
+          }
+        }
+      }, 300); // Tăng thời gian delay một chút để đảm bảo Drawer component đã hoàn toàn ổn định layout DOM
+    }
+  }
 
 }

@@ -347,9 +347,24 @@ class AdminController extends Controller
             $contacts = json_decode($contactsSetting->value, true) ?: [];
         }
 
+        // Lấy cấu hình Turnstile
+        $turnstileSetting = DB::table('system_settings')
+            ->where('key', 'turnstile_enabled')
+            ->first();
+        $turnstileEnabled = false;
+        if ($turnstileSetting) {
+            $value = json_decode($turnstileSetting->value, true);
+            $turnstileEnabled = (bool)($value['enabled'] ?? false);
+        }
+
+        // Chỉ tiết lộ có hay không có Secret Key (không tiết lộ giá trị thực)
+        $hasSecretKey = !empty(env('TURNSTILE_SECRET_KEY'));
+
         return response()->json([
-            'token_cleanup_days' => $days,
-            'system_contacts' => $contacts
+            'token_cleanup_days'  => $days,
+            'system_contacts'     => $contacts,
+            'turnstile_enabled'   => $turnstileEnabled,
+            'turnstile_has_key'   => $hasSecretKey,
         ]);
     }
 
@@ -359,12 +374,13 @@ class AdminController extends Controller
     public function updateSystemSettings(Request $request)
     {
         $validated = $request->validate([
-            'token_cleanup_days' => 'required|integer|min:1|max:365',
-            'system_contacts' => 'nullable|array',
-            'system_contacts.*.name' => 'required|string|max:255',
-            'system_contacts.*.phone' => 'required|string|regex:/^[0-9]+$/|max:20',
-            'system_contacts.*.email' => 'nullable|string|max:255',
-            'system_contacts.*.zalo' => 'nullable|string|max:20',
+            'token_cleanup_days'  => 'required|integer|min:1|max:365',
+            'turnstile_enabled'   => 'nullable|boolean',
+            'system_contacts'     => 'nullable|array',
+            'system_contacts.*.name'     => 'required|string|max:255',
+            'system_contacts.*.phone'    => 'required|string|regex:/^[0-9]+$/|max:20',
+            'system_contacts.*.email'    => 'nullable|string|max:255',
+            'system_contacts.*.zalo'     => 'nullable|string|max:20',
             'system_contacts.*.facebook' => 'nullable|string|max:255',
             'system_contacts.*.telegram' => 'nullable|string|max:255',
         ]);
@@ -373,10 +389,31 @@ class AdminController extends Controller
             ->updateOrInsert(
                 ['key' => 'token_cleanup_days'],
                 [
-                    'value' => json_encode(['days' => (int)$validated['token_cleanup_days']]),
+                    'value'      => json_encode(['days' => (int)$validated['token_cleanup_days']]),
                     'updated_at' => now()
                 ]
             );
+
+        // Cập nhật toggle Turnstile nếu có truyền lên
+        if (array_key_exists('turnstile_enabled', $validated)) {
+            // Không cho phép bật nếu chưa cấu hình Secret Key trong .env
+            if ($validated['turnstile_enabled'] && empty(env('TURNSTILE_SECRET_KEY'))) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot enable Turnstile: TURNSTILE_SECRET_KEY is not configured in environment variables.'
+                ], 400);
+            }
+
+            DB::table('system_settings')
+                ->updateOrInsert(
+                    ['key' => 'turnstile_enabled'],
+                    [
+                        'value'      => json_encode(['enabled' => (bool)$validated['turnstile_enabled']]),
+                        'updated_at' => now(),
+                        'created_at' => now(),
+                    ]
+                );
+        }
 
         if (array_key_exists('system_contacts', $validated)) {
             $contacts = $validated['system_contacts'] ?: [];
@@ -384,7 +421,7 @@ class AdminController extends Controller
                 ->updateOrInsert(
                     ['key' => 'system_contacts'],
                     [
-                        'value' => json_encode($contacts),
+                        'value'      => json_encode($contacts),
                         'updated_at' => now()
                     ]
                 );

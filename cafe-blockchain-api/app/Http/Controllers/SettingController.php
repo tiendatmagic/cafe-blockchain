@@ -418,9 +418,39 @@ class SettingController extends Controller
             'tx_hash' => $order ? $order->tx_hash : null,
             'voucher_nft_token_id' => $order ? $order->voucher_nft_token_id : null,
             'gift_voucher_nft_token_id' => $order ? $order->gift_voucher_nft_token_id : null,
+            'turnstile_site_key' => $this->getTurnstileSiteKey(),
         ];
 
         return response()->json($publicSettings);
+    }
+
+    /**
+     * Kiểm tra Turnstile có được bật trong hệ thống không (cần cả Secret Key .env VÀ toggle DB)
+     */
+    private function isTurnstileEnabled(): bool
+    {
+        $setting = \Illuminate\Support\Facades\DB::table('system_settings')
+            ->where('key', 'turnstile_enabled')
+            ->first();
+        if (!$setting) {
+            return false;
+        }
+        $value = json_decode($setting->value, true);
+        return (bool)($value['enabled'] ?? false);
+    }
+
+    /**
+     * Trả về Site Key công khai khi Turnstile được bật đầy đủ
+     */
+    private function getTurnstileSiteKey(): ?string
+    {
+        if (empty(env('TURNSTILE_SECRET_KEY'))) {
+            return null;
+        }
+        if (!$this->isTurnstileEnabled()) {
+            return null;
+        }
+        return env('TURNSTILE_SITE_KEY');
     }
 
     /**
@@ -528,6 +558,7 @@ class SettingController extends Controller
                 'store_opening_hours' => $settings['store_opening_hours'] ?? '',
                 'store_address' => $settings['store_address'] ?? '',
                 'store_description' => $settings['store_description'] ?? '',
+                'turnstile_site_key' => $this->getTurnstileSiteKey(),
             ];
 
             // Nếu cửa hàng tạm đóng thì không cần load danh mục và sản phẩm
@@ -641,7 +672,38 @@ class SettingController extends Controller
             'items.*.product_variant_id' => 'nullable|exists:product_variants,id',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.note' => 'nullable|string|max:255',
+            'turnstile_token' => 'nullable|string',
         ]);
+
+        // Xác thực Cloudflare Turnstile token nếu đã bật trong hệ thống (cả .env và DB)
+        $turnstileSecret = env('TURNSTILE_SECRET_KEY');
+        if (!empty($turnstileSecret) && $this->isTurnstileEnabled()) {
+            $token = $request->input('turnstile_token');
+            if (empty($token)) {
+                return response()->json([
+                    'message' => 'Security verification token is required to place an order.'
+                ], 400);
+            }
+
+            try {
+                $verifyResponse = Http::asForm()->timeout(5)->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
+                    'secret' => $turnstileSecret,
+                    'response' => $token,
+                    'remoteip' => $request->ip()
+                ]);
+
+                if (!$verifyResponse->successful() || !$verifyResponse->json('success')) {
+                    return response()->json([
+                        'message' => 'Security check (Turnstile) failed. Please refresh the page and try again.'
+                    ], 400);
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Turnstile verification connection failed: ' . $e->getMessage());
+                return response()->json([
+                    'message' => 'Unable to verify security status at this moment. Please try again later.'
+                ], 400);
+            }
+        }
 
         try {
             // Tìm hoặc tạo khách hàng mới

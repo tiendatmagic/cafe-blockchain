@@ -111,16 +111,19 @@ class AuthController extends Controller
             // Create Sanctum token
             $token = $user->createToken('pos-access-token')->plainTextToken;
 
+            $cookieDomain = env('SESSION_DOMAIN', null);
+            $sameSitePolicy = env('AUTH_COOKIE_SAME_SITE', $request->secure() ? 'None' : 'Lax');
+
             $cookie = cookie(
                 'auth_token', 
                 $token, 
                 1440, // 24 tiếng = 1 ngày
                 '/', 
-                null, 
+                $cookieDomain, 
                 $request->secure(), 
                 true, // httpOnly
                 false, 
-                $request->secure() ? 'None' : 'Lax'
+                $sameSitePolicy
             );
 
             $loggedCookie = cookie(
@@ -128,11 +131,11 @@ class AuthController extends Controller
                 'true', 
                 1440, // 24 tiếng = 1 ngày
                 '/', 
-                null, 
+                $cookieDomain, 
                 $request->secure(), 
                 false, // httpOnly = false -> JS có thể đọc
                 false, 
-                $request->secure() ? 'None' : 'Lax'
+                $sameSitePolicy
             );
 
             // Lấy thông tin gói cước (Dựa trên chủ quán)

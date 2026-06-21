@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Http\Request;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -46,5 +49,20 @@ class AppServiceProvider extends ServiceProvider
             \App\Domain\Events\OrderCompletedEvent::class,
             \App\Domain\Listeners\MintVoucherGiftListener::class
         );
+
+        // Định nghĩa các rate limiters toàn cục cho API
+        RateLimiter::for('api', function (Request $request) {
+            return Limit::perMinute(60)->by($request->ip());
+        });
+
+        // Giới hạn cho các endpoint đăng nhập Web3 nhạy cảm (Tối đa 5 request/phút)
+        RateLimiter::for('auth_endpoints', function (Request $request) {
+            return Limit::perMinute(7)->by($request->ip());
+        });
+
+        // Giới hạn cho việc tạo đơn hàng công khai trên storefront (Tối đa 10 đơn hàng/phút)
+        RateLimiter::for('public_orders', function (Request $request) {
+            return Limit::perMinute(10)->by($request->ip());
+        });
     }
 }
