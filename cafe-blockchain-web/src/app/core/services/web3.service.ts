@@ -11,6 +11,7 @@ import { getExplorerApiUrl, getBackupRpcUrls, getAvgBlockTime, POPULAR_CHAINS } 
 // Tích hợp Reown AppKit cho WalletConnect
 import { createAppKit } from '@reown/appkit';
 import { EthersAdapter } from '@reown/appkit-adapter-ethers';
+import { createSIWEConfig } from '@reown/appkit-siwe';
 import { arbitrum, bsc, base, bscTestnet, arbitrumSepolia } from '@reown/appkit/networks';
 
 @Injectable({
@@ -317,6 +318,31 @@ export class Web3Service {
 
       const ethersAdapter = new EthersAdapter();
       const defaultNet = this.getAppKitNetworkByChainId(this.configuredChainId());
+      const siweConfig = createSIWEConfig({
+        getNonce: async () => {
+          return Math.random().toString(36).substring(2, 14).toUpperCase();
+        },
+        createMessage: (args: any) => {
+          return `Sign in to Cafe Blockchain: ${args.address}`;
+        },
+        verifyMessage: async (args: any) => {
+          return true;
+        },
+        getSession: async () => {
+          const account = this.appKitAddress || this.currentAccount() || (typeof window !== 'undefined' ? localStorage.getItem('auth_address') : null);
+          if (account) {
+            return {
+              address: account,
+              chainId: Number(this.chainId() || this.configuredChainId())
+            };
+          }
+          return null;
+        },
+        signOut: async () => {
+          return true;
+        }
+      });
+
       this.modal = createAppKit({
         adapters: [ethersAdapter],
         networks: [arbitrum, base, bsc, bscTestnet, arbitrumSepolia],
@@ -333,7 +359,8 @@ export class Web3Service {
           socials: false,
           analytics: false
         },
-        enableCoinbase: false
+        enableCoinbase: false,
+        siweConfig
       });
 
       // Lắng nghe account thay đổi từ WalletConnect modal để cập nhật state đồng bộ
