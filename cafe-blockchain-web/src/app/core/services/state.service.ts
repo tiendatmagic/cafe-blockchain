@@ -285,44 +285,31 @@ export class StateService {
               return of(null);
             }))
             : of(null);
-          const shift$ = (this.hasPermission('shifts') && this.hasFeature('enable_shifts'))
-            ? this.apiService.getCurrentShift(30000).pipe(catchError((err) => { // Cache 30 giây để tránh gọi trùng lặp lúc khởi chạy
-              console.warn('[StateService] Lỗi tải ca trực hiện tại:', err);
-              return of(null);
-            }))
-            : of(null);
 
-          forkJoin({
-            settings: settings$,
-            shift: shift$
-          }).subscribe({
-            next: (res) => {
-              if (res.settings) {
-                const settings = {
+          settings$.subscribe({
+            next: (settings) => {
+              if (settings) {
+                const updatedSettings = {
                   default_print_size: '80mm',
                   show_crypto_payment: '0',
                   has_synced_menu: '0',
-                  ...res.settings
+                  ...settings
                 };
-                this.settingStore.updateSettingsCache(settings);
-              }
-              this.currentShift.set(res.shift || null);
-              if (res.shift && res.shift.status === 'open') {
-                this.apiService.getShiftSummary().subscribe({
-                  next: (sum) => this.shiftSummary.set(sum),
-                  error: (err) => console.error('[StateService] Lỗi tải summary ca trực ban đầu:', err)
-                });
-              } else {
-                this.shiftSummary.set(null);
+                this.settingStore.updateSettingsCache(updatedSettings);
               }
 
+              // Giải phóng UI và nạp tab hiện tại ngay lập tức để không bị nghẽn màn hình loading
               this.reloadCurrentTab(true);
               this.syncSubscriptionFromBackend();
               this.isInitialLoading.set(false);
+
+              // Tải thông tin ca làm việc sau cùng ở chế độ bất đồng bộ (không chặn UI)
+              this.loadShiftDataInitially();
             },
             error: (err) => {
               console.error('[StateService] Lỗi tải dữ liệu khởi tạo ví:', err);
               this.isInitialLoading.set(false);
+              this.loadShiftDataInitially();
             }
           });
         });
@@ -481,6 +468,30 @@ export class StateService {
   public onInitialCashInput(event: any) { this.shiftService.onInitialCashInput(event); }
   public openStartShiftModal() { this.shiftService.openStartShiftModal(); }
   public openCloseShiftModal() { this.shiftService.openCloseShiftModal(); }
+
+  private loadShiftDataInitially() {
+    if (this.hasPermission('shifts') && this.hasFeature('enable_shifts')) {
+      this.apiService.getCurrentShift(30000).pipe(
+        catchError((err) => {
+          console.warn('[StateService] Lỗi tải ca trực hiện tại:', err);
+          return of(null);
+        })
+      ).subscribe((shift) => {
+        this.currentShift.set(shift || null);
+        if (shift && shift.status === 'open') {
+          this.apiService.getShiftSummary().subscribe({
+            next: (sum) => this.shiftSummary.set(sum),
+            error: (err) => console.error('[StateService] Lỗi tải summary ca trực ban đầu:', err)
+          });
+        } else {
+          this.shiftSummary.set(null);
+        }
+      });
+    } else {
+      this.currentShift.set(null);
+      this.shiftSummary.set(null);
+    }
+  }
 
   // ----------------------------------------------------
   // BUSINESS LOGIC & DATA SYNCHRONIZATION
