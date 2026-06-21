@@ -473,7 +473,7 @@ export class OrdersComponent implements OnInit {
           'Đơn hàng đã tồn tại trên Blockchain. Đang truy vấn bằng chứng gốc...',
           'success',
         );
-        const originalTxHash = await this.web3Service.getOriginalTxHashForOrder(order.id);
+        const originalTxHash = await this.web3Service.getOriginalTxHashForOrder(order.id, order.order_code);
 
         if (originalTxHash) {
           this.apiService

@@ -85,7 +85,7 @@ export class FinanceContractService extends BaseContractService {
   /**
    * Truy vấn tx_hash gốc của giao dịch thu chi đã tồn tại trên Blockchain.
    */
-  public async getOriginalTxHashForTransaction(txId: string | number): Promise<string | null> {
+  public async getOriginalTxHashForTransaction(txId: string | number, txCode?: string): Promise<string | null> {
     const provider = this.web3Service.getBrowserProvider();
     if (!provider || !this.web3Service.financeContractAddress()) return null;
     try {
@@ -93,16 +93,35 @@ export class FinanceContractService extends BaseContractService {
       const finalTxId = typeof txId === 'string' ? this.web3Service.convertUuidToUint256(txId) : txId;
 
       let orderTimestamp = 0;
-      try {
-        const txData = await contract['getTransaction'](finalTxId);
-        if (txData && Number(txData[0]) !== 0) {
-          orderTimestamp = Number(txData[6]);
-        } else {
-          console.warn('[Blockchain] Transaction', finalTxId, 'khong ton tai tren Smart Contract (MetaMask RPC).');
-          return null;
+      let realTxId: string | number = finalTxId;
+
+      // 1. Thử tìm kiếm theo Code trước để lấy đúng ID và Timestamp từ Blockchain (tránh lệch UUID do database bị reset/sửa đổi)
+      if (txCode) {
+        try {
+          const txData = await contract['getTransactionByCode'](txCode);
+          if (txData && Number(txData[0]) !== 0) {
+            realTxId = txData[0].toString();
+            orderTimestamp = Number(txData[6]);
+            console.info(`[Blockchain] Tim thay giao dich bang Code [${txCode}] tren chain. RealTxId: ${realTxId}, Timestamp: ${orderTimestamp}`);
+          }
+        } catch (err) {
+          console.warn(`[Blockchain] Khong the goi getTransactionByCode() cho [${txCode}] tu MetaMask provider:`, err);
         }
-      } catch (err) {
-        console.warn('[Blockchain] Khong the goi getTransaction() tu MetaMask provider, se tiep tuc fallback:', err);
+      }
+
+      // 2. Nếu tìm theo Code không ra, fallback tìm theo ID database
+      if (orderTimestamp === 0) {
+        try {
+          const txData = await contract['getTransaction'](finalTxId);
+          if (txData && Number(txData[0]) !== 0) {
+            realTxId = finalTxId;
+            orderTimestamp = Number(txData[6]);
+          } else {
+            console.warn('[Blockchain] Transaction ID', finalTxId, 'khong ton tai tren Smart Contract (MetaMask RPC).');
+          }
+        } catch (err) {
+          console.warn('[Blockchain] Khong the goi getTransaction() tu MetaMask provider:', err);
+        }
       }
 
       const chainId = this.web3Service.chainId() || this.web3Service.configuredChainId();
@@ -112,7 +131,7 @@ export class FinanceContractService extends BaseContractService {
         contractAddress: this.web3Service.financeContractAddress(),
         abi: CAFE_WEB3_FINANCE_ABI,
         eventName: 'TransactionRecorded',
-        finalId: finalTxId,
+        finalId: realTxId,
         targetTimestamp: orderTimestamp,
         configuredChainId: chainId,
         explorerApiKey: this.web3Service.explorerApiKey() || '',

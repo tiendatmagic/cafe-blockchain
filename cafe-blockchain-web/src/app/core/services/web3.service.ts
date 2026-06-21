@@ -1076,8 +1076,8 @@ export class Web3Service {
     return this.posContractService.getOwnersFromChain();
   }
 
-  public async getOriginalTxHashForOrder(orderId: string | number): Promise<string | null> {
-    return this.posContractService.getOriginalTxHashForOrder(orderId);
+  public async getOriginalTxHashForOrder(orderId: string | number, orderCode?: string): Promise<string | null> {
+    return this.posContractService.getOriginalTxHashForOrder(orderId, orderCode);
   }
 
   public async getOrdersPaginatedFromChain(page: number, limit: number): Promise<{ orders: any[], total: number }> {
@@ -1140,8 +1140,8 @@ export class Web3Service {
     return this.financeContractService.recordTransactionOnChain(txId, transactionCode, type, amount, category, description);
   }
 
-  public async getOriginalTxHashForTransaction(txId: string | number): Promise<string | null> {
-    return this.financeContractService.getOriginalTxHashForTransaction(txId);
+  public async getOriginalTxHashForTransaction(txId: string | number, txCode?: string): Promise<string | null> {
+    return this.financeContractService.getOriginalTxHashForTransaction(txId, txCode);
   }
 
   public async getFinanceOwnersFromChain(): Promise<string[]> {

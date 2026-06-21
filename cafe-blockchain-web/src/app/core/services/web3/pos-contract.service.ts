@@ -123,7 +123,7 @@ export class PosContractService extends BaseContractService {
   /**
    * Truy vấn tx_hash gốc của đơn hàng đã tồn tại trên Blockchain.
    */
-  public async getOriginalTxHashForOrder(orderId: string | number): Promise<string | null> {
+  public async getOriginalTxHashForOrder(orderId: string | number, orderCode?: string): Promise<string | null> {
     const provider = this.web3Service.getBrowserProvider();
     if (!provider || !this.web3Service.contractAddress()) return null;
     try {
@@ -131,16 +131,35 @@ export class PosContractService extends BaseContractService {
       const finalOrderId = typeof orderId === 'string' ? this.web3Service.convertUuidToUint256(orderId) : orderId;
 
       let orderTimestamp = 0;
-      try {
-        const orderData = await contract['getOrder'](finalOrderId);
-        if (orderData && Number(orderData[0]) !== 0) {
-          orderTimestamp = Number(orderData[6]);
-        } else {
-          console.warn('[Blockchain] Order', finalOrderId, 'khong ton tai tren Smart Contract (MetaMask RPC).');
-          return null;
+      let realOrderId: string | number = finalOrderId;
+
+      // 1. Thử tìm kiếm theo Code trước để lấy đúng ID và Timestamp từ Blockchain (tránh lệch UUID do database bị reset/sửa đổi)
+      if (orderCode) {
+        try {
+          const orderData = await contract['getOrderByCode'](orderCode);
+          if (orderData && Number(orderData[0]) !== 0) {
+            realOrderId = orderData[0].toString();
+            orderTimestamp = Number(orderData[6]);
+            console.info(`[Blockchain] Tim thay don hang bang Code [${orderCode}] tren chain. RealOrderId: ${realOrderId}, Timestamp: ${orderTimestamp}`);
+          }
+        } catch (err) {
+          console.warn(`[Blockchain] Khong the goi getOrderByCode() cho [${orderCode}] tu MetaMask provider:`, err);
         }
-      } catch (err) {
-        console.warn('[Blockchain] Khong the goi getOrder() tu MetaMask provider, se tiep tuc fallback:', err);
+      }
+
+      // 2. Nếu tìm theo Code không ra, fallback tìm theo ID database
+      if (orderTimestamp === 0) {
+        try {
+          const orderData = await contract['getOrder'](finalOrderId);
+          if (orderData && Number(orderData[0]) !== 0) {
+            realOrderId = finalOrderId;
+            orderTimestamp = Number(orderData[6]);
+          } else {
+            console.warn('[Blockchain] Order ID', finalOrderId, 'khong ton tai tren Smart Contract (MetaMask RPC).');
+          }
+        } catch (err) {
+          console.warn('[Blockchain] Khong the goi getOrder() tu MetaMask provider:', err);
+        }
       }
 
       const chainId = this.web3Service.chainId() || this.web3Service.configuredChainId();
@@ -150,7 +169,7 @@ export class PosContractService extends BaseContractService {
         contractAddress: this.web3Service.contractAddress(),
         abi: CAFE_WEB3_POS_ABI,
         eventName: 'OrderRecorded',
-        finalId: finalOrderId,
+        finalId: realOrderId,
         targetTimestamp: orderTimestamp,
         configuredChainId: chainId,
         explorerApiKey: this.web3Service.explorerApiKey() || '',

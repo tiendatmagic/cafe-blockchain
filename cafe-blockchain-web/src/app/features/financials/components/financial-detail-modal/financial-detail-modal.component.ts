@@ -115,7 +115,7 @@ export class FinancialDetailModalComponent {
           'Giao dịch đã tồn tại trên Blockchain. Đang truy vấn bằng chứng gốc...',
           'success',
         );
-        const originalTxHash = await this.web3Service.getOriginalTxHashForTransaction(tx.id);
+        const originalTxHash = await this.web3Service.getOriginalTxHashForTransaction(tx.id, tx.transaction_code);
 
         if (originalTxHash) {
           this.apiService
