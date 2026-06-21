@@ -72,6 +72,7 @@ export class StateService {
   public readonly isLoading = this.uiStateService.isLoading;
   public readonly isMaintenance = this.uiStateService.isMaintenance;
   public readonly cancelRequests$ = this.uiStateService.cancelRequests$;
+  public readonly useSlidingEffect = this.uiStateService.useSlidingEffect;
 
   // Trạng thái modal ví và modal upgrade
   public readonly isWalletModalOpen = this.uiStateService.isWalletModalOpen;
@@ -97,6 +98,11 @@ export class StateService {
   public readonly subscriptionStatus = this.authService.subscriptionStatus;
   public readonly planFeatures = this.authService.planFeatures;
   public readonly systemContacts = this.authService.systemContacts;
+
+  // Profile signals
+  public readonly currentUserName = this.authService.currentUserName;
+  public readonly currentUserEmail = this.authService.currentUserEmail;
+  public readonly currentUserPhone = this.authService.currentUserPhone;
 
   public get pendingNonceMessage() { return this.authService.pendingNonceMessage; }
   public set pendingNonceMessage(val: string) { this.authService.pendingNonceMessage = val; }
@@ -431,6 +437,11 @@ export class StateService {
     this.toastService.showToast(msg, type);
   }
 
+  // Sliding Effect
+  public setSlidingEffect(enabled: boolean) {
+    this.uiStateService.setSlidingEffect(enabled);
+  }
+
   // Theme
   public toggleTheme() { this.themeService.toggleTheme(); }
   public setThemeMode(mode: 'light' | 'auto' | 'dark') { this.themeService.setThemeMode(mode); }
@@ -631,6 +642,30 @@ export class StateService {
           this.authService.systemContacts.set([]);
           if (typeof window !== 'undefined') {
             localStorage.removeItem('auth_system_contacts');
+          }
+        }
+
+        if (res) {
+          if (res.name) {
+            localStorage.setItem('auth_user_name', res.name);
+            this.authService.currentUserName.set(res.name);
+          } else {
+            localStorage.removeItem('auth_user_name');
+            this.authService.currentUserName.set('');
+          }
+          if (res.email) {
+            localStorage.setItem('auth_user_email', res.email);
+            this.authService.currentUserEmail.set(res.email);
+          } else {
+            localStorage.removeItem('auth_user_email');
+            this.authService.currentUserEmail.set('');
+          }
+          if (res.phone) {
+            localStorage.setItem('auth_user_phone', res.phone);
+            this.authService.currentUserPhone.set(res.phone);
+          } else {
+            localStorage.removeItem('auth_user_phone');
+            this.authService.currentUserPhone.set('');
           }
         }
       },

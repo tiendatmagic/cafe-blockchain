@@ -41,6 +41,7 @@ Route::post('/orders/claim-points', [\App\Http\Controllers\ClaimController::clas
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/me', [AuthController::class, 'me']); // Lấy thông tin subscription hiện tại
+    Route::put('/auth/profile', [AuthController::class, 'updateProfile']); // Cập nhật thông tin cá nhân
     Route::get('/auth/subscription/plans', [AuthController::class, 'getPublicPlans']); // Lấy danh sách gói cước để nâng cấp
     Route::post('/auth/subscription/upgrade', [AuthController::class, 'upgradeSubscription']);
 

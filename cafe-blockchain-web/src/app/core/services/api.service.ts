@@ -73,6 +73,10 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/auth/me`, { headers: this.getHeaders() });
   }
 
+  public updateProfile(profile: { name: string; email?: string; phone?: string }): Observable<any> {
+    return this.http.put(`${this.baseUrl}/auth/profile`, profile, { headers: this.getHeaders() });
+  }
+
   /**
    * Lấy danh sách các gói cước đang hoạt động
    */

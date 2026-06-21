@@ -84,6 +84,11 @@ export class AuthService {
   // Danh sách liên hệ hệ thống
   public readonly systemContacts = signal<any[]>([]);
 
+  // Thông tin profile cá nhân
+  public readonly currentUserName = signal<string>('');
+  public readonly currentUserEmail = signal<string>('');
+  public readonly currentUserPhone = signal<string>('');
+
   constructor() {
     this.restoreSessionFromStorage();
   }
@@ -129,6 +134,10 @@ export class AuthService {
           this.systemContacts.set([]);
         }
       }
+
+      this.currentUserName.set(localStorage.getItem('auth_user_name') || '');
+      this.currentUserEmail.set(localStorage.getItem('auth_user_email') || '');
+      this.currentUserPhone.set(localStorage.getItem('auth_user_phone') || '');
     }
   }
 
@@ -230,6 +239,28 @@ export class AuthService {
                     } else {
                       localStorage.removeItem('auth_system_contacts');
                       this.systemContacts.set([]);
+                    }
+
+                    if (verifyRes.name) {
+                      localStorage.setItem('auth_user_name', verifyRes.name);
+                      this.currentUserName.set(verifyRes.name);
+                    } else {
+                      localStorage.removeItem('auth_user_name');
+                      this.currentUserName.set('');
+                    }
+                    if (verifyRes.email) {
+                      localStorage.setItem('auth_user_email', verifyRes.email);
+                      this.currentUserEmail.set(verifyRes.email);
+                    } else {
+                      localStorage.removeItem('auth_user_email');
+                      this.currentUserEmail.set('');
+                    }
+                    if (verifyRes.phone) {
+                      localStorage.setItem('auth_user_phone', verifyRes.phone);
+                      this.currentUserPhone.set(verifyRes.phone);
+                    } else {
+                      localStorage.removeItem('auth_user_phone');
+                      this.currentUserPhone.set('');
                     }
                   }
                   
@@ -342,6 +373,28 @@ export class AuthService {
                   this.planFeatures.set(null);
                 }
               }
+
+              if (verifyRes.name) {
+                localStorage.setItem('auth_user_name', verifyRes.name);
+                this.currentUserName.set(verifyRes.name);
+              } else {
+                localStorage.removeItem('auth_user_name');
+                this.currentUserName.set('');
+              }
+              if (verifyRes.email) {
+                localStorage.setItem('auth_user_email', verifyRes.email);
+                this.currentUserEmail.set(verifyRes.email);
+              } else {
+                localStorage.removeItem('auth_user_email');
+                this.currentUserEmail.set('');
+              }
+              if (verifyRes.phone) {
+                localStorage.setItem('auth_user_phone', verifyRes.phone);
+                this.currentUserPhone.set(verifyRes.phone);
+              } else {
+                localStorage.removeItem('auth_user_phone');
+                this.currentUserPhone.set('');
+              }
             }
             this.web3Service.walletConnected.set(true);
             this.toastService.showToast('Ký xác thực thành công!', 'success');
@@ -381,6 +434,9 @@ export class AuthService {
       localStorage.clear();
       this.isAuthLoggedIn.set(false);
     }
+    this.currentUserName.set('');
+    this.currentUserEmail.set('');
+    this.currentUserPhone.set('');
     this.systemContacts.set([]);
     this.currentUserRole.set('Chủ cửa hàng');
     this.currentUserPermissions.set(null);

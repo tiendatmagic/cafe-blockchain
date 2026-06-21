@@ -98,12 +98,8 @@ export class StoreComponent implements OnInit, AfterViewInit {
   public readonly searchQuery = signal<string>('');
   public readonly currentPage = signal<number>(1);
   public readonly itemsPerPage = 20;
-  // Thiết lập hiệu ứng trượt danh mục - persist vào localStorage (dùng chung key với Sidebar)
-  public readonly useSlidingEffect = signal<boolean>(
-    typeof window !== 'undefined'
-      ? localStorage.getItem('ui_sliding_effect') !== 'false'
-      : true,
-  );
+  // Thiết lập hiệu ứng trượt danh mục toàn cục từ StateService
+  public readonly useSlidingEffect = this.stateService.useSlidingEffect;
 
   constructor() {
     effect(() => {
@@ -845,12 +841,5 @@ export class StoreComponent implements OnInit, AfterViewInit {
     }
   }
 
-  // Bật/tắt hiệu ứng trượt danh mục và lưu vào localStorage (đồng bộ với Sidebar)
-  public toggleSlidingEffect() {
-    const next = !this.useSlidingEffect();
-    this.useSlidingEffect.set(next);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('ui_sliding_effect', String(next));
-    }
-  }
+
 }

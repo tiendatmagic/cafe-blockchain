@@ -26,6 +26,20 @@ export class UiStateService {
   // Trạng thái Modal ví (có thể được điều phối tại đây)
   public readonly isWalletModalOpen = signal<boolean>(false);
 
+  // Hiệu ứng trượt menu/sidebar (sliding background) toàn cục
+  public readonly useSlidingEffect = signal<boolean>(
+    typeof window !== 'undefined'
+      ? localStorage.getItem('ui_sliding_effect') !== 'false'
+      : true
+  );
+
+  public setSlidingEffect(enabled: boolean) {
+    this.useSlidingEffect.set(enabled);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('ui_sliding_effect', String(enabled));
+    }
+  }
+
   // Kích hoạt mở modal blocked & nâng cấp tính năng
   public triggerUpgradeModal(featureKey: string, featureName: string) {
     this.lockedFeatureKey.set(featureKey);

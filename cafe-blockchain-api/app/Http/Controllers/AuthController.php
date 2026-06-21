@@ -147,6 +147,9 @@ class AuthController extends Controller
                 'role' => $roleName,
                 'permissions' => $permissions,
                 'is_super_admin' => $isSuperAdmin,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
                 'subscription' => [
                     'plan_code' => $planCode,
                     'subscription_expires_at' => $planExpiresAt,
@@ -191,6 +194,9 @@ class AuthController extends Controller
         return response()->json([
             'address' => $address,
             'is_super_admin' => $isSuperAdmin,
+            'name' => $user->name,
+            'email' => $user->email,
+            'phone' => $user->phone,
             'subscription' => [
                 'plan_code' => $planCode,
                 'subscription_expires_at' => $planExpiresAt,
@@ -299,6 +305,43 @@ class AuthController extends Controller
             'success' => true,
             'message' => 'Logged out successfully.'
         ])->withCookie($cookie)->withCookie($loggedCookie);
+    }
+
+    /**
+     * Update user profile information
+     */
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:50',
+        ]);
+
+        $user->name = $validated['name'];
+        $user->email = $validated['email'] ?? null;
+        $user->phone = $validated['phone'] ?? null;
+        $user->save();
+
+        // Sync with staffs table if this user is a staff member
+        $staff = Staff::where('wallet_address', strtolower($user->wallet_address))->first();
+        if ($staff) {
+            $staff->name = $user->name;
+            $staff->phone = $user->phone ?: '';
+            $staff->save();
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profile updated successfully.',
+            'user' => [
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone
+            ]
+        ]);
     }
 
     /**

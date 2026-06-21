@@ -8,6 +8,7 @@ import {
   ViewChild,
   AfterViewInit,
   OnDestroy,
+  effect,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
@@ -39,12 +40,8 @@ export class SidebarComponent implements AfterViewInit, OnDestroy {
   public readonly isChainDropdownOpen = signal<boolean>(false);
   private routerSub?: Subscription;
 
-  // Thiết lập hiệu ứng trượt - persist vào localStorage (dùng chung key với Storefront)
-  public readonly useSlidingEffect = signal<boolean>(
-    typeof window !== 'undefined'
-      ? localStorage.getItem('ui_sliding_effect') !== 'false'
-      : true,
-  );
+  // Thiết lập hiệu ứng trượt toàn cục từ StateService
+  public readonly useSlidingEffect = this.stateService.useSlidingEffect;
 
   ngAfterViewInit() {
     setTimeout(() => this.updateSliderPosition(), 150);
@@ -54,6 +51,12 @@ export class SidebarComponent implements AfterViewInit, OnDestroy {
       .subscribe(() => {
         setTimeout(() => this.updateSliderPosition(), 100);
       });
+
+    // Lắng nghe thay đổi hiệu ứng để vẽ lại slider
+    effect(() => {
+      this.useSlidingEffect();
+      setTimeout(() => this.updateSliderPosition(), 50);
+    });
   }
 
   ngOnDestroy() {
@@ -81,17 +84,6 @@ export class SidebarComponent implements AfterViewInit, OnDestroy {
     } else {
       this.sliderOpacity.set(0);
     }
-  }
-
-  // Bật/tắt hiệu ứng trượt và lưu vào localStorage
-  public toggleSlidingEffect() {
-    const next = !this.useSlidingEffect();
-    this.useSlidingEffect.set(next);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('ui_sliding_effect', String(next));
-    }
-    // Cập nhật lại vị trí slider sau khi đổi hiệu ứng
-    setTimeout(() => this.updateSliderPosition(), 50);
   }
 
 

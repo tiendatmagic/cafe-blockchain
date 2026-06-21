@@ -129,17 +129,6 @@
               containerClass="bg-slate-200/40 dark:bg-slate-950 border-none h-9 w-full sm:w-auto"
             ></app-tab-group>
 
-            <!-- Bộ chọn hiệu ứng danh mục (Trượt / Tĩnh) -->
-            <button
-              type="button"
-              (click)="toggleSlidingEffect()"
-              class="h-9 px-3 rounded-xl bg-slate-200/40 dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:text-[var(--dynamic-primary)] dark:hover:text-[var(--dynamic-primary)] text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer border border-transparent hover:border-[var(--dynamic-primary)]/20 shadow-sm"
-              title="Đổi hiệu ứng danh mục"
-            >
-              <app-icon [name]="useSlidingEffect() ? 'sparkles' : 'cursor-click'" class="h-3.5 w-3.5" [strokeWidth]="2" />
-              <span>{{ useSlidingEffect() ? 'Trượt' : 'Tĩnh' }}</span>
-            </button>
-
             <!-- Standalone Theme Toggle Component -->
             <app-theme-toggle size="md"></app-theme-toggle>
           </div>

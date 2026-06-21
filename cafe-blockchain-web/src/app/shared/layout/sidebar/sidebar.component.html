@@ -430,6 +430,19 @@
         <span>Quản trị hệ thống</span>
       </button>
     }
+
+    <!-- Link Trang cá nhân (Dành cho mọi tài khoản) -->
+    <button
+      routerLink="/profile"
+      routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+      class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
+    >
+      <app-icon
+        name="user"
+        class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform"
+      />
+      <span>Trang cá nhân</span>
+    </button>
   </nav>
 
   <!-- Blockchain Explorer (Nằm ngoài menu, trên Giao diện) -->
@@ -457,7 +470,7 @@
     </a>
   </div>
 
-  <!-- Sidebar Footer (Theme Toggle + Hiệu ứng Sidebar) -->
+  <!-- Sidebar Footer (Theme Toggle) -->
   <div class="p-4 border-t border-slate-200/60 dark:border-slate-800/60">
     <div class="flex items-center justify-between">
       <div class="flex flex-col">
@@ -482,20 +495,6 @@
         </span>
       </div>
       <div class="flex items-center gap-2">
-        <!-- Nút bật/tắt hiệu ứng trượt sidebar -->
-        <button
-          type="button"
-          (click)="toggleSlidingEffect()"
-          class="flex items-center justify-center w-8 h-8 rounded-xl border transition-all duration-200 cursor-pointer"
-          [class]="useSlidingEffect()
-            ? 'bg-purple-50 dark:bg-purple-950/40 border-purple-200/60 dark:border-purple-800/40 text-purple-600 dark:text-purple-400'
-            : 'bg-slate-100 dark:bg-slate-800/50 border-slate-200/60 dark:border-slate-700/40 text-slate-400 dark:text-slate-500'"
-          [title]="useSlidingEffect() ? 'Hiệu ứng: Trượt (bấm để tắt)' : 'Hiệu ứng: Tĩnh (bấm để bật)'"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="h-4 w-4" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
-        </button>
         <!-- Theme Toggle Component -->
         <app-theme-toggle size="sm"></app-theme-toggle>
       </div>
@@ -1066,6 +1065,17 @@
             <span>Quản trị hệ thống</span>
           </button>
         }
+
+        <!-- Link Trang cá nhân (Dành cho mọi tài khoản trên Mobile) -->
+        <button
+          routerLink="/profile"
+          routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-bold"
+          (click)="isMobileMenuOpen.set(false)"
+          class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
+        >
+          <app-icon name="user" class="h-5 w-5 shrink-0" />
+          <span>Trang cá nhân</span>
+        </button>
       </nav>
 
       <!-- Wallet Widget trong Drawer Mobile -->

@@ -7,6 +7,15 @@ export const routes: Routes = [
   { path: 'menu', canActivate: [FeatureGuard], data: { featureKey: 'enable_menu', featureName: 'Quản lý Thực đơn' }, loadComponent: () => import('@features/menu/menu.component').then(m => m.MenuComponent) },
   { path: 'orders', canActivate: [FeatureGuard], data: { featureKey: 'enable_orders', featureName: 'Đơn hàng' }, loadComponent: () => import('@features/orders/orders.component').then(m => m.OrdersComponent) },
   { path: 'settings', loadComponent: () => import('@features/settings/settings.component').then(m => m.SettingsComponent) },
+  { 
+    path: 'profile', 
+    loadComponent: () => import('@features/profile/profile.component').then(m => m.ProfileComponent),
+    children: [
+      { path: 'info', loadComponent: () => import('@features/profile/pages/profile-info/profile-info.component').then(m => m.ProfileInfoComponent) },
+      { path: 'settings', loadComponent: () => import('@features/profile/pages/profile-settings/profile-settings.component').then(m => m.ProfileSettingsComponent) },
+      { path: '', redirectTo: 'info', pathMatch: 'full' }
+    ]
+  },
   { path: 'customers', canActivate: [FeatureGuard], data: { featureKey: 'enable_customers', featureName: 'Khách hàng' }, loadComponent: () => import('@features/customers/customers.component').then(m => m.CustomersComponent) },
   { path: 'financials', canActivate: [FeatureGuard], data: { featureKey: 'enable_financials', featureName: 'Thu chi tài chính' }, loadComponent: () => import('@features/financials/financials.component').then(m => m.FinancialsComponent) },
   { path: 'inventory', canActivate: [FeatureGuard], data: { featureKey: 'enable_inventory', featureName: 'Kho hàng' }, loadComponent: () => import('@features/inventory/inventory.component').then(m => m.InventoryComponent) },
