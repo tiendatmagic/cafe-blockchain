@@ -125,4 +125,12 @@ export class Web3OverlaysComponent {
     this.durationMonths.set(1);
     this.isUpgrading.set(false);
   }
+
+  /**
+   * Chuyển hướng tới trang cá nhân và đóng modal ví
+   */
+  public goToProfile() {
+    this.stateService.isWalletModalOpen.set(false);
+    this.router.navigate(['/profile']);
+  }
 }

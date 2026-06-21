@@ -4,17 +4,31 @@
     description="Vui lòng kết nối ví Web3 để xem và quản lý thông tin hồ sơ cá nhân của bạn."
   ></app-web3-connect-prompt>
 } @else {
-  <div app-card class="p-6 max-w-2xl">
+  <div app-card class="p-6 max-w-full">
     <div class="space-y-6">
       <div class="flex items-center gap-3 pb-4 border-b border-slate-100 dark:border-slate-800/60">
-        <div class="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-950/40 flex items-center justify-center text-purple-600 dark:text-purple-400">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-5 h-5" stroke-width="2.2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+        <div
+          class="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-950/40 flex items-center justify-center text-purple-600 dark:text-purple-400"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            class="w-5 h-5"
+            stroke-width="2.2"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+            />
           </svg>
         </div>
         <div>
           <h3 class="text-base font-extrabold text-slate-800 dark:text-white">Thông tin cá nhân</h3>
-          <p class="text-xs text-slate-400 dark:text-slate-500 font-semibold mt-0.5">Địa chỉ ví của bạn: {{ stateService.web3Service.currentAccount() }}</p>
+          <p class="text-xs text-slate-400 dark:text-slate-500 font-semibold mt-0.5">
+            Địa chỉ ví của bạn: {{ stateService.web3Service.currentAccount() }}
+          </p>
         </div>
       </div>
 
@@ -22,7 +36,9 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Họ tên -->
         <div class="space-y-1.5 md:col-span-2">
-          <label class="text-xs sm:text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-wide block">
+          <label
+            class="text-xs sm:text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-wide block"
+          >
             Họ và tên <span class="text-rose-500">*</span>
           </label>
           <input
@@ -41,7 +57,9 @@
 
         <!-- Email -->
         <div class="space-y-1.5">
-          <label class="text-xs sm:text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-wide block">
+          <label
+            class="text-xs sm:text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-wide block"
+          >
             Địa chỉ Email
           </label>
           <input
@@ -60,7 +78,9 @@
 
         <!-- Số điện thoại -->
         <div class="space-y-1.5">
-          <label class="text-xs sm:text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-wide block">
+          <label
+            class="text-xs sm:text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-wide block"
+          >
             Số điện thoại
           </label>
           <input
@@ -89,7 +109,9 @@
         >
           @if (isSaving()) {
             <div class="flex items-center gap-2">
-              <div class="w-3.5 h-3.5 rounded-full border-2 border-white/20 border-t-white animate-spin"></div>
+              <div
+                class="w-3.5 h-3.5 rounded-full border-2 border-white/20 border-t-white animate-spin"
+              ></div>
               <span>Đang lưu...</span>
             </div>
           } @else {

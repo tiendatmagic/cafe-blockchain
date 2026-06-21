@@ -431,18 +431,7 @@
       </button>
     }
 
-    <!-- Link Trang cá nhân (Dành cho mọi tài khoản) -->
-    <button
-      routerLink="/profile"
-      routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
-      class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
-    >
-      <app-icon
-        name="user"
-        class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform"
-      />
-      <span>Trang cá nhân</span>
-    </button>
+
   </nav>
 
   <!-- Blockchain Explorer (Nằm ngoài menu, trên Giao diện) -->
@@ -1066,16 +1055,7 @@
           </button>
         }
 
-        <!-- Link Trang cá nhân (Dành cho mọi tài khoản trên Mobile) -->
-        <button
-          routerLink="/profile"
-          routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-bold"
-          (click)="isMobileMenuOpen.set(false)"
-          class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
-        >
-          <app-icon name="user" class="h-5 w-5 shrink-0" />
-          <span>Trang cá nhân</span>
-        </button>
+
       </nav>
 
       <!-- Wallet Widget trong Drawer Mobile -->
