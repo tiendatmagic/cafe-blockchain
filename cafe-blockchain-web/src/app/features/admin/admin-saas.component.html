@@ -1936,7 +1936,16 @@
               </ng-template>
 
               <ng-template appCell="actions" let-row>
-                <div class="flex items-center justify-end pr-2">
+                <div class="flex items-center justify-end gap-2 pr-2">
+                  <button
+                    app-button
+                    variant="secondary"
+                    size="sm"
+                    (click)="openEditStaff(row)"
+                    [disabled]="isSystemStaffActionLoading()"
+                  >
+                    Sửa
+                  </button>
                   <button
                     app-button
                     variant="danger-light"

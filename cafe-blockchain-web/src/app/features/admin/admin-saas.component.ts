@@ -1124,6 +1124,18 @@ export class AdminSaaSComponent implements OnInit {
     });
   }
 
+  public openEditStaff(staff: any) {
+    this.modalService.open(SystemStaffModalComponent, {
+      title: 'Chỉnh sửa nhân viên hệ thống',
+      size: 'md',
+      data: staff
+    }).afterClosed$.subscribe(success => {
+      if (success) {
+        this.loadSystemStaffs();
+      }
+    });
+  }
+
   public deleteSystemStaff(item: any) {
     this.modalService.confirm({
       title: 'Xóa nhân viên hệ thống?',

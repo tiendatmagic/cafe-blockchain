@@ -74,6 +74,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // System Staffs CRUD
         Route::get('/staffs', [AdminController::class, 'indexSystemStaffs']);
         Route::post('/staffs', [AdminController::class, 'storeSystemStaff']);
+        Route::put('/staffs/{id}', [AdminController::class, 'updateSystemStaff']);
         Route::delete('/staffs/{id}', [AdminController::class, 'destroySystemStaff']);
 
         // System Payment Methods CRUD

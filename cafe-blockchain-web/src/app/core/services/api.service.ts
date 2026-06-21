@@ -585,6 +585,10 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/admin/staffs`, data, { headers: this.getHeaders() });
   }
 
+  public updateAdminSystemStaff(id: number | string, data: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/admin/staffs/${id}`, data, { headers: this.getHeaders() });
+  }
+
   public deleteAdminSystemStaff(id: number | string): Observable<any> {
     return this.http.delete(`${this.baseUrl}/admin/staffs/${id}`, { headers: this.getHeaders() });
   }

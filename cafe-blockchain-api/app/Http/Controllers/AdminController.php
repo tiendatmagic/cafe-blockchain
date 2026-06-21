@@ -819,6 +819,28 @@ class AdminController extends Controller
         ]);
     }
 
+    public function updateSystemStaff(Request $request, $id)
+    {
+        $staff = SystemStaff::findOrFail($id);
+
+        $validated = $request->validate([
+            'wallet_address' => 'required|string|regex:/^0x[a-fA-F0-9]{40}$/i|unique:system_staffs,wallet_address,' . $id,
+            'name' => 'required|string|max:255',
+            'role' => 'required|string|in:staff,admin',
+            'is_active' => 'required|boolean',
+        ]);
+
+        $validated['wallet_address'] = strtolower($validated['wallet_address']);
+
+        $staff->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Nhân viên hệ thống đã được cập nhật thành công.',
+            'data' => $staff
+        ]);
+    }
+
     public function destroySystemStaff($id)
     {
         $staff = SystemStaff::findOrFail($id);

@@ -16,7 +16,7 @@ import { FormsModule, ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/f
   imports: [CommonModule, FormsModule],
   template: `
     <label
-      class="flex items-start gap-3 cursor-pointer select-none"
+      class="group flex items-center gap-3 cursor-pointer select-none"
       [class.opacity-50]="disabled"
       [class.pointer-events-none]="disabled"
     >
@@ -25,7 +25,7 @@ import { FormsModule, ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/f
         [ngClass]="
           checked()
             ? 'bg-[var(--color-primary)] border-[var(--color-primary)] shadow-sm shadow-[var(--color-primary)]/20'
-            : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800'
+            : 'bg-slate-50 dark:bg-slate-950 border-slate-300 dark:border-slate-700 group-hover:border-slate-400 dark:group-hover:border-slate-600'
         "
       >
         @if (checked()) {
@@ -50,7 +50,7 @@ import { FormsModule, ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/f
       @if (label || description) {
         <div class="text-xs sm:text-sm">
           @if (label) {
-            <p class="font-extrabold text-slate-800 dark:text-slate-250 leading-tight">
+            <p class="font-extrabold text-slate-800 dark:text-slate-200 leading-tight">
               {{ label }}
             </p>
           }
@@ -92,8 +92,8 @@ export class CustomCheckboxComponent implements ControlValueAccessor {
 
   @Output() checkedChange = new EventEmitter<boolean>();
 
-  private onChange: (value: boolean) => void = () => {};
-  private onTouched: () => void = () => {};
+  private onChange: (value: boolean) => void = () => { };
+  private onTouched: () => void = () => { };
 
   public onToggle(event: Event): void {
     if (this.disabled) return;
