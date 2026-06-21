@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Domain\Entities\User;
 use App\Domain\Entities\Staff;
 use App\Domain\Entities\SystemPaymentMethod;
+use App\Domain\Entities\SystemStaff;
+use App\Domain\Entities\SubscriptionRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -151,11 +153,21 @@ class AuthController extends Controller
             $plan = \App\Domain\Entities\SubscriptionPlan::where('code', $planCode)->first();
             $planFeatures = $plan ? $plan->features : null;
 
-            // Kiểm tra xem có phải là Super Admin không
+            // Kiểm tra xem có phải là Super Admin hay Staff không
             $superAdminEnv = config('auth.super_admin_addresses', '');
             $superAdmins = array_map('trim', explode(',', $superAdminEnv));
             $superAdmins = array_map('strtolower', array_filter($superAdmins));
             $isSuperAdmin = in_array(strtolower($address), $superAdmins);
+
+            $adminRole = null;
+            if ($isSuperAdmin) {
+                $adminRole = 'super_admin';
+            } else {
+                $staffMember = SystemStaff::where('wallet_address', $address)->where('is_active', true)->first();
+                if ($staffMember) {
+                    $adminRole = $staffMember->role; // 'staff', 'admin'
+                }
+            }
 
             $contactsSetting = DB::table('system_settings')->where('key', 'system_contacts')->first();
             $contacts = $contactsSetting ? json_decode($contactsSetting->value, true) : [];
@@ -172,6 +184,7 @@ class AuthController extends Controller
                 'role' => $roleName,
                 'permissions' => $permissions,
                 'is_super_admin' => $isSuperAdmin,
+                'admin_role' => $adminRole,
                 'name' => $displayName,
                 'email' => $displayEmail,
                 'phone' => $displayPhone,
@@ -207,11 +220,21 @@ class AuthController extends Controller
         $plan = \App\Domain\Entities\SubscriptionPlan::where('code', $planCode)->first();
         $planFeatures = $plan ? $plan->features : null;
 
-        // Kiểm tra xem có phải là Super Admin không
+        // Kiểm tra xem có phải là Super Admin hay Staff không
         $superAdminEnv = config('auth.super_admin_addresses', '');
         $superAdmins = array_map('trim', explode(',', $superAdminEnv));
         $superAdmins = array_map('strtolower', array_filter($superAdmins));
         $isSuperAdmin = in_array($address, $superAdmins);
+
+        $adminRole = null;
+        if ($isSuperAdmin) {
+            $adminRole = 'super_admin';
+        } else {
+            $staffMember = SystemStaff::where('wallet_address', $address)->where('is_active', true)->first();
+            if ($staffMember) {
+                $adminRole = $staffMember->role; // 'staff', 'admin'
+            }
+        }
 
         $contactsSetting = DB::table('system_settings')->where('key', 'system_contacts')->first();
         $contacts = $contactsSetting ? json_decode($contactsSetting->value, true) : [];
@@ -225,6 +248,7 @@ class AuthController extends Controller
         return response()->json([
             'address' => $address,
             'is_super_admin' => $isSuperAdmin,
+            'admin_role' => $adminRole,
             'name' => $displayName,
             'email' => $displayEmail,
             'phone' => $displayPhone,
@@ -258,6 +282,7 @@ class AuthController extends Controller
             'plan_code' => 'required|string|exists:subscription_plans,code',
             'duration_months' => 'required|integer|in:1,3,6,12',
             'tx_hash' => 'required|string',
+            'payment_method_details' => 'nullable|string',
         ]);
 
         $user = $request->user();
@@ -281,66 +306,62 @@ class AuthController extends Controller
             ], 400);
         }
 
+        // 2. Kiểm tra xem có yêu cầu nào đang ở trạng thái pending không
+        $hasPending = SubscriptionRequest::where('store_owner_address', $user->wallet_address)
+            ->where('status', 'pending')
+            ->exists();
+        if ($hasPending) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn đã có một yêu cầu nâng cấp đang chờ phê duyệt. Vui lòng không gửi yêu cầu trùng lặp.'
+            ], 400);
+        }
+
         $currentExpiresAt = $user->subscription_expires_at;
         $isExpired = !$currentExpiresAt || now()->greaterThan($currentExpiresAt);
 
-        // 2. Kiểm tra hạn gói cước và ràng buộc gói trả phí
+        // 3. Kiểm tra hạn gói cước và ràng buộc gói trả phí (để từ chối yêu cầu sai luật ngay lập tức)
         if (!$isExpired) {
-            // Nếu gói cước hiện tại chưa hết hạn
             if ($user->plan_code !== 'free') {
-                // Nếu gói cước hiện tại là gói trả phí (pro/ultra), họ phải trùng gói cước hiện tại (chỉ được phép gia hạn thêm)
                 if ($planCode !== $user->plan_code) {
                     return response()->json([
                         'success' => false,
                         'message' => 'You cannot change your subscription plan before the current one expires. You can only renew your active plan.'
                     ], 400);
                 }
-                
-                // Nếu trùng gói cước, cộng nối tiếp vào ngày hết hạn cũ
-                $newExpiresAt = \Carbon\Carbon::parse($currentExpiresAt)->addMonths($months);
-            } else {
-                // Gói cước hiện tại là gói dùng thử (free) và chưa hết hạn, cho phép nâng cấp lên gói pro/ultra
-                // Hạn sử dụng mới tính từ hôm nay
-                $newExpiresAt = now()->addMonths($months);
             }
-        } else {
-            // Gói cước hiện tại đã hết hạn, cho phép đăng ký gói pro hoặc ultra bất kỳ
-            // Hạn sử dụng mới tính từ hôm nay
-            $newExpiresAt = now()->addMonths($months);
         }
 
-        // Cập nhật thông tin của User
-        $user->plan_code = $planCode;
-        $user->subscription_expires_at = $newExpiresAt;
-        $user->subscription_status = 'active';
-        $user->save();
-
-        // Ghi log giao dịch nâng cấp
-        DB::table('system_settings')->updateOrInsert(
-            ['key' => 'last_upgrade_tx_' . strtolower($user->wallet_address)],
-            [
-                'value' => json_encode([
-                    'plan_code' => $planCode,
-                    'months' => $months,
-                    'tx_hash' => $validated['tx_hash'],
-                    'timestamp' => now()->toIso8601String()
-                ]),
-                'updated_at' => now()
-            ]
-        );
-
+        // 4. Lấy thông tin giá tiền của gói cước để lưu vào yêu cầu
         $plan = \App\Domain\Entities\SubscriptionPlan::where('code', $planCode)->first();
-        $planFeatures = $plan ? $plan->features : null;
+        if (!$plan) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Plan not found.'
+            ], 404);
+        }
+
+        $amount = 0;
+        if ($months == 12) {
+            $amount = $plan->price_per_year;
+        } else {
+            $amount = $plan->price_per_month * $months;
+        }
+
+        // 5. Tạo yêu cầu đăng ký thuê bao mới ở trạng thái pending
+        SubscriptionRequest::create([
+            'store_owner_address' => $user->wallet_address,
+            'plan_code' => $planCode,
+            'duration_months' => $months,
+            'amount' => $amount,
+            'payment_method_details' => $validated['payment_method_details'] ?? null,
+            'tx_hash' => $validated['tx_hash'],
+            'status' => 'pending',
+        ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Nâng cấp gói cước thành công!',
-            'subscription' => [
-                'plan_code' => $planCode,
-                'subscription_expires_at' => $newExpiresAt->toIso8601String(),
-                'subscription_status' => 'active',
-                'features' => $planFeatures
-            ]
+            'message' => 'Yêu cầu nâng cấp gói cước đã được gửi thành công. Vui lòng chờ Admin phê duyệt.'
         ]);
     }
 

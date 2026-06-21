@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Domain\Entities\User;
 use App\Domain\Entities\SubscriptionPlan;
 use App\Domain\Entities\SystemPaymentMethod;
+use App\Domain\Entities\SystemStaff;
+use App\Domain\Entities\SubscriptionRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -765,6 +767,182 @@ class AdminController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'System payment method deleted successfully.'
+        ]);
+    }
+
+    // =========================================================
+    // SYSTEM STAFFS MANAGEMENT (Chỉ dành cho Super Admin)
+    // =========================================================
+
+    public function indexSystemStaffs(Request $request)
+    {
+        $staffs = SystemStaff::orderBy('created_at', 'desc')->get();
+        return response()->json($staffs);
+    }
+
+    public function storeSystemStaff(Request $request)
+    {
+        $validated = $request->validate([
+            'wallet_address' => 'required|string|regex:/^0x[a-fA-F0-9]{40}$/i|unique:system_staffs,wallet_address',
+            'name' => 'required|string|max:255',
+            'role' => 'required|string|in:staff,admin',
+            'is_active' => 'required|boolean',
+        ]);
+
+        $validated['wallet_address'] = strtolower($validated['wallet_address']);
+
+        $staff = SystemStaff::create($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Nhân viên hệ thống đã được thêm thành công.',
+            'data' => $staff
+        ]);
+    }
+
+    public function destroySystemStaff($id)
+    {
+        $staff = SystemStaff::findOrFail($id);
+        $staff->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Nhân viên hệ thống đã được xóa thành công.'
+        ]);
+    }
+
+    // =========================================================
+    // SUBSCRIPTION REQUESTS MANAGEMENT (Super Admin & Staff)
+    // =========================================================
+
+    public function indexSubscriptionRequests(Request $request)
+    {
+        $status = $request->query('status', 'all');
+        $search = $request->query('search', '');
+        $perPage = (int)$request->query('per_page', 10);
+
+        $query = SubscriptionRequest::query();
+
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
+
+        if (!empty($search)) {
+            $query->where(function($q) use ($search) {
+                $q->where('store_owner_address', 'like', "%{$search}%")
+                  ->orWhere('plan_code', 'like', "%{$search}%");
+            });
+        }
+
+        $requests = $query->orderBy('created_at', 'desc')->paginate($perPage);
+
+        // Map thêm thông tin tên store cho từng yêu cầu
+        $items = $requests->items();
+        foreach ($items as $item) {
+            $storeNameSetting = DB::table('settings')
+                ->where('store_owner_address', strtolower($item->store_owner_address))
+                ->where('key', 'store_name')
+                ->first();
+            $item->store_name = $storeNameSetting ? $storeNameSetting->value : 'Cafe Web3 POS';
+        }
+
+        return response()->json([
+            'data' => $items,
+            'total' => $requests->total(),
+            'current_page' => $requests->currentPage(),
+            'per_page' => $requests->perPage(),
+        ]);
+    }
+
+    public function approveSubscriptionRequest(Request $request, $id)
+    {
+        $subRequest = SubscriptionRequest::findOrFail($id);
+
+        if ($subRequest->status !== 'pending') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Yêu cầu này đã được xử lý từ trước.'
+            ], 400);
+        }
+
+        $user = User::where('wallet_address', strtolower($subRequest->store_owner_address))->first();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy tài khoản chủ cửa hàng liên kết với yêu cầu này.'
+            ], 404);
+        }
+
+        // Thực hiện cập nhật thời hạn thuê bao trên tài khoản User chủ quán
+        $currentExpiresAt = $user->subscription_expires_at;
+        $isExpired = !$currentExpiresAt || now()->greaterThan($currentExpiresAt);
+        $months = $subRequest->duration_months;
+
+        if (!$isExpired && $user->plan_code !== 'free') {
+            // Cộng nối tiếp vào ngày hết hạn cũ
+            $newExpiresAt = \Carbon\Carbon::parse($currentExpiresAt)->addMonths($months);
+        } else {
+            // Tính từ ngày hôm nay
+            $newExpiresAt = now()->addMonths($months);
+        }
+
+        $user->plan_code = $subRequest->plan_code;
+        $user->subscription_expires_at = $newExpiresAt;
+        $user->subscription_status = 'active';
+        $user->save();
+
+        // Cập nhật trạng thái yêu cầu
+        $adminUser = $request->user();
+        $subRequest->status = 'approved';
+        $subRequest->approved_by = $adminUser->wallet_address;
+        $subRequest->approved_at = now();
+        $subRequest->save();
+
+        // Ghi log giao dịch nâng cấp vào system_settings (để tương thích ngược với log cũ)
+        DB::table('system_settings')->updateOrInsert(
+            ['key' => 'last_upgrade_tx_' . strtolower($user->wallet_address)],
+            [
+                'value' => json_encode([
+                    'plan_code' => $subRequest->plan_code,
+                    'months' => $months,
+                    'tx_hash' => $subRequest->tx_hash,
+                    'timestamp' => now()->toIso8601String()
+                ]),
+                'updated_at' => now()
+            ]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã phê duyệt yêu cầu nâng cấp gói cước và kích hoạt thuê bao thành công!'
+        ]);
+    }
+
+    public function rejectSubscriptionRequest(Request $request, $id)
+    {
+        $subRequest = SubscriptionRequest::findOrFail($id);
+
+        if ($subRequest->status !== 'pending') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Yêu cầu này đã được xử lý từ trước.'
+            ], 400);
+        }
+
+        $validated = $request->validate([
+            'rejected_reason' => 'required|string|max:500',
+        ]);
+
+        $adminUser = $request->user();
+        $subRequest->status = 'rejected';
+        $subRequest->rejected_reason = $validated['rejected_reason'];
+        $subRequest->approved_by = $adminUser->wallet_address;
+        $subRequest->approved_at = now();
+        $subRequest->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã từ chối yêu cầu nâng cấp gói cước.'
         ]);
     }
 }

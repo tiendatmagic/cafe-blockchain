@@ -47,11 +47,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/system-payment-methods', [AuthController::class, 'getSystemPaymentMethods']);
 
 
-    // Super Admin Routes (Bypass CheckSubscription)
-    Route::middleware(\App\Http\Middleware\EnsureIsSuperAdmin::class)->prefix('admin')->group(function () {
+    // System Admin & Staff Routes (Shared access)
+    Route::middleware(\App\Http\Middleware\EnsureIsSystemAdmin::class)->prefix('admin')->group(function () {
         Route::get('/tenants', [AdminController::class, 'indexTenants']);
         Route::put('/tenants/{id}/subscription', [AdminController::class, 'updateTenantSubscription']);
-        
+
+        // Subscription Requests Approval API
+        Route::get('/subscriptions', [AdminController::class, 'indexSubscriptionRequests']);
+        Route::post('/subscriptions/{id}/approve', [AdminController::class, 'approveSubscriptionRequest']);
+        Route::post('/subscriptions/{id}/reject', [AdminController::class, 'rejectSubscriptionRequest']);
+    });
+
+    // Super Admin Only Routes (Bypass CheckSubscription)
+    Route::middleware(\App\Http\Middleware\EnsureIsSuperAdmin::class)->prefix('admin')->group(function () {
         Route::get('/plans', [AdminController::class, 'indexPlans']);
         Route::post('/plans', [AdminController::class, 'storePlan']);
         Route::post('/plans/reset-defaults', [AdminController::class, 'resetDefaultPlans']);
@@ -62,6 +70,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/system-settings', [AdminController::class, 'updateSystemSettings']);
         Route::post('/clean-tokens', [AdminController::class, 'cleanTokens']);
         Route::post('/clean-all-tokens', [AdminController::class, 'cleanAllTokens']);
+
+        // System Staffs CRUD
+        Route::get('/staffs', [AdminController::class, 'indexSystemStaffs']);
+        Route::post('/staffs', [AdminController::class, 'storeSystemStaff']);
+        Route::delete('/staffs/{id}', [AdminController::class, 'destroySystemStaff']);
 
         // System Payment Methods CRUD
         Route::get('/payment-methods', [AdminController::class, 'indexPaymentMethods']);

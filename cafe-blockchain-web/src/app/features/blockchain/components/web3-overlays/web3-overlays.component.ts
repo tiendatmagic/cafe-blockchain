@@ -27,6 +27,7 @@ export class Web3OverlaysComponent {
   public readonly selectedPlan = signal<any>(null);
   public readonly durationMonths = signal<number>(1); // 1, 3, 6, 12
   public readonly isUpgrading = signal<boolean>(false);
+  public upgradeTxHash: string = '';
 
   // Quản lý phương thức thanh toán hệ thống
   public readonly systemPaymentMethods = signal<any[]>([]);
@@ -142,8 +143,20 @@ export class Web3OverlaysComponent {
     const plan = this.selectedPlan();
     if (!plan || plan.code === 'free') return;
 
+    const payment = this.selectedSystemPayment();
+    if (!payment) {
+      this.stateService.showToast('Vui lòng chọn phương thức thanh toán.', 'error');
+      return;
+    }
+
+    const txHash = this.upgradeTxHash.trim();
+    if (!txHash) {
+      this.stateService.showToast('Vui lòng nhập mã giao dịch/TxHash để đối soát.', 'error');
+      return;
+    }
+
     const duration = this.durationMonths();
-    const fakeTxHash = 'CASH_UPGRADE_' + Date.now();
+    const paymentDetails = `${payment.name} - ${payment.account_number} (${payment.account_holder})`;
 
     this.isUpgrading.set(true);
     this.stateService.showToast('Đang gửi yêu cầu nâng cấp gói cước...', 'success');
@@ -152,12 +165,13 @@ export class Web3OverlaysComponent {
       .updateTenantSubscriptionUpgrade({
         plan_code: plan.code,
         duration_months: duration,
-        tx_hash: fakeTxHash,
+        tx_hash: txHash,
+        payment_method_details: paymentDetails,
       })
       .subscribe({
         next: (res) => {
           this.stateService.showToast(
-            'Chúc mừng! Gói cước đã được nâng cấp/gia hạn thành công.',
+            res.message || 'Yêu cầu nâng cấp gói cước đã được gửi thành công. Vui lòng chờ phê duyệt!',
             'success',
           );
           // Cập nhật lại cấu hình và subscription từ backend
@@ -185,6 +199,7 @@ export class Web3OverlaysComponent {
     this.selectedPlan.set(null);
     this.durationMonths.set(1);
     this.isUpgrading.set(false);
+    this.upgradeTxHash = '';
   }
 
   /**

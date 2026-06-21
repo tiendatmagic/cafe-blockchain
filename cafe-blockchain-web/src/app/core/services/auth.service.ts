@@ -76,6 +76,7 @@ export class AuthService {
 
   // Thông tin thuê bao và Super Admin
   public readonly isSuperAdmin = signal<boolean>(false);
+  public readonly currentUserAdminRole = signal<'super_admin' | 'staff' | null>(null);
   public readonly subscriptionPlanCode = signal<string>('free');
   public readonly subscriptionExpiresAt = signal<string | null>(null);
   public readonly subscriptionStatus = signal<string>('active');
@@ -102,6 +103,7 @@ export class AuthService {
     if (savedAddress && this.hasValidAuthToken(savedAddress)) {
       this.isAuthLoggedIn.set(true);
       this.isSuperAdmin.set(localStorage.getItem('auth_is_super_admin') === 'true');
+      this.currentUserAdminRole.set(localStorage.getItem('auth_admin_role') as 'super_admin' | 'staff' | null);
       this.currentUserRole.set(localStorage.getItem('auth_role') || 'Chủ cửa hàng');
       
       const permStr = localStorage.getItem('auth_permissions');
@@ -187,6 +189,8 @@ export class AuthService {
                     this.isAuthLoggedIn.set(true);
                     localStorage.setItem('auth_is_super_admin', verifyRes.is_super_admin ? 'true' : 'false');
                     this.isSuperAdmin.set(!!verifyRes.is_super_admin);
+                    localStorage.setItem('auth_admin_role', verifyRes.admin_role || '');
+                    this.currentUserAdminRole.set(verifyRes.admin_role || null);
 
                     if (verifyRes.role) {
                       localStorage.setItem('auth_role', verifyRes.role);
@@ -339,6 +343,8 @@ export class AuthService {
               this.isAuthLoggedIn.set(true);
               localStorage.setItem('auth_is_super_admin', verifyRes.is_super_admin ? 'true' : 'false');
               this.isSuperAdmin.set(!!verifyRes.is_super_admin);
+              localStorage.setItem('auth_admin_role', verifyRes.admin_role || '');
+              this.currentUserAdminRole.set(verifyRes.admin_role || null);
 
               if (verifyRes.role) {
                 localStorage.setItem('auth_role', verifyRes.role);
@@ -436,6 +442,7 @@ export class AuthService {
       localStorage.removeItem('auth_role');
       localStorage.removeItem('auth_permissions');
       localStorage.removeItem('auth_is_super_admin');
+      localStorage.removeItem('auth_admin_role');
       localStorage.removeItem('auth_subscription_plan_code');
       localStorage.removeItem('auth_subscription_expires_at');
       localStorage.removeItem('auth_subscription_status');
@@ -454,6 +461,7 @@ export class AuthService {
     this.currentUserRole.set('Chủ cửa hàng');
     this.currentUserPermissions.set(null);
     this.isSuperAdmin.set(false);
+    this.currentUserAdminRole.set(null);
     this.subscriptionPlanCode.set('free');
     this.subscriptionExpiresAt.set(null);
     this.subscriptionStatus.set('active');

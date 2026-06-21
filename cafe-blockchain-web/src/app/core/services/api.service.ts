@@ -101,7 +101,7 @@ export class ApiService {
   /**
    * Nâng cấp gói cước cho cửa hàng qua Web3
    */
-  public updateTenantSubscriptionUpgrade(data: { plan_code: string, duration_months: number, tx_hash: string }): Observable<any> {
+  public updateTenantSubscriptionUpgrade(data: { plan_code: string, duration_months: number, tx_hash: string, payment_method_details?: string }): Observable<any> {
     return this.http.post(`${this.baseUrl}/auth/subscription/upgrade`, data, { headers: this.getHeaders() });
   }
 
@@ -565,6 +565,47 @@ export class ApiService {
   }
 
   // --- Super Admin SaaS APIs ---
+  // System Staffs (Nhân viên hệ thống)
+  public getAdminSystemStaffs(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/admin/staffs`, { headers: this.getHeaders() });
+  }
+
+  public createAdminSystemStaff(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/admin/staffs`, data, { headers: this.getHeaders() });
+  }
+
+  public deleteAdminSystemStaff(id: number | string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/admin/staffs/${id}`, { headers: this.getHeaders() });
+  }
+
+  // Subscription Requests (Yêu cầu thuê bao)
+  public getAdminSubscriptionRequests(params?: { status?: string; search?: string; page?: number; per_page?: number }): Observable<any> {
+    let httpParams = new HttpParams();
+    if (params) {
+      if (params.status !== undefined) {
+        httpParams = httpParams.set('status', params.status);
+      }
+      if (params.search !== undefined && params.search.trim() !== '') {
+        httpParams = httpParams.set('search', params.search.trim());
+      }
+      if (params.page !== undefined) {
+        httpParams = httpParams.set('page', params.page.toString());
+      }
+      if (params.per_page !== undefined) {
+        httpParams = httpParams.set('per_page', params.per_page.toString());
+      }
+    }
+    return this.http.get<any>(`${this.baseUrl}/admin/subscriptions`, { params: httpParams, headers: this.getHeaders() });
+  }
+
+  public approveAdminSubscription(id: number | string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/admin/subscriptions/${id}/approve`, {}, { headers: this.getHeaders() });
+  }
+
+  public rejectAdminSubscription(id: number | string, reason: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/admin/subscriptions/${id}/reject`, { rejected_reason: reason }, { headers: this.getHeaders() });
+  }
+
   public getAdminTenants(): Observable<any[]> {
     return this.http.get<any[]>(`${this.baseUrl}/admin/tenants`, { headers: this.getHeaders() });
   }

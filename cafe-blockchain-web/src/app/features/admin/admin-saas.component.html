@@ -13,13 +13,13 @@
 
   @if (!stateService.web3Service.walletConnected()) {
     <app-web3-connect-prompt [title]="'Quản trị hệ thống'"></app-web3-connect-prompt>
-  } @else if (!stateService.isSuperAdmin()) {
+  } @else if (!stateService.isSystemAdmin()) {
     <app-access-restricted></app-access-restricted>
   } @else {
     <!-- Tab Navigation -->
     <div class="flex flex-wrap items-center gap-3 mb-6">
       <app-tab-group
-        [options]="subTabOptions"
+        [options]="subTabOptions()"
         [activeValue]="activeSubTab()"
         (valueChange)="setSubTab($event)"
         class="shrink-0 min-w-0"
@@ -1601,6 +1601,400 @@
             </div>
           </div>
         }
+      }
+
+      <!-- ===== TAB 5: SUBSCRIPTION REQUESTS (Thuê bao) ===== -->
+      @if (activeSubTab() === 'subscriptions') {
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-6">
+          <!-- Bộ lọc trạng thái -->
+          <div class="w-full sm:w-48">
+            <app-custom-select
+              [options]="[
+                { value: 'all', label: 'Tất cả trạng thái' },
+                { value: 'pending', label: 'Chờ phê duyệt' },
+                { value: 'approved', label: 'Đã phê duyệt' },
+                { value: 'rejected', label: 'Đã từ chối' }
+              ]"
+              valueKey="value"
+              labelKey="label"
+              [value]="subscriptionStatus()"
+              (valueChange)="subscriptionStatus.set($event); subscriptionPage.set(1); loadSubscriptionRequests()"
+              placeholder="Trạng thái"
+              triggerClass="w-full form-input !py-2 !h-10 !text-sm"
+            >
+            </app-custom-select>
+          </div>
+
+          <!-- Search Field -->
+          <div class="relative w-full sm:w-64">
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+              <app-icon name="search" class="h-4.5 w-4.5 text-slate-400"></app-icon>
+            </div>
+            <input
+              type="text"
+              [ngModel]="subscriptionSearch()"
+              (ngModelChange)="subscriptionSearch.set($event); subscriptionPage.set(1); loadSubscriptionRequests()"
+              placeholder="Tìm theo ví, TxHash..."
+              class="search-input !pl-10 !h-10 !text-sm"
+            />
+          </div>
+        </div>
+
+        <div app-card class="p-0 overflow-hidden">
+          @if (isSubscriptionsLoading()) {
+            <app-skeleton-loader type="table" [cols]="8" [rows]="5"></app-skeleton-loader>
+          } @else {
+            <app-table
+              [columns]="subscriptionColumns"
+              [data]="subscriptionRequests()"
+              [totalItems]="subscriptionTotal()"
+              [itemsPerPage]="subscriptionPerPage()"
+              [currentPage]="subscriptionPage()"
+              [showPagination]="true"
+              [itemName]="'yêu cầu'"
+              (pageChange)="subscriptionPage.set($event); loadSubscriptionRequests()"
+            >
+              <ng-template appCell="store_owner_address" let-row>
+                <div class="flex items-center gap-1.5 font-mono text-purple-650 dark:text-purple-400">
+                  <span>{{ shortAddress(row.store_owner_address) }}</span>
+                  <button
+                    (click)="stateService.copyAddress(row.store_owner_address)"
+                    class="p-1 text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition"
+                    title="Sao chép ví"
+                  >
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </ng-template>
+
+              <ng-template appCell="plan_code" let-row>
+                <span
+                  class="inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-black uppercase tracking-wider"
+                  [ngClass]="{
+                    'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700':
+                      row.plan_code === 'free',
+                    'bg-purple-100 dark:bg-purple-500/10 text-purple-650 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20':
+                      row.plan_code === 'pro',
+                    'bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20':
+                      row.plan_code === 'ultra'
+                  }"
+                >
+                  {{ row.plan_code }}
+                </span>
+                @if (row.payment_method_details) {
+                  <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-1 font-medium max-w-[180px] truncate" [title]="row.payment_method_details">
+                    TK nhận: {{ row.payment_method_details }}
+                  </div>
+                }
+              </ng-template>
+
+              <ng-template appCell="duration_months" let-row>
+                <span class="text-sm font-semibold text-slate-750 dark:text-slate-300">
+                  {{ row.duration_months }} tháng
+                </span>
+              </ng-template>
+
+              <ng-template appCell="amount" let-row>
+                <span class="text-sm font-extrabold text-emerald-600 dark:text-emerald-400">
+                  {{ row.amount | vnd }}
+                </span>
+              </ng-template>
+
+              <ng-template appCell="tx_hash" let-row>
+                <div class="flex items-center gap-1">
+                  <span class="font-mono text-xs text-slate-500 max-w-[120px] truncate" [title]="row.tx_hash">
+                    {{ row.tx_hash }}
+                  </span>
+                  <button
+                    (click)="stateService.copyAddress(row.tx_hash)"
+                    class="p-1 text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition"
+                    title="Sao chép TxHash"
+                  >
+                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </ng-template>
+
+              <ng-template appCell="status" let-row>
+                <span
+                  class="inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-bold"
+                  [ngClass]="{
+                    'bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20':
+                      row.status === 'pending',
+                    'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20':
+                      row.status === 'approved',
+                    'bg-rose-100 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/20':
+                      row.status === 'rejected'
+                  }"
+                >
+                  {{
+                    row.status === 'pending'
+                      ? 'Chờ phê duyệt'
+                      : row.status === 'approved'
+                        ? 'Đã duyệt'
+                        : 'Đã từ chối'
+                  }}
+                </span>
+                @if (row.status === 'rejected' && row.rejected_reason) {
+                  <div class="text-[10px] text-rose-500 mt-1 max-w-[150px] truncate" [title]="row.rejected_reason">
+                    Lý do: {{ row.rejected_reason }}
+                  </div>
+                }
+                @if (row.status === 'approved' && row.approved_by) {
+                  <div class="text-[10px] text-slate-400 mt-1" [title]="row.approved_by">
+                    Duyệt bởi: {{ shortAddress(row.approved_by) }}
+                  </div>
+                }
+              </ng-template>
+
+              <ng-template appCell="created_at" let-row>
+                <span class="text-xs text-slate-500">
+                  {{ row.created_at | date: 'dd/MM/yyyy HH:mm' }}
+                </span>
+              </ng-template>
+
+              <ng-template appCell="actions" let-row>
+                <div class="flex items-center justify-end gap-2 pr-2">
+                  @if (row.status === 'pending') {
+                    <button
+                      (click)="approveSubscription(row)"
+                      [disabled]="isSubscriptionActionLoading()"
+                      class="btn-primary btn-xs"
+                    >
+                      Duyệt
+                    </button>
+                    <button
+                      (click)="openRejectModal(row)"
+                      [disabled]="isSubscriptionActionLoading()"
+                      class="btn-danger btn-xs"
+                    >
+                      Từ chối
+                    </button>
+                  } @else {
+                    <span class="text-xs text-slate-450">—</span>
+                  }
+                </div>
+              </ng-template>
+            </app-table>
+          }
+        </div>
+      }
+
+      <!-- ===== TAB 6: SYSTEM STAFFS (Nhân viên hệ thống) ===== -->
+      @if (activeSubTab() === 'staffs' && stateService.isSuperAdmin()) {
+        <div class="flex items-center justify-between gap-3 mb-6">
+          <div>
+            <h4 class="text-base font-black text-slate-800 dark:text-white uppercase tracking-wider">
+              QUẢN LÝ NHÂN VIÊN HỆ THỐNG
+            </h4>
+            <p class="text-xs text-slate-400 mt-0.5">
+              Thêm địa chỉ ví và quản lý phân quyền cho nhân viên hỗ trợ/sale của hệ thống.
+            </p>
+          </div>
+          <button app-button variant="primary" class="whitespace-nowrap flex items-center gap-1.5" (click)="openAddStaff()">
+            <app-icon name="plus" class="h-4.5 w-4.5" strokeWidth="2.5"></app-icon>
+            <span>Thêm nhân viên</span>
+          </button>
+        </div>
+
+        <div app-card class="p-0 overflow-hidden">
+          @if (isSystemStaffsLoading()) {
+            <app-skeleton-loader type="table" [cols]="6" [rows]="5"></app-skeleton-loader>
+          } @else {
+            <app-table
+              [columns]="staffSystemColumns"
+              [data]="systemStaffs()"
+              [showPagination]="false"
+              [itemName]="'nhân viên'"
+            >
+              <ng-template appCell="wallet_address" let-row>
+                <div class="flex items-center gap-1.5 font-mono text-purple-650 dark:text-purple-400">
+                  <span>{{ shortAddress(row.wallet_address) }}</span>
+                  <button
+                    (click)="stateService.copyAddress(row.wallet_address)"
+                    class="p-1 text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition"
+                    title="Sao chép ví"
+                  >
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </ng-template>
+
+              <ng-template appCell="name" let-row>
+                <span class="text-sm font-extrabold text-slate-800 dark:text-white">
+                  {{ row.name }}
+                </span>
+              </ng-template>
+
+              <ng-template appCell="role" let-row>
+                <span class="inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-bold bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20">
+                  {{ row.role === 'staff' ? 'Nhân viên hệ thống' : 'Quản trị viên' }}
+                </span>
+              </ng-template>
+
+              <ng-template appCell="is_active" let-row>
+                <span
+                  class="inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-bold"
+                  [ngClass]="{
+                    'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20':
+                      row.is_active,
+                    'bg-rose-100 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/20':
+                      !row.is_active
+                  }"
+                >
+                  {{ row.is_active ? 'Đang hoạt động' : 'Tạm khóa' }}
+                </span>
+              </ng-template>
+
+              <ng-template appCell="created_at" let-row>
+                <span class="text-xs text-slate-500">
+                  {{ row.created_at | date: 'dd/MM/yyyy' }}
+                </span>
+              </ng-template>
+
+              <ng-template appCell="actions" let-row>
+                <div class="flex items-center justify-end pr-2">
+                  <button
+                    (click)="deleteSystemStaff(row)"
+                    [disabled]="isSystemStaffActionLoading()"
+                    class="btn-danger btn-xs"
+                  >
+                    Xóa
+                  </button>
+                </div>
+              </ng-template>
+            </app-table>
+          }
+        </div>
+      }
+
+      <!-- Modal Từ chối phê duyệt -->
+      @if (showRejectModal()) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200 animate-none">
+          <div class="w-full max-w-md bg-white dark:bg-slate-900 rounded-[15px] shadow-2xl border border-slate-200/80 dark:border-slate-800/80 overflow-hidden flex flex-col animate-none">
+            <!-- Header -->
+            <div class="px-5 py-4 border-b border-slate-150 dark:border-slate-800/60 flex items-center justify-between">
+              <h3 class="text-base font-bold text-slate-800 dark:text-white">Từ chối yêu cầu nâng gói</h3>
+              <button (click)="closeRejectModal()" class="text-slate-400 hover:text-slate-650 dark:hover:text-slate-200 p-1">
+                <app-icon name="close" class="h-5 w-5"></app-icon>
+              </button>
+            </div>
+            <!-- Body -->
+            <div class="p-5 space-y-4">
+              <div class="space-y-2 flex flex-col">
+                <label class="text-xs font-bold text-slate-450 uppercase tracking-wider">Lý do từ chối <span class="text-rose-500">*</span></label>
+                <textarea
+                  [(ngModel)]="rejectReason"
+                  rows="3"
+                  placeholder="Ví dụ: Chưa nhận được chuyển khoản hoặc thông tin mã giao dịch không khớp..."
+                  class="form-input text-sm p-3 w-full"
+                ></textarea>
+              </div>
+            </div>
+            <!-- Footer -->
+            <div class="px-5 py-3.5 bg-slate-50 dark:bg-slate-950/40 border-t border-slate-150 dark:border-slate-800/60 flex justify-end gap-2">
+              <button app-button variant="secondary" (click)="closeRejectModal()" [disabled]="isSubscriptionActionLoading()">
+                <span>Hủy</span>
+              </button>
+              <button app-button variant="danger" (click)="submitReject()" [disabled]="isSubscriptionActionLoading() || !rejectReason().trim()">
+                <span>Xác nhận từ chối</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Modal Thêm nhân viên hệ thống -->
+      @if (showAddStaffModal()) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200 animate-none">
+          <div class="w-full max-w-md bg-white dark:bg-slate-900 rounded-[15px] shadow-2xl border border-slate-200/80 dark:border-slate-800/80 overflow-hidden flex flex-col animate-none" [formGroup]="addStaffForm">
+            <!-- Header -->
+            <div class="px-5 py-4 border-b border-slate-150 dark:border-slate-800/60 flex items-center justify-between">
+              <h3 class="text-base font-bold text-slate-800 dark:text-white">Thêm nhân viên hệ thống mới</h3>
+              <button (click)="closeAddStaff()" class="text-slate-400 hover:text-slate-650 dark:hover:text-slate-200 p-1">
+                <app-icon name="close" class="h-5 w-5"></app-icon>
+              </button>
+            </div>
+            <!-- Body -->
+            <div class="p-5 space-y-4">
+              <div class="space-y-1.5 flex flex-col">
+                <label class="text-xs font-bold text-slate-450 uppercase tracking-wider">Địa chỉ ví nhân viên <span class="text-rose-500">*</span></label>
+                <input
+                  type="text"
+                  formControlName="wallet_address"
+                  placeholder="Ví dụ: 0x..."
+                  class="form-input text-sm !h-10"
+                />
+                @if (addStaffForm.get('wallet_address')?.touched && addStaffForm.get('wallet_address')?.errors?.['pattern']) {
+                  <p class="text-xs text-rose-500 mt-1">Địa chỉ ví không đúng định dạng EVM (0x + 40 ký tự hex).</p>
+                }
+              </div>
+
+              <div class="space-y-1.5 flex flex-col">
+                <label class="text-xs font-bold text-slate-450 uppercase tracking-wider">Tên nhân viên <span class="text-rose-500">*</span></label>
+                <input
+                  type="text"
+                  formControlName="name"
+                  placeholder="Ví dụ: Nguyễn Văn Sale"
+                  class="form-input text-sm !h-10"
+                />
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1.5 flex flex-col">
+                  <label class="text-xs font-bold text-slate-450 uppercase tracking-wider">Vai trò</label>
+                  <app-custom-select
+                    [options]="[
+                      { value: 'staff', label: 'Nhân viên hệ thống' },
+                      { value: 'admin', label: 'Quản trị viên' }
+                    ]"
+                    valueKey="value"
+                    labelKey="label"
+                    formControlName="role"
+                    triggerClass="w-full form-input !py-2 !h-10 !text-sm"
+                  ></app-custom-select>
+                </div>
+
+                <div class="space-y-1.5 flex flex-col justify-end pb-2">
+                  <div class="flex items-center justify-between border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 h-10">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Hoạt động</span>
+                    <app-custom-switch formControlName="is_active"></app-custom-switch>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Footer -->
+            <div class="px-5 py-3.5 bg-slate-50 dark:bg-slate-950/40 border-t border-slate-150 dark:border-slate-800/60 flex justify-end gap-2">
+              <button app-button variant="secondary" (click)="closeAddStaff()" [disabled]="isSystemStaffActionLoading()">
+                <span>Hủy</span>
+              </button>
+              <button app-button variant="primary" (click)="submitAddStaff()" [disabled]="isSystemStaffActionLoading() || addStaffForm.invalid">
+                <span>Thêm nhân viên</span>
+              </button>
+            </div>
+          </div>
+        </div>
       }
     }
   }
