@@ -114,8 +114,11 @@ export class FinancialTransactionModalComponent implements OnInit {
             this.modalRef.close(true);
           }
         },
-        error: () => {
-          this.stateService.showToast('Ghi nhận thu chi thất bại!', 'error');
+        error: (err) => {
+          const isLimitError = err.error?.message?.includes('subscription plan has reached the maximum limit');
+          if (!isLimitError) {
+            this.stateService.showToast('Ghi nhận thu chi thất bại!', 'error');
+          }
           this.isTransactionSaving.set(false);
         },
       });
@@ -127,8 +130,11 @@ export class FinancialTransactionModalComponent implements OnInit {
           this.isTransactionSaving.set(false);
           this.modalRef.close(true);
         },
-        error: () => {
-          this.stateService.showToast('Cập nhật giao dịch thất bại!', 'error');
+        error: (err) => {
+          const isLimitError = err.error?.message?.includes('subscription plan has reached the maximum limit');
+          if (!isLimitError) {
+            this.stateService.showToast('Cập nhật giao dịch thất bại!', 'error');
+          }
           this.isTransactionSaving.set(false);
         },
       });

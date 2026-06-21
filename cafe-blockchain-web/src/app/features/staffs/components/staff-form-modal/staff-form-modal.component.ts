@@ -98,8 +98,11 @@ export class StaffFormModalComponent {
         this.modalRef.close(true);
       },
       error: (err) => {
-        const errorMsg = err.error?.message || 'Có lỗi xảy ra, vui lòng thử lại.';
-        this.stateService.showToast(errorMsg, 'error');
+        const isLimitError = err.error?.message?.includes('subscription plan has reached the maximum limit');
+        if (!isLimitError) {
+          const errorMsg = err.error?.message || 'Có lỗi xảy ra, vui lòng thử lại.';
+          this.stateService.showToast(errorMsg, 'error');
+        }
         this.isSavingStaff.set(false);
       },
     });

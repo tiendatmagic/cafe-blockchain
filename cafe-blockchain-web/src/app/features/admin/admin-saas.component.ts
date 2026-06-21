@@ -403,7 +403,7 @@ export class AdminSaaSComponent implements OnInit {
   public openAddPlan() {
     this.modalService.open(SubscriptionPlanModalComponent, {
       title: 'Thêm gói cước mới',
-      size: 'lg',
+      size: '5xl',
       data: { plan: null }
     }).afterClosed$.subscribe((success) => {
       if (success) {

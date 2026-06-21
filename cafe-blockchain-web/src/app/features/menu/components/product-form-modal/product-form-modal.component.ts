@@ -243,8 +243,11 @@ export class ProductFormModalComponent implements OnInit {
           this.isLoading.set(false);
           this.modalRef.close(true);
         },
-        error: () => {
-          this.toastService.showToast('Thêm món thất bại!', 'error');
+        error: (err) => {
+          const isLimitError = err.error?.message?.includes('subscription plan has reached the maximum limit');
+          if (!isLimitError) {
+            this.toastService.showToast('Thêm món thất bại!', 'error');
+          }
           this.isLoading.set(false);
         },
       });
@@ -256,8 +259,11 @@ export class ProductFormModalComponent implements OnInit {
           this.isLoading.set(false);
           this.modalRef.close(true);
         },
-        error: () => {
-          this.toastService.showToast('Cập nhật món thất bại!', 'error');
+        error: (err) => {
+          const isLimitError = err.error?.message?.includes('subscription plan has reached the maximum limit');
+          if (!isLimitError) {
+            this.toastService.showToast('Cập nhật món thất bại!', 'error');
+          }
           this.isLoading.set(false);
         },
       });

@@ -104,7 +104,31 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
             // Chỉ hiển thị Toast đỏ khi không phải lỗi khóa tính năng (đã hiện modal) và (không phải request GET bị dính limit)
             const isGetRequest = req.method === 'GET';
             if (!isFeatureError && !(isGetRequest && isLimitError)) {
-              toastService.showToast(errorMsg, 'error');
+              let displayMsg = errorMsg;
+              if (isLimitError) {
+                const match = errorMsg.match(/Your subscription plan has reached the maximum limit of (\d+) (customer|product|staff member|transaction|debt record)s?\./i);
+                if (match) {
+                  const limitVal = match[1];
+                  let resourceNameVi = 'tài nguyên';
+                  const englishResource = match[2].toLowerCase();
+                  if (englishResource.includes('customer')) {
+                    resourceNameVi = 'khách hàng';
+                  } else if (englishResource.includes('product')) {
+                    resourceNameVi = 'sản phẩm/nguyên liệu';
+                  } else if (englishResource.includes('staff')) {
+                    resourceNameVi = 'nhân viên';
+                  } else if (englishResource.includes('transaction')) {
+                    resourceNameVi = 'giao dịch thu chi';
+                  } else if (englishResource.includes('debt')) {
+                    resourceNameVi = 'ghi nợ';
+                  }
+                  
+                  displayMsg = `Cửa hàng của bạn đã đạt giới hạn tối đa số lượng ${resourceNameVi} (${limitVal} ${resourceNameVi}). Vui lòng nâng cấp lên gói Ultra để tiếp tục!`;
+                } else {
+                  displayMsg = 'Cửa hàng của bạn đã đạt giới hạn gói cước. Vui lòng nâng cấp lên gói Ultra để tiếp tục!';
+                }
+              }
+              toastService.showToast(displayMsg, 'error');
             }
           }
         }

@@ -257,8 +257,11 @@ export class CustomerFormModalComponent implements OnInit {
           this.isCustomerSaving.set(false);
           this.modalRef.close(true);
         },
-        error: () => {
-          this.stateService.showToast('Thêm khách hàng thất bại!', 'error');
+        error: (err) => {
+          const isLimitError = err.error?.message?.includes('subscription plan has reached the maximum limit');
+          if (!isLimitError) {
+            this.stateService.showToast('Thêm khách hàng thất bại!', 'error');
+          }
           this.isCustomerSaving.set(false);
         },
       });
@@ -270,8 +273,11 @@ export class CustomerFormModalComponent implements OnInit {
           this.isCustomerSaving.set(false);
           this.modalRef.close(true);
         },
-        error: () => {
-          this.stateService.showToast('Cập nhật khách hàng thất bại!', 'error');
+        error: (err) => {
+          const isLimitError = err.error?.message?.includes('subscription plan has reached the maximum limit');
+          if (!isLimitError) {
+            this.stateService.showToast('Cập nhật khách hàng thất bại!', 'error');
+          }
           this.isCustomerSaving.set(false);
         },
       });
