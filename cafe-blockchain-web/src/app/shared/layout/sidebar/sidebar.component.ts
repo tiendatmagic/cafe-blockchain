@@ -46,6 +46,14 @@ export class SidebarComponent implements AfterViewInit, OnDestroy {
   // Thiết lập hiệu ứng trượt toàn cục từ StateService
   public readonly useSlidingEffect = this.stateService.useSlidingEffect;
 
+  constructor() {
+    // Lắng nghe thay đổi hiệu ứng để vẽ lại slider
+    effect(() => {
+      this.useSlidingEffect();
+      setTimeout(() => this.updateSliderPosition(), 50);
+    });
+  }
+
   ngAfterViewInit() {
     setTimeout(() => this.updateSliderPosition(), 150);
 
@@ -54,12 +62,6 @@ export class SidebarComponent implements AfterViewInit, OnDestroy {
       .subscribe(() => {
         setTimeout(() => this.updateSliderPosition(), 100);
       });
-
-    // Lắng nghe thay đổi hiệu ứng để vẽ lại slider
-    effect(() => {
-      this.useSlidingEffect();
-      setTimeout(() => this.updateSliderPosition(), 50);
-    });
   }
 
   ngOnDestroy() {

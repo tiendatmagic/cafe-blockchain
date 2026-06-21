@@ -233,21 +233,6 @@ export class Web3Service {
     // Đánh dấu hoàn tất giai đoạn khởi tạo AppKit sau 2 giây để tránh race condition lúc F5
     setTimeout(() => {
       this.isAppKitInitializing = false;
-      // Nếu sau khi khởi tạo AppKit xong mà ví không thực sự kết nối, nhưng DApp vẫn đang ở trạng thái connected (do restore từ localStorage)
-      // thì tức là ví đã thực sự bị ngắt kết nối phía ngoài, ta cần reset và đăng xuất.
-      if (!this.appKitIsConnected && this.walletConnected()) {
-        const eth = typeof window !== 'undefined' ? (window as any).ethereum : null;
-        const extensionAccount = eth?.selectedAddress || eth?.accounts?.[0];
-        const savedAddress = typeof window !== 'undefined' ? localStorage.getItem('auth_address') : null;
-        if (extensionAccount && savedAddress && extensionAccount.toLowerCase() === savedAddress.toLowerCase()) {
-          console.log('[Web3] Phát hiện ví extension vẫn đang kết nối trùng khớp. Bảo toàn session.');
-          this.currentAccount.set(extensionAccount);
-          this.walletConnected.set(true);
-          return;
-        }
-        this.resetWalletState(true);
-        this.emitAccountChange('');
-      }
     }, 2000);
 
     // Định kỳ 30 giây cập nhật tình trạng mạng lưới blockchain và phí Gas
