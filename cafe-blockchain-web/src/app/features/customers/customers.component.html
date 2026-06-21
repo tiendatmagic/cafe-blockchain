@@ -278,13 +278,13 @@
                 <div class="flex flex-col gap-1 min-w-[140px]">
                   @if (row.wallet_address) {
                     <span
-                      class="font-mono text-xs text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-950 px-1.5 py-0.5 rounded truncate max-w-[140px] font-bold"
+                      class="font-mono text-xs text-purple-600 dark:text-purple-400 bg-purple-50/80 dark:bg-purple-950/40 px-1.5 py-0.5 rounded truncate max-w-[140px] font-bold border border-purple-100/50 dark:border-purple-900/30"
                       [title]="row.wallet_address"
                     >
                       {{ row.wallet_address | appShortAddress }}
                     </span>
                   } @else {
-                    <span class="text-xs text-slate-400 dark:text-slate-600 italic"
+                    <span class="text-xs text-slate-400 dark:text-slate-500 italic"
                       >Chưa liên kết ví</span
                     >
                   }
@@ -301,7 +301,7 @@
                     </app-badge>
                   } @else {
                     <span
-                      class="text-xs text-slate-400 dark:text-slate-600 font-semibold animate-pulse"
+                      class="text-xs text-slate-400 dark:text-slate-500 font-semibold animate-pulse"
                       >Chưa có voucher</span
                     >
                   }
