@@ -317,40 +317,6 @@ export class Web3Service {
 
       const ethersAdapter = new EthersAdapter();
       const defaultNet = this.getAppKitNetworkByChainId(this.configuredChainId());
-
-      // Mock SIWE Config để tự động giả lập và lưu session SIWE phía client
-      const mockSiweConfig = {
-        getNonce: async () => {
-          // Sinh chuỗi ngẫu nhiên 12 ký tự (chữ và số) để thông điệp ký trông chuyên nghiệp và hợp lệ
-          return Math.random().toString(36).substring(2, 14).toUpperCase();
-        },
-        createMessage: (args: any) => {
-          return `Sign in to Cafe Blockchain: ${args.address}`;
-        },
-        verifyMessage: async (args: any) => {
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('appkit_siwe_signed', 'true');
-          }
-          return true;
-        },
-        getSession: async () => {
-          const account = this.currentAccount();
-          if (typeof window !== 'undefined' && localStorage.getItem('appkit_siwe_signed') === 'true' && account) {
-            return {
-              address: account,
-              chainId: Number(this.chainId() || this.configuredChainId())
-            };
-          }
-          return null;
-        },
-        signOut: async () => {
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('appkit_siwe_signed');
-          }
-          return true;
-        }
-      };
-
       this.modal = createAppKit({
         adapters: [ethersAdapter],
         networks: [arbitrum, base, bsc, bscTestnet, arbitrumSepolia],
@@ -367,15 +333,7 @@ export class Web3Service {
           socials: false,
           analytics: false
         },
-        enableCoinbase: false,
-        excludeWalletIds: [
-          'fd20a4e69d7b889311311b93f773646548d7936a575a783783451e01869e54d8',
-          'ef333840daf915aafdc4a004525502d6d49d77bd9c65e0642dbaefb3c2893bef'
-        ],
-        featuredWalletIds: [
-          '4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0' // Trust Wallet
-        ],
-        siweConfig: mockSiweConfig as any
+        enableCoinbase: false
       });
 
       // Lắng nghe account thay đổi từ WalletConnect modal để cập nhật state đồng bộ
@@ -628,10 +586,8 @@ export class Web3Service {
         return true;
       }
 
-      // Xóa sạch localStorage trước khi mở modal kết nối mới để tránh kẹt session rác gây lỗi Connection declined
-      if (typeof window !== 'undefined') {
-        localStorage.clear();
-      }
+      // Xóa các key auth cũ thay vì clear toàn bộ localStorage tránh làm hỏng cache của AppKit
+      this.resetWalletState(true);
 
       // 2. Nếu chưa kết nối, mở modal chọn ví của AppKit
       await this.modal.open();
@@ -691,9 +647,7 @@ export class Web3Service {
                   resolved = true;
                   unsubscribeAccount();
                   unsubscribeEvents();
-                  if (typeof window !== 'undefined') {
-                    localStorage.clear();
-                  }
+                  this.resetWalletState(true);
                   resolve(false);
                 }
               }
@@ -704,9 +658,7 @@ export class Web3Service {
     } catch (err: any) {
       console.error('Lỗi khi mở modal kết nối:', err);
       this.walletError.set(err.message || 'Lỗi kết nối ví.');
-      if (typeof window !== 'undefined') {
-        localStorage.clear();
-      }
+      this.resetWalletState(true);
       return false;
     }
   }
