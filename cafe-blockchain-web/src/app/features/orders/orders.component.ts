@@ -236,12 +236,13 @@ export class OrdersComponent implements OnInit {
   // Mở modal xem chi tiết đơn hàng
   public viewOrderDetail(order: any) {
     this.selectedOrderDetails.set(order);
+    const self = this;
 
     const dialogRef = this.modalService.open(OrderDetailModalComponent, {
       title: `Chi tiết hóa đơn ${order.order_code || '#' + order.id}`,
       size: '5xl',
       data: {
-        order: order,
+        get order() { return self.selectedOrderDetails(); },
         settings: this.settings(),
         web3Service: this.web3Service,
         // Truyền signal references thay vì giá trị tĩnh để modal đọc reactive state
@@ -252,18 +253,19 @@ export class OrdersComponent implements OnInit {
         // Callback để modal thực thi action mà không cần đóng modal
         onUpdateStatus: (status: 'preparing' | 'completed' | 'cancelled', isAutoSync: boolean) => {
           this.isAutoSyncOnCompleteChecked.set(isAutoSync);
-          if (status === 'cancelled' && order.status === 'completed') {
+          const currentOrder = self.selectedOrderDetails();
+          if (status === 'cancelled' && currentOrder?.status === 'completed') {
             // Yêu cầu hủy đơn đã hoàn thành -> hiện modal giải thích nghiệp vụ
-            this.triggerCancelExplanation(order);
+            this.triggerCancelExplanation(currentOrder);
           } else {
-            this.updateStatus(order.id, status);
+            this.updateStatus(currentOrder?.id || order.id, status);
           }
         },
         onSyncToBlockchain: () => {
-          this.syncToBlockchain(order);
+          this.syncToBlockchain(self.selectedOrderDetails() || order);
         },
         onMintVoucher: () => {
-          this.mintVoucherManual(order);
+          this.mintVoucherManual(self.selectedOrderDetails() || order);
         },
         onUpdateOrder: (updatedOrder: any) => {
           this.updateLocalOrder(updatedOrder);

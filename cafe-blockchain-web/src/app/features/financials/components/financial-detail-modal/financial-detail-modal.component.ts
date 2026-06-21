@@ -97,7 +97,7 @@ export class FinancialDetailModalComponent {
             tx.tx_hash = result.txHash;
             tx.chain_id = this.web3Service.chainId();
             this.blockchainSyncLoading.set(false);
-            this.modalRef.close(true); // Trả về true để component cha reload list
+            this.stateService.refreshTransactions(); // Làm mới danh sách phía sau
           },
           error: (err) => {
             console.error('Loi cap nhat TxHash len DB:', err);
@@ -130,7 +130,7 @@ export class FinancialDetailModalComponent {
                 tx.tx_hash = originalTxHash;
                 tx.chain_id = this.web3Service.chainId();
                 this.blockchainSyncLoading.set(false);
-                this.modalRef.close(true);
+                this.stateService.refreshTransactions(); // Làm mới danh sách phía sau
               },
               error: (err) => {
                 console.error('Lỗi đối soát giao dịch thu chi:', err);
