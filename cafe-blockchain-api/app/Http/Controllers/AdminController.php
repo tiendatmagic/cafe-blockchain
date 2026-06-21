@@ -776,8 +776,27 @@ class AdminController extends Controller
 
     public function indexSystemStaffs(Request $request)
     {
-        $staffs = SystemStaff::orderBy('created_at', 'desc')->get();
-        return response()->json($staffs);
+        $perPage = $request->input('per_page', 10);
+        $search = $request->input('search', '');
+
+        $query = SystemStaff::query();
+
+        if (!empty($search)) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('wallet_address', 'like', "%{$search}%")
+                  ->orWhere('role', 'like', "%{$search}%");
+            });
+        }
+
+        $staffs = $query->orderBy('created_at', 'desc')->paginate($perPage);
+
+        return response()->json([
+            'data' => $staffs->items(),
+            'total' => $staffs->total(),
+            'current_page' => $staffs->currentPage(),
+            'per_page' => $staffs->perPage(),
+        ]);
     }
 
     public function storeSystemStaff(Request $request)

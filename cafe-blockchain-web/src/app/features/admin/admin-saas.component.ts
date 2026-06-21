@@ -23,6 +23,8 @@ import { SubscriptionPlanModalComponent } from './components/subscription-plan-m
 import { PaymentFormModalComponent } from '../settings/components/payment-form-modal/payment-form-modal.component';
 import { QrCodeModalComponent } from '../settings/components/qr-code-modal/qr-code-modal.component';
 import { SubscriptionRequestDetailModalComponent } from './components/subscription-request-detail-modal/subscription-request-detail-modal.component';
+import { SystemStaffModalComponent } from './components/system-staff-modal/system-staff-modal.component';
+import { RejectSubscriptionModalComponent } from './components/reject-subscription-modal/reject-subscription-modal.component';
 import { CustomSelectComponent } from '@shared/components/custom-select/custom-select.component';
 import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prompt/web3-connect-prompt.component';
 import { AccessRestrictedComponent } from '@shared/components/access-restricted/access-restricted.component';
@@ -246,22 +248,12 @@ export class AdminSaaSComponent implements OnInit {
 
   // System Staffs Signals
   public readonly systemStaffs = signal<any[]>([]);
+  public readonly systemStaffsTotal = signal<number>(0);
+  public readonly systemStaffsPage = signal<number>(1);
+  public readonly systemStaffsPerPage = signal<number>(10);
+  public readonly systemStaffsSearch = signal<string>('');
   public readonly isSystemStaffsLoading = signal<boolean>(false);
   public readonly isSystemStaffActionLoading = signal<boolean>(false);
-
-  // Add Staff Form (Super Admin)
-  public readonly showAddStaffModal = signal<boolean>(false);
-  public readonly addStaffForm: FormGroup = this.fb.group({
-    wallet_address: ['', [Validators.required, Validators.pattern(/^0x[a-fA-F0-9]{40}$/i)]],
-    name: ['', Validators.required],
-    role: ['staff', Validators.required],
-    is_active: [true]
-  });
-
-  // Reject Reason Dialog (Staff / Super Admin)
-  public readonly showRejectModal = signal<boolean>(false);
-  public readonly rejectItemId = signal<number | null>(null);
-  public readonly rejectReason = signal<string>('');
 
   public readonly systemPaymentMethods = signal<any[]>([]);
   public readonly systemPaymentTotal = signal<number>(0);
@@ -447,6 +439,10 @@ export class AdminSaaSComponent implements OnInit {
     this.subscriptionPage.set(1);
     this.subscriptionSearch.set('');
     this.subscriptionStatus.set('pending');
+
+    // Reset system staff search and pagination
+    this.systemStaffsPage.set(1);
+    this.systemStaffsSearch.set('');
 
     this.triggerTabLoad(tab);
 
@@ -1085,37 +1081,14 @@ export class AdminSaaSComponent implements OnInit {
   }
 
   public openRejectModal(item: any) {
-    this.rejectItemId.set(item.id);
-    this.rejectReason.set('');
-    this.showRejectModal.set(true);
-  }
-
-  public closeRejectModal() {
-    this.showRejectModal.set(false);
-    this.rejectItemId.set(null);
-    this.rejectReason.set('');
-  }
-
-  public submitReject() {
-    const id = this.rejectItemId();
-    const reason = this.rejectReason().trim();
-    if (!id) return;
-    if (!reason) {
-      this.stateService.showToast('Vui lòng nhập lý do từ chối.', 'error');
-      return;
-    }
-
-    this.apiService.rejectAdminSubscription(id, reason).subscribe({
-      next: (res) => {
-        this.stateService.showToast(res.message || 'Đã từ chối yêu cầu thành công.', 'success');
-        this.isSubscriptionActionLoading.set(false);
-        this.closeRejectModal();
+    this.modalService.open(RejectSubscriptionModalComponent, {
+      title: 'Từ chối yêu cầu nâng gói',
+      size: 'md',
+      data: { requestId: item.id }
+    }).afterClosed$.subscribe(success => {
+      if (success) {
         this.loadSubscriptionRequests();
-      },
-      error: (err) => {
-        const msg = err.error?.message || 'Có lỗi xảy ra khi từ chối yêu cầu.';
-        this.stateService.showToast(msg, 'error');
-        this.isSubscriptionActionLoading.set(false);
+        this.apiService.getAdminTenants().subscribe(tenants => this.tenants.set(tenants));
       }
     });
   }
@@ -1123,9 +1096,14 @@ export class AdminSaaSComponent implements OnInit {
   // --- Quản lý Nhân viên hệ thống (System Staffs) ---
   public loadSystemStaffs() {
     this.isSystemStaffsLoading.set(true);
-    this.apiService.getAdminSystemStaffs().subscribe({
+    this.apiService.getAdminSystemStaffs({
+      page: this.systemStaffsPage(),
+      per_page: this.systemStaffsPerPage(),
+      search: this.systemStaffsSearch()
+    }).subscribe({
       next: (res) => {
-        this.systemStaffs.set(res || []);
+        this.systemStaffs.set(res.data || []);
+        this.systemStaffsTotal.set(res.total || 0);
         this.isSystemStaffsLoading.set(false);
       },
       error: () => {
@@ -1136,38 +1114,12 @@ export class AdminSaaSComponent implements OnInit {
   }
 
   public openAddStaff() {
-    this.addStaffForm.reset({
-      wallet_address: '',
-      name: '',
-      role: 'staff',
-      is_active: true
-    });
-    this.showAddStaffModal.set(true);
-  }
-
-  public closeAddStaff() {
-    this.showAddStaffModal.set(false);
-  }
-
-  public submitAddStaff() {
-    if (this.addStaffForm.invalid) {
-      this.stateService.showToast('Dữ liệu biểu mẫu không hợp lệ.', 'error');
-      return;
-    }
-
-    this.isSystemStaffActionLoading.set(true);
-    const data = this.addStaffForm.value;
-    this.apiService.createAdminSystemStaff(data).subscribe({
-      next: (res) => {
-        this.stateService.showToast(res.message || 'Thêm nhân viên thành công.', 'success');
-        this.isSystemStaffActionLoading.set(false);
-        this.closeAddStaff();
+    this.modalService.open(SystemStaffModalComponent, {
+      title: 'Thêm nhân viên hệ thống mới',
+      size: 'md'
+    }).afterClosed$.subscribe(success => {
+      if (success) {
         this.loadSystemStaffs();
-      },
-      error: (err) => {
-        const msg = err.error?.message || 'Có lỗi xảy ra khi thêm nhân viên.';
-        this.stateService.showToast(msg, 'error');
-        this.isSystemStaffActionLoading.set(false);
       }
     });
   }

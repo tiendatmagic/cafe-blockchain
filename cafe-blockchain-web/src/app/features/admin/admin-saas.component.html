@@ -1831,8 +1831,8 @@
 
       <!-- ===== TAB 6: SYSTEM STAFFS (Nhân viên hệ thống) ===== -->
       @if (activeSubTab() === 'staffs' && stateService.isSuperAdmin()) {
-        <div class="flex items-center justify-between gap-3 mb-6">
-          <div>
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div class="min-w-0">
             <h4 class="text-base font-black text-slate-800 dark:text-white uppercase tracking-wider">
               QUẢN LÝ NHÂN VIÊN HỆ THỐNG
             </h4>
@@ -1840,10 +1840,32 @@
               Thêm địa chỉ ví và quản lý phân quyền cho nhân viên hỗ trợ/sale của hệ thống.
             </p>
           </div>
-          <button app-button variant="primary" class="whitespace-nowrap flex items-center gap-1.5" (click)="openAddStaff()">
-            <app-icon name="plus" class="h-4.5 w-4.5" strokeWidth="2.5"></app-icon>
-            <span>Thêm nhân viên</span>
-          </button>
+
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+            <!-- Search Field -->
+            <div class="relative w-full sm:w-64">
+              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+                <app-icon name="search" class="h-4.5 w-4.5 text-slate-400"></app-icon>
+              </div>
+              <input
+                type="text"
+                [ngModel]="systemStaffsSearch()"
+                (ngModelChange)="systemStaffsSearch.set($event); systemStaffsPage.set(1); loadSystemStaffs()"
+                placeholder="Tìm theo tên, ví..."
+                class="search-input !pl-10 !h-10 !text-sm"
+              />
+            </div>
+
+            <button
+              app-button
+              variant="primary"
+              class="whitespace-nowrap flex items-center justify-center gap-1.5 w-full sm:w-auto"
+              (click)="openAddStaff()"
+            >
+              <app-icon name="plus" class="h-4.5 w-4.5" strokeWidth="2.5"></app-icon>
+              <span>Thêm nhân viên</span>
+            </button>
+          </div>
         </div>
 
         <div app-card class="p-0 overflow-hidden">
@@ -1853,8 +1875,12 @@
             <app-table
               [columns]="staffSystemColumns"
               [data]="systemStaffs()"
-              [showPagination]="false"
+              [totalItems]="systemStaffsTotal()"
+              [itemsPerPage]="systemStaffsPerPage()"
+              [currentPage]="systemStaffsPage()"
+              [showPagination]="true"
               [itemName]="'nhân viên'"
+              (pageChange)="systemStaffsPage.set($event); loadSystemStaffs()"
             >
               <ng-template appCell="wallet_address" let-row>
                 <div class="flex items-center gap-1.5 font-mono text-purple-650 dark:text-purple-400">
@@ -1923,106 +1949,6 @@
               </ng-template>
             </app-table>
           }
-        </div>
-      }
-
-      <!-- Modal Từ chối phê duyệt -->
-      @if (showRejectModal()) {
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200 animate-none">
-          <div class="w-full max-w-md bg-white dark:bg-slate-900 rounded-[15px] shadow-2xl border border-slate-200/80 dark:border-slate-800/80 overflow-hidden flex flex-col animate-none">
-            <!-- Header -->
-            <div class="px-5 py-4 border-b border-slate-150 dark:border-slate-800/60 flex items-center justify-between">
-              <h3 class="text-base font-bold text-slate-800 dark:text-white">Từ chối yêu cầu nâng gói</h3>
-              <button (click)="closeRejectModal()" class="text-slate-400 hover:text-slate-650 dark:hover:text-slate-200 p-1">
-                <app-icon name="close" class="h-5 w-5"></app-icon>
-              </button>
-            </div>
-            <!-- Body -->
-            <div class="p-5 space-y-4">
-              <div class="space-y-2 flex flex-col">
-                <label class="text-xs font-bold text-slate-450 uppercase tracking-wider">Lý do từ chối <span class="text-rose-500">*</span></label>
-                <textarea
-                  [(ngModel)]="rejectReason"
-                  rows="3"
-                  placeholder="Ví dụ: Chưa nhận được chuyển khoản hoặc thông tin mã giao dịch không khớp..."
-                  class="form-input text-sm p-3 w-full"
-                ></textarea>
-              </div>
-            </div>
-            <!-- Footer -->
-            <div class="px-5 py-3.5 bg-slate-50 dark:bg-slate-950/40 border-t border-slate-150 dark:border-slate-800/60 flex justify-end gap-2">
-              <button app-button variant="secondary" (click)="closeRejectModal()" [disabled]="isSubscriptionActionLoading()">
-                <span>Hủy</span>
-              </button>
-              <button app-button variant="danger" (click)="submitReject()" [disabled]="isSubscriptionActionLoading() || !rejectReason().trim()">
-                <span>Xác nhận từ chối</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      }
-
-      <!-- Modal Thêm nhân viên hệ thống -->
-      @if (showAddStaffModal()) {
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200 animate-none">
-          <div class="w-full max-w-md bg-white dark:bg-slate-900 rounded-[15px] shadow-2xl border border-slate-200/80 dark:border-slate-800/80 overflow-hidden flex flex-col animate-none" [formGroup]="addStaffForm">
-            <!-- Header -->
-            <div class="px-5 py-4 border-b border-slate-150 dark:border-slate-800/60 flex items-center justify-between">
-              <h3 class="text-base font-bold text-slate-800 dark:text-white">Thêm nhân viên hệ thống mới</h3>
-              <button (click)="closeAddStaff()" class="text-slate-400 hover:text-slate-650 dark:hover:text-slate-200 p-1">
-                <app-icon name="close" class="h-5 w-5"></app-icon>
-              </button>
-            </div>
-            <!-- Body -->
-            <div class="p-5 space-y-4">
-              <div class="space-y-1.5 flex flex-col">
-                <label class="text-xs font-bold text-slate-450 uppercase tracking-wider">Địa chỉ ví nhân viên <span class="text-rose-500">*</span></label>
-                <input
-                  type="text"
-                  formControlName="wallet_address"
-                  placeholder="Ví dụ: 0x..."
-                  class="form-input text-sm !h-10"
-                />
-                @if (addStaffForm.get('wallet_address')?.touched && addStaffForm.get('wallet_address')?.errors?.['pattern']) {
-                  <p class="text-xs text-rose-500 mt-1">Địa chỉ ví không đúng định dạng EVM (0x + 40 ký tự hex).</p>
-                }
-              </div>
-
-              <div class="space-y-1.5 flex flex-col">
-                <label class="text-xs font-bold text-slate-450 uppercase tracking-wider">Tên nhân viên <span class="text-rose-500">*</span></label>
-                <input
-                  type="text"
-                  formControlName="name"
-                  placeholder="Ví dụ: Nguyễn Văn Sale"
-                  class="form-input text-sm !h-10"
-                />
-              </div>
-
-              <div class="grid grid-cols-2 gap-4">
-                <div class="space-y-1.5 flex flex-col col-span-2">
-                  <label class="text-xs font-bold text-slate-450 uppercase tracking-wider">Vai trò</label>
-                  <app-custom-select
-                    [options]="[
-                      { value: 'staff', label: 'Nhân viên hệ thống' },
-                      { value: 'admin', label: 'Quản trị viên' }
-                    ]"
-                    valueKey="value"
-                    labelKey="label"
-                    formControlName="role"
-                  ></app-custom-select>
-                </div>
-              </div>
-            </div>
-            <!-- Footer -->
-            <div class="px-5 py-3.5 bg-slate-50 dark:bg-slate-950/40 border-t border-slate-150 dark:border-slate-800/60 flex justify-end gap-2">
-              <button app-button variant="cancel" type="button" (click)="closeAddStaff()" [disabled]="isSystemStaffActionLoading()">
-                Hủy
-              </button>
-              <button app-button variant="primary" type="submit" [disabled]="isSystemStaffActionLoading() || addStaffForm.invalid">
-                Lưu nhân viên
-              </button>
-            </div>
-          </div>
         </div>
       }
     }

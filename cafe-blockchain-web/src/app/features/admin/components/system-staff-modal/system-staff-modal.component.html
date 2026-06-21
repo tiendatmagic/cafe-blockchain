@@ -1,0 +1,56 @@
+<form [formGroup]="staffForm" (ngSubmit)="onSubmit()" class="space-y-6">
+  <!-- Wallet Address Input -->
+  <div class="space-y-2 flex flex-col">
+    <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">
+      Địa chỉ ví nhân viên <span class="text-rose-500">*</span>
+    </label>
+    <input
+      type="text"
+      formControlName="wallet_address"
+      placeholder="Ví dụ: 0x..."
+      class="form-input text-base"
+    />
+    @if (staffForm.get('wallet_address')?.touched && staffForm.get('wallet_address')?.errors?.['pattern']) {
+      <span class="text-xs text-rose-500 block mt-1">Địa chỉ ví không đúng định dạng EVM (0x + 40 ký tự hex).</span>
+    }
+  </div>
+
+  <!-- Staff Name Input -->
+  <div class="space-y-2 flex flex-col">
+    <label class="text-xs font-bold text-slate-440 dark:text-slate-500 uppercase tracking-wide">
+      Tên nhân viên <span class="text-rose-500">*</span>
+    </label>
+    <input
+      type="text"
+      formControlName="name"
+      placeholder="Ví dụ: Nguyễn Văn Sale"
+      class="form-input text-base"
+    />
+  </div>
+
+  <!-- Role Selection -->
+  <div class="space-y-2 flex flex-col">
+    <label class="text-xs font-bold text-slate-440 dark:text-slate-500 uppercase tracking-wide">
+      Vai trò
+    </label>
+    <app-custom-select
+      [options]="[
+        { value: 'staff', label: 'Nhân viên hệ thống' },
+        { value: 'admin', label: 'Quản trị viên' }
+      ]"
+      valueKey="value"
+      labelKey="label"
+      formControlName="role"
+    ></app-custom-select>
+  </div>
+
+  <!-- Actions -->
+  <div class="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800/60 animate-in fade-in duration-200">
+    <button app-button variant="cancel" type="button" (click)="onCancel()" [disabled]="isActionLoading()">
+      Hủy
+    </button>
+    <button app-button variant="primary" type="submit" [loading]="isActionLoading()" [disabled]="staffForm.invalid">
+      Lưu nhân viên
+    </button>
+  </div>
+</form>

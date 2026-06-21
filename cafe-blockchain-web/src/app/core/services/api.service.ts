@@ -565,9 +565,20 @@ export class ApiService {
   }
 
   // --- Super Admin SaaS APIs ---
-  // System Staffs (Nhân viên hệ thống)
-  public getAdminSystemStaffs(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/admin/staffs`, { headers: this.getHeaders() });
+  public getAdminSystemStaffs(params?: { search?: string; page?: number; per_page?: number }): Observable<any> {
+    let httpParams = new HttpParams();
+    if (params) {
+      if (params.search !== undefined) {
+        httpParams = httpParams.set('search', params.search);
+      }
+      if (params.page !== undefined) {
+        httpParams = httpParams.set('page', params.page.toString());
+      }
+      if (params.per_page !== undefined) {
+        httpParams = httpParams.set('per_page', params.per_page.toString());
+      }
+    }
+    return this.http.get<any>(`${this.baseUrl}/admin/staffs`, { params: httpParams, headers: this.getHeaders() });
   }
 
   public createAdminSystemStaff(data: any): Observable<any> {

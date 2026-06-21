@@ -1,0 +1,26 @@
+<form (ngSubmit)="onSubmit()" class="space-y-6">
+  <!-- Reason Textarea -->
+  <div class="space-y-2 flex flex-col">
+    <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">
+      Lý do từ chối <span class="text-rose-500">*</span>
+    </label>
+    <textarea
+      [(ngModel)]="rejectReason"
+      name="rejectReason"
+      rows="3"
+      placeholder="Ví dụ: Chưa nhận được chuyển khoản hoặc thông tin mã giao dịch không khớp..."
+      class="form-input text-base p-3 w-full"
+      required
+    ></textarea>
+  </div>
+
+  <!-- Actions -->
+  <div class="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800/60 animate-in fade-in duration-200">
+    <button app-button variant="cancel" type="button" (click)="onCancel()" [disabled]="isActionLoading()">
+      Hủy
+    </button>
+    <button app-button variant="danger" type="submit" [loading]="isActionLoading()" [disabled]="!rejectReason().trim()">
+      Xác nhận từ chối
+    </button>
+  </div>
+</form>
