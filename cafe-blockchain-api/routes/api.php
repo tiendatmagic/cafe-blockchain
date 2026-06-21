@@ -60,6 +60,10 @@ Route::middleware('auth:sanctum')->group(function () {
         // System Info & Packages
         Route::get('/system-info', [AdminController::class, 'getSystemInfo']);
         Route::get('/packages', [AdminController::class, 'getPackages']);
+
+        // Read-only access for admin role (view system staffs & payment methods)
+        Route::get('/staffs', [AdminController::class, 'indexSystemStaffs']);
+        Route::get('/payment-methods', [AdminController::class, 'indexPaymentMethods']);
     });
 
     // Super Admin Only Routes (Bypass CheckSubscription)
@@ -75,14 +79,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/clean-tokens', [AdminController::class, 'cleanTokens']);
         Route::post('/clean-all-tokens', [AdminController::class, 'cleanAllTokens']);
 
-        // System Staffs CRUD
-        Route::get('/staffs', [AdminController::class, 'indexSystemStaffs']);
+        // System Staffs CRUD (write operations - Super Admin only)
         Route::post('/staffs', [AdminController::class, 'storeSystemStaff']);
         Route::put('/staffs/{id}', [AdminController::class, 'updateSystemStaff']);
         Route::delete('/staffs/{id}', [AdminController::class, 'destroySystemStaff']);
 
-        // System Payment Methods CRUD
-        Route::get('/payment-methods', [AdminController::class, 'indexPaymentMethods']);
+        // System Payment Methods CRUD (write operations - Super Admin only)
         Route::post('/payment-methods', [AdminController::class, 'storePaymentMethod']);
         Route::put('/payment-methods/{id}', [AdminController::class, 'updatePaymentMethod']);
         Route::delete('/payment-methods/{id}', [AdminController::class, 'destroyPaymentMethod']);

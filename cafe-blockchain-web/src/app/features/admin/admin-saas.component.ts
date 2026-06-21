@@ -167,6 +167,16 @@ export class AdminSaaSComponent implements OnInit {
         { value: 'tenants', label: 'Cửa hàng' },
       ];
     }
+    if (role === 'admin') {
+      // Quản trị viên: xem tất cả nhưng không có quyền ghi (không có tab Hệ thống vì maintenance chỉ Super Admin)
+      return [
+        { value: 'subscriptions', label: 'Thuê bao' },
+        { value: 'tenants', label: 'Cửa hàng' },
+        { value: 'staffs', label: 'Nhân viên hệ thống' },
+        { value: 'payment', label: 'Thanh toán' },
+        { value: 'sysinfo', label: 'Thông tin hệ thống' },
+      ];
+    }
     return [
       { value: 'sysconfig', label: 'Cấu hình thông tin hệ thống' },
       { value: 'tenants', label: 'Cửa hàng' },
@@ -227,14 +237,20 @@ export class AdminSaaSComponent implements OnInit {
     { key: 'actions', header: 'Thao tác', sortable: false, class: 'text-right pr-6 whitespace-nowrap', headerClass: 'text-right pr-6' }
   ];
 
-  public readonly staffSystemColumns: TableColumn[] = [
-    { key: 'wallet_address', header: 'Địa chỉ ví nhân viên', sortable: false, class: 'pl-6 font-mono text-sm whitespace-nowrap' },
-    { key: 'name', header: 'Tên nhân viên', sortable: false, class: 'font-semibold text-slate-800 dark:text-white' },
-    { key: 'role', header: 'Vai trò', sortable: false, class: 'whitespace-nowrap' },
-    { key: 'is_active', header: 'Trạng thái', sortable: false },
-    { key: 'created_at', header: 'Ngày tạo', sortable: false, class: 'whitespace-nowrap' },
-    { key: 'actions', header: 'Thao tác', sortable: false, class: 'text-right pr-6', headerClass: 'text-right pr-6' }
-  ];
+  public readonly staffSystemColumns = computed<TableColumn[]>(() => {
+    const isSuperAdmin = this.stateService.isSuperAdmin();
+    const base: TableColumn[] = [
+      { key: 'wallet_address', header: 'Địa chỉ ví nhân viên', sortable: false, class: 'pl-6 font-mono text-sm whitespace-nowrap' },
+      { key: 'name', header: 'Tên nhân viên', sortable: false, class: 'font-semibold text-slate-800 dark:text-white' },
+      { key: 'role', header: 'Vai trò', sortable: false, class: 'whitespace-nowrap' },
+      { key: 'is_active', header: 'Trạng thái', sortable: false },
+      { key: 'created_at', header: 'Ngày tạo', sortable: false, class: 'whitespace-nowrap' },
+    ];
+    if (isSuperAdmin) {
+      base.push({ key: 'actions', header: 'Thao tác', sortable: false, class: 'text-right pr-6', headerClass: 'text-right pr-6' });
+    }
+    return base;
+  });
 
   // Subscription Requests Signals
   public readonly subscriptionRequests = signal<any[]>([]);
@@ -400,10 +416,14 @@ export class AdminSaaSComponent implements OnInit {
   });
 
   ngOnInit() {
-    const isStaff = this.stateService.currentUserAdminRole() === 'staff';
+    const role = this.stateService.currentUserAdminRole();
+    const isStaff = role === 'staff';
+    const isAdmin = role === 'admin';
     const allowedTabs = isStaff
       ? ['subscriptions', 'tenants']
-      : ['sysconfig', 'tenants', 'plans', 'system', 'sysinfo', 'payment', 'subscriptions', 'staffs'];
+      : isAdmin
+        ? ['subscriptions', 'tenants', 'staffs', 'payment', 'sysinfo']
+        : ['sysconfig', 'tenants', 'plans', 'system', 'sysinfo', 'payment', 'subscriptions', 'staffs'];
 
     // Đồng bộ tab hiện tại với Query Parameter 'tab' trên URL
     this.route.queryParams.subscribe((params) => {
@@ -412,7 +432,7 @@ export class AdminSaaSComponent implements OnInit {
         this.activeSubTab.set(tab as any);
         this.triggerTabLoad(tab);
       } else {
-        const defaultTab = isStaff ? 'subscriptions' : 'sysconfig';
+        const defaultTab = isStaff ? 'subscriptions' : isAdmin ? 'subscriptions' : 'sysconfig';
         this.activeSubTab.set(defaultTab);
         this.triggerTabLoad(defaultTab);
       }
@@ -1001,6 +1021,9 @@ export class AdminSaaSComponent implements OnInit {
   }
 
   private triggerTabLoad(tab: string) {
+    const isSuperAdmin = this.stateService.isSuperAdmin();
+    const role = this.stateService.currentUserAdminRole();
+
     if (tab === 'sysinfo' && !this.systemInfo()) {
       this.loadSysInfo();
     }
@@ -1010,7 +1033,8 @@ export class AdminSaaSComponent implements OnInit {
     if (tab === 'subscriptions') {
       this.loadSubscriptionRequests();
     }
-    if (tab === 'staffs' && this.stateService.isSuperAdmin()) {
+    // Super Admin và admin role đều có thể xem danh sách nhân viên hệ thống
+    if (tab === 'staffs' && (isSuperAdmin || role === 'admin')) {
       this.loadSystemStaffs();
     }
   }
