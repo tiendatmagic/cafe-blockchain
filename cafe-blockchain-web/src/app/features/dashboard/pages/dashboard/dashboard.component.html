@@ -156,8 +156,8 @@
             app-card
             class="p-4 sm:p-5 flex flex-col justify-between border border-emerald-500/10 dark:border-emerald-500/5"
           >
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-center gap-3 min-w-0">
                 <div
                   class="w-10 h-10 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 flex items-center justify-center shrink-0"
                 >
@@ -167,22 +167,24 @@
                     [strokeWidth]="2.5"
                   ></app-icon>
                 </div>
-                <div class="min-w-0">
-                  <p
-                    class="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-wider"
-                  >
-                    Ca trực #{{ stateService.currentShift().id }}
-                  </p>
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span
+                      class="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap"
+                    >
+                      Ca trực #{{ stateService.currentShift().id }}
+                    </span>
+                    <app-badge variant="success" size="sm" rounded="full" [pulse]="true" class="shrink-0 text-[9px] px-1.5 py-0.5">
+                      Đang trực
+                    </app-badge>
+                  </div>
                   <h3
-                    class="text-slate-800 dark:text-slate-100 font-extrabold text-sm sm:text-base leading-tight mt-0.5 truncate"
+                    class="text-slate-800 dark:text-slate-100 font-extrabold text-sm sm:text-base leading-tight mt-1 truncate"
                   >
                     {{ stateService.currentShift().user?.name || 'Đang mở ca trực' }}
                   </h3>
                 </div>
               </div>
-              <app-badge variant="success" size="sm" rounded="full" [pulse]="true" class="shrink-0">
-                Đang trực
-              </app-badge>
             </div>
 
             <div

@@ -19,6 +19,7 @@ export class ShiftService {
 
   public isLoading = signal<boolean>(false);
   public readonly currentShift = this.shiftStore.currentShift;
+  public readonly isCurrentShiftLoading = this.shiftStore.isCurrentShiftLoading;
   public readonly shifts = this.shiftStore.shifts;
   public readonly isStartShiftModalOpen = this.shiftStore.isStartShiftModalOpen;
   public readonly isCloseShiftModalOpen = this.shiftStore.isCloseShiftModalOpen;

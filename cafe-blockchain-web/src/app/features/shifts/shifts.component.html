@@ -19,7 +19,20 @@
         <app-skeleton-loader type="shifts"></app-skeleton-loader>
       } @else {
         <!-- WIDGET CA TRỰC ĐANG HOẠT ĐỘNG (Dành cho Thu ngân tự đối soát nhanh) -->
-        @if (stateService.currentShift() && stateService.currentShift().id) {
+        @if (stateService.isCurrentShiftLoading()) {
+          <div app-card class="p-6 mb-6 animate-pulse border-l-4 border-l-slate-350 dark:border-l-slate-750">
+            <div class="flex space-x-4">
+              <div class="rounded-full bg-slate-200 dark:bg-slate-800 h-10 w-10 shrink-0"></div>
+              <div class="flex-1 space-y-4 py-1">
+                <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded w-1/4"></div>
+                <div class="space-y-2">
+                  <div class="h-3 bg-slate-200 dark:bg-slate-800 rounded"></div>
+                  <div class="h-3 bg-slate-200 dark:bg-slate-800 rounded w-5/6"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        } @else if (stateService.currentShift() && stateService.currentShift().id) {
           <div app-card class="border-l-4 border-l-emerald-500 overflow-hidden relative mb-6">
             <!-- Background SVG trang trí mờ ảo -->
             <div class="absolute right-0 bottom-0 opacity-[0.03] pointer-events-none">

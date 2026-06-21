@@ -137,6 +137,7 @@ export class StateService {
 
   // Trạng thái Ca trực (ShiftService & Stores)
   public readonly currentShift = this.shiftService.currentShift;
+  public readonly isCurrentShiftLoading = this.shiftService.isCurrentShiftLoading;
   public readonly shifts = this.shiftService.shifts;
   public readonly isStartShiftModalOpen = this.shiftService.isStartShiftModalOpen;
   public readonly isCloseShiftModalOpen = this.shiftService.isCloseShiftModalOpen;
@@ -471,25 +472,35 @@ export class StateService {
 
   private loadShiftDataInitially() {
     if (this.hasPermission('shifts') && this.hasFeature('enable_shifts')) {
+      this.shiftService.isCurrentShiftLoading.set(true);
       this.apiService.getCurrentShift(30000).pipe(
         catchError((err) => {
           console.warn('[StateService] Lỗi tải ca trực hiện tại:', err);
+          this.shiftService.isCurrentShiftLoading.set(false);
           return of(null);
         })
       ).subscribe((shift) => {
         this.currentShift.set(shift || null);
         if (shift && shift.status === 'open') {
           this.apiService.getShiftSummary().subscribe({
-            next: (sum) => this.shiftSummary.set(sum),
-            error: (err) => console.error('[StateService] Lỗi tải summary ca trực ban đầu:', err)
+            next: (sum) => {
+              this.shiftSummary.set(sum);
+              this.shiftService.isCurrentShiftLoading.set(false);
+            },
+            error: (err) => {
+              console.error('[StateService] Lỗi tải summary ca trực ban đầu:', err);
+              this.shiftService.isCurrentShiftLoading.set(false);
+            }
           });
         } else {
           this.shiftSummary.set(null);
+          this.shiftService.isCurrentShiftLoading.set(false);
         }
       });
     } else {
       this.currentShift.set(null);
       this.shiftSummary.set(null);
+      this.shiftService.isCurrentShiftLoading.set(false);
     }
   }
 

@@ -11,6 +11,7 @@ export class ShiftStore {
 
   // States
   public readonly isShiftsLoading = signal<boolean>(false);
+  public readonly isCurrentShiftLoading = signal<boolean>(false);
   public readonly currentShift = signal<any>(null);
   public readonly shifts = signal<any[]>([]);
   public readonly shiftDurationString = signal<string>('00:00:00');
@@ -104,6 +105,8 @@ export class ShiftStore {
       actualTtl = 30000;
     }
 
+    this.isCurrentShiftLoading.set(true);
+
     this.apiService.getCurrentShift(actualTtl, force).subscribe({
       next: (res) => {
         this.currentShift.set(res || null);
@@ -111,20 +114,24 @@ export class ShiftStore {
           this.apiService.getShiftSummary().subscribe({
             next: (sum) => {
               this.shiftSummary.set(sum || null);
+              this.isCurrentShiftLoading.set(false);
               if (actualOnSuccess) actualOnSuccess(res || null);
             },
             error: (err) => {
               console.error('[ShiftStore] Lỗi tải summary ca trực khi refresh:', err);
+              this.isCurrentShiftLoading.set(false);
               if (actualOnSuccess) actualOnSuccess(res || null);
             }
           });
         } else {
           this.shiftSummary.set(null);
+          this.isCurrentShiftLoading.set(false);
           if (actualOnSuccess) actualOnSuccess(res || null);
         }
       },
       error: (err) => {
         console.error('[ShiftStore] Lỗi tải ca trực hiện tại:', err);
+        this.isCurrentShiftLoading.set(false);
       }
     });
   }

@@ -1,495 +1,531 @@
 <!-- SIDEBAR (DESKTOP & TABLET) -->
 @if (!stateService.isSubscriptionBlocked()) {
-<aside
-  class="hidden lg:flex flex-col w-72 bg-white dark:bg-slate-900 border-r border-slate-200/60 dark:border-slate-800/60 shrink-0 sticky top-0 h-screen transition-colors duration-300"
->
-  <div class="p-6 border-b border-slate-200/60 dark:border-slate-800/60 flex items-center gap-3">
-    <img
-      src="/assets/logo.png"
-      class="h-10 object-contain shrink-0 w-10"
-      alt="Cafe Blockchain Logo"
-    />
-    <div>
-      <h1 class="text-lg font-bold tracking-tight text-slate-800 dark:text-white leading-none">
-        Cafe Web3
-      </h1>
-      <span
-        class="text-xs font-semibold text-purple-600 dark:text-purple-400 tracking-wider uppercase"
-        >Sổ Bán Hàng POS</span
-      >
+  <aside
+    class="hidden lg:flex flex-col w-72 bg-white dark:bg-slate-900 border-r border-slate-200/60 dark:border-slate-800/60 shrink-0 sticky top-0 h-screen transition-colors duration-300"
+  >
+    <div class="p-6 border-b border-slate-200/60 dark:border-slate-800/60 flex items-center gap-3">
+      <img
+        src="/assets/logo.png"
+        class="h-10 object-contain shrink-0 w-10"
+        alt="Cafe Blockchain Logo"
+      />
+      <div>
+        <h1 class="text-lg font-bold tracking-tight text-slate-800 dark:text-white leading-none">
+          Cafe Web3
+        </h1>
+        <span
+          class="text-xs font-semibold text-purple-600 dark:text-purple-400 tracking-wider uppercase"
+          >Sổ Bán Hàng POS</span
+        >
+      </div>
     </div>
-  </div>
 
-  <!-- Navigation Menu -->
-  <nav #navEl class="relative flex-1 p-4 space-y-1.5 overflow-y-auto" [class.sidebar-no-slide]="!useSlidingEffect()">
-    <!-- 
+    <!-- Navigation Menu -->
+    <nav
+      #navEl
+      class="relative flex-1 p-4 space-y-1.5 overflow-y-auto"
+      [class.sidebar-no-slide]="!useSlidingEffect()"
+    >
+      <!--
       [NOTE - LỰA CHỌN HIỆU ỨNG SIDEBAR]:
       Dự án hỗ trợ 2 loại hiệu ứng. Hiện tại đang kích hoạt HIỆU ỨNG MỚI (Sliding Background).
-      
+
       - CẤU HÌNH HIỆU ỨNG MỚI (SLIDING BACKGROUND):
         + Kích hoạt thẻ <div [style.top]="sliderTop()"...> ở dưới làm nền trượt.
         + Các mục button/a sử dụng class có "relative z-10" để nổi chữ lên trên.
         + routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
-        
+
       - CẤU HÌNH HIỆU ỨNG CŨ (MÀU TĨNH & HOVER XÁM):
         + Xóa/comment thẻ Sliding Background Indicator ở dưới.
         + Các mục button/a bỏ class "relative z-10" và thêm class "hover:bg-slate-100 dark:hover:bg-slate-800/50".
         + routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
     -->
-    
-    <!-- Sliding Background Indicator (Chỉ hiển thị khi bật hiệu ứng trượt) -->
-    @if (useSlidingEffect()) {
-      <div
-        class="absolute left-4 right-4 bg-purple-50 dark:bg-purple-950/40 rounded-2xl transition-all duration-300 ease-out z-0 pointer-events-none"
-        [style.top]="sliderTop()"
-        [style.height]="sliderHeight()"
-        [style.opacity]="sliderOpacity()"
-      ></div>
-    }
 
-    @if (stateService.hasPermission('dashboard')) {
-      <button
-        [routerLink]="stateService.hasFeature('enable_dashboard') ? '/dashboard' : null"
-        (click)="handleTabClick('enable_dashboard', 'Tổng quan', $event)"
-        routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
-        [routerLinkActiveOptions]="{ exact: true }"
-        class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
-      >
-        <app-icon
-          name="dashboard"
-          class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform"
-        />
-        <span>Tổng quan</span>
-        @if (stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_dashboard')) {
-          <svg
-            class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2.5"
-              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-            />
-          </svg>
-        }
-      </button>
-    }
+      <!-- Sliding Background Indicator (Chỉ hiển thị khi bật hiệu ứng trượt) -->
+      @if (useSlidingEffect()) {
+        <div
+          class="absolute left-4 right-4 bg-purple-50 dark:bg-purple-950/40 rounded-2xl transition-all duration-300 ease-out z-0 pointer-events-none"
+          [style.top]="sliderTop()"
+          [style.height]="sliderHeight()"
+          [style.opacity]="sliderOpacity()"
+        ></div>
+      }
 
-    @if (stateService.hasPermission('pos')) {
-      <button
-        [routerLink]="stateService.hasFeature('enable_pos') ? '/pos' : null"
-        (click)="handleTabClick('enable_pos', 'Bán hàng POS', $event)"
-        routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
-        class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
-      >
-        <app-icon name="pos" class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform" />
-        <span>Bán hàng POS</span>
-        @if (stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_pos')) {
-          <svg
-            class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2.5"
-              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-            />
-          </svg>
-        }
-      </button>
-    }
+      @if (stateService.hasPermission('dashboard')) {
+        <button
+          [routerLink]="stateService.hasFeature('enable_dashboard') ? '/dashboard' : null"
+          (click)="handleTabClick('enable_dashboard', 'Tổng quan', $event)"
+          routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
+        >
+          <app-icon
+            name="dashboard"
+            class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform"
+          />
+          <span>Tổng quan</span>
+          @if (
+            stateService.web3Service.walletConnected() &&
+            !stateService.hasFeature('enable_dashboard')
+          ) {
+            <svg
+              class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
+            </svg>
+          }
+        </button>
+      }
 
-    @if (stateService.hasPermission('orders')) {
-      <button
-        [routerLink]="stateService.hasFeature('enable_orders') ? '/orders' : null"
-        (click)="handleTabClick('enable_orders', 'Đơn hàng', $event)"
-        routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
-        class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
-      >
-        <app-icon
-          name="orders"
-          class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform"
-        />
-        <span>Đơn hàng</span>
-        @if (stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_orders')) {
-          <svg
-            class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2.5"
-              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-            />
-          </svg>
-        }
-      </button>
-    }
+      @if (stateService.hasPermission('pos')) {
+        <button
+          [routerLink]="stateService.hasFeature('enable_pos') ? '/pos' : null"
+          (click)="handleTabClick('enable_pos', 'Bán hàng POS', $event)"
+          routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+          class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
+        >
+          <app-icon
+            name="pos"
+            class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform"
+          />
+          <span>Bán hàng POS</span>
+          @if (
+            stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_pos')
+          ) {
+            <svg
+              class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
+            </svg>
+          }
+        </button>
+      }
 
-    @if (stateService.hasPermission('tables')) {
-      <button
-        [routerLink]="stateService.hasFeature('enable_tables') ? '/tables' : null"
-        (click)="handleTabClick('enable_tables', 'Quản lý sơ đồ bàn', $event)"
-        routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
-        class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
-      >
-        <app-icon
-          name="tables"
-          class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform"
-        />
-        <span>Quản lý sơ đồ bàn</span>
-        @if (stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_tables')) {
-          <svg
-            class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2.5"
-              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-            />
-          </svg>
-        }
-      </button>
-    }
+      @if (stateService.hasPermission('orders')) {
+        <button
+          [routerLink]="stateService.hasFeature('enable_orders') ? '/orders' : null"
+          (click)="handleTabClick('enable_orders', 'Đơn hàng', $event)"
+          routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+          class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
+        >
+          <app-icon
+            name="orders"
+            class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform"
+          />
+          <span>Đơn hàng</span>
+          @if (
+            stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_orders')
+          ) {
+            <svg
+              class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
+            </svg>
+          }
+        </button>
+      }
 
-    @if (stateService.hasPermission('shifts')) {
-      <button
-        [routerLink]="stateService.hasFeature('enable_shifts') ? '/shifts' : null"
-        (click)="handleTabClick('enable_shifts', 'Ca làm việc', $event)"
-        routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
-        class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
-      >
-        <app-icon
-          name="clock"
-          class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform"
-          strokeWidth="2.2"
-        />
-        <span>Ca làm việc</span>
-        @if (stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_shifts')) {
-          <svg
-            class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2.5"
-              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-            />
-          </svg>
-        }
-      </button>
-    }
+      @if (stateService.hasPermission('tables')) {
+        <button
+          [routerLink]="stateService.hasFeature('enable_tables') ? '/tables' : null"
+          (click)="handleTabClick('enable_tables', 'Quản lý sơ đồ bàn', $event)"
+          routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+          class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
+        >
+          <app-icon
+            name="tables"
+            class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform"
+          />
+          <span>Quản lý sơ đồ bàn</span>
+          @if (
+            stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_tables')
+          ) {
+            <svg
+              class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
+            </svg>
+          }
+        </button>
+      }
 
-    @if (stateService.hasPermission('menu')) {
-      <button
-        [routerLink]="stateService.hasFeature('enable_menu') ? '/menu' : null"
-        (click)="handleTabClick('enable_menu', 'Quản lý Thực đơn', $event)"
-        routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
-        class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
-      >
-        <app-icon name="menu" class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform" />
-        <span>Quản lý Thực đơn</span>
-        @if (stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_menu')) {
-          <svg
-            class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2.5"
-              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-            />
-          </svg>
-        }
-      </button>
-    }
+      @if (stateService.hasPermission('shifts')) {
+        <button
+          [routerLink]="stateService.hasFeature('enable_shifts') ? '/shifts' : null"
+          (click)="handleTabClick('enable_shifts', 'Ca làm việc', $event)"
+          routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+          class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
+        >
+          <app-icon
+            name="clock"
+            class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform"
+            strokeWidth="2.2"
+          />
+          <span>Ca làm việc</span>
+          @if (
+            stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_shifts')
+          ) {
+            <svg
+              class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
+            </svg>
+          }
+        </button>
+      }
 
-    @if (stateService.hasPermission('inventory')) {
-      <button
-        [routerLink]="stateService.hasFeature('enable_inventory') ? '/inventory' : null"
-        (click)="handleTabClick('enable_inventory', 'Kho hàng', $event)"
-        routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
-        class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
-      >
-        <app-icon
-          name="inventory"
-          class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform"
-        />
-        <span>Kho hàng</span>
-        @if (stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_inventory')) {
-          <svg
-            class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2.5"
-              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-            />
-          </svg>
-        }
-      </button>
-    }
+      @if (stateService.hasPermission('menu')) {
+        <button
+          [routerLink]="stateService.hasFeature('enable_menu') ? '/menu' : null"
+          (click)="handleTabClick('enable_menu', 'Quản lý Thực đơn', $event)"
+          routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+          class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
+        >
+          <app-icon
+            name="menu"
+            class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform"
+          />
+          <span>Quản lý Thực đơn</span>
+          @if (
+            stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_menu')
+          ) {
+            <svg
+              class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
+            </svg>
+          }
+        </button>
+      }
 
-    @if (stateService.hasPermission('customers')) {
-      <button
-        [routerLink]="stateService.hasFeature('enable_customers') ? '/customers' : null"
-        (click)="handleTabClick('enable_customers', 'Khách hàng', $event)"
-        routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
-        class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
-      >
-        <app-icon
-          name="customers"
-          class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform"
-        />
-        <span>Khách hàng</span>
-        @if (stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_customers')) {
-          <svg
-            class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2.5"
-              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-            />
-          </svg>
-        }
-      </button>
-    }
+      @if (stateService.hasPermission('inventory')) {
+        <button
+          [routerLink]="stateService.hasFeature('enable_inventory') ? '/inventory' : null"
+          (click)="handleTabClick('enable_inventory', 'Kho hàng', $event)"
+          routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+          class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
+        >
+          <app-icon
+            name="inventory"
+            class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform"
+          />
+          <span>Kho hàng</span>
+          @if (
+            stateService.web3Service.walletConnected() &&
+            !stateService.hasFeature('enable_inventory')
+          ) {
+            <svg
+              class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
+            </svg>
+          }
+        </button>
+      }
 
-    @if (stateService.hasPermission('debts')) {
-      <button
-        [routerLink]="stateService.hasFeature('enable_debts') ? '/debts' : null"
-        (click)="handleTabClick('enable_debts', 'Sổ nợ', $event)"
-        routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
-        class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
-      >
-        <app-icon
-          name="debts"
-          class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform"
-        />
-        <span>Sổ nợ</span>
-        @if (stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_debts')) {
-          <svg
-            class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2.5"
-              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-            />
-          </svg>
-        }
-      </button>
-    }
+      @if (stateService.hasPermission('customers')) {
+        <button
+          [routerLink]="stateService.hasFeature('enable_customers') ? '/customers' : null"
+          (click)="handleTabClick('enable_customers', 'Khách hàng', $event)"
+          routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+          class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
+        >
+          <app-icon
+            name="customers"
+            class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform"
+          />
+          <span>Khách hàng</span>
+          @if (
+            stateService.web3Service.walletConnected() &&
+            !stateService.hasFeature('enable_customers')
+          ) {
+            <svg
+              class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
+            </svg>
+          }
+        </button>
+      }
 
-    @if (stateService.hasPermission('financials')) {
-      <button
-        [routerLink]="stateService.hasFeature('enable_financials') ? '/financials' : null"
-        (click)="handleTabClick('enable_financials', 'Thu chi tài chính', $event)"
-        routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
-        class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
-      >
-        <app-icon
-          name="financials"
-          class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform"
-        />
-        <span>Thu chi tài chính</span>
-        @if (stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_financials')) {
-          <svg
-            class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2.5"
-              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-            />
-          </svg>
-        }
-      </button>
-    }
+      @if (stateService.hasPermission('debts')) {
+        <button
+          [routerLink]="stateService.hasFeature('enable_debts') ? '/debts' : null"
+          (click)="handleTabClick('enable_debts', 'Sổ nợ', $event)"
+          routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+          class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
+        >
+          <app-icon
+            name="debts"
+            class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform"
+          />
+          <span>Sổ nợ</span>
+          @if (
+            stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_debts')
+          ) {
+            <svg
+              class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
+            </svg>
+          }
+        </button>
+      }
 
-    @if (stateService.hasPermission('reports')) {
-      <button
-        [routerLink]="stateService.hasFeature('enable_reports') ? '/reports' : null"
-        (click)="handleTabClick('enable_reports', 'Báo cáo', $event)"
-        routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
-        class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
-      >
-        <app-icon
-          name="reports"
-          class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform"
-        />
-        <span>Báo cáo</span>
-        @if (stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_reports')) {
-          <svg
-            class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2.5"
-              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-            />
-          </svg>
-        }
-      </button>
-    }
+      @if (stateService.hasPermission('financials')) {
+        <button
+          [routerLink]="stateService.hasFeature('enable_financials') ? '/financials' : null"
+          (click)="handleTabClick('enable_financials', 'Thu chi tài chính', $event)"
+          routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+          class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
+        >
+          <app-icon
+            name="financials"
+            class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform"
+          />
+          <span>Thu chi tài chính</span>
+          @if (
+            stateService.web3Service.walletConnected() &&
+            !stateService.hasFeature('enable_financials')
+          ) {
+            <svg
+              class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
+            </svg>
+          }
+        </button>
+      }
 
-    @if (stateService.hasPermission('staffs')) {
-      <button
-        [routerLink]="stateService.hasFeature('enable_staffs') ? '/staffs' : null"
-        (click)="handleTabClick('enable_staffs', 'Nhân viên', $event)"
-        routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
-        class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
-      >
-        <app-icon
-          name="staffs"
-          class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform"
-        />
-        <span>Nhân viên</span>
-        @if (stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_staffs')) {
-          <svg
-            class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2.5"
-              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-            />
-          </svg>
-        }
-      </button>
-    }
+      @if (stateService.hasPermission('reports')) {
+        <button
+          [routerLink]="stateService.hasFeature('enable_reports') ? '/reports' : null"
+          (click)="handleTabClick('enable_reports', 'Báo cáo', $event)"
+          routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+          class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
+        >
+          <app-icon
+            name="reports"
+            class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform"
+          />
+          <span>Báo cáo</span>
+          @if (
+            stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_reports')
+          ) {
+            <svg
+              class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
+            </svg>
+          }
+        </button>
+      }
 
-    @if (stateService.hasPermission('settings')) {
-      <button
-        routerLink="/settings"
-        routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
-        class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
-      >
-        <app-icon
-          name="settings"
-          class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform"
-        />
-        <span>Cấu hình quán</span>
-      </button>
-    }
+      @if (stateService.hasPermission('staffs')) {
+        <button
+          [routerLink]="stateService.hasFeature('enable_staffs') ? '/staffs' : null"
+          (click)="handleTabClick('enable_staffs', 'Nhân viên', $event)"
+          routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+          class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
+        >
+          <app-icon
+            name="staffs"
+            class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform"
+          />
+          <span>Nhân viên</span>
+          @if (
+            stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_staffs')
+          ) {
+            <svg
+              class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
+            </svg>
+          }
+        </button>
+      }
 
-    @if (stateService.isSuperAdmin()) {
-      <button
-        routerLink="/admin"
-        routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
-        class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
-      >
-        <app-icon
-          name="server"
-          class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform"
-        />
-        <span>Quản trị hệ thống</span>
-      </button>
-    }
+      @if (stateService.hasPermission('settings')) {
+        <button
+          routerLink="/settings"
+          routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+          class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
+        >
+          <app-icon
+            name="settings"
+            class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform"
+          />
+          <span>Cấu hình quán</span>
+        </button>
+      }
 
+      @if (stateService.isSuperAdmin()) {
+        <button
+          routerLink="/admin"
+          routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+          class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium"
+        >
+          <app-icon
+            name="server"
+            class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform"
+          />
+          <span>Quản trị hệ thống</span>
+        </button>
+      }
+    </nav>
 
-  </nav>
-
-  <!-- Blockchain Explorer (Nằm ngoài menu, trên Giao diện) -->
-  <div class="px-4 py-2 border-t border-slate-200/60 dark:border-slate-800/60 shrink-0">
-    <!--
+    <!-- Blockchain Explorer (Nằm ngoài menu, trên Giao diện) -->
+    <div class="px-4 py-2 border-t border-slate-200/60 dark:border-slate-800/60 shrink-0">
+      <!--
       [NOTE - LỰA CHỌN HIỆU ỨNG BLOCKCHAIN EXPLORER]:
-      - HIỆU ỨNG MỚI (SLIDING BACKGROUND): 
+      - HIỆU ỨNG MỚI (SLIDING BACKGROUND):
         + routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
         + class="relative z-10 ... font-medium"
-      - HIỆU ỨNG CŨ (MÀU TĨNH & HOVER XÁM): 
+      - HIỆU ỨNG CŨ (MÀU TĨNH & HOVER XÁM):
         + routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-semibold"
         + class="... hover:bg-slate-100 dark:hover:bg-slate-800/50 cursor-pointer" (bỏ relative z-10)
     -->
-    <a
-      routerLink="/blockchain-explorer"
-      target="_blank"
-      routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
-      class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium cursor-pointer"
-    >
-      <app-icon
-        name="blockchain"
-        class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform text-purple-500"
-      />
-      <span>Blockchain Explorer</span>
-    </a>
-  </div>
+      <a
+        routerLink="/blockchain-explorer"
+        target="_blank"
+        routerLinkActive="!text-purple-600 !dark:text-purple-400 font-semibold sidebar-active-item"
+        class="relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 group text-slate-700 dark:text-slate-300 font-medium cursor-pointer"
+      >
+        <app-icon
+          name="blockchain"
+          class="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform text-purple-500"
+        />
+        <span>Blockchain Explorer</span>
+      </a>
+    </div>
 
-  <!-- Sidebar Footer (Theme Toggle) -->
-  <div class="p-4 border-t border-slate-200/60 dark:border-slate-800/60">
-    <div class="flex items-center justify-between">
-      <div class="flex flex-col">
-        <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Giao diện</span>
-        <span
-          class="text-xs font-semibold"
-          [class]="
-            stateService.themeMode() === 'light'
-              ? 'text-amber-500'
-              : stateService.themeMode() === 'dark'
-                ? 'text-purple-500 dark:text-purple-400'
-                : 'text-slate-400 dark:text-slate-500'
-          "
-        >
-          {{
-            stateService.themeMode() === 'light'
-              ? 'Sáng'
-              : stateService.themeMode() === 'dark'
-                ? 'Tối'
-                : 'Tự động (18h-6h)'
-          }}
-        </span>
-      </div>
-      <div class="flex items-center gap-2">
-        <!-- Theme Toggle Component -->
-        <app-theme-toggle size="sm"></app-theme-toggle>
+    <!-- Sidebar Footer (Theme Toggle) -->
+    <div class="p-4 border-t border-slate-200/60 dark:border-slate-800/60">
+      <div class="flex items-center justify-between">
+        <div class="flex flex-col">
+          <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Giao diện</span>
+          <span
+            class="text-xs font-semibold"
+            [class]="
+              stateService.themeMode() === 'light'
+                ? 'text-amber-500'
+                : stateService.themeMode() === 'dark'
+                  ? 'text-purple-500 dark:text-purple-400'
+                  : 'text-slate-400 dark:text-slate-500'
+            "
+          >
+            {{
+              stateService.themeMode() === 'light'
+                ? 'Sáng'
+                : stateService.themeMode() === 'dark'
+                  ? 'Tối'
+                  : 'Tự động (18h-6h)'
+            }}
+          </span>
+        </div>
+        <div class="flex items-center gap-2">
+          <!-- Theme Toggle Component -->
+          <app-theme-toggle size="sm"></app-theme-toggle>
+        </div>
       </div>
     </div>
-  </div>
-</aside>
+  </aside>
 }
 
 <!-- MOBILE MENU (HAMBURGER BUTTON & OVERLAY) -->
@@ -514,7 +550,9 @@
         class="h-6.5 w-6.5 object-contain rounded-lg shrink-0 shadow-sm border border-purple-500/10"
         alt="logo"
       />
-      <span class="font-bold text-slate-800 dark:text-white text-base">Cafe Web3 POS</span>
+      <span class="font-bold text-slate-800 dark:text-white text-base hidden sm:block"
+        >Cafe Web3 POS</span
+      >
     </div>
 
     <!-- Wallet Widget rút gọn trên mobile -->
@@ -575,27 +613,61 @@
       </div>
 
       <!-- Widget Ca trực trên Mobile -->
-      @if (stateService.isAuthLoggedIn() && !stateService.isSubscriptionBlocked() && stateService.hasFeature('enable_shifts')) {
-        <button
-          type="button"
-          (click)="handleMobileShiftClick()"
-          class="flex items-center justify-center w-9.5 h-9.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-[var(--dynamic-primary)] dark:hover:text-[var(--dynamic-primary)] transition-all duration-200 active:scale-95 cursor-pointer shadow-sm relative shrink-0"
-          [class.text-[var(--dynamic-primary)]]="
-            stateService.currentShift() && stateService.currentShift().id
-          "
-          [class.text-slate-500]="!(stateService.currentShift() && stateService.currentShift().id)"
-          [class.dark:text-slate-400]="
-            !(stateService.currentShift() && stateService.currentShift().id)
-          "
-          title="Quản lý ca trực"
-        >
-          <app-icon name="clock" class="h-4.5 w-4.5" strokeWidth="2.2" />
-          @if (stateService.currentShift() && stateService.currentShift().id) {
-            <span
-              class="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-500 animate-pulse"
-            ></span>
-          }
-        </button>
+      @if (
+        stateService.isAuthLoggedIn() &&
+        !stateService.isSubscriptionBlocked() &&
+        stateService.hasFeature('enable_shifts')
+      ) {
+        @if (stateService.isCurrentShiftLoading()) {
+          <button
+            type="button"
+            class="flex items-center justify-center w-9.5 h-9.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-slate-400 cursor-default shadow-sm shrink-0"
+            title="Đang kiểm tra ca trực"
+          >
+            <svg
+              class="animate-spin h-4 w-4 text-[var(--dynamic-primary)]"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+          </button>
+        } @else {
+          <button
+            type="button"
+            (click)="handleMobileShiftClick()"
+            class="flex items-center justify-center w-9.5 h-9.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-[var(--dynamic-primary)] dark:hover:text-[var(--dynamic-primary)] transition-all duration-200 active:scale-95 cursor-pointer shadow-sm relative shrink-0"
+            [class.text-[var(--dynamic-primary)]]="
+              stateService.currentShift() && stateService.currentShift().id
+            "
+            [class.text-slate-500]="
+              !(stateService.currentShift() && stateService.currentShift().id)
+            "
+            [class.dark:text-slate-400]="
+              !(stateService.currentShift() && stateService.currentShift().id)
+            "
+            title="Quản lý ca trực"
+          >
+            <app-icon name="clock" class="h-4.5 w-4.5" strokeWidth="2.2" />
+            @if (stateService.currentShift() && stateService.currentShift().id) {
+              <span
+                class="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-500 animate-pulse"
+              ></span>
+            }
+          </button>
+        }
       }
 
       @if (web3Service.walletConnected()) {
@@ -611,7 +683,7 @@
                 variant="danger"
                 size="sm"
                 rounded="full"
-                class="absolute -top-2 -right-1 text-[7px] px-1.5 py-0.5 shadow-sm uppercase tracking-wide font-black"
+                class="absolute -top-1 -right-1 text-[7px] px-1.5 py-0.5 shadow-sm uppercase tracking-wide font-black"
               >
                 <span>{{ stateService.subscriptionPlanCode() }}</span>
                 @if (stateService.subscriptionDaysLeft() > 0) {
@@ -625,7 +697,7 @@
                 variant="success"
                 size="sm"
                 rounded="full"
-                class="absolute -top-2 -right-1 text-[7px] px-1.5 py-0.5 shadow-sm uppercase tracking-wide font-black"
+                class="absolute -top-1 -right-1 text-[7px] px-1.5 py-0.5 shadow-sm uppercase tracking-wide font-black"
               >
                 <span>{{ stateService.subscriptionPlanCode() }}</span>
                 @if (stateService.subscriptionDaysLeft() > 0) {
@@ -640,7 +712,9 @@
               <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 leading-none">{{
                 web3Service.shortAddress()
               }}</span>
-              <span class="text-[10px] font-extrabold text-purple-600 dark:text-purple-400 mt-0.5 leading-none">
+              <span
+                class="text-[10px] font-extrabold text-purple-600 dark:text-purple-400 mt-0.5 leading-none"
+              >
                 {{ web3Service.walletBalance() }} {{ web3Service.nativeTokenSymbol() }}
               </span>
             </div>
@@ -648,7 +722,10 @@
             <svg
               class="h-3 w-3 text-purple-500 dark:text-purple-400 transition-transform duration-200 shrink-0"
               [class.rotate-180]="isWalletDropdownOpen()"
-              fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2.5"
             >
               <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
             </svg>
@@ -661,9 +738,19 @@
             >
               <!-- Header ví -->
               <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800/60">
-                <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1">Ví đang kết nối</p>
-                <p class="text-xs font-mono font-extrabold text-slate-700 dark:text-slate-200 select-all">{{ web3Service.shortAddress() }}</p>
-                <p class="text-xs font-black text-purple-600 dark:text-purple-400 mt-0.5">{{ web3Service.walletBalance() }} {{ web3Service.nativeTokenSymbol() }}</p>
+                <p
+                  class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1"
+                >
+                  Ví đang kết nối
+                </p>
+                <p
+                  class="text-xs font-mono font-extrabold text-slate-700 dark:text-slate-200 select-all"
+                >
+                  {{ web3Service.shortAddress() }}
+                </p>
+                <p class="text-xs font-black text-purple-600 dark:text-purple-400 mt-0.5">
+                  {{ web3Service.walletBalance() }} {{ web3Service.nativeTokenSymbol() }}
+                </p>
               </div>
 
               <!-- Menu items -->
@@ -674,8 +761,18 @@
                   (click)="goToProfile()"
                   class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-slate-700 dark:text-slate-300 hover:bg-purple-50 dark:hover:bg-purple-950/30 hover:text-purple-600 dark:hover:text-purple-400 transition-all text-left cursor-pointer group"
                 >
-                  <svg class="h-4 w-4 shrink-0 text-slate-400 group-hover:text-purple-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  <svg
+                    class="h-4 w-4 shrink-0 text-slate-400 group-hover:text-purple-500 transition-colors"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
                   </svg>
                   <span class="font-semibold">Thông tin cá nhân</span>
                 </button>
@@ -686,8 +783,18 @@
                   (click)="copyWalletAddress()"
                   class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all text-left cursor-pointer group"
                 >
-                  <svg class="h-4 w-4 shrink-0 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  <svg
+                    class="h-4 w-4 shrink-0 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-colors"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                    />
                   </svg>
                   <span class="font-semibold">Sao chép địa chỉ ví</span>
                 </button>
@@ -698,8 +805,18 @@
                   (click)="openWalletModal()"
                   class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all text-left cursor-pointer group"
                 >
-                  <svg class="h-4 w-4 shrink-0 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  <svg
+                    class="h-4 w-4 shrink-0 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-colors"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                    />
                   </svg>
                   <span class="font-semibold">Chi tiết ví</span>
                 </button>
@@ -712,8 +829,18 @@
                   (click)="disconnectWallet()"
                   class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-rose-500 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all text-left cursor-pointer group"
                 >
-                  <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  <svg
+                    class="h-4 w-4 shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                    />
                   </svg>
                   <span class="font-bold">Ngắt kết nối ví</span>
                 </button>
@@ -781,14 +908,19 @@
         @if (stateService.hasPermission('dashboard')) {
           <button
             [routerLink]="stateService.hasFeature('enable_dashboard') ? '/dashboard' : null"
-            (click)="handleTabClick('enable_dashboard', 'Tổng quan', $event); isMobileMenuOpen.set(false)"
+            (click)="
+              handleTabClick('enable_dashboard', 'Tổng quan', $event); isMobileMenuOpen.set(false)
+            "
             routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-bold"
             [routerLinkActiveOptions]="{ exact: true }"
             class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
           >
             <app-icon name="dashboard" class="h-5 w-5 shrink-0" />
             <span>Tổng quan</span>
-            @if (stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_dashboard')) {
+            @if (
+              stateService.web3Service.walletConnected() &&
+              !stateService.hasFeature('enable_dashboard')
+            ) {
               <svg
                 class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
                 fill="none"
@@ -809,13 +941,17 @@
         @if (stateService.hasPermission('pos')) {
           <button
             [routerLink]="stateService.hasFeature('enable_pos') ? '/pos' : null"
-            (click)="handleTabClick('enable_pos', 'Bán hàng POS', $event); isMobileMenuOpen.set(false)"
+            (click)="
+              handleTabClick('enable_pos', 'Bán hàng POS', $event); isMobileMenuOpen.set(false)
+            "
             routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-bold"
             class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
           >
             <app-icon name="pos" class="h-5 w-5 shrink-0" />
             <span>Bán hàng POS</span>
-            @if (stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_pos')) {
+            @if (
+              stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_pos')
+            ) {
               <svg
                 class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
                 fill="none"
@@ -836,13 +972,18 @@
         @if (stateService.hasPermission('orders')) {
           <button
             [routerLink]="stateService.hasFeature('enable_orders') ? '/orders' : null"
-            (click)="handleTabClick('enable_orders', 'Đơn hàng', $event); isMobileMenuOpen.set(false)"
+            (click)="
+              handleTabClick('enable_orders', 'Đơn hàng', $event); isMobileMenuOpen.set(false)
+            "
             routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-bold"
             class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
           >
             <app-icon name="orders" class="h-5 w-5 shrink-0" />
             <span>Đơn hàng</span>
-            @if (stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_orders')) {
+            @if (
+              stateService.web3Service.walletConnected() &&
+              !stateService.hasFeature('enable_orders')
+            ) {
               <svg
                 class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
                 fill="none"
@@ -863,13 +1004,19 @@
         @if (stateService.hasPermission('tables')) {
           <button
             [routerLink]="stateService.hasFeature('enable_tables') ? '/tables' : null"
-            (click)="handleTabClick('enable_tables', 'Quản lý sơ đồ bàn', $event); isMobileMenuOpen.set(false)"
+            (click)="
+              handleTabClick('enable_tables', 'Quản lý sơ đồ bàn', $event);
+              isMobileMenuOpen.set(false)
+            "
             routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-bold"
             class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
           >
             <app-icon name="tables" class="h-5 w-5 shrink-0" />
             <span>Quản lý sơ đồ bàn</span>
-            @if (stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_tables')) {
+            @if (
+              stateService.web3Service.walletConnected() &&
+              !stateService.hasFeature('enable_tables')
+            ) {
               <svg
                 class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
                 fill="none"
@@ -890,13 +1037,18 @@
         @if (stateService.hasPermission('shifts')) {
           <button
             [routerLink]="stateService.hasFeature('enable_shifts') ? '/shifts' : null"
-            (click)="handleTabClick('enable_shifts', 'Ca làm việc', $event); isMobileMenuOpen.set(false)"
+            (click)="
+              handleTabClick('enable_shifts', 'Ca làm việc', $event); isMobileMenuOpen.set(false)
+            "
             routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-bold"
             class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
           >
             <app-icon name="clock" class="h-5 w-5 shrink-0" strokeWidth="2.2" />
             <span>Ca làm việc</span>
-            @if (stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_shifts')) {
+            @if (
+              stateService.web3Service.walletConnected() &&
+              !stateService.hasFeature('enable_shifts')
+            ) {
               <svg
                 class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
                 fill="none"
@@ -917,13 +1069,17 @@
         @if (stateService.hasPermission('menu')) {
           <button
             [routerLink]="stateService.hasFeature('enable_menu') ? '/menu' : null"
-            (click)="handleTabClick('enable_menu', 'Quản lý Thực đơn', $event); isMobileMenuOpen.set(false)"
+            (click)="
+              handleTabClick('enable_menu', 'Quản lý Thực đơn', $event); isMobileMenuOpen.set(false)
+            "
             routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-bold"
             class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
           >
             <app-icon name="menu" class="h-5 w-5 shrink-0" />
             <span>Quản lý Thực đơn</span>
-            @if (stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_menu')) {
+            @if (
+              stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_menu')
+            ) {
               <svg
                 class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
                 fill="none"
@@ -944,13 +1100,18 @@
         @if (stateService.hasPermission('inventory')) {
           <button
             [routerLink]="stateService.hasFeature('enable_inventory') ? '/inventory' : null"
-            (click)="handleTabClick('enable_inventory', 'Kho hàng', $event); isMobileMenuOpen.set(false)"
+            (click)="
+              handleTabClick('enable_inventory', 'Kho hàng', $event); isMobileMenuOpen.set(false)
+            "
             routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-bold"
             class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
           >
             <app-icon name="inventory" class="h-5 w-5 shrink-0" />
             <span>Kho hàng</span>
-            @if (stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_inventory')) {
+            @if (
+              stateService.web3Service.walletConnected() &&
+              !stateService.hasFeature('enable_inventory')
+            ) {
               <svg
                 class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
                 fill="none"
@@ -971,13 +1132,18 @@
         @if (stateService.hasPermission('customers')) {
           <button
             [routerLink]="stateService.hasFeature('enable_customers') ? '/customers' : null"
-            (click)="handleTabClick('enable_customers', 'Khách hàng', $event); isMobileMenuOpen.set(false)"
+            (click)="
+              handleTabClick('enable_customers', 'Khách hàng', $event); isMobileMenuOpen.set(false)
+            "
             routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-bold"
             class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
           >
             <app-icon name="customers" class="h-5 w-5 shrink-0" />
             <span>Khách hàng</span>
-            @if (stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_customers')) {
+            @if (
+              stateService.web3Service.walletConnected() &&
+              !stateService.hasFeature('enable_customers')
+            ) {
               <svg
                 class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
                 fill="none"
@@ -1004,7 +1170,9 @@
           >
             <app-icon name="debts" class="h-5 w-5 shrink-0" />
             <span>Sổ nợ</span>
-            @if (stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_debts')) {
+            @if (
+              stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_debts')
+            ) {
               <svg
                 class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
                 fill="none"
@@ -1025,13 +1193,19 @@
         @if (stateService.hasPermission('financials')) {
           <button
             [routerLink]="stateService.hasFeature('enable_financials') ? '/financials' : null"
-            (click)="handleTabClick('enable_financials', 'Thu chi tài chính', $event); isMobileMenuOpen.set(false)"
+            (click)="
+              handleTabClick('enable_financials', 'Thu chi tài chính', $event);
+              isMobileMenuOpen.set(false)
+            "
             routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-bold"
             class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
           >
             <app-icon name="financials" class="h-5 w-5 shrink-0" />
             <span>Thu chi tài chính</span>
-            @if (stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_financials')) {
+            @if (
+              stateService.web3Service.walletConnected() &&
+              !stateService.hasFeature('enable_financials')
+            ) {
               <svg
                 class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
                 fill="none"
@@ -1052,13 +1226,18 @@
         @if (stateService.hasPermission('reports')) {
           <button
             [routerLink]="stateService.hasFeature('enable_reports') ? '/reports' : null"
-            (click)="handleTabClick('enable_reports', 'Báo cáo', $event); isMobileMenuOpen.set(false)"
+            (click)="
+              handleTabClick('enable_reports', 'Báo cáo', $event); isMobileMenuOpen.set(false)
+            "
             routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-bold"
             class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
           >
             <app-icon name="reports" class="h-5 w-5 shrink-0" />
             <span>Báo cáo</span>
-            @if (stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_reports')) {
+            @if (
+              stateService.web3Service.walletConnected() &&
+              !stateService.hasFeature('enable_reports')
+            ) {
               <svg
                 class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
                 fill="none"
@@ -1079,13 +1258,18 @@
         @if (stateService.hasPermission('staffs')) {
           <button
             [routerLink]="stateService.hasFeature('enable_staffs') ? '/staffs' : null"
-            (click)="handleTabClick('enable_staffs', 'Nhân viên', $event); isMobileMenuOpen.set(false)"
+            (click)="
+              handleTabClick('enable_staffs', 'Nhân viên', $event); isMobileMenuOpen.set(false)
+            "
             routerLinkActive="bg-purple-50 dark:bg-purple-950/40 !text-purple-600 !dark:text-purple-400 font-bold"
             class="flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-sm transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/50"
           >
             <app-icon name="staffs" class="h-5 w-5 shrink-0" />
             <span>Nhân viên</span>
-            @if (stateService.web3Service.walletConnected() && !stateService.hasFeature('enable_staffs')) {
+            @if (
+              stateService.web3Service.walletConnected() &&
+              !stateService.hasFeature('enable_staffs')
+            ) {
               <svg
                 class="h-3.5 w-3.5 ml-auto text-purple-500/80 shrink-0"
                 fill="none"
@@ -1126,8 +1310,6 @@
             <span>Quản trị hệ thống</span>
           </button>
         }
-
-
       </nav>
 
       <!-- Wallet Widget trong Drawer Mobile -->
