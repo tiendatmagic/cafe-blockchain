@@ -444,6 +444,7 @@ export class AuthService {
       localStorage.removeItem('auth_user_name');
       localStorage.removeItem('auth_user_email');
       localStorage.removeItem('auth_user_phone');
+      localStorage.removeItem('appkit_siwe_signed');
       this.isAuthLoggedIn.set(false);
     }
     this.currentUserName.set('');

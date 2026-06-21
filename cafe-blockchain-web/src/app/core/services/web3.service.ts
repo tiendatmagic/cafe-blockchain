@@ -318,6 +318,39 @@ export class Web3Service {
       const ethersAdapter = new EthersAdapter();
       const defaultNet = this.getAppKitNetworkByChainId(this.configuredChainId());
 
+      // Mock SIWE Config để tự động giả lập và lưu session SIWE phía client
+      const mockSiweConfig = {
+        getNonce: async () => {
+          // Sinh chuỗi ngẫu nhiên 12 ký tự (chữ và số) để thông điệp ký trông chuyên nghiệp và hợp lệ
+          return Math.random().toString(36).substring(2, 14).toUpperCase();
+        },
+        createMessage: (args: any) => {
+          return `Sign in to Cafe Blockchain: ${args.address}`;
+        },
+        verifyMessage: async (args: any) => {
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('appkit_siwe_signed', 'true');
+          }
+          return true;
+        },
+        getSession: async () => {
+          const account = this.currentAccount();
+          if (typeof window !== 'undefined' && localStorage.getItem('appkit_siwe_signed') === 'true' && account) {
+            return {
+              address: account,
+              chainId: Number(this.chainId() || this.configuredChainId())
+            };
+          }
+          return null;
+        },
+        signOut: async () => {
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('appkit_siwe_signed');
+          }
+          return true;
+        }
+      };
+
       this.modal = createAppKit({
         adapters: [ethersAdapter],
         networks: [arbitrum, base, bsc, bscTestnet, arbitrumSepolia],
@@ -341,7 +374,8 @@ export class Web3Service {
         ],
         featuredWalletIds: [
           '4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0' // Trust Wallet
-        ]
+        ],
+        siweConfig: mockSiweConfig as any
       });
 
       // Lắng nghe account thay đổi từ WalletConnect modal để cập nhật state đồng bộ
@@ -802,6 +836,7 @@ export class Web3Service {
       localStorage.removeItem('auth_user_name');
       localStorage.removeItem('auth_user_email');
       localStorage.removeItem('auth_user_phone');
+      localStorage.removeItem('appkit_siwe_signed');
     }
   }
 
