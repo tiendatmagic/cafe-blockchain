@@ -35,7 +35,7 @@ class EnsureIsSystemAdmin
         }
 
         // 2. Kiểm tra ví Staff từ database system_staffs
-        $isStaff = SystemStaff::where('wallet_address', $user->wallet_address)
+        $isStaff = SystemStaff::where('wallet_address', $walletAddress)
             ->where('is_active', true)
             ->exists();
 

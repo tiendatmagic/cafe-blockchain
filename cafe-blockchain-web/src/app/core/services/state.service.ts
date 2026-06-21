@@ -95,7 +95,10 @@ export class StateService {
   public readonly currentUserPermissions = this.authService.currentUserPermissions;
   public readonly isSuperAdmin = this.authService.isSuperAdmin;
   public readonly currentUserAdminRole = this.authService.currentUserAdminRole;
-  public readonly isSystemStaff = computed(() => this.currentUserAdminRole() === 'staff');
+  public readonly isSystemStaff = computed(() => {
+    const role = this.currentUserAdminRole();
+    return role === 'staff' || role === 'admin';
+  });
   public readonly isSystemAdmin = computed(() => this.isSuperAdmin() || this.isSystemStaff());
   public readonly subscriptionPlanCode = this.authService.subscriptionPlanCode;
   public readonly subscriptionExpiresAt = this.authService.subscriptionExpiresAt;

@@ -56,6 +56,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/subscriptions', [AdminController::class, 'indexSubscriptionRequests']);
         Route::post('/subscriptions/{id}/approve', [AdminController::class, 'approveSubscriptionRequest']);
         Route::post('/subscriptions/{id}/reject', [AdminController::class, 'rejectSubscriptionRequest']);
+
+        // System Info & Packages
+        Route::get('/system-info', [AdminController::class, 'getSystemInfo']);
+        Route::get('/packages', [AdminController::class, 'getPackages']);
     });
 
     // Super Admin Only Routes (Bypass CheckSubscription)
@@ -82,10 +86,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/payment-methods', [AdminController::class, 'storePaymentMethod']);
         Route::put('/payment-methods/{id}', [AdminController::class, 'updatePaymentMethod']);
         Route::delete('/payment-methods/{id}', [AdminController::class, 'destroyPaymentMethod']);
-
-        // System Info & Packages
-        Route::get('/system-info', [AdminController::class, 'getSystemInfo']);
-        Route::get('/packages', [AdminController::class, 'getPackages']);
 
         // Maintenance Actions
         Route::post('/maintenance/clear-views', [AdminController::class, 'clearViews']);

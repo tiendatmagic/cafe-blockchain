@@ -76,7 +76,7 @@ export class AuthService {
 
   // Thông tin thuê bao và Super Admin
   public readonly isSuperAdmin = signal<boolean>(false);
-  public readonly currentUserAdminRole = signal<'super_admin' | 'staff' | null>(null);
+  public readonly currentUserAdminRole = signal<'super_admin' | 'staff' | 'admin' | null>(null);
   public readonly subscriptionPlanCode = signal<string>('free');
   public readonly subscriptionExpiresAt = signal<string | null>(null);
   public readonly subscriptionStatus = signal<string>('active');
@@ -103,7 +103,7 @@ export class AuthService {
     if (savedAddress && this.hasValidAuthToken(savedAddress)) {
       this.isAuthLoggedIn.set(true);
       this.isSuperAdmin.set(localStorage.getItem('auth_is_super_admin') === 'true');
-      this.currentUserAdminRole.set(localStorage.getItem('auth_admin_role') as 'super_admin' | 'staff' | null);
+      this.currentUserAdminRole.set(localStorage.getItem('auth_admin_role') as 'super_admin' | 'staff' | 'admin' | null);
       this.currentUserRole.set(localStorage.getItem('auth_role') || 'Chủ cửa hàng');
       
       const permStr = localStorage.getItem('auth_permissions');

@@ -420,7 +420,7 @@ export class AdminSaaSComponent implements OnInit {
 
     if (this.stateService.isSuperAdmin()) {
       this.loadAllAdminData();
-    } else if (isStaff) {
+    } else {
       this.loadStaffAdminData();
     }
   }
