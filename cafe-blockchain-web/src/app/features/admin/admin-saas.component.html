@@ -1605,38 +1605,49 @@
 
       <!-- ===== TAB 5: SUBSCRIPTION REQUESTS (Thuê bao) ===== -->
       @if (activeSubTab() === 'subscriptions') {
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-6">
-          <!-- Bộ lọc trạng thái -->
-          <div class="w-full sm:w-48">
-            <app-custom-select
-              [options]="[
-                { value: 'all', label: 'Tất cả trạng thái' },
-                { value: 'pending', label: 'Chờ phê duyệt' },
-                { value: 'approved', label: 'Đã phê duyệt' },
-                { value: 'rejected', label: 'Đã từ chối' }
-              ]"
-              valueKey="value"
-              labelKey="label"
-              [value]="subscriptionStatus()"
-              (valueChange)="subscriptionStatus.set($event); subscriptionPage.set(1); loadSubscriptionRequests()"
-              placeholder="Trạng thái"
-              triggerClass="w-full form-input !py-2 !h-10 !text-sm"
-            >
-            </app-custom-select>
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div class="min-w-0">
+            <h4 class="text-base font-black text-slate-800 dark:text-white uppercase tracking-wider">
+              QUẢN LÝ YÊU CẦU THUÊ BAO
+            </h4>
+            <p class="text-xs text-slate-400 mt-0.5">
+              Phê duyệt các yêu cầu đăng ký, gia hạn gói cước của các cửa hàng trong hệ thống.
+            </p>
           </div>
 
-          <!-- Search Field -->
-          <div class="relative w-full sm:w-64">
-            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-              <app-icon name="search" class="h-4.5 w-4.5 text-slate-400"></app-icon>
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+            <!-- Bộ lọc trạng thái -->
+            <div class="w-full sm:w-48">
+              <app-custom-select
+                [options]="[
+                  { value: 'all', label: 'Tất cả trạng thái' },
+                  { value: 'pending', label: 'Chờ phê duyệt' },
+                  { value: 'approved', label: 'Đã phê duyệt' },
+                  { value: 'rejected', label: 'Đã từ chối' }
+                ]"
+                valueKey="value"
+                labelKey="label"
+                [value]="subscriptionStatus()"
+                (valueChange)="subscriptionStatus.set($event); subscriptionPage.set(1); loadSubscriptionRequests()"
+                placeholder="Trạng thái"
+                triggerClass="w-full form-input !py-2 !h-10 !text-sm"
+              >
+              </app-custom-select>
             </div>
-            <input
-              type="text"
-              [ngModel]="subscriptionSearch()"
-              (ngModelChange)="subscriptionSearch.set($event); subscriptionPage.set(1); loadSubscriptionRequests()"
-              placeholder="Tìm theo ví, TxHash..."
-              class="search-input !pl-10 !h-10 !text-sm"
-            />
+
+            <!-- Search Field -->
+            <div class="relative w-full sm:w-64">
+              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+                <app-icon name="search" class="h-4.5 w-4.5 text-slate-400"></app-icon>
+              </div>
+              <input
+                type="text"
+                [ngModel]="subscriptionSearch()"
+                (ngModelChange)="subscriptionSearch.set($event); subscriptionPage.set(1); loadSubscriptionRequests()"
+                placeholder="Tìm theo ví, TxHash..."
+                class="search-input !pl-10 !h-10 !text-sm"
+              />
+            </div>
           </div>
         </div>
 
@@ -1678,59 +1689,49 @@
               </ng-template>
 
               <ng-template appCell="current_plan" let-row>
-                <div class="flex flex-col gap-0.5 text-xs font-semibold">
+                <span
+                  class="inline-flex items-center rounded px-2 py-0.5 text-[10px] font-black uppercase tracking-wider"
+                  [ngClass]="{
+                    'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700':
+                      row.current_plan_code === 'free',
+                    'bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20':
+                      row.current_plan_code === 'pro',
+                    'bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20':
+                      row.current_plan_code === 'ultra'
+                  }"
+                >
+                  {{ row.current_plan_code }}
+                </span>
+              </ng-template>
+
+              <ng-template appCell="current_subscription_expires_at" let-row>
+                @if (!row.current_subscription_expires_at) {
+                  <span class="text-xs font-semibold text-slate-450 dark:text-slate-500">Vô hạn</span>
+                } @else {
                   <span
-                    class="inline-flex items-center self-start rounded px-2 py-0.5 text-[10px] font-black uppercase tracking-wider"
+                    class="text-xs font-semibold"
                     [ngClass]="{
-                      'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700':
-                        row.current_plan_code === 'free',
-                      'bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20':
-                        row.current_plan_code === 'pro',
-                      'bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20':
-                        row.current_plan_code === 'ultra'
+                      'text-rose-500': row.current_subscription_status === 'suspended',
+                      'text-slate-650 dark:text-slate-350': row.current_subscription_status !== 'suspended'
                     }"
                   >
-                    {{ row.current_plan_code }}
+                    {{ row.current_subscription_expires_at | date: 'dd/MM/yyyy' }}
                   </span>
-                  @if (!row.current_subscription_expires_at) {
-                    <span class="text-[11px] text-slate-400 mt-0.5">Vô hạn</span>
-                  } @else {
-                    <span
-                      class="text-[11px] mt-0.5"
-                      [ngClass]="{
-                        'text-rose-500': row.current_subscription_status === 'suspended',
-                        'text-slate-450': row.current_subscription_status !== 'suspended'
-                      }"
-                    >
-                      Hạn: {{ row.current_subscription_expires_at | date: 'dd/MM/yyyy' }}
-                    </span>
-                  }
-                </div>
+                }
               </ng-template>
 
               <ng-template appCell="plan_code" let-row>
-                <div class="flex flex-col gap-0.5">
-                  <span
-                    class="inline-flex items-center self-start rounded px-2 py-0.5 text-[10px] font-black uppercase tracking-wider"
-                    [ngClass]="{
-                      'bg-purple-100 dark:bg-purple-500/10 text-purple-650 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20':
-                        row.plan_code === 'pro',
-                      'bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20':
-                        row.plan_code === 'ultra'
-                    }"
-                  >
-                    {{ row.plan_code }}
-                  </span>
-                  <span class="text-[11px] text-slate-500 dark:text-slate-455 font-bold mt-0.5">
-                    {{ row.duration_months }} tháng / {{ row.amount | vnd }}
-                  </span>
-                </div>
-              </ng-template>
-
-              <ng-template appCell="payment_method_details" let-row>
-                <div class="text-xs text-slate-600 dark:text-slate-350 font-semibold max-w-[150px] truncate" [title]="row.payment_method_details || '—'">
-                  {{ row.payment_method_details || '—' }}
-                </div>
+                <span
+                  class="inline-flex items-center rounded px-2 py-0.5 text-[10px] font-black uppercase tracking-wider"
+                  [ngClass]="{
+                    'bg-purple-100 dark:bg-purple-500/10 text-purple-655 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20':
+                      row.plan_code === 'pro',
+                    'bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20':
+                      row.plan_code === 'ultra'
+                  }"
+                >
+                  {{ row.plan_code }}
+                </span>
               </ng-template>
 
               <ng-template appCell="tx_hash" let-row>

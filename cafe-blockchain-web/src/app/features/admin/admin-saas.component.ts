@@ -219,8 +219,8 @@ export class AdminSaaSComponent implements OnInit {
   public readonly subscriptionColumns: TableColumn[] = [
     { key: 'store_name', header: 'Cửa hàng', sortable: false, class: 'pl-6 whitespace-nowrap font-bold text-slate-800 dark:text-slate-200' },
     { key: 'current_plan', header: 'Thuê bao hiện tại', sortable: false, class: 'whitespace-nowrap' },
-    { key: 'plan_code', header: 'Đăng ký mới', sortable: false, class: 'whitespace-nowrap font-bold' },
-    { key: 'payment_method_details', header: 'Tài khoản nhận', sortable: false, class: 'whitespace-nowrap text-xs max-w-xs truncate' },
+    { key: 'current_subscription_expires_at', header: 'Ngày hết hạn', sortable: false, class: 'whitespace-nowrap' },
+    { key: 'plan_code', header: 'Gói dịch vụ', sortable: false, class: 'whitespace-nowrap font-bold' },
     { key: 'tx_hash', header: 'Mã giao dịch (TxHash)', sortable: false, class: 'font-mono text-xs max-w-[120px] truncate' },
     { key: 'status', header: 'Trạng thái', sortable: false, class: 'whitespace-nowrap' },
     { key: 'created_at', header: 'Ngày gửi', sortable: false, class: 'whitespace-nowrap' },
