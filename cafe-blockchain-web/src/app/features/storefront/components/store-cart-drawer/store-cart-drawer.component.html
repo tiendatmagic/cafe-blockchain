@@ -1,0 +1,536 @@
+<app-drawer [isOpen]="isOpen" (close)="close.emit()" title="Giỏ hàng của bạn">
+  <div class="space-y-6">
+    <!-- Chi tiết món đã chọn -->
+    <div class="space-y-3">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wide"
+          >Chi tiết món đã chọn</span
+        >
+        <button
+          type="button"
+          (click)="clearCart.emit()"
+          class="text-xs font-bold text-rose-500 hover:text-rose-600 active:scale-95 transition-all cursor-pointer"
+        >
+          Xóa tất cả
+        </button>
+      </div>
+
+      <div class="space-y-3.5 max-h-[320px] overflow-y-auto pr-1 no-scrollbar">
+        @for (item of cart; track $index) {
+          <div
+            class="flex gap-3.5 p-3.5 bg-slate-50 dark:bg-slate-950/40 rounded-2xl border border-slate-100 dark:border-slate-800/40"
+          >
+            <!-- Ảnh hoặc Icon -->
+            <div
+              class="w-16 h-16 rounded-xl bg-slate-100 dark:bg-slate-800 overflow-hidden shrink-0 flex items-center justify-center border border-slate-200/10 dark:border-slate-800/20"
+            >
+              @if (item.product.image) {
+                <img
+                  [src]="item.product.image"
+                  [alt]="item.product.name"
+                  class="w-full h-full object-cover"
+                />
+              } @else {
+                <app-icon
+                  name="archive"
+                  class="w-6 h-6 text-slate-400"
+                  [strokeWidth]="1.5"
+                ></app-icon>
+              }
+            </div>
+
+            <div class="flex-1 min-w-0 flex flex-col justify-between">
+              <div>
+                <h4 class="text-xs font-extrabold text-slate-800 dark:text-white truncate">
+                  {{ item.product.name }}
+                </h4>
+                @if (item.variant) {
+                  <app-badge
+                    variant="primary"
+                    size="sm"
+                    rounded="md"
+                    class="mt-1"
+                  >
+                    {{ item.variant.variant_name }}
+                  </app-badge>
+                }
+                <!-- Ô nhập ghi chú cho từng món tương tự POS thu ngân -->
+                <div class="mt-1.5 relative">
+                  <input
+                    type="text"
+                    [(ngModel)]="item.note"
+                    (ngModelChange)="cartItemNoteChange.emit()"
+                    placeholder="Ghi chú (ít đá, ít ngọt...)"
+                    class="w-full form-input-sm bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80"
+                  />
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between mt-2 shrink-0">
+                <span class="text-xs font-black text-slate-700 dark:text-slate-300 font-mono">
+                  {{
+                    (item.variant ? item.variant.price : item.product.price) * item.quantity
+                      | number
+                  }}đ
+                  @if (item.product.unit) {
+                    <span class="text-[10px] text-slate-400 dark:text-slate-500 font-normal">
+                      / {{ item.product.unit }}</span
+                    >
+                  }
+                </span>
+
+                <!-- Bộ tăng giảm số lượng -->
+                <div
+                  class="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1 shrink-0"
+                >
+                  <button
+                    type="button"
+                    (click)="updateCartQty.emit({ index: $index, delta: -1 })"
+                    class="w-8 h-8 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-center text-sm font-bold text-slate-400 hover:text-[var(--dynamic-primary)] dark:hover:text-[var(--dynamic-primary)]"
+                  >
+                    -
+                  </button>
+                  <span
+                    class="text-sm font-bold text-slate-800 dark:text-white w-7 text-center"
+                  >
+                    {{ item.quantity }}
+                  </span>
+                  <button
+                    type="button"
+                    (click)="updateCartQty.emit({ index: $index, delta: 1 })"
+                    class="w-8 h-8 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-center text-sm font-bold text-slate-400 hover:text-[var(--dynamic-primary)] dark:hover:text-[var(--dynamic-primary)]"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Form điền thông tin đặt đơn -->
+    <div class="border-t border-slate-100 dark:border-slate-800/60 pt-5 space-y-4">
+      <span class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+        >Thông tin nhận đơn</span
+      >
+
+      <!-- Tên -->
+      <div class="space-y-1.5">
+        <label
+          class="text-xs sm:text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-wide block"
+          >Tên của bạn <span class="text-rose-500">*</span></label
+        >
+        <input
+          type="text"
+          [(ngModel)]="orderForm.customer_name"
+          placeholder="Nhập tên của bạn"
+          class="form-input"
+        />
+      </div>
+
+      <!-- SĐT -->
+      <div class="space-y-1.5">
+        <label
+          class="text-xs sm:text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-wide block"
+          >Số điện thoại liên hệ <span class="text-rose-500">*</span></label
+        >
+        <input
+          type="text"
+          pattern="[0-9]*"
+          inputmode="numeric"
+          [ngModel]="orderForm.customer_phone"
+          (ngModelChange)="phoneInputChange.emit($event)"
+          placeholder="Nhập số điện thoại để quán liên hệ"
+          class="form-input"
+        />
+      </div>
+
+      <!-- Địa chỉ giao hàng / Số bàn -->
+      <div class="space-y-1.5">
+        <label
+          class="text-xs sm:text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-wide block"
+        >
+          {{ isQrTable ? 'Bàn ăn của bạn' : 'Địa chỉ giao hàng' }}
+          <span class="text-rose-500">*</span>
+        </label>
+        <input
+          type="text"
+          [(ngModel)]="orderForm.table_number"
+          [placeholder]="isQrTable ? '' : 'Nhập địa chỉ giao hàng của bạn (bắt buộc)'"
+          class="form-input"
+          [disabled]="isQrTable"
+          required
+        />
+        @if (isQrTable) {
+          <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold block mt-1">
+            ✓ Hệ thống tự động nhận diện bàn ăn qua mã QR.
+          </span>
+        }
+      </div>
+
+      <!-- Ghi chú chung -->
+      <div class="space-y-1.5">
+        <label
+          class="text-xs sm:text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-wide block"
+          >Ghi chú đơn hàng</label
+        >
+        <textarea
+          rows="2"
+          [(ngModel)]="orderForm.note"
+          placeholder="Ghi chú thêm cho quán (Ví dụ: ít đường, nhiều đá...)"
+          class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-sm focus:outline-none focus:border-[var(--color-primary)] text-slate-800 dark:text-white resize-none transition-all duration-200"
+        ></textarea>
+      </div>
+
+      <!-- Chọn phương thức thanh toán -->
+      <div class="space-y-2">
+        <label
+          class="text-xs sm:text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-wide block"
+          >Hình thức thanh toán</label
+        >
+        <div
+          [class]="
+            storeSettings?.show_crypto_payment === '1'
+              ? 'grid grid-cols-2 sm:grid-cols-4 gap-3'
+              : 'grid grid-cols-3 gap-3'
+          "
+        >
+          <!-- COD -->
+          <div
+            (click)="orderForm.payment_method = 'cash'"
+            class="p-3.5 rounded-2xl border-2 flex flex-col items-center justify-center cursor-pointer transition-all text-center h-24"
+            [ngClass]="
+              orderForm.payment_method === 'cash'
+                ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 text-[var(--dynamic-primary)] font-black'
+                : 'border-slate-200 dark:border-slate-800 text-slate-500 font-extrabold'
+            "
+          >
+            <app-icon name="cash" class="w-6 h-6 shrink-0" [strokeWidth]="2"></app-icon>
+            <span class="text-[11px] sm:text-xs uppercase mt-1.5 leading-tight"
+              >Tiền mặt (COD)</span
+            >
+          </div>
+
+          <!-- Chuyển khoản -->
+          <div
+            (click)="orderForm.payment_method = 'bank_transfer'"
+            class="p-3.5 rounded-2xl border-2 flex flex-col items-center justify-center cursor-pointer transition-all text-center h-24"
+            [ngClass]="
+              orderForm.payment_method === 'bank_transfer'
+                ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 text-[var(--dynamic-primary)] font-black'
+                : 'border-slate-200 dark:border-slate-800 text-slate-500 font-extrabold'
+            "
+          >
+            <app-icon name="bank" class="w-6 h-6 shrink-0" [strokeWidth]="2"></app-icon>
+            <span class="text-[11px] sm:text-xs uppercase mt-1.5 leading-tight"
+              >Chuyển khoản</span
+            >
+          </div>
+
+          <!-- Ví điện tử -->
+          <div
+            (click)="orderForm.payment_method = 'e_wallet'"
+            class="p-3.5 rounded-2xl border-2 flex flex-col items-center justify-center cursor-pointer transition-all text-center h-24"
+            [ngClass]="
+              orderForm.payment_method === 'e_wallet'
+                ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 text-[var(--dynamic-primary)] font-black'
+                : 'border-slate-200 dark:border-slate-800 text-slate-500 font-extrabold'
+            "
+          >
+            <app-icon name="wallet" class="w-6 h-6 shrink-0" [strokeWidth]="2"></app-icon>
+            <span class="text-[11px] sm:text-xs uppercase mt-1.5 leading-tight"
+              >Ví điện tử</span
+            >
+          </div>
+
+          <!-- Crypto (nếu được bật) -->
+          @if (storeSettings?.show_crypto_payment === '1') {
+            <div
+              (click)="orderForm.payment_method = 'crypto'"
+              class="p-3.5 rounded-2xl border-2 flex flex-col items-center justify-center cursor-pointer transition-all text-center h-24"
+              [ngClass]="
+                orderForm.payment_method === 'crypto'
+                  ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 text-[var(--dynamic-primary)] font-black'
+                  : 'border-slate-200 dark:border-slate-800 text-slate-500 font-extrabold'
+              "
+            >
+              <app-icon
+                name="blockchain"
+                class="w-6 h-6 shrink-0"
+                [strokeWidth]="2"
+              ></app-icon>
+              <span class="text-[11px] sm:text-xs uppercase mt-1.5 leading-tight"
+                >Crypto</span
+              >
+            </div>
+          }
+        </div>
+
+        <!-- Lựa chọn tài khoản Chuyển khoản / Ví điện tử -->
+        @if (
+          orderForm.payment_method === 'bank_transfer' ||
+          orderForm.payment_method === 'e_wallet'
+        ) {
+          <div
+            class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/60 space-y-4"
+          >
+            <span class="text-xs font-black text-slate-400 uppercase tracking-wide block">
+              {{
+                orderForm.payment_method === 'bank_transfer'
+                  ? 'Chọn tài khoản Ngân hàng'
+                  : 'Chọn Ví điện tử'
+              }}
+            </span>
+
+            <!-- Danh sách tài khoản -->
+            <div class="grid grid-cols-1 gap-2.5">
+              @for (pm of paymentMethods; track pm.id) {
+                @if (
+                  (orderForm.payment_method === 'bank_transfer' && pm.type === 'bank') ||
+                  (orderForm.payment_method === 'e_wallet' && pm.type === 'wallet')
+                ) {
+                  <div
+                    (click)="selectStorePaymentMethod.emit(pm.id)"
+                    [class]="
+                      'p-3.5 rounded-2xl border-2 flex items-center justify-between cursor-pointer transition-all ' +
+                      (orderForm.selected_payment_method_id === pm.id
+                        ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5'
+                        : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700')
+                    "
+                  >
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0"
+                      >
+                        <app-icon
+                          [name]="pm.type === 'bank' ? 'bank' : 'wallet'"
+                          class="w-5 h-5"
+                          [strokeWidth]="2"
+                        ></app-icon>
+                      </div>
+                      <div>
+                        <span
+                          class="text-xs font-black text-slate-800 dark:text-white block"
+                          >{{ pm.name }}</span
+                        >
+                        <span
+                          class="text-[10px] text-slate-500 dark:text-slate-400 font-bold block mt-0.5"
+                          >{{ pm.account_holder }} - {{ pm.account_number }}</span
+                        >
+                      </div>
+                    </div>
+                    @if (orderForm.selected_payment_method_id === pm.id) {
+                      <div class="text-[var(--dynamic-primary)]">
+                        <app-icon
+                          name="check-circle"
+                          class="h-5 w-5"
+                          [strokeWidth]="2.5"
+                        ></app-icon>
+                      </div>
+                    }
+                  </div>
+                }
+              }
+            </div>
+
+            <!-- QR Code & Hướng dẫn chuyển khoản -->
+            @if (getSelectedPaymentMethod(); as selectedPM) {
+              <div
+                class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800/40 space-y-4 flex flex-col items-center text-center"
+              >
+                <div
+                  class="text-[11px] font-bold text-slate-500 dark:text-slate-400 leading-relaxed"
+                >
+                  Vui lòng quét mã QR bên dưới để chuyển khoản số tiền
+                  <strong class="text-slate-800 dark:text-white">{{
+                    cartTotalWithShipping | vnd
+                  }}</strong>
+                  trước khi bấm đặt đơn!
+                </div>
+
+                <!-- QR Image -->
+                <div
+                  class="p-2.5 bg-white rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-md flex items-center justify-center w-48 h-48 shrink-0"
+                >
+                  <img
+                    [src]="getStoreQrUrl(selectedPM)"
+                    alt="QR Code Chuyển Khoản"
+                    class="w-full h-full object-contain rounded-lg"
+                  />
+                </div>
+
+                <!-- Nút tải ảnh QR -->
+                <button
+                  type="button"
+                  (click)="downloadQrCode(selectedPM)"
+                  class="btn-secondary text-xs py-1.5 px-4 rounded-xl flex items-center gap-1.5 font-bold border border-slate-200 dark:border-slate-800/60 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all text-slate-700 dark:text-slate-300"
+                >
+                  <app-icon name="download" class="h-3.5 w-3.5" strokeWidth="2.5" />
+                  <span>Tải ảnh QR</span>
+                </button>
+
+                <div
+                  class="w-full text-left text-[11px] space-y-1 bg-white dark:bg-slate-950 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800/50"
+                >
+                  <div class="flex justify-between items-center py-0.5">
+                    <span
+                      class="text-slate-400 font-bold uppercase tracking-wider text-[10px]"
+                      >Chủ tài khoản:</span
+                    >
+                    <div class="flex items-center gap-1.5 min-w-0">
+                      <span class="font-extrabold text-slate-800 dark:text-white uppercase truncate">{{
+                        selectedPM.account_holder
+                      }}</span>
+                      <button
+                        type="button"
+                        (click)="copyToClipboard(selectedPM.account_holder)"
+                        class="p-1 rounded-lg text-slate-400 hover:text-[var(--dynamic-primary)] hover:bg-slate-100 dark:hover:bg-slate-900 transition-all cursor-pointer shrink-0"
+                        title="Sao chép"
+                      >
+                        <app-icon name="copy" class="h-3.5 w-3.5" [strokeWidth]="2" />
+                      </button>
+                    </div>
+                  </div>
+                  <div class="flex justify-between items-center py-0.5">
+                    <span
+                      class="text-slate-400 font-bold uppercase tracking-wider text-[10px]"
+                      >Số tài khoản/SĐT:</span
+                    >
+                    <div class="flex items-center gap-1.5 min-w-0">
+                      <span class="font-bold text-slate-800 dark:text-white font-mono truncate">{{
+                        selectedPM.account_number
+                      }}</span>
+                      <button
+                        type="button"
+                        (click)="copyToClipboard(selectedPM.account_number)"
+                        class="p-1 rounded-lg text-slate-400 hover:text-[var(--dynamic-primary)] hover:bg-slate-100 dark:hover:bg-slate-900 transition-all cursor-pointer shrink-0"
+                        title="Sao chép"
+                      >
+                        <app-icon name="copy" class="h-3.5 w-3.5" [strokeWidth]="2" />
+                      </button>
+                    </div>
+                  </div>
+                  @if (selectedPM.type === 'bank') {
+                    <div class="flex justify-between items-center py-0.5">
+                      <span
+                        class="text-slate-400 font-bold uppercase tracking-wider text-[10px]"
+                        >Ngân hàng:</span
+                      >
+                      <div class="flex items-center gap-1.5 min-w-0">
+                        <span class="font-extrabold text-slate-800 dark:text-white truncate"
+                          >{{ selectedPM.name }} ({{ selectedPM.bank_code }})</span
+                        >
+                        <button
+                          type="button"
+                          (click)="copyToClipboard(selectedPM.name)"
+                          class="p-1 rounded-lg text-slate-400 hover:text-[var(--dynamic-primary)] hover:bg-slate-100 dark:hover:bg-slate-900 transition-all cursor-pointer shrink-0"
+                          title="Sao chép"
+                        >
+                          <app-icon name="copy" class="h-3.5 w-3.5" [strokeWidth]="2" />
+                        </button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Footer Drawer (Thực hiện hành động đặt hàng) -->
+    <div class="border-t border-slate-100 dark:border-slate-800/60 pt-5 space-y-4">
+      <!-- Chi tiết phí vận chuyển nếu được cấu hình -->
+      @if (storeSettings && storeSettings.shipping_fee_flat_enabled === '1') {
+        <!-- Tiến trình miễn phí vận chuyển -->
+        @if (storeSettings.shipping_fee_free_enabled === '1') {
+          @if (cartTotal < (storeSettings.shipping_fee_free_min_amount || 0)) {
+            <div
+              class="p-3 rounded-xl bg-purple-500/5 dark:bg-purple-950/20 border border-purple-500/10 dark:border-purple-800/40 text-[11px] font-bold text-slate-500 dark:text-slate-400 flex items-center justify-between gap-2"
+            >
+              <span
+                >Mua thêm
+                <span class="text-[var(--dynamic-primary)]">{{
+                  storeSettings.shipping_fee_free_min_amount - cartTotal | vnd
+                }}</span>
+                để được miễn phí vận chuyển</span
+              >
+              <div
+                class="w-16 bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden shrink-0"
+              >
+                <div
+                  class="bg-[var(--dynamic-primary)] h-full transition-all duration-300"
+                  [style.width.%]="
+                    (cartTotal / storeSettings.shipping_fee_free_min_amount) * 100
+                  "
+                ></div>
+              </div>
+            </div>
+          } @else {
+            <div
+              class="p-3 rounded-xl bg-emerald-500/5 dark:bg-emerald-950/20 border border-emerald-500/10 dark:border-emerald-800/40 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5"
+            >
+              <app-icon
+                name="check-circle"
+                class="w-4 h-4 shrink-0"
+                [strokeWidth]="2"
+              ></app-icon>
+              <span>Chúc mừng! Đơn hàng của bạn đã được miễn phí vận chuyển</span>
+            </div>
+          }
+        }
+
+        <div class="space-y-2 text-xs font-bold text-slate-500 dark:text-slate-400">
+          <div class="flex items-center justify-between">
+            <span>Tạm tính:</span>
+            <span class="font-mono text-slate-700 dark:text-slate-300">{{
+              cartTotal | vnd
+            }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span>Phí vận chuyển:</span>
+            <span class="font-mono text-slate-700 dark:text-slate-300">
+              @if (shippingFee > 0) {
+                {{ shippingFee | vnd }}
+              } @else {
+                <span class="text-emerald-500 uppercase tracking-wider text-[10px]"
+                  >Miễn phí</span
+                >
+              }
+            </span>
+          </div>
+        </div>
+      }
+
+      <div
+        class="flex items-center justify-between text-slate-800 dark:text-white border-t border-slate-100 dark:border-slate-800/40 pt-3"
+      >
+        <span class="text-xs sm:text-sm font-extrabold uppercase">Tổng thanh toán:</span>
+        <span class="text-base font-black text-rose-500 font-mono">
+          {{ cartTotalWithShipping | vnd }}
+        </span>
+      </div>
+
+      <!-- Turnstile Widget (Chống Bot Spam) -->
+      @if (turnstileSiteKey) {
+        <div class="flex justify-center py-2.5 bg-slate-50 dark:bg-slate-950/40 rounded-2xl border border-slate-100 dark:border-slate-800/40 my-3 shrink-0">
+          <div id="turnstile-container"></div>
+        </div>
+      }
+
+      <button
+        app-button
+        variant="primary"
+        type="button"
+        (click)="placeOrder.emit()"
+        [loading]="isSubmittingOrder"
+        class="w-full text-sm uppercase tracking-wider"
+      >
+        XÁC NHẬN ĐẶT ĐƠN HÀNG
+      </button>
+    </div>
+  </div>
+</app-drawer>

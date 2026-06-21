@@ -22,7 +22,6 @@ import { StateService } from '@core/services/state.service';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
 import { ThemeToggleComponent } from '@shared/components/theme-toggle/theme-toggle.component';
-import { DrawerComponent } from '@shared/components/drawer/drawer.component';
 import { environment } from '@environments/environment';
 import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prompt/web3-connect-prompt.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
@@ -33,6 +32,8 @@ import { BadgeComponent } from '@shared/components/badge/badge.component';
 import { ModalService } from '@core/services/modal.service';
 import { StoreVariantSelectModalComponent } from '../../components/store-variant-select-modal/store-variant-select-modal.component';
 import { OrderSuccessModalComponent } from '../../components/order-success-modal/order-success-modal.component';
+import { FloatingCartBarComponent } from '../../components/floating-cart-bar/floating-cart-bar.component';
+import { StoreCartDrawerComponent } from '../../components/store-cart-drawer/store-cart-drawer.component';
 
 interface CartItem {
   product: any;
@@ -51,13 +52,14 @@ interface CartItem {
     PaginationComponent,
     VNDCurrencyPipe,
     ThemeToggleComponent,
-    DrawerComponent,
     Web3ConnectPromptComponent,
     IconComponent,
     TabGroupComponent,
     ButtonComponent,
     CardComponent,
     BadgeComponent,
+    FloatingCartBarComponent,
+    StoreCartDrawerComponent,
   ],
   templateUrl: './store.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
