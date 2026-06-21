@@ -7,6 +7,7 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { StateService } from '@core/services/state.service';
 import { Web3Service } from '@core/services/web3.service';
 import { IconComponent } from '@shared/components/icon/icon.component';
@@ -29,6 +30,9 @@ export class DesktopHeaderComponent {
   public readonly isPriceDropdownOpen = signal<boolean>(false);
   public readonly isChainDropdownOpen = signal<boolean>(false);
   public readonly isShiftDropdownOpen = signal<boolean>(false);
+  public readonly isWalletDropdownOpen = signal<boolean>(false);
+
+  private readonly router = inject(Router);
 
   @HostListener('document:click', ['$event'])
   public onDocumentClick(event: MouseEvent) {
@@ -47,6 +51,11 @@ export class DesktopHeaderComponent {
       !this.elementRef.nativeElement.querySelector('#shift-dropdown-container')?.contains(target)
     ) {
       this.isShiftDropdownOpen.set(false);
+    }
+    if (
+      !this.elementRef.nativeElement.querySelector('#wallet-dropdown-container')?.contains(target)
+    ) {
+      this.isWalletDropdownOpen.set(false);
     }
   }
 
@@ -90,5 +99,25 @@ export class DesktopHeaderComponent {
   public openCloseShiftModal() {
     this.isShiftDropdownOpen.set(false);
     this.stateService.openCloseShiftModal();
+  }
+
+  public goToProfile() {
+    this.isWalletDropdownOpen.set(false);
+    this.router.navigate(['/profile']);
+  }
+
+  public copyWalletAddress() {
+    this.isWalletDropdownOpen.set(false);
+    this.stateService.copyAddress();
+  }
+
+  public openWalletModal() {
+    this.isWalletDropdownOpen.set(false);
+    this.stateService.isWalletModalOpen.set(true);
+  }
+
+  public disconnectWallet() {
+    this.isWalletDropdownOpen.set(false);
+    this.stateService.disconnectWalletAndClose();
   }
 }

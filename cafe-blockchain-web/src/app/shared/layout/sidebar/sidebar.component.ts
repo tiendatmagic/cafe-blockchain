@@ -38,6 +38,7 @@ export class SidebarComponent implements AfterViewInit, OnDestroy {
   public readonly sliderOpacity = signal<number>(0);
 
   public readonly isChainDropdownOpen = signal<boolean>(false);
+  public readonly isWalletDropdownOpen = signal<boolean>(false);
   private routerSub?: Subscription;
 
   // Thiết lập hiệu ứng trượt toàn cục từ StateService
@@ -130,6 +131,34 @@ export class SidebarComponent implements AfterViewInit, OnDestroy {
     ) {
       this.isChainDropdownOpen.set(false);
     }
+    if (
+      !this.elementRef.nativeElement
+        .querySelector('#wallet-dropdown-container')
+        ?.contains(target)
+    ) {
+      this.isWalletDropdownOpen.set(false);
+    }
+  }
+
+  public goToProfile() {
+    this.isWalletDropdownOpen.set(false);
+    this.isMobileMenuOpen.set(false);
+    this.router.navigate(['/profile']);
+  }
+
+  public copyWalletAddress() {
+    this.isWalletDropdownOpen.set(false);
+    this.stateService.copyAddress();
+  }
+
+  public openWalletModal() {
+    this.isWalletDropdownOpen.set(false);
+    this.stateService.isWalletModalOpen.set(true);
+  }
+
+  public disconnectWallet() {
+    this.isWalletDropdownOpen.set(false);
+    this.stateService.disconnectWalletAndClose();
   }
 
   // Chuyển đổi mạng (Chain) trên ví Web3 cho mobile/tablet
