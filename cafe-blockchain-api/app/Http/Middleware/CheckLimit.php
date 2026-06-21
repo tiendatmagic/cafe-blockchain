@@ -74,11 +74,11 @@ class CheckLimit
                 // Fallback mặc định cho gói free nếu thiếu key cấu hình
                 $limitVal = isset($features[$limitKey]) ? (int)$features[$limitKey] : -1;
                 if (!isset($features[$limitKey]) && $planCode === 'free') {
-                    if ($limitKey === 'max_products') $limitVal = 20;
-                    if ($limitKey === 'max_staffs') $limitVal = 2;
+                    if ($limitKey === 'max_products') $limitVal = 50;
+                    if ($limitKey === 'max_staffs') $limitVal = 0;
                     if ($limitKey === 'max_customers') $limitVal = 50;
                     if ($limitKey === 'max_transactions') $limitVal = 100;
-                    if ($limitKey === 'max_debts') $limitVal = 10;
+                    if ($limitKey === 'max_debts') $limitVal = 100;
                 }
                 
                 if ($limitVal >= 0 && $currentCount >= $limitVal) {

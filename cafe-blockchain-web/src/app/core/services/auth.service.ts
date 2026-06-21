@@ -30,7 +30,7 @@ export const DEFAULT_PLAN_FEATURES: Record<string, Record<string, any>> = {
     'enable_dashboard': true,
     'enable_pos': true,
     'enable_orders': true,
-    'enable_tables': true,
+    'enable_tables': false,
     'enable_shifts': false,
     'enable_menu': true,
     'enable_inventory': false,
@@ -40,12 +40,12 @@ export const DEFAULT_PLAN_FEATURES: Record<string, Record<string, any>> = {
     'enable_reports': false,
     'enable_excel_export': false,
     'enable_storefront': false,
-    'enable_staffs': true,
-    'max_products': 20,
-    'max_staffs': 2,
+    'enable_staffs': false,
+    'max_products': 50,
+    'max_staffs': 0,
     'max_customers': 50,
     'max_transactions': 100,
-    'max_debts': 10
+    'max_debts': 100
   }
 };
 
