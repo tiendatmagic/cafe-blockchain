@@ -329,14 +329,73 @@ export class Web3Service {
           return true;
         },
         getSession: async () => {
-          const account = this.appKitAddress || this.currentAccount() || (typeof window !== 'undefined' ? localStorage.getItem('auth_address') : null);
-          if (account) {
-            return {
-              address: account,
-              chainId: Number(this.chainId() || this.configuredChainId())
-            };
+          if (typeof window === 'undefined') return null;
+
+          // 1. Xác định địa chỉ ví đang kết nối hiện tại
+          let account: string | null = this.appKitAddress || this.currentAccount() || null;
+          if (account === '') {
+            account = null;
           }
-          return null;
+          
+          // Thử lấy thêm từ window.ethereum nếu có
+          if (!account && (window as any).ethereum?.selectedAddress) {
+            account = (window as any).ethereum.selectedAddress;
+          }
+
+          // Thử lấy từ localStorage nếu DApp đã đăng nhập trước đó
+          if (!account) {
+            account = localStorage.getItem('auth_address');
+          }
+
+          if (!account) return null;
+
+          // 2. Xác định chainId hiện tại đang kết nối
+          let activeChainId: string | number | null = null;
+
+          // a. Thử lấy từ AppKit instance nếu đã được gán
+          if (this.modal) {
+            try {
+              const appKitChain = this.modal.getChainId();
+              if (appKitChain) {
+                activeChainId = appKitChain;
+              }
+            } catch (e) {}
+          }
+
+          // b. Thử lấy từ window.ethereum (đồng bộ và chính xác nhất cho extension)
+          if (!activeChainId && (window as any).ethereum) {
+            try {
+              const ethChainId = (window as any).ethereum.chainId;
+              if (ethChainId) {
+                activeChainId = BigInt(ethChainId).toString();
+              }
+            } catch (e) {}
+          }
+
+          // c. Thử lấy từ localStorage của AppKit
+          if (!activeChainId) {
+            try {
+              const cachedChain = localStorage.getItem('@w3m/active_chain_id') || localStorage.getItem('w3m-active-chain-id');
+              if (cachedChain) {
+                activeChainId = cachedChain;
+              }
+            } catch (e) {}
+          }
+
+          // d. Thử lấy từ signal chainId của service
+          if (!activeChainId) {
+            activeChainId = this.chainId();
+          }
+
+          // e. Fallback về configuredChainId
+          if (!activeChainId) {
+            activeChainId = this.configuredChainId();
+          }
+
+          return {
+            address: account,
+            chainId: Number(activeChainId)
+          };
         },
         signOut: async () => {
           return true;
