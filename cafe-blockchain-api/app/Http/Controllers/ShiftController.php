@@ -27,10 +27,22 @@ class ShiftController extends Controller
      */
     public function current(Request $request)
     {
+        $t1 = microtime(true);
+        logger()->info('[ShiftController] current started');
+        
         $user = $request->user();
+        $t2 = microtime(true);
+        logger()->info('[ShiftController] user resolved: ' . (($t2 - $t1) * 1000) . 'ms');
+        
         $shift = $this->shiftRepository->findActiveByUserId($user->id);
-
-        return response()->json($shift);
+        $t3 = microtime(true);
+        logger()->info('[ShiftController] shift query done: ' . (($t3 - $t2) * 1000) . 'ms');
+        
+        $response = response()->json($shift);
+        $t4 = microtime(true);
+        logger()->info('[ShiftController] json response created: ' . (($t4 - $t3) * 1000) . 'ms');
+        
+        return $response;
     }
 
     /**

@@ -286,7 +286,7 @@ export class StateService {
             }))
             : of(null);
           const shift$ = (this.hasPermission('shifts') && this.hasFeature('enable_shifts'))
-            ? this.apiService.getCurrentShift().pipe(catchError((err) => {
+            ? this.apiService.getCurrentShift(30000).pipe(catchError((err) => { // Cache 30 giây để tránh gọi trùng lặp lúc khởi chạy
               console.warn('[StateService] Lỗi tải ca trực hiện tại:', err);
               return of(null);
             }))

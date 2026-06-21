@@ -46,10 +46,12 @@ export class ShiftService {
     return false;
   }
 
-  public refreshCurrentShift(onSuccess?: (shift: any) => void) {
+  public refreshCurrentShift(ttl?: number | ((shift: any) => void), force?: boolean, onSuccess?: (shift: any) => void) {
     if (this.isSubscriptionBlocked()) return;
     this.shiftStore.refreshCurrentShift(
       this.authService.hasPermission('shifts') && this.authService.hasFeature('enable_shifts'),
+      ttl,
+      force,
       onSuccess
     );
   }
@@ -128,7 +130,7 @@ export class ShiftService {
       size: 'md',
     }).afterClosed$.subscribe((success) => {
       if (success) {
-        this.refreshCurrentShift();
+        this.refreshCurrentShift(0, true);
         this.refreshShifts();
       }
     });
@@ -148,7 +150,7 @@ export class ShiftService {
       size: 'md',
     }).afterClosed$.subscribe((success) => {
       if (success) {
-        this.refreshCurrentShift();
+        this.refreshCurrentShift(0, true);
         this.refreshShifts();
       }
     });

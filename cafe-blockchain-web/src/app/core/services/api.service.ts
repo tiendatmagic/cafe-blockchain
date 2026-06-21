@@ -461,8 +461,9 @@ export class ApiService {
   }
 
   // --- Shifts (Ca làm việc) API ---
-  public getCurrentShift(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/shifts/current`, { headers: this.getHeaders() });
+  public getCurrentShift(ttl?: number, force?: boolean): Observable<any> {
+    const headers = this.getCacheHeaders(ttl, force);
+    return this.http.get(`${this.baseUrl}/shifts/current`, { headers });
   }
 
   public getShiftSummary(): Observable<any> {

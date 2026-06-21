@@ -81,27 +81,46 @@ export class ShiftStore {
     this.shiftDurationString.set(`${pad(hours)}:${pad(minutes)}:${pad(seconds)}`);
   }
 
-  public refreshCurrentShift(hasShiftsPermission: boolean, onSuccess?: (shift: any) => void) {
+  public refreshCurrentShift(
+    hasShiftsPermission: boolean,
+    ttl?: number | ((shift: any) => void),
+    force?: boolean,
+    onSuccess?: (shift: any) => void
+  ) {
     if (!this.web3Service.walletConnected()) return;
     if (!hasShiftsPermission) return;
 
-    this.apiService.getCurrentShift().subscribe({
+    let actualTtl: number | undefined = undefined;
+    let actualOnSuccess = onSuccess;
+
+    if (typeof ttl === 'function') {
+      actualOnSuccess = ttl;
+    } else {
+      actualTtl = ttl;
+    }
+
+    // Mặc định cache 30 giây để tối ưu nếu không force và không truyền ttl cụ thể
+    if (actualTtl === undefined && !force) {
+      actualTtl = 30000;
+    }
+
+    this.apiService.getCurrentShift(actualTtl, force).subscribe({
       next: (res) => {
         this.currentShift.set(res || null);
         if (res && res.status === 'open') {
           this.apiService.getShiftSummary().subscribe({
             next: (sum) => {
               this.shiftSummary.set(sum || null);
-              if (onSuccess) onSuccess(res || null);
+              if (actualOnSuccess) actualOnSuccess(res || null);
             },
             error: (err) => {
               console.error('[ShiftStore] Lỗi tải summary ca trực khi refresh:', err);
-              if (onSuccess) onSuccess(res || null);
+              if (actualOnSuccess) actualOnSuccess(res || null);
             }
           });
         } else {
           this.shiftSummary.set(null);
-          if (onSuccess) onSuccess(res || null);
+          if (actualOnSuccess) actualOnSuccess(res || null);
         }
       },
       error: (err) => {

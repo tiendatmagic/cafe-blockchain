@@ -49,6 +49,13 @@ export const cacheInterceptor: HttpInterceptorFn = (req, next) => {
           keysToRemove.push(key);
         }
       }
+
+      // Invalidate ca làm việc khi có thay đổi ca trực (mở ca, đóng ca)
+      if (url.includes('/shifts')) {
+        if (key.includes('/shifts')) {
+          keysToRemove.push(key);
+        }
+      }
     });
 
     keysToRemove.forEach((key) => cacheMap.delete(key));
