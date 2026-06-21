@@ -837,6 +837,7 @@ export class Web3Service {
       localStorage.removeItem('auth_user_email');
       localStorage.removeItem('auth_user_phone');
       localStorage.removeItem('appkit_siwe_signed');
+      localStorage.removeItem('dapp_dynamic_colors');
     }
   }
 

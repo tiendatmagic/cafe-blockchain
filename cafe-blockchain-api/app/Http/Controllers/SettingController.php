@@ -384,8 +384,8 @@ class SettingController extends Controller
         // Chỉ trả về các cấu hình an toàn cho client
         $publicSettings = [
             'store_name' => $settings['store_name'] ?? 'Cafe Web3 POS',
-            'primary_color' => $settings['primary_color'] ?? '#7c3aed',
-            'secondary_color' => $settings['secondary_color'] ?? '#c084fc',
+            'primary_color' => empty($orderCode) ? '#7c3aed' : ($settings['primary_color'] ?? '#7c3aed'),
+            'secondary_color' => empty($orderCode) ? '#c084fc' : ($settings['secondary_color'] ?? '#c084fc'),
             'contract_address' => $settings['contract_address'] ?? '',
             'finance_contract_address' => $settings['finance_contract_address'] ?? '',
             'voucher_contract_address' => $settings['voucher_contract_address'] ?? '',

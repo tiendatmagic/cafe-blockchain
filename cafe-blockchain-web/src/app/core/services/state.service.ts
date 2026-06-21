@@ -349,6 +349,7 @@ export class StateService {
       const url = event.urlAfterRedirects || event.url;
       this.uiStateService.currentUrl.set(url);
       this.syncTabWithUrl(url);
+      this.syncThemeColorsForRoute(url);
     });
 
     setTimeout(() => {
@@ -672,6 +673,25 @@ export class StateService {
       this.setTabState('settings');
     } else if (url === '/' || url === '/dashboard') {
       this.setTabState('dashboard');
+    }
+  }
+
+  private syncThemeColorsForRoute(url: string) {
+    if (typeof window === 'undefined') return;
+    
+    // Nếu không ở storefront (/store/slug)
+    if (!url.includes('/store/')) {
+      if (this.web3Service.walletConnected() && this.isAuthLoggedIn()) {
+        const settings = this.settingStore.settings();
+        if (settings && (settings.primary_color || settings.secondary_color)) {
+          this.settingStore.applyDynamicColors(settings.primary_color, settings.secondary_color);
+        } else {
+          this.settingStore.applyCachedDynamicColors();
+        }
+      } else {
+        // Nếu chưa đăng nhập hoặc ngắt kết nối ví, khôi phục màu mặc định thương hiệu DApp
+        this.settingStore.applyDynamicColors('#7c3aed', '#c084fc');
+      }
     }
   }
 
