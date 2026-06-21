@@ -5,6 +5,8 @@ import {
   computed,
   OnInit,
   ChangeDetectionStrategy,
+  VERSION,
+  HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -16,6 +18,7 @@ import {
 } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { StateService } from '@core/services/state.service';
+import { environment } from '@environments/environment';
 import { ApiService } from '@core/services/api.service';
 import { ModalService } from '@core/services/modal.service';
 import { TenantSubscriptionModalComponent } from './components/tenant-subscription-modal/tenant-subscription-modal.component';
@@ -358,6 +361,57 @@ export class AdminSaaSComponent implements OnInit {
   public readonly packageTotalPages = computed(() =>
     Math.ceil(this.filteredPackages().length / this.packageItemsPerPage),
   );
+
+  // Frontend & Client Info
+  public readonly angularVersion = VERSION.full;
+  public readonly frontendEnv = environment;
+
+  public readonly windowWidth = signal<number>(typeof window !== 'undefined' ? window.innerWidth : 1200);
+  public readonly windowHeight = signal<number>(typeof window !== 'undefined' ? window.innerHeight : 800);
+
+  public readonly clientInfo = computed(() => {
+    if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+      return {
+        browser: 'Server Side Rendering',
+        os: 'Server',
+        screenResolution: 'N/A',
+        language: 'N/A',
+        userAgent: 'N/A'
+      };
+    }
+
+    const ua = navigator.userAgent;
+    let browser = 'Không xác định';
+    if (ua.includes('Firefox')) browser = 'Mozilla Firefox';
+    else if (ua.includes('SamsungBrowser')) browser = 'Samsung Internet';
+    else if (ua.includes('Opera') || ua.includes('OPR')) browser = 'Opera';
+    else if (ua.includes('Edg')) browser = 'Microsoft Edge';
+    else if (ua.includes('Chrome')) browser = 'Google Chrome';
+    else if (ua.includes('Safari')) browser = 'Apple Safari';
+
+    let os = 'Không xác định';
+    if (ua.includes('Win')) os = 'Windows';
+    else if (ua.includes('Mac')) os = 'macOS';
+    else if (ua.includes('Linux')) os = 'Linux';
+    else if (ua.includes('Android')) os = 'Android';
+    else if (ua.includes('like Mac')) os = 'iOS';
+
+    return {
+      browser,
+      os,
+      screenResolution: `${window.screen.width}x${window.screen.height}`,
+      language: navigator.language,
+      userAgent: ua
+    };
+  });
+
+  @HostListener('window:resize')
+  onResize() {
+    if (typeof window !== 'undefined') {
+      this.windowWidth.set(window.innerWidth);
+      this.windowHeight.set(window.innerHeight);
+    }
+  }
 
   // Select Options cho Gói cước
   public get planOptions() {

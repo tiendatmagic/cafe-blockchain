@@ -106,7 +106,9 @@
           <span>Làm mới</span>
         </button>
       } @else if (activeSubTab() === 'payment') {
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto ml-auto">
+        <div
+          class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto ml-auto"
+        >
           <!-- Search Field -->
           <div class="relative w-full sm:w-64">
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
@@ -121,7 +123,12 @@
             />
           </div>
           @if (stateService.isSuperAdmin()) {
-            <button app-button variant="primary" class="whitespace-nowrap flex items-center gap-1.5" (click)="openAddSystemPaymentModal()">
+            <button
+              app-button
+              variant="primary"
+              class="whitespace-nowrap flex items-center gap-1.5"
+              (click)="openAddSystemPaymentModal()"
+            >
               <app-icon name="plus" class="h-4.5 w-4.5" strokeWidth="2.5"></app-icon>
               <span>Thêm phương thức mới</span>
             </button>
@@ -657,17 +664,23 @@
                 <div class="font-extrabold text-slate-800 dark:text-slate-200 text-sm">
                   {{ row.name }}
                   @if (row.bank_code) {
-                    <span class="text-xs font-mono font-bold text-slate-400 ml-1">({{ row.bank_code }})</span>
+                    <span class="text-xs font-mono font-bold text-slate-400 ml-1"
+                      >({{ row.bank_code }})</span
+                    >
                   }
                 </div>
               </ng-template>
 
               <ng-template appCell="account_number" let-row>
-                <span class="font-mono font-bold text-slate-700 dark:text-slate-350">{{ row.account_number }}</span>
+                <span class="font-mono font-bold text-slate-700 dark:text-slate-350">{{
+                  row.account_number
+                }}</span>
               </ng-template>
 
               <ng-template appCell="account_holder" let-row>
-                <span class="font-bold uppercase text-slate-700 dark:text-slate-350">{{ row.account_holder }}</span>
+                <span class="font-bold uppercase text-slate-700 dark:text-slate-350">{{
+                  row.account_holder
+                }}</span>
               </ng-template>
 
               <ng-template appCell="is_active" let-row>
@@ -724,38 +737,79 @@
             <div class="flex items-center justify-between px-6 py-5 gap-4">
               <div class="min-w-0 flex items-start gap-4">
                 <!-- Icon -->
-                <div class="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
-                  [ngClass]="turnstileEnabled() ? 'bg-emerald-100 dark:bg-emerald-500/10' : 'bg-slate-100 dark:bg-slate-800/60'">
-                  <svg class="w-5 h-5"
+                <div
+                  class="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
+                  [ngClass]="
+                    turnstileEnabled()
+                      ? 'bg-emerald-100 dark:bg-emerald-500/10'
+                      : 'bg-slate-100 dark:bg-slate-800/60'
+                  "
+                >
+                  <svg
+                    class="w-5 h-5"
                     [ngClass]="turnstileEnabled() ? 'text-emerald-500' : 'text-slate-400'"
-                    viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                    />
                   </svg>
                 </div>
 
                 <div>
-                  <p class="text-base font-bold text-slate-800 dark:text-slate-200 flex flex-wrap items-center gap-2">
+                  <p
+                    class="text-base font-bold text-slate-800 dark:text-slate-200 flex flex-wrap items-center gap-2"
+                  >
                     Cloudflare Turnstile
-                    <span class="text-xs font-bold px-2 py-0.5 rounded-lg"
-                      [ngClass]="turnstileEnabled()
-                        ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700'">
+                    <span
+                      class="text-xs font-bold px-2 py-0.5 rounded-lg"
+                      [ngClass]="
+                        turnstileEnabled()
+                          ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700'
+                      "
+                    >
                       {{ turnstileEnabled() ? 'Đang bật' : 'Đang tắt' }}
                     </span>
                   </p>
                   <p class="text-sm text-slate-400 mt-1">
                     Bảo vệ storefront đặt hàng công khai khỏi bot và spam. Yêu cầu cấu hình
-                    <code class="font-mono text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">TURNSTILE_SECRET_KEY</code>
+                    <code
+                      class="font-mono text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded"
+                      >TURNSTILE_SECRET_KEY</code
+                    >
                     và
-                    <code class="font-mono text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">TURNSTILE_SITE_KEY</code>
-                    trong <code class="font-mono text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">.env</code>.
+                    <code
+                      class="font-mono text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded"
+                      >TURNSTILE_SITE_KEY</code
+                    >
+                    trong
+                    <code
+                      class="font-mono text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded"
+                      >.env</code
+                    >.
                   </p>
                   @if (!turnstileHasKey()) {
-                    <p class="text-xs text-amber-600 dark:text-amber-400 mt-2 flex items-center gap-1.5">
-                      <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    <p
+                      class="text-xs text-amber-600 dark:text-amber-400 mt-2 flex items-center gap-1.5"
+                    >
+                      <svg
+                        class="w-3.5 h-3.5 shrink-0"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2.5"
+                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                        />
                       </svg>
                       Chưa cấu hình TURNSTILE_SECRET_KEY trong .env — không thể bật bảo vệ.
                     </p>
@@ -766,7 +820,9 @@
               <!-- Toggle Button -->
               <div class="shrink-0">
                 @if (isTogglingTurnstile()) {
-                  <div class="w-5 h-5 rounded-full border-2 border-current/30 border-t-current animate-spin text-[var(--dynamic-primary)]"></div>
+                  <div
+                    class="w-5 h-5 rounded-full border-2 border-current/30 border-t-current animate-spin text-[var(--dynamic-primary)]"
+                  ></div>
                 } @else {
                   <app-custom-switch
                     [checked]="turnstileEnabled()"
@@ -971,7 +1027,6 @@
 
           <!-- Token Maintenance Configuration -->
           <div app-card class="space-y-6 relative overflow-hidden">
-
             <div class="pb-2 border-b border-slate-100 dark:border-slate-800/60">
               <div>
                 <h4
@@ -1272,7 +1327,7 @@
                           "
                         />
                       </svg>
-                      {{ systemInfo()?.system_env?.debug_mode ? 'Bật (On)' : 'Tắt (Off)' }}
+                      {{ systemInfo()?.system_env?.debug_mode ? 'Bật ' : 'Tắt ' }}
                     </span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
@@ -1302,7 +1357,7 @@
                           "
                         />
                       </svg>
-                      {{ systemInfo()?.system_env?.storage_writable ? 'Được (Yes)' : 'Không (No)' }}
+                      {{ systemInfo()?.system_env?.storage_writable ? 'Được ' : 'Không ' }}
                     </span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
@@ -1332,8 +1387,87 @@
                           "
                         />
                       </svg>
-                      {{ systemInfo()?.system_env?.cache_writable ? 'Được (Yes)' : 'Không (No)' }}
+                      {{ systemInfo()?.system_env?.cache_writable ? 'Được ' : 'Không ' }}
                     </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Frontend Environment -->
+              <div app-card class="space-y-0 p-0 overflow-hidden">
+                <div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800/60">
+                  <h5
+                    class="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest"
+                  >
+                    MÔI TRƯỜNG FRONTEND
+                  </h5>
+                </div>
+                <div
+                  class="divide-y divide-slate-50 dark:divide-slate-800/40 text-slate-800 dark:text-slate-200"
+                >
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm">
+                    <span class="text-slate-500 font-medium">Phiên bản Angular</span>
+                    <span
+                      class="font-mono text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/30 px-2 py-0.5 rounded-lg border border-purple-100/50 dark:border-purple-900/30 leading-none"
+                      >{{ angularVersion }}</span
+                    >
+                  </div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm">
+                    <span class="text-slate-500 font-medium">Chế độ Production</span>
+                    <span
+                      [ngClass]="frontendEnv.production ? 'text-emerald-500' : 'text-amber-500'"
+                      class="font-extrabold flex items-center gap-1"
+                    >
+                      {{ frontendEnv.production ? 'Bật' : 'Tắt' }}
+                    </span>
+                  </div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm">
+                    <span class="text-slate-550 font-medium">API Base URL</span>
+                    <span
+                      class="font-mono text-xs text-slate-600 dark:text-slate-400 break-all select-all text-right max-w-[200px]"
+                      [title]="frontendEnv.apiBaseUrl"
+                      >{{ frontendEnv.apiBaseUrl }}</span
+                    >
+                  </div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm">
+                    <span class="text-slate-550 font-medium">Chain ID mặc định</span>
+                    <span
+                      class="font-mono text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-200/30 dark:border-slate-700/30 leading-none"
+                      >{{ frontendEnv.defaultChainId }}</span
+                    >
+                  </div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm">
+                    <span class="text-slate-500 font-medium">Trình duyệt</span>
+                    <span
+                      class="font-bold text-slate-800 dark:text-slate-200 truncate max-w-[180px]"
+                      [title]="clientInfo().userAgent"
+                      >{{ clientInfo().browser }}</span
+                    >
+                  </div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm">
+                    <span class="text-slate-500 font-medium">Hệ điều hành</span>
+                    <span class="font-bold text-slate-800 dark:text-slate-200">{{
+                      clientInfo().os
+                    }}</span>
+                  </div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm">
+                    <span class="text-slate-550 font-medium">Độ phân giải</span>
+                    <span class="font-mono text-xs text-slate-600 dark:text-slate-400">{{
+                      clientInfo().screenResolution
+                    }}</span>
+                  </div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm">
+                    <span class="text-slate-550 font-medium">Kích thước cửa sổ</span>
+                    <span class="font-mono text-xs text-slate-600 dark:text-slate-400"
+                      >{{ windowWidth() }}x{{ windowHeight() }}</span
+                    >
+                  </div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm">
+                    <span class="text-slate-550 font-medium">Ngôn ngữ</span>
+                    <span
+                      class="font-bold text-slate-800 dark:text-slate-200 uppercase font-mono text-xs"
+                      >{{ clientInfo().language }}</span
+                    >
                   </div>
                 </div>
               </div>
@@ -1594,9 +1728,8 @@
                           : 'text-emerald-500'
                       "
                       class="font-extrabold"
-                      >{{
-                        systemInfo()?.php_config?.display_errors ? 'Bật (On)' : 'Tắt (Off)'
-                      }}</span>
+                      >{{ systemInfo()?.php_config?.display_errors ? 'Bật ' : 'Tắt ' }}</span
+                    >
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Cấp độ báo lỗi</span>
@@ -1615,7 +1748,9 @@
       @if (activeSubTab() === 'subscriptions') {
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div class="min-w-0">
-            <h4 class="text-base font-black text-slate-800 dark:text-white uppercase tracking-wider">
+            <h4
+              class="text-base font-black text-slate-800 dark:text-white uppercase tracking-wider"
+            >
               QUẢN LÝ YÊU CẦU THUÊ BAO
             </h4>
             <p class="text-xs text-slate-400 mt-0.5">
@@ -1623,7 +1758,9 @@
             </p>
           </div>
 
-          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+          <div
+            class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto"
+          >
             <!-- Bộ lọc trạng thái -->
             <div class="w-full sm:w-48">
               <app-custom-select
@@ -1631,12 +1768,16 @@
                   { value: 'all', label: 'Tất cả trạng thái' },
                   { value: 'pending', label: 'Chờ phê duyệt' },
                   { value: 'approved', label: 'Đã phê duyệt' },
-                  { value: 'rejected', label: 'Đã từ chối' }
+                  { value: 'rejected', label: 'Đã từ chối' },
                 ]"
                 valueKey="value"
                 labelKey="label"
                 [value]="subscriptionStatus()"
-                (valueChange)="subscriptionStatus.set($event); subscriptionPage.set(1); loadSubscriptionRequests()"
+                (valueChange)="
+                  subscriptionStatus.set($event);
+                  subscriptionPage.set(1);
+                  loadSubscriptionRequests()
+                "
                 placeholder="Trạng thái"
                 triggerClass="w-full form-input !py-2 !h-10 !text-sm"
               >
@@ -1651,7 +1792,11 @@
               <input
                 type="text"
                 [ngModel]="subscriptionSearch()"
-                (ngModelChange)="subscriptionSearch.set($event); subscriptionPage.set(1); loadSubscriptionRequests()"
+                (ngModelChange)="
+                  subscriptionSearch.set($event);
+                  subscriptionPage.set(1);
+                  loadSubscriptionRequests()
+                "
                 placeholder="Tìm theo ví, TxHash..."
                 class="search-input !pl-10 !h-10 !text-sm"
               />
@@ -1705,7 +1850,7 @@
                     'bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20':
                       row.current_plan_code === 'pro',
                     'bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20':
-                      row.current_plan_code === 'ultra'
+                      row.current_plan_code === 'ultra',
                   }"
                 >
                   {{ row.current_plan_code }}
@@ -1714,13 +1859,16 @@
 
               <ng-template appCell="current_subscription_expires_at" let-row>
                 @if (!row.current_subscription_expires_at) {
-                  <span class="text-xs font-semibold text-slate-450 dark:text-slate-500">Vô hạn</span>
+                  <span class="text-xs font-semibold text-slate-450 dark:text-slate-500"
+                    >Vô hạn</span
+                  >
                 } @else {
                   <span
                     class="text-xs font-semibold"
                     [ngClass]="{
                       'text-rose-500': row.current_subscription_status === 'suspended',
-                      'text-slate-650 dark:text-slate-350': row.current_subscription_status !== 'suspended'
+                      'text-slate-650 dark:text-slate-350':
+                        row.current_subscription_status !== 'suspended',
                     }"
                   >
                     {{ row.current_subscription_expires_at | date: 'dd/MM/yyyy' }}
@@ -1735,7 +1883,7 @@
                     'bg-purple-100 dark:bg-purple-500/10 text-purple-655 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20':
                       row.plan_code === 'pro',
                     'bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20':
-                      row.plan_code === 'ultra'
+                      row.plan_code === 'ultra',
                   }"
                 >
                   {{ row.plan_code }}
@@ -1744,7 +1892,10 @@
 
               <ng-template appCell="tx_hash" let-row>
                 <div class="flex items-center gap-1.5">
-                  <span class="font-mono text-xs text-slate-500 max-w-[90px] truncate" [title]="row.tx_hash">
+                  <span
+                    class="font-mono text-xs text-slate-500 max-w-[90px] truncate"
+                    [title]="row.tx_hash"
+                  >
                     {{ row.tx_hash }}
                   </span>
                   <button
@@ -1773,7 +1924,7 @@
                     'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20':
                       row.status === 'approved',
                     'bg-rose-100 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/20':
-                      row.status === 'rejected'
+                      row.status === 'rejected',
                   }"
                 >
                   {{
@@ -1785,7 +1936,10 @@
                   }}
                 </span>
                 @if (row.status === 'rejected' && row.rejected_reason) {
-                  <div class="text-[10px] text-rose-500 mt-1 max-w-[150px] truncate" [title]="row.rejected_reason">
+                  <div
+                    class="text-[10px] text-rose-500 mt-1 max-w-[150px] truncate"
+                    [title]="row.rejected_reason"
+                  >
                     Lý do: {{ row.rejected_reason }}
                   </div>
                 }
@@ -1839,10 +1993,15 @@
       }
 
       <!-- ===== TAB 6: SYSTEM STAFFS (Nhân viên hệ thống) ===== -->
-      @if (activeSubTab() === 'staffs' && (stateService.isSuperAdmin() || stateService.currentUserAdminRole() === 'admin')) {
+      @if (
+        activeSubTab() === 'staffs' &&
+        (stateService.isSuperAdmin() || stateService.currentUserAdminRole() === 'admin')
+      ) {
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div class="min-w-0">
-            <h4 class="text-base font-black text-slate-800 dark:text-white uppercase tracking-wider">
+            <h4
+              class="text-base font-black text-slate-800 dark:text-white uppercase tracking-wider"
+            >
               QUẢN LÝ NHÂN VIÊN HỆ THỐNG
             </h4>
             <p class="text-xs text-slate-400 mt-0.5">
@@ -1850,7 +2009,9 @@
             </p>
           </div>
 
-          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+          <div
+            class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto"
+          >
             <!-- Search Field -->
             <div class="relative w-full sm:w-64">
               <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
@@ -1859,7 +2020,9 @@
               <input
                 type="text"
                 [ngModel]="systemStaffsSearch()"
-                (ngModelChange)="systemStaffsSearch.set($event); systemStaffsPage.set(1); loadSystemStaffs()"
+                (ngModelChange)="
+                  systemStaffsSearch.set($event); systemStaffsPage.set(1); loadSystemStaffs()
+                "
                 placeholder="Tìm theo tên, ví..."
                 class="search-input !pl-10 !h-10 !text-sm"
               />
@@ -1894,7 +2057,9 @@
               (pageChange)="systemStaffsPage.set($event); loadSystemStaffs()"
             >
               <ng-template appCell="wallet_address" let-row>
-                <div class="flex items-center gap-1.5 font-mono text-purple-650 dark:text-purple-400">
+                <div
+                  class="flex items-center gap-1.5 font-mono text-purple-650 dark:text-purple-400"
+                >
                   <span>{{ shortAddress(row.wallet_address) }}</span>
                   <button
                     (click)="stateService.copyAddress(row.wallet_address)"
@@ -1920,7 +2085,9 @@
               </ng-template>
 
               <ng-template appCell="role" let-row>
-                <span class="inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-bold bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20">
+                <span
+                  class="inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-bold bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20"
+                >
                   {{ row.role === 'staff' ? 'Nhân viên hệ thống' : 'Quản trị viên' }}
                 </span>
               </ng-template>
@@ -1932,7 +2099,7 @@
                     'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20':
                       row.is_active,
                     'bg-rose-100 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/20':
-                      !row.is_active
+                      !row.is_active,
                   }"
                 >
                   {{ row.is_active ? 'Đang hoạt động' : 'Tạm khóa' }}
@@ -1974,4 +2141,3 @@
     }
   }
 </div>
-
