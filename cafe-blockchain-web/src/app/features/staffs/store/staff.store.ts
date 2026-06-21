@@ -26,8 +26,8 @@ export class StaffStore {
     this.isStaffsLoading.set(true);
 
     forkJoin({
-      staffs: this.apiService.getStaffs(),
-      roles: this.apiService.getRoles()
+      staffs: this.apiService.getStaffs(10 * 60 * 1000),
+      roles: this.apiService.getRoles(10 * 60 * 1000)
     }).subscribe({
       next: (res) => {
         this.staffs.set(res.staffs || []);

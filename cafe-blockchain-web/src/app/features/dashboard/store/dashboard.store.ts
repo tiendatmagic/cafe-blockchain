@@ -15,35 +15,16 @@ export class DashboardStore {
   public readonly dashboardData = signal<any>(null);
   public readonly isDashboardLoading = signal<boolean>(false);
   
-  public lastDashboardLoadTimestamp = 0;
-  private lastDashboardStartDate = '';
-  private lastDashboardEndDate = '';
-
-  /**
-   * Tải dữ liệu báo cáo dashboard từ backend (có cache 5 phút)
-   */
   public refreshDashboard(hasPermission: boolean, force: boolean = false) {
     if (!this.web3Service.walletConnected()) return;
     if (!hasPermission) return;
 
-    const now = Date.now();
-    const isFilterSame = this.dashboardStartDate() === this.lastDashboardStartDate && 
-                         this.dashboardEndDate() === this.lastDashboardEndDate;
-
-    // Nếu không ép buộc tải lại, đã có dữ liệu, trùng bộ lọc ngày và chưa hết hạn 5 phút
-    if (!force && this.dashboardData() && isFilterSame && (now - this.lastDashboardLoadTimestamp < 5 * 60 * 1000)) {
-      return;
-    }
-
     if (this.isDashboardLoading()) return;
     this.isDashboardLoading.set(true);
 
-    this.apiService.getDashboard(this.dashboardStartDate(), this.dashboardEndDate()).subscribe({
+    this.apiService.getDashboard(this.dashboardStartDate(), this.dashboardEndDate(), 5 * 60 * 1000, force).subscribe({
       next: (res) => {
         this.dashboardData.set(res);
-        this.lastDashboardLoadTimestamp = now;
-        this.lastDashboardStartDate = this.dashboardStartDate();
-        this.lastDashboardEndDate = this.dashboardEndDate();
         this.isDashboardLoading.set(false);
       },
       error: (err) => {

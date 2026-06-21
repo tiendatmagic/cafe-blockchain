@@ -263,7 +263,7 @@ export class ReportsComponent implements OnInit {
     this.customerSortField.set('total_spent');
     this.customerSortDesc.set(true);
 
-    this.apiService.getReports(this.reportsStartDate(), this.reportsEndDate()).subscribe({
+    this.apiService.getReports(this.reportsStartDate(), this.reportsEndDate(), 10 * 60 * 1000).subscribe({
       next: (data: any) => {
         this.reportsData.set(data);
         this.isReportsLoading.set(false);

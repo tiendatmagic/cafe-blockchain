@@ -15,31 +15,20 @@ export class CustomerStore {
   public readonly customerGroups = signal<any[]>([]);
   public readonly isCustomersLoading = signal<boolean>(false);
   
-  public lastCustomersLoadTimestamp = 0;
-
-  /**
-   * Tải danh sách khách hàng và nhóm khách hàng
-   */
   public refreshCustomers(hasPermission: boolean, force: boolean = false) {
     if (!this.web3Service.walletConnected()) return;
     if (!hasPermission) return;
-
-    const now = Date.now();
-    if (!force && this.customers().length > 0 && (now - this.lastCustomersLoadTimestamp < 5 * 60 * 1000)) {
-      return;
-    }
 
     if (this.isCustomersLoading()) return;
     this.isCustomersLoading.set(true);
 
     forkJoin({
-      customers: this.apiService.getCustomers(),
-      groups: this.apiService.getCustomerGroups()
+      customers: this.apiService.getCustomers(undefined, undefined, 5 * 60 * 1000, force),
+      groups: this.apiService.getCustomerGroups(5 * 60 * 1000, force)
     }).subscribe({
       next: (res) => {
         this.customers.set(res.customers || []);
         this.customerGroups.set(res.groups || []);
-        this.lastCustomersLoadTimestamp = Date.now();
         this.isCustomersLoading.set(false);
       },
       error: (err) => {

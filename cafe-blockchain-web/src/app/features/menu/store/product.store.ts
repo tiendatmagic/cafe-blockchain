@@ -41,7 +41,7 @@ export class ProductStore {
   /**
    * Tải danh sách sản phẩm và danh mục từ backend
    */
-  public refreshProducts(hasPermission: boolean) {
+  public refreshProducts(hasPermission: boolean, ttl?: number) {
     if (!this.web3Service.walletConnected()) return;
     if (!hasPermission) return;
 
@@ -49,8 +49,8 @@ export class ProductStore {
     this.isProductsLoading.set(true);
 
     forkJoin({
-      products: this.apiService.getProducts(),
-      categories: this.apiService.getCategories()
+      products: this.apiService.getProducts(undefined, ttl),
+      categories: this.apiService.getCategories(ttl)
     }).subscribe({
       next: (res) => {
         this.products.set(res.products || []);

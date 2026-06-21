@@ -29,15 +29,11 @@ export class SettingStore {
     has_synced_transactions: false
   });
 
-  private isSettingsFetching = false;
-  private lastSettingsLoadTimestamp = 0;
-
   /**
    * Cập nhật cache cài đặt thủ công (sử dụng khi tải từ effect bên ngoài)
    */
   public updateSettingsCache(settings: any) {
     this.settings.set(settings);
-    this.lastSettingsLoadTimestamp = Date.now();
     this.applyAndCacheDynamicColors(settings.primary_color, settings.secondary_color);
     this.web3Service.updateConfig(settings);
   }
@@ -45,25 +41,18 @@ export class SettingStore {
   /**
    * Tải cấu hình từ backend
    */
-  public loadSettings(hasSettingsPermission: boolean) {
+  public loadSettings(hasSettingsPermission: boolean, force: boolean = false) {
     if (!this.web3Service.walletConnected()) {
       return;
     }
 
-    const now = Date.now();
-    const hasCachedSettings = this.settings() && this.settings().store_name && this.settings().store_name !== 'Blockchain Cafe & Bistro';
-    if (hasCachedSettings && (now - this.lastSettingsLoadTimestamp < 5 * 60 * 1000)) {
+    if (this.isSettingsLoading()) {
       return;
     }
-
-    if (this.isSettingsFetching) {
-      return;
-    }
-    this.isSettingsFetching = true;
     this.isSettingsLoading.set(true);
 
     const settingsObservable = hasSettingsPermission
-      ? this.apiService.getSettings() 
+      ? this.apiService.getSettings(5 * 60 * 1000, force) 
       : this.apiService.getPublicSettings();
 
     settingsObservable.subscribe({
@@ -76,13 +65,11 @@ export class SettingStore {
         };
         this.updateSettingsCache(updated);
         this.isSettingsLoading.set(false);
-        this.isSettingsFetching = false;
       },
       error: (err) => {
         console.error('[SettingStore] Lỗi tải cấu hình:', err);
         this.applyAndCacheDynamicColors('#7c3aed', '#c084fc');
         this.isSettingsLoading.set(false);
-        this.isSettingsFetching = false;
       }
     });
   }

@@ -26,8 +26,8 @@ export class TableStore {
     this.isTablesLoading.set(true);
 
     forkJoin({
-      areas: this.apiService.getAreas(),
-      tables: this.apiService.getDiningTables()
+      areas: this.apiService.getAreas(-1),
+      tables: this.apiService.getDiningTables(-1)
     }).subscribe({
       next: (res) => {
         this.areas.set(res.areas || []);

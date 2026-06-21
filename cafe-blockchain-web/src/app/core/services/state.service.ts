@@ -197,12 +197,6 @@ export class StateService {
   // Dữ liệu phương thức thanh toán
   public readonly paymentMethodsList = signal<any[]>([]);
   public readonly paymentMethodsTotal = signal<number>(0);
-  public lastPaymentMethodsLoadTimestamp = 0;
-
-  public get lastCustomersLoadTimestamp() { return this.customerStore.lastCustomersLoadTimestamp; }
-  public set lastCustomersLoadTimestamp(val: number) { this.customerStore.lastCustomersLoadTimestamp = val; }
-  public get lastDashboardLoadTimestamp() { return this.dashboardStore.lastDashboardLoadTimestamp; }
-  public set lastDashboardLoadTimestamp(val: number) { this.dashboardStore.lastDashboardLoadTimestamp = val; }
 
   // Thông điệp Toast
   public readonly successMessage = this.toastService.successMessage;
@@ -547,8 +541,11 @@ export class StateService {
 
   public refreshProducts() {
     if (this.isSubscriptionBlocked()) return;
+    const tab = this.activeTab();
+    const ttl = tab === 'pos' ? 10 * 60 * 1000 : (tab === 'menu' ? 5 * 60 * 1000 : undefined);
     this.productStore.refreshProducts(
-      this.hasPermission('pos') || this.hasPermission('menu') || this.hasPermission('inventory')
+      this.hasPermission('pos') || this.hasPermission('menu') || this.hasPermission('inventory'),
+      ttl
     );
   }
 

@@ -1319,29 +1319,22 @@ export class SettingsComponent implements OnInit {
   public readonly deletingPaymentMethodId = signal<number | null>(null);
 
   public loadPaymentMethods(force = false) {
-    const now = Date.now();
-    // Cache 5 phút: dữ liệu và timestamp nằm ở StateService nên tồn tại xuyên vòng đời component
-    if (
-      !force &&
-      this.stateService.paymentMethodsList().length > 0 &&
-      now - this.stateService.lastPaymentMethodsLoadTimestamp < 300000
-    ) {
-      return;
-    }
-
     this.isPaymentMethodsLoading.set(true);
     this.apiService
-      .getPaymentMethods({
-        page: this.paymentMethodsPage(),
-        per_page: this.paymentMethodsPerPage(),
-        search: this.paymentMethodsSearch(),
-      })
+      .getPaymentMethods(
+        {
+          page: this.paymentMethodsPage(),
+          per_page: this.paymentMethodsPerPage(),
+          search: this.paymentMethodsSearch(),
+        },
+        5 * 60 * 1000,
+        force
+      )
       .subscribe({
         next: (res) => {
           if (res) {
             this.stateService.paymentMethodsList.set(res.data || []);
             this.stateService.paymentMethodsTotal.set(res.total || 0);
-            this.stateService.lastPaymentMethodsLoadTimestamp = now;
           }
           this.isPaymentMethodsLoading.set(false);
         },

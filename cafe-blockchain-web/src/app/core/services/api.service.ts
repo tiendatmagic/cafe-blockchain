@@ -49,6 +49,20 @@ export class ApiService {
     return headers;
   }
 
+  /**
+   * Tạo HttpHeaders có chứa thông tin cache (TTL và Bypass Cache)
+   */
+  private getCacheHeaders(ttl?: number, force?: boolean): HttpHeaders {
+    let headers = this.getHeaders();
+    if (ttl !== undefined) {
+      headers = headers.set('X-Cache-TTL', ttl.toString());
+    }
+    if (force) {
+      headers = headers.set('X-Bypass-Cache', 'true');
+    }
+    return headers;
+  }
+
   // --- Auth API ---
   public getNonce(address: string): Observable<any> {
     return this.http.get(`${this.baseUrl}/auth/nonce?address=${address}`);
@@ -92,7 +106,7 @@ export class ApiService {
   }
 
   // 1. Dashboard API
-  public getDashboard(startDate?: string, endDate?: string): Observable<any> {
+  public getDashboard(startDate?: string, endDate?: string, ttl?: number, force?: boolean): Observable<any> {
     let params = new HttpParams();
     if (startDate) {
       params = params.set('start_date', startDate);
@@ -100,11 +114,12 @@ export class ApiService {
     if (endDate) {
       params = params.set('end_date', endDate);
     }
-    return this.http.get(`${this.baseUrl}/dashboard`, { params, headers: this.getHeaders() });
+    const headers = this.getCacheHeaders(ttl, force);
+    return this.http.get(`${this.baseUrl}/dashboard`, { params, headers });
   }
 
   // 2. Products (Thực đơn) API
-  public getProducts(params?: { page?: number; limit?: number; search?: string; category?: string }): Observable<any> {
+  public getProducts(params?: { page?: number; limit?: number; search?: string; category?: string }, ttl?: number): Observable<any> {
     let httpParams = new HttpParams();
     if (params) {
       if (params.page !== undefined) {
@@ -120,7 +135,11 @@ export class ApiService {
         httpParams = httpParams.set('category', params.category);
       }
     }
-    return this.http.get<any>(`${this.baseUrl}/products`, { params: httpParams, headers: this.getHeaders() });
+    let headers = this.getHeaders();
+    if (ttl !== undefined) {
+      headers = headers.set('X-Cache-TTL', ttl.toString());
+    }
+    return this.http.get<any>(`${this.baseUrl}/products`, { params: httpParams, headers });
   }
 
   public createProduct(product: any): Observable<any> {
@@ -213,8 +232,9 @@ export class ApiService {
   }
 
   // 4. Settings (Cấu hình) API
-  public getSettings(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/settings`, { headers: this.getHeaders() });
+  public getSettings(ttl?: number, force?: boolean): Observable<any> {
+    const headers = this.getCacheHeaders(ttl, force);
+    return this.http.get(`${this.baseUrl}/settings`, { headers });
   }
 
   public getPublicSettings(orderCode?: string): Observable<any> {
@@ -245,8 +265,12 @@ export class ApiService {
   }
 
   // 5. Categories (Danh mục) API
-  public getCategories(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/categories`, { headers: this.getHeaders() });
+  public getCategories(ttl?: number): Observable<any[]> {
+    let headers = this.getHeaders();
+    if (ttl !== undefined) {
+      headers = headers.set('X-Cache-TTL', ttl.toString());
+    }
+    return this.http.get<any[]>(`${this.baseUrl}/categories`, { headers });
   }
 
   public createCategory(category: { name: string }): Observable<any> {
@@ -262,7 +286,7 @@ export class ApiService {
   }
 
   // 6. Customers (Khách hàng) API
-  public getCustomers(search?: string, limit?: number): Observable<any[]> {
+  public getCustomers(search?: string, limit?: number, ttl?: number, force?: boolean): Observable<any[]> {
     let url = `${this.baseUrl}/customers`;
     const params: string[] = [];
     if (search) params.push(`search=${encodeURIComponent(search)}`);
@@ -270,7 +294,8 @@ export class ApiService {
     if (params.length > 0) {
       url += `?${params.join('&')}`;
     }
-    return this.http.get<any[]>(url, { headers: this.getHeaders() });
+    const headers = this.getCacheHeaders(ttl, force);
+    return this.http.get<any[]>(url, { headers });
   }
 
   public createCustomer(customer: any): Observable<any> {
@@ -286,8 +311,9 @@ export class ApiService {
   }
 
   // 7. Customer Groups (Nhóm khách hàng) API
-  public getCustomerGroups(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/customer-groups`, { headers: this.getHeaders() });
+  public getCustomerGroups(ttl?: number, force?: boolean): Observable<any[]> {
+    const headers = this.getCacheHeaders(ttl, force);
+    return this.http.get<any[]>(`${this.baseUrl}/customer-groups`, { headers });
   }
 
   public createCustomerGroup(group: { name: string }): Observable<any> {
@@ -349,8 +375,12 @@ export class ApiService {
   }
 
   // 10. Areas (Khu vực) API
-  public getAreas(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/areas`, { headers: this.getHeaders() });
+  public getAreas(ttl?: number): Observable<any[]> {
+    let headers = this.getHeaders();
+    if (ttl !== undefined) {
+      headers = headers.set('X-Cache-TTL', ttl.toString());
+    }
+    return this.http.get<any[]>(`${this.baseUrl}/areas`, { headers });
   }
 
   public createArea(area: { name: string }): Observable<any> {
@@ -366,8 +396,12 @@ export class ApiService {
   }
 
   // 11. Dining Tables (Bàn ăn) API
-  public getDiningTables(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/dining-tables`, { headers: this.getHeaders() });
+  public getDiningTables(ttl?: number): Observable<any[]> {
+    let headers = this.getHeaders();
+    if (ttl !== undefined) {
+      headers = headers.set('X-Cache-TTL', ttl.toString());
+    }
+    return this.http.get<any[]>(`${this.baseUrl}/dining-tables`, { headers });
   }
 
   public createDiningTable(table: { name: string, area_id: number, status?: string }): Observable<any> {
@@ -387,11 +421,15 @@ export class ApiService {
   }
 
   // 12. Reports API (Báo cáo doanh thu, hàng hóa, khách hàng, lãi lỗ)
-  public getReports(startDate: string, endDate: string): Observable<any> {
+  public getReports(startDate: string, endDate: string, ttl?: number): Observable<any> {
     let params = new HttpParams();
     if (startDate) params = params.set('start_date', startDate);
     if (endDate) params = params.set('end_date', endDate);
-    return this.http.get<any>(`${this.baseUrl}/reports`, { headers: this.getHeaders(), params });
+    let headers = this.getHeaders();
+    if (ttl !== undefined) {
+      headers = headers.set('X-Cache-TTL', ttl.toString());
+    }
+    return this.http.get<any>(`${this.baseUrl}/reports`, { headers, params });
   }
 
   // --- Debts (Sổ nợ) API ---
@@ -444,8 +482,12 @@ export class ApiService {
   }
 
   // --- Staffs & Roles API ---
-  public getStaffs(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/staffs`, { headers: this.getHeaders() });
+  public getStaffs(ttl?: number): Observable<any[]> {
+    let headers = this.getHeaders();
+    if (ttl !== undefined) {
+      headers = headers.set('X-Cache-TTL', ttl.toString());
+    }
+    return this.http.get<any[]>(`${this.baseUrl}/staffs`, { headers });
   }
 
   public createStaff(staff: any): Observable<any> {
@@ -460,8 +502,12 @@ export class ApiService {
     return this.http.delete(`${this.baseUrl}/staffs/${id}`, { headers: this.getHeaders() });
   }
 
-  public getRoles(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/roles`, { headers: this.getHeaders() });
+  public getRoles(ttl?: number): Observable<any[]> {
+    let headers = this.getHeaders();
+    if (ttl !== undefined) {
+      headers = headers.set('X-Cache-TTL', ttl.toString());
+    }
+    return this.http.get<any[]>(`${this.baseUrl}/roles`, { headers });
   }
 
   public createRole(role: any): Observable<any> {
@@ -481,7 +527,7 @@ export class ApiService {
   }
 
   // --- Payment Methods (Phương thức thanh toán) API ---
-  public getPaymentMethods(params?: { page?: number; per_page?: number; search?: string }): Observable<any> {
+  public getPaymentMethods(params?: { page?: number; per_page?: number; search?: string }, ttl?: number, force?: boolean): Observable<any> {
     let httpParams = new HttpParams();
     if (params) {
       if (params.page !== undefined) {
@@ -494,7 +540,8 @@ export class ApiService {
         httpParams = httpParams.set('search', params.search.trim());
       }
     }
-    return this.http.get<any>(`${this.baseUrl}/payment-methods`, { params: httpParams, headers: this.getHeaders() });
+    const headers = this.getCacheHeaders(ttl, force);
+    return this.http.get<any>(`${this.baseUrl}/payment-methods`, { params: httpParams, headers });
   }
 
   public createPaymentMethod(paymentMethod: any): Observable<any> {
