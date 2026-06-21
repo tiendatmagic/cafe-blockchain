@@ -13,6 +13,7 @@ import { createAppKit } from '@reown/appkit';
 import { EthersAdapter } from '@reown/appkit-adapter-ethers';
 import { createSIWEConfig } from '@reown/appkit-siwe';
 import { arbitrum, bsc, base, bscTestnet, arbitrumSepolia } from '@reown/appkit/networks';
+import { ApiController } from '@reown/appkit-controllers';
 
 @Injectable({
   providedIn: 'root'
@@ -316,6 +317,17 @@ export class Web3Service {
         return;
       }
 
+      // Ghi đè ApiController.fetchProjectConfig để nó luôn trả về null.
+      // Điều này ngăn AppKit fetch remote config từ Cloud, từ đó cho phép cấu hình 
+      // features.reownAuthentication = false có hiệu lực ở client-side để tắt SIWE hoàn toàn.
+      try {
+        (ApiController as any).fetchProjectConfig = async () => {
+          return null;
+        };
+      } catch (e) {
+        console.warn('[Web3] Lỗi ghi đè ApiController:', e);
+      }
+
       const ethersAdapter = new EthersAdapter();
       const defaultNet = this.getAppKitNetworkByChainId(this.configuredChainId());
       const appKitConfig: any = {
@@ -332,10 +344,10 @@ export class Web3Service {
         features: {
           email: false,
           socials: false,
-          analytics: false
+          analytics: false,
+          reownAuthentication: false
         },
-        enableCoinbase: false,
-        basic: true
+        enableCoinbase: false
       };
 
       this.modal = createAppKit(appKitConfig);
