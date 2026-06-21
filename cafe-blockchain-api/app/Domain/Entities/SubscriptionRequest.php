@@ -16,7 +16,7 @@ class SubscriptionRequest extends Model
         'plan_code',
         'duration_months',
         'amount',
-        'payment_method_details',
+        'system_payment_method_id',
         'tx_hash',
         'status', // 'pending', 'approved', 'rejected'
         'rejected_reason',
@@ -27,6 +27,12 @@ class SubscriptionRequest extends Model
     protected $casts = [
         'duration_months' => 'integer',
         'amount' => 'decimal:2',
+        'system_payment_method_id' => 'integer',
         'approved_at' => 'datetime'
     ];
+
+    public function systemPaymentMethod()
+    {
+        return $this->belongsTo(SystemPaymentMethod::class, 'system_payment_method_id');
+    }
 }

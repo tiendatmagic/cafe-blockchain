@@ -16,7 +16,8 @@ return new class extends Migration
             $table->string('plan_code');
             $table->integer('duration_months');
             $table->decimal('amount', 15, 2);
-            $table->text('payment_method_details')->nullable();
+            $table->unsignedBigInteger('system_payment_method_id')->nullable();
+            $table->foreign('system_payment_method_id')->references('id')->on('system_payment_methods')->onDelete('set null');
             $table->string('tx_hash')->nullable();
             $table->string('status')->default('pending'); // 'pending', 'approved', 'rejected'
             $table->text('rejected_reason')->nullable();

@@ -282,7 +282,7 @@ class AuthController extends Controller
             'plan_code' => 'required|string|exists:subscription_plans,code',
             'duration_months' => 'required|integer|in:1,3,6,12',
             'tx_hash' => 'required|string',
-            'payment_method_details' => 'nullable|string',
+            'system_payment_method_id' => 'nullable|integer|exists:system_payment_methods,id',
         ]);
 
         $user = $request->user();
@@ -354,7 +354,7 @@ class AuthController extends Controller
             'plan_code' => $planCode,
             'duration_months' => $months,
             'amount' => $amount,
-            'payment_method_details' => $validated['payment_method_details'] ?? null,
+            'system_payment_method_id' => $validated['system_payment_method_id'] ?? null,
             'tx_hash' => $validated['tx_hash'],
             'status' => 'pending',
         ]);

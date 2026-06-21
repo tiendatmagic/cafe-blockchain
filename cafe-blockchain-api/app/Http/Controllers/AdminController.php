@@ -821,7 +821,7 @@ class AdminController extends Controller
         $search = $request->query('search', '');
         $perPage = (int)$request->query('per_page', 10);
 
-        $query = SubscriptionRequest::query();
+        $query = SubscriptionRequest::with('systemPaymentMethod');
 
         if ($status !== 'all') {
             $query->where('status', $status);
@@ -836,7 +836,7 @@ class AdminController extends Controller
 
         $requests = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
-        // Map thêm thông tin tên store cho từng yêu cầu
+        // Map thêm thông tin tên store và gói hiện tại cho từng yêu cầu
         $items = $requests->items();
         foreach ($items as $item) {
             $storeNameSetting = DB::table('settings')
@@ -844,6 +844,27 @@ class AdminController extends Controller
                 ->where('key', 'store_name')
                 ->first();
             $item->store_name = $storeNameSetting ? $storeNameSetting->value : 'Cafe Web3 POS';
+
+            $user = User::where('wallet_address', strtolower($item->store_owner_address))->first();
+            if ($user) {
+                $item->current_plan_code = $user->plan_code;
+                $item->current_subscription_expires_at = $user->subscription_expires_at;
+                $item->current_subscription_status = $user->subscription_status;
+            } else {
+                $item->current_plan_code = 'free';
+                $item->current_subscription_expires_at = null;
+                $item->current_subscription_status = 'active';
+            }
+
+            // Map payment_method_details động từ system_payment_method_id
+            $paymentMethod = $item->systemPaymentMethod;
+            if ($paymentMethod) {
+                $item->payment_method_details = "{$paymentMethod->name} - {$paymentMethod->account_number} ({$paymentMethod->account_holder})";
+            } else {
+                $item->payment_method_details = $item->system_payment_method_id 
+                    ? "Phương thức đã bị xóa (ID: {$item->system_payment_method_id})" 
+                    : 'N/A';
+            }
         }
 
         return response()->json([

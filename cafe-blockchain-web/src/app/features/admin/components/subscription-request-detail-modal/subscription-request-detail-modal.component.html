@@ -1,0 +1,174 @@
+<div class="space-y-6">
+  <!-- Grid Layout -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Cột 1: Thông tin cửa hàng & Gói cước hiện tại -->
+    <div class="space-y-3">
+      <h4 class="text-xs font-black text-[var(--dynamic-primary)] uppercase tracking-wider">Thông tin Cửa hàng & Thuê bao hiện tại</h4>
+      <div class="bg-slate-50 dark:bg-slate-950/40 rounded-[12px] p-5 border border-slate-100 dark:border-slate-800/60 space-y-3">
+        <div class="flex justify-between items-center text-sm">
+          <span class="text-slate-400 dark:text-slate-500 font-bold">Tên cửa hàng</span>
+          <span class="font-extrabold text-slate-855 dark:text-white">{{ item.store_name }}</span>
+        </div>
+        <div class="flex justify-between items-center text-sm">
+          <span class="text-slate-400 dark:text-slate-500 font-bold">Ví chủ quán</span>
+          <div class="flex items-center gap-1.5 font-mono text-xs text-purple-650 dark:text-purple-400 font-bold">
+            <span>{{ item.store_owner_address }}</span>
+            <button (click)="stateService.copyAddress(item.store_owner_address)" class="p-1 text-slate-400 hover:text-purple-600 transition" title="Sao chép ví">
+              <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="flex justify-between items-center text-sm">
+          <span class="text-slate-400 dark:text-slate-500 font-bold">Gói hiện tại</span>
+          <span class="inline-flex items-center rounded px-2 py-0.5 text-[10px] font-black uppercase tracking-wider"
+            [ngClass]="{
+              'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700': item.current_plan_code === 'free',
+              'bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20': item.current_plan_code === 'pro',
+              'bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20': item.current_plan_code === 'ultra'
+            }">
+            {{ item.current_plan_code }}
+          </span>
+        </div>
+        <div class="flex justify-between items-center text-sm">
+          <span class="text-slate-400 dark:text-slate-500 font-bold">Ngày hết hạn</span>
+          <span class="font-bold text-slate-850 dark:text-white">
+            {{ item.current_subscription_expires_at ? (item.current_subscription_expires_at | date: 'dd/MM/yyyy HH:mm') : 'Vô hạn (Dùng thử)' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cột 2: Yêu cầu nâng cấp mới -->
+    <div class="space-y-3">
+      <h4 class="text-xs font-black text-[var(--dynamic-primary)] uppercase tracking-wider">Thông tin yêu cầu đăng ký mới</h4>
+      <div class="bg-slate-50 dark:bg-slate-950/40 rounded-[12px] p-5 border border-slate-100 dark:border-slate-800/60 space-y-3">
+        <div class="flex justify-between items-center text-sm">
+          <span class="text-slate-400 dark:text-slate-500 font-bold">Gói đăng ký mới</span>
+          <span class="inline-flex items-center rounded px-2.5 py-1 text-xs font-black uppercase tracking-wider"
+            [ngClass]="{
+              'bg-purple-100 dark:bg-purple-500/10 text-purple-650 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20': item.plan_code === 'pro',
+              'bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20': item.plan_code === 'ultra'
+            }">
+            {{ item.plan_code }}
+          </span>
+        </div>
+        <div class="flex justify-between items-center text-sm">
+          <span class="text-slate-400 dark:text-slate-500 font-bold">Thời hạn đăng ký</span>
+          <span class="font-extrabold text-slate-800 dark:text-white">{{ item.duration_months }} tháng</span>
+        </div>
+        <div class="flex justify-between items-center text-sm">
+          <span class="text-slate-400 dark:text-slate-500 font-bold">Tổng tiền cần thanh toán</span>
+          <span class="text-base font-black text-emerald-600 dark:text-emerald-400">{{ item.amount | vnd }}</span>
+        </div>
+        <div class="flex justify-between items-center text-sm">
+          <span class="text-slate-400 dark:text-slate-500 font-bold">Ngày gửi yêu cầu</span>
+          <span class="font-bold text-slate-800 dark:text-white">{{ item.created_at | date: 'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 3: Đối soát giao dịch & Tài khoản nhận -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Tài khoản nhận của Super Admin -->
+    <div class="space-y-3">
+      <h4 class="text-xs font-black text-[var(--dynamic-primary)] uppercase tracking-wider">Tài khoản nhận thanh toán của Hệ thống</h4>
+      <div class="bg-slate-50 dark:bg-slate-950/40 rounded-[12px] p-5 border border-slate-100 dark:border-slate-800/60 text-sm font-semibold text-slate-700 dark:text-slate-300">
+        {{ item.payment_method_details || 'Không rõ phương thức nhận tiền' }}
+      </div>
+    </div>
+
+    <!-- Mã giao dịch đối soát -->
+    <div class="space-y-3">
+      <h4 class="text-xs font-black text-[var(--dynamic-primary)] uppercase tracking-wider">Mã giao dịch đối soát (TxHash)</h4>
+      <div class="bg-slate-50 dark:bg-slate-950/40 rounded-[12px] p-5 border border-slate-100 dark:border-slate-800/60 space-y-3">
+        <div class="flex items-center justify-between text-sm">
+          <span class="text-slate-400 dark:text-slate-500 font-bold">Mã giao dịch</span>
+          <div class="flex items-center gap-1.5 font-mono text-xs font-bold text-slate-800 dark:text-white">
+            <span class="break-all">{{ item.tx_hash }}</span>
+            <button (click)="stateService.copyAddress(item.tx_hash)" class="p-1 text-slate-400 hover:text-purple-600 transition" title="Sao chép mã">
+              <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        @if (item.tx_hash && item.tx_hash.startsWith('0x')) {
+          <div class="flex justify-end pt-1">
+            <a [href]="stateService.web3Service.getTxExplorerLink(item.tx_hash, 97)" target="_blank" class="text-xs text-[var(--dynamic-primary)] hover:underline font-bold flex items-center gap-1">
+              <span>Xem trên Blockchain Explorer (BSC Testnet)</span>
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+              </svg>
+            </a>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Trạng thái hiện tại -->
+  <div class="space-y-3">
+    <h4 class="text-xs font-black text-[var(--dynamic-primary)] uppercase tracking-wider">Trạng thái phê duyệt</h4>
+    <div class="bg-slate-50 dark:bg-slate-950/40 rounded-[12px] p-5 border border-slate-100 dark:border-slate-800/60 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="inline-flex items-center rounded-lg px-3 py-1 text-xs font-extrabold uppercase tracking-wider"
+          [ngClass]="{
+            'bg-amber-100 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20': item.status === 'pending',
+            'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20': item.status === 'approved',
+            'bg-rose-100 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400 border border-rose-200 dark:border-rose-500/20': item.status === 'rejected'
+          }">
+          {{ item.status === 'pending' ? 'Chờ phê duyệt' : item.status === 'approved' ? 'Đã duyệt' : 'Đã từ chối' }}
+        </span>
+        @if (item.status === 'approved' && item.approved_by) {
+          <span class="text-xs text-slate-450 dark:text-slate-400 font-semibold">
+            Người duyệt: <code class="font-mono">{{ item.approved_by }}</code> @if (item.approved_at) { vào lúc {{ item.approved_at | date: 'dd/MM/yyyy HH:mm' }} }
+          </span>
+        }
+        @if (item.status === 'rejected' && item.rejected_reason) {
+          <span class="text-xs text-rose-500 font-semibold">
+            Lý do từ chối: {{ item.rejected_reason }}
+          </span>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Inline Reject Reason Form (Hiển thị khi bấm Từ Chối) -->
+  @if (isRejectMode()) {
+    <div class="space-y-3 bg-rose-50/50 dark:bg-rose-950/10 rounded-xl p-5 border border-rose-100 dark:border-rose-900/30 flex flex-col">
+      <label class="text-xs font-bold text-rose-600 dark:text-rose-450 uppercase tracking-wider">Lý do từ chối phê duyệt <span class="text-rose-500">*</span></label>
+      <textarea
+        [(ngModel)]="rejectReason"
+        rows="2"
+        placeholder="Nhập lý do từ chối chi tiết..."
+        class="form-input text-sm p-3 w-full border-rose-200 dark:border-rose-900 focus:border-rose-500 focus:ring-rose-500"
+      ></textarea>
+      <div class="flex justify-end gap-2 mt-2">
+        <button app-button variant="cancel" (click)="cancelRejectMode()" [disabled]="isActionLoading()">
+          Hủy
+        </button>
+        <button app-button variant="danger" (click)="submitReject()" [disabled]="isActionLoading() || !rejectReason().trim()">
+          Xác nhận từ chối
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Footer -->
+  <div class="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800/60">
+    <button app-button variant="cancel" (click)="onClose()">
+      Đóng
+    </button>
+    @if (item.status === 'pending' && !isRejectMode()) {
+      <button app-button variant="danger" (click)="enterRejectMode()" [disabled]="isActionLoading()">
+        Từ chối
+      </button>
+      <button app-button variant="primary" (click)="onApprove()" [disabled]="isActionLoading()">
+        Phê duyệt nâng gói
+      </button>
+    }
+  </div>
+</div>

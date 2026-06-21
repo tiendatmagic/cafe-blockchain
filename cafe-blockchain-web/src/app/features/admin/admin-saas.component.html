@@ -1654,15 +1654,18 @@
               [itemName]="'yêu cầu'"
               (pageChange)="subscriptionPage.set($event); loadSubscriptionRequests()"
             >
-              <ng-template appCell="store_owner_address" let-row>
-                <div class="flex items-center gap-1.5 font-mono text-purple-650 dark:text-purple-400">
+              <ng-template appCell="store_name" let-row>
+                <div class="font-extrabold text-slate-800 dark:text-slate-200 text-sm">
+                  {{ row.store_name }}
+                </div>
+                <div class="flex items-center gap-1.5 font-mono text-slate-400 text-xs mt-1">
                   <span>{{ shortAddress(row.store_owner_address) }}</span>
                   <button
                     (click)="stateService.copyAddress(row.store_owner_address)"
                     class="p-1 text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition"
                     title="Sao chép ví"
                   >
-                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path
                         stroke-linecap="round"
                         stroke-linejoin="round"
@@ -1674,42 +1677,65 @@
                 </div>
               </ng-template>
 
+              <ng-template appCell="current_plan" let-row>
+                <div class="flex flex-col gap-0.5 text-xs font-semibold">
+                  <span
+                    class="inline-flex items-center self-start rounded px-2 py-0.5 text-[10px] font-black uppercase tracking-wider"
+                    [ngClass]="{
+                      'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700':
+                        row.current_plan_code === 'free',
+                      'bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20':
+                        row.current_plan_code === 'pro',
+                      'bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20':
+                        row.current_plan_code === 'ultra'
+                    }"
+                  >
+                    {{ row.current_plan_code }}
+                  </span>
+                  @if (!row.current_subscription_expires_at) {
+                    <span class="text-[11px] text-slate-400 mt-0.5">Vô hạn</span>
+                  } @else {
+                    <span
+                      class="text-[11px] mt-0.5"
+                      [ngClass]="{
+                        'text-rose-500': row.current_subscription_status === 'suspended',
+                        'text-slate-450': row.current_subscription_status !== 'suspended'
+                      }"
+                    >
+                      Hạn: {{ row.current_subscription_expires_at | date: 'dd/MM/yyyy' }}
+                    </span>
+                  }
+                </div>
+              </ng-template>
+
               <ng-template appCell="plan_code" let-row>
-                <span
-                  class="inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-black uppercase tracking-wider"
-                  [ngClass]="{
-                    'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700':
-                      row.plan_code === 'free',
-                    'bg-purple-100 dark:bg-purple-500/10 text-purple-650 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20':
-                      row.plan_code === 'pro',
-                    'bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20':
-                      row.plan_code === 'ultra'
-                  }"
-                >
-                  {{ row.plan_code }}
-                </span>
-                @if (row.payment_method_details) {
-                  <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-1 font-medium max-w-[180px] truncate" [title]="row.payment_method_details">
-                    TK nhận: {{ row.payment_method_details }}
-                  </div>
-                }
+                <div class="flex flex-col gap-0.5">
+                  <span
+                    class="inline-flex items-center self-start rounded px-2 py-0.5 text-[10px] font-black uppercase tracking-wider"
+                    [ngClass]="{
+                      'bg-purple-100 dark:bg-purple-500/10 text-purple-650 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20':
+                        row.plan_code === 'pro',
+                      'bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20':
+                        row.plan_code === 'ultra'
+                    }"
+                  >
+                    {{ row.plan_code }}
+                  </span>
+                  <span class="text-[11px] text-slate-500 dark:text-slate-455 font-bold mt-0.5">
+                    {{ row.duration_months }} tháng / {{ row.amount | vnd }}
+                  </span>
+                </div>
               </ng-template>
 
-              <ng-template appCell="duration_months" let-row>
-                <span class="text-sm font-semibold text-slate-750 dark:text-slate-300">
-                  {{ row.duration_months }} tháng
-                </span>
-              </ng-template>
-
-              <ng-template appCell="amount" let-row>
-                <span class="text-sm font-extrabold text-emerald-600 dark:text-emerald-400">
-                  {{ row.amount | vnd }}
-                </span>
+              <ng-template appCell="payment_method_details" let-row>
+                <div class="text-xs text-slate-600 dark:text-slate-350 font-semibold max-w-[150px] truncate" [title]="row.payment_method_details || '—'">
+                  {{ row.payment_method_details || '—' }}
+                </div>
               </ng-template>
 
               <ng-template appCell="tx_hash" let-row>
-                <div class="flex items-center gap-1">
-                  <span class="font-mono text-xs text-slate-500 max-w-[120px] truncate" [title]="row.tx_hash">
+                <div class="flex items-center gap-1.5">
+                  <span class="font-mono text-xs text-slate-500 max-w-[90px] truncate" [title]="row.tx_hash">
                     {{ row.tx_hash }}
                   </span>
                   <button
@@ -1731,7 +1757,7 @@
 
               <ng-template appCell="status" let-row>
                 <span
-                  class="inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-bold"
+                  class="inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-bold"
                   [ngClass]="{
                     'bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20':
                       row.status === 'pending',
@@ -1743,7 +1769,7 @@
                 >
                   {{
                     row.status === 'pending'
-                      ? 'Chờ phê duyệt'
+                      ? 'Chờ duyệt'
                       : row.status === 'approved'
                         ? 'Đã duyệt'
                         : 'Đã từ chối'
@@ -1752,11 +1778,6 @@
                 @if (row.status === 'rejected' && row.rejected_reason) {
                   <div class="text-[10px] text-rose-500 mt-1 max-w-[150px] truncate" [title]="row.rejected_reason">
                     Lý do: {{ row.rejected_reason }}
-                  </div>
-                }
-                @if (row.status === 'approved' && row.approved_by) {
-                  <div class="text-[10px] text-slate-400 mt-1" [title]="row.approved_by">
-                    Duyệt bởi: {{ shortAddress(row.approved_by) }}
                   </div>
                 }
               </ng-template>
@@ -1769,23 +1790,37 @@
 
               <ng-template appCell="actions" let-row>
                 <div class="flex items-center justify-end gap-2 pr-2">
+                  <button
+                    app-button
+                    variant="secondary"
+                    size="sm"
+                    (click)="openDetailModal(row)"
+                    class="whitespace-nowrap"
+                    title="Xem chi tiết"
+                  >
+                    Xem chi tiết
+                  </button>
                   @if (row.status === 'pending') {
                     <button
+                      app-button
+                      variant="primary"
+                      size="sm"
                       (click)="approveSubscription(row)"
                       [disabled]="isSubscriptionActionLoading()"
-                      class="btn-primary btn-xs"
+                      class="whitespace-nowrap"
                     >
                       Duyệt
                     </button>
                     <button
+                      app-button
+                      variant="danger"
+                      size="sm"
                       (click)="openRejectModal(row)"
                       [disabled]="isSubscriptionActionLoading()"
-                      class="btn-danger btn-xs"
+                      class="whitespace-nowrap"
                     >
                       Từ chối
                     </button>
-                  } @else {
-                    <span class="text-xs text-slate-450">—</span>
                   }
                 </div>
               </ng-template>
@@ -1876,9 +1911,11 @@
               <ng-template appCell="actions" let-row>
                 <div class="flex items-center justify-end pr-2">
                   <button
+                    app-button
+                    variant="danger-light"
+                    size="sm"
                     (click)="deleteSystemStaff(row)"
                     [disabled]="isSystemStaffActionLoading()"
-                    class="btn-danger btn-xs"
                   >
                     Xóa
                   </button>
@@ -1962,7 +1999,7 @@
               </div>
 
               <div class="grid grid-cols-2 gap-4">
-                <div class="space-y-1.5 flex flex-col">
+                <div class="space-y-1.5 flex flex-col col-span-2">
                   <label class="text-xs font-bold text-slate-450 uppercase tracking-wider">Vai trò</label>
                   <app-custom-select
                     [options]="[
@@ -1972,25 +2009,17 @@
                     valueKey="value"
                     labelKey="label"
                     formControlName="role"
-                    triggerClass="w-full form-input !py-2 !h-10 !text-sm"
                   ></app-custom-select>
-                </div>
-
-                <div class="space-y-1.5 flex flex-col justify-end pb-2">
-                  <div class="flex items-center justify-between border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 h-10">
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Hoạt động</span>
-                    <app-custom-switch formControlName="is_active"></app-custom-switch>
-                  </div>
                 </div>
               </div>
             </div>
             <!-- Footer -->
             <div class="px-5 py-3.5 bg-slate-50 dark:bg-slate-950/40 border-t border-slate-150 dark:border-slate-800/60 flex justify-end gap-2">
-              <button app-button variant="secondary" (click)="closeAddStaff()" [disabled]="isSystemStaffActionLoading()">
-                <span>Hủy</span>
+              <button app-button variant="cancel" type="button" (click)="closeAddStaff()" [disabled]="isSystemStaffActionLoading()">
+                Hủy
               </button>
-              <button app-button variant="primary" (click)="submitAddStaff()" [disabled]="isSystemStaffActionLoading() || addStaffForm.invalid">
-                <span>Thêm nhân viên</span>
+              <button app-button variant="primary" type="submit" [disabled]="isSystemStaffActionLoading() || addStaffForm.invalid">
+                Lưu nhân viên
               </button>
             </div>
           </div>
@@ -1999,3 +2028,4 @@
     }
   }
 </div>
+

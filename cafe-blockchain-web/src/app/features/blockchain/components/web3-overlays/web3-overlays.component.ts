@@ -156,7 +156,6 @@ export class Web3OverlaysComponent {
     }
 
     const duration = this.durationMonths();
-    const paymentDetails = `${payment.name} - ${payment.account_number} (${payment.account_holder})`;
 
     this.isUpgrading.set(true);
     this.stateService.showToast('Đang gửi yêu cầu nâng cấp gói cước...', 'success');
@@ -166,7 +165,7 @@ export class Web3OverlaysComponent {
         plan_code: plan.code,
         duration_months: duration,
         tx_hash: txHash,
-        payment_method_details: paymentDetails,
+        system_payment_method_id: payment.id,
       })
       .subscribe({
         next: (res) => {

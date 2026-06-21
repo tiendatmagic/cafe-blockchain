@@ -101,7 +101,7 @@ export class ApiService {
   /**
    * Nâng cấp gói cước cho cửa hàng qua Web3
    */
-  public updateTenantSubscriptionUpgrade(data: { plan_code: string, duration_months: number, tx_hash: string, payment_method_details?: string }): Observable<any> {
+  public updateTenantSubscriptionUpgrade(data: { plan_code: string, duration_months: number, tx_hash: string, system_payment_method_id?: number }): Observable<any> {
     return this.http.post(`${this.baseUrl}/auth/subscription/upgrade`, data, { headers: this.getHeaders() });
   }
 

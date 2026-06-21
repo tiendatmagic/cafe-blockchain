@@ -22,6 +22,7 @@ import { TenantSubscriptionModalComponent } from './components/tenant-subscripti
 import { SubscriptionPlanModalComponent } from './components/subscription-plan-modal/subscription-plan-modal.component';
 import { PaymentFormModalComponent } from '../settings/components/payment-form-modal/payment-form-modal.component';
 import { QrCodeModalComponent } from '../settings/components/qr-code-modal/qr-code-modal.component';
+import { SubscriptionRequestDetailModalComponent } from './components/subscription-request-detail-modal/subscription-request-detail-modal.component';
 import { CustomSelectComponent } from '@shared/components/custom-select/custom-select.component';
 import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prompt/web3-connect-prompt.component';
 import { AccessRestrictedComponent } from '@shared/components/access-restricted/access-restricted.component';
@@ -214,12 +215,12 @@ export class AdminSaaSComponent implements OnInit {
 
   // Columns Tables
   public readonly subscriptionColumns: TableColumn[] = [
-    { key: 'store_owner_address', header: 'Ví chủ quán', sortable: false, class: 'pl-6 font-mono text-sm whitespace-nowrap' },
-    { key: 'plan_code', header: 'Gói đăng ký', sortable: false, class: 'whitespace-nowrap font-bold' },
-    { key: 'duration_months', header: 'Thời hạn', sortable: false, class: 'whitespace-nowrap' },
-    { key: 'amount', header: 'Tổng tiền', sortable: false, class: 'whitespace-nowrap font-bold text-emerald-600 dark:text-emerald-400' },
-    { key: 'tx_hash', header: 'Mã giao dịch (TxHash)', sortable: false, class: 'font-mono text-xs max-w-xs truncate' },
-    { key: 'status', header: 'Trạng thái', sortable: false },
+    { key: 'store_name', header: 'Cửa hàng', sortable: false, class: 'pl-6 whitespace-nowrap font-bold text-slate-800 dark:text-slate-200' },
+    { key: 'current_plan', header: 'Thuê bao hiện tại', sortable: false, class: 'whitespace-nowrap' },
+    { key: 'plan_code', header: 'Đăng ký mới', sortable: false, class: 'whitespace-nowrap font-bold' },
+    { key: 'payment_method_details', header: 'Tài khoản nhận', sortable: false, class: 'whitespace-nowrap text-xs max-w-xs truncate' },
+    { key: 'tx_hash', header: 'Mã giao dịch (TxHash)', sortable: false, class: 'font-mono text-xs max-w-[120px] truncate' },
+    { key: 'status', header: 'Trạng thái', sortable: false, class: 'whitespace-nowrap' },
     { key: 'created_at', header: 'Ngày gửi', sortable: false, class: 'whitespace-nowrap' },
     { key: 'actions', header: 'Thao tác', sortable: false, class: 'text-right pr-6 whitespace-nowrap', headerClass: 'text-right pr-6' }
   ];
@@ -1068,6 +1069,21 @@ export class AdminSaaSComponent implements OnInit {
     });
   }
 
+  // --- Chi tiết yêu cầu thuê bao (Subscription Detail Modal) ---
+  public openDetailModal(item: any) {
+    this.modalService.open(SubscriptionRequestDetailModalComponent, {
+      title: 'Chi tiết yêu cầu đăng ký thuê bao',
+      size: '5xl',
+      data: { item }
+    }).afterClosed$.subscribe((success) => {
+      if (success) {
+        this.loadSubscriptionRequests();
+        // Cập nhật lại danh sách cửa hàng
+        this.apiService.getAdminTenants().subscribe(tenants => this.tenants.set(tenants));
+      }
+    });
+  }
+
   public openRejectModal(item: any) {
     this.rejectItemId.set(item.id);
     this.rejectReason.set('');
@@ -1089,7 +1105,6 @@ export class AdminSaaSComponent implements OnInit {
       return;
     }
 
-    this.isSubscriptionActionLoading.set(true);
     this.apiService.rejectAdminSubscription(id, reason).subscribe({
       next: (res) => {
         this.stateService.showToast(res.message || 'Đã từ chối yêu cầu thành công.', 'success');
