@@ -408,7 +408,7 @@ export class AdminSaaSComponent implements OnInit {
   public openEditPlan(plan: any) {
     this.modalService.open(SubscriptionPlanModalComponent, {
       title: 'Cấu hình chi tiết gói cước',
-      size: 'lg',
+      size: '5xl',
       data: { plan }
     }).afterClosed$.subscribe((success) => {
       if (success) {
