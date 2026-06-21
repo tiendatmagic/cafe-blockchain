@@ -81,7 +81,7 @@ class Transaction extends Model
      */
     public function generateVerificationHash(): string
     {
-        $secretKey = env('TRANSACTION_SECRET_KEY', 'default_transaction_secret_key_change_me');
+        $secretKey = config('app.transaction_secret_key', 'default_transaction_secret_key_change_me');
 
         // Định dạng tiền tệ với 2 chữ số thập phân
         $amountFormatted = number_format((float)$this->amount, 2, '.', '');

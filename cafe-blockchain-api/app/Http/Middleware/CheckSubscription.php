@@ -27,7 +27,7 @@ class CheckSubscription
         $ownerAddress = strtolower($user->store_owner_address ?: $user->wallet_address);
         
         // Bỏ qua kiểm tra nếu chủ quán là Super Admin
-        $superAdminEnv = env('SUPER_ADMIN_ADDRESSES', '');
+        $superAdminEnv = config('auth.super_admin_addresses', '');
         $superAdmins = array_map('trim', explode(',', $superAdminEnv));
         $superAdmins = array_map('strtolower', array_filter($superAdmins));
         if (in_array($ownerAddress, $superAdmins)) {

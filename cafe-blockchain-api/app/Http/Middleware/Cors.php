@@ -14,7 +14,7 @@ class Cors
     public function handle(Request $request, Closure $next): Response
     {
         $origin = $request->header('Origin');
-        $allowedOrigins = array_filter(explode(',', env('ALLOWED_ORIGINS', 'http://localhost:4200,http://127.0.0.1:4200')));
+        $allowedOrigins = array_filter(array_map('trim', explode(',', config('app.allowed_origins', 'http://localhost:4200,http://127.0.0.1:4200'))));
         
         $isAllowed = false;
         if (empty($origin)) {

@@ -57,9 +57,10 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
       if (error instanceof HttpErrorResponse) {
         // Xử lý lỗi 503 bảo trì hệ thống hoặc lỗi status 0 (CORS block/mất kết nối) từ API backend
         if ((error.status === 503 || error.status === 0) && isBackendApi && !isExplorer) {
-          console.warn(`Nhận được lỗi status ${error.status} từ Backend. Kích hoạt trạng thái bảo trì toàn hệ thống...`);
+          console.warn(`Nhận được lỗi status ${error.status} từ Backend. Kích hoạt trạng thái bảo trì hoặc mất kết nối...`);
           uiStateService.isMaintenance.set(true);
-          uiStateService.isInitialLoading.set(false); // Ẩn màn hình loading khởi tạo lập tiếp để hiện màn hình bảo trì
+          uiStateService.maintenanceType.set(error.status === 503 ? 'maintenance' : 'connection');
+          uiStateService.isInitialLoading.set(false); // Ẩn màn hình loading khởi tạo lập tiếp để hiện màn hình bảo trì/lỗi kết nối
           uiStateService.cancelRequests$.next(); // Phát tín hiệu hủy toàn bộ request đang bay
         }
 

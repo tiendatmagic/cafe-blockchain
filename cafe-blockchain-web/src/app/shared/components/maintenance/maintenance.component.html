@@ -4,32 +4,60 @@
   <div
     class="w-full max-w-md bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-slate-200/50 dark:border-slate-800/50 rounded-2xl p-8 text-center shadow-2xl shadow-[var(--dynamic-primary)]/10 flex flex-col items-center"
   >
-    <!-- Icon Bảo trì SVG bánh răng xoay nhẹ -->
+    <!-- Icon -->
     <div
-      class="w-20 h-20 rounded-2xl bg-purple-50 dark:bg-purple-950/40 flex items-center justify-center text-[var(--dynamic-primary)] mb-6 animate-pulse"
+      class="w-20 h-20 rounded-2xl flex items-center justify-center mb-6 animate-pulse"
+      [class]="maintenanceType() === 'maintenance' ? 'bg-purple-50 dark:bg-purple-950/40 text-[var(--dynamic-primary)]' : 'bg-red-50 dark:bg-red-950/40 text-red-500'"
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="1.5"
-        stroke="currentColor"
-        class="w-10 h-10"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766l.002-.001a2.25 2.25 0 011.961.222l.01.007a2.25 2.25 0 01.83 2.542l-.001.002A2.251 2.251 0 0115.8 15.01l-4.38 2.255a1.875 1.875 0 00-.916.916l-2.255 4.38a2.25 2.25 0 01-2.915 1.077L5.33 23.63a2.25 2.25 0 01-1.077-2.915l2.255-4.38a1.875 1.875 0 00.916-.916l4.38-2.255zM11.42 15.17L5.33 9.08a2.652 2.652 0 113.75-3.75l6.09 6.09"
-        />
-      </svg>
+      @if (maintenanceType() === 'maintenance') {
+        <!-- Icon Bảo trì SVG bánh răng/cờ lê -->
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-10 h-10"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766l.002-.001a2.25 2.25 0 011.961.222l.01.007a2.25 2.25 0 01.83 2.542l-.001.002A2.251 2.251 0 0115.8 15.01l-4.38 2.255a1.875 1.875 0 00-.916.916l-2.255 4.38a2.25 2.25 0 01-2.915 1.077L5.33 23.63a2.25 2.25 0 01-1.077-2.915l2.255-4.38a1.875 1.875 0 00.916-.916l4.38-2.255zM11.42 15.17L5.33 9.08a2.652 2.652 0 113.75-3.75l6.09 6.09"
+          />
+        </svg>
+      } @else {
+        <!-- Icon Mất kết nối SVG Wifi-slash -->
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          fill="none" 
+          viewBox="0 0 24 24" 
+          stroke-width="1.5" 
+          stroke="currentColor" 
+          class="w-10 h-10"
+        >
+          <path 
+            stroke-linecap="round" 
+            stroke-linejoin="round" 
+            d="M3 3l18 18M9.625 5.568a15.933 15.933 0 0 1 11.233-1.037M18.847 8.35a11.97 11.97 0 0 0-4.04-2.23m-4.643.51a11.97 11.97 0 0 0-5.834 2.87m2.808 2.808a7.98 7.98 0 0 1 5.926-2.072M14.615 11.6a4 4 0 0 0-5.23 0M12 18.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z" 
+          />
+        </svg>
+      }
     </div>
 
     <h1 class="text-xl font-black text-slate-800 dark:text-white uppercase mb-2.5 tracking-tight">
-      Hệ thống đang bảo trì
+      @if (maintenanceType() === 'maintenance') {
+        Hệ thống đang bảo trì
+      } @else {
+        Mất kết nối máy chủ
+      }
     </h1>
 
     <p class="text-sm font-bold text-slate-500 dark:text-slate-400 mb-8 leading-relaxed max-w-xs">
-      Hệ thống đang trong thời gian nâng cấp hệ thống, bạn quay lại sau nhé
+      @if (maintenanceType() === 'maintenance') {
+        Hệ thống đang trong thời gian nâng cấp hệ thống, bạn quay lại sau nhé
+      } @else {
+        Không thể kết nối đến máy chủ API. Vui lòng kiểm tra lại đường truyền internet hoặc cấu hình CORS của bạn.
+      }
     </p>
 
     <!-- Nút Thử lại -->

@@ -358,7 +358,7 @@ class AdminController extends Controller
         }
 
         // Chỉ tiết lộ có hay không có Secret Key (không tiết lộ giá trị thực)
-        $hasSecretKey = !empty(env('TURNSTILE_SECRET_KEY'));
+        $hasSecretKey = !empty(config('services.turnstile.secret_key'));
 
         return response()->json([
             'token_cleanup_days'  => $days,
@@ -397,7 +397,7 @@ class AdminController extends Controller
         // Cập nhật toggle Turnstile nếu có truyền lên
         if (array_key_exists('turnstile_enabled', $validated)) {
             // Không cho phép bật nếu chưa cấu hình Secret Key trong .env
-            if ($validated['turnstile_enabled'] && empty(env('TURNSTILE_SECRET_KEY'))) {
+            if ($validated['turnstile_enabled'] && empty(config('services.turnstile.secret_key'))) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Cannot enable Turnstile: TURNSTILE_SECRET_KEY is not configured in environment variables.'

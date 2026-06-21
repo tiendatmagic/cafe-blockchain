@@ -28,7 +28,7 @@ class ResignTransactions extends Command
     {
         $this->info('=== Bat dau tien trinh ky lai chu ky so giao dich tai chinh (HMAC-SHA256) ===');
 
-        $secretKey = env('TRANSACTION_SECRET_KEY');
+        $secretKey = config('app.transaction_secret_key');
         if (empty($secretKey)) {
             $this->warn('CANH BAO: Khong tim thay khoa TRANSACTION_SECRET_KEY trong file .env! He thong se su dung khoa mac dinh.');
         } else {

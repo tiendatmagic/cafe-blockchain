@@ -123,4 +123,16 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | CORS Whitelist Origins
+    |--------------------------------------------------------------------------
+    */
+    'allowed_origins' => env('ALLOWED_ORIGINS', 'http://localhost:4200,http://127.0.0.1:4200'),
+
+    'super_admin_addresses' => env('SUPER_ADMIN_ADDRESSES', ''),
+    'order_secret_key' => env('ORDER_SECRET_KEY', 'default_secret_key_change_me'),
+    'transaction_secret_key' => env('TRANSACTION_SECRET_KEY', 'default_transaction_secret_key_change_me'),
+    'node_binary' => env('NODE_BINARY'),
+
 ];

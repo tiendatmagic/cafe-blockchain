@@ -71,6 +71,7 @@ export class StateService {
   public readonly isInitialLoading = this.uiStateService.isInitialLoading;
   public readonly isLoading = this.uiStateService.isLoading;
   public readonly isMaintenance = this.uiStateService.isMaintenance;
+  public readonly maintenanceType = this.uiStateService.maintenanceType;
   public readonly cancelRequests$ = this.uiStateService.cancelRequests$;
   public readonly useSlidingEffect = this.uiStateService.useSlidingEffect;
 

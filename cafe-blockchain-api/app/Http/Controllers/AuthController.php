@@ -111,8 +111,8 @@ class AuthController extends Controller
             // Create Sanctum token
             $token = $user->createToken('pos-access-token')->plainTextToken;
 
-            $cookieDomain = env('SESSION_DOMAIN', null);
-            $sameSitePolicy = env('AUTH_COOKIE_SAME_SITE', $request->secure() ? 'None' : 'Lax');
+            $cookieDomain = config('session.domain', null);
+            $sameSitePolicy = config('session.auth_cookie_same_site', $request->secure() ? 'None' : 'Lax');
 
             $cookie = cookie(
                 'auth_token', 

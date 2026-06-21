@@ -266,7 +266,7 @@ class BlockchainRelayerService implements BlockchainRelayerServiceInterface
     private function getNodeBinary(): string
     {
         // 1. Ưu tiên cấu hình trong .env
-        $envNode = env('NODE_BINARY');
+        $envNode = config('app.node_binary');
         if (!empty($envNode)) {
             return $envNode;
         }

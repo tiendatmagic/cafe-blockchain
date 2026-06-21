@@ -444,13 +444,13 @@ class SettingController extends Controller
      */
     private function getTurnstileSiteKey(): ?string
     {
-        if (empty(env('TURNSTILE_SECRET_KEY'))) {
+        if (empty(config('services.turnstile.secret_key'))) {
             return null;
         }
         if (!$this->isTurnstileEnabled()) {
             return null;
         }
-        return env('TURNSTILE_SITE_KEY');
+        return config('services.turnstile.site_key');
     }
 
     /**
@@ -676,7 +676,7 @@ class SettingController extends Controller
         ]);
 
         // Xác thực Cloudflare Turnstile token nếu đã bật trong hệ thống (cả .env và DB)
-        $turnstileSecret = env('TURNSTILE_SECRET_KEY');
+        $turnstileSecret = config('services.turnstile.secret_key');
         if (!empty($turnstileSecret) && $this->isTurnstileEnabled()) {
             $token = $request->input('turnstile_token');
             if (empty($token)) {

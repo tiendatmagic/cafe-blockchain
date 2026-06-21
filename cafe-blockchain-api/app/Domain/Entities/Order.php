@@ -50,7 +50,7 @@ class Order
      */
     public function generateVerificationHash(): string
     {
-        $secretKey = env('ORDER_SECRET_KEY', 'default_secret_key_change_me');
+        $secretKey = config('app.order_secret_key', 'default_secret_key_change_me');
 
         // Định dạng tiền tệ với 2 chữ số thập phân để đảm bảo tính đồng nhất
         $totalAmountFormatted = number_format($this->total_amount, 2, '.', '');

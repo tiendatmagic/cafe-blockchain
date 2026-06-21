@@ -29,7 +29,7 @@ class ResignOrders extends Command
     {
         $this->info('=== Bat dau tien trinh ky lai chu ky so don hang (HMAC-SHA256) ===');
 
-        $secretKey = env('ORDER_SECRET_KEY');
+        $secretKey = config('app.order_secret_key');
         if (empty($secretKey)) {
             $this->warn('CANH BAO: Khong tim thay khoa ORDER_SECRET_KEY trong file .env! He thong se su dung khoa mac dinh.');
         } else {
