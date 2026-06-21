@@ -112,7 +112,8 @@ class AuthController extends Controller
             $token = $user->createToken('pos-access-token')->plainTextToken;
 
             $cookieDomain = config('session.domain', null);
-            $sameSitePolicy = config('session.auth_cookie_same_site', $request->secure() ? 'None' : 'Lax');
+            $sameSitePolicy = config('session.auth_cookie_same_site', 'Lax');
+            $isSecure = strtolower($sameSitePolicy) === 'none' ? true : $request->secure();
 
             $cookie = cookie(
                 'auth_token', 
@@ -120,7 +121,7 @@ class AuthController extends Controller
                 1440, // 24 tiếng = 1 ngày
                 '/', 
                 $cookieDomain, 
-                $request->secure(), 
+                $isSecure, 
                 true, // httpOnly
                 false, 
                 $sameSitePolicy
@@ -132,7 +133,7 @@ class AuthController extends Controller
                 1440, // 24 tiếng = 1 ngày
                 '/', 
                 $cookieDomain, 
-                $request->secure(), 
+                $isSecure, 
                 false, // httpOnly = false -> JS có thể đọc
                 false, 
                 $sameSitePolicy
