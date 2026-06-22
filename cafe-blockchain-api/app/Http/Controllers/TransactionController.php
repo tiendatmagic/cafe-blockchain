@@ -61,6 +61,9 @@ class TransactionController extends Controller
             'shift_id' => $shiftId,
         ]);
 
+        $month = \Carbon\Carbon::parse($transaction->transaction_date)->format('Y-m');
+        \Illuminate\Support\Facades\Cache::forget("store_transactions_history:{$storeOwner}:{$month}");
+
         return response()->json([
             'message' => 'Transaction created successfully.',
             'transaction' => $transaction
@@ -97,6 +100,9 @@ class TransactionController extends Controller
             'transaction_date' => $validated['transaction_date'],
         ]);
 
+        $month = \Carbon\Carbon::parse($transaction->transaction_date)->format('Y-m');
+        \Illuminate\Support\Facades\Cache::forget("store_transactions_history:{$storeOwner}:{$month}");
+
         return response()->json([
             'message' => 'Transaction updated successfully.',
             'transaction' => $transaction
@@ -123,6 +129,9 @@ class TransactionController extends Controller
         }
 
         $this->transactionRepository->delete($transaction);
+
+        $month = \Carbon\Carbon::parse($transaction->transaction_date)->format('Y-m');
+        \Illuminate\Support\Facades\Cache::forget("store_transactions_history:{$storeOwner}:{$month}");
 
         return response()->json([
             'message' => 'Transaction deleted successfully.'
@@ -208,6 +217,9 @@ class TransactionController extends Controller
         if ($validated['blockchain_status'] === 'success') {
             \Illuminate\Support\Facades\Cache::forget("store_settings_admin:{$storeOwner}");
         }
+
+        $month = \Carbon\Carbon::parse($transaction->transaction_date)->format('Y-m');
+        \Illuminate\Support\Facades\Cache::forget("store_transactions_history:{$storeOwner}:{$month}");
 
         return response()->json([
             'message' => 'Blockchain sync updated successfully.',

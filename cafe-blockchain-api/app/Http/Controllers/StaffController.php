@@ -17,10 +17,13 @@ class StaffController extends Controller
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
         
-        $staffs = Staff::where('store_owner_address', $storeOwner)
-            ->with('role')
-            ->orderBy('id', 'desc')
-            ->get();
+        $staffs = \Illuminate\Support\Facades\Cache::remember("store_staffs:{$storeOwner}", 86400, function () use ($storeOwner) {
+            return Staff::where('store_owner_address', $storeOwner)
+                ->with('role')
+                ->orderBy('id', 'desc')
+                ->get()
+                ->toArray();
+        });
 
         return response()->json($staffs);
     }
@@ -76,8 +79,9 @@ class StaffController extends Controller
         $user->store_owner_address = $storeOwner;
         $user->save();
 
-        // Xóa cache phân quyền nhân viên
+        // Xóa cache phân quyền nhân viên và danh sách nhân viên
         \Illuminate\Support\Facades\Cache::forget("store_staff_permissions:" . $walletAddress);
+        \Illuminate\Support\Facades\Cache::forget("store_staffs:{$storeOwner}");
 
         return response()->json([
             'success' => true,
@@ -147,9 +151,10 @@ class StaffController extends Controller
             $newUser->save();
         }
 
-        // Xóa cache phân quyền nhân viên
+        // Xóa cache phân quyền nhân viên và danh sách nhân viên
         \Illuminate\Support\Facades\Cache::forget("store_staff_permissions:" . $oldWalletAddress);
         \Illuminate\Support\Facades\Cache::forget("store_staff_permissions:" . $newWalletAddress);
+        \Illuminate\Support\Facades\Cache::forget("store_staffs:{$storeOwner}");
 
         return response()->json([
             'success' => true,
@@ -176,8 +181,9 @@ class StaffController extends Controller
 
         $staff->delete();
 
-        // Xóa cache phân quyền nhân viên
+        // Xóa cache phân quyền nhân viên và danh sách nhân viên
         \Illuminate\Support\Facades\Cache::forget("store_staff_permissions:" . $walletAddress);
+        \Illuminate\Support\Facades\Cache::forget("store_staffs:{$storeOwner}");
 
         return response()->json([
             'success' => true,
@@ -192,56 +198,59 @@ class StaffController extends Controller
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
 
-        $roles = Role::where('store_owner_address', $storeOwner)->get();
+        $roles = \Illuminate\Support\Facades\Cache::remember("store_roles:{$storeOwner}", 86400, function () use ($storeOwner) {
+            $data = Role::where('store_owner_address', $storeOwner)->get();
 
-        // Nếu quán chưa cấu hình vai trò nào, tự động sinh 4 vai trò mặc định
-        if ($roles->isEmpty()) {
-            $defaultRoles = [
-                [
-                    'name' => 'Chủ quán',
-                    'permissions' => [
-                        'dashboard' => true, 'pos' => true, 'menu' => true, 'orders' => true,
-                        'financials' => true, 'customers' => true, 'debts' => true, 'inventory' => true,
-                        'tables' => true, 'reports' => true, 'settings' => true, 'staffs' => true, 'shifts' => true
+            // Nếu quán chưa cấu hình vai trò nào, tự động sinh 4 vai trò mặc định
+            if ($data->isEmpty()) {
+                $defaultRoles = [
+                    [
+                        'name' => 'Chủ quán',
+                        'permissions' => [
+                            'dashboard' => true, 'pos' => true, 'menu' => true, 'orders' => true,
+                            'financials' => true, 'customers' => true, 'debts' => true, 'inventory' => true,
+                            'tables' => true, 'reports' => true, 'settings' => true, 'staffs' => true, 'shifts' => true
+                        ]
+                    ],
+                    [
+                        'name' => 'Quản lý',
+                        'permissions' => [
+                            'dashboard' => true, 'pos' => true, 'menu' => true, 'orders' => true,
+                            'financials' => false, 'customers' => true, 'debts' => true, 'inventory' => true,
+                            'tables' => true, 'reports' => true, 'settings' => false, 'staffs' => false, 'shifts' => true
+                        ]
+                    ],
+                    [
+                        'name' => 'Thu ngân',
+                        'permissions' => [
+                            'dashboard' => false, 'pos' => true, 'menu' => false, 'orders' => true,
+                            'financials' => false, 'customers' => true, 'debts' => true, 'inventory' => false,
+                            'tables' => true, 'reports' => false, 'settings' => false, 'staffs' => false, 'shifts' => true
+                        ]
+                    ],
+                    [
+                        'name' => 'Kế toán',
+                        'permissions' => [
+                            'dashboard' => true, 'pos' => false, 'menu' => false, 'orders' => false,
+                            'financials' => true, 'customers' => true, 'debts' => true, 'inventory' => true,
+                            'tables' => false, 'reports' => true, 'settings' => false, 'staffs' => false, 'shifts' => true
+                        ]
                     ]
-                ],
-                [
-                    'name' => 'Quản lý',
-                    'permissions' => [
-                        'dashboard' => true, 'pos' => true, 'menu' => true, 'orders' => true,
-                        'financials' => false, 'customers' => true, 'debts' => true, 'inventory' => true,
-                        'tables' => true, 'reports' => true, 'settings' => false, 'staffs' => false, 'shifts' => true
-                    ]
-                ],
-                [
-                    'name' => 'Thu ngân',
-                    'permissions' => [
-                        'dashboard' => false, 'pos' => true, 'menu' => false, 'orders' => true,
-                        'financials' => false, 'customers' => true, 'debts' => true, 'inventory' => false,
-                        'tables' => true, 'reports' => false, 'settings' => false, 'staffs' => false, 'shifts' => true
-                    ]
-                ],
-                [
-                    'name' => 'Kế toán',
-                    'permissions' => [
-                        'dashboard' => true, 'pos' => false, 'menu' => false, 'orders' => false,
-                        'financials' => true, 'customers' => true, 'debts' => true, 'inventory' => true,
-                        'tables' => false, 'reports' => true, 'settings' => false, 'staffs' => false, 'shifts' => true
-                    ]
-                ]
-            ];
+                ];
 
-            foreach ($defaultRoles as $def) {
-                Role::create([
-                    'name' => $def['name'],
-                    'store_owner_address' => $storeOwner,
-                    'permissions' => $def['permissions']
-                ]);
+                foreach ($defaultRoles as $def) {
+                    Role::create([
+                        'name' => $def['name'],
+                        'store_owner_address' => $storeOwner,
+                        'permissions' => $def['permissions']
+                    ]);
+                }
+
+                $data = Role::where('store_owner_address', $storeOwner)->get();
             }
 
-            // Lấy lại danh sách vai trò sau khi tạo
-            $roles = Role::where('store_owner_address', $storeOwner)->get();
-        }
+            return $data->toArray();
+        });
 
         return response()->json($roles);
     }
@@ -263,6 +272,8 @@ class StaffController extends Controller
             'store_owner_address' => $storeOwner,
             'permissions' => $validated['permissions']
         ]);
+
+        \Illuminate\Support\Facades\Cache::forget("store_roles:{$storeOwner}");
 
         return response()->json([
             'success' => true,
@@ -294,6 +305,7 @@ class StaffController extends Controller
         foreach ($staffs as $s) {
             \Illuminate\Support\Facades\Cache::forget("store_staff_permissions:" . strtolower($s->wallet_address));
         }
+        \Illuminate\Support\Facades\Cache::forget("store_roles:{$storeOwner}");
 
         return response()->json([
             'success' => true,
@@ -320,6 +332,7 @@ class StaffController extends Controller
         }
 
         $role->delete();
+        \Illuminate\Support\Facades\Cache::forget("store_roles:{$storeOwner}");
 
         return response()->json([
             'success' => true,
@@ -392,6 +405,7 @@ class StaffController extends Controller
         foreach ($staffs as $s) {
             \Illuminate\Support\Facades\Cache::forget("store_staff_permissions:" . strtolower($s->wallet_address));
         }
+        \Illuminate\Support\Facades\Cache::forget("store_roles:{$storeOwner}");
 
         return response()->json([
             'success' => true,

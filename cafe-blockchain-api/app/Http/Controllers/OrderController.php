@@ -112,6 +112,9 @@ class OrderController extends Controller
         try {
             $order = $command->execute($storeOwner, $id, $validated);
 
+            $month = \Carbon\Carbon::parse($order->created_at)->format('Y-m');
+            \Illuminate\Support\Facades\Cache::forget("store_orders_history:{$storeOwner}:{$month}");
+
             return response()->json([
                 'message' => 'Order updated successfully.',
                 'data' => OrderModel::with(['customer', 'items.product', 'items.variant'])->find($order->id)
@@ -136,6 +139,9 @@ class OrderController extends Controller
 
         try {
             $order = $command->execute($storeOwner, $id, $validated['status']);
+
+            $month = \Carbon\Carbon::parse($order->created_at)->format('Y-m');
+            \Illuminate\Support\Facades\Cache::forget("store_orders_history:{$storeOwner}:{$month}");
 
             return response()->json([
                 'message' => 'Order status updated successfully.',
@@ -168,6 +174,9 @@ class OrderController extends Controller
                 \Illuminate\Support\Facades\Cache::forget("store_settings_admin:{$storeOwner}");
             }
 
+            $month = \Carbon\Carbon::parse($order->created_at)->format('Y-m');
+            \Illuminate\Support\Facades\Cache::forget("store_orders_history:{$storeOwner}:{$month}");
+
             return response()->json([
                 'message' => 'Blockchain sync updated successfully.',
                 'data' => OrderModel::with(['customer', 'items.product', 'items.variant'])->find($order->id)
@@ -188,6 +197,9 @@ class OrderController extends Controller
 
         try {
             $order = $command->execute($storeOwner, $id);
+
+            $month = \Carbon\Carbon::parse($order->created_at)->format('Y-m');
+            \Illuminate\Support\Facades\Cache::forget("store_orders_history:{$storeOwner}:{$month}");
 
             return response()->json([
                 'message' => 'NFT Voucher gifted and minted successfully to the customer!',

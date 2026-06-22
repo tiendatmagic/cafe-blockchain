@@ -16,15 +16,25 @@ class InventoryController extends Controller
     public function index(Request $request)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-        
-        $query = InventoryRecord::where('store_owner_address', $storeOwner)->with(['items.product', 'items.variant'])->orderBy('id', 'desc');
+
+        $records = \Illuminate\Support\Facades\Cache::remember("store_inventory_history:{$storeOwner}", 86400, function () use ($storeOwner) {
+            return InventoryRecord::where('store_owner_address', $storeOwner)
+                ->with(['items.product', 'items.variant'])
+                ->orderBy('id', 'desc')
+                ->get()
+                ->toArray();
+        });
+
+        $collection = collect($records);
 
         if ($request->has('type') && $request->type !== 'all') {
-            $query->where('type', $request->type);
+            $type = $request->type;
+            $collection = $collection->filter(function ($r) use ($type) {
+                return ($r['type'] ?? '') === $type;
+            });
         }
 
-        $records = $query->get();
-        return response()->json($records);
+        return response()->json($collection->values()->all());
     }
 
     /**
@@ -78,6 +88,8 @@ class InventoryController extends Controller
 
             DB::commit();
 
+            \Illuminate\Support\Facades\Cache::forget("store_inventory_history:{$storeOwner}");
+
             return response()->json([
                 'message' => 'Inventory record created successfully.',
                 'data' => InventoryRecord::with(['items.product', 'items.variant'])->find($inventoryRecord->id)
@@ -100,6 +112,8 @@ class InventoryController extends Controller
         $record = InventoryRecord::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         $record->delete();
+
+        \Illuminate\Support\Facades\Cache::forget("store_inventory_history:{$storeOwner}");
 
         return response()->json([
             'message' => 'Inventory record deleted successfully.'
