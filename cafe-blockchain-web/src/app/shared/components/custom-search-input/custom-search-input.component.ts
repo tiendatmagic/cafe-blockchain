@@ -41,7 +41,7 @@ export class CustomSearchInputComponent implements ControlValueAccessor, OnDestr
   @Input() placeholder: string = 'Tìm kiếm...';
   @Input() disabled: boolean = false;
   @Input() clearable: boolean = true;
-  @Input() containerClass: string = 'relative w-full';
+  @Input() containerClass: string = 'w-full';
   @Input() inputClass: string = 'w-full search-input';
   @Input() debounce: number = 0; // debounce time in ms (0 = immediate)
   @Input() loading: boolean = false; // show loading spinner
