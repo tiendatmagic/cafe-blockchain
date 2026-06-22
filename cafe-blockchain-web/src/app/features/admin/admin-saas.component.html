@@ -1626,6 +1626,109 @@
                 </div>
               </div>
 
+              <!-- Redis Info -->
+              <div app-card class="space-y-0 p-0 overflow-hidden">
+                <div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800/60">
+                  <h5
+                    class="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest"
+                  >
+                    THÔNG TIN REDIS & CACHE
+                  </h5>
+                </div>
+                <div class="divide-y divide-slate-50 dark:divide-slate-800/40 text-slate-800 dark:text-slate-200">
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm">
+                    <span class="text-slate-500 font-medium">PHP Extension redis</span>
+                    <span
+                      [ngClass]="
+                        systemInfo()?.redis_info?.enabled
+                          ? 'text-emerald-500'
+                          : 'text-slate-400'
+                      "
+                      class="font-extrabold flex items-center gap-1"
+                    >
+                      <svg
+                        class="h-3.5 w-3.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2.5"
+                          [attr.d]="
+                            systemInfo()?.redis_info?.enabled
+                              ? 'M5 13l4 4L19 7'
+                              : 'M6 18L18 6M6 6l12 12'
+                          "
+                        />
+                      </svg>
+                      {{ systemInfo()?.redis_info?.enabled ? 'Đã cài đặt' : 'Chưa cài đặt' }}
+                    </span>
+                  </div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm">
+                    <span class="text-slate-500 font-medium">Trạng thái hoạt động</span>
+                    <span
+                      [ngClass]="
+                        systemInfo()?.redis_info?.status === 'Đang hoạt động'
+                          ? 'text-emerald-500'
+                          : 'text-rose-500'
+                      "
+                      class="font-extrabold text-right max-w-[200px] truncate"
+                      [title]="systemInfo()?.redis_info?.status"
+                    >
+                      {{ systemInfo()?.redis_info?.status }}
+                    </span>
+                  </div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm">
+                    <span class="text-slate-550 font-medium">Phiên bản Redis</span>
+                    <span
+                      class="font-mono text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-200/30 dark:border-slate-700/30 leading-none"
+                      >{{ systemInfo()?.redis_info?.version }}</span
+                    >
+                  </div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm">
+                    <span class="text-slate-550 font-medium">Redis Client</span>
+                    <span class="font-extrabold text-slate-800 dark:text-slate-200 font-mono text-xs">{{
+                      systemInfo()?.redis_info?.client
+                    }}</span>
+                  </div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm">
+                    <span class="text-slate-500 font-medium">Host & Port</span>
+                    <span class="font-extrabold text-slate-800 dark:text-slate-200 font-mono text-xs">{{
+                      systemInfo()?.redis_info?.host }}:{{ systemInfo()?.redis_info?.port
+                    }}</span>
+                  </div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm">
+                    <span class="text-slate-550 font-medium">Làm Cache Driver</span>
+                    <span
+                      [ngClass]="systemInfo()?.redis_info?.is_cache ? 'text-emerald-500' : 'text-slate-400'"
+                      class="font-extrabold"
+                    >
+                      {{ systemInfo()?.redis_info?.is_cache ? 'Đang dùng' : 'Không dùng' }}
+                    </span>
+                  </div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm">
+                    <span class="text-slate-550 font-medium">Làm Session Driver</span>
+                    <span
+                      [ngClass]="systemInfo()?.redis_info?.is_session ? 'text-emerald-500' : 'text-slate-400'"
+                      class="font-extrabold"
+                    >
+                      {{ systemInfo()?.redis_info?.is_session ? 'Đang dùng' : 'Không dùng' }}
+                    </span>
+                  </div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm">
+                    <span class="text-slate-550 font-medium">Làm Queue Connection</span>
+                    <span
+                      [ngClass]="systemInfo()?.redis_info?.is_queue ? 'text-emerald-500' : 'text-slate-400'"
+                      class="font-extrabold"
+                    >
+                      {{ systemInfo()?.redis_info?.is_queue ? 'Đang dùng' : 'Không dùng' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
               <!-- PHP Configuration -->
               <div app-card class="space-y-0 p-0 overflow-hidden">
                 <div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800/60">

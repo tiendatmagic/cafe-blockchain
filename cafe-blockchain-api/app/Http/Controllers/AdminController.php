@@ -600,7 +600,60 @@ class AdminController extends Controller
                 'error_reporting'    => ini_get('error_reporting'),
                 'date_timezone'      => ini_get('date.timezone'),
             ],
+            'redis_info' => $this->getRedisSystemInfo(),
         ]);
+    }
+
+    /**
+     * Thu thập thông tin Redis của hệ thống
+     */
+    private function getRedisSystemInfo()
+    {
+        $redisEnabled = extension_loaded('redis') || class_exists('Redis');
+        $redisStatus = 'Không hoạt động';
+        $redisVersion = 'N/A';
+        $redisHost = config('database.redis.default.host', '127.0.0.1');
+        $redisPort = config('database.redis.default.port', '6379');
+        $redisClient = config('database.redis.client', 'phpredis');
+
+        if ($redisEnabled) {
+            try {
+                $redis = \Illuminate\Support\Facades\Redis::connection();
+                $response = $redis->ping();
+                
+                if ($response === true || $response === 'PONG' || $response === '+PONG' || (is_object($response) && method_exists($response, 'getPayload') && $response->getPayload() === 'PONG')) {
+                    $redisStatus = 'Đang hoạt động';
+                    try {
+                        $info = $redis->info();
+                        if (isset($info['redis_version'])) {
+                            $redisVersion = $info['redis_version'];
+                        } elseif (isset($info['Server']['redis_version'])) {
+                            $redisVersion = $info['Server']['redis_version'];
+                        }
+                    } catch (\Throwable $e) {
+                        $redisVersion = 'Đang chạy (Không lấy được version)';
+                    }
+                } else {
+                    $redisStatus = 'Không phản hồi (Ping fail)';
+                }
+            } catch (\Throwable $e) {
+                $redisStatus = 'Không kết nối được: ' . $e->getMessage();
+            }
+        } else {
+            $redisStatus = 'PHP Extension redis chưa được cài đặt';
+        }
+
+        return [
+            'enabled'      => $redisEnabled,
+            'status'       => $redisStatus,
+            'version'      => $redisVersion,
+            'client'       => $redisClient,
+            'host'         => $redisHost,
+            'port'         => $redisPort,
+            'is_cache'     => config('cache.default') === 'redis',
+            'is_session'   => config('session.driver') === 'redis',
+            'is_queue'     => config('queue.default') === 'redis',
+        ];
     }
 
     /**
