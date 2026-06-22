@@ -149,7 +149,8 @@ class DashboardController extends Controller
                 ->whereNotNull('tx_hash')
                 ->orderBy('updated_at', 'desc')
                 ->limit(5)
-                ->get(['id', 'table_number', 'total_amount', 'tx_hash', 'blockchain_status', 'updated_at']);
+                ->get(['id', 'table_number', 'total_amount', 'tx_hash', 'blockchain_status', 'updated_at'])
+                ->toArray();
 
             // 7. Thống kê phương thức thanh toán trong khoảng thời gian được lọc
             $paymentMethodsStats = Order::where('store_owner_address', $storeOwner)
@@ -204,7 +205,8 @@ class DashboardController extends Controller
                 ->groupBy('products.id', 'products.name', 'product_variants.id', 'product_variants.variant_name')
                 ->orderByDesc('total_quantity')
                 ->limit(5)
-                ->get();
+                ->get()
+                ->toArray();
 
             // 9. Tính toán cảnh báo tồn kho thấp (các sản phẩm có tồn kho <= 10)
             $products = \App\Domain\Entities\Product::where('store_owner_address', $storeOwner)->with(['variants', 'recipes'])->get();

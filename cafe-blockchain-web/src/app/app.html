@@ -37,6 +37,14 @@
       "
     >
       @if (!isPublicLayout) {
+        <!-- Hiệu ứng lưới màu phát sáng nền (Background decorative glowing mesh) -->
+        <div class="absolute inset-0 pointer-events-none overflow-hidden z-0">
+          <div class="absolute top-0 left-1/4 w-[500px] h-[500px] bg-[var(--color-primary)]/5 dark:bg-[var(--color-primary)]/10 rounded-full blur-[120px]"></div>
+          <div class="absolute top-20 right-1/4 w-[400px] h-[400px] bg-emerald-600/3 dark:bg-emerald-600/5 rounded-full blur-[100px]"></div>
+        </div>
+      }
+
+      @if (!isPublicLayout) {
         <app-desktop-header></app-desktop-header>
       } @else if (isCustomerWeb3Route) {
         <app-web3-public-header></app-web3-public-header>
