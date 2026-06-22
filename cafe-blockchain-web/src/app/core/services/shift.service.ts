@@ -117,9 +117,13 @@ export class ShiftService {
     });
   }
 
-  public closeShift(actualCash: number, note?: string, onSuccess?: () => void) {
+  public closeShift(actualCash: number | null, note?: string, onSuccess?: () => void) {
     if (!this.web3Service.walletConnected()) return;
     if (!this.authService.hasFeature('enable_shifts')) return;
+    if (actualCash === null || actualCash === undefined) {
+      this.toastService.showToast('Vui lòng nhập số tiền mặt thực tế kiểm đếm!', 'error');
+      return;
+    }
     if (this.isLoading()) return;
     this.isLoading.set(true);
 
@@ -140,7 +144,7 @@ export class ShiftService {
   public onActualCashInput(event: any) {
     const inputVal = event.target.value;
     const cleanVal = inputVal.replace(/[^0-9]/g, '');
-    const numVal = cleanVal === '' ? 0 : Number(cleanVal);
+    const numVal = cleanVal === '' ? null : Number(cleanVal);
     this.shiftStore.actualCashInput.set(numVal);
     event.target.value = cleanVal !== '' ? Number(cleanVal).toLocaleString('en-US') : '';
   }
@@ -192,8 +196,7 @@ export class ShiftService {
 
     const now = Date.now();
     if (this.shiftStore.shiftSummary() && (now - this.lastShiftSummaryLoadedTime < 5000)) {
-      const expected = this.shiftStore.shiftSummary()?.expected_cash ?? 0;
-      this.shiftStore.actualCashInput.set(Math.max(0, expected));
+      this.shiftStore.actualCashInput.set(null);
       return;
     }
 
@@ -201,8 +204,7 @@ export class ShiftService {
     this.apiService.getShiftSummary().subscribe({
       next: (res) => {
         this.shiftStore.shiftSummary.set(res);
-        const expected = res?.expected_cash ?? 0;
-        this.shiftStore.actualCashInput.set(Math.max(0, expected));
+        this.shiftStore.actualCashInput.set(null);
         this.lastShiftSummaryLoadedTime = Date.now();
         this.shiftStore.isShiftSummaryLoading.set(false);
       },

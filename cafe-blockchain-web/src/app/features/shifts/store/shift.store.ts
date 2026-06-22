@@ -19,7 +19,7 @@ export class ShiftStore {
   public readonly isCloseShiftModalOpen = signal<boolean>(false);
   public readonly isShiftSummaryLoading = signal<boolean>(false);
   public readonly shiftSummary = signal<any>(null);
-  public readonly actualCashInput = signal<number>(0);
+  public readonly actualCashInput = signal<number | null>(null);
   public readonly closeShiftNote = signal<string>('');
   
   public readonly isStartShiftModalOpen = signal<boolean>(false);
