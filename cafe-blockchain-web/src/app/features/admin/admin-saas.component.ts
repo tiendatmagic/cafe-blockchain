@@ -1,27 +1,19 @@
 import {
   Component,
   inject,
-  signal,
-  computed,
   OnInit,
   ChangeDetectionStrategy,
-  VERSION,
   HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormsModule,
   ReactiveFormsModule,
-  FormBuilder,
-  FormGroup,
-  Validators,
 } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { StateService } from '@core/services/state.service';
-import { environment } from '@environments/environment';
 import { ApiService } from '@core/services/api.service';
 import { ModalService } from '@core/services/modal.service';
-import packageInfo from '../../../../package.json';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
 import { TenantSubscriptionModalComponent } from './components/tenant-subscription-modal/tenant-subscription-modal.component';
 import { SubscriptionPlanModalComponent } from './components/subscription-plan-modal/subscription-plan-modal.component';
@@ -37,21 +29,21 @@ import { PageHeaderComponent } from '@shared/components/page-header/page-header.
 import {
   TableComponent,
   TableColumn,
-  TableCellDirective,
 } from '@shared/components/table/table.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
-import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
+import { TabGroupComponent } from '@shared/components/tab-group/tab-group.component';
 import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skeleton-loader.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { CardComponent } from '@shared/components/card/card.component';
 import { CustomSwitchComponent } from '@shared/components/custom-switch/custom-switch.component';
-import { forkJoin, of, catchError } from 'rxjs';
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
 import { CustomSearchInputComponent } from '@shared/components/custom-search-input/custom-search-input.component';
+import { SaaSAdminStore } from './services/saas-admin.store';
 
 @Component({
   selector: 'app-admin-saas',
   standalone: true,
+  providers: [SaaSAdminStore], // Khởi tạo Store theo vòng đời của Component này
   imports: [
     CommonModule,
     FormsModule,
@@ -62,7 +54,6 @@ import { CustomSearchInputComponent } from '@shared/components/custom-search-inp
     AccessRestrictedComponent,
     PageHeaderComponent,
     TableComponent,
-    TableCellDirective,
     IconComponent,
     TabGroupComponent,
     SkeletonLoaderComponent,
@@ -84,9 +75,9 @@ import { CustomSearchInputComponent } from '@shared/components/custom-search-inp
   ],
 })
 export class AdminSaaSComponent implements OnInit {
+  public readonly store = inject(SaaSAdminStore);
   public readonly stateService = inject(StateService);
   private readonly apiService = inject(ApiService);
-  private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly modalService = inject(ModalService);
@@ -162,42 +153,6 @@ export class AdminSaaSComponent implements OnInit {
     },
   ];
 
-  // Tab: 'config' | 'tenants' | 'plans' | 'maintenance' | 'info' | 'payment' | 'subscriptions' | 'staffs'
-  public readonly activeSubTab = signal<
-    'config' | 'tenants' | 'plans' | 'maintenance' | 'info' | 'payment' | 'subscriptions' | 'staffs'
-  >('config');
-
-  public readonly subTabOptions = computed<TabOption[]>(() => {
-    const role = this.stateService.currentUserAdminRole();
-    if (role === 'staff') {
-      return [
-        { value: 'subscriptions', label: 'Thuê bao' },
-        { value: 'tenants', label: 'Cửa hàng' },
-      ];
-    }
-    if (role === 'admin') {
-      // Quản trị viên: xem tất cả nhưng không có quyền ghi (không có tab Hệ thống vì maintenance chỉ Super Admin)
-      return [
-        { value: 'subscriptions', label: 'Thuê bao' },
-        { value: 'tenants', label: 'Cửa hàng' },
-        { value: 'staffs', label: 'Nhân viên hệ thống' },
-        { value: 'payment', label: 'Thanh toán' },
-        { value: 'info', label: 'Thông tin hệ thống' },
-      ];
-    }
-    return [
-      { value: 'config', label: 'Cấu hình thông tin hệ thống' },
-      { value: 'tenants', label: 'Cửa hàng' },
-      { value: 'plans', label: 'Gói cước' },
-      { value: 'payment', label: 'Thanh toán' },
-      { value: 'subscriptions', label: 'Thuê bao' },
-      { value: 'staffs', label: 'Nhân viên hệ thống' },
-      { value: 'maintenance', label: 'Bảo trì & Tối ưu' },
-      { value: 'info', label: 'Thông tin hệ thống' },
-    ];
-  });
-
-  // Cấu hình Phương thức thanh toán Hệ thống (Super Admin)
   public readonly paymentColumns: TableColumn[] = [
     {
       key: 'type',
@@ -233,7 +188,6 @@ export class AdminSaaSComponent implements OnInit {
     },
   ];
 
-  // Columns Tables
   public readonly subscriptionColumns: TableColumn[] = [
     { key: 'store_name', header: 'Cửa hàng', sortable: false, class: 'pl-6 whitespace-nowrap font-bold text-slate-800 dark:text-slate-200' },
     { key: 'current_plan', header: 'Thuê bao hiện tại', sortable: false, class: 'whitespace-nowrap' },
@@ -245,226 +199,9 @@ export class AdminSaaSComponent implements OnInit {
     { key: 'actions', header: 'Thao tác', sortable: false, class: 'text-right pr-6 whitespace-nowrap', headerClass: 'text-right pr-6' }
   ];
 
-  public readonly staffSystemColumns = computed<TableColumn[]>(() => {
-    const isSuperAdmin = this.stateService.isSuperAdmin();
-    const base: TableColumn[] = [
-      { key: 'wallet_address', header: 'Địa chỉ ví nhân viên', sortable: false, class: 'pl-6 font-mono text-sm whitespace-nowrap' },
-      { key: 'name', header: 'Tên nhân viên', sortable: false, class: 'font-semibold text-slate-800 dark:text-white' },
-      { key: 'role', header: 'Vai trò', sortable: false, class: 'whitespace-nowrap' },
-      { key: 'is_active', header: 'Trạng thái', sortable: false },
-      { key: 'created_at', header: 'Ngày tạo', sortable: false, class: 'whitespace-nowrap' },
-    ];
-    if (isSuperAdmin) {
-      base.push({ key: 'actions', header: 'Thao tác', sortable: false, class: 'text-right pr-6', headerClass: 'text-right pr-6' });
-    }
-    return base;
-  });
-
-  // Subscription Requests Signals
-  public readonly subscriptionRequests = signal<any[]>([]);
-  public readonly subscriptionTotal = signal<number>(0);
-  public readonly subscriptionPage = signal<number>(1);
-  public readonly subscriptionPerPage = signal<number>(10);
-  public readonly subscriptionStatus = signal<string>('pending');
-  public readonly subscriptionSearch = signal<string>('');
-  public readonly isSubscriptionsLoading = signal<boolean>(false);
-  public readonly isSubscriptionActionLoading = signal<boolean>(false);
-
-  // System Staffs Signals
-  public readonly systemStaffs = signal<any[]>([]);
-  public readonly systemStaffsTotal = signal<number>(0);
-  public readonly systemStaffsPage = signal<number>(1);
-  public readonly systemStaffsPerPage = signal<number>(10);
-  public readonly systemStaffsSearch = signal<string>('');
-  public readonly isSystemStaffsLoading = signal<boolean>(false);
-  public readonly isSystemStaffActionLoading = signal<boolean>(false);
-
-  public readonly systemPaymentMethods = signal<any[]>([]);
-  public readonly systemPaymentTotal = signal<number>(0);
-  public readonly systemPaymentPage = signal<number>(1);
-  public readonly systemPaymentPerPage = signal<number>(10);
-  public readonly systemPaymentSearch = signal<string>('');
-  public readonly isSystemPaymentsLoading = signal<boolean>(false);
-  public readonly isSystemPaymentActionLoading = signal<boolean>(false);
-
-  // Cờ hiệu cache FE (loaded flags)
-  public readonly hasLoadedPayments = signal<boolean>(false);
-  public readonly hasLoadedSubscriptions = signal<boolean>(false);
-  public readonly hasLoadedStaffs = signal<boolean>(false);
-  public readonly hasLoadedLogs = signal<boolean>(false);
-
-
-  public readonly systemContactsList = signal<any[]>([]);
-  public readonly isSavingContacts = signal<boolean>(false);
-
-  // Trạng thái Loading và Dữ liệu
-  public readonly isDataLoading = signal<boolean>(false);
-  public readonly tenants = signal<any[]>([]);
-  public readonly plans = signal<any[]>([]);
-  public readonly tokenCleanupDays = signal<number>(7);
-  public readonly turnstileEnabled = signal<boolean>(false);
-  public readonly turnstileHasKey = signal<boolean>(false);
-  public readonly isTogglingTurnstile = signal<boolean>(false);
-
-  public readonly searchQuery = signal<string>('');
-  public readonly tenantPlanFilter = signal<string>('all');
-  public readonly tenantStatusFilter = signal<string>('all');
-
-  // Computed signal cho danh sách chọn bộ lọc gói cước (kết hợp các gói thực tế từ DB)
-  public readonly planFilterOptions = computed(() => {
-    const list = this.plans().map((p) => ({
-      value: p.code,
-      label: p.name,
-    }));
-    return [{ value: 'all', label: 'Tất cả gói cước' }, ...list];
-  });
-
-  // Phân trang
-  public readonly tenantCurrentPage = signal<number>(1);
-  public readonly tenantItemsPerPage = 10;
-  public readonly planCurrentPage = signal<number>(1);
-  public readonly planItemsPerPage = 10;
-
-  // Computed signals phân trang Client-side
-  public readonly paginatedTenants = computed(() => {
-    const list = this.filteredTenants();
-    const startIndex = (this.tenantCurrentPage() - 1) * this.tenantItemsPerPage;
-    return list.slice(startIndex, startIndex + this.tenantItemsPerPage);
-  });
-
-  public readonly paginatedPlans = computed(() => {
-    const list = this.plans();
-    const startIndex = (this.planCurrentPage() - 1) * this.planItemsPerPage;
-    return list.slice(startIndex, startIndex + this.planItemsPerPage);
-  });
-
-  // Settings
-  public readonly isSavingSettings = signal<boolean>(false);
-
-  // Trạng thái Loading của các tiến trình chạy ngầm
-  public readonly isDeletingPlan = signal<boolean>(false);
-  public readonly isCleaningTokens = signal<boolean>(false);
-  public readonly isCleaningAllTokens = signal<boolean>(false);
-  public readonly isResettingDefaultPlans = signal<boolean>(false);
-
-  // System Info & Packages
-  public readonly systemInfo = signal<any | null>(null);
-  public readonly composerPackages = signal<any[]>([]);
-  public readonly npmPackages = signal<any[]>([]);
-  public readonly packageType = signal<'composer' | 'npm'>('composer');
-  public readonly isLoadingSysInfo = signal<boolean>(false);
-  public readonly packageSearch = signal<string>('');
-  public readonly packageCurrentPage = signal<number>(1);
-  public readonly packageItemsPerPage = 15;
-  public readonly webBuildSize = signal<string>('0.00 MB');
-  // System Logs
-  public readonly systemLogs = signal<any[]>([]);
-  public readonly logsLimit = signal<number>(100);
-  public readonly logsLevelFilter = signal<string>('ALL');
-  public readonly logSearchQuery = signal<string>('');
-  public readonly isLoadingLogs = signal<boolean>(false);
-  public readonly logSize = signal<string>('0 MB');
-
-  // Maintenance
-  public readonly runningMaintenance = signal<string>('');
-
-  public readonly packageTabOptions: TabOption[] = [
-    { value: 'composer', label: 'Backend (Composer)' },
-    { value: 'npm', label: 'Frontend (NPM)' },
-  ];
-
-  public readonly logsLimitOptions = [
-    { value: 50, label: '50 dòng' },
-    { value: 100, label: '100 dòng' },
-    { value: 200, label: '200 dòng' },
-    { value: 500, label: '500 dòng' }
-  ];
-
-  public readonly logsLevelOptions = [
-    { value: 'ALL', label: 'Tất cả cấp độ' },
-    { value: 'INFO', label: 'INFO' },
-    { value: 'WARNING', label: 'WARNING' },
-    { value: 'ERROR', label: 'ERROR' },
-    { value: 'CRITICAL', label: 'CRITICAL' },
-    { value: 'ALERT', label: 'ALERT' },
-    { value: 'EMERGENCY', label: 'EMERGENCY' },
-    { value: 'DEBUG', label: 'DEBUG' }
-  ];
-
-  public readonly packages = computed(() => {
-    return this.packageType() === 'composer' ? this.composerPackages() : this.npmPackages();
-  });
-
-  public readonly filteredPackages = computed(() => {
-    const q = this.packageSearch().trim().toLowerCase();
-    if (!q) return this.packages();
-    return this.packages().filter((p) => p.name.toLowerCase().includes(q));
-  });
-
-  public readonly paginatedPackages = computed(() => {
-    const list = this.filteredPackages();
-    const start = (this.packageCurrentPage() - 1) * this.packageItemsPerPage;
-    return list.slice(start, start + this.packageItemsPerPage);
-  });
-
-  public readonly packageTotalPages = computed(() =>
-    Math.ceil(this.filteredPackages().length / this.packageItemsPerPage),
-  );
-
-  // Frontend & Client Info
-  public readonly angularVersion = VERSION.full;
-  public readonly frontendEnv = environment;
-
-  public readonly windowWidth = signal<number>(typeof window !== 'undefined' ? window.innerWidth : 1200);
-  public readonly windowHeight = signal<number>(typeof window !== 'undefined' ? window.innerHeight : 800);
-
-  public readonly clientInfo = computed(() => {
-    if (typeof window === 'undefined' || typeof navigator === 'undefined') {
-      return {
-        browser: 'Server Side Rendering',
-        os: 'Server',
-        screenResolution: 'N/A',
-        language: 'N/A',
-        userAgent: 'N/A'
-      };
-    }
-
-    const ua = navigator.userAgent;
-    let browser = 'Không xác định';
-    if (ua.includes('Firefox')) browser = 'Mozilla Firefox';
-    else if (ua.includes('SamsungBrowser')) browser = 'Samsung Internet';
-    else if (ua.includes('Opera') || ua.includes('OPR')) browser = 'Opera';
-    else if (ua.includes('Edg')) browser = 'Microsoft Edge';
-    else if (ua.includes('Chrome')) browser = 'Google Chrome';
-    else if (ua.includes('Safari')) browser = 'Apple Safari';
-
-    let os = 'Không xác định';
-    if (ua.includes('Win')) os = 'Windows';
-    else if (ua.includes('Mac')) os = 'macOS';
-    else if (ua.includes('Linux')) os = 'Linux';
-    else if (ua.includes('Android')) os = 'Android';
-    else if (ua.includes('like Mac')) os = 'iOS';
-
-    return {
-      browser,
-      os,
-      screenResolution: `${window.screen.width}x${window.screen.height}`,
-      language: navigator.language,
-      userAgent: ua
-    };
-  });
-
-  @HostListener('window:resize')
-  onResize() {
-    if (typeof window !== 'undefined') {
-      this.windowWidth.set(window.innerWidth);
-      this.windowHeight.set(window.innerHeight);
-    }
-  }
-
   // Select Options cho Gói cước
   public get planOptions() {
-    return this.plans()
+    return this.store.plans()
       .filter((p) => p.is_active)
       .map((p) => ({
         value: p.code,
@@ -472,75 +209,16 @@ export class AdminSaaSComponent implements OnInit {
       }));
   }
 
-  // Note: Các hàm ngày tháng phục vụ form modal đã được đóng gói trong các component modal động tương ứng
-
-  // Khử dấu tiếng Việt
-  private removeSign(str: string): string {
-    if (!str) return '';
-    return str
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/đ/g, 'd')
-      .replace(/Đ/g, 'D');
+  @HostListener('window:resize')
+  onResize() {
+    if (typeof window !== 'undefined') {
+      // Cập nhật kích thước màn hình sang store
+      (this.store as any).windowWidth?.set(window.innerWidth);
+      (this.store as any).windowHeight?.set(window.innerHeight);
+    }
   }
 
-  // Lọc Tenants
-  public readonly filteredTenants = computed(() => {
-    let list = this.tenants();
-
-    // 1. Lọc theo gói cước
-    const planFilter = this.tenantPlanFilter();
-    if (planFilter !== 'all') {
-      list = list.filter((t) => t.plan_code === planFilter);
-    }
-
-    // 2. Lọc theo trạng thái
-    const statusFilter = this.tenantStatusFilter();
-    if (statusFilter !== 'all') {
-      list = list.filter((t) => t.subscription_status === statusFilter);
-    }
-
-    // 3. Lọc theo từ khóa tìm kiếm
-    const search = this.searchQuery().trim().toLowerCase();
-    if (search) {
-      const searchClean = this.removeSign(search);
-      list = list.filter((t) => {
-        const storeNameClean = t.store_name ? this.removeSign(t.store_name.toLowerCase()) : '';
-        const walletClean = t.wallet_address ? t.wallet_address.toLowerCase() : '';
-        const planClean = t.plan_code ? t.plan_code.toLowerCase() : '';
-        return (
-          storeNameClean.includes(searchClean) ||
-          walletClean.includes(searchClean) ||
-          planClean.includes(searchClean)
-        );
-      });
-    }
-    return list;
-  });
-
   ngOnInit() {
-    // Tải danh sách NPM packages từ package.json của frontend (Compile-time)
-    const npmPkgs: any[] = [];
-    if (packageInfo && (packageInfo as any).dependencies) {
-      Object.entries((packageInfo as any).dependencies).forEach(([name, version]) => {
-        npmPkgs.push({
-          name,
-          version: version as string,
-          require: [],
-        });
-      });
-    }
-    if (packageInfo && (packageInfo as any).devDependencies) {
-      Object.entries((packageInfo as any).devDependencies).forEach(([name, version]) => {
-        npmPkgs.push({
-          name,
-          version: version as string,
-          require: [],
-        });
-      });
-    }
-    this.npmPackages.set(npmPkgs);
-
     const role = this.stateService.currentUserAdminRole();
     const isStaff = role === 'staff';
     const isAdmin = role === 'admin';
@@ -554,29 +232,25 @@ export class AdminSaaSComponent implements OnInit {
     this.route.queryParams.subscribe((params) => {
       const tab = params['tab'];
       if (tab && allowedTabs.includes(tab)) {
-        this.activeSubTab.set(tab as any);
-        this.triggerTabLoad(tab);
+        this.store.activeSubTab.set(tab as any);
+        this.store.triggerTabLoad(tab);
       } else {
         const defaultTab = isStaff ? 'subscriptions' : isAdmin ? 'subscriptions' : 'config';
-        this.activeSubTab.set(defaultTab);
-        this.triggerTabLoad(defaultTab);
+        this.store.activeSubTab.set(defaultTab);
+        this.store.triggerTabLoad(defaultTab);
       }
     });
 
     if (this.stateService.isSuperAdmin()) {
-      this.loadAllAdminData();
+      this.store.loadAllAdminData();
     } else {
-      this.loadStaffAdminData();
+      this.store.loadStaffAdminData();
     }
   }
 
   public setSubTab(tab: 'config' | 'tenants' | 'plans' | 'maintenance' | 'info' | 'payment' | 'subscriptions' | 'staffs') {
-    this.activeSubTab.set(tab);
-
-    // Không reset các bộ lọc/tìm kiếm của các tab khác nữa để giữ nguyên trạng thái (state preservation),
-    // giúp người dùng bấm qua lại giữa các tab mà không bị mất dữ liệu lọc/phân trang hiện tại.
-
-    this.triggerTabLoad(tab);
+    this.store.activeSubTab.set(tab);
+    this.store.triggerTabLoad(tab);
 
     // Cập nhật query parameter tab trên URL
     this.router.navigate([], {
@@ -586,51 +260,10 @@ export class AdminSaaSComponent implements OnInit {
     });
   }
 
-  public onSearchQueryChange(query: string) {
-    this.searchQuery.set(query);
-    this.tenantCurrentPage.set(1);
-  }
-
-  public onTenantPlanFilterChange(value: string) {
-    this.tenantPlanFilter.set(value);
-    this.tenantCurrentPage.set(1);
-  }
-
-  public onTenantStatusFilterChange(value: string) {
-    this.tenantStatusFilter.set(value);
-    this.tenantCurrentPage.set(1);
-  }
-
-  // Load toàn bộ dữ liệu quản trị
-  public loadAllAdminData() {
-    this.isDataLoading.set(true);
-
-    const tenants$ = this.apiService.getAdminTenants();
-    const plans$ = this.apiService.getAdminPlans();
-    const settings$ = this.apiService.getAdminSystemSettings();
-
-    forkJoin({
-      tenants: tenants$,
-      plans: plans$,
-      settings: settings$,
-    }).subscribe({
-      next: (res) => {
-        this.tenants.set(res.tenants || []);
-        this.plans.set(res.plans || []);
-        this.tenantCurrentPage.set(1);
-        this.planCurrentPage.set(1);
-        this.tokenCleanupDays.set(res.settings?.token_cleanup_days ?? 7);
-        this.turnstileEnabled.set(res.settings?.turnstile_enabled ?? false);
-        this.turnstileHasKey.set(res.settings?.turnstile_has_key ?? false);
-        this.systemContactsList.set(res.settings?.system_contacts || []);
-        this.isDataLoading.set(false);
-      },
-      error: (err) => {
-        console.error('[AdminSaaS] Lỗi tải dữ liệu quản trị:', err);
-        this.stateService.showToast('Không thể lấy dữ liệu quản trị từ Laravel API.', 'error');
-        this.isDataLoading.set(false);
-      },
-    });
+  // Rút gọn ví
+  public shortAddress(address: string): string {
+    if (!address) return '';
+    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
   }
 
   // --- Quản lý Thuê bao Quán ---
@@ -644,7 +277,7 @@ export class AdminSaaSComponent implements OnInit {
       }
     }).afterClosed$.subscribe((success) => {
       if (success) {
-        this.loadAllAdminData();
+        this.store.loadAllAdminData(true);
       }
     });
   }
@@ -657,7 +290,7 @@ export class AdminSaaSComponent implements OnInit {
       data: { plan: null }
     }).afterClosed$.subscribe((success) => {
       if (success) {
-        this.loadAllAdminData();
+        this.store.loadAllAdminData(true);
       }
     });
   }
@@ -669,7 +302,7 @@ export class AdminSaaSComponent implements OnInit {
       data: { plan }
     }).afterClosed$.subscribe((success) => {
       if (success) {
-        this.loadAllAdminData();
+        this.store.loadAllAdminData(true);
       }
     });
   }
@@ -682,17 +315,17 @@ export class AdminSaaSComponent implements OnInit {
       cancelText: 'Hủy',
     }).afterClosed$.subscribe((confirmed) => {
       if (confirmed) {
-        this.isDeletingPlan.set(true);
+        this.store.isDeletingPlan.set(true);
         this.apiService.deleteAdminPlan(plan.id).subscribe({
           next: () => {
             this.stateService.showToast('Xóa gói cước thành công!', 'success');
-            this.isDeletingPlan.set(false);
-            this.loadAllAdminData();
+            this.store.isDeletingPlan.set(false);
+            this.store.loadAllAdminData(true);
           },
           error: (err) => {
             const errorMsg = err.error?.message || 'Không thể xóa gói cước này.';
             this.stateService.showToast(errorMsg, 'error');
-            this.isDeletingPlan.set(false);
+            this.store.isDeletingPlan.set(false);
           },
         });
       }
@@ -707,16 +340,16 @@ export class AdminSaaSComponent implements OnInit {
       cancelText: 'Hủy',
     }).afterClosed$.subscribe((confirmed) => {
       if (confirmed) {
-        this.isResettingDefaultPlans.set(true);
+        this.store.isResettingDefaultPlans.set(true);
         this.apiService.resetAdminDefaultPlans().subscribe({
           next: (res) => {
             this.stateService.showToast(res.message || 'Khôi phục gói mặc định thành công!', 'success');
-            this.isResettingDefaultPlans.set(false);
-            this.loadAllAdminData();
+            this.store.isResettingDefaultPlans.set(false);
+            this.store.loadAllAdminData(true);
           },
           error: () => {
             this.stateService.showToast('Có lỗi xảy ra khi khôi phục gói mặc định.', 'error');
-            this.isResettingDefaultPlans.set(false);
+            this.store.isResettingDefaultPlans.set(false);
           },
         });
       }
@@ -725,32 +358,32 @@ export class AdminSaaSComponent implements OnInit {
 
   // --- Cấu hình Dọn dẹp Token ---
   public saveSystemSettings() {
-    if (this.isSavingSettings()) return;
+    if (this.store.isSavingSettings()) return;
 
-    const days = this.tokenCleanupDays();
+    const days = this.store.tokenCleanupDays();
     if (days < 1 || days > 365) {
       this.stateService.showToast('Số ngày giữ lại token phải từ 1 đến 365 ngày.', 'error');
       return;
     }
 
-    this.isSavingSettings.set(true);
+    this.store.isSavingSettings.set(true);
     this.apiService.updateAdminSystemSettings({ token_cleanup_days: days }).subscribe({
       next: () => {
         this.stateService.showToast('Lưu cấu hình dọn dẹp hệ thống thành công!', 'success');
-        this.isSavingSettings.set(false);
+        this.store.isSavingSettings.set(false);
       },
-      error: (err) => {
+      error: () => {
         this.stateService.showToast('Không thể lưu cấu hình dọn dẹp.', 'error');
-        this.isSavingSettings.set(false);
+        this.store.isSavingSettings.set(false);
       },
     });
   }
 
   // --- Bật/Tắt Cloudflare Turnstile ---
   public toggleTurnstile(enabled: boolean) {
-    if (this.isTogglingTurnstile()) return;
+    if (this.store.isTogglingTurnstile()) return;
 
-    if (enabled && !this.turnstileHasKey()) {
+    if (enabled && !this.store.turnstileHasKey()) {
       this.stateService.showToast(
         'Không thể bật Turnstile: Chưa cấu hình TURNSTILE_SECRET_KEY trong biến môi trường server.',
         'error',
@@ -758,32 +391,32 @@ export class AdminSaaSComponent implements OnInit {
       return;
     }
 
-    this.isTogglingTurnstile.set(true);
+    this.store.isTogglingTurnstile.set(true);
     this.apiService
       .updateAdminSystemSettings({
-        token_cleanup_days: this.tokenCleanupDays(),
+        token_cleanup_days: this.store.tokenCleanupDays(),
         turnstile_enabled: enabled,
       })
       .subscribe({
         next: () => {
-          this.turnstileEnabled.set(enabled);
+          this.store.turnstileEnabled.set(enabled);
           this.stateService.showToast(
             enabled ? 'Đã bật Cloudflare Turnstile!' : 'Đã tắt Cloudflare Turnstile!',
             'success',
           );
-          this.isTogglingTurnstile.set(false);
+          this.store.isTogglingTurnstile.set(false);
         },
         error: (err) => {
           const msg = err?.error?.message || 'Không thể cập nhật cấu hình Turnstile.';
           this.stateService.showToast(msg, 'error');
-          this.isTogglingTurnstile.set(false);
+          this.store.isTogglingTurnstile.set(false);
         },
       });
   }
 
   // --- Cấu hình Thông tin liên hệ ---
   public addContact() {
-    this.systemContactsList.update((list) => [
+    this.store.systemContactsList.update((list) => [
       ...list,
       {
         name: '',
@@ -797,13 +430,13 @@ export class AdminSaaSComponent implements OnInit {
   }
 
   public removeContact(index: number) {
-    this.systemContactsList.update((list) => list.filter((_, i) => i !== index));
+    this.store.systemContactsList.update((list) => list.filter((_, i) => i !== index));
   }
 
   public saveSystemContacts() {
-    if (this.isSavingContacts()) return;
+    if (this.store.isSavingContacts()) return;
 
-    const contacts = this.systemContactsList();
+    const contacts = this.store.systemContactsList();
     for (let i = 0; i < contacts.length; i++) {
       const c = contacts[i];
       if (!c.name || !c.name.trim()) {
@@ -826,16 +459,16 @@ export class AdminSaaSComponent implements OnInit {
       }
     }
 
-    this.isSavingContacts.set(true);
+    this.store.isSavingContacts.set(true);
     this.apiService
       .updateAdminSystemSettings({
-        token_cleanup_days: this.tokenCleanupDays(),
+        token_cleanup_days: this.store.tokenCleanupDays(),
         system_contacts: contacts,
       })
       .subscribe({
         next: () => {
           this.stateService.showToast('Lưu cấu hình thông tin hệ thống thành công!', 'success');
-          this.isSavingContacts.set(false);
+          this.store.isSavingContacts.set(false);
           this.stateService.systemContacts.set(contacts);
           if (typeof window !== 'undefined') {
             localStorage.setItem('auth_system_contacts', JSON.stringify(contacts));
@@ -844,7 +477,7 @@ export class AdminSaaSComponent implements OnInit {
         error: (err) => {
           const errorMsg = err.error?.message || 'Không thể lưu cấu hình thông tin hệ thống.';
           this.stateService.showToast(errorMsg, 'error');
-          this.isSavingContacts.set(false);
+          this.store.isSavingContacts.set(false);
         },
       });
   }
@@ -852,22 +485,22 @@ export class AdminSaaSComponent implements OnInit {
   public triggerCleanTokens() {
     this.modalService.confirm({
       title: 'Dọn dẹp Token hết hạn',
-      description: `Bạn có chắc chắn muốn dọn dẹp các token Sanctum đã hết hạn không? Hệ thống sẽ xóa các token cũ hơn ${this.tokenCleanupDays()} ngày.`,
+      description: `Bạn có chắc chắn muốn dọn dẹp các token Sanctum đã hết hạn không? Hệ thống sẽ xóa các token cũ hơn ${this.store.tokenCleanupDays()} ngày.`,
       confirmText: 'Dọn dẹp',
       cancelText: 'Hủy',
     }).afterClosed$.subscribe((confirmed) => {
       if (confirmed) {
-        if (this.isCleaningTokens()) return;
-        this.isCleaningTokens.set(true);
+        if (this.store.isCleaningTokens()) return;
+        this.store.isCleaningTokens.set(true);
 
         this.apiService.cleanTokens().subscribe({
           next: (res) => {
             this.stateService.showToast(res.message || 'Dọn dẹp token thành công!', 'success');
-            this.isCleaningTokens.set(false);
+            this.store.isCleaningTokens.set(false);
           },
-          error: (err) => {
+          error: () => {
             this.stateService.showToast('Lỗi khi dọn dẹp token hệ thống.', 'error');
-            this.isCleaningTokens.set(false);
+            this.store.isCleaningTokens.set(false);
           },
         });
       }
@@ -882,78 +515,31 @@ export class AdminSaaSComponent implements OnInit {
       cancelText: 'Hủy',
     }).afterClosed$.subscribe((confirmed) => {
       if (confirmed) {
-        if (this.isCleaningAllTokens()) return;
-        this.isCleaningAllTokens.set(true);
+        if (this.store.isCleaningAllTokens()) return;
+        this.store.isCleaningAllTokens.set(true);
 
         this.apiService.cleanAllTokens().subscribe({
           next: (res) => {
             this.stateService.showToast(res.message || 'Xóa tất cả token thành công!', 'success');
-            this.isCleaningAllTokens.set(false);
+            this.store.isCleaningAllTokens.set(false);
             this.stateService.disconnectWalletAndClose(
               'Tất cả token đã bị xóa. Vui lòng kết nối lại ví.',
             );
             this.router.navigate(['/']);
           },
-          error: (err) => {
+          error: () => {
             this.stateService.showToast('Lỗi khi xóa tất cả token hệ thống.', 'error');
-            this.isCleaningAllTokens.set(false);
+            this.store.isCleaningAllTokens.set(false);
           },
         });
       }
     });
   }
 
-  // Rút gọn ví
-  public shortAddress(address: string): string {
-    if (!address) return '';
-    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
-  }
-
-  // --- System Info ---
-  public loadSysInfo() {
-    if (this.isLoadingSysInfo()) return;
-    this.isLoadingSysInfo.set(true);
-
-    forkJoin({
-      info: this.apiService.getAdminSystemInfo(),
-      pkgs: this.apiService.getAdminPackages(),
-      webBuild: this.apiService.getWebBuildSize().pipe(catchError(() => of(null)))
-    }).subscribe({
-      next: (res) => {
-        this.systemInfo.set(res.info);
-        this.composerPackages.set(res.pkgs?.packages ?? []);
-
-        // Cập nhật build size từ file tĩnh nếu tải thành công, ngược lại dùng fallback từ backend hoặc tĩnh
-        if (res.webBuild && res.webBuild.size) {
-          this.webBuildSize.set(res.webBuild.size);
-        } else {
-          const backendSize = res.info?.system_env?.web_build_size;
-          if (backendSize && backendSize !== 'N/A (Deploy độc lập)') {
-            this.webBuildSize.set(backendSize);
-          } else {
-            this.webBuildSize.set('0.00 MB');
-          }
-        }
-
-        this.packageCurrentPage.set(1);
-        this.isLoadingSysInfo.set(false);
-      },
-      error: () => {
-        this.stateService.showToast('Không thể tải thông tin hệ thống.', 'error');
-        this.isLoadingSysInfo.set(false);
-      },
-    });
-  }
-
-  public onPackageSearchChange(q: string) {
-    this.packageSearch.set(q);
-    this.packageCurrentPage.set(1);
-  }
-
   // --- Maintenance ---
   public runMaintenance(action: string) {
-    if (this.runningMaintenance()) return;
-    this.runningMaintenance.set(action);
+    if (this.store.runningMaintenance()) return;
+    this.store.runningMaintenance.set(action);
 
     const apiMap: Record<string, () => any> = {
       'clear-views': () => this.apiService.adminMaintenanceClearViews(),
@@ -966,119 +552,131 @@ export class AdminSaaSComponent implements OnInit {
 
     const call = apiMap[action];
     if (!call) {
-      this.runningMaintenance.set('');
+      this.store.runningMaintenance.set('');
       return;
     }
 
     call().subscribe({
       next: (res: any) => {
         this.stateService.showToast(res.message || 'Thao tác thành công!', 'success');
-        this.runningMaintenance.set('');
+        this.store.runningMaintenance.set('');
         if (action === 'clear-logs') {
-          this.loadSystemLogs();
+          this.store.loadSystemLogs();
         }
       },
       error: (err: any) => {
         const msg = err?.error?.message || 'Có lỗi xảy ra, vui lòng thử lại.';
         this.stateService.showToast(msg, 'error');
-        this.runningMaintenance.set('');
+        this.store.runningMaintenance.set('');
       },
     });
   }
 
-  public loadSystemLogs() {
-    this.isLoadingLogs.set(true);
-    this.apiService.getAdminSystemLogs({
-      limit: this.logsLimit(),
-      level: this.logsLevelFilter(),
-      search: this.logSearchQuery(),
-    }).subscribe({
-      next: (res) => {
-        if (res) {
-          this.systemLogs.set(res.logs || []);
-          this.logSize.set(res.log_size || '0 MB');
-          this.hasLoadedLogs.set(true);
-        }
-        this.isLoadingLogs.set(false);
-      },
-      error: () => {
-        this.stateService.showToast('Không thể tải nhật ký lỗi hệ thống.', 'error');
-        this.isLoadingLogs.set(false);
+  // --- Quản lý Yêu cầu thuê bao (Subscriptions) ---
+  public approveSubscription(item: any) {
+    this.modalService.confirm({
+      title: 'Phê duyệt yêu cầu nâng gói?',
+      description: `Bạn có chắc chắn muốn duyệt yêu cầu nâng cấp lên gói "${item.plan_code.toUpperCase()}" (${item.duration_months} tháng) của ví chủ cửa hàng ${this.shortAddress(item.store_owner_address)}?`,
+      confirmText: 'Phê duyệt',
+      cancelText: 'Hủy'
+    }).afterClosed$.subscribe(confirmed => {
+      if (confirmed) {
+        this.store.isSubscriptionActionLoading.set(true);
+        this.apiService.approveAdminSubscription(item.id).subscribe({
+          next: (res) => {
+            this.stateService.showToast(res.message || 'Phê duyệt yêu cầu thành công!', 'success');
+            this.store.isSubscriptionActionLoading.set(false);
+            this.store.loadSubscriptionRequests(true);
+            // Cập nhật lại danh sách cửa hàng
+            this.apiService.getAdminTenants().subscribe(tenants => this.store.tenants.set(tenants));
+          },
+          error: (err) => {
+            const msg = err.error?.message || 'Có lỗi xảy ra khi phê duyệt yêu cầu.';
+            this.stateService.showToast(msg, 'error');
+            this.store.isSubscriptionActionLoading.set(false);
+          }
+        });
       }
     });
   }
 
-  public onLogsSearchChange(search: string) {
-    this.logSearchQuery.set(search);
-    this.loadSystemLogs();
+  // --- Chi tiết yêu cầu thuê bao (Subscription Detail Modal) ---
+  public openDetailModal(item: any) {
+    this.modalService.open(SubscriptionRequestDetailModalComponent, {
+      title: 'Chi tiết yêu cầu đăng ký thuê bao',
+      size: '5xl',
+      data: { item }
+    }).afterClosed$.subscribe((success) => {
+      if (success) {
+        this.store.loadSubscriptionRequests(true);
+        // Cập nhật lại danh sách cửa hàng
+        this.apiService.getAdminTenants().subscribe(tenants => this.store.tenants.set(tenants));
+      }
+    });
   }
 
-  public onLogsLevelChange(level: string) {
-    this.logsLevelFilter.set(level);
-    this.loadSystemLogs();
+  public openRejectModal(item: any) {
+    this.modalService.open(RejectSubscriptionModalComponent, {
+      title: 'Từ chối yêu cầu nâng gói',
+      size: 'md',
+      data: { requestId: item.id }
+    }).afterClosed$.subscribe(success => {
+      if (success) {
+        this.store.loadSubscriptionRequests(true);
+        this.apiService.getAdminTenants().subscribe(tenants => this.store.tenants.set(tenants));
+      }
+    });
   }
 
-  public onLogsLimitChange(limit: any) {
-    this.logsLimit.set(Number(limit));
-    this.loadSystemLogs();
+  // --- Quản lý Nhân viên hệ thống (System Staffs) ---
+  public openAddStaff() {
+    this.modalService.open(SystemStaffModalComponent, {
+      title: 'Thêm nhân viên hệ thống mới',
+      size: 'md'
+    }).afterClosed$.subscribe(success => {
+      if (success) {
+        this.store.loadSystemStaffs(true);
+      }
+    });
+  }
+
+  public openEditStaff(staff: any) {
+    this.modalService.open(SystemStaffModalComponent, {
+      title: 'Chỉnh sửa nhân viên hệ thống',
+      size: 'md',
+      data: staff
+    }).afterClosed$.subscribe(success => {
+      if (success) {
+        this.store.loadSystemStaffs(true);
+      }
+    });
+  }
+
+  public deleteSystemStaff(item: any) {
+    this.modalService.confirm({
+      title: 'Xóa nhân viên hệ thống?',
+      description: `Bạn có chắc chắn muốn xóa nhân viên "${item.name}" với địa chỉ ví ${this.shortAddress(item.wallet_address)} không?`,
+      confirmText: 'Xác nhận xóa'
+    }).afterClosed$.subscribe(confirmed => {
+      if (confirmed) {
+        this.store.isSystemStaffActionLoading.set(true);
+        this.apiService.deleteAdminSystemStaff(item.id).subscribe({
+          next: (res) => {
+            this.stateService.showToast(res.message || 'Xóa nhân viên thành công.', 'success');
+            this.store.isSystemStaffActionLoading.set(false);
+            this.store.loadSystemStaffs(true);
+          },
+          error: (err) => {
+            const msg = err.error?.message || 'Có lỗi xảy ra khi xóa nhân viên.';
+            this.stateService.showToast(msg, 'error');
+            this.store.isSystemStaffActionLoading.set(false);
+          }
+        });
+      }
+    });
   }
 
   // --- Quản lý Phương thức thanh toán Hệ thống (Super Admin) ---
-  public loadSystemPaymentMethods(force = false) {
-    this.isSystemPaymentsLoading.set(true);
-    this.apiService
-      .getAdminPaymentMethods({
-        page: this.systemPaymentPage(),
-        per_page: this.systemPaymentPerPage(),
-        search: this.systemPaymentSearch(),
-      })
-      .subscribe({
-        next: (res) => {
-          if (res) {
-            this.systemPaymentMethods.set(res.data || []);
-            this.systemPaymentTotal.set(res.total || 0);
-            this.hasLoadedPayments.set(true);
-          }
-          this.isSystemPaymentsLoading.set(false);
-        },
-        error: () => {
-          this.stateService.showToast('Không thể tải danh sách phương thức thanh toán!', 'error');
-          this.isSystemPaymentsLoading.set(false);
-        },
-      });
-  }
-
-  public onSystemPaymentSearchChange() {
-    this.systemPaymentPage.set(1);
-    this.loadSystemPaymentMethods(true);
-  }
-
-  public setSystemPaymentPage(page: number) {
-    if (page < 1 || page > this.getSystemPaymentTotalPages()) return;
-    this.systemPaymentPage.set(page);
-    this.loadSystemPaymentMethods(true);
-  }
-
-  public getSystemPaymentTotalPages(): number {
-    return Math.ceil(this.systemPaymentTotal() / this.systemPaymentPerPage()) || 1;
-  }
-
-  public getSystemPaymentPagesArray(): number[] {
-    const total = this.getSystemPaymentTotalPages();
-    const current = this.systemPaymentPage();
-    const pages: number[] = [];
-
-    let start = Math.max(1, current - 2);
-    let end = Math.min(total, start + 4);
-    if (end - start < 4) {
-      start = Math.max(1, end - 4);
-    }
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-    return pages;
-  }
-
   public openAddSystemPaymentModal() {
     this.modalService.open(PaymentFormModalComponent, {
       title: 'Thêm phương thức hệ thống mới',
@@ -1097,7 +695,7 @@ export class AdminSaaSComponent implements OnInit {
       }
     }).afterClosed$.subscribe(success => {
       if (success) {
-        this.loadSystemPaymentMethods(true);
+        this.store.loadSystemPaymentMethods(true);
       }
     });
   }
@@ -1121,7 +719,7 @@ export class AdminSaaSComponent implements OnInit {
       }
     }).afterClosed$.subscribe(success => {
       if (success) {
-        this.loadSystemPaymentMethods(true);
+        this.store.loadSystemPaymentMethods(true);
       }
     });
   }
@@ -1139,18 +737,18 @@ export class AdminSaaSComponent implements OnInit {
   }
 
   public confirmDeleteSystemPaymentMethod(id: number) {
-    if (this.isSystemPaymentActionLoading()) return;
-    this.isSystemPaymentActionLoading.set(true);
+    if (this.store.isSystemPaymentActionLoading()) return;
+    this.store.isSystemPaymentActionLoading.set(true);
 
     this.apiService.deleteAdminPaymentMethod(id).subscribe({
       next: () => {
         this.stateService.showToast('Xóa phương thức thanh toán thành công!', 'success');
-        this.isSystemPaymentActionLoading.set(false);
-        this.loadSystemPaymentMethods(true);
+        this.store.isSystemPaymentActionLoading.set(false);
+        this.store.loadSystemPaymentMethods(true);
       },
       error: () => {
         this.stateService.showToast('Xóa phương thức thanh toán thất bại!', 'error');
-        this.isSystemPaymentActionLoading.set(false);
+        this.store.isSystemPaymentActionLoading.set(false);
       },
     });
   }
@@ -1163,204 +761,5 @@ export class AdminSaaSComponent implements OnInit {
         payment: item
       }
     });
-  }
-
-  // --- Staff Admin Load ---
-  public loadStaffAdminData() {
-    this.isDataLoading.set(true);
-    forkJoin({
-      tenants: this.apiService.getAdminTenants(),
-      plans: this.apiService.getPublicPlans(),
-    }).subscribe({
-      next: (res) => {
-        this.tenants.set(res.tenants || []);
-        this.plans.set(res.plans || []);
-        this.tenantCurrentPage.set(1);
-        this.isDataLoading.set(false);
-        // Sau khi isDataLoading = false, trigger load tab-specific data
-        // để tránh race condition giữa loadSystemStaffs và isDataLoading
-        this.triggerTabLoad(this.activeSubTab());
-      },
-      error: (err) => {
-        console.error('[AdminSaaS] Lỗi tải dữ liệu cho Staff:', err);
-        this.stateService.showToast('Không thể lấy dữ liệu cửa hàng từ API.', 'error');
-        this.isDataLoading.set(false);
-      },
-    });
-  }
-
-
-  private triggerTabLoad(tab: string) {
-    const isSuperAdmin = this.stateService.isSuperAdmin();
-    const role = this.stateService.currentUserAdminRole();
-
-    if (tab === 'info' && !this.systemInfo()) {
-      this.loadSysInfo();
-    }
-    if (tab === 'maintenance' && !this.hasLoadedLogs()) {
-      this.loadSystemLogs();
-    }
-    if (tab === 'payment' && !this.hasLoadedPayments()) {
-      this.loadSystemPaymentMethods();
-    }
-    if (tab === 'subscriptions' && !this.hasLoadedSubscriptions()) {
-      this.loadSubscriptionRequests();
-    }
-    // Super Admin và admin role đều có thể xem danh sách nhân viên hệ thống
-    if (tab === 'staffs' && (isSuperAdmin || role === 'admin') && !this.hasLoadedStaffs()) {
-      this.loadSystemStaffs();
-    }
-  }
-
-  // --- Quản lý Yêu cầu thuê bao (Subscriptions) ---
-  public loadSubscriptionRequests() {
-    this.isSubscriptionsLoading.set(true);
-    this.apiService.getAdminSubscriptionRequests({
-      status: this.subscriptionStatus() === 'all' ? undefined : this.subscriptionStatus(),
-      search: this.subscriptionSearch(),
-      page: this.subscriptionPage(),
-      per_page: this.subscriptionPerPage()
-    }).subscribe({
-      next: (res) => {
-        if (res) {
-          this.subscriptionRequests.set(res.data || []);
-          this.subscriptionTotal.set(res.total || 0);
-          this.hasLoadedSubscriptions.set(true);
-        }
-        this.isSubscriptionsLoading.set(false);
-      },
-      error: () => {
-        this.stateService.showToast('Không thể tải danh sách yêu cầu thuê bao!', 'error');
-        this.isSubscriptionsLoading.set(false);
-      }
-    });
-  }
-
-  public approveSubscription(item: any) {
-    this.modalService.confirm({
-      title: 'Phê duyệt yêu cầu nâng gói?',
-      description: `Bạn có chắc chắn muốn duyệt yêu cầu nâng cấp lên gói "${item.plan_code.toUpperCase()}" (${item.duration_months} tháng) của ví chủ cửa hàng ${this.shortAddress(item.store_owner_address)}?`,
-      confirmText: 'Phê duyệt',
-      cancelText: 'Hủy'
-    }).afterClosed$.subscribe(confirmed => {
-      if (confirmed) {
-        this.isSubscriptionActionLoading.set(true);
-        this.apiService.approveAdminSubscription(item.id).subscribe({
-          next: (res) => {
-            this.stateService.showToast(res.message || 'Phê duyệt yêu cầu thành công!', 'success');
-            this.isSubscriptionActionLoading.set(false);
-            this.loadSubscriptionRequests();
-            // Cập nhật lại danh sách cửa hàng
-            this.apiService.getAdminTenants().subscribe(tenants => this.tenants.set(tenants));
-          },
-          error: (err) => {
-            const msg = err.error?.message || 'Có lỗi xảy ra khi phê duyệt yêu cầu.';
-            this.stateService.showToast(msg, 'error');
-            this.isSubscriptionActionLoading.set(false);
-          }
-        });
-      }
-    });
-  }
-
-  // --- Chi tiết yêu cầu thuê bao (Subscription Detail Modal) ---
-  public openDetailModal(item: any) {
-    this.modalService.open(SubscriptionRequestDetailModalComponent, {
-      title: 'Chi tiết yêu cầu đăng ký thuê bao',
-      size: '5xl',
-      data: { item }
-    }).afterClosed$.subscribe((success) => {
-      if (success) {
-        this.loadSubscriptionRequests();
-        // Cập nhật lại danh sách cửa hàng
-        this.apiService.getAdminTenants().subscribe(tenants => this.tenants.set(tenants));
-      }
-    });
-  }
-
-  public openRejectModal(item: any) {
-    this.modalService.open(RejectSubscriptionModalComponent, {
-      title: 'Từ chối yêu cầu nâng gói',
-      size: 'md',
-      data: { requestId: item.id }
-    }).afterClosed$.subscribe(success => {
-      if (success) {
-        this.loadSubscriptionRequests();
-        this.apiService.getAdminTenants().subscribe(tenants => this.tenants.set(tenants));
-      }
-    });
-  }
-
-  // --- Quản lý Nhân viên hệ thống (System Staffs) ---
-  public loadSystemStaffs() {
-    this.isSystemStaffsLoading.set(true);
-    this.apiService.getAdminSystemStaffs({
-      page: this.systemStaffsPage(),
-      per_page: this.systemStaffsPerPage(),
-      search: this.systemStaffsSearch()
-    }).subscribe({
-      next: (res) => {
-        this.systemStaffs.set(res.data || []);
-        this.systemStaffsTotal.set(res.total || 0);
-        this.hasLoadedStaffs.set(true);
-        this.isSystemStaffsLoading.set(false);
-      },
-      error: () => {
-        this.stateService.showToast('Không thể tải danh sách nhân viên hệ thống.', 'error');
-        this.isSystemStaffsLoading.set(false);
-      }
-    });
-  }
-
-  public openAddStaff() {
-    this.modalService.open(SystemStaffModalComponent, {
-      title: 'Thêm nhân viên hệ thống mới',
-      size: 'md'
-    }).afterClosed$.subscribe(success => {
-      if (success) {
-        this.loadSystemStaffs();
-      }
-    });
-  }
-
-  public openEditStaff(staff: any) {
-    this.modalService.open(SystemStaffModalComponent, {
-      title: 'Chỉnh sửa nhân viên hệ thống',
-      size: 'md',
-      data: staff
-    }).afterClosed$.subscribe(success => {
-      if (success) {
-        this.loadSystemStaffs();
-      }
-    });
-  }
-
-  public deleteSystemStaff(item: any) {
-    this.modalService.confirm({
-      title: 'Xóa nhân viên hệ thống?',
-      description: `Bạn có chắc chắn muốn xóa nhân viên "${item.name}" với địa chỉ ví ${this.shortAddress(item.wallet_address)} không?`,
-      confirmText: 'Xác nhận xóa'
-    }).afterClosed$.subscribe(confirmed => {
-      if (confirmed) {
-        this.isSystemStaffActionLoading.set(true);
-        this.apiService.deleteAdminSystemStaff(item.id).subscribe({
-          next: (res) => {
-            this.stateService.showToast(res.message || 'Xóa nhân viên thành công.', 'success');
-            this.isSystemStaffActionLoading.set(false);
-            this.loadSystemStaffs();
-          },
-          error: (err) => {
-            const msg = err.error?.message || 'Có lỗi xảy ra khi xóa nhân viên.';
-            this.stateService.showToast(msg, 'error');
-            this.isSystemStaffActionLoading.set(false);
-          }
-        });
-      }
-    });
-  }
-
-  public onPackageTypeChange(type: any) {
-    this.packageType.set(type);
-    this.packageCurrentPage.set(1);
   }
 }

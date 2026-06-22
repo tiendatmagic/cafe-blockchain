@@ -19,8 +19,8 @@
     <!-- Tab Navigation -->
     <div class="mb-4">
       <app-tab-group
-        [options]="subTabOptions()"
-        [activeValue]="activeSubTab()"
+        [options]="store.subTabOptions()"
+        [activeValue]="store.activeSubTab()"
         (valueChange)="setSubTab($event)"
         [flex]="false"
         class="w-full"
@@ -30,16 +30,16 @@
 
     <!-- Tab Filters / Actions Bar -->
     <div class="flex flex-wrap items-center gap-3 mb-6">
-      @if (activeSubTab() === 'tenants') {
+      @if (store.activeSubTab() === 'tenants') {
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
           <!-- Bộ lọc gói cước -->
           <div class="w-full sm:w-48">
             <app-custom-select
-              [options]="planFilterOptions()"
+              [options]="store.planFilterOptions()"
               valueKey="value"
               labelKey="label"
-              [value]="tenantPlanFilter()"
-              (valueChange)="onTenantPlanFilterChange($event)"
+              [value]="store.tenantPlanFilter()"
+              (valueChange)="store.onTenantPlanFilterChange($event)"
               placeholder="Gói cước"
               triggerClass="w-full form-input !py-2 !h-10 !text-sm"
             >
@@ -56,8 +56,8 @@
               ]"
               valueKey="value"
               labelKey="label"
-              [value]="tenantStatusFilter()"
-              (valueChange)="onTenantStatusFilterChange($event)"
+              [value]="store.tenantStatusFilter()"
+              (valueChange)="store.onTenantStatusFilterChange($event)"
               placeholder="Trạng thái"
               triggerClass="w-full form-input !py-2 !h-10 !text-sm"
             >
@@ -66,14 +66,14 @@
 
           <!-- Search Field -->
           <app-custom-search-input
-            [ngModel]="searchQuery()"
-            (ngModelChange)="onSearchQueryChange($event)"
+            [ngModel]="store.searchQuery()"
+            (ngModelChange)="store.onSearchQueryChange($event)"
             placeholder="Tìm theo ví, tên quán..."
             containerClass="w-full sm:w-64"
             inputClass="search-input !pl-10 !h-10 !text-sm"
           ></app-custom-search-input>
         </div>
-      } @else if (activeSubTab() === 'plans') {
+      } @else if (store.activeSubTab() === 'plans') {
         <!-- Plans Tab Buttons -->
         <div class="flex items-center gap-2 w-full md:w-auto shrink-0">
           <button
@@ -89,25 +89,25 @@
             <span>Thêm gói cước mới</span>
           </button>
         </div>
-      } @else if (activeSubTab() === 'info') {
+      } @else if (store.activeSubTab() === 'info') {
         <!-- Reload SysInfo -->
         <button
           app-button
           variant="secondary"
           class="w-full md:w-auto"
-          (click)="loadSysInfo()"
-          [disabled]="isLoadingSysInfo()"
+          (click)="store.loadSysInfo()"
+          [disabled]="store.isLoadingSysInfo()"
         >
           <span>Làm mới</span>
         </button>
-      } @else if (activeSubTab() === 'payment') {
+      } @else if (store.activeSubTab() === 'payment') {
         <div
           class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto ml-auto"
         >
           <!-- Search Field -->
           <app-custom-search-input
-            [ngModel]="systemPaymentSearch()"
-            (ngModelChange)="systemPaymentSearch.set($event); onSystemPaymentSearchChange()"
+            [ngModel]="store.systemPaymentSearch()"
+            (ngModelChange)="store.systemPaymentSearch.set($event); store.onSystemPaymentSearchChange()"
             placeholder="Tìm phương thức..."
             containerClass="w-full sm:w-64"
             inputClass="search-input !pl-10 !h-10 !text-sm"
@@ -118,11 +118,11 @@
             app-button
             variant="secondary"
             size="md"
-            (click)="loadSystemPaymentMethods(true)"
-            [loading]="isSystemPaymentsLoading()"
+            (click)="store.loadSystemPaymentMethods(true)"
+            [loading]="store.isSystemPaymentsLoading()"
             class="flex items-center justify-center gap-1.5 shrink-0 !h-10 rounded-xl !py-2 !px-4 text-sm font-bold w-full sm:w-auto"
           >
-            @if (!isSystemPaymentsLoading()) {
+            @if (!store.isSystemPaymentsLoading()) {
               <app-icon name="sync" class="h-4 w-4"></app-icon>
             }
             <span>Tải lại</span>
@@ -144,11 +144,11 @@
     </div>
 
     <!-- Content Sections -->
-    @if (isDataLoading()) {
+    @if (store.isDataLoading()) {
       <app-skeleton-loader type="table" [cols]="7" [rows]="5"></app-skeleton-loader>
     } @else {
       <!-- ===== TAB 0: SYSTEM CONFIG (Cấu hình thông tin hệ thống) ===== -->
-      @if (activeSubTab() === 'config') {
+      @if (store.activeSubTab() === 'config') {
         <div app-card class="space-y-6 relative overflow-hidden">
           <div
             class="pb-4 border-b border-slate-100 dark:border-slate-800/60 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3"
@@ -174,7 +174,7 @@
             </button>
           </div>
 
-          @if (systemContactsList().length === 0) {
+          @if (store.systemContactsList().length === 0) {
             <div class="py-16 flex flex-col items-center justify-center text-center gap-4">
               <div
                 class="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800/60 flex items-center justify-center text-slate-400"
@@ -199,7 +199,7 @@
             </div>
           } @else {
             <div class="space-y-6">
-              @for (contact of systemContactsList(); track $index; let idx = $index) {
+              @for (contact of store.systemContactsList(); track $index; let idx = $index) {
                 <div
                   class="relative bg-slate-50 dark:bg-slate-950/40 p-5 rounded-[12px] border border-slate-100 dark:border-slate-800/80 space-y-4"
                 >
@@ -328,7 +328,7 @@
                 <button
                   app-button
                   variant="primary"
-                  [disabled]="isSavingContacts()"
+                  [disabled]="store.isSavingContacts()"
                   (click)="saveSystemContacts()"
                   class="w-full sm:w-auto min-w-[150px]"
                 >
@@ -341,17 +341,17 @@
       }
 
       <!-- ===== TAB 1: TENANTS ===== -->
-      @if (activeSubTab() === 'tenants') {
+      @if (store.activeSubTab() === 'tenants') {
         <div app-card class="p-0 overflow-hidden">
           <app-table
             [columns]="tenantColumns"
-            [data]="paginatedTenants()"
-            [totalItems]="filteredTenants().length"
-            [itemsPerPage]="tenantItemsPerPage"
-            [currentPage]="tenantCurrentPage()"
+            [data]="store.paginatedTenants()"
+            [totalItems]="store.filteredTenants().length"
+            [itemsPerPage]="store.tenantItemsPerPage"
+            [currentPage]="store.tenantCurrentPage()"
             [showPagination]="true"
             [itemName]="'cửa hàng'"
-            (pageChange)="tenantCurrentPage.set($event)"
+            (pageChange)="store.tenantCurrentPage.set($event)"
           >
             <ng-template appCell="store_name" let-row>
               <div class="font-extrabold text-slate-800 dark:text-slate-200 text-sm sm:text-base">
@@ -445,17 +445,17 @@
       }
 
       <!-- ===== TAB 2: PLANS ===== -->
-      @if (activeSubTab() === 'plans') {
+      @if (store.activeSubTab() === 'plans') {
         <div app-card class="p-0 overflow-hidden">
           <app-table
             [columns]="planColumns"
-            [data]="paginatedPlans()"
-            [totalItems]="plans().length"
-            [itemsPerPage]="planItemsPerPage"
-            [currentPage]="planCurrentPage()"
+            [data]="store.paginatedPlans()"
+            [totalItems]="store.plans().length"
+            [itemsPerPage]="store.planItemsPerPage"
+            [currentPage]="store.planCurrentPage()"
             [showPagination]="true"
             [itemName]="'gói cước'"
-            (pageChange)="planCurrentPage.set($event)"
+            (pageChange)="store.planCurrentPage.set($event)"
           >
             <ng-template appCell="code" let-row>
               <div class="font-mono text-purple-650 dark:text-purple-400 font-bold pl-6 text-xs">
@@ -637,20 +637,20 @@
       }
 
       <!-- ===== TAB: PAYMENT (Phương thức thanh toán hệ thống) ===== -->
-      @if (activeSubTab() === 'payment') {
+      @if (store.activeSubTab() === 'payment') {
         <div app-card class="p-0 overflow-hidden">
-          @if (isSystemPaymentsLoading()) {
+          @if (store.isSystemPaymentsLoading()) {
             <app-skeleton-loader type="table" [cols]="6" [rows]="5"></app-skeleton-loader>
           } @else {
             <app-table
               [columns]="paymentColumns"
-              [data]="systemPaymentMethods()"
-              [totalItems]="systemPaymentTotal()"
-              [itemsPerPage]="systemPaymentPerPage()"
-              [currentPage]="systemPaymentPage()"
+              [data]="store.systemPaymentMethods()"
+              [totalItems]="store.systemPaymentTotal()"
+              [itemsPerPage]="store.systemPaymentPerPage()"
+              [currentPage]="store.systemPaymentPage()"
               [showPagination]="true"
               [itemName]="'phương thức thanh toán'"
-              (pageChange)="setSystemPaymentPage($event)"
+              (pageChange)="store.setSystemPaymentPage($event)"
             >
               <ng-template appCell="type" let-row>
                 <span
@@ -736,7 +736,7 @@
       }
 
       <!-- ===== TAB 3: SYSTEM (Maintenance) ===== -->
-      @if (activeSubTab() === 'maintenance') {
+      @if (store.activeSubTab() === 'maintenance') {
         <div class="space-y-6">
           <!-- Cloudflare Turnstile Configuration -->
           <div app-card class="p-0 overflow-hidden">
@@ -746,14 +746,14 @@
                 <div
                   class="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
                   [ngClass]="
-                    turnstileEnabled()
+                    store.turnstileEnabled()
                       ? 'bg-emerald-100 dark:bg-emerald-500/10'
                       : 'bg-slate-100 dark:bg-slate-800/60'
                   "
                 >
                   <svg
                     class="w-5 h-5"
-                    [ngClass]="turnstileEnabled() ? 'text-emerald-500' : 'text-slate-400'"
+                    [ngClass]="store.turnstileEnabled() ? 'text-emerald-500' : 'text-slate-400'"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -775,12 +775,12 @@
                     <span
                       class="text-xs font-bold px-2 py-0.5 rounded-lg"
                       [ngClass]="
-                        turnstileEnabled()
+                        store.turnstileEnabled()
                           ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20'
                           : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700'
                       "
                     >
-                      {{ turnstileEnabled() ? 'Đang bật' : 'Đang tắt' }}
+                      {{ store.turnstileEnabled() ? 'Đang bật' : 'Đang tắt' }}
                     </span>
                   </p>
                   <p class="text-sm text-slate-400 mt-1">
@@ -800,7 +800,7 @@
                       >.env</code
                     >.
                   </p>
-                  @if (!turnstileHasKey()) {
+                  @if (!store.turnstileHasKey()) {
                     <p
                       class="text-xs text-amber-600 dark:text-amber-400 mt-2 flex items-center gap-1.5"
                     >
@@ -825,14 +825,14 @@
 
               <!-- Toggle Button -->
               <div class="shrink-0">
-                @if (isTogglingTurnstile()) {
+                @if (store.isTogglingTurnstile()) {
                   <div
                     class="w-5 h-5 rounded-full border-2 border-current/30 border-t-current animate-spin text-[var(--dynamic-primary)]"
                   ></div>
                 } @else {
                   <app-custom-switch
-                    [checked]="turnstileEnabled()"
-                    [disabled]="!turnstileHasKey() && !turnstileEnabled()"
+                    [checked]="store.turnstileEnabled()"
+                    [disabled]="!store.turnstileHasKey() && !store.turnstileEnabled()"
                     (checkedChange)="toggleTurnstile($event)"
                     type="compact"
                   ></app-custom-switch>
@@ -870,10 +870,10 @@
                 </div>
                 <button
                   (click)="runMaintenance('clear-views')"
-                  [disabled]="!!runningMaintenance()"
+                  [disabled]="!!store.runningMaintenance()"
                   class="btn-primary shrink-0 !bg-amber-500 hover:!bg-amber-600 border-0"
                 >
-                  @if (runningMaintenance() === 'clear-views') {
+                  @if (store.runningMaintenance() === 'clear-views') {
                     <div
                       class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"
                     ></div>
@@ -896,10 +896,10 @@
                 </div>
                 <button
                   (click)="runMaintenance('clear-config')"
-                  [disabled]="!!runningMaintenance()"
+                  [disabled]="!!store.runningMaintenance()"
                   class="btn-secondary shrink-0"
                 >
-                  @if (runningMaintenance() === 'clear-config') {
+                  @if (store.runningMaintenance() === 'clear-config') {
                     <div
                       class="w-4 h-4 rounded-full border-2 border-current/30 border-t-current animate-spin"
                     ></div>
@@ -922,10 +922,10 @@
                 </div>
                 <button
                   (click)="runMaintenance('clear-routes')"
-                  [disabled]="!!runningMaintenance()"
+                  [disabled]="!!store.runningMaintenance()"
                   class="btn-primary shrink-0 !bg-emerald-500 hover:!bg-emerald-600 border-0"
                 >
-                  @if (runningMaintenance() === 'clear-routes') {
+                  @if (store.runningMaintenance() === 'clear-routes') {
                     <div
                       class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"
                     ></div>
@@ -948,10 +948,10 @@
                 </div>
                 <button
                   (click)="runMaintenance('clear-logs')"
-                  [disabled]="!!runningMaintenance()"
+                  [disabled]="!!store.runningMaintenance()"
                   class="btn-danger-light shrink-0"
                 >
-                  @if (runningMaintenance() === 'clear-logs') {
+                  @if (store.runningMaintenance() === 'clear-logs') {
                     <div
                       class="w-4 h-4 rounded-full border-2 border-current/30 border-t-current animate-spin"
                     ></div>
@@ -991,10 +991,10 @@
                 </div>
                 <button
                   (click)="runMaintenance('optimize')"
-                  [disabled]="!!runningMaintenance()"
+                  [disabled]="!!store.runningMaintenance()"
                   class="btn-primary shrink-0 !bg-emerald-500 hover:!bg-emerald-600 border-0"
                 >
-                  @if (runningMaintenance() === 'optimize') {
+                  @if (store.runningMaintenance() === 'optimize') {
                     <div
                       class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"
                     ></div>
@@ -1016,10 +1016,10 @@
                 </div>
                 <button
                   (click)="runMaintenance('clear-optimize')"
-                  [disabled]="!!runningMaintenance()"
+                  [disabled]="!!store.runningMaintenance()"
                   class="btn-primary shrink-0 !bg-amber-500 hover:!bg-amber-600 border-0"
                 >
-                  @if (runningMaintenance() === 'clear-optimize') {
+                  @if (store.runningMaintenance() === 'clear-optimize') {
                     <div
                       class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"
                     ></div>
@@ -1053,7 +1053,7 @@
                 >
                 <input
                   type="number"
-                  [(ngModel)]="tokenCleanupDays"
+                  [(ngModel)]="store.tokenCleanupDays"
                   min="1"
                   max="365"
                   class="form-input text-base"
@@ -1062,21 +1062,21 @@
               <div class="flex flex-wrap gap-3 pt-2">
                 <button
                   (click)="saveSystemSettings()"
-                  [disabled]="isSavingSettings()"
+                  [disabled]="store.isSavingSettings()"
                   class="btn-primary flex-1 sm:flex-none"
                 >
                   Lưu thiết lập
                 </button>
                 <button
                   (click)="triggerCleanTokens()"
-                  [disabled]="isDataLoading()"
+                  [disabled]="store.isDataLoading()"
                   class="btn-secondary flex-1 sm:flex-none"
                 >
                   Dọn dẹp Token hết hạn
                 </button>
                 <button
                   (click)="triggerCleanAllTokens()"
-                  [disabled]="isDataLoading()"
+                  [disabled]="store.isDataLoading()"
                   class="btn-danger flex-1 sm:flex-none"
                 >
                   Xóa tất cả Token
@@ -1093,7 +1093,7 @@
                 <h4 class="text-base font-black text-slate-800 dark:text-white uppercase tracking-wider flex items-center gap-2">
                   <span>NHẬT KÝ LỖI HỆ THỐNG (laravel.log)</span>
                   <span class="text-xs font-mono bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-500">
-                    {{ logSize() }}
+                    {{ store.logSize() }}
                   </span>
                 </h4>
                 <p class="text-sm text-slate-400 mt-0.5">
@@ -1106,9 +1106,9 @@
                 <!-- Limit Select -->
                 <div class="shrink-0 w-28">
                   <app-custom-select
-                    [value]="logsLimit()"
-                    (valueChange)="onLogsLimitChange($event)"
-                    [options]="logsLimitOptions"
+                    [value]="store.logsLimit()"
+                    (valueChange)="store.onLogsLimitChange($event)"
+                    [options]="store.logsLimitOptions"
                     valueKey="value"
                     labelKey="label"
                     triggerClass="w-full form-input !h-9 !py-1.5 !px-3 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-300 font-semibold shadow-sm flex items-center justify-between"
@@ -1118,9 +1118,9 @@
                 <!-- Level Select -->
                 <div class="shrink-0 w-36">
                   <app-custom-select
-                    [value]="logsLevelFilter()"
-                    (valueChange)="onLogsLevelChange($event)"
-                    [options]="logsLevelOptions"
+                    [value]="store.logsLevelFilter()"
+                    (valueChange)="store.onLogsLevelChange($event)"
+                    [options]="store.logsLevelOptions"
                     valueKey="value"
                     labelKey="label"
                     triggerClass="w-full form-input !h-9 !py-1.5 !px-3 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-300 font-semibold shadow-sm flex items-center justify-between"
@@ -1130,8 +1130,8 @@
                 <!-- Search Input -->
                 <div class="w-full sm:w-48">
                   <app-custom-search-input
-                    [ngModel]="logSearchQuery()"
-                    (ngModelChange)="onLogsSearchChange($event)"
+                    [ngModel]="store.logSearchQuery()"
+                    (ngModelChange)="store.onLogsSearchChange($event)"
                     [debounce]="300"
                     placeholder="Tìm kiếm log..."
                     containerClass="w-full"
@@ -1144,11 +1144,11 @@
                   app-button
                   variant="secondary"
                   size="md"
-                  (click)="loadSystemLogs()"
-                  [loading]="isLoadingLogs()"
+                  (click)="store.loadSystemLogs()"
+                  [loading]="store.isLoadingLogs()"
                   class="flex items-center gap-1.5 shrink-0 !h-9 rounded-xl !py-1.5 !px-4 text-sm font-bold"
                 >
-                  @if (!isLoadingLogs()) {
+                  @if (!store.isLoadingLogs()) {
                     <app-icon name="sync" class="h-3.5 w-3.5"></app-icon>
                   }
                   <span>Tải lại</span>
@@ -1158,12 +1158,12 @@
 
             <!-- Terminal Body -->
             <div class="bg-slate-950 dark:bg-black p-4 font-mono text-xs text-slate-300 overflow-y-auto max-h-[550px] min-h-[300px] border-t border-slate-900">
-              @if (isLoadingLogs()) {
+              @if (store.isLoadingLogs()) {
                 <div class="flex flex-col items-center justify-center py-20 gap-3 text-slate-500">
                   <div class="w-6 h-6 rounded-full border-2 border-slate-700 border-t-[var(--dynamic-primary)] animate-spin"></div>
                   <p class="text-xs">Đang đọc ngược tệp log hệ thống...</p>
                 </div>
-              } @else if (systemLogs().length === 0) {
+              } @else if (store.systemLogs().length === 0) {
                 <div class="flex flex-col items-center justify-center py-20 text-slate-500">
                   <svg class="w-10 h-10 mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -1172,7 +1172,7 @@
                 </div>
               } @else {
                 <div class="space-y-2">
-                  @for (log of systemLogs(); track $index) {
+                  @for (log of store.systemLogs(); track $index) {
                     <div class="border-b border-slate-900/60 pb-2 last:border-b-0 last:pb-0">
                       <!-- Log Header Line -->
                       <div class="flex flex-wrap items-start gap-2 select-text">
@@ -1226,10 +1226,10 @@
       }
 
       <!-- ===== TAB 4: SYSTEM INFO ===== -->
-      @if (activeSubTab() === 'info') {
-        @if (isLoadingSysInfo()) {
+      @if (store.activeSubTab() === 'info') {
+        @if (store.isLoadingSysInfo()) {
           <app-skeleton-loader type="table" [cols]="3" [rows]="8"></app-skeleton-loader>
-        } @else if (!systemInfo()) {
+        } @else if (!store.systemInfo()) {
           <div app-card class="flex flex-col items-center justify-center py-16 gap-4 text-center">
             <div
               class="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center"
@@ -1256,7 +1256,7 @@
                 Nhấn nút "Làm mới" ở góc trên bên phải để tải.
               </p>
             </div>
-            <button (click)="loadSysInfo()" class="btn-primary">
+            <button (click)="store.loadSysInfo()" class="btn-primary">
               <span>Tải thông tin ngay</span>
             </button>
           </div>
@@ -1270,10 +1270,10 @@
                 <div class="flex-1 min-w-0">
                   <div>
                     <h4 class="text-sm font-bold text-slate-800 dark:text-white">
-                      Thư viện đã cài đặt ({{ packageType() === 'composer' ? 'composer.json' : 'package.json' }})
+                      Thư viện đã cài đặt ({{ store.packageType() === 'composer' ? 'composer.json' : 'package.json' }})
                     </h4>
                     <p class="text-sm text-slate-400 mt-0.5">
-                      {{ filteredPackages().length }} / {{ packages().length }} package
+                      {{ store.filteredPackages().length }} / {{ store.packages().length }} package
                     </p>
                   </div>
                 </div>
@@ -1281,16 +1281,16 @@
                 <!-- Bộ chuyển đổi Tab thư viện (Backend vs Frontend) -->
                 <div class="shrink-0 self-start lg:self-center">
                   <app-tab-group
-                    [options]="packageTabOptions"
-                    [activeValue]="packageType()"
-                    (valueChange)="onPackageTypeChange($event)"
+                    [options]="store.packageTabOptions"
+                    [activeValue]="store.packageType()"
+                    (valueChange)="store.onPackageTypeChange($event)"
                     [flex]="false"
                   ></app-tab-group>
                 </div>
 
                 <app-custom-search-input
-                  [ngModel]="packageSearch()"
-                  (ngModelChange)="onPackageSearchChange($event)"
+                  [ngModel]="store.packageSearch()"
+                  (ngModelChange)="store.onPackageSearchChange($event)"
                   placeholder="Tìm thư viện..."
                   containerClass="w-full lg:w-64"
                   inputClass="search-input !pl-9 !h-9 !text-sm"
@@ -1299,7 +1299,7 @@
 
               <!-- Package List -->
               <div class="divide-y divide-slate-50 dark:divide-slate-800/40">
-                @for (pkg of paginatedPackages(); track pkg.name) {
+                @for (pkg of store.paginatedPackages(); track pkg.name) {
                   <div
                     class="flex items-start gap-4 px-6 py-3.5 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors"
                   >
@@ -1323,7 +1323,7 @@
                     </div>
                   </div>
                 }
-                @if (paginatedPackages().length === 0) {
+                @if (store.paginatedPackages().length === 0) {
                   <div class="py-8 text-center text-sm text-slate-405">
                     Không tìm thấy thư viện nào.
                   </div>
@@ -1331,15 +1331,15 @@
               </div>
 
               <!-- Pagination -->
-              @if (filteredPackages().length > packageItemsPerPage) {
+              @if (store.filteredPackages().length > store.packageItemsPerPage) {
                 <div class="border-t border-slate-100 dark:border-slate-800/60">
                   <app-pagination
-                    [currentPage]="packageCurrentPage()"
-                    [totalPages]="packageTotalPages()"
-                    [totalItems]="filteredPackages().length"
-                    [itemsPerPage]="packageItemsPerPage"
+                    [currentPage]="store.packageCurrentPage()"
+                    [totalPages]="store.packageTotalPages()"
+                    [totalItems]="store.filteredPackages().length"
+                    [itemsPerPage]="store.packageItemsPerPage"
                     [itemName]="'thư viện'"
-                    (pageChange)="packageCurrentPage.set($event)"
+                    (pageChange)="store.packageCurrentPage.set($event)"
                   ></app-pagination>
                 </div>
               }
@@ -1360,46 +1360,46 @@
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Tên ứng dụng</span>
                     <span class="font-extrabold text-slate-800 dark:text-slate-200">{{
-                      systemInfo()?.system_env?.app_name
+                      store.systemInfo()?.system_env?.app_name
                     }}</span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-550 font-medium">Phiên bản Laravel</span>
                     <span
                       class="font-mono text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-200/30 dark:border-slate-700/30 leading-none"
-                      >{{ systemInfo()?.system_env?.laravel_version }}</span
+                      >{{ store.systemInfo()?.system_env?.laravel_version }}</span
                     >
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-550 font-medium">Phiên bản PHP</span>
                     <span
                       class="font-mono text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-200/30 dark:border-slate-700/30 leading-none"
-                      >{{ systemInfo()?.system_env?.php_version }}</span
+                      >{{ store.systemInfo()?.system_env?.php_version }}</span
                     >
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Múi giờ hệ thống</span>
                     <span class="font-extrabold text-slate-800 dark:text-slate-200">{{
-                      systemInfo()?.system_env?.timezone
+                      store.systemInfo()?.system_env?.timezone
                     }}</span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Dung lượng ứng dụng</span>
                     <span class="font-extrabold text-slate-800 dark:text-slate-200">{{
-                      systemInfo()?.system_env?.app_size
+                      store.systemInfo()?.system_env?.app_size
                     }}</span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">IP Máy chủ</span>
                     <span class="font-mono font-extrabold text-slate-800 dark:text-slate-200">{{
-                      systemInfo()?.system_env?.server_ip
+                      store.systemInfo()?.system_env?.server_ip
                     }}</span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Chế độ Debug</span>
                     <span
                       [ngClass]="
-                        systemInfo()?.system_env?.debug_mode ? 'text-rose-500' : 'text-emerald-500'
+                        store.systemInfo()?.system_env?.debug_mode ? 'text-rose-500' : 'text-emerald-500'
                       "
                       class="font-extrabold flex items-center gap-1"
                     >
@@ -1414,20 +1414,20 @@
                           stroke-linejoin="round"
                           stroke-width="2.5"
                           [attr.d]="
-                            systemInfo()?.system_env?.debug_mode
+                            store.systemInfo()?.system_env?.debug_mode
                               ? 'M6 18L18 6M6 6l12 12'
                               : 'M5 13l4 4L19 7'
                           "
                         />
                       </svg>
-                      {{ systemInfo()?.system_env?.debug_mode ? 'Bật ' : 'Tắt ' }}
+                      {{ store.systemInfo()?.system_env?.debug_mode ? 'Bật ' : 'Tắt ' }}
                     </span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Thư mục Storage ghi được</span>
                     <span
                       [ngClass]="
-                        systemInfo()?.system_env?.storage_writable
+                        store.systemInfo()?.system_env?.storage_writable
                           ? 'text-emerald-500'
                           : 'text-rose-500'
                       "
@@ -1444,20 +1444,20 @@
                           stroke-linejoin="round"
                           stroke-width="2.5"
                           [attr.d]="
-                            systemInfo()?.system_env?.storage_writable
+                            store.systemInfo()?.system_env?.storage_writable
                               ? 'M5 13l4 4L19 7'
                               : 'M6 18L18 6M6 6l12 12'
                           "
                         />
                       </svg>
-                      {{ systemInfo()?.system_env?.storage_writable ? 'Được ' : 'Không ' }}
+                      {{ store.systemInfo()?.system_env?.storage_writable ? 'Được ' : 'Không ' }}
                     </span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Thư mục Cache ghi được</span>
                     <span
                       [ngClass]="
-                        systemInfo()?.system_env?.cache_writable
+                        store.systemInfo()?.system_env?.cache_writable
                           ? 'text-emerald-500'
                           : 'text-rose-500'
                       "
@@ -1474,13 +1474,13 @@
                           stroke-linejoin="round"
                           stroke-width="2.5"
                           [attr.d]="
-                            systemInfo()?.system_env?.cache_writable
+                            store.systemInfo()?.system_env?.cache_writable
                               ? 'M5 13l4 4L19 7'
                               : 'M6 18L18 6M6 6l12 12'
                           "
                         />
                       </svg>
-                      {{ systemInfo()?.system_env?.cache_writable ? 'Được ' : 'Không ' }}
+                      {{ store.systemInfo()?.system_env?.cache_writable ? 'Được ' : 'Không ' }}
                     </span>
                   </div>
                 </div>
@@ -1502,70 +1502,70 @@
                     <span class="text-slate-500 font-medium">Phiên bản Angular</span>
                     <span
                       class="font-mono text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/30 px-2 py-0.5 rounded-lg border border-purple-100/50 dark:border-purple-900/30 leading-none"
-                      >{{ angularVersion }}</span
+                      >{{ store.angularVersion }}</span
                     >
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Dung lượng đóng gói Web</span>
                     <span class="font-extrabold text-slate-800 dark:text-slate-200">
-                      {{ webBuildSize() }}
+                      {{ store.webBuildSize() }}
                     </span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Chế độ Production</span>
                     <span
-                      [ngClass]="frontendEnv.production ? 'text-emerald-500' : 'text-amber-500'"
+                      [ngClass]="store.frontendEnv.production ? 'text-emerald-500' : 'text-amber-500'"
                       class="font-extrabold flex items-center gap-1"
                     >
-                      {{ frontendEnv.production ? 'Bật' : 'Tắt' }}
+                      {{ store.frontendEnv.production ? 'Bật' : 'Tắt' }}
                     </span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-550 font-medium">API Base URL</span>
                     <span
                       class="font-mono text-xs text-slate-600 dark:text-slate-400 break-all select-all text-right max-w-[200px]"
-                      [title]="frontendEnv.apiBaseUrl"
-                      >{{ frontendEnv.apiBaseUrl }}</span
+                      [title]="store.frontendEnv.apiBaseUrl"
+                      >{{ store.frontendEnv.apiBaseUrl }}</span
                     >
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-550 font-medium">Chain ID mặc định</span>
                     <span
                       class="font-mono text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-200/30 dark:border-slate-700/30 leading-none"
-                      >{{ frontendEnv.defaultChainId }}</span
+                      >{{ store.frontendEnv.defaultChainId }}</span
                     >
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Trình duyệt</span>
                     <span
                       class="font-bold text-slate-800 dark:text-slate-200 truncate max-w-[180px]"
-                      [title]="clientInfo().userAgent"
-                      >{{ clientInfo().browser }}</span
+                      [title]="store.clientInfo().userAgent"
+                      >{{ store.clientInfo().browser }}</span
                     >
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Hệ điều hành</span>
                     <span class="font-bold text-slate-800 dark:text-slate-200">{{
-                      clientInfo().os
+                      store.clientInfo().os
                     }}</span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-550 font-medium">Độ phân giải</span>
                     <span class="font-mono text-xs text-slate-600 dark:text-slate-400">{{
-                      clientInfo().screenResolution
+                      store.clientInfo().screenResolution
                     }}</span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-550 font-medium">Kích thước cửa sổ</span>
                     <span class="font-mono text-xs text-slate-600 dark:text-slate-400"
-                      >{{ windowWidth() }}x{{ windowHeight() }}</span
+                      >{{ store.windowWidth() }}x{{ store.windowHeight() }}</span
                     >
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-550 font-medium">Ngôn ngữ</span>
                     <span
                       class="font-bold text-slate-800 dark:text-slate-200 uppercase font-mono text-xs"
-                      >{{ clientInfo().language }}</span
+                      >{{ store.clientInfo().language }}</span
                     >
                   </div>
                 </div>
@@ -1584,38 +1584,38 @@
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Giới hạn bộ nhớ</span
                     ><span class="font-extrabold text-slate-800 dark:text-slate-200">{{
-                      systemInfo()?.server_env?.memory_limit
+                      store.systemInfo()?.server_env?.memory_limit
                     }}</span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">T.gian chạy tối đa</span
                     ><span class="font-extrabold text-slate-800 dark:text-slate-200"
-                      >{{ systemInfo()?.server_env?.max_exec_time }}s</span
+                      >{{ store.systemInfo()?.server_env?.max_exec_time }}s</span
                     >
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Trình quản lý Cache</span
                     ><span class="font-extrabold text-slate-800 dark:text-slate-200">{{
-                      systemInfo()?.server_env?.cache_driver
+                      store.systemInfo()?.server_env?.cache_driver
                     }}</span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Trình quản lý Session</span
                     ><span class="font-extrabold text-slate-800 dark:text-slate-200">{{
-                      systemInfo()?.server_env?.session_driver
+                      store.systemInfo()?.server_env?.session_driver
                     }}</span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Kết nối Hàng đợi</span
                     ><span class="font-extrabold text-slate-800 dark:text-slate-200">{{
-                      systemInfo()?.server_env?.queue_connection
+                      store.systemInfo()?.server_env?.queue_connection
                     }}</span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">OPcache</span
                     ><span
                       [ngClass]="
-                        systemInfo()?.server_env?.opcache_enabled
+                        store.systemInfo()?.server_env?.opcache_enabled
                           ? 'text-emerald-500'
                           : 'text-slate-400'
                       "
@@ -1631,19 +1631,19 @@
                           stroke-linejoin="round"
                           stroke-width="2.5"
                           [attr.d]="
-                            systemInfo()?.server_env?.opcache_enabled
+                            store.systemInfo()?.server_env?.opcache_enabled
                               ? 'M5 13l4 4L19 7'
                               : 'M6 18L18 6M6 6l12 12'
                           "
                         /></svg
-                      >{{ systemInfo()?.server_env?.opcache_enabled ? 'Kích hoạt' : 'Tắt' }}</span
+                      >{{ store.systemInfo()?.server_env?.opcache_enabled ? 'Kích hoạt' : 'Tắt' }}</span
                     >
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">SSL</span
                     ><span
                       [ngClass]="
-                        systemInfo()?.server_env?.ssl_installed
+                        store.systemInfo()?.server_env?.ssl_installed
                           ? 'text-emerald-500'
                           : 'text-rose-450'
                       "
@@ -1659,13 +1659,13 @@
                           stroke-linejoin="round"
                           stroke-width="2.5"
                           [attr.d]="
-                            systemInfo()?.server_env?.ssl_installed
+                            store.systemInfo()?.server_env?.ssl_installed
                               ? 'M5 13l4 4L19 7'
                               : 'M6 18L18 6M6 6l12 12'
                           "
                         /></svg
                       >{{
-                        systemInfo()?.server_env?.ssl_installed ? 'Đã thiết lập' : 'Chưa cài đặt'
+                        store.systemInfo()?.server_env?.ssl_installed ? 'Đã thiết lập' : 'Chưa cài đặt'
                       }}</span
                     >
                   </div>
@@ -1692,7 +1692,7 @@
                         <span
                           class="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-sm font-semibold"
                           [ngClass]="
-                            systemInfo()?.server_env?.[ext.key]
+                            store.systemInfo()?.server_env?.[ext.key]
                               ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                               : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
                           "
@@ -1708,7 +1708,7 @@
                               stroke-linejoin="round"
                               stroke-width="3"
                               [attr.d]="
-                                systemInfo()?.server_env?.[ext.key]
+                                store.systemInfo()?.server_env?.[ext.key]
                                   ? 'M5 13l4 4L19 7'
                                   : 'M6 18L18 6M6 6l12 12'
                               "
@@ -1735,38 +1735,38 @@
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Trình kết nối</span
                     ><span class="font-extrabold text-slate-800 dark:text-slate-200">{{
-                      systemInfo()?.database_info?.driver
+                      store.systemInfo()?.database_info?.driver
                     }}</span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Tên Database</span
                     ><span class="font-extrabold text-slate-800 dark:text-slate-200">{{
-                      systemInfo()?.database_info?.name
+                      store.systemInfo()?.database_info?.name
                     }}</span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-550 font-medium">Phiên bản DB</span
                     ><span
                       class="font-mono text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-200/30 dark:border-slate-700/30 leading-none"
-                      >{{ systemInfo()?.database_info?.version }}</span
+                      >{{ store.systemInfo()?.database_info?.version }}</span
                     >
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Số kết nối tối đa</span
                     ><span class="font-extrabold text-slate-800 dark:text-slate-200">{{
-                      systemInfo()?.database_info?.max_connections
+                      store.systemInfo()?.database_info?.max_connections
                     }}</span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Bảng mã kết nối</span
                     ><span class="font-extrabold text-slate-800 dark:text-slate-200">{{
-                      systemInfo()?.database_info?.charset
+                      store.systemInfo()?.database_info?.charset
                     }}</span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Đối chiếu kết nối</span
                     ><span class="font-extrabold text-slate-800 dark:text-slate-200">{{
-                      systemInfo()?.database_info?.collation
+                      store.systemInfo()?.database_info?.collation
                     }}</span>
                   </div>
                 </div>
@@ -1786,7 +1786,7 @@
                     <span class="text-slate-500 font-medium">PHP Extension redis</span>
                     <span
                       [ngClass]="
-                        systemInfo()?.redis_info?.enabled
+                        store.systemInfo()?.redis_info?.enabled
                           ? 'text-emerald-500'
                           : 'text-slate-400'
                       "
@@ -1803,73 +1803,73 @@
                           stroke-linejoin="round"
                           stroke-width="2.5"
                           [attr.d]="
-                            systemInfo()?.redis_info?.enabled
+                            store.systemInfo()?.redis_info?.enabled
                               ? 'M5 13l4 4L19 7'
                               : 'M6 18L18 6M6 6l12 12'
                           "
                         />
                       </svg>
-                      {{ systemInfo()?.redis_info?.enabled ? 'Đã cài đặt' : 'Chưa cài đặt' }}
+                      {{ store.systemInfo()?.redis_info?.enabled ? 'Đã cài đặt' : 'Chưa cài đặt' }}
                     </span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Trạng thái hoạt động</span>
                     <span
                       [ngClass]="
-                        systemInfo()?.redis_info?.status === 'Đang hoạt động'
+                        store.systemInfo()?.redis_info?.status === 'Đang hoạt động'
                           ? 'text-emerald-500'
                           : 'text-rose-500'
                       "
                       class="font-extrabold text-right max-w-[200px] truncate"
-                      [title]="systemInfo()?.redis_info?.status"
+                      [title]="store.systemInfo()?.redis_info?.status"
                     >
-                      {{ systemInfo()?.redis_info?.status }}
+                      {{ store.systemInfo()?.redis_info?.status }}
                     </span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-550 font-medium">Phiên bản Redis</span>
                     <span
                       class="font-mono text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-200/30 dark:border-slate-700/30 leading-none"
-                      >{{ systemInfo()?.redis_info?.version }}</span
+                      >{{ store.systemInfo()?.redis_info?.version }}</span
                     >
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-550 font-medium">Redis Client</span>
                     <span class="font-extrabold text-slate-800 dark:text-slate-200 font-mono text-xs">{{
-                      systemInfo()?.redis_info?.client
+                      store.systemInfo()?.redis_info?.client
                     }}</span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Host & Port</span>
                     <span class="font-extrabold text-slate-800 dark:text-slate-200 font-mono text-xs">{{
-                      systemInfo()?.redis_info?.host }}:{{ systemInfo()?.redis_info?.port
+                      store.systemInfo()?.redis_info?.host }}:{{ store.systemInfo()?.redis_info?.port
                     }}</span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-550 font-medium">Làm Cache Driver</span>
                     <span
-                      [ngClass]="systemInfo()?.redis_info?.is_cache ? 'text-emerald-500' : 'text-slate-400'"
+                      [ngClass]="store.systemInfo()?.redis_info?.is_cache ? 'text-emerald-500' : 'text-slate-400'"
                       class="font-extrabold"
                     >
-                      {{ systemInfo()?.redis_info?.is_cache ? 'Đang dùng' : 'Không dùng' }}
+                      {{ store.systemInfo()?.redis_info?.is_cache ? 'Đang dùng' : 'Không dùng' }}
                     </span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-550 font-medium">Làm Session Driver</span>
                     <span
-                      [ngClass]="systemInfo()?.redis_info?.is_session ? 'text-emerald-500' : 'text-slate-400'"
+                      [ngClass]="store.systemInfo()?.redis_info?.is_session ? 'text-emerald-500' : 'text-slate-400'"
                       class="font-extrabold"
                     >
-                      {{ systemInfo()?.redis_info?.is_session ? 'Đang dùng' : 'Không dùng' }}
+                      {{ store.systemInfo()?.redis_info?.is_session ? 'Đang dùng' : 'Không dùng' }}
                     </span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-550 font-medium">Làm Queue Connection</span>
                     <span
-                      [ngClass]="systemInfo()?.redis_info?.is_queue ? 'text-emerald-500' : 'text-slate-400'"
+                      [ngClass]="store.systemInfo()?.redis_info?.is_queue ? 'text-emerald-500' : 'text-slate-400'"
                       class="font-extrabold"
                     >
-                      {{ systemInfo()?.redis_info?.is_queue ? 'Đang dùng' : 'Không dùng' }}
+                      {{ store.systemInfo()?.redis_info?.is_queue ? 'Đang dùng' : 'Không dùng' }}
                     </span>
                   </div>
                 </div>
@@ -1888,55 +1888,55 @@
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Kích thước POST tối đa</span
                     ><span class="font-extrabold text-slate-800 dark:text-slate-200">{{
-                      systemInfo()?.php_config?.post_max_size
+                      store.systemInfo()?.php_config?.post_max_size
                     }}</span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Tải tệp lên tối đa</span
                     ><span class="font-extrabold text-slate-800 dark:text-slate-200">{{
-                      systemInfo()?.php_config?.upload_max_size
+                      store.systemInfo()?.php_config?.upload_max_size
                     }}</span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Số lượng tệp tải tối đa</span
                     ><span class="font-extrabold text-slate-800 dark:text-slate-200">{{
-                      systemInfo()?.php_config?.max_file_uploads
+                      store.systemInfo()?.php_config?.max_file_uploads
                     }}</span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">T.gian nhập liệu tối đa</span
                     ><span class="font-extrabold text-slate-800 dark:text-slate-200"
-                      >{{ systemInfo()?.php_config?.max_input_time }}s</span
+                      >{{ store.systemInfo()?.php_config?.max_input_time }}s</span
                     >
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Số lượng biến nhập tối đa</span
                     ><span class="font-extrabold text-slate-800 dark:text-slate-200">{{
-                      systemInfo()?.php_config?.max_input_vars
+                      store.systemInfo()?.php_config?.max_input_vars
                     }}</span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Múi giờ cấu hình</span
                     ><span class="font-extrabold text-slate-800 dark:text-slate-200">{{
-                      systemInfo()?.php_config?.date_timezone
+                      store.systemInfo()?.php_config?.date_timezone
                     }}</span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Hiển thị lỗi</span>
                     <span
                       [ngClass]="
-                        systemInfo()?.php_config?.display_errors
+                        store.systemInfo()?.php_config?.display_errors
                           ? 'text-rose-500'
                           : 'text-emerald-500'
                       "
                       class="font-extrabold"
-                      >{{ systemInfo()?.php_config?.display_errors ? 'Bật ' : 'Tắt ' }}</span
+                      >{{ store.systemInfo()?.php_config?.display_errors ? 'Bật ' : 'Tắt ' }}</span
                     >
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Cấp độ báo lỗi</span>
                     <span class="font-extrabold text-slate-800 dark:text-slate-200">{{
-                      systemInfo()?.php_config?.error_reporting
+                      store.systemInfo()?.php_config?.error_reporting
                     }}</span>
                   </div>
                 </div>
@@ -1947,7 +1947,7 @@
       }
 
       <!-- ===== TAB 5: SUBSCRIPTION REQUESTS (Thuê bao) ===== -->
-      @if (activeSubTab() === 'subscriptions') {
+      @if (store.activeSubTab() === 'subscriptions') {
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div class="min-w-0">
             <h4
@@ -1974,11 +1974,11 @@
                 ]"
                 valueKey="value"
                 labelKey="label"
-                [value]="subscriptionStatus()"
+                [value]="store.subscriptionStatus()"
                 (valueChange)="
-                  subscriptionStatus.set($event);
-                  subscriptionPage.set(1);
-                  loadSubscriptionRequests()
+                  store.subscriptionStatus.set($event);
+                  store.subscriptionPage.set(1);
+                  store.loadSubscriptionRequests()
                 "
                 placeholder="Trạng thái"
                 triggerClass="w-full form-input !py-2 !h-10 !text-sm"
@@ -1988,11 +1988,11 @@
 
             <!-- Search Field -->
             <app-custom-search-input
-              [ngModel]="subscriptionSearch()"
+              [ngModel]="store.subscriptionSearch()"
               (ngModelChange)="
-                subscriptionSearch.set($event);
-                subscriptionPage.set(1);
-                loadSubscriptionRequests()
+                store.subscriptionSearch.set($event);
+                store.subscriptionPage.set(1);
+                store.loadSubscriptionRequests()
               "
               placeholder="Tìm theo ví, TxHash..."
               containerClass="w-full sm:w-64"
@@ -2004,11 +2004,11 @@
               app-button
               variant="secondary"
               size="md"
-              (click)="loadSubscriptionRequests()"
-              [loading]="isSubscriptionsLoading()"
+              (click)="store.loadSubscriptionRequests()"
+              [loading]="store.isSubscriptionsLoading()"
               class="flex items-center justify-center gap-1.5 shrink-0 !h-10 rounded-xl !py-2 !px-4 text-sm font-bold w-full sm:w-auto"
             >
-              @if (!isSubscriptionsLoading()) {
+              @if (!store.isSubscriptionsLoading()) {
                 <app-icon name="sync" class="h-4 w-4"></app-icon>
               }
               <span>Tải lại</span>
@@ -2017,18 +2017,18 @@
         </div>
 
         <div app-card class="p-0 overflow-hidden">
-          @if (isSubscriptionsLoading()) {
+          @if (store.isSubscriptionsLoading()) {
             <app-skeleton-loader type="table" [cols]="8" [rows]="5"></app-skeleton-loader>
           } @else {
             <app-table
               [columns]="subscriptionColumns"
-              [data]="subscriptionRequests()"
-              [totalItems]="subscriptionTotal()"
-              [itemsPerPage]="subscriptionPerPage()"
-              [currentPage]="subscriptionPage()"
+              [data]="store.subscriptionRequests()"
+              [totalItems]="store.subscriptionTotal()"
+              [itemsPerPage]="store.subscriptionPerPage()"
+              [currentPage]="store.subscriptionPage()"
               [showPagination]="true"
               [itemName]="'yêu cầu'"
-              (pageChange)="subscriptionPage.set($event); loadSubscriptionRequests()"
+              (pageChange)="store.subscriptionPage.set($event); store.loadSubscriptionRequests()"
             >
               <ng-template appCell="store_name" let-row>
                 <div class="font-extrabold text-slate-800 dark:text-slate-200 text-sm">
@@ -2181,7 +2181,7 @@
                       variant="primary"
                       size="sm"
                       (click)="approveSubscription(row)"
-                      [disabled]="isSubscriptionActionLoading()"
+                      [disabled]="store.isSubscriptionActionLoading()"
                       class="whitespace-nowrap"
                     >
                       Duyệt
@@ -2191,7 +2191,7 @@
                       variant="danger"
                       size="sm"
                       (click)="openRejectModal(row)"
-                      [disabled]="isSubscriptionActionLoading()"
+                      [disabled]="store.isSubscriptionActionLoading()"
                       class="whitespace-nowrap"
                     >
                       Từ chối
@@ -2206,7 +2206,7 @@
 
       <!-- ===== TAB 6: SYSTEM STAFFS (Nhân viên hệ thống) ===== -->
       @if (
-        activeSubTab() === 'staffs' &&
+        store.activeSubTab() === 'staffs' &&
         (stateService.isSuperAdmin() || stateService.currentUserAdminRole() === 'admin')
       ) {
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
@@ -2226,9 +2226,9 @@
           >
             <!-- Search Field -->
             <app-custom-search-input
-              [ngModel]="systemStaffsSearch()"
+              [ngModel]="store.systemStaffsSearch()"
               (ngModelChange)="
-                systemStaffsSearch.set($event); systemStaffsPage.set(1); loadSystemStaffs()
+                store.systemStaffsSearch.set($event); store.systemStaffsPage.set(1); store.loadSystemStaffs()
               "
               placeholder="Tìm theo tên, ví..."
               containerClass="w-full sm:w-64"
@@ -2240,11 +2240,11 @@
               app-button
               variant="secondary"
               size="md"
-              (click)="loadSystemStaffs()"
-              [loading]="isSystemStaffsLoading()"
+              (click)="store.loadSystemStaffs()"
+              [loading]="store.isSystemStaffsLoading()"
               class="flex items-center justify-center gap-1.5 shrink-0 !h-10 rounded-xl !py-2 !px-4 text-sm font-bold w-full sm:w-auto"
             >
-              @if (!isSystemStaffsLoading()) {
+              @if (!store.isSystemStaffsLoading()) {
                 <app-icon name="sync" class="h-4 w-4"></app-icon>
               }
               <span>Tải lại</span>
@@ -2265,18 +2265,18 @@
         </div>
 
         <div app-card class="p-0 overflow-hidden">
-          @if (isSystemStaffsLoading()) {
+          @if (store.isSystemStaffsLoading()) {
             <app-skeleton-loader type="table" [cols]="6" [rows]="5"></app-skeleton-loader>
           } @else {
             <app-table
-              [columns]="staffSystemColumns()"
-              [data]="systemStaffs()"
-              [totalItems]="systemStaffsTotal()"
-              [itemsPerPage]="systemStaffsPerPage()"
-              [currentPage]="systemStaffsPage()"
+              [columns]="store.staffSystemColumns()"
+              [data]="store.systemStaffs()"
+              [totalItems]="store.systemStaffsTotal()"
+              [itemsPerPage]="store.systemStaffsPerPage()"
+              [currentPage]="store.systemStaffsPage()"
               [showPagination]="true"
               [itemName]="'nhân viên'"
-              (pageChange)="systemStaffsPage.set($event); loadSystemStaffs()"
+              (pageChange)="store.systemStaffsPage.set($event); store.loadSystemStaffs()"
             >
               <ng-template appCell="wallet_address" let-row>
                 <div
@@ -2341,7 +2341,7 @@
                     variant="secondary"
                     size="sm"
                     (click)="openEditStaff(row)"
-                    [disabled]="isSystemStaffActionLoading()"
+                    [disabled]="store.isSystemStaffActionLoading()"
                   >
                     Sửa
                   </button>
@@ -2350,7 +2350,7 @@
                     variant="danger-light"
                     size="sm"
                     (click)="deleteSystemStaff(row)"
-                    [disabled]="isSystemStaffActionLoading()"
+                    [disabled]="store.isSystemStaffActionLoading()"
                   >
                     Xóa
                   </button>
