@@ -13,37 +13,42 @@ use Laravel\Sanctum\PersonalAccessToken;
 
 class AdminController extends Controller
 {
+
+
     /**
      * Lấy danh sách toàn bộ các quán (Chủ quán: store_owner_address là null)
      */
     public function indexTenants(Request $request)
     {
-        $tenants = User::whereNull('store_owner_address')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $result = \Cache::remember('admin_tenants', 3600, function () {
+            $tenants = User::whereNull('store_owner_address')
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-        $result = [];
-        foreach ($tenants as $tenant) {
-            $wallet = strtolower($tenant->wallet_address);
-            
-            // Lấy tên cửa hàng từ bảng settings
-            $storeNameSetting = DB::table('settings')
-                ->where('store_owner_address', $wallet)
-                ->where('key', 'store_name')
-                ->first();
-            
-            $storeName = $storeNameSetting ? $storeNameSetting->value : 'Cafe Web3 POS';
+            $result = [];
+            foreach ($tenants as $tenant) {
+                $wallet = strtolower($tenant->wallet_address);
+                
+                // Lấy tên cửa hàng từ bảng settings
+                $storeNameSetting = DB::table('settings')
+                    ->where('store_owner_address', $wallet)
+                    ->where('key', 'store_name')
+                    ->first();
+                
+                $storeName = $storeNameSetting ? $storeNameSetting->value : 'Cafe Web3 POS';
 
-            $result[] = [
-                'id' => $tenant->id,
-                'wallet_address' => $tenant->wallet_address,
-                'store_name' => $storeName,
-                'plan_code' => $tenant->plan_code ?: 'free',
-                'subscription_expires_at' => $tenant->subscription_expires_at,
-                'subscription_status' => $tenant->subscription_status ?: 'active',
-                'created_at' => $tenant->created_at,
-            ];
-        }
+                $result[] = [
+                    'id' => $tenant->id,
+                    'wallet_address' => $tenant->wallet_address,
+                    'store_name' => $storeName,
+                    'plan_code' => $tenant->plan_code ?: 'free',
+                    'subscription_expires_at' => $tenant->subscription_expires_at ? ($tenant->subscription_expires_at instanceof \Carbon\Carbon ? $tenant->subscription_expires_at->toDateTimeString() : (string)$tenant->subscription_expires_at) : null,
+                    'subscription_status' => $tenant->subscription_status ?: 'active',
+                    'created_at' => $tenant->created_at ? ($tenant->created_at instanceof \Carbon\Carbon ? $tenant->created_at->toDateTimeString() : (string)$tenant->created_at) : null,
+                ];
+            }
+            return $result;
+        });
 
         return response()->json($result);
     }
@@ -72,6 +77,9 @@ class AdminController extends Controller
         \App\Domain\Entities\Setting::setForStore('store_name', $validated['store_name'], $wallet);
         \App\Domain\Entities\Setting::clearStorefrontCache($wallet);
 
+        // Xóa cache danh sách tenants
+        \Cache::forget('admin_tenants');
+
         return response()->json([
             'success' => true,
             'message' => 'Tenant subscription updated successfully.',
@@ -84,7 +92,9 @@ class AdminController extends Controller
      */
     public function indexPlans(Request $request)
     {
-        $plans = SubscriptionPlan::orderBy('created_at', 'asc')->get();
+        $plans = \Cache::remember('admin_plans', 86400, function () {
+            return SubscriptionPlan::orderBy('created_at', 'asc')->get()->toArray();
+        });
         return response()->json($plans);
     }
 
@@ -129,6 +139,9 @@ class AdminController extends Controller
             'price_per_year' => $validated['price_per_year'],
             'features' => $validated['features']
         ]);
+
+        // Xóa cache danh sách gói cước
+        \Cache::forget('admin_plans');
 
         return response()->json([
             'success' => true,
@@ -178,6 +191,9 @@ class AdminController extends Controller
         $plan->features = $validated['features'];
         $plan->save();
 
+        // Xóa cache danh sách gói cước
+        \Cache::forget('admin_plans');
+
         return response()->json([
             'success' => true,
             'message' => 'Subscription plan updated successfully.',
@@ -210,6 +226,9 @@ class AdminController extends Controller
         }
 
         $plan->delete();
+
+        // Xóa cache danh sách gói cước
+        \Cache::forget('admin_plans');
 
         return response()->json([
             'success' => true,
@@ -320,6 +339,9 @@ class AdminController extends Controller
             );
         }
 
+        // Xóa cache danh sách gói cước
+        \Cache::forget('admin_plans');
+
         return response()->json([
             'success' => true,
             'message' => 'Default subscription plans (free, pro, ultra) restored successfully.',
@@ -331,44 +353,48 @@ class AdminController extends Controller
      */
     public function getSystemSettings()
     {
-        $cleanupSetting = DB::table('system_settings')
-            ->where('key', 'token_cleanup_days')
-            ->first();
+        $settings = \Cache::remember('admin_system_settings', 86400, function () {
+            $cleanupSetting = DB::table('system_settings')
+                ->where('key', 'token_cleanup_days')
+                ->first();
 
-        $days = 7;
-        if ($cleanupSetting) {
-            $value = json_decode($cleanupSetting->value, true);
-            $days = $value['days'] ?? 7;
-        }
+            $days = 7;
+            if ($cleanupSetting) {
+                $value = json_decode($cleanupSetting->value, true);
+                $days = $value['days'] ?? 7;
+            }
 
-        $contactsSetting = DB::table('system_settings')
-            ->where('key', 'system_contacts')
-            ->first();
+            $contactsSetting = DB::table('system_settings')
+                ->where('key', 'system_contacts')
+                ->first();
 
-        $contacts = [];
-        if ($contactsSetting) {
-            $contacts = json_decode($contactsSetting->value, true) ?: [];
-        }
+            $contacts = [];
+            if ($contactsSetting) {
+                $contacts = json_decode($contactsSetting->value, true) ?: [];
+            }
 
-        // Lấy cấu hình Turnstile
-        $turnstileSetting = DB::table('system_settings')
-            ->where('key', 'turnstile_enabled')
-            ->first();
-        $turnstileEnabled = false;
-        if ($turnstileSetting) {
-            $value = json_decode($turnstileSetting->value, true);
-            $turnstileEnabled = (bool)($value['enabled'] ?? false);
-        }
+            // Lấy cấu hình Turnstile
+            $turnstileSetting = DB::table('system_settings')
+                ->where('key', 'turnstile_enabled')
+                ->first();
+            $turnstileEnabled = false;
+            if ($turnstileSetting) {
+                $value = json_decode($turnstileSetting->value, true);
+                $turnstileEnabled = (bool)($value['enabled'] ?? false);
+            }
 
-        // Chỉ tiết lộ có hay không có Secret Key (không tiết lộ giá trị thực)
-        $hasSecretKey = !empty(config('services.turnstile.secret_key'));
+            // Chỉ tiết lộ có hay không có Secret Key (không tiết lộ giá trị thực)
+            $hasSecretKey = !empty(config('services.turnstile.secret_key'));
 
-        return response()->json([
-            'token_cleanup_days'  => $days,
-            'system_contacts'     => $contacts,
-            'turnstile_enabled'   => $turnstileEnabled,
-            'turnstile_has_key'   => $hasSecretKey,
-        ]);
+            return [
+                'token_cleanup_days'  => $days,
+                'system_contacts'     => $contacts,
+                'turnstile_enabled'   => $turnstileEnabled,
+                'turnstile_has_key'   => $hasSecretKey,
+            ];
+        });
+
+        return response()->json($settings);
     }
 
     /**
@@ -429,6 +455,9 @@ class AdminController extends Controller
                     ]
                 );
         }
+
+        // Xóa cache cấu hình hệ thống
+        \Cache::forget('admin_system_settings');
 
         return response()->json([
             'success' => true,
@@ -661,39 +690,43 @@ class AdminController extends Controller
      */
     public function getPackages()
     {
-        $jsonFile = base_path('composer.json');
+        $packagesData = \Cache::remember('admin_packages', 86400, function () {
+            $jsonFile = base_path('composer.json');
 
-        if (!file_exists($jsonFile)) {
-            return response()->json(['packages' => [], 'message' => 'composer.json not found.']);
-        }
+            if (!file_exists($jsonFile)) {
+                return ['packages' => [], 'message' => 'composer.json not found.'];
+            }
 
-        $data = json_decode(file_get_contents($jsonFile), true);
-        $packages = [];
+            $data = json_decode(file_get_contents($jsonFile), true);
+            $packages = [];
 
-        if (isset($data['require'])) {
-            foreach ($data['require'] as $name => $version) {
-                if ($name === 'php') {
-                    continue;
+            if (isset($data['require'])) {
+                foreach ($data['require'] as $name => $version) {
+                    if ($name === 'php') {
+                        continue;
+                    }
+                    $packages[] = [
+                        'name'    => $name,
+                        'version' => $version,
+                        'require' => [],
+                    ];
                 }
-                $packages[] = [
-                    'name'    => $name,
-                    'version' => $version,
-                    'require' => [],
-                ];
             }
-        }
 
-        if (isset($data['require-dev'])) {
-            foreach ($data['require-dev'] as $name => $version) {
-                $packages[] = [
-                    'name'    => $name,
-                    'version' => $version,
-                    'require' => [],
-                ];
+            if (isset($data['require-dev'])) {
+                foreach ($data['require-dev'] as $name => $version) {
+                    $packages[] = [
+                        'name'    => $name,
+                        'version' => $version,
+                        'require' => [],
+                    ];
+                }
             }
-        }
 
-        return response()->json(['packages' => $packages]);
+            return ['packages' => $packages];
+        });
+
+        return response()->json($packagesData);
     }
 
     // =========================================================
@@ -878,6 +911,15 @@ class AdminController extends Controller
     public function optimize()
     {
         \Artisan::call('optimize');
+        
+        // Dọn dẹp cache của các API SaaS Admin
+        \Cache::forget('admin_packages');
+        \Cache::forget('admin_plans');
+        \Cache::forget('admin_system_settings');
+        \Cache::forget('admin_payment_methods');
+        \Cache::forget('admin_system_staffs');
+        \Cache::forget('admin_tenants');
+
         return response()->json(['success' => true, 'message' => 'System optimization completed successfully.']);
     }
 
@@ -885,34 +927,45 @@ class AdminController extends Controller
     public function clearOptimize()
     {
         \Artisan::call('optimize:clear');
+        
+        // Dọn dẹp cache của các API SaaS Admin
+        \Cache::forget('admin_packages');
+        \Cache::forget('admin_plans');
+        \Cache::forget('admin_system_settings');
+        \Cache::forget('admin_payment_methods');
+        \Cache::forget('admin_system_staffs');
+        \Cache::forget('admin_tenants');
+
         return response()->json(['success' => true, 'message' => 'Optimization cache cleared successfully.']);
     }
 
-    /**
-     * Lấy danh sách các phương thức thanh toán của hệ thống
-     */
     public function indexPaymentMethods(Request $request)
     {
         $search = $request->query('search', '');
         $perPage = (int)$request->query('per_page', 10);
+        $page = (int)$request->query('page', 1);
 
-        $query = SystemPaymentMethod::query();
+        $allMethods = collect(\Cache::remember('admin_payment_methods', 86400, function () {
+            return SystemPaymentMethod::orderBy('created_at', 'desc')->get()->toArray();
+        }));
 
         if (!empty($search)) {
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('account_number', 'like', "%{$search}%")
-                  ->orWhere('account_holder', 'like', "%{$search}%");
+            $searchLower = strtolower($search);
+            $allMethods = $allMethods->filter(function ($item) use ($searchLower) {
+                return strpos(strtolower($item['name'] ?? ''), $searchLower) !== false ||
+                       strpos(strtolower($item['account_number'] ?? ''), $searchLower) !== false ||
+                       strpos(strtolower($item['account_holder'] ?? ''), $searchLower) !== false;
             });
         }
 
-        $paymentMethods = $query->orderBy('created_at', 'desc')->paginate($perPage);
+        $total = $allMethods->count();
+        $sliced = $allMethods->slice(($page - 1) * $perPage, $perPage)->values();
 
         return response()->json([
-            'data' => $paymentMethods->items(),
-            'total' => $paymentMethods->total(),
-            'current_page' => $paymentMethods->currentPage(),
-            'per_page' => $paymentMethods->perPage(),
+            'data' => $sliced,
+            'total' => $total,
+            'current_page' => $page,
+            'per_page' => $perPage,
         ]);
     }
 
@@ -931,6 +984,9 @@ class AdminController extends Controller
         ]);
 
         $paymentMethod = SystemPaymentMethod::create($validated);
+
+        // Xóa cache phương thức thanh toán
+        \Cache::forget('admin_payment_methods');
 
         return response()->json([
             'success' => true,
@@ -957,6 +1013,9 @@ class AdminController extends Controller
 
         $paymentMethod->update($validated);
 
+        // Xóa cache phương thức thanh toán
+        \Cache::forget('admin_payment_methods');
+
         return response()->json([
             'success' => true,
             'message' => 'System payment method updated successfully.',
@@ -972,6 +1031,9 @@ class AdminController extends Controller
         $paymentMethod = SystemPaymentMethod::findOrFail($id);
         $paymentMethod->delete();
 
+        // Xóa cache phương thức thanh toán
+        \Cache::forget('admin_payment_methods');
+
         return response()->json([
             'success' => true,
             'message' => 'System payment method deleted successfully.'
@@ -984,26 +1046,31 @@ class AdminController extends Controller
 
     public function indexSystemStaffs(Request $request)
     {
-        $perPage = $request->input('per_page', 10);
+        $perPage = (int)$request->input('per_page', 10);
+        $page = (int)$request->input('page', 1);
         $search = $request->input('search', '');
 
-        $query = SystemStaff::query();
+        $allStaffs = collect(\Cache::remember('admin_system_staffs', 86400, function () {
+            return SystemStaff::orderBy('created_at', 'desc')->get()->toArray();
+        }));
 
         if (!empty($search)) {
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('wallet_address', 'like', "%{$search}%")
-                  ->orWhere('role', 'like', "%{$search}%");
+            $searchLower = strtolower($search);
+            $allStaffs = $allStaffs->filter(function ($item) use ($searchLower) {
+                return strpos(strtolower($item['name'] ?? ''), $searchLower) !== false ||
+                       strpos(strtolower($item['wallet_address'] ?? ''), $searchLower) !== false ||
+                       strpos(strtolower($item['role'] ?? ''), $searchLower) !== false;
             });
         }
 
-        $staffs = $query->orderBy('created_at', 'desc')->paginate($perPage);
+        $total = $allStaffs->count();
+        $sliced = $allStaffs->slice(($page - 1) * $perPage, $perPage)->values();
 
         return response()->json([
-            'data' => $staffs->items(),
-            'total' => $staffs->total(),
-            'current_page' => $staffs->currentPage(),
-            'per_page' => $staffs->perPage(),
+            'data' => $sliced,
+            'total' => $total,
+            'current_page' => $page,
+            'per_page' => $perPage,
         ]);
     }
 
@@ -1019,6 +1086,9 @@ class AdminController extends Controller
         $validated['wallet_address'] = strtolower($validated['wallet_address']);
 
         $staff = SystemStaff::create($validated);
+
+        // Xóa cache danh sách nhân viên hệ thống
+        \Cache::forget('admin_system_staffs');
 
         return response()->json([
             'success' => true,
@@ -1042,6 +1112,9 @@ class AdminController extends Controller
 
         $staff->update($validated);
 
+        // Xóa cache danh sách nhân viên hệ thống
+        \Cache::forget('admin_system_staffs');
+
         return response()->json([
             'success' => true,
             'message' => 'Nhân viên hệ thống đã được cập nhật thành công.',
@@ -1053,6 +1126,9 @@ class AdminController extends Controller
     {
         $staff = SystemStaff::findOrFail($id);
         $staff->delete();
+
+        // Xóa cache danh sách nhân viên hệ thống
+        \Cache::forget('admin_system_staffs');
 
         return response()->json([
             'success' => true,
@@ -1167,6 +1243,9 @@ class AdminController extends Controller
         $subRequest->approved_by = $adminUser->wallet_address;
         $subRequest->approved_at = now();
         $subRequest->save();
+
+        // Xóa cache danh sách tenants
+        \Cache::forget('admin_tenants');
 
         // Ghi log giao dịch nâng cấp vào system_settings (để tương thích ngược với log cũ)
         DB::table('system_settings')->updateOrInsert(
