@@ -939,6 +939,32 @@ class AdminController extends Controller
         return response()->json(['success' => true, 'message' => 'Optimization cache cleared successfully.']);
     }
 
+    /** Xóa toàn bộ và tối ưu hóa lại cache hệ thống */
+    public function clearAllCaches()
+    {
+        // 1. Gỡ bỏ tất cả các tệp cache tối ưu hóa
+        \Artisan::call('optimize:clear');
+        
+        // 2. Làm mới compiled views
+        \Artisan::call('view:clear');
+        
+        // 3. Thực thi tối ưu hóa hiệu năng
+        \Artisan::call('optimize');
+        
+        // 4. Xóa cache application
+        \Artisan::call('cache:clear');
+        
+        // Dọn dẹp cache của các API SaaS Admin
+        \Cache::forget('admin_packages');
+        \Cache::forget('admin_plans');
+        \Cache::forget('admin_system_settings');
+        \Cache::forget('admin_payment_methods');
+        \Cache::forget('admin_system_staffs');
+        \Cache::forget('admin_tenants');
+        
+        return response()->json(['success' => true, 'message' => 'Toàn bộ cache hệ thống đã được dọn dẹp và tối ưu hóa thành công.']);
+    }
+
     public function indexPaymentMethods(Request $request)
     {
         $search = $request->query('search', '');

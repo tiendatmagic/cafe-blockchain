@@ -548,6 +548,7 @@ export class AdminSaaSComponent implements OnInit {
       'clear-logs': () => this.apiService.adminMaintenanceClearLogs(),
       optimize: () => this.apiService.adminMaintenanceOptimize(),
       'clear-optimize': () => this.apiService.adminMaintenanceClearOptimize(),
+      'clear-all': () => this.apiService.adminMaintenanceClearAll(),
     };
 
     const call = apiMap[action];

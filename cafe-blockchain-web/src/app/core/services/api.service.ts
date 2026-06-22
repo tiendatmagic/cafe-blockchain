@@ -725,6 +725,10 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/admin/maintenance/clear-optimize`, {}, { headers: this.getHeaders() });
   }
 
+  public adminMaintenanceClearAll(): Observable<any> {
+    return this.http.post(`${this.baseUrl}/admin/maintenance/clear-all`, {}, { headers: this.getHeaders() });
+  }
+
   public getAdminSystemLogs(params?: { limit?: number; level?: string; search?: string }): Observable<any> {
     let httpParams = new HttpParams();
     if (params) {

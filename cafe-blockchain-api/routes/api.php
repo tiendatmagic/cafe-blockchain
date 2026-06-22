@@ -97,6 +97,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/maintenance/clear-logs', [AdminController::class, 'clearLogs']);
         Route::post('/maintenance/optimize', [AdminController::class, 'optimize']);
         Route::post('/maintenance/clear-optimize', [AdminController::class, 'clearOptimize']);
+        Route::post('/maintenance/clear-all', [AdminController::class, 'clearAllCaches']);
     });
 
     // Business routes (protected by CheckSubscription)
