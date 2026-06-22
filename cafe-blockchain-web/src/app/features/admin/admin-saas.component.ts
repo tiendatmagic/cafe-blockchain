@@ -162,10 +162,10 @@ export class AdminSaaSComponent implements OnInit {
     },
   ];
 
-  // Tab: 'sysconfig' | 'tenants' | 'plans' | 'system' | 'sysinfo' | 'payment' | 'subscriptions' | 'staffs'
+  // Tab: 'config' | 'tenants' | 'plans' | 'maintenance' | 'info' | 'payment' | 'subscriptions' | 'staffs'
   public readonly activeSubTab = signal<
-    'sysconfig' | 'tenants' | 'plans' | 'system' | 'sysinfo' | 'payment' | 'subscriptions' | 'staffs'
-  >('sysconfig');
+    'config' | 'tenants' | 'plans' | 'maintenance' | 'info' | 'payment' | 'subscriptions' | 'staffs'
+  >('config');
 
   public readonly subTabOptions = computed<TabOption[]>(() => {
     const role = this.stateService.currentUserAdminRole();
@@ -182,18 +182,18 @@ export class AdminSaaSComponent implements OnInit {
         { value: 'tenants', label: 'Cửa hàng' },
         { value: 'staffs', label: 'Nhân viên hệ thống' },
         { value: 'payment', label: 'Thanh toán' },
-        { value: 'sysinfo', label: 'Thông tin hệ thống' },
+        { value: 'info', label: 'Thông tin hệ thống' },
       ];
     }
     return [
-      { value: 'sysconfig', label: 'Cấu hình thông tin hệ thống' },
+      { value: 'config', label: 'Cấu hình thông tin hệ thống' },
       { value: 'tenants', label: 'Cửa hàng' },
       { value: 'plans', label: 'Gói cước' },
       { value: 'payment', label: 'Thanh toán' },
       { value: 'subscriptions', label: 'Thuê bao' },
       { value: 'staffs', label: 'Nhân viên hệ thống' },
-      { value: 'system', label: 'Bảo trì & Tối ưu' },
-      { value: 'sysinfo', label: 'Thông tin hệ thống' },
+      { value: 'maintenance', label: 'Bảo trì & Tối ưu' },
+      { value: 'info', label: 'Thông tin hệ thống' },
     ];
   });
 
@@ -361,6 +361,29 @@ export class AdminSaaSComponent implements OnInit {
   // Maintenance
   public readonly runningMaintenance = signal<string>('');
 
+  public readonly packageTabOptions: TabOption[] = [
+    { value: 'composer', label: 'Backend (Composer)' },
+    { value: 'npm', label: 'Frontend (NPM)' },
+  ];
+
+  public readonly logsLimitOptions = [
+    { value: 50, label: '50 dòng' },
+    { value: 100, label: '100 dòng' },
+    { value: 200, label: '200 dòng' },
+    { value: 500, label: '500 dòng' }
+  ];
+
+  public readonly logsLevelOptions = [
+    { value: 'ALL', label: 'Tất cả cấp độ' },
+    { value: 'INFO', label: 'INFO' },
+    { value: 'WARNING', label: 'WARNING' },
+    { value: 'ERROR', label: 'ERROR' },
+    { value: 'CRITICAL', label: 'CRITICAL' },
+    { value: 'ALERT', label: 'ALERT' },
+    { value: 'EMERGENCY', label: 'EMERGENCY' },
+    { value: 'DEBUG', label: 'DEBUG' }
+  ];
+
   public readonly packages = computed(() => {
     return this.packageType() === 'composer' ? this.composerPackages() : this.npmPackages();
   });
@@ -517,8 +540,8 @@ export class AdminSaaSComponent implements OnInit {
     const allowedTabs = isStaff
       ? ['subscriptions', 'tenants']
       : isAdmin
-        ? ['subscriptions', 'tenants', 'staffs', 'payment', 'sysinfo']
-        : ['sysconfig', 'tenants', 'plans', 'system', 'sysinfo', 'payment', 'subscriptions', 'staffs'];
+        ? ['subscriptions', 'tenants', 'staffs', 'payment', 'info']
+        : ['config', 'tenants', 'plans', 'maintenance', 'info', 'payment', 'subscriptions', 'staffs'];
 
     // Đồng bộ tab hiện tại với Query Parameter 'tab' trên URL
     this.route.queryParams.subscribe((params) => {
@@ -527,7 +550,7 @@ export class AdminSaaSComponent implements OnInit {
         this.activeSubTab.set(tab as any);
         this.triggerTabLoad(tab);
       } else {
-        const defaultTab = isStaff ? 'subscriptions' : isAdmin ? 'subscriptions' : 'sysconfig';
+        const defaultTab = isStaff ? 'subscriptions' : isAdmin ? 'subscriptions' : 'config';
         this.activeSubTab.set(defaultTab);
         this.triggerTabLoad(defaultTab);
       }
@@ -540,7 +563,7 @@ export class AdminSaaSComponent implements OnInit {
     }
   }
 
-  public setSubTab(tab: 'sysconfig' | 'tenants' | 'plans' | 'system' | 'sysinfo' | 'payment' | 'subscriptions' | 'staffs') {
+  public setSubTab(tab: 'config' | 'tenants' | 'plans' | 'maintenance' | 'info' | 'payment' | 'subscriptions' | 'staffs') {
     this.activeSubTab.set(tab);
     this.searchQuery.set('');
     this.tenantPlanFilter.set('all');
@@ -1176,10 +1199,10 @@ export class AdminSaaSComponent implements OnInit {
     const isSuperAdmin = this.stateService.isSuperAdmin();
     const role = this.stateService.currentUserAdminRole();
 
-    if (tab === 'sysinfo' && !this.systemInfo()) {
+    if (tab === 'info' && !this.systemInfo()) {
       this.loadSysInfo();
     }
-    if (tab === 'system') {
+    if (tab === 'maintenance') {
       this.loadSystemLogs();
     }
     if (tab === 'payment') {
@@ -1337,5 +1360,10 @@ export class AdminSaaSComponent implements OnInit {
         });
       }
     });
+  }
+
+  public onPackageTypeChange(type: any) {
+    this.packageType.set(type);
+    this.packageCurrentPage.set(1);
   }
 }

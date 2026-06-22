@@ -89,7 +89,7 @@
             <span>Thêm gói cước mới</span>
           </button>
         </div>
-      } @else if (activeSubTab() === 'sysinfo') {
+      } @else if (activeSubTab() === 'info') {
         <!-- Reload SysInfo -->
         <button
           app-button
@@ -132,7 +132,7 @@
       <app-skeleton-loader type="table" [cols]="7" [rows]="5"></app-skeleton-loader>
     } @else {
       <!-- ===== TAB 0: SYSTEM CONFIG (Cấu hình thông tin hệ thống) ===== -->
-      @if (activeSubTab() === 'sysconfig') {
+      @if (activeSubTab() === 'config') {
         <div app-card class="space-y-6 relative overflow-hidden">
           <div
             class="pb-4 border-b border-slate-100 dark:border-slate-800/60 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3"
@@ -720,7 +720,7 @@
       }
 
       <!-- ===== TAB 3: SYSTEM (Maintenance) ===== -->
-      @if (activeSubTab() === 'system') {
+      @if (activeSubTab() === 'maintenance') {
         <div class="space-y-6">
           <!-- Cloudflare Turnstile Configuration -->
           <div app-card class="p-0 overflow-hidden">
@@ -1088,73 +1088,53 @@
               <!-- Action controls (Limit, Level, Search, Refresh) -->
               <div class="flex flex-wrap items-center gap-3">
                 <!-- Limit Select -->
-                <div class="shrink-0">
-                  <select 
-                    [ngModel]="logsLimit()" 
-                    (ngModelChange)="onLogsLimitChange($event)"
-                    class="form-select text-xs py-1.5 pl-3 pr-8 rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 font-medium"
-                  >
-                    <option [value]="50">50 dòng</option>
-                    <option [value]="100">100 dòng</option>
-                    <option [value]="200">200 dòng</option>
-                    <option [value]="500">500 dòng</option>
-                  </select>
+                <div class="shrink-0 w-28">
+                  <app-custom-select
+                    [value]="logsLimit()"
+                    (valueChange)="onLogsLimitChange($event)"
+                    [options]="logsLimitOptions"
+                    valueKey="value"
+                    labelKey="label"
+                    triggerClass="w-full form-input !h-9 !py-1.5 !px-3 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-300 font-semibold shadow-sm flex items-center justify-between"
+                  ></app-custom-select>
                 </div>
 
                 <!-- Level Select -->
-                <div class="shrink-0">
-                  <select 
-                    [ngModel]="logsLevelFilter()" 
-                    (ngModelChange)="onLogsLevelChange($event)"
-                    class="form-select text-xs py-1.5 pl-3 pr-8 rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 font-medium"
-                  >
-                    <option value="ALL">Tất cả cấp độ</option>
-                    <option value="INFO">INFO</option>
-                    <option value="WARNING">WARNING</option>
-                    <option value="ERROR">ERROR</option>
-                    <option value="CRITICAL">CRITICAL</option>
-                    <option value="ALERT">ALERT</option>
-                    <option value="EMERGENCY">EMERGENCY</option>
-                    <option value="DEBUG">DEBUG</option>
-                  </select>
+                <div class="shrink-0 w-36">
+                  <app-custom-select
+                    [value]="logsLevelFilter()"
+                    (valueChange)="onLogsLevelChange($event)"
+                    [options]="logsLevelOptions"
+                    valueKey="value"
+                    labelKey="label"
+                    triggerClass="w-full form-input !h-9 !py-1.5 !px-3 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-300 font-semibold shadow-sm flex items-center justify-between"
+                  ></app-custom-select>
                 </div>
 
                 <!-- Search Input -->
-                <div class="w-full sm:w-48 relative">
-                  <input
-                    type="text"
+                <div class="w-full sm:w-48">
+                  <app-custom-search-input
                     [ngModel]="logSearchQuery()"
                     (ngModelChange)="onLogsSearchChange($event)"
+                    [debounce]="300"
                     placeholder="Tìm kiếm log..."
-                    class="form-input text-xs py-1.5 pl-3 pr-8 rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300"
-                  />
-                  @if (logSearchQuery()) {
-                    <button 
-                      (click)="onLogsSearchChange('')" 
-                      class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-                    >
-                      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                      </svg>
-                    </button>
-                  }
+                    containerClass="w-full"
+                    inputClass="w-full search-input !pl-9 !h-9 !py-1.5 !text-sm rounded-xl"
+                  ></app-custom-search-input>
                 </div>
 
                 <!-- Refresh Button -->
                 <button
+                  app-button
+                  variant="secondary"
+                  size="md"
                   (click)="loadSystemLogs()"
-                  [disabled]="isLoadingLogs()"
-                  class="btn-secondary !py-1.5 !px-3 text-xs shrink-0 flex items-center gap-1.5"
+                  [loading]="isLoadingLogs()"
+                  class="flex items-center gap-1.5 shrink-0 !h-9 rounded-xl !py-1.5 !px-4 text-sm font-bold"
                 >
-                  <svg 
-                    class="w-3.5 h-3.5" 
-                    [ngClass]="{'animate-spin': isLoadingLogs()}" 
-                    fill="none" 
-                    viewBox="0 0 24 24" 
-                    stroke="currentColor"
-                  >
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 3v3H16"/>
-                  </svg>
+                  @if (!isLoadingLogs()) {
+                    <app-icon name="sync" class="h-3.5 w-3.5"></app-icon>
+                  }
                   <span>Tải lại</span>
                 </button>
               </div>
@@ -1230,7 +1210,7 @@
       }
 
       <!-- ===== TAB 4: SYSTEM INFO ===== -->
-      @if (activeSubTab() === 'sysinfo') {
+      @if (activeSubTab() === 'info') {
         @if (isLoadingSysInfo()) {
           <app-skeleton-loader type="table" [cols]="3" [rows]="8"></app-skeleton-loader>
         } @else if (!systemInfo()) {
@@ -1283,21 +1263,13 @@
                 </div>
 
                 <!-- Bộ chuyển đổi Tab thư viện (Backend vs Frontend) -->
-                <div class="flex items-center gap-1 p-1 bg-slate-100/80 dark:bg-slate-800/50 rounded-lg text-xs font-bold leading-none shrink-0 self-start lg:self-center">
-                  <button
-                    (click)="packageType.set('composer'); packageCurrentPage.set(1)"
-                    [class]="packageType() === 'composer' ? 'bg-white dark:bg-slate-700 shadow-sm text-[var(--dynamic-primary)]' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-350'"
-                    class="px-3 py-1.5 rounded-md transition"
-                  >
-                    Backend (Composer)
-                  </button>
-                  <button
-                    (click)="packageType.set('npm'); packageCurrentPage.set(1)"
-                    [class]="packageType() === 'npm' ? 'bg-white dark:bg-slate-700 shadow-sm text-[var(--dynamic-primary)]' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-350'"
-                    class="px-3 py-1.5 rounded-md transition"
-                  >
-                    Frontend (NPM)
-                  </button>
+                <div class="shrink-0 self-start lg:self-center">
+                  <app-tab-group
+                    [options]="packageTabOptions"
+                    [activeValue]="packageType()"
+                    (valueChange)="onPackageTypeChange($event)"
+                    [flex]="false"
+                  ></app-tab-group>
                 </div>
 
                 <app-custom-search-input
