@@ -380,33 +380,33 @@ export class ShiftsComponent implements OnInit {
         <div class="text-center bold header">${storeName}</div>
         <div class="text-center" style="font-size: 10px;">BÁO CÁO KẾT CA TRỰC</div>
         <div class="divider"></div>
-        
+
         <div class="flex-between"><span>Nhân viên:</span><span class="bold">${staff}</span></div>
         <div class="flex-between"><span>Mở ca:</span><span>${start}</span></div>
         <div class="flex-between"><span>Kết ca:</span><span>${end}</span></div>
         <div class="flex-between"><span>Trạng thái:</span><span class="bold">${shift.status === 'open' ? 'ĐANG MỞ' : 'ĐÃ ĐÓNG'}</span></div>
-        
+
         <div class="divider"></div>
-        
+
         <div class="flex-between bold"><span>Tiền đầu ca:</span><span>${initial}</span></div>
         <div class="flex-between"><span>Tiền hệ thống:</span><span>${expected}</span></div>
         <div class="flex-between bold"><span>Tiền thực tế:</span><span>${actual}</span></div>
         <div class="flex-between bold" style="font-size: 13px;"><span>Chênh lệch:</span><span>${diff}</span></div>
-        
+
         <div class="divider"></div>
-        
+
         <div class="mt-10">
           <div class="bold">Ghi chú giải trình:</div>
           <div style="font-style: italic; white-space: pre-wrap; margin-top: 4px;">${note}</div>
         </div>
-        
+
         <div class="divider"></div>
-        
+
         <div class="text-center footer">
           Đã in ngày: ${new Date().toLocaleString('vi-VN')}<br>
           Powered by Blockchain Dapp POS
         </div>
-        
+
         <script>
           window.onload = function() {
             window.print();
@@ -435,7 +435,7 @@ export class ShiftsComponent implements OnInit {
     );
     this.modalService.open(ShiftDetailModalComponent, {
       title: `Chi tiết ca trực #${shift.id}`,
-      size: 'xl',
+      size: '5xl',
       data: {
         shift: shift,
         onPrint: (s: any) => this.printShiftReceipt(s),
