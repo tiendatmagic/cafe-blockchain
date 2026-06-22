@@ -25,7 +25,7 @@ class ReportController extends Controller
         $endDateObj = Carbon::parse($endDate);
 
         $isHistory = $endDateObj->isBefore(Carbon::today());
-        $ttl = $isHistory ? 604800 : 600; // 1 tuần (lịch sử) hoặc 10 phút (ngày hôm nay / động)
+        $ttl = $isHistory ? 604800 : 120; // 1 tuần (lịch sử) hoặc 2 phút (ngày hôm nay / động)
 
         $cacheKey = "store_reports:{$storeOwner}:{$startDate}:{$endDate}";
 
