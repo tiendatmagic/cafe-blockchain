@@ -332,11 +332,8 @@ export class StateService {
       }
     });
 
-    // 5. Gọi tải cấu hình public và menu storefront ban đầu khi chưa kết nối ví
+    // 5. Gọi tải thông tin coin prices ban đầu khi khởi tạo
     setTimeout(() => {
-      if (!this.web3Service.walletConnected()) {
-        this.loadPublicSettingsAndMenu();
-      }
       if (typeof window !== 'undefined') {
         this.priceStore.loadCoinPrices();
       }

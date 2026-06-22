@@ -239,7 +239,7 @@ export class ApiService {
 
   public getPublicSettings(orderCode?: string): Observable<any> {
     const url = orderCode ? `${this.baseUrl}/settings/public?order_code=${orderCode}` : `${this.baseUrl}/settings/public`;
-    return this.http.get(url);
+    return this.http.get(url, { headers: this.getHeaders() });
   }
 
   public getPublicStoreBySlug(slug: string): Observable<any> {

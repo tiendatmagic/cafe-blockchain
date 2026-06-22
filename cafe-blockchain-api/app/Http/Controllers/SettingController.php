@@ -340,14 +340,13 @@ class SettingController extends Controller
         $order = null;
 
         if (empty($orderCode)) {
-            // Lấy store_owner_address đầu tiên từ bảng settings
-            $firstSetting = Setting::whereNotNull('store_owner_address')->first();
-            if ($firstSetting) {
-                $storeOwner = strtolower($firstSetting->store_owner_address);
+            // Thử lấy user đang đăng nhập qua Sanctum (nếu có)
+            $user = auth('sanctum')->user();
+            if ($user) {
+                $storeOwner = strtolower($user->store_owner_address ?: $user->wallet_address);
             } else {
-                // Thử lấy ví admin đầu tiên từ users
-                $firstUser = \App\Domain\Entities\User::first();
-                $storeOwner = $firstUser ? strtolower($firstUser->store_owner_address ?: $firstUser->wallet_address) : '';
+                // Chưa đăng nhập và không truyền order_code -> trả về cấu hình mặc định rỗng/hệ thống
+                $storeOwner = null;
             }
         } else {
             // Tìm đơn hàng để lấy store_owner_address của quán
@@ -382,6 +381,48 @@ class SettingController extends Controller
                     'items' => $orderItems
                 ];
             }
+        }
+
+        if ($storeOwner === null) {
+            $publicSettings = [
+                'store_name' => 'Cafe Web3 POS',
+                'primary_color' => '#7c3aed',
+                'secondary_color' => '#c084fc',
+                'contract_address' => '',
+                'finance_contract_address' => '',
+                'voucher_contract_address' => '',
+                'menu_registry_contract_address' => '',
+                'loyalty_token_contract_address' => '',
+                'voucher_shop_contract_address' => '',
+                'voucher_marketplace_contract_address' => '',
+                'has_synced_menu' => '0',
+                'rpc_url' => '',
+                'chain_id' => '',
+                'explorer_url' => '',
+                'show_crypto_payment' => '0',
+                'voucher_enabled' => '0',
+                'website_slug' => '',
+                'store_categories' => '',
+                'website_cover_image' => '',
+                'store_status' => '0',
+                'shipping_fee_flat_enabled' => '0',
+                'shipping_fee_flat_amount' => '0',
+                'shipping_fee_free_enabled' => '0',
+                'shipping_fee_free_min_amount' => '0',
+                'website_avatar_image' => '',
+                'store_phone' => '',
+                'store_opening_hours' => '',
+                'store_address' => '',
+                'store_description' => '',
+                'temp_order' => null,
+                'order_status' => null,
+                'blockchain_status' => null,
+                'tx_hash' => null,
+                'voucher_nft_token_id' => null,
+                'gift_voucher_nft_token_id' => null,
+                'turnstile_site_key' => $this->getTurnstileSiteKey(),
+            ];
+            return response()->json($publicSettings);
         }
 
         $settings = $this->ensureDefaultSettings($storeOwner);

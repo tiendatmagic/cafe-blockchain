@@ -163,7 +163,7 @@ export class BlockchainExplorerComponent implements OnInit {
   }
 
   /**
-   * Khởi tạo cấu hình (Thử từ localStorage -> API -> Fallback cứng)
+   * Khởi tạo cấu hình (Thử từ localStorage -> Cấu hình Store đang đăng nhập -> Cấu hình môi trường mặc định)
    */
   public initConfiguration() {
     const cachedConfig = localStorage.getItem('cafe_blockchain_explorer_config');
@@ -184,7 +184,7 @@ export class BlockchainExplorerComponent implements OnInit {
         this.loadDataForActiveTab();
         return;
       } catch (e) {
-        console.error('Lỗi đọc cấu hình cache, thử tải từ API:', e);
+        console.error('Lỗi đọc cấu hình cache, thử tải tự động:', e);
       }
     }
 
@@ -192,44 +192,40 @@ export class BlockchainExplorerComponent implements OnInit {
   }
 
   /**
-   * Tải cấu hình từ API của quán
+   * Tải cấu hình tự động (từ Store nếu đã đăng nhập hoặc dùng fallback mặc định)
    */
   public loadFromApi() {
-    this.connectionStatus.set('loading');
-    this.apiService.getPublicSettings().subscribe({
-      next: (res) => {
-        this.rpcUrl.set(res.rpc_url || 'https://arb1.arbitrum.io/rpc');
-        this.posContractAddress.set(res.contract_address || '');
-        this.financeContractAddress.set(res.finance_contract_address || '');
-        this.voucherContractAddress.set(res.voucher_contract_address || '');
-        this.menuRegistryContractAddress.set(res.menu_registry_contract_address || '');
-        this.explorerUrl.set(res.explorer_url || 'https://arbiscan.io');
-        this.chainId.set(res.chain_id || '42161');
-        this.storeName.set(res.store_name || 'Cafe Web3 POS');
-        this.connectionStatus.set('api');
+    const storeSettings = this.stateService.settings();
+    if (this.stateService.isAuthLoggedIn() && storeSettings) {
+      this.rpcUrl.set(storeSettings.rpc_url || environment.defaultRpcUrl || 'https://arb1.arbitrum.io/rpc');
+      this.posContractAddress.set(storeSettings.contract_address || '');
+      this.financeContractAddress.set(storeSettings.finance_contract_address || '');
+      this.voucherContractAddress.set(storeSettings.voucher_contract_address || '');
+      this.menuRegistryContractAddress.set(storeSettings.menu_registry_contract_address || '');
+      this.explorerUrl.set(storeSettings.explorer_url || environment.defaultExplorerUrl || 'https://arbiscan.io');
+      this.chainId.set(storeSettings.chain_id || environment.defaultChainId || '42161');
+      this.storeName.set(storeSettings.store_name || 'Cafe Web3 POS');
+      this.connectionStatus.set('api');
 
-        this.syncToCustomFields();
-        this.loadDataForActiveTab();
-      },
-      error: (err) => {
-        console.warn('API sập hoặc lỗi, chuyển sang chế độ Offline Fallback:', err);
-        this.useOfflineFallback();
-      },
-    });
+      this.syncToCustomFields();
+      this.loadDataForActiveTab();
+    } else {
+      this.useOfflineFallback();
+    }
   }
 
   /**
-   * Kích hoạt chế độ Offline Fallback
+   * Kích hoạt chế độ mặc định hệ thống (Offline Fallback)
    */
   public useOfflineFallback() {
-    this.rpcUrl.set('');
+    this.rpcUrl.set(environment.defaultRpcUrl || 'https://arb1.arbitrum.io/rpc');
     this.posContractAddress.set('');
     this.financeContractAddress.set('');
     this.voucherContractAddress.set('');
     this.menuRegistryContractAddress.set('');
-    this.explorerUrl.set('');
-    this.chainId.set('');
-    this.storeName.set('Mạng Arbitrum (Fallback)');
+    this.explorerUrl.set(environment.defaultExplorerUrl || 'https://arbiscan.io');
+    this.chainId.set(environment.defaultChainId || '42161');
+    this.storeName.set('Mạng Arbitrum (Mặc định)');
     this.connectionStatus.set('offline_fallback');
 
     this.syncToCustomFields();
