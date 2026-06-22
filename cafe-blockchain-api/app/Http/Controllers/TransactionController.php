@@ -205,6 +205,10 @@ class TransactionController extends Controller
             'chain_id' => $validated['chain_id'] ?? $transaction->chain_id
         ]);
 
+        if ($validated['blockchain_status'] === 'success') {
+            \Illuminate\Support\Facades\Cache::forget("store_settings_admin:{$storeOwner}");
+        }
+
         return response()->json([
             'message' => 'Blockchain sync updated successfully.',
             'transaction' => $transaction

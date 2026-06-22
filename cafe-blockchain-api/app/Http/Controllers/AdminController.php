@@ -142,6 +142,7 @@ class AdminController extends Controller
 
         // Xóa cache danh sách gói cước
         \Cache::forget('admin_plans');
+        \Cache::forget('system_subscription_plans');
 
         return response()->json([
             'success' => true,
@@ -193,6 +194,7 @@ class AdminController extends Controller
 
         // Xóa cache danh sách gói cước
         \Cache::forget('admin_plans');
+        \Cache::forget('system_subscription_plans');
 
         return response()->json([
             'success' => true,
@@ -229,6 +231,7 @@ class AdminController extends Controller
 
         // Xóa cache danh sách gói cước
         \Cache::forget('admin_plans');
+        \Cache::forget('system_subscription_plans');
 
         return response()->json([
             'success' => true,
@@ -341,6 +344,7 @@ class AdminController extends Controller
 
         // Xóa cache danh sách gói cước
         \Cache::forget('admin_plans');
+        \Cache::forget('system_subscription_plans');
 
         return response()->json([
             'success' => true,

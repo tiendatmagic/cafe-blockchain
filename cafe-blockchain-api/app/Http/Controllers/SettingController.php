@@ -115,14 +115,18 @@ class SettingController extends Controller
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
 
-        $settings = $this->ensureDefaultSettings($storeOwner);
+        $settings = Cache::remember("store_settings_admin:{$storeOwner}", 86400, function () use ($storeOwner) {
+            $data = $this->ensureDefaultSettings($storeOwner);
 
-        $settings['has_synced_orders'] = \App\Infrastructure\Persistence\Eloquent\OrderModel::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
-        $settings['has_synced_transactions'] = \App\Domain\Entities\Transaction::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
+            $data['has_synced_orders'] = \App\Infrastructure\Persistence\Eloquent\OrderModel::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
+            $data['has_synced_transactions'] = \App\Domain\Entities\Transaction::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
 
-        // Ẩn Private Key thô trước khi gửi về client, chỉ trả về flag boolean trạng thái đã cấu hình
-        $settings['has_relayer_private_key'] = !empty($settings['relayer_private_key'] ?? '');
-        unset($settings['relayer_private_key']);
+            // Ẩn Private Key thô trước khi gửi về client, chỉ trả về flag boolean trạng thái đã cấu hình
+            $data['has_relayer_private_key'] = !empty($data['relayer_private_key'] ?? '');
+            unset($data['relayer_private_key']);
+
+            return $data;
+        });
 
         return response()->json($settings);
     }
@@ -307,8 +311,9 @@ class SettingController extends Controller
             Setting::setForStore($key, $value ?? '', $storeOwner);
         }
 
-        // Giải phóng cache storefront của quán khi đổi cài đặt
+        // Giải phóng cache storefront và cache cài đặt admin của quán khi đổi cài đặt
         Setting::clearStorefrontCache($storeOwner);
+        Cache::forget("store_settings_admin:{$storeOwner}");
 
         $updatedSettings = Setting::where('store_owner_address', $storeOwner)->pluck('value', 'key')->all();
         $updatedSettings['has_synced_orders'] = \App\Infrastructure\Persistence\Eloquent\OrderModel::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();

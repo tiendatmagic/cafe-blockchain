@@ -267,9 +267,12 @@ class AuthController extends Controller
      */
     public function getPublicPlans()
     {
-        $plans = \App\Domain\Entities\SubscriptionPlan::where('is_active', true)
-            ->orderBy('price_per_month', 'asc')
-            ->get();
+        $plans = Cache::remember('system_subscription_plans', 86400, function () {
+            return \App\Domain\Entities\SubscriptionPlan::where('is_active', true)
+                ->orderBy('price_per_month', 'asc')
+                ->get()
+                ->toArray();
+        });
         return response()->json($plans);
     }
 
