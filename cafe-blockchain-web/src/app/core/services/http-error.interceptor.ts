@@ -55,12 +55,12 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
     }),
     catchError((error: any) => {
       if (error instanceof HttpErrorResponse) {
-        // Xử lý lỗi 503 bảo trì hệ thống hoặc lỗi status 0 (CORS block/mất kết nối) từ API backend
-        if ((error.status === 503 || error.status === 0) && isBackendApi && !isExplorer) {
-          console.warn(`Nhận được lỗi status ${error.status} từ Backend. Kích hoạt trạng thái bảo trì hoặc mất kết nối...`);
+        // Xử lý lỗi 503 bảo trì hệ thống từ API backend
+        if (error.status === 503 && isBackendApi && !isExplorer) {
+          console.warn(`Nhận được lỗi status ${error.status} từ Backend. Kích hoạt trạng thái bảo trì...`);
           uiStateService.isMaintenance.set(true);
-          uiStateService.maintenanceType.set(error.status === 503 ? 'maintenance' : 'connection');
-          uiStateService.isInitialLoading.set(false); // Ẩn màn hình loading khởi tạo lập tiếp để hiện màn hình bảo trì/lỗi kết nối
+          uiStateService.maintenanceType.set('maintenance');
+          uiStateService.isInitialLoading.set(false); // Ẩn màn hình loading khởi tạo lập tiếp để hiện màn hình bảo trì
           uiStateService.cancelRequests$.next(); // Phát tín hiệu hủy toàn bộ request đang bay
         }
 
@@ -71,7 +71,7 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
             console.warn('Nhận được lỗi 401 (Unauthenticated) từ API. Tự động ngắt kết nối ví...');
             authService.disconnectWalletAndClose('Phiên làm việc đã hết hạn hoặc không hợp lệ. Vui lòng kết nối lại ví!', true);
           }
-        } else if (error.status !== 503 && !(error.status === 0 && isBackendApi)) {
+        } else if (error.status !== 503) {
           // 2. Tự động hiển thị Toast báo lỗi từ API (Bỏ qua lỗi 503 và lỗi sập backend vì đã có màn hình bảo trì)
           // Loại trừ trường hợp lấy thông tin store details trên trang public store (/store/:slug) 
           // để tránh hiện Toast đỏ lòm làm xấu giao diện (giao diện store tự render box thông báo lỗi chuyên nghiệp)

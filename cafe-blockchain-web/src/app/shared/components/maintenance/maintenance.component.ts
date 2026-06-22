@@ -21,8 +21,6 @@ import { ButtonComponent } from '../button/button.component';
 export class MaintenanceComponent {
   private readonly stateService = inject(StateService);
 
-  public readonly maintenanceType = this.stateService.maintenanceType;
-
   public retryConnection() {
     this.stateService.isMaintenance.set(false);
     this.stateService.maintenanceType.set(null);

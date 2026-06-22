@@ -14,7 +14,7 @@ export class UiStateService {
   public readonly isInitialLoading = signal<boolean>(true);
   public readonly isLoading = signal<boolean>(false); // Cho loading overlay của HTTP requests
   public readonly isMaintenance = signal<boolean>(false);
-  public readonly maintenanceType = signal<'maintenance' | 'connection' | null>(null);
+  public readonly maintenanceType = signal<'maintenance' | null>(null);
   public readonly cancelRequests$ = new Subject<void>();
 
   // Trạng thái Modals chặn tính năng nâng cấp (Upgrade)
