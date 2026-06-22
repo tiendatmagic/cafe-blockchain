@@ -114,7 +114,7 @@ class ClaimController extends Controller
         if (empty($customer->wallet_address)) {
             $customer->wallet_address = $walletAddress;
             $customer->save();
-        } else if ($customer->wallet_address !== $walletAddress) {
+        } else if (strtolower($customer->wallet_address) !== $walletAddress) {
             // Nếu khách hàng đã có địa chỉ ví khác trong hệ thống, đảm bảo không có sự mâu thuẫn ví
             return response()->json([
                 'success' => false,

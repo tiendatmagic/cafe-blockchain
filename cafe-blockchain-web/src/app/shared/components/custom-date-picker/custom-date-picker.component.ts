@@ -24,6 +24,13 @@ import { IconComponent } from '../icon/icon.component';
   imports: [CommonModule, FormsModule, IconComponent],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './custom-date-picker.component.html',
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
 })
 export class CustomDatePickerComponent implements OnInit, OnChanges, OnDestroy {
   private readonly elementRef = inject(ElementRef);

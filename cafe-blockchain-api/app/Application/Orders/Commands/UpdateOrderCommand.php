@@ -7,6 +7,7 @@ use App\Infrastructure\Persistence\Eloquent\OrderModel;
 use App\Domain\Entities\OrderItem;
 use App\Domain\Entities\Product;
 use App\Domain\Entities\Customer;
+use App\Domain\Entities\DebtLog;
 use Illuminate\Support\Facades\DB;
 
 class UpdateOrderCommand
@@ -31,6 +32,23 @@ class UpdateOrderCommand
         }
 
         return DB::transaction(function () use ($storeOwner, $order, $data) {
+            // Xác thực khách hàng thuộc sở hữu của quán và tải trước
+            $customer = null;
+            if (!empty($data['customer_id'])) {
+                $customer = Customer::where('id', $data['customer_id'])
+                    ->where('store_owner_address', $storeOwner)
+                    ->first();
+                if (!$customer) {
+                    throw new \Exception("The selected customer was not found or does not belong to this store!");
+                }
+            }
+
+            if ($data['payment_method'] === 'debt') {
+                if (empty($data['customer_id'])) {
+                    throw new \Exception("A customer must be selected for debt orders!");
+                }
+            }
+
             $totalAmount = 0;
             $itemsData = [];
 
@@ -84,11 +102,6 @@ class UpdateOrderCommand
                 $discountAmount = $order->discount_amount;
                 $voucherNftTokenId = $order->voucher_nft_token_id;
             } elseif ($voucherNftTokenId !== null && !empty($voucherNftSignature)) {
-                $customer = null;
-                if (!empty($data['customer_id'])) {
-                    $customer = Customer::find($data['customer_id']);
-                }
-
                 if (!$customer || empty($customer->wallet_address)) {
                     throw new \Exception("NFT Vouchers only apply to customers with linked EVM wallets!");
                 }
@@ -129,6 +142,11 @@ class UpdateOrderCommand
 
             $finalTotalAmount = max(0, $totalAmount - $discountAmount);
 
+            // Lưu trữ thông tin cũ của đơn hàng trước khi cập nhật để tính toán công nợ
+            $oldPaymentMethod = $order->payment_method;
+            $oldCustomerId = $order->customer_id;
+            $oldTotalAmount = $order->total_amount;
+
             $updateData = [
                 'table_number' => $data['table_number'] ?? null,
                 'customer_id' => $data['customer_id'] ?? null,
@@ -152,6 +170,76 @@ class UpdateOrderCommand
             }
 
             $order->update($updateData);
+
+            // Điều chỉnh công nợ khách hàng nếu có sự thay đổi
+            if ($oldPaymentMethod === 'debt' && $updateData['payment_method'] !== 'debt') {
+                // Chuyển từ Ghi nợ sang hình thức khác -> Hoàn trả nợ cho khách hàng cũ
+                if ($oldCustomerId) {
+                    $oldCustomer = Customer::find($oldCustomerId);
+                    if ($oldCustomer) {
+                        $oldCustomer->decrement('debt_balance', $oldTotalAmount);
+                    }
+                    DebtLog::where('order_id', $order->id)->where('type', 'debt')->delete();
+                }
+            } elseif ($oldPaymentMethod !== 'debt' && $updateData['payment_method'] === 'debt') {
+                // Chuyển từ hình thức khác sang Ghi nợ -> Ghi nhận nợ mới
+                if ($customer) {
+                    $customer->increment('debt_balance', $finalTotalAmount);
+                    DebtLog::create([
+                        'store_owner_address' => $storeOwner,
+                        'customer_id' => $customer->id,
+                        'order_id' => $order->id,
+                        'type' => 'debt',
+                        'amount' => $finalTotalAmount,
+                        'note' => "Debt for order " . ($order->order_code ?? $order->id),
+                        'recorded_at' => now()->toDateString(),
+                    ]);
+                }
+            } elseif ($oldPaymentMethod === 'debt' && $updateData['payment_method'] === 'debt') {
+                // Vẫn giữ hình thức Ghi nợ
+                if ($oldCustomerId === $customer->id) {
+                    // Cùng khách hàng -> Cập nhật chênh lệch số tiền nợ
+                    $diffAmount = $finalTotalAmount - $oldTotalAmount;
+                    if ($diffAmount !== 0) {
+                        $customer->increment('debt_balance', $diffAmount);
+                    }
+                    // Cập nhật lại DebtLog
+                    DebtLog::updateOrCreate(
+                        ['order_id' => $order->id, 'type' => 'debt'],
+                        [
+                            'store_owner_address' => $storeOwner,
+                            'customer_id' => $customer->id,
+                            'amount' => $finalTotalAmount,
+                            'note' => "Debt for order " . ($order->order_code ?? $order->id),
+                            'recorded_at' => now()->toDateString(),
+                        ]
+                    );
+                } else {
+                    // Thay đổi khách hàng ghi nợ
+                    // 1. Trừ nợ khách hàng cũ
+                    if ($oldCustomerId) {
+                        $oldCustomer = Customer::find($oldCustomerId);
+                        if ($oldCustomer) {
+                            $oldCustomer->decrement('debt_balance', $oldTotalAmount);
+                        }
+                    }
+                    // 2. Cộng nợ khách hàng mới
+                    if ($customer) {
+                        $customer->increment('debt_balance', $finalTotalAmount);
+                    }
+                    // 3. Cập nhật lại DebtLog
+                    DebtLog::updateOrCreate(
+                        ['order_id' => $order->id, 'type' => 'debt'],
+                        [
+                            'store_owner_address' => $storeOwner,
+                            'customer_id' => $customer->id,
+                            'amount' => $finalTotalAmount,
+                            'note' => "Debt for order " . ($order->order_code ?? $order->id),
+                            'recorded_at' => now()->toDateString(),
+                        ]
+                    );
+                }
+            }
 
             $order->items()->delete();
 

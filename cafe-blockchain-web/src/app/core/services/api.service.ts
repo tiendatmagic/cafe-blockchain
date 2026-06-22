@@ -724,5 +724,9 @@ export class ApiService {
   public adminMaintenanceClearOptimize(): Observable<any> {
     return this.http.post(`${this.baseUrl}/admin/maintenance/clear-optimize`, {}, { headers: this.getHeaders() });
   }
+
+  public getWebBuildSize(): Observable<any> {
+    return this.http.get('assets/build-size.json');
+  }
 }
 

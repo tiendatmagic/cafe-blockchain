@@ -29,6 +29,13 @@ import { IconComponent } from '../icon/icon.component';
       multi: true,
     },
   ],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
 })
 export class CustomSelectComponent implements ControlValueAccessor, OnDestroy {
   private readonly elementRef = inject(ElementRef);

@@ -515,6 +515,26 @@ class AdminController extends Controller
             }
         });
 
+        // Tính dung lượng đóng gói của Angular frontend (Cache 5 phút)
+        $webBuildSize = \Cache::remember('system_web_build_size', 300, function () {
+            try {
+                $distPath = base_path('../cafe-blockchain-web/dist');
+                if (!file_exists($distPath) || !is_dir($distPath)) {
+                    return 'N/A (Deploy độc lập)';
+                }
+                $size = 0;
+                $its = new \RecursiveIteratorIterator(
+                    new \RecursiveDirectoryIterator($distPath, \FilesystemIterator::SKIP_DOTS)
+                );
+                foreach ($its as $file) {
+                    $size += $file->getSize();
+                }
+                return number_format($size / 1024 / 1024, 2, ',', '.') . ' MB';
+            } catch (\Throwable $e) {
+                return 'N/A';
+            }
+        });
+
         // Lấy số lượng kết nối tối đa của Database
         $maxConnections = 'N/A';
         try {
@@ -532,6 +552,7 @@ class AdminController extends Controller
                 'timezone'         => config('app.timezone'),
                 'server_ip'        => $serverIp,
                 'app_size'         => $appSize,
+                'web_build_size'   => $webBuildSize,
                 'debug_mode'       => (bool) config('app.debug'),
                 'storage_writable' => is_writable(storage_path()),
                 'cache_writable'   => is_writable(storage_path('framework/cache')),

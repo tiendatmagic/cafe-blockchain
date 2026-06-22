@@ -74,6 +74,18 @@ class CreateOrderCommandHandler
                 ];
             }
 
+
+            // Xác thực khách hàng thuộc sở hữu của quán và tải trước
+            $customer = null;
+            if (!empty($data['customer_id'])) {
+                $customer = Customer::where('id', $data['customer_id'])
+                    ->where('store_owner_address', $storeOwner)
+                    ->first();
+                if (!$customer) {
+                    throw new \Exception("The selected customer was not found or does not belong to this store!");
+                }
+            }
+
             // Áp dụng voucher nếu có
             $discountAmount = 0;
             $voucherNftTokenId = $data['voucher_nft_token_id'] ?? null;
@@ -90,11 +102,6 @@ class CreateOrderCommandHandler
                 if (empty($orderCode)) {
                     $orderCode = 'HD-' . strtoupper(bin2hex(random_bytes(3)));
                     $data['order_code'] = $orderCode;
-                }
-
-                $customer = null;
-                if (!empty($data['customer_id'])) {
-                    $customer = Customer::find($data['customer_id']);
                 }
 
                 if (!$customer || empty($customer->wallet_address)) {
@@ -185,7 +192,6 @@ class CreateOrderCommandHandler
 
             // Ghi nhận công nợ nếu phương thức thanh toán là Ghi nợ
             if ($savedOrder->payment_method === 'debt') {
-                $customer = Customer::findOrFail($savedOrder->customer_id);
                 $customer->increment('debt_balance', $savedOrder->total_amount);
 
                 DebtLog::create([

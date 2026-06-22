@@ -446,7 +446,7 @@ class AuthController extends Controller
             $derivedAddress = '0x' . substr(Keccak::hash(substr(hex2bin($pubkey->encode('hex')), 1), 256), 24);
 
             return strtolower($derivedAddress) === strtolower($address);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return false;
         }
     }

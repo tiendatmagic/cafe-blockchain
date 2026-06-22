@@ -1111,23 +1111,42 @@
             <!-- LEFT: Installed Packages -->
             <div app-card class="p-0 overflow-hidden">
               <div
-                class="px-6 py-4 border-b border-slate-100 dark:border-slate-800/60 flex flex-col sm:flex-row sm:items-center gap-3"
+                class="px-6 py-4 border-b border-slate-100 dark:border-slate-800/60 flex flex-col lg:flex-row lg:items-center gap-4"
               >
                 <div class="flex-1 min-w-0">
                   <div>
                     <h4 class="text-sm font-bold text-slate-800 dark:text-white">
-                      Thư viện đã cài đặt (composer.json)
+                      Thư viện đã cài đặt ({{ packageType() === 'composer' ? 'composer.json' : 'package.json' }})
                     </h4>
                     <p class="text-sm text-slate-400 mt-0.5">
                       {{ filteredPackages().length }} / {{ packages().length }} package
                     </p>
                   </div>
                 </div>
+
+                <!-- Bộ chuyển đổi Tab thư viện (Backend vs Frontend) -->
+                <div class="flex items-center gap-1 p-1 bg-slate-100/80 dark:bg-slate-800/50 rounded-lg text-xs font-bold leading-none shrink-0 self-start lg:self-center">
+                  <button
+                    (click)="packageType.set('composer'); packageCurrentPage.set(1)"
+                    [class]="packageType() === 'composer' ? 'bg-white dark:bg-slate-700 shadow-sm text-[var(--dynamic-primary)]' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-350'"
+                    class="px-3 py-1.5 rounded-md transition"
+                  >
+                    Backend (Composer)
+                  </button>
+                  <button
+                    (click)="packageType.set('npm'); packageCurrentPage.set(1)"
+                    [class]="packageType() === 'npm' ? 'bg-white dark:bg-slate-700 shadow-sm text-[var(--dynamic-primary)]' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-350'"
+                    class="px-3 py-1.5 rounded-md transition"
+                  >
+                    Frontend (NPM)
+                  </button>
+                </div>
+
                 <app-custom-search-input
                   [ngModel]="packageSearch()"
                   (ngModelChange)="onPackageSearchChange($event)"
                   placeholder="Tìm thư viện..."
-                  containerClass="w-full sm:w-64"
+                  containerClass="w-full lg:w-64"
                   inputClass="search-input !pl-9 !h-9 !text-sm"
                 ></app-custom-search-input>
               </div>
@@ -1167,60 +1186,15 @@
 
               <!-- Pagination -->
               @if (filteredPackages().length > packageItemsPerPage) {
-                <div
-                  class="px-6 py-3 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between gap-2"
-                >
-                  <span class="text-sm text-slate-405">
-                    {{ (packageCurrentPage() - 1) * packageItemsPerPage + 1 }}–{{
-                      packageCurrentPage() * packageItemsPerPage < filteredPackages().length
-                        ? packageCurrentPage() * packageItemsPerPage
-                        : filteredPackages().length
-                    }}
-                    / {{ filteredPackages().length }}
-                  </span>
-                  <div class="flex items-center gap-1">
-                    <button
-                      (click)="packageCurrentPage.set(packageCurrentPage() - 1)"
-                      [disabled]="packageCurrentPage() <= 1"
-                      class="w-9.5 h-9.5 rounded-lg flex items-center justify-center text-slate-400 hover:text-[var(--dynamic-primary)] hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 transition"
-                    >
-                      <svg
-                        class="h-4.5 w-4.5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M15 19l-7-7 7-7"
-                        />
-                      </svg>
-                    </button>
-                    <span class="text-sm font-bold text-slate-600 dark:text-slate-400 px-2"
-                      >{{ packageCurrentPage() }} / {{ packageTotalPages() }}</span
-                    >
-                    <button
-                      (click)="packageCurrentPage.set(packageCurrentPage() + 1)"
-                      [disabled]="packageCurrentPage() >= packageTotalPages()"
-                      class="w-9.5 h-9.5 rounded-lg flex items-center justify-center text-slate-400 hover:text-[var(--dynamic-primary)] hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 transition"
-                    >
-                      <svg
-                        class="h-4.5 w-4.5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M9 5l7 7-7 7"
-                        />
-                      </svg>
-                    </button>
-                  </div>
+                <div class="border-t border-slate-100 dark:border-slate-800/60">
+                  <app-pagination
+                    [currentPage]="packageCurrentPage()"
+                    [totalPages]="packageTotalPages()"
+                    [totalItems]="filteredPackages().length"
+                    [itemsPerPage]="packageItemsPerPage"
+                    [itemName]="'thư viện'"
+                    (pageChange)="packageCurrentPage.set($event)"
+                  ></app-pagination>
                 </div>
               }
             </div>
@@ -1366,13 +1340,13 @@
                 </div>
               </div>
 
-              <!-- Frontend Environment -->
+              <!-- Frontend Environment (Client) -->
               <div app-card class="space-y-0 p-0 overflow-hidden">
                 <div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800/60">
                   <h5
                     class="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest"
                   >
-                    MÔI TRƯỜNG FRONTEND
+                    MÔI TRƯỜNG KHÁCH (CLIENT)
                   </h5>
                 </div>
                 <div
@@ -1384,6 +1358,12 @@
                       class="font-mono text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/30 px-2 py-0.5 rounded-lg border border-purple-100/50 dark:border-purple-900/30 leading-none"
                       >{{ angularVersion }}</span
                     >
+                  </div>
+                  <div class="flex items-center justify-between px-5 py-2.5 text-sm">
+                    <span class="text-slate-500 font-medium">Dung lượng đóng gói Web</span>
+                    <span class="font-extrabold text-slate-800 dark:text-slate-200">
+                      {{ webBuildSize() }}
+                    </span>
                   </div>
                   <div class="flex items-center justify-between px-5 py-2.5 text-sm">
                     <span class="text-slate-500 font-medium">Chế độ Production</span>

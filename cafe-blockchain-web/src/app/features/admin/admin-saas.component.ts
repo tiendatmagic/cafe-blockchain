@@ -21,6 +21,8 @@ import { StateService } from '@core/services/state.service';
 import { environment } from '@environments/environment';
 import { ApiService } from '@core/services/api.service';
 import { ModalService } from '@core/services/modal.service';
+import packageInfo from '../../../../package.json';
+import { PaginationComponent } from '@shared/components/pagination/pagination.component';
 import { TenantSubscriptionModalComponent } from './components/tenant-subscription-modal/tenant-subscription-modal.component';
 import { SubscriptionPlanModalComponent } from './components/subscription-plan-modal/subscription-plan-modal.component';
 import { PaymentFormModalComponent } from '../settings/components/payment-form-modal/payment-form-modal.component';
@@ -43,7 +45,7 @@ import { SkeletonLoaderComponent } from '@shared/components/skeleton-loader/skel
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { CardComponent } from '@shared/components/card/card.component';
 import { CustomSwitchComponent } from '@shared/components/custom-switch/custom-switch.component';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of, catchError } from 'rxjs';
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
 import { CustomSearchInputComponent } from '@shared/components/custom-search-input/custom-search-input.component';
 
@@ -69,6 +71,7 @@ import { CustomSearchInputComponent } from '@shared/components/custom-search-inp
     CustomSwitchComponent,
     VNDCurrencyPipe,
     CustomSearchInputComponent,
+    PaginationComponent,
   ],
   templateUrl: './admin-saas.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
@@ -339,14 +342,21 @@ export class AdminSaaSComponent implements OnInit {
 
   // System Info & Packages
   public readonly systemInfo = signal<any | null>(null);
-  public readonly packages = signal<any[]>([]);
+  public readonly composerPackages = signal<any[]>([]);
+  public readonly npmPackages = signal<any[]>([]);
+  public readonly packageType = signal<'composer' | 'npm'>('composer');
   public readonly isLoadingSysInfo = signal<boolean>(false);
   public readonly packageSearch = signal<string>('');
   public readonly packageCurrentPage = signal<number>(1);
   public readonly packageItemsPerPage = 15;
+  public readonly webBuildSize = signal<string>('0.00 MB');
 
   // Maintenance
   public readonly runningMaintenance = signal<string>('');
+
+  public readonly packages = computed(() => {
+    return this.packageType() === 'composer' ? this.composerPackages() : this.npmPackages();
+  });
 
   public readonly filteredPackages = computed(() => {
     const q = this.packageSearch().trim().toLowerCase();
@@ -472,6 +482,28 @@ export class AdminSaaSComponent implements OnInit {
   });
 
   ngOnInit() {
+    // Tải danh sách NPM packages từ package.json của frontend (Compile-time)
+    const npmPkgs: any[] = [];
+    if (packageInfo && (packageInfo as any).dependencies) {
+      Object.entries((packageInfo as any).dependencies).forEach(([name, version]) => {
+        npmPkgs.push({
+          name,
+          version: version as string,
+          require: [],
+        });
+      });
+    }
+    if (packageInfo && (packageInfo as any).devDependencies) {
+      Object.entries((packageInfo as any).devDependencies).forEach(([name, version]) => {
+        npmPkgs.push({
+          name,
+          version: version as string,
+          require: [],
+        });
+      });
+    }
+    this.npmPackages.set(npmPkgs);
+
     const role = this.stateService.currentUserAdminRole();
     const isStaff = role === 'staff';
     const isAdmin = role === 'admin';
@@ -861,10 +893,24 @@ export class AdminSaaSComponent implements OnInit {
     forkJoin({
       info: this.apiService.getAdminSystemInfo(),
       pkgs: this.apiService.getAdminPackages(),
+      webBuild: this.apiService.getWebBuildSize().pipe(catchError(() => of(null)))
     }).subscribe({
       next: (res) => {
         this.systemInfo.set(res.info);
-        this.packages.set(res.pkgs?.packages ?? []);
+        this.composerPackages.set(res.pkgs?.packages ?? []);
+
+        // Cập nhật build size từ file tĩnh nếu tải thành công, ngược lại dùng fallback từ backend hoặc tĩnh
+        if (res.webBuild && res.webBuild.size) {
+          this.webBuildSize.set(res.webBuild.size);
+        } else {
+          const backendSize = res.info?.system_env?.web_build_size;
+          if (backendSize && backendSize !== 'N/A (Deploy độc lập)') {
+            this.webBuildSize.set(backendSize);
+          } else {
+            this.webBuildSize.set('0.00 MB');
+          }
+        }
+
         this.packageCurrentPage.set(1);
         this.isLoadingSysInfo.set(false);
       },
