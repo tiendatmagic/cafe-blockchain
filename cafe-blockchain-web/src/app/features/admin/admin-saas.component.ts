@@ -192,7 +192,7 @@ export class AdminSaaSComponent implements OnInit {
       { value: 'payment', label: 'Thanh toán' },
       { value: 'subscriptions', label: 'Thuê bao' },
       { value: 'staffs', label: 'Nhân viên hệ thống' },
-      { value: 'system', label: 'Hệ thống' },
+      { value: 'system', label: 'Bảo trì & Tối ưu' },
       { value: 'sysinfo', label: 'Thông tin hệ thống' },
     ];
   });
@@ -350,6 +350,13 @@ export class AdminSaaSComponent implements OnInit {
   public readonly packageCurrentPage = signal<number>(1);
   public readonly packageItemsPerPage = 15;
   public readonly webBuildSize = signal<string>('0.00 MB');
+  // System Logs
+  public readonly systemLogs = signal<any[]>([]);
+  public readonly logsLimit = signal<number>(100);
+  public readonly logsLevelFilter = signal<string>('ALL');
+  public readonly logSearchQuery = signal<string>('');
+  public readonly isLoadingLogs = signal<boolean>(false);
+  public readonly logSize = signal<string>('0 MB');
 
   // Maintenance
   public readonly runningMaintenance = signal<string>('');
@@ -950,6 +957,9 @@ export class AdminSaaSComponent implements OnInit {
       next: (res: any) => {
         this.stateService.showToast(res.message || 'Thao tác thành công!', 'success');
         this.runningMaintenance.set('');
+        if (action === 'clear-logs') {
+          this.loadSystemLogs();
+        }
       },
       error: (err: any) => {
         const msg = err?.error?.message || 'Có lỗi xảy ra, vui lòng thử lại.';
@@ -957,6 +967,42 @@ export class AdminSaaSComponent implements OnInit {
         this.runningMaintenance.set('');
       },
     });
+  }
+
+  public loadSystemLogs() {
+    this.isLoadingLogs.set(true);
+    this.apiService.getAdminSystemLogs({
+      limit: this.logsLimit(),
+      level: this.logsLevelFilter(),
+      search: this.logSearchQuery(),
+    }).subscribe({
+      next: (res) => {
+        if (res) {
+          this.systemLogs.set(res.logs || []);
+          this.logSize.set(res.log_size || '0 MB');
+        }
+        this.isLoadingLogs.set(false);
+      },
+      error: () => {
+        this.stateService.showToast('Không thể tải nhật ký lỗi hệ thống.', 'error');
+        this.isLoadingLogs.set(false);
+      }
+    });
+  }
+
+  public onLogsSearchChange(search: string) {
+    this.logSearchQuery.set(search);
+    this.loadSystemLogs();
+  }
+
+  public onLogsLevelChange(level: string) {
+    this.logsLevelFilter.set(level);
+    this.loadSystemLogs();
+  }
+
+  public onLogsLimitChange(limit: any) {
+    this.logsLimit.set(Number(limit));
+    this.loadSystemLogs();
   }
 
   // --- Quản lý Phương thức thanh toán Hệ thống (Super Admin) ---
@@ -1132,6 +1178,9 @@ export class AdminSaaSComponent implements OnInit {
 
     if (tab === 'sysinfo' && !this.systemInfo()) {
       this.loadSysInfo();
+    }
+    if (tab === 'system') {
+      this.loadSystemLogs();
     }
     if (tab === 'payment') {
       this.loadSystemPaymentMethods();

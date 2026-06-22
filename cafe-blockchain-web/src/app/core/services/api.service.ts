@@ -725,6 +725,16 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/admin/maintenance/clear-optimize`, {}, { headers: this.getHeaders() });
   }
 
+  public getAdminSystemLogs(params?: { limit?: number; level?: string; search?: string }): Observable<any> {
+    let httpParams = new HttpParams();
+    if (params) {
+      if (params.limit) httpParams = httpParams.set('limit', params.limit.toString());
+      if (params.level) httpParams = httpParams.set('level', params.level);
+      if (params.search) httpParams = httpParams.set('search', params.search);
+    }
+    return this.http.get(`${this.baseUrl}/admin/logs`, { headers: this.getHeaders(), params: httpParams });
+  }
+
   public getWebBuildSize(): Observable<any> {
     return this.http.get('assets/build-size.json');
   }

@@ -721,6 +721,140 @@ class AdminController extends Controller
         return response()->json(['success' => true, 'message' => 'Route cache cleared successfully.']);
     }
 
+    /**
+     * Đọc logs hệ thống (laravel.log) an toàn từ dưới lên
+     */
+    public function getSystemLogs(Request $request)
+    {
+        $logFile = storage_path('logs/laravel.log');
+        if (!file_exists($logFile)) {
+            return response()->json([
+                'logs' => [],
+                'log_size' => '0 MB',
+                'message' => 'Log file is empty or does not exist.'
+            ]);
+        }
+
+        $limit = (int) $request->query('limit', 100);
+        $limit = min(max($limit, 10), 500); // Giới hạn hợp lý từ 10 đến 500
+        $levelFilter = strtoupper($request->query('level', 'all'));
+        $search = $request->query('search', '');
+
+        $logs = [];
+        $stackBuffer = [];
+        $logCount = 0;
+        
+        $fileSize = filesize($logFile);
+        $handle = fopen($logFile, 'r');
+        
+        if ($handle) {
+            $pos = $fileSize;
+            $buffer = '';
+            $chunkSize = 8192; // Đọc block 8KB mỗi lần
+            $totalLinesProcessed = 0;
+            $maxLinesToProcess = 10000; // Giới hạn tối đa tránh treo CPU
+
+            while ($pos > 0 && $logCount < $limit && $totalLinesProcessed < $maxLinesToProcess) {
+                $readSize = min($pos, $chunkSize);
+                $pos -= $readSize;
+                
+                fseek($handle, $pos);
+                $chunk = fread($handle, $readSize);
+                $buffer = $chunk . $buffer;
+                
+                $lines = explode("\n", $buffer);
+                // Dòng đầu tiên của mảng explode có thể chưa trọn vẹn (vì bị cắt ngang ở đầu block), 
+                // giữ lại đưa vào buffer cho lượt đọc tiếp theo, trừ khi đã đọc đến đầu file (pos == 0)
+                if ($pos > 0) {
+                    $buffer = array_shift($lines);
+                } else {
+                    $buffer = '';
+                }
+                
+                // Duyệt ngược các dòng đã hoàn chỉnh trong block này
+                for ($i = count($lines) - 1; $i >= 0; $i--) {
+                    $line = $lines[$i];
+                    $totalLinesProcessed++;
+                    
+                    $parsed = $this->parseLogLine($line, $stackBuffer);
+                    if ($parsed) {
+                        // Áp dụng bộ lọc
+                        if ($this->filterLog($parsed, $levelFilter, $search)) {
+                            $logs[] = $parsed;
+                            $logCount++;
+                            if ($logCount >= $limit) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            fclose($handle);
+        }
+
+        return response()->json([
+            'logs' => $logs,
+            'log_size' => number_format($fileSize / 1024 / 1024, 2, ',', '.') . ' MB'
+        ]);
+    }
+
+    private function parseLogLine($line, &$stackBuffer)
+    {
+        $line = trim($line);
+        if (empty($line)) {
+            return null;
+        }
+
+        // Pattern chuẩn log Laravel: [2026-06-22 18:19:11] local.ERROR: Message {"exception":"..."}
+        if (preg_match('/^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]\s+([\w\-]+)\.(\w+):\s+(.*)$/u', $line, $matches)) {
+            $timestamp = $matches[1];
+            $environment = $matches[2];
+            $level = strtoupper($matches[3]);
+            $message = $matches[4];
+            
+            // Ghép stack trace thu thập được trước đó (đi ngược từ dưới lên nên array_reverse)
+            $stackTrace = null;
+            if (!empty($stackBuffer)) {
+                $stackTrace = implode("\n", array_reverse($stackBuffer));
+                $stackBuffer = []; // clear cho log tiếp theo
+            }
+            
+            return [
+                'timestamp'   => $timestamp,
+                'environment' => $environment,
+                'level'       => $level,
+                'message'     => $message,
+                'stack_trace' => $stackTrace,
+            ];
+        } else {
+            // Không khớp định dạng, đây là stack trace của dòng log phía trên nó
+            $stackBuffer[] = $line;
+            return null;
+        }
+    }
+
+    private function filterLog($log, $levelFilter, $search)
+    {
+        // Lọc theo level
+        if ($levelFilter !== 'ALL' && $log['level'] !== $levelFilter) {
+            return false;
+        }
+        
+        // Lọc theo từ khóa tìm kiếm
+        if (!empty($search)) {
+            $search = strtolower($search);
+            $messageMatch = strpos(strtolower($log['message']), $search) !== false;
+            $traceMatch = $log['stack_trace'] && strpos(strtolower($log['stack_trace']), $search) !== false;
+            $levelMatch = strpos(strtolower($log['level']), $search) !== false;
+            
+            if (!$messageMatch && !$traceMatch && !$levelMatch) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
     /** Xóa toàn bộ file .log trong storage/logs */
     public function clearLogs()
     {

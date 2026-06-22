@@ -90,6 +90,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/payment-methods/{id}', [AdminController::class, 'destroyPaymentMethod']);
 
         // Maintenance Actions
+        Route::get('/logs', [AdminController::class, 'getSystemLogs']);
         Route::post('/maintenance/clear-views', [AdminController::class, 'clearViews']);
         Route::post('/maintenance/clear-config', [AdminController::class, 'clearConfig']);
         Route::post('/maintenance/clear-routes', [AdminController::class, 'clearRoutes']);
