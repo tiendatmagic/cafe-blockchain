@@ -119,15 +119,15 @@ export class PosComponent implements OnInit, OnDestroy {
   public readonly initialCashInput = signal<number>(0);
   public readonly initialCashFormatted = computed(() => {
     const val = this.initialCashInput();
-    return val > 0 ? val.toLocaleString('en-US') : '';
+    return val !== null && val !== undefined ? val.toLocaleString('en-US') : '';
   });
 
   public onInitialCashInput(event: any) {
     const inputVal = event.target.value;
     const cleanVal = inputVal.replace(/[^0-9]/g, '');
-    const numVal = Number(cleanVal) || 0;
+    const numVal = cleanVal === '' ? 0 : Number(cleanVal);
     this.initialCashInput.set(numVal);
-    event.target.value = numVal > 0 ? numVal.toLocaleString('en-US') : '';
+    event.target.value = cleanVal !== '' ? Number(cleanVal).toLocaleString('en-US') : '';
   }
 
   public startShift() {

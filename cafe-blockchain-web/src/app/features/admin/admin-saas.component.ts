@@ -287,6 +287,13 @@ export class AdminSaaSComponent implements OnInit {
   public readonly isSystemPaymentsLoading = signal<boolean>(false);
   public readonly isSystemPaymentActionLoading = signal<boolean>(false);
 
+  // Cờ hiệu cache FE (loaded flags)
+  public readonly hasLoadedPayments = signal<boolean>(false);
+  public readonly hasLoadedSubscriptions = signal<boolean>(false);
+  public readonly hasLoadedStaffs = signal<boolean>(false);
+  public readonly hasLoadedLogs = signal<boolean>(false);
+
+
   public readonly systemContactsList = signal<any[]>([]);
   public readonly isSavingContacts = signal<boolean>(false);
 
@@ -565,22 +572,9 @@ export class AdminSaaSComponent implements OnInit {
 
   public setSubTab(tab: 'config' | 'tenants' | 'plans' | 'maintenance' | 'info' | 'payment' | 'subscriptions' | 'staffs') {
     this.activeSubTab.set(tab);
-    this.searchQuery.set('');
-    this.tenantPlanFilter.set('all');
-    this.tenantStatusFilter.set('all');
-    this.tenantCurrentPage.set(1);
-    this.planCurrentPage.set(1);
-    this.systemPaymentPage.set(1);
-    this.systemPaymentSearch.set('');
 
-    // Reset subscription search and pagination
-    this.subscriptionPage.set(1);
-    this.subscriptionSearch.set('');
-    this.subscriptionStatus.set('pending');
-
-    // Reset system staff search and pagination
-    this.systemStaffsPage.set(1);
-    this.systemStaffsSearch.set('');
+    // Không reset các bộ lọc/tìm kiếm của các tab khác nữa để giữ nguyên trạng thái (state preservation),
+    // giúp người dùng bấm qua lại giữa các tab mà không bị mất dữ liệu lọc/phân trang hiện tại.
 
     this.triggerTabLoad(tab);
 
@@ -1003,6 +997,7 @@ export class AdminSaaSComponent implements OnInit {
         if (res) {
           this.systemLogs.set(res.logs || []);
           this.logSize.set(res.log_size || '0 MB');
+          this.hasLoadedLogs.set(true);
         }
         this.isLoadingLogs.set(false);
       },
@@ -1042,6 +1037,7 @@ export class AdminSaaSComponent implements OnInit {
           if (res) {
             this.systemPaymentMethods.set(res.data || []);
             this.systemPaymentTotal.set(res.total || 0);
+            this.hasLoadedPayments.set(true);
           }
           this.isSystemPaymentsLoading.set(false);
         },
@@ -1180,7 +1176,6 @@ export class AdminSaaSComponent implements OnInit {
         this.tenants.set(res.tenants || []);
         this.plans.set(res.plans || []);
         this.tenantCurrentPage.set(1);
-        this.loadSubscriptionRequests();
         this.isDataLoading.set(false);
         // Sau khi isDataLoading = false, trigger load tab-specific data
         // để tránh race condition giữa loadSystemStaffs và isDataLoading
@@ -1202,17 +1197,17 @@ export class AdminSaaSComponent implements OnInit {
     if (tab === 'info' && !this.systemInfo()) {
       this.loadSysInfo();
     }
-    if (tab === 'maintenance') {
+    if (tab === 'maintenance' && !this.hasLoadedLogs()) {
       this.loadSystemLogs();
     }
-    if (tab === 'payment') {
+    if (tab === 'payment' && !this.hasLoadedPayments()) {
       this.loadSystemPaymentMethods();
     }
-    if (tab === 'subscriptions') {
+    if (tab === 'subscriptions' && !this.hasLoadedSubscriptions()) {
       this.loadSubscriptionRequests();
     }
     // Super Admin và admin role đều có thể xem danh sách nhân viên hệ thống
-    if (tab === 'staffs' && (isSuperAdmin || role === 'admin')) {
+    if (tab === 'staffs' && (isSuperAdmin || role === 'admin') && !this.hasLoadedStaffs()) {
       this.loadSystemStaffs();
     }
   }
@@ -1230,6 +1225,7 @@ export class AdminSaaSComponent implements OnInit {
         if (res) {
           this.subscriptionRequests.set(res.data || []);
           this.subscriptionTotal.set(res.total || 0);
+          this.hasLoadedSubscriptions.set(true);
         }
         this.isSubscriptionsLoading.set(false);
       },
@@ -1306,6 +1302,7 @@ export class AdminSaaSComponent implements OnInit {
       next: (res) => {
         this.systemStaffs.set(res.data || []);
         this.systemStaffsTotal.set(res.total || 0);
+        this.hasLoadedStaffs.set(true);
         this.isSystemStaffsLoading.set(false);
       },
       error: () => {

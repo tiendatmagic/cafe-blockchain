@@ -140,17 +140,17 @@ export class ShiftService {
   public onActualCashInput(event: any) {
     const inputVal = event.target.value;
     const cleanVal = inputVal.replace(/[^0-9]/g, '');
-    const numVal = Number(cleanVal) || 0;
+    const numVal = cleanVal === '' ? 0 : Number(cleanVal);
     this.shiftStore.actualCashInput.set(numVal);
-    event.target.value = numVal > 0 ? numVal.toLocaleString('en-US') : '';
+    event.target.value = cleanVal !== '' ? Number(cleanVal).toLocaleString('en-US') : '';
   }
 
   public onInitialCashInput(event: any) {
     const inputVal = event.target.value;
     const cleanVal = inputVal.replace(/[^0-9]/g, '');
-    const numVal = Number(cleanVal) || 0;
+    const numVal = cleanVal === '' ? 0 : Number(cleanVal);
     this.shiftStore.initialCashInput.set(numVal);
-    event.target.value = numVal > 0 ? numVal.toLocaleString('en-US') : '';
+    event.target.value = cleanVal !== '' ? Number(cleanVal).toLocaleString('en-US') : '';
   }
 
   public async openStartShiftModal() {
@@ -193,7 +193,7 @@ export class ShiftService {
     const now = Date.now();
     if (this.shiftStore.shiftSummary() && (now - this.lastShiftSummaryLoadedTime < 5000)) {
       const expected = this.shiftStore.shiftSummary()?.expected_cash ?? 0;
-      this.shiftStore.actualCashInput.set(expected);
+      this.shiftStore.actualCashInput.set(Math.max(0, expected));
       return;
     }
 
@@ -202,7 +202,7 @@ export class ShiftService {
       next: (res) => {
         this.shiftStore.shiftSummary.set(res);
         const expected = res?.expected_cash ?? 0;
-        this.shiftStore.actualCashInput.set(expected);
+        this.shiftStore.actualCashInput.set(Math.max(0, expected));
         this.lastShiftSummaryLoadedTime = Date.now();
         this.shiftStore.isShiftSummaryLoading.set(false);
       },

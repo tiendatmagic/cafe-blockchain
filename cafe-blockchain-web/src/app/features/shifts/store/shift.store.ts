@@ -30,12 +30,12 @@ export class ShiftStore {
   // Computed properties
   public readonly actualCashFormatted = computed(() => {
     const val = this.actualCashInput();
-    return val > 0 ? val.toLocaleString('en-US') : '';
+    return val !== null && val !== undefined ? val.toLocaleString('en-US') : '';
   });
 
   public readonly initialCashFormatted = computed(() => {
     const val = this.initialCashInput();
-    return val > 0 ? val.toLocaleString('en-US') : '';
+    return val !== null && val !== undefined ? val.toLocaleString('en-US') : '';
   });
 
   public readonly shiftFiatRevenue = computed(() => this.shiftSummary()?.payment_revenues?.cash ?? 0);

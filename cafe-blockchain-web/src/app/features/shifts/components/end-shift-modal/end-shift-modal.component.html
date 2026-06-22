@@ -13,7 +13,7 @@
   } @else {
     <!-- Thông tin ca trực cơ bản -->
     <div
-      class="grid grid-cols-2 gap-4 p-4.5 bg-slate-50 dark:bg-slate-950 rounded-[15px] border border-slate-200/40 dark:border-slate-800/40 text-xs"
+      class="grid grid-cols-3 gap-4 p-4.5 bg-slate-50 dark:bg-slate-950 rounded-[15px] border border-slate-200/40 dark:border-slate-800/40 text-xs"
     >
       <div class="space-y-1">
         <span class="text-slate-400 font-bold block">Thời gian vào ca</span>
@@ -21,6 +21,12 @@
           shiftService.currentShift()
             ? formatShiftTime(shiftService.currentShift().start_time)
             : ''
+        }}</span>
+      </div>
+      <div class="space-y-1">
+        <span class="text-slate-400 font-bold block">Thời gian đã chạy</span>
+        <span class="font-extrabold text-slate-800 dark:text-white">{{
+          shiftService.shiftDurationString()
         }}</span>
       </div>
       <div class="space-y-1">
@@ -119,7 +125,7 @@
         <div class="relative">
           <input
             type="text"
-            [value]="shiftService.actualCashInput() > 0 ? shiftService.actualCashInput().toLocaleString('en-US') : ''"
+            [value]="shiftService.actualCashFormatted()"
             (input)="onActualCashInput($event)"
             placeholder="Nhập số tiền mặt thực tế..."
             class="form-input pr-12 text-lg font-extrabold text-[var(--dynamic-primary)]"

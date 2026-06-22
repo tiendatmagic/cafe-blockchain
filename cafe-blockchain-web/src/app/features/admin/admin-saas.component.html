@@ -112,11 +112,27 @@
             containerClass="w-full sm:w-64"
             inputClass="search-input !pl-10 !h-10 !text-sm"
           ></app-custom-search-input>
+
+          <!-- Refresh Button -->
+          <button
+            app-button
+            variant="secondary"
+            size="md"
+            (click)="loadSystemPaymentMethods(true)"
+            [loading]="isSystemPaymentsLoading()"
+            class="flex items-center justify-center gap-1.5 shrink-0 !h-10 rounded-xl !py-2 !px-4 text-sm font-bold w-full sm:w-auto"
+          >
+            @if (!isSystemPaymentsLoading()) {
+              <app-icon name="sync" class="h-4 w-4"></app-icon>
+            }
+            <span>Tải lại</span>
+          </button>
+
           @if (stateService.isSuperAdmin()) {
             <button
               app-button
               variant="primary"
-              class="whitespace-nowrap flex items-center gap-1.5"
+              class="whitespace-nowrap flex items-center justify-center gap-1.5 w-full sm:w-auto"
               (click)="openAddSystemPaymentModal()"
             >
               <app-icon name="plus" class="h-4.5 w-4.5" strokeWidth="2.5"></app-icon>
@@ -1982,6 +1998,21 @@
               containerClass="w-full sm:w-64"
               inputClass="search-input !pl-10 !h-10 !text-sm"
             ></app-custom-search-input>
+
+            <!-- Refresh Button -->
+            <button
+              app-button
+              variant="secondary"
+              size="md"
+              (click)="loadSubscriptionRequests()"
+              [loading]="isSubscriptionsLoading()"
+              class="flex items-center justify-center gap-1.5 shrink-0 !h-10 rounded-xl !py-2 !px-4 text-sm font-bold w-full sm:w-auto"
+            >
+              @if (!isSubscriptionsLoading()) {
+                <app-icon name="sync" class="h-4 w-4"></app-icon>
+              }
+              <span>Tải lại</span>
+            </button>
           </div>
         </div>
 
@@ -2203,6 +2234,21 @@
               containerClass="w-full sm:w-64"
               inputClass="search-input !pl-10 !h-10 !text-sm"
             ></app-custom-search-input>
+
+            <!-- Refresh Button -->
+            <button
+              app-button
+              variant="secondary"
+              size="md"
+              (click)="loadSystemStaffs()"
+              [loading]="isSystemStaffsLoading()"
+              class="flex items-center justify-center gap-1.5 shrink-0 !h-10 rounded-xl !py-2 !px-4 text-sm font-bold w-full sm:w-auto"
+            >
+              @if (!isSystemStaffsLoading()) {
+                <app-icon name="sync" class="h-4 w-4"></app-icon>
+              }
+              <span>Tải lại</span>
+            </button>
 
             @if (stateService.isSuperAdmin()) {
               <button
