@@ -295,6 +295,10 @@ export class StateService {
             }
           });
         });
+      } else {
+        untracked(() => {
+          this.isInitialLoading.set(false);
+        });
       }
     }, { allowSignalWrites: true });
 
