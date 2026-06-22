@@ -118,6 +118,11 @@ class ShiftController extends Controller
             $storeOwner = strtolower($user->store_owner_address ?: $user->wallet_address);
             \App\Domain\Entities\Setting::clearStoreCache($storeOwner);
 
+            // Xóa cache lịch sử ca trực của tháng tương ứng
+            $month = \Carbon\Carbon::parse($shift->start_time)->format('Y-m');
+            \Illuminate\Support\Facades\Cache::forget("store_shifts_history:{$storeOwner}:{$user->id}:{$month}");
+            \Illuminate\Support\Facades\Cache::forget("store_shifts_history:{$storeOwner}:all:{$month}");
+
             DB::commit();
 
             return response()->json([
