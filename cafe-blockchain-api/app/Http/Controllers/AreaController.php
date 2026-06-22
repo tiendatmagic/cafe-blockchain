@@ -13,8 +13,18 @@ class AreaController extends Controller
     public function index(Request $request)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-        $areas = Area::where('store_owner_address', $storeOwner)->with('tables')->orderBy('id', 'asc')->get();
+        
+        $areas = \Illuminate\Support\Facades\Cache::remember("store_areas_with_tables:{$storeOwner}", 86400, function () use ($storeOwner) {
+            return Area::where('store_owner_address', $storeOwner)->with('tables')->orderBy('id', 'asc')->get()->toArray();
+        });
+
         return response()->json($areas);
+    }
+
+    private function clearTableAreaCache(string $storeOwner)
+    {
+        \Illuminate\Support\Facades\Cache::forget("store_areas_with_tables:{$storeOwner}");
+        \Illuminate\Support\Facades\Cache::forget("store_tables_with_areas:{$storeOwner}");
     }
 
     /**
@@ -39,6 +49,8 @@ class AreaController extends Controller
             'name' => $validated['name'],
             'store_owner_address' => $storeOwner,
         ]);
+
+        $this->clearTableAreaCache($storeOwner);
 
         return response()->json([
             'message' => 'Area created successfully.',
@@ -71,6 +83,8 @@ class AreaController extends Controller
             'name' => $validated['name']
         ]);
 
+        $this->clearTableAreaCache($storeOwner);
+
         return response()->json([
             'message' => 'Area updated successfully.',
             'area' => $area
@@ -86,6 +100,8 @@ class AreaController extends Controller
         $area = Area::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         $area->delete();
+
+        $this->clearTableAreaCache($storeOwner);
 
         return response()->json([
             'message' => 'Area deleted successfully.'

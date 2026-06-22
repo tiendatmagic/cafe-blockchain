@@ -13,7 +13,11 @@ class CustomerGroupController extends Controller
     public function index(Request $request)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-        $groups = CustomerGroup::where('store_owner_address', $storeOwner)->withCount('customers')->orderBy('id', 'asc')->get();
+        
+        $groups = \Illuminate\Support\Facades\Cache::remember("store_customer_groups:{$storeOwner}", 86400, function () use ($storeOwner) {
+            return CustomerGroup::where('store_owner_address', $storeOwner)->withCount('customers')->orderBy('id', 'asc')->get()->toArray();
+        });
+
         return response()->json($groups);
     }
 
@@ -39,6 +43,8 @@ class CustomerGroupController extends Controller
             'name' => $validated['name'],
             'store_owner_address' => $storeOwner,
         ]);
+
+        \Illuminate\Support\Facades\Cache::forget("store_customer_groups:{$storeOwner}");
 
         $group->loadCount('customers');
 
@@ -73,6 +79,8 @@ class CustomerGroupController extends Controller
             'name' => $validated['name']
         ]);
 
+        \Illuminate\Support\Facades\Cache::forget("store_customer_groups:{$storeOwner}");
+
         $group->loadCount('customers');
 
         return response()->json([
@@ -90,6 +98,8 @@ class CustomerGroupController extends Controller
         $group = CustomerGroup::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         $group->delete();
+
+        \Illuminate\Support\Facades\Cache::forget("store_customer_groups:{$storeOwner}");
 
         return response()->json([
             'message' => 'Customer group deleted successfully.'

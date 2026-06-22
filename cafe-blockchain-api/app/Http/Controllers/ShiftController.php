@@ -114,6 +114,10 @@ class ShiftController extends Controller
                 'note' => $validated['note'] ?? null,
             ]);
 
+            // Giải phóng toàn bộ cache báo cáo và dashboard của cửa hàng
+            $storeOwner = strtolower($user->store_owner_address ?: $user->wallet_address);
+            \App\Domain\Entities\Setting::clearStoreCache($storeOwner);
+
             DB::commit();
 
             return response()->json([

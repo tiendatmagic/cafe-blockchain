@@ -36,16 +36,23 @@ class User extends Authenticatable
             return true;
         }
 
-        // Tìm kiếm thông tin nhân viên đăng nhập
-        $staff = $this->staff;
-        if (!$staff || !$staff->role) {
-            return false;
-        }
+        $wallet = strtolower($this->wallet_address);
+        $cacheKey = "store_staff_permissions:{$wallet}";
 
-        $permissions = $staff->role->permissions;
-        if (is_string($permissions)) {
-            $permissions = json_decode($permissions, true);
-        }
+        $permissions = \Illuminate\Support\Facades\Cache::remember($cacheKey, 86400, function () {
+            // Tìm kiếm thông tin nhân viên đăng nhập
+            $staff = $this->staff;
+            if (!$staff || !$staff->role) {
+                return [];
+            }
+
+            $permissions = $staff->role->permissions;
+            if (is_string($permissions)) {
+                $permissions = json_decode($permissions, true);
+            }
+
+            return is_array($permissions) ? $permissions : [];
+        });
 
         return !empty($permissions[$module]);
     }

@@ -13,8 +13,18 @@ class DiningTableController extends Controller
     public function index(Request $request)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-        $tables = DiningTable::where('store_owner_address', $storeOwner)->with('area')->orderBy('id', 'asc')->get();
+        
+        $tables = \Illuminate\Support\Facades\Cache::remember("store_tables_with_areas:{$storeOwner}", 86400, function () use ($storeOwner) {
+            return DiningTable::where('store_owner_address', $storeOwner)->with('area')->orderBy('id', 'asc')->get()->toArray();
+        });
+
         return response()->json($tables);
+    }
+
+    private function clearTableAreaCache(string $storeOwner)
+    {
+        \Illuminate\Support\Facades\Cache::forget("store_areas_with_tables:{$storeOwner}");
+        \Illuminate\Support\Facades\Cache::forget("store_tables_with_areas:{$storeOwner}");
     }
 
     /**
@@ -46,6 +56,8 @@ class DiningTableController extends Controller
             'status' => $validated['status'] ?? 'empty',
             'store_owner_address' => $storeOwner,
         ]);
+
+        $this->clearTableAreaCache($storeOwner);
 
         return response()->json([
             'message' => 'Dining table created successfully.',
@@ -85,6 +97,8 @@ class DiningTableController extends Controller
             'status' => $validated['status'] ?? $table->status,
         ]);
 
+        $this->clearTableAreaCache($storeOwner);
+
         return response()->json([
             'message' => 'Dining table updated successfully.',
             'table' => $table
@@ -107,6 +121,8 @@ class DiningTableController extends Controller
             'status' => $validated['status']
         ]);
 
+        $this->clearTableAreaCache($storeOwner);
+
         return response()->json([
             'message' => 'Dining table status updated successfully.',
             'table' => $table
@@ -122,6 +138,8 @@ class DiningTableController extends Controller
         $table = DiningTable::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         $table->delete();
+
+        $this->clearTableAreaCache($storeOwner);
 
         return response()->json([
             'message' => 'Dining table deleted successfully.'

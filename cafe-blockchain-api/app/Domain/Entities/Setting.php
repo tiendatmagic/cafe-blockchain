@@ -79,4 +79,38 @@ class Setting extends Model
         \Illuminate\Support\Facades\Cache::forget("store_products_all:{$storeOwnerAddress}");
         \Illuminate\Support\Facades\Cache::forget("store_categories_all:{$storeOwnerAddress}");
     }
+
+    /**
+     * Đăng ký cache key động của cửa hàng vào danh sách quản lý
+     */
+    public static function registerCacheKey($storeOwnerAddress, $key)
+    {
+        if (!$storeOwnerAddress) {
+            return;
+        }
+        $storeOwnerAddress = strtolower($storeOwnerAddress);
+        $keysKey = "store_cache_keys:{$storeOwnerAddress}";
+        $keys = \Illuminate\Support\Facades\Cache::get($keysKey, []);
+        if (!in_array($key, $keys)) {
+            $keys[] = $key;
+            \Illuminate\Support\Facades\Cache::put($keysKey, $keys, 604800); // Lưu trữ trong 1 tuần
+        }
+    }
+
+    /**
+     * Xóa toàn bộ các cache key đã đăng ký của cửa hàng
+     */
+    public static function clearStoreCache($storeOwnerAddress)
+    {
+        if (!$storeOwnerAddress) {
+            return;
+        }
+        $storeOwnerAddress = strtolower($storeOwnerAddress);
+        $keysKey = "store_cache_keys:{$storeOwnerAddress}";
+        $keys = \Illuminate\Support\Facades\Cache::get($keysKey, []);
+        foreach ($keys as $key) {
+            \Illuminate\Support\Facades\Cache::forget($key);
+        }
+        \Illuminate\Support\Facades\Cache::forget($keysKey);
+    }
 }

@@ -15,22 +15,35 @@ class PaymentMethodController extends Controller
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
         
-        $perPage = $request->query('per_page', 10);
+        $perPage = (int)$request->query('per_page', 10);
         $search = $request->query('search');
 
-        $query = PaymentMethod::where('store_owner_address', $storeOwner);
+        $allMethods = collect(\Illuminate\Support\Facades\Cache::remember("store_payment_methods:{$storeOwner}", 86400, function () use ($storeOwner) {
+            return PaymentMethod::where('store_owner_address', $storeOwner)->orderBy('id', 'desc')->get()->toArray();
+        }));
 
         if (!empty($search)) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('account_number', 'like', "%{$search}%")
-                  ->orWhere('account_holder', 'like', "%{$search}%");
+            $searchLower = strtolower($search);
+            $allMethods = $allMethods->filter(function ($item) use ($searchLower) {
+                return strpos(strtolower($item['name'] ?? ''), $searchLower) !== false ||
+                       strpos(strtolower($item['account_number'] ?? ''), $searchLower) !== false ||
+                       strpos(strtolower($item['account_holder'] ?? ''), $searchLower) !== false;
             });
         }
 
-        $paymentMethods = $query->orderBy('id', 'desc')->paginate($perPage);
+        $total = $allMethods->count();
+        $page = (int)$request->query('page', 1);
+        $sliced = $allMethods->slice(($page - 1) * $perPage, $perPage)->values()->all();
 
-        return response()->json($paymentMethods);
+        $paginated = new \Illuminate\Pagination\LengthAwarePaginator(
+            $sliced,
+            $total,
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
+        return response()->json($paginated);
     }
 
     /**
@@ -58,6 +71,9 @@ class PaymentMethodController extends Controller
             'bank_code' => $validated['bank_code'] ?? null,
             'is_active' => $validated['is_active'] ?? true,
         ]);
+
+        // Xóa cache phương thức thanh toán
+        \Illuminate\Support\Facades\Cache::forget("store_payment_methods:{$storeOwner}");
 
         // Xóa cache storefront công khai để cập nhật dữ liệu mới nhất
         Setting::clearStorefrontCache($storeOwner);
@@ -94,6 +110,9 @@ class PaymentMethodController extends Controller
             'is_active' => $validated['is_active'] ?? true,
         ]);
 
+        // Xóa cache phương thức thanh toán
+        \Illuminate\Support\Facades\Cache::forget("store_payment_methods:{$storeOwner}");
+
         // Xóa cache storefront công khai
         Setting::clearStorefrontCache($storeOwner);
 
@@ -112,6 +131,9 @@ class PaymentMethodController extends Controller
         $paymentMethod = PaymentMethod::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         $paymentMethod->delete();
+
+        // Xóa cache phương thức thanh toán
+        \Illuminate\Support\Facades\Cache::forget("store_payment_methods:{$storeOwner}");
 
         // Xóa cache storefront công khai
         Setting::clearStorefrontCache($storeOwner);

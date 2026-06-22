@@ -76,6 +76,9 @@ class StaffController extends Controller
         $user->store_owner_address = $storeOwner;
         $user->save();
 
+        // Xóa cache phân quyền nhân viên
+        \Illuminate\Support\Facades\Cache::forget("store_staff_permissions:" . $walletAddress);
+
         return response()->json([
             'success' => true,
             'message' => 'Staff added successfully.',
@@ -144,6 +147,10 @@ class StaffController extends Controller
             $newUser->save();
         }
 
+        // Xóa cache phân quyền nhân viên
+        \Illuminate\Support\Facades\Cache::forget("store_staff_permissions:" . $oldWalletAddress);
+        \Illuminate\Support\Facades\Cache::forget("store_staff_permissions:" . $newWalletAddress);
+
         return response()->json([
             'success' => true,
             'message' => 'Staff updated successfully.',
@@ -168,6 +175,9 @@ class StaffController extends Controller
         }
 
         $staff->delete();
+
+        // Xóa cache phân quyền nhân viên
+        \Illuminate\Support\Facades\Cache::forget("store_staff_permissions:" . $walletAddress);
 
         return response()->json([
             'success' => true,
@@ -279,6 +289,12 @@ class StaffController extends Controller
             'permissions' => $validated['permissions']
         ]);
 
+        // Xóa cache phân quyền của tất cả nhân viên thuộc vai trò này
+        $staffs = Staff::where('role_id', $id)->get();
+        foreach ($staffs as $s) {
+            \Illuminate\Support\Facades\Cache::forget("store_staff_permissions:" . strtolower($s->wallet_address));
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Role updated successfully.',
@@ -369,6 +385,12 @@ class StaffController extends Controller
                     'permissions' => $def['permissions']
                 ]);
             }
+        }
+
+        // Xóa cache phân quyền của tất cả nhân viên của cửa hàng do vai trò mặc định được thiết lập lại
+        $staffs = Staff::where('store_owner_address', $storeOwner)->get();
+        foreach ($staffs as $s) {
+            \Illuminate\Support\Facades\Cache::forget("store_staff_permissions:" . strtolower($s->wallet_address));
         }
 
         return response()->json([

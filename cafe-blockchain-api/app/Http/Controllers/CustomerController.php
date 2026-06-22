@@ -118,6 +118,9 @@ class CustomerController extends Controller
         // Tải lại mối quan hệ nhóm
         $customer->load('groups');
 
+        // Xóa cache nhóm khách hàng
+        \Illuminate\Support\Facades\Cache::forget("store_customer_groups:{$storeOwner}");
+
         return response()->json([
             'message' => 'Customer created successfully.',
             'customer' => $customer
@@ -200,6 +203,9 @@ class CustomerController extends Controller
 
         $customer->load('groups');
 
+        // Xóa cache nhóm khách hàng
+        \Illuminate\Support\Facades\Cache::forget("store_customer_groups:{$storeOwner}");
+
         return response()->json([
             'message' => 'Customer updated successfully.',
             'customer' => $customer
@@ -215,6 +221,9 @@ class CustomerController extends Controller
         $customer = Customer::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         $customer->delete();
+
+        // Xóa cache nhóm khách hàng
+        \Illuminate\Support\Facades\Cache::forget("store_customer_groups:{$storeOwner}");
 
         return response()->json([
             'message' => 'Customer deleted successfully.'
