@@ -957,6 +957,12 @@ class AdminController extends Controller
         
         // 4. Xóa cache application
         \Artisan::call('cache:clear');
+
+        // Xóa cứng thư mục cache data để tránh lỗi lock file hoặc cấu hình sai trên Windows
+        $cacheDataPath = storage_path('framework/cache/data');
+        if (\Illuminate\Support\Facades\File::isDirectory($cacheDataPath)) {
+            \Illuminate\Support\Facades\File::cleanDirectory($cacheDataPath);
+        }
         
         // Dọn dẹp cache của các API SaaS Admin
         \Cache::forget('admin_packages');
