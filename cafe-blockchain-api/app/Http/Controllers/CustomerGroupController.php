@@ -12,7 +12,7 @@ class CustomerGroupController extends Controller
      */
     public function index(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         
         $groups = \Illuminate\Support\Facades\Cache::remember("store_customer_groups:{$storeOwner}", 86400, function () use ($storeOwner) {
             return CustomerGroup::where('store_owner_address', $storeOwner)->withCount('customers')->orderBy('id', 'asc')->get()->toArray();
@@ -26,7 +26,7 @@ class CustomerGroupController extends Controller
      */
     public function store(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
 
         $validated = $request->validate([
             'name' => [
@@ -59,7 +59,7 @@ class CustomerGroupController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $group = CustomerGroup::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         $validated = $request->validate([
@@ -94,7 +94,7 @@ class CustomerGroupController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $group = CustomerGroup::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         $group->delete();

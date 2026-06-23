@@ -56,4 +56,13 @@ class User extends Authenticatable
 
         return !empty($permissions[$module]);
     }
+
+    /**
+     * Lấy địa chỉ ví chủ cửa hàng (Store Owner) dạng chữ thường
+     */
+    public function getStoreOwnerAddress(): string
+    {
+        return strtolower($this->store_owner_address ?: $this->wallet_address);
+    }
 }
+

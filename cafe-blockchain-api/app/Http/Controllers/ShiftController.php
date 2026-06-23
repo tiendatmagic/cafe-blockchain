@@ -51,7 +51,7 @@ class ShiftController extends Controller
     public function open(OpenShiftRequest $request)
     {
         $user = $request->user();
-        $storeOwner = strtolower($user->store_owner_address ?: $user->wallet_address);
+        $storeOwner = $user->getStoreOwnerAddress();
 
         $validated = $request->validated();
 
@@ -115,7 +115,7 @@ class ShiftController extends Controller
             ]);
 
             // Giải phóng toàn bộ cache báo cáo và dashboard của cửa hàng
-            $storeOwner = strtolower($user->store_owner_address ?: $user->wallet_address);
+            $storeOwner = $user->getStoreOwnerAddress();
             \App\Domain\Entities\Setting::clearStoreCache($storeOwner);
 
             // Xóa cache lịch sử ca trực của tháng tương ứng
@@ -167,7 +167,7 @@ class ShiftController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $storeOwner = strtolower($user->store_owner_address ?: $user->wallet_address);
+        $storeOwner = $user->getStoreOwnerAddress();
         
         // Phân quyền bảo mật: Nếu là nhân viên thông thường (không có quyền quản lý nhân sự staffs hoặc báo cáo reports)
         // thì chỉ cho phép họ nhìn thấy lịch sử ca trực của chính mình.

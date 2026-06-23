@@ -25,7 +25,7 @@ class RequireOwner
         }
 
         $walletAddress = strtolower($user->wallet_address);
-        $storeOwner = $user->store_owner_address ?: $user->wallet_address;
+        $storeOwner = $user->getStoreOwnerAddress();
         
         $contractAddress = Setting::getForStore('contract_address', $storeOwner);
         $rpcUrl = Setting::getForStore('rpc_url', $storeOwner, 'https://ethereum-sepolia.publicnode.com');

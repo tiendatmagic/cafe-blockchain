@@ -21,7 +21,7 @@ class TransactionController extends Controller
      */
     public function index(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         
         $type = $request->query('type');
         $category = $request->query('category');
@@ -46,7 +46,7 @@ class TransactionController extends Controller
      */
     public function store(StoreTransactionRequest $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
 
         $validated = $request->validated();
 
@@ -85,7 +85,7 @@ class TransactionController extends Controller
      */
     public function update(StoreTransactionRequest $request, $id)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $transaction = $this->transactionRepository->find($id);
 
         if (!$transaction || $transaction->store_owner_address !== $storeOwner) {
@@ -124,7 +124,7 @@ class TransactionController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $transaction = $this->transactionRepository->find($id);
 
         if (!$transaction || $transaction->store_owner_address !== $storeOwner) {
@@ -153,7 +153,7 @@ class TransactionController extends Controller
      */
     public function syncBlockchain(Request $request, $id)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $transaction = $this->transactionRepository->find($id);
 
         if (!$transaction || $transaction->store_owner_address !== $storeOwner) {

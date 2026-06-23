@@ -13,7 +13,7 @@ class CustomerController extends Controller
      */
     public function index(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $limit = (int)$request->query('limit', 10);
         $search = $request->query('search');
 
@@ -81,7 +81,7 @@ class CustomerController extends Controller
      */
     public function store(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
 
         $validated = $request->validate([
             'name' => 'required|string|max:150',
@@ -170,7 +170,7 @@ class CustomerController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $customer = Customer::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         $validated = $request->validate([
@@ -256,7 +256,7 @@ class CustomerController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $customer = Customer::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         $customer->delete();

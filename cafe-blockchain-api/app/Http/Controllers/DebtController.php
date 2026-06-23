@@ -28,7 +28,7 @@ class DebtController extends Controller
      */
     public function index(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $search = $request->query('search');
         $filter = $request->query('filter', 'all');
         $limit = (int)$request->query('limit', 10);
@@ -50,7 +50,7 @@ class DebtController extends Controller
      */
     public function show(Request $request, $id)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         
         // Đảm bảo khách hàng thuộc cửa hàng này
         $customer = $this->debtRepository->findCustomer($storeOwner, $id);
@@ -71,7 +71,7 @@ class DebtController extends Controller
      */
     public function store(StoreDebtRequest $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $validated = $request->validated();
 
         $customer = $this->debtRepository->findCustomer($storeOwner, $validated['customer_id']);
@@ -98,7 +98,7 @@ class DebtController extends Controller
      */
     public function storePayment(StoreDebtPaymentRequest $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $validated = $request->validated();
 
         $customer = $this->debtRepository->findCustomer($storeOwner, $validated['customer_id']);
@@ -126,7 +126,7 @@ class DebtController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $debtLog = $this->debtRepository->findDebtLog($storeOwner, $id);
         if (!$debtLog) {
             abort(404, 'Debt record not found.');

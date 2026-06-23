@@ -47,7 +47,7 @@ class VoucherController extends Controller
             'temp_order_data' => 'nullable|array',
         ]);
 
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
 
         $voucherEnabled = \App\Domain\Entities\Setting::getForStore('voucher_enabled', $storeOwner, '0') === '1';
         if (!$voucherEnabled) {

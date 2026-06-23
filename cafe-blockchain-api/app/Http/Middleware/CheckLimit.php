@@ -25,7 +25,7 @@ class CheckLimit
         }
 
         // Xác định địa chỉ ví chủ quán
-        $storeOwner = strtolower($user->store_owner_address ?: $user->wallet_address);
+        $storeOwner = $user->getStoreOwnerAddress();
 
         $owner = User::where('wallet_address', $storeOwner)->first();
         if ($owner) {

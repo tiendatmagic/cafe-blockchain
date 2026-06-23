@@ -12,7 +12,7 @@ class DiningTableController extends Controller
      */
     public function index(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         
         $tables = \Illuminate\Support\Facades\Cache::remember("store_tables_with_areas:{$storeOwner}", 86400, function () use ($storeOwner) {
             return DiningTable::where('store_owner_address', $storeOwner)->with('area')->orderBy('id', 'asc')->get()->toArray();
@@ -32,7 +32,7 @@ class DiningTableController extends Controller
      */
     public function store(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
 
         $validated = $request->validate([
             'name' => [
@@ -70,7 +70,7 @@ class DiningTableController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $table = DiningTable::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         $validated = $request->validate([
@@ -110,7 +110,7 @@ class DiningTableController extends Controller
      */
     public function updateStatus(Request $request, $id)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $table = DiningTable::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         $validated = $request->validate([
@@ -134,7 +134,7 @@ class DiningTableController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $table = DiningTable::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         $table->delete();

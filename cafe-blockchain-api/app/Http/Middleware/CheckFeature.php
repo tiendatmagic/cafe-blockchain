@@ -25,7 +25,7 @@ class CheckFeature
         }
 
         // Xác định địa chỉ ví chủ quán
-        $ownerAddress = strtolower($user->store_owner_address ?: $user->wallet_address);
+        $ownerAddress = $user->getStoreOwnerAddress();
 
         // Tìm tài khoản chủ quán để lấy gói cước
         $owner = User::where('wallet_address', $ownerAddress)->first();

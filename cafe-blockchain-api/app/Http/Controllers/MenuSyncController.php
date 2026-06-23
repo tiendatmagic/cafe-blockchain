@@ -13,9 +13,7 @@ class MenuSyncController extends Controller
      */
     public function index(Request $request)
     {
-        $storeOwner = strtolower(
-            $request->user()->store_owner_address ?: $request->user()->wallet_address
-        );
+        $storeOwner = $request->user()->getStoreOwnerAddress();
 
         $logs = MenuSyncLog::where('store_owner_address', $storeOwner)
             ->orderBy('created_at', 'desc')
@@ -40,9 +38,7 @@ class MenuSyncController extends Controller
      */
     public function store(Request $request)
     {
-        $storeOwner = strtolower(
-            $request->user()->store_owner_address ?: $request->user()->wallet_address
-        );
+        $storeOwner = $request->user()->getStoreOwnerAddress();
 
         $data = $request->validate([
             'synced_by'     => 'required|string|max:42',

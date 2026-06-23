@@ -27,7 +27,7 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         
         $query = new GetOrdersQuery($storeOwner, $request->all());
         $orders = $this->bus->dispatch($query);
@@ -40,7 +40,7 @@ class OrderController extends Controller
      */
     public function show(Request $request, $id)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         try {
             $query = new GetOrderDetailQuery($storeOwner, $id);
             $order = $this->bus->dispatch($query);
@@ -58,7 +58,7 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
 
         $validated = $request->validate([
             'order_code' => 'nullable|string|max:50|unique:orders,order_code',
@@ -94,7 +94,7 @@ class OrderController extends Controller
      */
     public function update(Request $request, $id, UpdateOrderCommand $command)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
 
         $validated = $request->validate([
             'table_number' => 'nullable|string|max:50',
@@ -131,7 +131,7 @@ class OrderController extends Controller
      */
     public function updateStatus(Request $request, $id, UpdateOrderStatusCommand $command)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
 
         $validated = $request->validate([
             'status' => 'required|string|in:completed,cancelled,pending,preparing',
@@ -159,7 +159,7 @@ class OrderController extends Controller
      */
     public function syncBlockchain(Request $request, $id, SyncBlockchainCommand $command)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
 
         $validated = $request->validate([
             'tx_hash' => 'required|string|max:255',
@@ -193,7 +193,7 @@ class OrderController extends Controller
      */
     public function mintVoucherManual(Request $request, $id, MintVoucherManualCommand $command)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
 
         try {
             $order = $command->execute($storeOwner, $id);

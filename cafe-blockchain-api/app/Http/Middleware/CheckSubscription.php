@@ -24,7 +24,7 @@ class CheckSubscription
         }
 
         // Xác định địa chỉ ví chủ quán
-        $ownerAddress = strtolower($user->store_owner_address ?: $user->wallet_address);
+        $ownerAddress = $user->getStoreOwnerAddress();
         
         // Bỏ qua kiểm tra nếu chủ quán là Super Admin
         $superAdminEnv = config('auth.super_admin_addresses', '');

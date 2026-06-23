@@ -15,7 +15,7 @@ class InventoryController extends Controller
      */
     public function index(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $limit = (int)$request->query('limit', 10);
  
         $query = InventoryRecord::where('store_owner_address', $storeOwner)
@@ -46,7 +46,7 @@ class InventoryController extends Controller
      */
     public function store(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
 
         $validated = $request->validate([
             'type' => 'required|string|in:nhap,xuat,kiem',
@@ -112,7 +112,7 @@ class InventoryController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $record = InventoryRecord::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         $record->delete();

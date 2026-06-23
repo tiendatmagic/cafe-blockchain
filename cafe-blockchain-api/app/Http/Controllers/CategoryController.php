@@ -12,7 +12,7 @@ class CategoryController extends Controller
      */
     public function index(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $categories = \Illuminate\Support\Facades\Cache::remember("store_categories_all:{$storeOwner}", 86400, function () use ($storeOwner) {
             return Category::where('store_owner_address', $storeOwner)->orderBy('id', 'asc')->get()->toArray();
         });
@@ -24,7 +24,7 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
 
         $validated = $request->validate([
             'name' => [
@@ -56,7 +56,7 @@ class CategoryController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $category = Category::where('store_owner_address', $storeOwner)->findOrFail($id);
  
         $validated = $request->validate([
@@ -90,7 +90,7 @@ class CategoryController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $category = Category::where('store_owner_address', $storeOwner)->find($id);
 
         if (!$category) {

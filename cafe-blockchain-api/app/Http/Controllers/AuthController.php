@@ -158,7 +158,7 @@ class AuthController extends Controller
             );
 
             // Lấy thông tin gói cước (Dựa trên chủ quán)
-            $ownerAddress = strtolower($user->store_owner_address ?: $user->wallet_address);
+            $ownerAddress = $user->getStoreOwnerAddress();
             $owner = User::where('wallet_address', $ownerAddress)->first();
             
             $planCode = $owner ? ($owner->plan_code ?: 'free') : 'free';
@@ -225,7 +225,7 @@ class AuthController extends Controller
         $address = strtolower($user->wallet_address);
 
         // Lấy thông tin gói cước dựa trên chủ quán
-        $ownerAddress = strtolower($user->store_owner_address ?: $user->wallet_address);
+        $ownerAddress = $user->getStoreOwnerAddress();
         $owner = User::where('wallet_address', $ownerAddress)->first();
 
         $planCode = $owner ? ($owner->plan_code ?: 'free') : 'free';

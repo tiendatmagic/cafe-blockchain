@@ -13,7 +13,7 @@ class PaymentMethodController extends Controller
      */
     public function index(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         
         $perPage = (int)$request->query('per_page', 10);
         $search = $request->query('search');
@@ -51,7 +51,7 @@ class PaymentMethodController extends Controller
      */
     public function store(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
 
         $validated = $request->validate([
             'type' => 'required|string|in:bank,wallet',
@@ -89,7 +89,7 @@ class PaymentMethodController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $paymentMethod = PaymentMethod::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         $validated = $request->validate([
@@ -127,7 +127,7 @@ class PaymentMethodController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $paymentMethod = PaymentMethod::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         $paymentMethod->delete();

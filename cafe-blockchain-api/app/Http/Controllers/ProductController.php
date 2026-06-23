@@ -12,7 +12,7 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         
         // Nếu có phân trang (dùng cho trang quản lý Menu)
         if ($request->has('page') || $request->has('limit')) {
@@ -120,7 +120,7 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         
         
         $validated = $request->validate([
@@ -210,7 +210,7 @@ class ProductController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $product = Product::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         $validated = $request->validate([
@@ -318,7 +318,7 @@ class ProductController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $product = Product::where('store_owner_address', $storeOwner)->find($id);
 
         if (!$product) {

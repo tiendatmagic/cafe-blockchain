@@ -15,7 +15,7 @@ class StaffController extends Controller
      */
     public function index(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         
         $staffs = \Illuminate\Support\Facades\Cache::remember("store_staffs:{$storeOwner}", 86400, function () use ($storeOwner) {
             return Staff::where('store_owner_address', $storeOwner)
@@ -33,7 +33,7 @@ class StaffController extends Controller
      */
     public function store(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -95,7 +95,7 @@ class StaffController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $staff = Staff::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         $validated = $request->validate([
@@ -168,7 +168,7 @@ class StaffController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $staff = Staff::where('store_owner_address', $storeOwner)->findOrFail($id);
         $walletAddress = strtolower($staff->wallet_address);
 
@@ -196,7 +196,7 @@ class StaffController extends Controller
      */
     public function indexRoles(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
 
         $roles = \Illuminate\Support\Facades\Cache::remember("store_roles:{$storeOwner}", 86400, function () use ($storeOwner) {
             $data = Role::where('store_owner_address', $storeOwner)->get();
@@ -260,7 +260,7 @@ class StaffController extends Controller
      */
     public function storeRole(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -287,7 +287,7 @@ class StaffController extends Controller
      */
     public function updateRole(Request $request, $id)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $role = Role::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         $validated = $request->validate([
@@ -319,7 +319,7 @@ class StaffController extends Controller
      */
     public function destroyRole(Request $request, $id)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $role = Role::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         // Kiểm tra xem vai trò này có đang được gán cho nhân viên nào không
@@ -345,7 +345,7 @@ class StaffController extends Controller
      */
     public function resetDefaultRoles(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
 
         $defaultRoles = [
             [

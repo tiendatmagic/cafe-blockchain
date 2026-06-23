@@ -14,7 +14,7 @@ class DashboardController extends Controller
      */
     public function index(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
 
         // Nhận bộ lọc thời gian từ query
         $startDate = $request->query('start_date');

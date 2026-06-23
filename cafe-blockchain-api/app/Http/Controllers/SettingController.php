@@ -34,7 +34,7 @@ class SettingController extends Controller
      */
     public function index(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
 
         $settings = Cache::remember("store_settings_admin:{$storeOwner}", 86400, function () use ($storeOwner) {
             $data = $this->ensureDefaultSettings($storeOwner);
@@ -57,7 +57,7 @@ class SettingController extends Controller
      */
     public function store(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
 
         $settingsData = $request->validate([
             'store_name' => 'required|string|max:255',
@@ -264,7 +264,7 @@ class SettingController extends Controller
             // Thử lấy user đang đăng nhập qua Sanctum (nếu có)
             $user = auth('sanctum')->user();
             if ($user) {
-                $storeOwner = strtolower($user->store_owner_address ?: $user->wallet_address);
+                $storeOwner = $user->getStoreOwnerAddress();
             } else {
                 // Chưa đăng nhập và không truyền order_code -> trả về cấu hình mặc định rỗng/hệ thống
                 $storeOwner = null;

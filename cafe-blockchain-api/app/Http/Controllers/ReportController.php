@@ -15,7 +15,7 @@ class ReportController extends Controller
      */
     public function index(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
 
         // Lọc theo mốc thời gian (mặc định 7 ngày qua)
         $startDate = $request->input('start_date', Carbon::now()->subDays(6)->toDateString());

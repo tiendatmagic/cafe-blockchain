@@ -12,7 +12,7 @@ class AreaController extends Controller
      */
     public function index(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         
         $areas = \Illuminate\Support\Facades\Cache::remember("store_areas_with_tables:{$storeOwner}", 86400, function () use ($storeOwner) {
             return Area::where('store_owner_address', $storeOwner)->with('tables')->orderBy('id', 'asc')->get()->toArray();
@@ -32,7 +32,7 @@ class AreaController extends Controller
      */
     public function store(Request $request)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
 
         $validated = $request->validate([
             'name' => [
@@ -63,7 +63,7 @@ class AreaController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $area = Area::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         $validated = $request->validate([
@@ -96,7 +96,7 @@ class AreaController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $storeOwner = $request->user()->getStoreOwnerAddress();
         $area = Area::where('store_owner_address', $storeOwner)->findOrFail($id);
 
         $area->delete();
