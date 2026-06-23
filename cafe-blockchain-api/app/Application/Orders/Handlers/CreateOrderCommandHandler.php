@@ -35,9 +35,20 @@ class CreateOrderCommandHandler
             $totalAmount = 0;
             $itemsData = [];
 
+            // Tải trước (Eager Load) tất cả sản phẩm và các biến thể tương ứng
+            $productIds = collect($data['items'])->pluck('product_id')->unique()->all();
+            $products = Product::with('variants')
+                ->where('store_owner_address', $storeOwner)
+                ->whereIn('id', $productIds)
+                ->get()
+                ->keyBy('id');
+
             // Tính tổng tiền và lấy chi tiết món
             foreach ($data['items'] as $item) {
-                $product = Product::where('store_owner_address', $storeOwner)->findOrFail($item['product_id']);
+                $product = $products->get($item['product_id']);
+                if (!$product) {
+                    throw new \Illuminate\Database\Eloquent\ModelNotFoundException("Product not found with ID: " . $item['product_id']);
+                }
                 
                 if (!$product->status) {
                     throw new \Exception("Product '" . $product->name . "' is currently disabled and not available for purchase!");
@@ -48,7 +59,7 @@ class CreateOrderCommandHandler
                 $variantId = $item['product_variant_id'] ?? null;
 
                 if ($variantId) {
-                    $variant = $product->variants()->where('id', $variantId)->first();
+                    $variant = $product->variants->firstWhere('id', $variantId);
                     if ($variant) {
                         if (!$variant->status) {
                             throw new \Exception("Variant '" . $variant->variant_name . "' of product '" . $product->name . "' is currently disabled!");

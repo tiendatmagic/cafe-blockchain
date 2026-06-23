@@ -705,15 +705,28 @@ class SettingController extends Controller
                 $customer->save();
             }
 
+            // Tải trước (Eager Load) tất cả sản phẩm và các biến thể tương ứng
+            $productIds = collect($validated['items'])->pluck('product_id')->unique()->all();
+            $products = \App\Domain\Entities\Product::with('variants')
+                ->where('store_owner_address', $storeOwner)
+                ->whereIn('id', $productIds)
+                ->get()
+                ->keyBy('id');
+
             // Tính toán giá trị đơn hàng trước khi giảm giá/phí ship để làm cơ sở tính miễn phí ship
             $itemSubtotal = 0;
             foreach ($validated['items'] as $item) {
-                $product = \App\Domain\Entities\Product::where('store_owner_address', $storeOwner)->findOrFail($item['product_id']);
+                $product = $products->get($item['product_id']);
+                if (!$product) {
+                    throw new \Illuminate\Database\Eloquent\ModelNotFoundException("Product not found with ID: " . $item['product_id']);
+                }
                 $price = $product->price;
                 if (!empty($item['product_variant_id'])) {
-                    $variant = $product->variants()->where('id', $item['product_variant_id'])->first();
+                    $variant = $product->variants->firstWhere('id', $item['product_variant_id']);
                     if ($variant) {
                         $price = $variant->price;
+                    } else {
+                        throw new \Exception("Invalid product variant for item: " . $product->name);
                     }
                 }
                 $itemSubtotal += $price * $item['quantity'];
