@@ -93,7 +93,8 @@ class ReportController extends Controller
                     $item->total_cost = (float)$item->total_cost;
                     $item->gross_profit = $item->total_revenue - $item->total_cost;
                     return $item;
-                });
+                })
+                ->toArray();
 
             // 3. Báo cáo Khách hàng chi tiêu
             $customerReport = DB::table('orders')
@@ -116,7 +117,8 @@ class ReportController extends Controller
                     $item->total_spent = (float)$item->total_spent;
                     $item->average_order_value = $item->orders_count > 0 ? ($item->total_spent / $item->orders_count) : 0;
                     return $item;
-                });
+                })
+                ->toArray();
 
             // 4. Biểu đồ xu hướng (Doanh thu & Chi phí theo ngày)
             $dailyRevenue = DB::table('orders')
@@ -184,7 +186,8 @@ class ReportController extends Controller
                     $item->amount = (float)$item->amount;
                     $item->count = (int)$item->count;
                     return $item;
-                });
+                })
+                ->toArray();
 
             return [
                 'financials' => [
