@@ -81,33 +81,8 @@ class EloquentShiftRepository implements ShiftRepositoryInterface
         // 3. Trộn toàn bộ ca làm việc
         $allShifts = array_merge($currentMonthShifts, $pastShifts);
 
-        // 4. Sắp xếp lại theo start_time giảm dần
+        // 4. Sắp xếp lại theo start_time giảm dần và trả về mảng thô
         $collection = collect($allShifts);
-        $sorted = $collection->sortByDesc('start_time')->values();
-
-        // 5. Chuyển lại thành Eloquent Collection
-        $models = $sorted->map(function ($attributes) {
-            // Chuyển đổi ngược các trường array/json thành string trước khi đưa vào setRawAttributes
-            if (isset($attributes['payment_revenues']) && is_array($attributes['payment_revenues'])) {
-                $attributes['payment_revenues'] = json_encode($attributes['payment_revenues']);
-            }
-            if (isset($attributes['payment_expenses']) && is_array($attributes['payment_expenses'])) {
-                $attributes['payment_expenses'] = json_encode($attributes['payment_expenses']);
-            }
-
-            $shift = new Shift();
-            $shift->exists = true;
-            $shift->setRawAttributes($attributes, true);
-
-            if (isset($attributes['user']) && $attributes['user']) {
-                $user = new \App\Domain\Entities\User();
-                $user->exists = true;
-                $user->setRawAttributes($attributes['user'], true);
-                $shift->setRelation('user', $user);
-            }
-            return $shift;
-        });
-
-        return new Collection($models);
+        return $collection->sortByDesc('start_time')->values();
     }
 }

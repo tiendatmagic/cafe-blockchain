@@ -85,25 +85,28 @@ class Setting extends Model
     public static function getAllForStore($storeOwnerAddress)
     {
         $storeOwnerAddress = strtolower($storeOwnerAddress);
-        $config = self::getStoreConfigArray($storeOwnerAddress);
+        
+        return \Illuminate\Support\Facades\Cache::remember("store_flat_config:{$storeOwnerAddress}", 86400, function () use ($storeOwnerAddress) {
+            $config = self::getStoreConfigArray($storeOwnerAddress);
 
-        // Lấy thêm các key loại trừ (website_slug)
-        foreach (self::$jsonExcludedKeys as $key) {
-            $setting = self::where('key', $key)
-                ->where('store_owner_address', $storeOwnerAddress)
-                ->first();
-            if ($setting) {
-                $config[$key] = $setting->value;
-            } else {
-                if (array_key_exists($key, self::$systemDefaults)) {
-                    $config[$key] = self::$systemDefaults[$key];
+            // Lấy thêm các key loại trừ (website_slug)
+            foreach (self::$jsonExcludedKeys as $key) {
+                $setting = self::where('key', $key)
+                    ->where('store_owner_address', $storeOwnerAddress)
+                    ->first();
+                if ($setting) {
+                    $config[$key] = $setting->value;
                 } else {
-                    $config[$key] = '';
+                    if (array_key_exists($key, self::$systemDefaults)) {
+                        $config[$key] = self::$systemDefaults[$key];
+                    } else {
+                        $config[$key] = '';
+                    }
                 }
             }
-        }
 
-        return $config;
+            return $config;
+        });
     }
 
     /**
@@ -116,18 +119,9 @@ class Setting extends Model
         }
         $storeOwnerAddress = strtolower($storeOwnerAddress);
 
-        if (in_array($key, self::$jsonExcludedKeys)) {
-            $setting = self::where('key', $key)
-                ->where('store_owner_address', $storeOwnerAddress)
-                ->first();
-            if ($setting) {
-                return $setting->value;
-            }
-        } else {
-            $config = self::getStoreConfigArray($storeOwnerAddress);
-            if (array_key_exists($key, $config)) {
-                return $config[$key];
-            }
+        $config = self::getAllForStore($storeOwnerAddress);
+        if (array_key_exists($key, $config)) {
+            return $config[$key];
         }
 
         if (array_key_exists($key, self::$systemDefaults)) {
@@ -146,6 +140,9 @@ class Setting extends Model
             return self::set($key, $value);
         }
         $storeOwnerAddress = strtolower($storeOwnerAddress);
+
+        // Xóa cache cấu hình phẳng
+        \Illuminate\Support\Facades\Cache::forget("store_flat_config:{$storeOwnerAddress}");
 
         if (in_array($key, self::$jsonExcludedKeys)) {
             return self::updateOrCreate(
@@ -204,6 +201,9 @@ class Setting extends Model
             return;
         }
         $storeOwnerAddress = strtolower($storeOwnerAddress);
+        
+        \Illuminate\Support\Facades\Cache::forget("store_flat_config:{$storeOwnerAddress}");
+        
         $slug = self::getForStore('website_slug', $storeOwnerAddress);
         if ($slug) {
             \Illuminate\Support\Facades\Cache::forget("store_details:{$slug}");
