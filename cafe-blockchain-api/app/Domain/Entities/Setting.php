@@ -53,9 +53,57 @@ class Setting extends Model
         'store_description' => '',
     ];
 
+    protected static $jsonExcludedKeys = [
+        'website_slug'
+    ];
+
     public static function getSystemDefaults()
     {
         return self::$systemDefaults;
+    }
+
+    /**
+     * Lấy cấu hình JSON gộp dưới dạng mảng của store.
+     */
+    private static function getStoreConfigArray($storeOwnerAddress)
+    {
+        $storeOwnerAddress = strtolower($storeOwnerAddress);
+        $setting = self::where('key', 'store_config')
+            ->where('store_owner_address', $storeOwnerAddress)
+            ->first();
+            
+        if ($setting && !empty($setting->value)) {
+            return json_decode($setting->value, true) ?: [];
+        }
+
+        return [];
+    }
+
+    /**
+     * Lấy toàn bộ mảng phẳng các cấu hình của store (gồm cả JSON gộp và các key loại trừ)
+     */
+    public static function getAllForStore($storeOwnerAddress)
+    {
+        $storeOwnerAddress = strtolower($storeOwnerAddress);
+        $config = self::getStoreConfigArray($storeOwnerAddress);
+
+        // Lấy thêm các key loại trừ (website_slug)
+        foreach (self::$jsonExcludedKeys as $key) {
+            $setting = self::where('key', $key)
+                ->where('store_owner_address', $storeOwnerAddress)
+                ->first();
+            if ($setting) {
+                $config[$key] = $setting->value;
+            } else {
+                if (array_key_exists($key, self::$systemDefaults)) {
+                    $config[$key] = self::$systemDefaults[$key];
+                } else {
+                    $config[$key] = '';
+                }
+            }
+        }
+
+        return $config;
     }
 
     /**
@@ -66,15 +114,26 @@ class Setting extends Model
         if (!$storeOwnerAddress) {
             return self::get($key, $default);
         }
-        $setting = self::where('key', $key)
-            ->where('store_owner_address', strtolower($storeOwnerAddress))
-            ->first();
-        if ($setting) {
-            return $setting->value;
+        $storeOwnerAddress = strtolower($storeOwnerAddress);
+
+        if (in_array($key, self::$jsonExcludedKeys)) {
+            $setting = self::where('key', $key)
+                ->where('store_owner_address', $storeOwnerAddress)
+                ->first();
+            if ($setting) {
+                return $setting->value;
+            }
+        } else {
+            $config = self::getStoreConfigArray($storeOwnerAddress);
+            if (array_key_exists($key, $config)) {
+                return $config[$key];
+            }
         }
+
         if (array_key_exists($key, self::$systemDefaults)) {
             return self::$systemDefaults[$key];
         }
+
         return $default;
     }
 
@@ -86,13 +145,28 @@ class Setting extends Model
         if (!$storeOwnerAddress) {
             return self::set($key, $value);
         }
-        return self::updateOrCreate(
-            [
-                'key' => $key,
-                'store_owner_address' => strtolower($storeOwnerAddress)
-            ],
-            ['value' => $value]
-        );
+        $storeOwnerAddress = strtolower($storeOwnerAddress);
+
+        if (in_array($key, self::$jsonExcludedKeys)) {
+            return self::updateOrCreate(
+                [
+                    'key' => $key,
+                    'store_owner_address' => $storeOwnerAddress
+                ],
+                ['value' => $value]
+            );
+        } else {
+            $config = self::getStoreConfigArray($storeOwnerAddress);
+            $config[$key] = $value;
+
+            return self::updateOrCreate(
+                [
+                    'key' => 'store_config',
+                    'store_owner_address' => $storeOwnerAddress
+                ],
+                ['value' => json_encode($config, JSON_UNESCAPED_UNICODE)]
+            );
+        }
     }
 
     /**
@@ -100,7 +174,7 @@ class Setting extends Model
      */
     public static function get($key, $default = null)
     {
-        $setting = self::where('key', $key)->first();
+        $setting = self::where('key', $key)->whereNull('store_owner_address')->first();
         if ($setting) {
             return $setting->value;
         }
@@ -116,7 +190,10 @@ class Setting extends Model
     public static function set($key, $value)
     {
         return self::updateOrCreate(
-            ['key' => $key],
+            [
+                'key' => $key,
+                'store_owner_address' => null
+            ],
             ['value' => $value]
         );
     }

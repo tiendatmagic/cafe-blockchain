@@ -15,7 +15,7 @@ class SettingController extends Controller
 
     private function ensureDefaultSettings($storeOwner)
     {
-        $settings = Setting::where('store_owner_address', $storeOwner)->pluck('value', 'key')->all();
+        $settings = Setting::getAllForStore($storeOwner);
 
         $defaultSettings = Setting::getSystemDefaults();
 
@@ -236,7 +236,7 @@ class SettingController extends Controller
         Setting::clearStorefrontCache($storeOwner);
         Cache::forget("store_settings_admin:{$storeOwner}");
 
-        $updatedSettings = Setting::where('store_owner_address', $storeOwner)->pluck('value', 'key')->all();
+        $updatedSettings = Setting::getAllForStore($storeOwner);
         $updatedSettings['has_synced_orders'] = \App\Infrastructure\Persistence\Eloquent\OrderModel::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
         $updatedSettings['has_synced_transactions'] = \App\Domain\Entities\Transaction::where('store_owner_address', $storeOwner)->where('blockchain_status', 'success')->exists();
 
