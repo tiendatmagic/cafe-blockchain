@@ -399,4 +399,19 @@ export class DebtsComponent implements OnInit {
 
     this.stateService.showToast('Đã xuất file sao kê Excel thành công!', 'success');
   }
+
+  public translateNote(note: string): string {
+    if (!note) return '';
+    if (note === 'Manual debt entry') {
+      return 'Ghi nợ thủ công';
+    }
+    if (note.startsWith('Customer debt payment')) {
+      let method = 'Tiền mặt';
+      if (note.includes('Bank Transfer')) method = 'Chuyển khoản';
+      else if (note.includes('Crypto')) method = 'Blockchain/Crypto';
+      else if (note.includes('E-Wallet')) method = 'Ví điện tử';
+      return `Thu hồi công nợ thủ công (${method})`;
+    }
+    return note;
+  }
 }

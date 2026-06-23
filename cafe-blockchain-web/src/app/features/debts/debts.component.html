@@ -291,7 +291,7 @@
   title="Lịch sử biến động công nợ"
 >
   <span class="text-xs text-slate-500 dark:text-slate-400 font-bold block mb-4 mt-[-8px]"
-    >Khách hàng: {{ selectedCustomer()?.name }}</span
+    >Khách hàng: {{ selectedCustomer()?.name }} ({{ selectedCustomer()?.customer_code }})</span
   >
 
   <!-- Khung tổng quan dư nợ -->
@@ -386,7 +386,7 @@
               } @else {
                 <div class="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
                   <app-icon name="debts" class="h-4 w-4 shrink-0" [strokeWidth]="2"></app-icon>
-                  {{ log.description || 'Thu hồi công nợ thủ công' }}
+                  {{ translateNote(log.note) || (log.type === 'debt' ? 'Ghi nợ thủ công' : 'Thu hồi công nợ thủ công') }}
                 </div>
               }
             </div>
