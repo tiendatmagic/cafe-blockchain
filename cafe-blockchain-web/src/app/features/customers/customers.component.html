@@ -234,6 +234,13 @@
                 </div>
               </ng-template>
 
+              <!-- Custom cell cho cột phân loại -->
+              <ng-template appCell="type" let-row>
+                <span class="font-semibold text-slate-700 dark:text-slate-300">
+                  {{ row.type === 'business' ? 'Doanh nghiệp' : 'Cá nhân' }}
+                </span>
+              </ng-template>
+
               <!-- Custom cell cho cột điện thoại/email -->
               <ng-template appCell="phone" let-row>
                 <div class="flex flex-col">

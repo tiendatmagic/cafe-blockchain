@@ -82,7 +82,7 @@ class GetOrdersQueryHandler
             
             if (isset($attributes['items']) && is_array($attributes['items'])) {
                 $items = collect($attributes['items'])->map(function ($itemAttr) {
-                    $item = new \App\Infrastructure\Persistence\Eloquent\OrderItemModel();
+                    $item = new \App\Domain\Entities\OrderItem();
                     $item->exists = true;
                     $item->setRawAttributes($itemAttr, true);
                     
