@@ -4,7 +4,7 @@ namespace App\Application\Orders\Handlers;
 
 use App\Application\Orders\Queries\GetOrdersQuery;
 use App\Infrastructure\Persistence\Eloquent\OrderModel;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
 
 class GetOrdersQueryHandler
 {
@@ -63,51 +63,7 @@ class GetOrdersQueryHandler
             });
         }
 
-        // 5. Sắp xếp lại theo thời gian giảm dần
-        $sorted = $collection->sortByDesc('created_at')->values();
-
-        // 6. Chuyển lại thành Eloquent Collection để tương thích kiểu trả về
-        $models = $sorted->map(function ($attributes) {
-            $order = new OrderModel();
-            $order->exists = true;
-            $order->setRawAttributes($attributes, true);
-            
-            // Re-hydrate relationships if any
-            if (isset($attributes['customer']) && $attributes['customer']) {
-                $customer = new \App\Domain\Entities\Customer();
-                $customer->exists = true;
-                $customer->setRawAttributes($attributes['customer'], true);
-                $order->setRelation('customer', $customer);
-            }
-            
-            if (isset($attributes['items']) && is_array($attributes['items'])) {
-                $items = collect($attributes['items'])->map(function ($itemAttr) {
-                    $item = new \App\Domain\Entities\OrderItem();
-                    $item->exists = true;
-                    $item->setRawAttributes($itemAttr, true);
-                    
-                    if (isset($itemAttr['product']) && $itemAttr['product']) {
-                        $product = new \App\Domain\Entities\Product();
-                        $product->exists = true;
-                        $product->setRawAttributes($itemAttr['product'], true);
-                        $item->setRelation('product', $product);
-                    }
-                    
-                    if (isset($itemAttr['variant']) && $itemAttr['variant']) {
-                        $variant = new \App\Domain\Entities\ProductVariant();
-                        $variant->exists = true;
-                        $variant->setRawAttributes($itemAttr['variant'], true);
-                        $item->setRelation('variant', $variant);
-                    }
-                    
-                    return $item;
-                });
-                $order->setRelation('items', new Collection($items));
-            }
-
-            return $order;
-        });
-
-        return new Collection($models);
+        // 5. Sắp xếp lại theo thời gian giảm dần và trả về danh sách thô
+        return $collection->sortByDesc('created_at')->values();
     }
 }

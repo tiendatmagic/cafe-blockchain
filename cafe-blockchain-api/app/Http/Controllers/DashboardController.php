@@ -42,7 +42,7 @@ class DashboardController extends Controller
             // 1. Doanh thu hôm nay (các đơn completed hôm nay)
             $todayOrders = Order::where('store_owner_address', $storeOwner)
                 ->where('status', 'completed')
-                ->whereDate('created_at', $today);
+                ->whereBetween('created_at', [$today->copy()->startOfDay(), $today->copy()->endOfDay()]);
 
             $todayRevenue = $todayOrders->sum('total_amount');
             $todayOrdersCount = $todayOrders->count();
@@ -51,7 +51,7 @@ class DashboardController extends Controller
             $yesterday = Carbon::yesterday();
             $yesterdayOrders = Order::where('store_owner_address', $storeOwner)
                 ->where('status', 'completed')
-                ->whereDate('created_at', $yesterday);
+                ->whereBetween('created_at', [$yesterday->copy()->startOfDay(), $yesterday->copy()->endOfDay()]);
             $yesterdayRevenue = $yesterdayOrders->sum('total_amount');
             
             $todayRevenueGrowth = 0;
@@ -210,33 +210,71 @@ class DashboardController extends Controller
 
             // 9. Tính toán cảnh báo tồn kho thấp (các sản phẩm có tồn kho <= 10)
             $products = \App\Domain\Entities\Product::where('store_owner_address', $storeOwner)->with(['variants', 'recipes'])->get();
-            $inventoryRecords = \App\Domain\Entities\InventoryRecord::where('store_owner_address', $storeOwner)->with('items')->get();
-            $completedOrders = Order::where('store_owner_address', $storeOwner)->where('status', 'completed')->with('items')->get();
-
-            // Tiền xử lý (Pre-index) nhóm dữ liệu theo product_id và variant_id để đạt độ phức tạp O(1) khi truy xuất
-            $recordsGrouped = [];
-            foreach ($inventoryRecords as $r) {
-                $rDate = Carbon::parse($r->record_date);
-                foreach ($r->items as $item) {
+            
+            // Lấy danh sách phiếu kiểm kho gần nhất của từng sản phẩm/biến thể
+            $latestKiem = DB::table('inventory_records as r')
+                ->join('inventory_record_items as i', 'r.id', '=', 'i.inventory_record_id')
+                ->where('r.store_owner_address', $storeOwner)
+                ->where('r.type', 'kiem')
+                ->select('i.product_id', 'i.product_variant_id', DB::raw('MAX(r.record_date) as max_date'))
+                ->groupBy('i.product_id', 'i.product_variant_id')
+                ->get()
+                ->mapWithKeys(function ($item) {
                     $key = $item->product_id . '-' . ($item->product_variant_id ?: '0');
-                    $recordsGrouped[$key][] = [
-                        'type' => $r->type,
-                        'date' => $rDate,
-                        'quantity' => (int)$item->quantity
-                    ];
+                    return [$key => $item->max_date];
+                })
+                ->toArray();
+
+            $kiemQuantities = [];
+            if (!empty($latestKiem)) {
+                $kiemItems = DB::table('inventory_records as r')
+                    ->join('inventory_record_items as i', 'r.id', '=', 'i.inventory_record_id')
+                    ->where('r.store_owner_address', $storeOwner)
+                    ->where('r.type', 'kiem')
+                    ->select('i.product_id', 'i.product_variant_id', 'r.record_date', 'i.quantity')
+                    ->get();
+                
+                foreach ($kiemItems as $item) {
+                    $key = $item->product_id . '-' . ($item->product_variant_id ?: '0');
+                    if (isset($latestKiem[$key]) && $latestKiem[$key] === $item->record_date) {
+                        $kiemQuantities[$key] = (int)$item->quantity;
+                    }
                 }
             }
 
-            $ordersGrouped = [];
-            foreach ($completedOrders as $o) {
-                $oDate = Carbon::parse($o->created_at);
-                foreach ($o->items as $item) {
-                    $key = $item->product_id . '-' . ($item->product_variant_id ?: '0');
-                    $ordersGrouped[$key][] = [
-                        'date' => $oDate,
-                        'quantity' => (int)$item->quantity
-                    ];
-                }
+            // Lấy các phiếu nhập, xuất kho (chỉ lấy dữ liệu thô để tối ưu hiệu năng)
+            $recordItems = DB::table('inventory_record_items as i')
+                ->join('inventory_records as r', 'i.inventory_record_id', '=', 'r.id')
+                ->where('r.store_owner_address', $storeOwner)
+                ->whereIn('r.type', ['nhap', 'xuat'])
+                ->select('i.product_id', 'i.product_variant_id', 'r.type', 'r.record_date', 'i.quantity')
+                ->get();
+
+            $recordsGrouped = [];
+            foreach ($recordItems as $item) {
+                $key = $item->product_id . '-' . ($item->product_variant_id ?: '0');
+                $recordsGrouped[$key][] = [
+                    'type' => $item->type,
+                    'date' => Carbon::parse($item->record_date),
+                    'quantity' => (int)$item->quantity
+                ];
+            }
+
+            // Lấy các mặt hàng đã bán từ các đơn hàng thành công (chỉ lấy dữ liệu thô)
+            $soldItems = DB::table('order_items as oi')
+                ->join('orders as o', 'oi.order_id', '=', 'o.id')
+                ->where('o.store_owner_address', $storeOwner)
+                ->where('o.status', 'completed')
+                ->select('oi.product_id', 'oi.product_variant_id', 'o.created_at', 'oi.quantity')
+                ->get();
+
+            $soldItemsGrouped = [];
+            foreach ($soldItems as $item) {
+                $key = $item->product_id . '-' . ($item->product_variant_id ?: '0');
+                $soldItemsGrouped[$key][] = [
+                    'date' => Carbon::parse($item->created_at),
+                    'quantity' => (int)$item->quantity
+                ];
             }
 
             $lowStockAlerts = [];
@@ -244,7 +282,7 @@ class DashboardController extends Controller
                 $variants = $p->variants;
                 if (count($variants) > 0) {
                     foreach ($variants as $v) {
-                        $stock = $this->calculateStockGrouped($p, $v->id, $recordsGrouped, $ordersGrouped, $completedOrders, $products);
+                        $stock = $this->calculateStockGrouped($p, $v->id, $recordsGrouped, $soldItemsGrouped, $latestKiem, $kiemQuantities, $products);
                         if ($stock <= 10) {
                             $lowStockAlerts[] = [
                                 'product_name' => $p->name,
@@ -255,7 +293,7 @@ class DashboardController extends Controller
                         }
                     }
                 } else {
-                    $stock = $this->calculateStockGrouped($p, null, $recordsGrouped, $ordersGrouped, $completedOrders, $products);
+                    $stock = $this->calculateStockGrouped($p, null, $recordsGrouped, $soldItemsGrouped, $latestKiem, $kiemQuantities, $products);
                     if ($stock <= 10) {
                         $lowStockAlerts[] = [
                             'product_name' => $p->name,
@@ -309,29 +347,18 @@ class DashboardController extends Controller
     /**
      * Thuật toán tính toán tồn kho đã được tối ưu dựa trên nhóm dữ liệu đã tiền xử lý
      */
-    private function calculateStockGrouped($p, $variantId, $recordsGrouped, $ordersGrouped, $completedOrders, $allProductsWithRecipes)
+    private function calculateStockGrouped($p, $variantId, $recordsGrouped, $soldItemsGrouped, $latestKiem, $kiemQuantities, $allProductsWithRecipes)
     {
         $key = $p->id . '-' . ($variantId ?: '0');
-        $latestKiemDate = null;
-        $latestKiemQty = 0;
-
-        $pRecords = $recordsGrouped[$key] ?? [];
-
-        // Tìm phiếu kiểm kho gần nhất của riêng sản phẩm/biến thể này
-        foreach ($pRecords as $r) {
-            if ($r['type'] === 'kiem') {
-                if ($latestKiemDate === null || $r['date']->gt($latestKiemDate)) {
-                    $latestKiemDate = $r['date'];
-                    $latestKiemQty = $r['quantity'];
-                }
-            }
-        }
+        $latestKiemDate = isset($latestKiem[$key]) ? Carbon::parse($latestKiem[$key]) : null;
+        $latestKiemQty = $kiemQuantities[$key] ?? 0;
 
         $totalIn = 0;
         $totalOut = 0;
         $totalSold = 0;
 
         // Cộng các giao dịch nhập/xuất sau ngày kiểm kho
+        $pRecords = $recordsGrouped[$key] ?? [];
         foreach ($pRecords as $r) {
             if ($latestKiemDate === null || $r['date']->gt($latestKiemDate)) {
                 if ($r['type'] === 'nhap') {
@@ -345,18 +372,21 @@ class DashboardController extends Controller
         // Tính lượng tiêu thụ/bán ra
         if ($p->type === 'ingredient') {
             // Nếu là nguyên vật liệu: Tính hao hụt từ các sản phẩm bán ra
-            foreach ($completedOrders as $o) {
-                $oDate = Carbon::parse($o->created_at);
-                if ($latestKiemDate === null || $oDate->gt($latestKiemDate)) {
-                    foreach ($o->items as $oItem) {
-                        $sellProduct = $allProductsWithRecipes->firstWhere('id', $oItem->product_id);
-                        if ($sellProduct && count($sellProduct->recipes) > 0) {
-                            $recipe = $sellProduct->recipes->first(function ($r) use ($p, $oItem) {
-                                return $r->ingredient_id === $p->id && 
-                                       (empty($r->product_variant_id) || $r->product_variant_id == $oItem->product_variant_id);
-                            });
-                            if ($recipe) {
-                                $totalSold += $oItem->quantity * $recipe->quantity;
+            foreach ($soldItemsGrouped as $sellKey => $items) {
+                $parts = explode('-', $sellKey);
+                $sellProductId = (int)$parts[0];
+                $sellVariantId = isset($parts[1]) && $parts[1] !== '0' ? (int)$parts[1] : null;
+
+                $sellProduct = $allProductsWithRecipes->firstWhere('id', $sellProductId);
+                if ($sellProduct && count($sellProduct->recipes) > 0) {
+                    $recipe = $sellProduct->recipes->first(function ($r) use ($p, $sellVariantId) {
+                        return $r->ingredient_id === $p->id && 
+                               (empty($r->product_variant_id) || $r->product_variant_id == $sellVariantId);
+                    });
+                    if ($recipe) {
+                        foreach ($items as $item) {
+                            if ($latestKiemDate === null || $item['date']->gt($latestKiemDate)) {
+                                $totalSold += $item['quantity'] * $recipe->quantity;
                             }
                         }
                     }
@@ -364,10 +394,10 @@ class DashboardController extends Controller
             }
         } else {
             // Nếu là món bán thường: Tính trực tiếp từ đơn hàng
-            $pOrders = $ordersGrouped[$key] ?? [];
-            foreach ($pOrders as $o) {
-                if ($latestKiemDate === null || $o['date']->gt($latestKiemDate)) {
-                    $totalSold += $o['quantity'];
+            $pSold = $soldItemsGrouped[$key] ?? [];
+            foreach ($pSold as $item) {
+                if ($latestKiemDate === null || $item['date']->gt($latestKiemDate)) {
+                    $totalSold += $item['quantity'];
                 }
             }
         }
