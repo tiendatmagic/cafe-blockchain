@@ -432,8 +432,10 @@
             <ng-template appCell="actions" let-row>
               <div class="flex justify-end gap-2 pr-6">
                 <button
+                  app-button
+                  variant="secondary"
+                  size="sm"
                   (click)="openEditSubscription(row)"
-                  class="btn-secondary btn-sm"
                   title="Thay đổi gói thuê bao"
                 >
                   <span>Sửa</span>
@@ -607,24 +609,30 @@
             <ng-template appCell="actions" let-row>
               <div class="flex justify-end gap-2 pr-6">
                 <button
+                  app-button
+                  variant="secondary"
+                  size="sm"
                   (click)="openEditPlan(row)"
-                  class="btn-secondary btn-sm"
                   title="Chỉnh sửa cấu hình gói cước"
                 >
                   <span>Sửa</span>
                 </button>
                 @if (row.code !== 'free') {
                   <button
+                    app-button
+                    variant="danger-light"
+                    size="sm"
                     (click)="triggerDeletePlan(row)"
-                    class="btn-danger-light btn-sm"
                     title="Xóa gói cước (nếu không có cửa hàng nào đang sử dụng)"
                   >
                     <span>Xóa</span>
                   </button>
                 } @else {
                   <button
-                    disabled
-                    class="btn-cancel btn-sm cursor-not-allowed opacity-40"
+                    app-button
+                    variant="cancel"
+                    size="sm"
+                    [disabled]="true"
                     title="Gói 'free' là gói mặc định hệ thống, không thể xóa"
                   >
                     <span>Xóa</span>
@@ -858,15 +866,14 @@
                 </div>
               </div>
               <button
-                (click)="runMaintenance('clear-all')"
+                app-button
+                variant="primary"
+                [loading]="store.runningMaintenance() === 'clear-all'"
                 [disabled]="!!store.runningMaintenance()"
-                class="btn-primary shrink-0 !bg-purple-600 hover:!bg-purple-700 border-0 flex items-center gap-1.5 py-2.5 px-4 font-bold shadow-lg shadow-purple-500/20"
+                (click)="runMaintenance('clear-all')"
+                class="shrink-0 !bg-purple-600 hover:!bg-purple-700 border-0 flex items-center gap-1.5 py-2.5 px-4 font-bold shadow-lg shadow-purple-500/20"
               >
-                @if (store.runningMaintenance() === 'clear-all') {
-                  <div class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></div>
-                } @else {
-                  <span>Xóa tất cả cache</span>
-                }
+                <span>Xóa tất cả cache</span>
               </button>
             </div>
           </div>
@@ -899,17 +906,14 @@
                   </p>
                 </div>
                 <button
-                  (click)="runMaintenance('clear-views')"
+                  app-button
+                  variant="primary"
+                  [loading]="store.runningMaintenance() === 'clear-views'"
                   [disabled]="!!store.runningMaintenance()"
-                  class="btn-primary shrink-0 !bg-amber-500 hover:!bg-amber-600 border-0"
+                  (click)="runMaintenance('clear-views')"
+                  class="shrink-0 !bg-amber-500 hover:!bg-amber-600 border-0"
                 >
-                  @if (store.runningMaintenance() === 'clear-views') {
-                    <div
-                      class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                    ></div>
-                  } @else {
-                    <span>Làm mới</span>
-                  }
+                  <span>Làm mới</span>
                 </button>
               </div>
 
@@ -925,17 +929,14 @@
                   </p>
                 </div>
                 <button
-                  (click)="runMaintenance('clear-config')"
+                  app-button
+                  variant="secondary"
+                  [loading]="store.runningMaintenance() === 'clear-config'"
                   [disabled]="!!store.runningMaintenance()"
-                  class="btn-secondary shrink-0"
+                  (click)="runMaintenance('clear-config')"
+                  class="shrink-0"
                 >
-                  @if (store.runningMaintenance() === 'clear-config') {
-                    <div
-                      class="w-4 h-4 rounded-full border-2 border-current/30 border-t-current animate-spin"
-                    ></div>
-                  } @else {
-                    <span>Xóa cache</span>
-                  }
+                  <span>Xóa cache</span>
                 </button>
               </div>
 
@@ -951,17 +952,14 @@
                   </p>
                 </div>
                 <button
-                  (click)="runMaintenance('clear-routes')"
+                  app-button
+                  variant="primary"
+                  [loading]="store.runningMaintenance() === 'clear-routes'"
                   [disabled]="!!store.runningMaintenance()"
-                  class="btn-primary shrink-0 !bg-emerald-500 hover:!bg-emerald-600 border-0"
+                  (click)="runMaintenance('clear-routes')"
+                  class="shrink-0 !bg-emerald-500 hover:!bg-emerald-600 border-0"
                 >
-                  @if (store.runningMaintenance() === 'clear-routes') {
-                    <div
-                      class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                    ></div>
-                  } @else {
-                    <span>Xóa cache</span>
-                  }
+                  <span>Xóa cache</span>
                 </button>
               </div>
 
@@ -977,17 +975,14 @@
                   </p>
                 </div>
                 <button
-                  (click)="runMaintenance('clear-logs')"
+                  app-button
+                  variant="danger-light"
+                  [loading]="store.runningMaintenance() === 'clear-logs'"
                   [disabled]="!!store.runningMaintenance()"
-                  class="btn-danger-light shrink-0"
+                  (click)="runMaintenance('clear-logs')"
+                  class="shrink-0"
                 >
-                  @if (store.runningMaintenance() === 'clear-logs') {
-                    <div
-                      class="w-4 h-4 rounded-full border-2 border-current/30 border-t-current animate-spin"
-                    ></div>
-                  } @else {
-                    <span>Xóa log</span>
-                  }
+                  <span>Xóa log</span>
                 </button>
               </div>
             </div>
@@ -1020,17 +1015,14 @@
                   </p>
                 </div>
                 <button
-                  (click)="runMaintenance('optimize')"
+                  app-button
+                  variant="primary"
+                  [loading]="store.runningMaintenance() === 'optimize'"
                   [disabled]="!!store.runningMaintenance()"
-                  class="btn-primary shrink-0 !bg-emerald-500 hover:!bg-emerald-600 border-0"
+                  (click)="runMaintenance('optimize')"
+                  class="shrink-0 !bg-emerald-500 hover:!bg-emerald-600 border-0"
                 >
-                  @if (store.runningMaintenance() === 'optimize') {
-                    <div
-                      class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                    ></div>
-                  } @else {
-                    <span>Tối ưu hóa</span>
-                  }
+                  <span>Tối ưu hóa</span>
                 </button>
               </div>
               <!-- Clear Optimize -->
@@ -1045,17 +1037,14 @@
                   </p>
                 </div>
                 <button
-                  (click)="runMaintenance('clear-optimize')"
+                  app-button
+                  variant="primary"
+                  [loading]="store.runningMaintenance() === 'clear-optimize'"
                   [disabled]="!!store.runningMaintenance()"
-                  class="btn-primary shrink-0 !bg-amber-500 hover:!bg-amber-600 border-0"
+                  (click)="runMaintenance('clear-optimize')"
+                  class="shrink-0 !bg-amber-500 hover:!bg-amber-600 border-0"
                 >
-                  @if (store.runningMaintenance() === 'clear-optimize') {
-                    <div
-                      class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                    ></div>
-                  } @else {
-                    <span>Xóa cache</span>
-                  }
+                  <span>Xóa cache</span>
                 </button>
               </div>
             </div>
@@ -1091,23 +1080,29 @@
               </div>
               <div class="flex flex-wrap gap-3 pt-2">
                 <button
+                  app-button
+                  variant="primary"
                   (click)="saveSystemSettings()"
-                  [disabled]="store.isSavingSettings()"
-                  class="btn-primary flex-1 sm:flex-none"
+                  [loading]="store.isSavingSettings()"
+                  class="flex-1 sm:flex-none"
                 >
                   Lưu thiết lập
                 </button>
                 <button
+                  app-button
+                  variant="secondary"
                   (click)="triggerCleanTokens()"
                   [disabled]="store.isDataLoading()"
-                  class="btn-secondary flex-1 sm:flex-none"
+                  class="flex-1 sm:flex-none"
                 >
                   Dọn dẹp Token hết hạn
                 </button>
                 <button
+                  app-button
+                  variant="danger"
                   (click)="triggerCleanAllTokens()"
                   [disabled]="store.isDataLoading()"
-                  class="btn-danger flex-1 sm:flex-none"
+                  class="flex-1 sm:flex-none"
                 >
                   Xóa tất cả Token
                 </button>
@@ -1286,7 +1281,12 @@
                 Nhấn nút "Làm mới" ở góc trên bên phải để tải.
               </p>
             </div>
-            <button (click)="store.loadSysInfo()" class="btn-primary">
+            <button
+              app-button
+              variant="primary"
+              (click)="store.loadSysInfo()"
+              [loading]="store.isLoadingSysInfo()"
+            >
               <span>Tải thông tin ngay</span>
             </button>
           </div>
