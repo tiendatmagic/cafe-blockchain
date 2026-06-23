@@ -28,6 +28,7 @@ import { AccessRestrictedComponent } from '@shared/components/access-restricted/
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import {
   TableComponent,
+  TableCellDirective,
   TableColumn,
 } from '@shared/components/table/table.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
@@ -54,6 +55,7 @@ import { SaaSAdminStore } from './services/saas-admin.store';
     AccessRestrictedComponent,
     PageHeaderComponent,
     TableComponent,
+    TableCellDirective,
     IconComponent,
     TabGroupComponent,
     SkeletonLoaderComponent,
@@ -377,6 +379,44 @@ export class AdminSaaSComponent implements OnInit {
         this.store.isSavingSettings.set(false);
       },
     });
+  }
+
+  // --- Cấu hình Ưu đãi Người mới ---
+  public savePromoSettings() {
+    if (this.store.isSavingPromoSettings()) return;
+
+    this.store.isSavingPromoSettings.set(true);
+    this.apiService
+      .updateAdminSystemSettings({
+        token_cleanup_days: this.store.tokenCleanupDays(),
+        new_user_promo_enabled: this.store.newUserPromoEnabled(),
+        new_user_promo_plan_code: this.store.newUserPromoPlanCode(),
+        new_user_promo_duration_days: this.store.newUserPromoDurationDays(),
+      })
+      .subscribe({
+        next: () => {
+          this.stateService.showToast('Lưu cấu hình ưu đãi người mới thành công!', 'success');
+          this.store.isSavingPromoSettings.set(false);
+        },
+        error: (err) => {
+          const msg = err?.error?.message || 'Không thể lưu cấu hình ưu đãi.';
+          this.stateService.showToast(msg, 'error');
+          this.store.isSavingPromoSettings.set(false);
+        },
+      });
+  }
+
+  public onPromoEnabledChange(enabled: boolean) {
+    this.store.newUserPromoEnabled.set(enabled);
+  }
+
+  public onPromoPlanChange(planCode: string) {
+    this.store.newUserPromoPlanCode.set(planCode);
+  }
+
+  public onPromoDurationChange(event: any) {
+    const val = parseInt(event.target.value, 10) || 7;
+    this.store.newUserPromoDurationDays.set(val);
   }
 
   // --- Bật/Tắt Cloudflare Turnstile ---

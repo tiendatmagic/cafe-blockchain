@@ -387,6 +387,20 @@ class AdminController extends Controller
                 $turnstileEnabled = (bool)($value['enabled'] ?? false);
             }
 
+            // Lấy cấu hình ưu đãi người mới
+            $promoSetting = DB::table('system_settings')
+                ->where('key', 'new_user_promo_settings')
+                ->first();
+            $promoEnabled = false;
+            $promoPlanCode = 'free';
+            $promoDurationDays = 7;
+            if ($promoSetting) {
+                $value = json_decode($promoSetting->value, true);
+                $promoEnabled = (bool)($value['enabled'] ?? false);
+                $promoPlanCode = $value['plan_code'] ?? 'free';
+                $promoDurationDays = (int)($value['duration_days'] ?? 7);
+            }
+
             // Chỉ tiết lộ có hay không có Secret Key (không tiết lộ giá trị thực)
             $hasSecretKey = !empty(config('services.turnstile.secret_key'));
 
@@ -395,6 +409,9 @@ class AdminController extends Controller
                 'system_contacts'     => $contacts,
                 'turnstile_enabled'   => $turnstileEnabled,
                 'turnstile_has_key'   => $hasSecretKey,
+                'new_user_promo_enabled' => $promoEnabled,
+                'new_user_promo_plan_code' => $promoPlanCode,
+                'new_user_promo_duration_days' => $promoDurationDays,
             ];
         });
 
@@ -416,6 +433,9 @@ class AdminController extends Controller
             'system_contacts.*.zalo'     => 'nullable|string|max:20',
             'system_contacts.*.facebook' => 'nullable|string|max:255',
             'system_contacts.*.telegram' => 'nullable|string|max:255',
+            'new_user_promo_enabled' => 'nullable|boolean',
+            'new_user_promo_plan_code' => 'nullable|string',
+            'new_user_promo_duration_days' => 'nullable|integer|min:1|max:3650',
         ]);
 
         DB::table('system_settings')
@@ -456,6 +476,23 @@ class AdminController extends Controller
                     [
                         'value'      => json_encode($contacts),
                         'updated_at' => now()
+                    ]
+                );
+        }
+
+        // Cập nhật cấu hình ưu đãi người mới
+        if (array_key_exists('new_user_promo_enabled', $validated)) {
+            DB::table('system_settings')
+                ->updateOrInsert(
+                    ['key' => 'new_user_promo_settings'],
+                    [
+                        'value'      => json_encode([
+                            'enabled' => (bool)$validated['new_user_promo_enabled'],
+                            'plan_code' => $validated['new_user_promo_plan_code'] ?? 'free',
+                            'duration_days' => (int)($validated['new_user_promo_duration_days'] ?? 7),
+                        ]),
+                        'updated_at' => now(),
+                        'created_at' => now(),
                     ]
                 );
         }

@@ -33,6 +33,10 @@ export class SaaSAdminStore {
   public readonly turnstileHasKey = signal<boolean>(false);
   public readonly isTogglingTurnstile = signal<boolean>(false);
   public readonly systemContactsList = signal<any[]>([]);
+  public readonly newUserPromoEnabled = signal<boolean>(false);
+  public readonly newUserPromoPlanCode = signal<string>('free');
+  public readonly newUserPromoDurationDays = signal<number>(7);
+  public readonly isSavingPromoSettings = signal<boolean>(false);
 
   // Search & Filter (Tenants tab)
   public readonly searchQuery = signal<string>('');
@@ -313,6 +317,9 @@ export class SaaSAdminStore {
         this.turnstileEnabled.set(res.settings?.turnstile_enabled ?? false);
         this.turnstileHasKey.set(res.settings?.turnstile_has_key ?? false);
         this.systemContactsList.set(res.settings?.system_contacts || []);
+        this.newUserPromoEnabled.set(res.settings?.new_user_promo_enabled ?? false);
+        this.newUserPromoPlanCode.set(res.settings?.new_user_promo_plan_code ?? 'free');
+        this.newUserPromoDurationDays.set(res.settings?.new_user_promo_duration_days ?? 7);
         this.isDataLoading.set(false);
       },
       error: (err) => {

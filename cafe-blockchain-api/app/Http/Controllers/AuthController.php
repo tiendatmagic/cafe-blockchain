@@ -67,10 +67,25 @@ class AuthController extends Controller
             // Find or create user
             $user = User::where('wallet_address', $address)->first();
             if (!$user) {
+                // Đọc cấu hình ưu đãi người mới
+                $promoEnabled = false;
+                $promoPlanCode = 'free';
+                $promoDurationDays = 7;
+
+                $promoSetting = DB::table('system_settings')->where('key', 'new_user_promo_settings')->first();
+                if ($promoSetting) {
+                    $promoValue = json_decode($promoSetting->value, true);
+                    $promoEnabled = (bool)($promoValue['enabled'] ?? false);
+                    if ($promoEnabled) {
+                        $promoPlanCode = $promoValue['plan_code'] ?? 'free';
+                        $promoDurationDays = (int)($promoValue['duration_days'] ?? 7);
+                    }
+                }
+
                 $user = new User();
                 $user->wallet_address = $address;
-                $user->plan_code = 'free';
-                $user->subscription_expires_at = now()->addDays(7);
+                $user->plan_code = $promoPlanCode;
+                $user->subscription_expires_at = now()->addDays($promoDurationDays);
                 $user->subscription_status = 'active';
                 // Populate profile từ staffs nếu ví đã được đăng ký là nhân viên
                 if ($staff) {
