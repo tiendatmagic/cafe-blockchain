@@ -19,6 +19,7 @@ import { Web3PublicHeaderComponent } from '@features/marketplace/components/web3
 import { SubscriptionBlockedComponent } from './shared/components/subscription-blocked/subscription-blocked.component';
 import { ToastComponent } from './shared/components/toast/toast.component';
 import { FeatureBlockedComponent } from '@shared/components/feature-blocked/feature-blocked.component';
+import { GlowingMeshComponent } from '@shared/components/glowing-mesh/glowing-mesh.component';
 
 @Component({
   selector: 'app-root',
@@ -34,6 +35,7 @@ import { FeatureBlockedComponent } from '@shared/components/feature-blocked/feat
     SubscriptionBlockedComponent,
     ToastComponent,
     FeatureBlockedComponent,
+    GlowingMeshComponent,
   ],
   templateUrl: './app.html',
   changeDetection: ChangeDetectionStrategy.Eager,

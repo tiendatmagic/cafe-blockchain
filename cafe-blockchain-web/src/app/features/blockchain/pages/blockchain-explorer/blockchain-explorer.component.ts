@@ -25,6 +25,7 @@ import { PaginationComponent } from '@shared/components/pagination/pagination.co
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import { CardComponent } from '@shared/components/card/card.component';
+import { GlowingMeshComponent } from '@shared/components/glowing-mesh/glowing-mesh.component';
 
 @Component({
   selector: 'app-blockchain-explorer',
@@ -40,6 +41,7 @@ import { CardComponent } from '@shared/components/card/card.component';
     IconComponent,
     TabGroupComponent,
     CardComponent,
+    GlowingMeshComponent,
   ],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './blockchain-explorer.component.html',
