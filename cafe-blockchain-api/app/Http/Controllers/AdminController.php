@@ -1032,10 +1032,14 @@ class AdminController extends Controller
         // 4. Xóa cache application
         \Artisan::call('cache:clear');
 
-        // Xóa cứng thư mục cache data để tránh lỗi lock file hoặc cấu hình sai trên Windows
+        // Xóa cứng thư mục cache data để tránh lỗi lock file hoặc cấu hình sai trên Windows và Hosting Linux
         $cacheDataPath = storage_path('framework/cache/data');
-        if (\Illuminate\Support\Facades\File::isDirectory($cacheDataPath)) {
-            \Illuminate\Support\Facades\File::cleanDirectory($cacheDataPath);
+        try {
+            if (\Illuminate\Support\Facades\File::isDirectory($cacheDataPath)) {
+                $this->recursiveCleanDirectory($cacheDataPath);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Lỗi khi xóa cứng thư mục cache data: ' . $e->getMessage());
         }
         
         // Dọn dẹp cache của các API SaaS Admin
@@ -1047,6 +1051,40 @@ class AdminController extends Controller
         \Cache::forget('admin_tenants');
         
         return response()->json(['success' => true, 'message' => 'Toàn bộ cache hệ thống đã được dọn dẹp và tối ưu hóa thành công.']);
+    }
+
+    /**
+     * Dọn dẹp đệ quy toàn bộ thư mục và tệp tin, bỏ qua lỗi permission và chmod trước khi xóa.
+     */
+    private function recursiveCleanDirectory($dirPath)
+    {
+        if (!is_dir($dirPath)) {
+            return;
+        }
+
+        $items = scandir($dirPath);
+        if ($items === false) {
+            return;
+        }
+
+        foreach ($items as $item) {
+            if ($item === '.' || $item === '..') {
+                continue;
+            }
+
+            $path = $dirPath . DIRECTORY_SEPARATOR . $item;
+            
+            // Cố gắng chmod để đảm bảo quyền ghi/xóa
+            @chmod($path, 0777);
+
+            if (is_dir($path)) {
+                $this->recursiveCleanDirectory($path);
+                // Xóa thư mục con sau khi đã dọn sạch ruột
+                @rmdir($path);
+            } else {
+                @unlink($path);
+            }
+        }
     }
 
     public function indexPaymentMethods(Request $request)
