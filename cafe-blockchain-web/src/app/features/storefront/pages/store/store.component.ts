@@ -387,8 +387,8 @@ export class StoreComponent implements OnInit, AfterViewInit {
   // Áp dụng biến màu css động
   private applyDynamicColors(primary: string, secondary: string) {
     const root = document.documentElement;
-    root.style.setProperty('--dynamic-primary', primary || '#7c3aed');
-    root.style.setProperty('--dynamic-secondary', secondary || '#c084fc');
+    root.style.setProperty('--dynamic-primary', primary || '#ff00dd');
+    root.style.setProperty('--dynamic-secondary', secondary || '#8000ff');
   }
 
   // --- Quản lý Giỏ hàng ---

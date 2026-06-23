@@ -172,8 +172,8 @@ export class SettingsComponent implements OnInit {
     chain_id: '',
     explorer_url: '',
     explorer_api_key: '',
-    primary_color: '#7c3aed',
-    secondary_color: '#c084fc',
+    primary_color: '#ff00dd',
+    secondary_color: '#8000ff',
     default_print_size: '80mm',
     voucher_gift_min_amount: 100000,
     voucher_discount_amount: 5000,
@@ -510,10 +510,10 @@ export class SettingsComponent implements OnInit {
     }
     this.configForm.update((form) => ({
       ...form,
-      primary_color: '#7c3aed',
-      secondary_color: '#c084fc',
+      primary_color: '#ff00dd',
+      secondary_color: '#8000ff',
     }));
-    this.stateService.applyDynamicColors('#7c3aed', '#c084fc');
+    this.stateService.applyDynamicColors('#ff00dd', '#8000ff');
     this.stateService.showToast(
       'Đã đặt màu về mặc định. Nhấn "LƯU CẤU HÌNH HỆ THỐNG" để ghi nhận!',
       'success',

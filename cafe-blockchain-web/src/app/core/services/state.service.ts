@@ -704,7 +704,7 @@ export class StateService {
         }
       } else {
         // Nếu chưa đăng nhập hoặc ngắt kết nối ví, khôi phục màu mặc định thương hiệu DApp
-        this.settingStore.applyDynamicColors('#7c3aed', '#c084fc');
+        this.settingStore.applyDynamicColors('#ff00dd', '#8000ff');
       }
     }
   }

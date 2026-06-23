@@ -378,7 +378,7 @@
                         type="text"
                         [ngModel]="configForm().primary_color"
                         (ngModelChange)="updateConfigForm('primary_color', $event)"
-                        placeholder="#7c3aed"
+                        placeholder="#ff00dd"
                         [disabled]="
                           !web3Service.walletConnected() || !web3Service.isOwnerContract()
                         "
@@ -410,7 +410,7 @@
                         type="text"
                         [ngModel]="configForm().secondary_color"
                         (ngModelChange)="updateConfigForm('secondary_color', $event)"
-                        placeholder="#c084fc"
+                        placeholder="#8000ff"
                         [disabled]="
                           !web3Service.walletConnected() || !web3Service.isOwnerContract()
                         "

@@ -20,8 +20,8 @@ class SettingController extends Controller
         // Các settings mặc định an toàn — KHÔNG bao gồm địa chỉ contract (chỉ điền khi người dùng chủ động deploy/cấu hình)
         $defaultSettings = [
             'store_name' => 'Cafe Web3 POS',
-            'primary_color' => '#7c3aed',
-            'secondary_color' => '#c084fc',
+            'primary_color' => '#ff00dd',
+            'secondary_color' => '#8000ff',
             'contract_address' => '',
             'finance_contract_address' => '',
             'voucher_contract_address' => '',
@@ -386,8 +386,8 @@ class SettingController extends Controller
         if ($storeOwner === null) {
             $publicSettings = [
                 'store_name' => 'Cafe Web3 POS',
-                'primary_color' => '#7c3aed',
-                'secondary_color' => '#c084fc',
+                'primary_color' => '#ff00dd',
+                'secondary_color' => '#8000ff',
                 'contract_address' => '',
                 'finance_contract_address' => '',
                 'voucher_contract_address' => '',
@@ -430,8 +430,8 @@ class SettingController extends Controller
         // Chỉ trả về các cấu hình an toàn cho client
         $publicSettings = [
             'store_name' => $settings['store_name'] ?? 'Cafe Web3 POS',
-            'primary_color' => empty($orderCode) ? '#7c3aed' : ($settings['primary_color'] ?? '#7c3aed'),
-            'secondary_color' => empty($orderCode) ? '#c084fc' : ($settings['secondary_color'] ?? '#c084fc'),
+            'primary_color' => empty($orderCode) ? '#ff00dd' : ($settings['primary_color'] ?? '#ff00dd'),
+            'secondary_color' => empty($orderCode) ? '#8000ff' : ($settings['secondary_color'] ?? '#8000ff'),
             'contract_address' => $settings['contract_address'] ?? '',
             'finance_contract_address' => $settings['finance_contract_address'] ?? '',
             'voucher_contract_address' => $settings['voucher_contract_address'] ?? '',
@@ -576,8 +576,8 @@ class SettingController extends Controller
             // Chỉ trả về các cấu hình an toàn cho client
             $publicSettings = [
                 'store_name' => $settings['store_name'] ?? 'Cafe Web3 POS',
-                'primary_color' => $settings['primary_color'] ?? '#7c3aed',
-                'secondary_color' => $settings['secondary_color'] ?? '#c084fc',
+                'primary_color' => $settings['primary_color'] ?? '#ff00dd',
+                'secondary_color' => $settings['secondary_color'] ?? '#8000ff',
                 'contract_address' => $settings['contract_address'] ?? '',
                 'finance_contract_address' => $settings['finance_contract_address'] ?? '',
                 'voucher_contract_address' => $settings['voucher_contract_address'] ?? '',

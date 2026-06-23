@@ -20,8 +20,8 @@ export class SettingStore {
     chain_id: '11155111',
     explorer_url: 'https://sepolia.etherscan.io',
     explorer_api_key: '',
-    primary_color: '#7c3aed',
-    secondary_color: '#c084fc',
+    primary_color: '#ff00dd',
+    secondary_color: '#8000ff',
     default_print_size: '80mm',
     show_crypto_payment: '0',
     has_synced_menu: '0',
@@ -68,7 +68,7 @@ export class SettingStore {
       },
       error: (err) => {
         console.error('[SettingStore] Lỗi tải cấu hình:', err);
-        this.applyAndCacheDynamicColors('#7c3aed', '#c084fc');
+        this.applyAndCacheDynamicColors('#ff00dd', '#8000ff');
         this.isSettingsLoading.set(false);
       }
     });
@@ -76,8 +76,8 @@ export class SettingStore {
 
   public applyDynamicColors(primary: string, secondary: string) {
     if (typeof document !== 'undefined') {
-      const pColor = primary || '#7c3aed';
-      const sColor = secondary || '#c084fc';
+      const pColor = primary || '#ff00dd';
+      const sColor = secondary || '#8000ff';
       document.documentElement.style.setProperty('--dynamic-primary', pColor);
       document.documentElement.style.setProperty('--dynamic-secondary', sColor);
     }
@@ -87,8 +87,8 @@ export class SettingStore {
     this.applyDynamicColors(primary, secondary);
     if (typeof window !== 'undefined') {
       localStorage.setItem(this.colorStorageKey, JSON.stringify({
-        primary_color: primary || '#7c3aed',
-        secondary_color: secondary || '#c084fc'
+        primary_color: primary || '#ff00dd',
+        secondary_color: secondary || '#8000ff'
       }));
     }
   }
@@ -97,7 +97,7 @@ export class SettingStore {
     if (typeof window === 'undefined') return;
     const cachedColors = localStorage.getItem(this.colorStorageKey);
     if (!cachedColors) {
-      this.applyDynamicColors('#7c3aed', '#c084fc');
+      this.applyDynamicColors('#ff00dd', '#8000ff');
       return;
     }
 
@@ -106,7 +106,7 @@ export class SettingStore {
       this.applyDynamicColors(colors.primary_color, colors.secondary_color);
     } catch {
       localStorage.removeItem(this.colorStorageKey);
-      this.applyDynamicColors('#7c3aed', '#c084fc');
+      this.applyDynamicColors('#ff00dd', '#8000ff');
     }
   }
 }

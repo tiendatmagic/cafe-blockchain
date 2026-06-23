@@ -24,8 +24,8 @@ class DatabaseSeeder extends Seeder
         Setting::set('rpc_url', 'https://ethereum-sepolia.publicnode.com');
         Setting::set('chain_id', '11155111'); // Sepolia Chain ID
         Setting::set('explorer_url', 'https://sepolia.etherscan.io');
-        Setting::set('primary_color', '#7c3aed'); // Màu tím chính mặc định
-        Setting::set('secondary_color', '#c084fc'); // Màu tím phụ mặc định
+        Setting::set('primary_color', '#ff00dd'); // Màu hồng chính mặc định
+        Setting::set('secondary_color', '#8000ff'); // Màu tím phụ mặc định
  
         // 3. Tạo 8 danh mục động mặc định
         $categories = [
