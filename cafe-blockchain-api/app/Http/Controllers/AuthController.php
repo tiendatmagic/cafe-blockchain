@@ -23,17 +23,37 @@ class AuthController extends Controller
     {
         $validated = $request->validate([
             'address' => 'required|string|regex:/^0x[a-fA-F0-9]{40}$/i',
+            'domain' => 'nullable|string',
+            'uri' => 'nullable|string',
+            'chain_id' => 'nullable|string',
         ]);
 
         $address = strtolower($validated['address']);
         $nonce = Str::random(32);
 
-        // Store nonce in cache for 5 minutes
-        Cache::put('auth_nonce_' . $address, $nonce, now()->addMinutes(5));
+        $domain = $request->input('domain') ?: $request->getHost();
+        $uri = $request->input('uri') ?: $request->getSchemeAndHttpHost();
+        $chainId = $request->input('chain_id') ?: '56';
+        $timestamp = now()->setTimezone('UTC')->format('Y-m-d\TH:i:s\Z');
+
+        $message = "{$domain} wants you to sign in with your Ethereum account:\n" .
+                   "{$address}\n\n" .
+                   "Sign in to Cafe Blockchain POS\n" .
+                   "URI: {$uri}\n" .
+                   "Version: 1\n" .
+                   "Chain ID: {$chainId}\n" .
+                   "Nonce: {$nonce}\n" .
+                   "Issued At: {$timestamp}";
+
+        // Store both nonce and complete message in cache for 5 minutes
+        Cache::put('auth_nonce_' . $address, [
+            'nonce' => $nonce,
+            'message' => $message
+        ], now()->addMinutes(5));
 
         return response()->json([
             'nonce' => $nonce,
-            'message' => "Sign in to Cafe Blockchain POS\nNonce: {$nonce}"
+            'message' => $message
         ]);
     }
 
@@ -50,12 +70,12 @@ class AuthController extends Controller
         $address = strtolower($validated['address']);
         $signature = $validated['signature'];
 
-        $nonce = Cache::get('auth_nonce_' . $address);
-        if (!$nonce) {
+        $authData = Cache::get('auth_nonce_' . $address);
+        if (!$authData || !is_array($authData) || empty($authData['message'])) {
             return response()->json(['message' => 'Nonce expired or invalid.'], 400);
         }
 
-        $message = "Sign in to Cafe Blockchain POS\nNonce: {$nonce}";
+        $message = $authData['message'];
 
         if ($this->verifyEthereumSignature($message, $signature, $address)) {
             // Valid signature, remove nonce

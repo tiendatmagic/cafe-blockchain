@@ -65,7 +65,10 @@ export class ApiService {
 
   // --- Auth API ---
   public getNonce(address: string): Observable<any> {
-    return this.http.get(`${this.baseUrl}/auth/nonce?address=${address}`);
+    const domain = typeof window !== 'undefined' ? window.location.host : '';
+    const uri = typeof window !== 'undefined' ? window.location.origin : '';
+    const chainId = this.web3Service.chainId() || '';
+    return this.http.get(`${this.baseUrl}/auth/nonce?address=${address}&domain=${encodeURIComponent(domain)}&uri=${encodeURIComponent(uri)}&chain_id=${chainId}`);
   }
 
   public verifySignature(address: string, signature: string): Observable<any> {
