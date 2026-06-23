@@ -16,25 +16,29 @@ class InventoryController extends Controller
     public function index(Request $request)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
-
-        $records = \Illuminate\Support\Facades\Cache::remember("store_inventory_history:{$storeOwner}", 86400, function () use ($storeOwner) {
-            return InventoryRecord::where('store_owner_address', $storeOwner)
-                ->with(['items.product', 'items.variant'])
-                ->orderBy('id', 'desc')
-                ->get()
-                ->toArray();
-        });
-
-        $collection = collect($records);
-
+        $limit = (int)$request->query('limit', 10);
+ 
+        $query = InventoryRecord::where('store_owner_address', $storeOwner)
+            ->with(['items.product', 'items.variant'])
+            ->orderBy('id', 'desc');
+ 
         if ($request->has('type') && $request->type !== 'all') {
-            $type = $request->type;
-            $collection = $collection->filter(function ($r) use ($type) {
-                return ($r['type'] ?? '') === $type;
-            });
+            $query->where('type', $request->type);
         }
 
-        return response()->json($collection->values()->all());
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('note', 'like', "%{$search}%")
+                  ->orWhere('id', 'like', "%{$search}%")
+                  ->orWhereHas('items.product', function($qp) use ($search) {
+                      $qp->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+ 
+        $paginated = $query->paginate($limit);
+        return response()->json($paginated);
     }
 
     /**

@@ -16,41 +16,69 @@ class AdminController extends Controller
 
 
     /**
-     * Lấy danh sách toàn bộ các quán (Chủ quán: store_owner_address là null)
+     * Lấy danh sách phân trang các quán (Chủ quán: store_owner_address là null)
      */
     public function indexTenants(Request $request)
     {
-        $result = \Cache::remember('admin_tenants', 3600, function () {
-            $tenants = User::whereNull('store_owner_address')
-                ->orderBy('created_at', 'desc')
-                ->get();
+        $search = $request->query('search');
+        $plan = $request->query('plan', 'all');
+        $status = $request->query('status', 'all');
+        $limit = (int)$request->query('limit', 10);
+        $page = (int)$request->query('page', 1);
 
-            $result = [];
-            foreach ($tenants as $tenant) {
-                $wallet = strtolower($tenant->wallet_address);
-                
-                // Lấy tên cửa hàng từ bảng settings
-                $storeNameSetting = DB::table('settings')
-                    ->where('store_owner_address', $wallet)
-                    ->where('key', 'store_name')
-                    ->first();
-                
-                $storeName = $storeNameSetting ? $storeNameSetting->value : 'Cafe Web3 POS';
+        $query = User::whereNull('store_owner_address');
 
-                $result[] = [
-                    'id' => $tenant->id,
-                    'wallet_address' => $tenant->wallet_address,
-                    'store_name' => $storeName,
-                    'plan_code' => $tenant->plan_code ?: 'free',
-                    'subscription_expires_at' => $tenant->subscription_expires_at ? ($tenant->subscription_expires_at instanceof \Carbon\Carbon ? $tenant->subscription_expires_at->toDateTimeString() : (string)$tenant->subscription_expires_at) : null,
-                    'subscription_status' => $tenant->subscription_status ?: 'active',
-                    'created_at' => $tenant->created_at ? ($tenant->created_at instanceof \Carbon\Carbon ? $tenant->created_at->toDateTimeString() : (string)$tenant->created_at) : null,
-                ];
-            }
-            return $result;
-        });
+        // Lọc theo gói cước
+        if ($plan && $plan !== 'all') {
+            $query->where('plan_code', $plan);
+        }
 
-        return response()->json($result);
+        // Lọc theo trạng thái
+        if ($status && $status !== 'all') {
+            $query->where('subscription_status', $status);
+        }
+
+        // Tìm kiếm (ví hoặc tên cửa hàng trong JSON store_config)
+        if (!empty($search)) {
+            $searchLower = strtolower(trim($search));
+            $query->where(function($q) use ($searchLower) {
+                $q->whereRaw('LOWER(wallet_address) LIKE ?', ["%{$searchLower}%"])
+                  ->orWhereRaw('LOWER(plan_code) LIKE ?', ["%{$searchLower}%"])
+                  ->orWhereExists(function($subQuery) use ($searchLower) {
+                      $subQuery->select(DB::raw(1))
+                          ->from('settings')
+                          ->whereRaw('LOWER(store_owner_address) = LOWER(users.wallet_address)')
+                          ->where('key', 'store_config')
+                          ->whereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(value, "$.store_name"))) LIKE ?', ["%{$searchLower}%"]);
+                  });
+            });
+        }
+
+        $paginated = $query->orderBy('created_at', 'desc')->paginate($limit, ['*'], 'page', $page);
+
+        $formatted = [];
+        foreach ($paginated->items() as $tenant) {
+            $wallet = strtolower($tenant->wallet_address);
+            // Sửa bug hiển thị tên cửa hàng do đã được gộp vào JSON
+            $storeName = \App\Domain\Entities\Setting::getForStore('store_name', $wallet, 'Cafe Web3 POS');
+
+            $formatted[] = [
+                'id' => $tenant->id,
+                'wallet_address' => $tenant->wallet_address,
+                'store_name' => $storeName,
+                'plan_code' => $tenant->plan_code ?: 'free',
+                'subscription_expires_at' => $tenant->subscription_expires_at ? ($tenant->subscription_expires_at instanceof \Carbon\Carbon ? $tenant->subscription_expires_at->toDateTimeString() : (string)$tenant->subscription_expires_at) : null,
+                'subscription_status' => $tenant->subscription_status ?: 'active',
+                'created_at' => $tenant->created_at ? ($tenant->created_at instanceof \Carbon\Carbon ? $tenant->created_at->toDateTimeString() : (string)$tenant->created_at) : null,
+            ];
+        }
+
+        return response()->json([
+            'data' => $formatted,
+            'total' => $paginated->total(),
+            'current_page' => $paginated->currentPage(),
+            'per_page' => $paginated->perPage(),
+        ]);
     }
 
     /**

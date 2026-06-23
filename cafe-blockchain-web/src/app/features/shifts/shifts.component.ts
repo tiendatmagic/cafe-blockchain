@@ -152,7 +152,7 @@ export class ShiftsComponent implements OnInit {
 
     this.setDatePreset('7days');
     if (this.web3Service.walletConnected()) {
-      this.shiftService.refreshShifts();
+      this.refreshShifts(1);
       this.shiftService.refreshCurrentShift();
     }
   }
@@ -197,7 +197,7 @@ export class ShiftsComponent implements OnInit {
       this.tempEndDate = end;
       this.reportsStartDate.set(start);
       this.reportsEndDate.set(end);
-      this.shiftPage.set(1);
+      this.refreshShifts(1);
     }
   }
 
@@ -205,98 +205,38 @@ export class ShiftsComponent implements OnInit {
     if (this.tempStartDate && this.tempEndDate) {
       this.reportsStartDate.set(this.tempStartDate);
       this.reportsEndDate.set(this.tempEndDate);
-      this.shiftPage.set(1);
+      this.refreshShifts(1);
     }
   }
 
-  // Lọc cục bộ theo ngày, từ khóa tìm kiếm nhân viên và trạng thái ca
-  public readonly filteredShifts = computed(() => {
-    const list = this.shiftService.shifts() || [];
-    const start = this.reportsStartDate();
-    const end = this.reportsEndDate();
-    const search = this.shiftSearchQuery().trim().toLowerCase();
-    const status = this.shiftStatusFilter();
-
-    let result = list;
-
-    // 1. Lọc theo ngày
-    if (start && end) {
-      const startDate = new Date(start + 'T00:00:00');
-      const endDate = new Date(end + 'T23:59:59');
-      result = result.filter((shift) => {
-        const shiftDate = new Date(shift.start_time);
-        return shiftDate >= startDate && shiftDate <= endDate;
-      });
-    }
-
-    // 2. Lọc theo từ khóa tìm kiếm (tên nhân viên hoặc địa chỉ ví)
-    if (search) {
-      result = result.filter((shift) => {
-        const name = (shift.user?.name || '').toLowerCase();
-        const address = (shift.user?.wallet_address || '').toLowerCase();
-        return name.includes(search) || address.includes(search);
-      });
-    }
-
-    // 3. Lọc theo trạng thái ca trực
-    if (status !== 'all') {
-      result = result.filter((shift) => shift.status === status);
-    }
-
-    return result;
-  });
-
-  // Sắp xếp danh sách
-  public readonly sortedShifts = computed(() => {
-    const list = this.filteredShifts();
-    const field = this.shiftSortField();
-    const desc = this.shiftSortDesc();
-
-    const result = [...list];
-    result.sort((a, b) => {
-      let valA = a[field];
-      let valB = b[field];
-
-      if (field === 'staff_name') {
-        valA = a.user?.name || a.user?.wallet_address || '';
-        valB = b.user?.name || b.user?.wallet_address || '';
-      } else if (field === 'difference') {
-        valA = (a.actual_cash ?? 0) - (a.expected_cash ?? 0);
-        valB = (b.actual_cash ?? 0) - (b.expected_cash ?? 0);
-      }
-
-      if (valA === null || valA === undefined) return desc ? 1 : -1;
-      if (valB === null || valB === undefined) return desc ? -1 : 1;
-
-      if (typeof valA === 'string') {
-        return desc ? valB.localeCompare(valA) : valA.localeCompare(valB);
-      }
-      return desc ? valB - valA : valA - valB;
-    });
-    return result;
-  });
-
-  // Phân trang
+  // Lấy danh sách ca làm việc đã phân trang từ DB
   public readonly shiftsPaged = computed(() => {
-    const list = this.sortedShifts();
-    const start = (this.shiftPage() - 1) * this.shiftLimit;
-    return list.slice(start, start + this.shiftLimit);
+    return this.shiftService.shifts() || [];
+  });
+
+  public readonly totalShifts = computed(() => {
+    return this.shiftService.totalShifts();
   });
 
   public readonly shiftsTotalPages = computed(() => {
-    const list = this.sortedShifts();
-    return Math.ceil(list.length / this.shiftLimit);
+    return Math.ceil(this.totalShifts() / this.shiftLimit) || 1;
   });
 
+  // Gọi API lấy danh sách ca làm việc phân trang từ DB
+  public refreshShifts(page: number = this.shiftPage()) {
+    this.shiftPage.set(page);
+    this.shiftService.refreshShifts(
+      page,
+      this.reportsStartDate(),
+      this.reportsEndDate(),
+      this.shiftStatusFilter(),
+      this.shiftSearchQuery()
+    );
+  }
+
   public onSortChange(event: { key: string; direction: 'asc' | 'desc' | '' }) {
-    if (event.key) {
-      this.shiftSortField.set(event.key);
-      this.shiftSortDesc.set(event.direction === 'desc');
-    } else {
-      this.shiftSortField.set('start_time');
-      this.shiftSortDesc.set(true);
-    }
-    this.shiftPage.set(1);
+    // Sắp xếp ở backend mặc định là thời gian giảm dần
+    this.refreshShifts(1);
   }
 
   // Mở modal bắt đầu / kết ca
@@ -425,7 +365,13 @@ export class ShiftsComponent implements OnInit {
   // Lọc theo trạng thái ca trực
   public setShiftStatusFilter(status: string) {
     this.shiftStatusFilter.set(status);
-    this.shiftPage.set(1);
+    this.refreshShifts(1);
+  }
+
+  // Khi tìm kiếm thay đổi
+  public onSearchQueryChange(query: string) {
+    this.shiftSearchQuery.set(query);
+    this.refreshShifts(1);
   }
 
   // Mở modal xem chi tiết ca trực

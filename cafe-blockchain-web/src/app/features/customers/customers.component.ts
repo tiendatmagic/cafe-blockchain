@@ -108,10 +108,8 @@ export class CustomersComponent implements OnInit {
   private readonly modalService = inject(ModalService);
 
   // Bộ lọc, phân trang khách hàng
-  public readonly customerCurrentPage = signal<number>(1);
-  public readonly customerItemsPerPage = 9;
   public readonly customerGroupCurrentPage = signal<number>(1);
-  public readonly customerGroupItemsPerPage = 9;
+  public readonly customerGroupItemsPerPage = 10;
 
   // Bộ tìm kiếm khách hàng
   public readonly customerSearchQuery = signal<string>('');
@@ -129,63 +127,30 @@ export class CustomersComponent implements OnInit {
   public get isCustomersLoading() {
     return this.stateService.isCustomersLoading;
   }
-
-  private removeSign(str: string): string {
-    if (!str) return '';
-    return str
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/đ/g, 'd')
-      .replace(/Đ/g, 'D');
+  public get totalCustomers() {
+    return this.stateService.totalCustomers;
+  }
+  public get customerCurrentPage() {
+    return this.stateService.customerCurrentPage;
+  }
+  public get customerItemsPerPage() {
+    return this.stateService.customerItemsPerPage;
   }
 
-  // Lọc danh sách khách hàng cục bộ tức thời tại client
+  // Computed Properties Khách hàng
   public readonly filteredCustomers = computed(() => {
-    let list = this.customers();
-    const search = this.customerSearchQuery().trim().toLowerCase();
-    if (search) {
-      const searchClean = this.removeSign(search);
-      list = list.filter((c) => {
-        const nameClean = c.name ? this.removeSign(c.name.toLowerCase()) : '';
-        const phoneClean = c.phone ? c.phone.toLowerCase() : '';
-        const emailClean = c.email ? this.removeSign(c.email.toLowerCase()) : '';
-        const codeClean = c.customer_code ? c.customer_code.toLowerCase() : '';
-        const companyClean = c.company_name ? this.removeSign(c.company_name.toLowerCase()) : '';
-        const repClean = c.representative_name
-          ? this.removeSign(c.representative_name.toLowerCase())
-          : '';
-        const taxClean = c.tax_code ? c.tax_code.toLowerCase() : '';
-        const walletClean = c.wallet_address ? c.wallet_address.toLowerCase() : '';
-        const idClean = c.id ? c.id.toString() : '';
-
-        return (
-          nameClean.includes(searchClean) ||
-          phoneClean.includes(searchClean) ||
-          emailClean.includes(searchClean) ||
-          codeClean.includes(searchClean) ||
-          companyClean.includes(searchClean) ||
-          repClean.includes(searchClean) ||
-          taxClean.includes(searchClean) ||
-          walletClean.includes(searchClean) ||
-          idClean.includes(searchClean)
-        );
-      });
-    }
-    return list;
+    return this.customers();
   });
 
-  // Computed phân trang Khách hàng dựa trên danh sách đã lọc
   public readonly paginatedCustomers = computed(() => {
-    const list = this.filteredCustomers();
-    const startIndex = (this.customerCurrentPage() - 1) * this.customerItemsPerPage;
-    return list.slice(startIndex, startIndex + this.customerItemsPerPage);
+    return this.customers();
   });
 
   public readonly customerTotalPages = computed(() => {
-    return Math.ceil(this.filteredCustomers().length / this.customerItemsPerPage) || 1;
+    return Math.ceil(this.totalCustomers() / this.customerItemsPerPage) || 1;
   });
 
-  // Computed phân trang Nhóm Khách hàng
+  // Computed phân trang Nhóm Khách hàng (Giữ phân trang client vì danh sách nhỏ)
   public readonly paginatedCustomerGroups = computed(() => {
     const list = this.customerGroups();
     const startIndex = (this.customerGroupCurrentPage() - 1) * this.customerGroupItemsPerPage;
@@ -196,11 +161,23 @@ export class CustomersComponent implements OnInit {
     return Math.ceil(this.customerGroups().length / this.customerGroupItemsPerPage) || 1;
   });
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.refreshCustomers(1);
+  }
 
-  // Tải lại dữ liệu
-  public refreshCustomers() {
-    this.stateService.refreshCustomers(true);
+  // Tải lại dữ liệu từ DB (phân trang)
+  public refreshCustomers(page: number = this.customerCurrentPage()) {
+    this.stateService.refreshCustomers(
+      true, // force load
+      page,
+      this.customerItemsPerPage,
+      this.customerSearchQuery()
+    );
+  }
+
+  public onSearchQueryChange(query: string) {
+    this.customerSearchQuery.set(query);
+    this.refreshCustomers(1);
   }
 
   public getBusinessStatusColor(status: string): 'emerald' | 'amber' | 'rose' {

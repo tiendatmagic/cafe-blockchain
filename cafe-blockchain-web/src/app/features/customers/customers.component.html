@@ -112,7 +112,8 @@
               <!-- Search input -->
               <app-custom-search-input
                 [ngModel]="customerSearchQuery()"
-                (ngModelChange)="customerSearchQuery.set($event); customerCurrentPage.set(1)"
+                (ngModelChange)="onSearchQueryChange($event)"
+                [debounce]="400"
                 placeholder="Tìm tên, SĐT, công ty..."
                 containerClass="w-full sm:w-60"
               ></app-custom-search-input>
@@ -123,12 +124,12 @@
               [columns]="customerColumns"
               [isLoading]="isCustomersLoading()"
               skeletonType="table"
-              [totalItems]="filteredCustomers().length"
+              [totalItems]="totalCustomers()"
               [itemsPerPage]="customerItemsPerPage"
               [currentPage]="customerCurrentPage()"
               itemName="khách hàng"
               [showPagination]="true"
-              (pageChange)="customerCurrentPage.set($event)"
+              (pageChange)="refreshCustomers($event)"
             >
               <!-- Custom cell cho cột mã khách -->
               <ng-template appCell="customer_code" let-row>

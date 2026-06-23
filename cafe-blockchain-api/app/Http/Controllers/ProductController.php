@@ -14,6 +14,68 @@ class ProductController extends Controller
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
         
+        // Nếu có phân trang (dùng cho trang quản lý Menu)
+        if ($request->has('page') || $request->has('limit')) {
+            $limit = (int)$request->input('limit', 10);
+            
+            $query = Product::where('store_owner_address', $storeOwner)
+                ->with(['categories', 'variants', 'recipes.ingredient', 'recipes.variant'])
+                ->orderBy('id', 'desc');
+
+            // Lọc theo loại sản phẩm (product hoặc ingredient)
+            if ($request->has('type') && !empty($request->type)) {
+                $query->where('type', $request->type);
+            }
+
+            // Lọc theo từ khóa tìm kiếm nếu có
+            if ($request->has('search') && !empty($request->search)) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('sku', 'like', "%{$search}%");
+                });
+            }
+
+            // Lọc theo danh mục nếu có
+            if ($request->has('category') && $request->category !== 'Tất cả') {
+                $category = $request->category;
+                $query->whereHas('categories', function($q) use ($category) {
+                    $q->where('name', $category);
+                });
+            }
+
+            // Lọc theo trạng thái bật/tắt (Đang bán/Ngừng bán)
+            if ($request->has('status') && $request->status !== 'all') {
+                $status = $request->status === 'active' ? 1 : 0;
+                $query->where('status', $status);
+            }
+
+            // Lọc theo khoảng giá sản phẩm chính
+            if ($request->has('min_price') && $request->min_price !== null && $request->min_price !== '') {
+                $query->where('price', '>=', $request->min_price);
+            }
+            if ($request->has('max_price') && $request->max_price !== null && $request->max_price !== '') {
+                $query->where('price', '<=', $request->max_price);
+            }
+
+            // Lọc theo khoảng giá biến thể sản phẩm
+            if (($request->has('min_variant_price') && $request->min_variant_price !== null && $request->min_variant_price !== '') ||
+                ($request->has('max_variant_price') && $request->max_variant_price !== null && $request->max_variant_price !== '')) {
+                $query->whereHas('variants', function($q) use ($request) {
+                    if ($request->has('min_variant_price') && $request->min_variant_price !== null && $request->min_variant_price !== '') {
+                        $q->where('price', '>=', $request->min_variant_price);
+                    }
+                    if ($request->has('max_variant_price') && $request->max_variant_price !== null && $request->max_variant_price !== '') {
+                        $q->where('price', '<=', $request->max_variant_price);
+                    }
+                });
+            }
+
+            $paginated = $query->paginate($limit);
+            return response()->json($paginated);
+        }
+
+        // Mặc định cho POS/Storefront: Trả về toàn bộ danh sách dùng cache
         $products = \Illuminate\Support\Facades\Cache::remember("store_products_all:{$storeOwner}", 86400, function () use ($storeOwner) {
             return Product::where('store_owner_address', $storeOwner)
                 ->with(['categories', 'variants', 'recipes.ingredient', 'recipes.variant'])
@@ -48,19 +110,6 @@ class ProductController extends Controller
             $collection = $collection->filter(function ($p) use ($category) {
                 return collect($p['categories'] ?? [])->contains('name', $category);
             });
-        }
-
-        if ($request->has('page') || $request->has('limit')) {
-            $limit = (int)$request->input('limit', 9);
-            $page = (int)$request->input('page', 1);
-            $paginated = new \Illuminate\Pagination\LengthAwarePaginator(
-                $collection->forPage($page, $limit)->values()->all(),
-                $collection->count(),
-                $limit,
-                $page,
-                ['path' => $request->url(), 'query' => $request->query()]
-            );
-            return response()->json($paginated);
         }
 
         return response()->json($collection->values()->all());

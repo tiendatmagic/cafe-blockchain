@@ -44,6 +44,7 @@ export class SaaSAdminStore {
   public readonly tenantStatusFilter = signal<string>('all');
   public readonly tenantCurrentPage = signal<number>(1);
   public readonly tenantItemsPerPage = 10;
+  public readonly tenantTotal = signal<number>(0);
 
   // Pagination (Plans tab)
   public readonly planCurrentPage = signal<number>(1);
@@ -96,7 +97,7 @@ export class SaaSAdminStore {
   public readonly isLoadingSysInfo = signal<boolean>(false);
   public readonly packageSearch = signal<string>('');
   public readonly packageCurrentPage = signal<number>(1);
-  public readonly packageItemsPerPage = 15;
+  public readonly packageItemsPerPage = 10;
   public readonly webBuildSize = signal<string>('0.00 MB');
 
   // System Logs Signals
@@ -169,39 +170,15 @@ export class SaaSAdminStore {
 
   // Client-side pagination & filter for tenants
   public readonly filteredTenants = computed(() => {
-    let list = this.tenants();
-
-    const planFilter = this.tenantPlanFilter();
-    if (planFilter !== 'all') {
-      list = list.filter((t) => t.plan_code === planFilter);
-    }
-
-    const statusFilter = this.tenantStatusFilter();
-    if (statusFilter !== 'all') {
-      list = list.filter((t) => t.subscription_status === statusFilter);
-    }
-
-    const search = this.searchQuery().trim().toLowerCase();
-    if (search) {
-      const searchClean = this.removeSign(search);
-      list = list.filter((t) => {
-        const storeNameClean = t.store_name ? this.removeSign(t.store_name.toLowerCase()) : '';
-        const walletClean = t.wallet_address ? t.wallet_address.toLowerCase() : '';
-        const planClean = t.plan_code ? t.plan_code.toLowerCase() : '';
-        return (
-          storeNameClean.includes(searchClean) ||
-          walletClean.includes(searchClean) ||
-          planClean.includes(searchClean)
-        );
-      });
-    }
-    return list;
+    return this.tenants();
   });
 
   public readonly paginatedTenants = computed(() => {
-    const list = this.filteredTenants();
-    const startIndex = (this.tenantCurrentPage() - 1) * this.tenantItemsPerPage;
-    return list.slice(startIndex, startIndex + this.tenantItemsPerPage);
+    return this.tenants();
+  });
+
+  public readonly tenantTotalPages = computed(() => {
+    return Math.ceil(this.tenantTotal() / this.tenantItemsPerPage) || 1;
   });
 
   public readonly paginatedPlans = computed(() => {
@@ -299,7 +276,13 @@ export class SaaSAdminStore {
     if (this.tenants().length > 0 && this.plans().length > 0 && !force) return;
 
     this.isDataLoading.set(true);
-    const tenants$ = this.apiService.getAdminTenants();
+    const tenants$ = this.apiService.getAdminTenants(
+      this.searchQuery(),
+      this.tenantPlanFilter(),
+      this.tenantStatusFilter(),
+      this.tenantCurrentPage(),
+      this.tenantItemsPerPage
+    );
     const plans$ = this.apiService.getAdminPlans();
     const settings$ = this.apiService.getAdminSystemSettings();
 
@@ -309,7 +292,13 @@ export class SaaSAdminStore {
       settings: settings$,
     }).subscribe({
       next: (res) => {
-        this.tenants.set(res.tenants || []);
+        if (res.tenants && res.tenants.data) {
+          this.tenants.set(res.tenants.data || []);
+          this.tenantTotal.set(res.tenants.total || 0);
+        } else {
+          this.tenants.set(res.tenants || []);
+          this.tenantTotal.set(Array.isArray(res.tenants) ? res.tenants.length : 0);
+        }
         this.plans.set(res.plans || []);
         this.tenantCurrentPage.set(1);
         this.planCurrentPage.set(1);
@@ -336,11 +325,23 @@ export class SaaSAdminStore {
 
     this.isDataLoading.set(true);
     forkJoin({
-      tenants: this.apiService.getAdminTenants(),
+      tenants: this.apiService.getAdminTenants(
+        this.searchQuery(),
+        this.tenantPlanFilter(),
+        this.tenantStatusFilter(),
+        this.tenantCurrentPage(),
+        this.tenantItemsPerPage
+      ),
       plans: this.apiService.getPublicPlans(),
     }).subscribe({
       next: (res) => {
-        this.tenants.set(res.tenants || []);
+        if (res.tenants && res.tenants.data) {
+          this.tenants.set(res.tenants.data || []);
+          this.tenantTotal.set(res.tenants.total || 0);
+        } else {
+          this.tenants.set(res.tenants || []);
+          this.tenantTotal.set(Array.isArray(res.tenants) ? res.tenants.length : 0);
+        }
         this.plans.set(res.plans || []);
         this.tenantCurrentPage.set(1);
         this.isDataLoading.set(false);
@@ -560,19 +561,54 @@ export class SaaSAdminStore {
     this.packageCurrentPage.set(1);
   }
 
+  public loadTenants() {
+    this.isDataLoading.set(true);
+    this.apiService.getAdminTenants(
+      this.searchQuery(),
+      this.tenantPlanFilter(),
+      this.tenantStatusFilter(),
+      this.tenantCurrentPage(),
+      this.tenantItemsPerPage
+    ).subscribe({
+      next: (res) => {
+        if (res && res.data) {
+          this.tenants.set(res.data || []);
+          this.tenantTotal.set(res.total || 0);
+        } else {
+          this.tenants.set(res || []);
+          this.tenantTotal.set(Array.isArray(res) ? res.length : 0);
+        }
+        this.isDataLoading.set(false);
+      },
+      error: (err) => {
+        console.error('[SaaSAdminStore] Lỗi tải danh sách cửa hàng:', err);
+        this.stateService.showToast('Không thể lấy dữ liệu cửa hàng từ Laravel API.', 'error');
+        this.isDataLoading.set(false);
+      }
+    });
+  }
+
   public onTenantPlanFilterChange(val: string) {
     this.tenantPlanFilter.set(val);
     this.tenantCurrentPage.set(1);
+    this.loadTenants();
   }
 
   public onTenantStatusFilterChange(val: string) {
     this.tenantStatusFilter.set(val);
     this.tenantCurrentPage.set(1);
+    this.loadTenants();
   }
 
   public onSearchQueryChange(val: string) {
     this.searchQuery.set(val);
     this.tenantCurrentPage.set(1);
+    this.loadTenants();
+  }
+
+  public setTenantPage(page: number) {
+    this.tenantCurrentPage.set(page);
+    this.loadTenants();
   }
 
   public onSystemPaymentSearchChange() {

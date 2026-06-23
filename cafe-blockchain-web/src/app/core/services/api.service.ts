@@ -119,7 +119,18 @@ export class ApiService {
   }
 
   // 2. Products (Thực đơn) API
-  public getProducts(params?: { page?: number; limit?: number; search?: string; category?: string }, ttl?: number): Observable<any> {
+  public getProducts(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    category?: string;
+    type?: string;
+    status?: string;
+    min_price?: number | null;
+    max_price?: number | null;
+    min_variant_price?: number | null;
+    max_variant_price?: number | null;
+  }, ttl?: number): Observable<any> {
     let httpParams = new HttpParams();
     if (params) {
       if (params.page !== undefined) {
@@ -133,6 +144,24 @@ export class ApiService {
       }
       if (params.category !== undefined) {
         httpParams = httpParams.set('category', params.category);
+      }
+      if (params.type !== undefined) {
+        httpParams = httpParams.set('type', params.type);
+      }
+      if (params.status !== undefined && params.status !== 'all') {
+        httpParams = httpParams.set('status', params.status);
+      }
+      if (params.min_price !== undefined && params.min_price !== null) {
+        httpParams = httpParams.set('min_price', params.min_price.toString());
+      }
+      if (params.max_price !== undefined && params.max_price !== null) {
+        httpParams = httpParams.set('max_price', params.max_price.toString());
+      }
+      if (params.min_variant_price !== undefined && params.min_variant_price !== null) {
+        httpParams = httpParams.set('min_variant_price', params.min_variant_price.toString());
+      }
+      if (params.max_variant_price !== undefined && params.max_variant_price !== null) {
+        httpParams = httpParams.set('max_variant_price', params.max_variant_price.toString());
       }
     }
     let headers = this.getHeaders();
@@ -155,7 +184,7 @@ export class ApiService {
   }
 
   // 3. Orders (Đơn hàng) API
-  public getOrders(status: string = 'all', blockchainStatus: string = 'all'): Observable<any[]> {
+  public getOrders(status: string = 'all', blockchainStatus: string = 'all', page?: number, limit?: number, search?: string): Observable<any> {
     let params = new HttpParams();
     if (status !== 'all') {
       params = params.set('status', status);
@@ -163,7 +192,16 @@ export class ApiService {
     if (blockchainStatus !== 'all') {
       params = params.set('blockchain_status', blockchainStatus);
     }
-    return this.http.get<any[]>(`${this.baseUrl}/orders`, { params, headers: this.getHeaders() });
+    if (page !== undefined) {
+      params = params.set('page', page.toString());
+    }
+    if (limit !== undefined) {
+      params = params.set('limit', limit.toString());
+    }
+    if (search !== undefined && search.trim() !== '') {
+      params = params.set('search', search.trim());
+    }
+    return this.http.get<any>(`${this.baseUrl}/orders`, { params, headers: this.getHeaders() });
   }
 
   public getOrder(id: string | number): Observable<any> {
@@ -286,16 +324,18 @@ export class ApiService {
   }
 
   // 6. Customers (Khách hàng) API
-  public getCustomers(search?: string, limit?: number, ttl?: number, force?: boolean): Observable<any[]> {
+  public getCustomers(search?: string, limit?: number, page?: number, ttl?: number, force?: boolean, groupId?: number): Observable<any> {
     let url = `${this.baseUrl}/customers`;
     const params: string[] = [];
     if (search) params.push(`search=${encodeURIComponent(search)}`);
     if (limit) params.push(`limit=${limit}`);
+    if (page) params.push(`page=${page}`);
+    if (groupId) params.push(`group_id=${groupId}`);
     if (params.length > 0) {
       url += `?${params.join('&')}`;
     }
     const headers = this.getCacheHeaders(ttl, force);
-    return this.http.get<any[]>(url, { headers });
+    return this.http.get<any>(url, { headers });
   }
 
   public createCustomer(customer: any): Observable<any> {
@@ -329,12 +369,24 @@ export class ApiService {
   }
 
   // 8. Transactions (Thu Chi) API
-  public getTransactions(type: string = 'all'): Observable<any[]> {
+  public getTransactions(type: string = 'all', category?: string, page?: number, limit?: number, search?: string): Observable<any> {
     let params = new HttpParams();
     if (type !== 'all') {
       params = params.set('type', type);
     }
-    return this.http.get<any[]>(`${this.baseUrl}/transactions`, { params, headers: this.getHeaders() });
+    if (category) {
+      params = params.set('category', category);
+    }
+    if (page !== undefined) {
+      params = params.set('page', page.toString());
+    }
+    if (limit !== undefined) {
+      params = params.set('limit', limit.toString());
+    }
+    if (search) {
+      params = params.set('search', search);
+    }
+    return this.http.get<any>(`${this.baseUrl}/transactions`, { params, headers: this.getHeaders() });
   }
 
   public createTransaction(transaction: any): Observable<any> {
@@ -358,12 +410,21 @@ export class ApiService {
   }
 
   // 9. Inventory (Kho hàng) API
-  public getInventoryRecords(type: string = 'all'): Observable<any[]> {
+  public getInventoryRecords(type: string = 'all', page?: number, limit?: number, search?: string): Observable<any> {
     let params = new HttpParams();
     if (type !== 'all') {
       params = params.set('type', type);
     }
-    return this.http.get<any[]>(`${this.baseUrl}/inventory`, { params, headers: this.getHeaders() });
+    if (page !== undefined) {
+      params = params.set('page', page.toString());
+    }
+    if (limit !== undefined) {
+      params = params.set('limit', limit.toString());
+    }
+    if (search !== undefined && search.trim() !== '') {
+      params = params.set('search', search.trim());
+    }
+    return this.http.get<any>(`${this.baseUrl}/inventory`, { params: params, headers: this.getHeaders() });
   }
 
   public createInventoryRecord(record: any): Observable<any> {
@@ -433,7 +494,7 @@ export class ApiService {
   }
 
   // --- Debts (Sổ nợ) API ---
-  public getDebts(search?: string, filter: string = 'all'): Observable<any[]> {
+  public getDebts(search?: string, filter: string = 'all', page?: number, limit?: number): Observable<any> {
     let params = new HttpParams();
     if (search) {
       params = params.set('search', search);
@@ -441,7 +502,13 @@ export class ApiService {
     if (filter !== 'all') {
       params = params.set('filter', filter);
     }
-    return this.http.get<any[]>(`${this.baseUrl}/debts`, { headers: this.getHeaders(), params });
+    if (page !== undefined) {
+      params = params.set('page', page.toString());
+    }
+    if (limit !== undefined) {
+      params = params.set('limit', limit.toString());
+    }
+    return this.http.get<any>(`${this.baseUrl}/debts`, { headers: this.getHeaders(), params });
   }
 
   public getCustomerDebtLogs(customerId: number): Observable<any> {
@@ -481,8 +548,27 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/shifts/close`, { actual_cash: actualCash, note }, { headers: this.getHeaders() });
   }
 
-  public getShifts(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/shifts`, { headers: this.getHeaders() });
+  public getShifts(page?: number, limit?: number, startDate?: string, endDate?: string, status?: string, search?: string): Observable<any> {
+    let params = new HttpParams();
+    if (page !== undefined) {
+      params = params.set('page', page.toString());
+    }
+    if (limit !== undefined) {
+      params = params.set('limit', limit.toString());
+    }
+    if (startDate) {
+      params = params.set('start_date', startDate);
+    }
+    if (endDate) {
+      params = params.set('end_date', endDate);
+    }
+    if (status && status !== 'all') {
+      params = params.set('status', status);
+    }
+    if (search && search.trim() !== '') {
+      params = params.set('search', search.trim());
+    }
+    return this.http.get<any>(`${this.baseUrl}/shifts`, { headers: this.getHeaders(), params });
   }
 
   // --- Staffs & Roles API ---
@@ -621,8 +707,24 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/admin/subscriptions/${id}/reject`, { rejected_reason: reason }, { headers: this.getHeaders() });
   }
 
-  public getAdminTenants(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/admin/tenants`, { headers: this.getHeaders() });
+  public getAdminTenants(search?: string, plan?: string, status?: string, page?: number, limit?: number): Observable<any> {
+    let params = new HttpParams();
+    if (search) {
+      params = params.set('search', search);
+    }
+    if (plan && plan !== 'all') {
+      params = params.set('plan', plan);
+    }
+    if (status && status !== 'all') {
+      params = params.set('status', status);
+    }
+    if (page !== undefined) {
+      params = params.set('page', page.toString());
+    }
+    if (limit !== undefined) {
+      params = params.set('limit', limit.toString());
+    }
+    return this.http.get<any>(`${this.baseUrl}/admin/tenants`, { headers: this.getHeaders(), params });
   }
 
   public getAdminPaymentMethods(params?: { page?: number; per_page?: number; search?: string }): Observable<any> {

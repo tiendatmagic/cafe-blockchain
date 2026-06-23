@@ -31,10 +31,18 @@ class DebtController extends Controller
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
         $search = $request->query('search');
         $filter = $request->query('filter', 'all');
+        $limit = (int)$request->query('limit', 10);
 
-        $customers = $this->debtRepository->getCustomers($storeOwner, $search, $filter);
+        $paginated = $this->debtRepository->getCustomers($storeOwner, $search, $filter, $limit);
+        
+        $totalDebtOutstanding = Customer::where('store_owner_address', $storeOwner)->sum('debt_balance');
+        $totalDebtorsCount = Customer::where('store_owner_address', $storeOwner)->where('debt_balance', '>', 0)->count();
 
-        return response()->json($customers);
+        return response()->json([
+            'paginated' => $paginated,
+            'total_debt_outstanding' => (float)$totalDebtOutstanding,
+            'total_debtors_count' => (int)$totalDebtorsCount
+        ]);
     }
 
     /**

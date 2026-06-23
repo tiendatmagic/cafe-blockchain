@@ -104,7 +104,7 @@
               <app-tab-group
                 [options]="inventoryTypeFilterOptions"
                 [activeValue]="inventoryTypeFilter()"
-                (valueChange)="inventoryTypeFilter.set($event); inventoryCurrentPage.set(1)"
+                (valueChange)="onTypeFilterChange($event)"
               ></app-tab-group>
 
               <div
@@ -113,13 +113,14 @@
                 <!-- Search input -->
                 <app-custom-search-input
                   [ngModel]="inventorySearchQuery()"
-                  (ngModelChange)="inventorySearchQuery.set($event); inventoryCurrentPage.set(1)"
+                  (ngModelChange)="onSearchQueryChange($event)"
+                  [debounce]="400"
                   placeholder="Tìm ghi chú, mã phiếu, món..."
                   containerClass="w-full sm:w-60"
                 ></app-custom-search-input>
 
                 <span class="text-xs font-bold text-slate-400 whitespace-nowrap"
-                  >Tìm thấy {{ filteredInventoryRecords().length }} phiếu kho</span
+                  >Tìm thấy {{ totalInventoryRecords() }} phiếu kho</span
                 >
               </div>
             </div>
@@ -205,14 +206,14 @@
               </div>
 
               <!-- Phân trang Kho -->
-              @if (filteredInventoryRecords().length > inventoryItemsPerPage) {
+              @if (totalInventoryRecords() > inventoryItemsPerPage) {
                 <app-pagination
                   [currentPage]="inventoryCurrentPage()"
                   [totalPages]="inventoryTotalPages()"
-                  [totalItems]="filteredInventoryRecords().length"
+                  [totalItems]="totalInventoryRecords()"
                   [itemsPerPage]="inventoryItemsPerPage"
                   itemName="phiếu"
-                  (pageChange)="inventoryCurrentPage.set($event)"
+                  (pageChange)="refreshInventory($event)"
                 ></app-pagination>
               }
             </div>

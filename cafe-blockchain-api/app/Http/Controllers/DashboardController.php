@@ -148,7 +148,7 @@ class DashboardController extends Controller
             $latestBlockchainTransactions = Order::where('store_owner_address', $storeOwner)
                 ->whereNotNull('tx_hash')
                 ->orderBy('updated_at', 'desc')
-                ->limit(5)
+                ->limit(10)
                 ->get(['id', 'table_number', 'total_amount', 'tx_hash', 'blockchain_status', 'updated_at'])
                 ->toArray();
 
@@ -204,7 +204,7 @@ class DashboardController extends Controller
                 )
                 ->groupBy('products.id', 'products.name', 'product_variants.id', 'product_variants.variant_name')
                 ->orderByDesc('total_quantity')
-                ->limit(5)
+                ->limit(10)
                 ->get()
                 ->toArray();
 

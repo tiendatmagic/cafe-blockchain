@@ -194,7 +194,7 @@
               >
               <app-custom-search-input
                 [ngModel]="shiftSearchQuery()"
-                (ngModelChange)="shiftSearchQuery.set($event); shiftPage.set(1)"
+                (ngModelChange)="onSearchQueryChange($event)"
                 placeholder="Tên nhân viên hoặc địa chỉ ví..."
                 containerClass="w-full"
                 inputClass="w-full search-input text-xs sm:text-sm h-10.5"
@@ -203,20 +203,20 @@
           </div>
         </div>
       }
-
+ 
       <!-- Bảng ca trực -->
       <app-table
         [data]="shiftsPaged()"
         [columns]="shiftColumns"
         [isLoading]="shiftService.isShiftsLoading()"
         [showPagination]="true"
-        [totalItems]="sortedShifts().length"
+        [totalItems]="totalShifts()"
         [itemsPerPage]="shiftLimit"
         [currentPage]="shiftPage()"
         [sortKey]="shiftSortField()"
         [sortDirection]="shiftSortDesc() ? 'desc' : 'asc'"
         itemName="ca trực"
-        (pageChange)="shiftPage.set($event)"
+        (pageChange)="refreshShifts($event)"
         (sortChange)="onSortChange($event)"
         noDataMessage="Không có dữ liệu ca trực trong khoảng thời gian được chọn."
       >

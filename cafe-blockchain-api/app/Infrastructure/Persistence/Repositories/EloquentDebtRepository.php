@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 
 class EloquentDebtRepository implements DebtRepositoryInterface
 {
-    public function getCustomers(string $storeOwner, ?string $search = null, string $filter = 'all'): Collection
+    public function getCustomers(string $storeOwner, ?string $search = null, string $filter = 'all', int $perPage = 10): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
         $query = Customer::where('store_owner_address', $storeOwner);
 
@@ -30,7 +30,7 @@ class EloquentDebtRepository implements DebtRepositoryInterface
             $query->where('debt_balance', '<=', 0);
         }
 
-        return $query->orderBy('debt_balance', 'desc')->orderBy('id', 'desc')->get();
+        return $query->orderBy('debt_balance', 'desc')->orderBy('id', 'desc')->paginate($perPage);
     }
 
     public function findCustomer(string $storeOwner, string $customerId): ?Customer

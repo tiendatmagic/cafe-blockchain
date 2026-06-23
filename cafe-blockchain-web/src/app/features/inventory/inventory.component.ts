@@ -1,4 +1,5 @@
 import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prompt/web3-connect-prompt.component';
+import { InventoryStore } from './store/inventory.store';
 import { AccessRestrictedComponent } from '@shared/components/access-restricted/access-restricted.component';
 import {
   Component,
@@ -54,13 +55,14 @@ export class InventoryComponent implements OnInit {
   private readonly apiService = inject(ApiService);
   private readonly router = inject(Router);
   private readonly modalService = inject(ModalService);
+  private readonly inventoryStore = inject(InventoryStore);
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.refreshInventory(1);
+  }
 
   // Bộ lọc, phân trang kho
   public readonly inventoryTypeFilter = signal<string>('all');
-  public readonly inventoryCurrentPage = signal<number>(1);
-  public readonly inventoryItemsPerPage = 9;
 
   public readonly inventoryTypeFilterOptions: TabOption[] = [
     { value: 'all', label: 'Tất cả' },
@@ -94,7 +96,7 @@ export class InventoryComponent implements OnInit {
     items: [],
   });
 
-  // Getters từ StateService
+  // Getters từ StateService & InventoryStore
   public get products() {
     return this.stateService.products;
   }
@@ -102,10 +104,19 @@ export class InventoryComponent implements OnInit {
     return this.stateService.orders;
   }
   public get inventoryRecords() {
-    return this.stateService.inventoryRecords;
+    return this.inventoryStore.inventoryRecords;
   }
   public get isInventoryLoading() {
-    return this.stateService.isInventoryLoading;
+    return this.inventoryStore.isInventoryLoading;
+  }
+  public get totalInventoryRecords() {
+    return this.inventoryStore.totalInventoryRecords;
+  }
+  public get inventoryCurrentPage() {
+    return this.inventoryStore.inventoryCurrentPage;
+  }
+  public get inventoryItemsPerPage() {
+    return this.inventoryStore.inventoryItemsPerPage;
   }
 
   // Danh sách sản phẩm bao gồm tùy chọn mặc định cho dropdown
@@ -116,38 +127,15 @@ export class InventoryComponent implements OnInit {
 
   // --- Computed Properties Kho hàng ---
   public readonly filteredInventoryRecords = computed(() => {
-    let list = this.inventoryRecords();
-    const type = this.inventoryTypeFilter();
-    if (type !== 'all') {
-      list = list.filter((r) => r.type === type);
-    }
-
-    // Thêm tìm kiếm cục bộ (note, record_code, tên món trong record items)
-    const search = this.inventorySearchQuery().trim().toLowerCase();
-    if (search) {
-      list = list.filter(
-        (r) =>
-          (r.note && r.note.toLowerCase().includes(search)) ||
-          (r.record_code && r.record_code.toLowerCase().includes(search)) ||
-          (r.id && r.id.toString().includes(search)) ||
-          (r.items &&
-            r.items.some((item: any) => {
-              const prod = this.products().find((p) => p.id === item.product_id);
-              return prod && prod.name.toLowerCase().includes(search);
-            })),
-      );
-    }
-    return list;
+    return this.inventoryRecords();
   });
 
   public readonly paginatedInventoryRecords = computed(() => {
-    const list = this.filteredInventoryRecords();
-    const startIndex = (this.inventoryCurrentPage() - 1) * this.inventoryItemsPerPage;
-    return list.slice(startIndex, startIndex + this.inventoryItemsPerPage);
+    return this.inventoryRecords();
   });
 
   public readonly inventoryTotalPages = computed(() => {
-    return Math.ceil(this.filteredInventoryRecords().length / this.inventoryItemsPerPage) || 1;
+    return Math.ceil(this.totalInventoryRecords() / this.inventoryItemsPerPage) || 1;
   });
 
   // Tính toán số lượng tồn kho của tất cả sản phẩm
@@ -312,8 +300,23 @@ export class InventoryComponent implements OnInit {
   }
 
   // Tải lại dữ liệu kho
-  public refreshInventory() {
-    this.stateService.refreshInventory();
+  public refreshInventory(page: number = this.inventoryCurrentPage()) {
+    this.inventoryStore.refreshInventory(
+      this.stateService.hasPermission('inventory'),
+      this.inventoryTypeFilter(),
+      page,
+      this.inventorySearchQuery()
+    );
+  }
+
+  public onTypeFilterChange(type: string) {
+    this.inventoryTypeFilter.set(type);
+    this.refreshInventory(1);
+  }
+
+  public onSearchQueryChange(query: string) {
+    this.inventorySearchQuery.set(query);
+    this.refreshInventory(1);
   }
 
   // --- Inventory CRUD ---

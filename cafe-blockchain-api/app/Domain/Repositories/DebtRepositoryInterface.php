@@ -11,7 +11,7 @@ interface DebtRepositoryInterface
     /**
      * Lấy danh sách khách hàng và dư nợ
      */
-    public function getCustomers(string $storeOwner, ?string $search = null, string $filter = 'all'): Collection;
+    public function getCustomers(string $storeOwner, ?string $search = null, string $filter = 'all', int $perPage = 10): \Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
     /**
      * Tìm khách hàng của cửa hàng

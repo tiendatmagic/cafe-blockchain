@@ -14,7 +14,41 @@ class CustomerController extends Controller
     public function index(Request $request)
     {
         $storeOwner = strtolower($request->user()->store_owner_address ?: $request->user()->wallet_address);
+        $limit = (int)$request->query('limit', 10);
+        $search = $request->query('search');
 
+        // Nếu request yêu cầu phân trang rõ ràng
+        if ($request->has('page') || $request->has('limit')) {
+            $query = Customer::where('store_owner_address', $storeOwner)
+                ->with('groups')
+                ->orderBy('id', 'desc');
+
+            if ($search) {
+                $searchLower = trim($search);
+                $query->where(function ($q) use ($searchLower) {
+                    $q->where('name', 'like', "%{$searchLower}%")
+                      ->orWhere('phone', 'like', "%{$searchLower}%")
+                      ->orWhere('email', 'like', "%{$searchLower}%")
+                      ->orWhere('customer_code', 'like', "%{$searchLower}%")
+                      ->orWhere('company_name', 'like', "%{$searchLower}%")
+                      ->orWhere('representative_name', 'like', "%{$searchLower}%")
+                      ->orWhere('wallet_address', 'like', "%{$searchLower}%");
+                });
+            }
+
+            // Lọc theo nhóm khách hàng nếu có
+            $groupId = $request->query('group_id');
+            if ($groupId) {
+                $query->whereHas('groups', function($q) use ($groupId) {
+                    $q->where('customer_groups.id', $groupId);
+                });
+            }
+
+            $paginated = $query->paginate($limit);
+            return response()->json($paginated);
+        }
+
+        // Fallback: Trả phẳng cho POS dùng cache
         $customers = \Illuminate\Support\Facades\Cache::remember("store_customers_pos:{$storeOwner}", 600, function () use ($storeOwner) {
             return Customer::where('store_owner_address', $storeOwner)
                 ->with('groups')
@@ -24,7 +58,6 @@ class CustomerController extends Controller
         });
 
         $collection = collect($customers);
-        $search = $request->query('search');
 
         if ($search) {
             $searchLower = strtolower(trim($search));
@@ -37,7 +70,6 @@ class CustomerController extends Controller
                        str_contains(strtolower($item['representative_name'] ?? ''), $searchLower) ||
                        str_contains(strtolower($item['wallet_address'] ?? ''), $searchLower);
             });
-            $limit = (int)$request->query('limit', 15);
             return response()->json($collection->take($limit)->values()->all());
         }
 

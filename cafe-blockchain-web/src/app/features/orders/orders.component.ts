@@ -119,7 +119,7 @@ export class OrdersComponent implements OnInit {
     { value: 'none', label: 'Chưa đồng bộ' },
   ];
   public readonly ordersCurrentPage = signal<number>(1);
-  public readonly ordersItemsPerPage = 9;
+  public readonly ordersItemsPerPage = 10;
 
   // Bộ tìm kiếm Đơn hàng
   public readonly orderSearchQuery = signal<string>('');
@@ -143,12 +143,15 @@ export class OrdersComponent implements OnInit {
   public get orders() {
     return this.stateService.orders;
   }
+  public get totalOrders() {
+    return this.stateService.totalOrders;
+  }
   public get settings() {
     return this.stateService.settings;
   }
 
   ngOnInit() {
-    this.refreshOrders();
+    this.refreshOrders(1);
   }
 
   // Danh sách đơn hàng hoàn thành chưa đồng bộ blockchain để hiện cảnh báo đối soát
@@ -156,52 +159,24 @@ export class OrdersComponent implements OnInit {
     return this.orders().filter((o) => o.status === 'completed' && o.blockchain_status === 'none');
   });
 
-  // Danh sách đơn hàng đã được lọc cục bộ trên client
-  public readonly filteredOrders = computed(() => {
-    let list = this.orders();
-
-    // 1. Lọc theo trạng thái đơn hàng
-    const status = this.orderStatusFilter();
-    if (status !== 'all') {
-      list = list.filter((o) => o.status === status);
-    }
-
-    // 2. Lọc theo trạng thái blockchain
-    const blockchain = this.orderBlockchainFilter();
-    if (blockchain !== 'all') {
-      list = list.filter((o) => o.blockchain_status === blockchain);
-    }
-
-    // 3. Lọc theo từ khóa tìm kiếm (mã đơn hàng order_code, bàn ăn, hoặc tên khách hàng)
-    const search = this.orderSearchQuery().trim().toLowerCase();
-    if (search) {
-      list = list.filter(
-        (o) =>
-          (o.order_code && o.order_code.toLowerCase().includes(search)) ||
-          (o.table_number && o.table_number.toLowerCase().includes(search)) ||
-          (o.customer && o.customer.name && o.customer.name.toLowerCase().includes(search)) ||
-          (o.customer_name && o.customer_name.toLowerCase().includes(search)) ||
-          (o.id && o.id.toString().includes(search)),
-      );
-    }
-
-    return list;
-  });
-
-  // Phân trang đơn hàng dựa trên danh sách đã lọc cục bộ
+  // Phân trang đơn hàng dựa trên danh sách từ DB
   public readonly paginatedOrders = computed(() => {
-    const list = this.filteredOrders();
-    const startIndex = (this.ordersCurrentPage() - 1) * this.ordersItemsPerPage;
-    return list.slice(startIndex, startIndex + this.ordersItemsPerPage);
+    return this.orders();
   });
 
   public readonly ordersTotalPages = computed(() => {
-    return Math.ceil(this.filteredOrders().length / this.ordersItemsPerPage) || 1;
+    return Math.ceil(this.totalOrders() / this.ordersItemsPerPage) || 1;
   });
 
-  // Gọi API lấy toàn bộ danh sách đơn hàng từ máy chủ (lọc client-side tự động xử lý hiển thị)
-  public refreshOrders() {
-    this.stateService.refreshOrders();
+  // Gọi API lấy danh sách đơn hàng phân trang từ DB
+  public refreshOrders(page: number = this.ordersCurrentPage()) {
+    this.ordersCurrentPage.set(page);
+    this.stateService.refreshOrders(
+      this.orderStatusFilter(),
+      this.orderBlockchainFilter(),
+      page,
+      this.orderSearchQuery()
+    );
   }
 
   // Cập nhật đơn hàng cục bộ để tránh reload toàn bộ danh sách đơn hàng
@@ -223,16 +198,22 @@ export class OrdersComponent implements OnInit {
     }
   }
 
-  // Cập nhật bộ lọc trạng thái đơn hàng (lọc cục bộ tức thì)
+  // Cập nhật bộ lọc trạng thái đơn hàng
   public setOrderStatusFilter(status: string) {
     this.orderStatusFilter.set(status);
-    this.ordersCurrentPage.set(1);
+    this.refreshOrders(1);
   }
 
-  // Cập nhật bộ lọc blockchain đơn hàng (lọc cục bộ tức thì)
+  // Cập nhật bộ lọc blockchain đơn hàng
   public setOrderBlockchainFilter(blockchain: string) {
     this.orderBlockchainFilter.set(blockchain);
-    this.ordersCurrentPage.set(1);
+    this.refreshOrders(1);
+  }
+
+  // Khi tìm kiếm thay đổi
+  public onSearchQueryChange(query: string) {
+    this.orderSearchQuery.set(query);
+    this.refreshOrders(1);
   }
 
   // Mở modal xem chi tiết đơn hàng

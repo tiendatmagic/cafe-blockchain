@@ -27,6 +27,9 @@ export class ShiftService {
   public readonly currentShift = this.shiftStore.currentShift;
   public readonly isCurrentShiftLoading = this.shiftStore.isCurrentShiftLoading;
   public readonly shifts = this.shiftStore.shifts;
+  public readonly totalShifts = this.shiftStore.totalShifts;
+  public readonly shiftsCurrentPage = this.shiftStore.shiftsCurrentPage;
+  public readonly shiftsItemsPerPage = this.shiftStore.shiftsItemsPerPage;
   public readonly isStartShiftModalOpen = this.shiftStore.isStartShiftModalOpen;
   public readonly isCloseShiftModalOpen = this.shiftStore.isCloseShiftModalOpen;
   public readonly initialCashInput = this.shiftStore.initialCashInput;
@@ -40,9 +43,9 @@ export class ShiftService {
   public readonly shiftDurationString = this.shiftStore.shiftDurationString;
   public readonly isShiftsLoading = this.shiftStore.isShiftsLoading;
   public readonly shiftExpectedCash = this.shiftStore.shiftExpectedCash;
-
+ 
   private lastShiftSummaryLoadedTime = 0;
-
+ 
   constructor() {
     // 1. Tự động nạp ca trực ban đầu dưới nền khi đăng nhập ví thành công
     effect(() => {
@@ -52,7 +55,7 @@ export class ShiftService {
         });
       }
     }, { allowSignalWrites: true });
-
+ 
     // 2. Tự động đếm thời gian trôi qua của ca làm việc
     effect(() => {
       const shift = this.currentShift();
@@ -63,7 +66,7 @@ export class ShiftService {
       }
     }, { allowSignalWrites: true });
   }
-
+ 
   private loadShiftDataInitially() {
     this.isShiftSkipped.set(false);
     if (this.authService.hasPermission('shifts') && this.authService.hasFeature('enable_shifts')) {
@@ -74,7 +77,7 @@ export class ShiftService {
       this.shiftStore.isCurrentShiftLoading.set(false);
     }
   }
-
+ 
   // Trạng thái blocked của subscription (sẽ được delegate hoặc check thông qua AuthService)
   private isSubscriptionBlocked() {
     // Để tránh phụ thuộc chéo vòng phức tạp, ta sẽ tự check dựa trên trạng thái thuê bao của AuthService
@@ -87,7 +90,7 @@ export class ShiftService {
     }
     return false;
   }
-
+ 
   public refreshCurrentShift(ttl?: number | ((shift: any) => void), force?: boolean, onSuccess?: (shift: any) => void) {
     if (this.isSubscriptionBlocked()) return;
     this.shiftStore.refreshCurrentShift(
@@ -97,11 +100,16 @@ export class ShiftService {
       onSuccess
     );
   }
-
-  public refreshShifts() {
+ 
+  public refreshShifts(page: number = 1, startDate?: string, endDate?: string, status?: string, search?: string) {
     if (this.isSubscriptionBlocked()) return;
     this.shiftStore.refreshShifts(
-      this.authService.hasPermission('shifts') && this.authService.hasFeature('enable_shifts')
+      this.authService.hasPermission('shifts') && this.authService.hasFeature('enable_shifts'),
+      page,
+      startDate,
+      endDate,
+      status,
+      search
     );
   }
 

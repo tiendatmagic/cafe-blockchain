@@ -14,6 +14,9 @@ export class ShiftStore {
   public readonly isCurrentShiftLoading = signal<boolean>(false);
   public readonly currentShift = signal<any>(null);
   public readonly shifts = signal<any[]>([]);
+  public readonly totalShifts = signal<number>(0);
+  public readonly shiftsCurrentPage = signal<number>(1);
+  public readonly shiftsItemsPerPage = 10;
   public readonly shiftDurationString = signal<string>('00:00:00');
   
   public readonly isCloseShiftModalOpen = signal<boolean>(false);
@@ -26,25 +29,25 @@ export class ShiftStore {
   public readonly initialCashInput = signal<number>(0);
   
   private shiftTimerInterval: any = null;
-
+ 
   // Computed properties
   public readonly actualCashFormatted = computed(() => {
     const val = this.actualCashInput();
     return val !== null && val !== undefined ? val.toLocaleString('en-US') : '';
   });
-
+ 
   public readonly initialCashFormatted = computed(() => {
     const val = this.initialCashInput();
     return val !== null && val !== undefined ? val.toLocaleString('en-US') : '';
   });
-
+ 
   public readonly shiftFiatRevenue = computed(() => this.shiftSummary()?.payment_revenues?.cash ?? 0);
   public readonly shiftBankTransferRevenue = computed(() => this.shiftSummary()?.payment_revenues?.bank_transfer ?? 0);
   public readonly shiftCryptoRevenue = computed(() => this.shiftSummary()?.payment_revenues?.crypto ?? 0);
   public readonly shiftEWalletRevenue = computed(() => this.shiftSummary()?.payment_revenues?.e_wallet ?? 0);
   public readonly shiftFiatExpenses = computed(() => this.shiftSummary()?.payment_expenses?.cash ?? 0);
   public readonly shiftExpectedCash = computed(() => this.shiftSummary()?.expected_cash ?? 0);
-
+ 
   // Methods
   public startShiftTimer(startTimeIso: string) {
     this.stopShiftTimer();
@@ -55,7 +58,7 @@ export class ShiftStore {
       }, 1000);
     }
   }
-
+ 
   public stopShiftTimer() {
     if (this.shiftTimerInterval) {
       clearInterval(this.shiftTimerInterval);
@@ -63,7 +66,7 @@ export class ShiftStore {
     }
     this.shiftDurationString.set('00:00:00');
   }
-
+ 
   private updateShiftDuration(startTimeIso: string) {
     const start = new Date(startTimeIso).getTime();
     if (isNaN(start)) {
@@ -72,16 +75,16 @@ export class ShiftStore {
     }
     const now = Date.now();
     const diff = Math.max(0, now - start); // ms
-
+ 
     const totalSecs = Math.floor(diff / 1000);
     const hours = Math.floor(totalSecs / 3600);
     const minutes = Math.floor((totalSecs % 3600) / 60);
     const seconds = totalSecs % 60;
-
+ 
     const pad = (num: number) => String(num).padStart(2, '0');
     this.shiftDurationString.set(`${pad(hours)}:${pad(minutes)}:${pad(seconds)}`);
   }
-
+ 
   public refreshCurrentShift(
     hasShiftsPermission: boolean,
     ttl?: number | ((shift: any) => void),
@@ -90,23 +93,23 @@ export class ShiftStore {
   ) {
     if (!this.web3Service.walletConnected()) return;
     if (!hasShiftsPermission) return;
-
+ 
     let actualTtl: number | undefined = undefined;
     let actualOnSuccess = onSuccess;
-
+ 
     if (typeof ttl === 'function') {
       actualOnSuccess = ttl;
     } else {
       actualTtl = ttl;
     }
-
+ 
     // Mặc định cache 30 giây để tối ưu nếu không force và không truyền ttl cụ thể
     if (actualTtl === undefined && !force) {
       actualTtl = 30000;
     }
-
+ 
     this.isCurrentShiftLoading.set(true);
-
+ 
     this.apiService.getCurrentShift(actualTtl, force).subscribe({
       next: (res) => {
         this.currentShift.set(res || null);
@@ -135,16 +138,24 @@ export class ShiftStore {
       }
     });
   }
-
-  public refreshShifts(hasShiftsPermission: boolean) {
+ 
+  public refreshShifts(hasShiftsPermission: boolean, page: number = 1, startDate?: string, endDate?: string, status?: string, search?: string) {
     if (!this.web3Service.walletConnected()) return;
     if (!hasShiftsPermission) return;
     if (this.isShiftsLoading()) return;
     this.isShiftsLoading.set(true);
-
-    this.apiService.getShifts().subscribe({
+    this.shiftsCurrentPage.set(page);
+ 
+    this.apiService.getShifts(page, this.shiftsItemsPerPage, startDate, endDate, status, search).subscribe({
       next: (res) => {
-        this.shifts.set(res || []);
+        if (res && res.data) {
+          this.shifts.set(res.data || []);
+          this.totalShifts.set(res.total || 0);
+          this.shiftsCurrentPage.set(res.current_page || page);
+        } else {
+          this.shifts.set(res || []);
+          this.totalShifts.set(Array.isArray(res) ? res.length : 0);
+        }
         this.isShiftsLoading.set(false);
       },
       error: (err) => {

@@ -30,5 +30,5 @@ interface ShiftRepositoryInterface
     /**
      * Lấy lịch sử ca trực của cửa hàng
      */
-    public function getHistory(string $storeOwner, ?int $userId = null): Collection;
+    public function getHistory(string $storeOwner, ?int $userId = null, array $filters = []);
 }

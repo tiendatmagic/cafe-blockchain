@@ -4,66 +4,46 @@ namespace App\Application\Orders\Handlers;
 
 use App\Application\Orders\Queries\GetOrdersQuery;
 use App\Infrastructure\Persistence\Eloquent\OrderModel;
-use Illuminate\Support\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class GetOrdersQueryHandler
 {
-    public function handle(GetOrdersQuery $query): Collection
+    public function handle(GetOrdersQuery $query): LengthAwarePaginator
     {
         $storeOwner = $query->storeOwner;
         $filters = $query->filters;
 
-        $startOfCurrentMonth = \Carbon\Carbon::now()->startOfMonth();
+        $perPage = isset($filters['limit']) ? (int)$filters['limit'] : 10;
+        $search = isset($filters['search']) ? trim($filters['search']) : '';
+        $status = isset($filters['status']) ? $filters['status'] : 'all';
+        $bcStatus = isset($filters['blockchain_status']) ? $filters['blockchain_status'] : 'all';
 
-        // 1. Lấy các đơn hàng thuộc tháng hiện tại từ DB (real-time)
-        $currentMonthOrders = OrderModel::where('store_owner_address', $storeOwner)
-            ->where('created_at', '>=', $startOfCurrentMonth)
-            ->with(['customer', 'items.product', 'items.variant'])
-            ->get()
-            ->toArray();
+        $queryBuilder = OrderModel::where('store_owner_address', $storeOwner)
+            ->with(['customer', 'items.product', 'items.variant']);
 
-        // 2. Tìm danh sách các tháng trong quá khứ có đơn hàng
-        $pastMonths = OrderModel::where('store_owner_address', $storeOwner)
-            ->where('created_at', '<', $startOfCurrentMonth)
-            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month")
-            ->groupBy('month')
-            ->pluck('month');
-
-        $pastOrders = [];
-        foreach ($pastMonths as $month) {
-            $monthOrders = \Illuminate\Support\Facades\Cache::remember("store_orders_history:{$storeOwner}:{$month}", 604800, function () use ($storeOwner, $month) {
-                $start = \Carbon\Carbon::parse($month . '-01')->startOfMonth();
-                $end = \Carbon\Carbon::parse($month . '-01')->endOfMonth();
-                return OrderModel::where('store_owner_address', $storeOwner)
-                    ->whereBetween('created_at', [$start, $end])
-                    ->with(['customer', 'items.product', 'items.variant'])
-                    ->get()
-                    ->toArray();
-            });
-            $pastOrders = array_merge($pastOrders, $monthOrders);
+        // Lọc trạng thái đơn hàng
+        if ($status !== 'all' && !empty($status)) {
+            $queryBuilder->where('status', $status);
         }
 
-        // 3. Trộn toàn bộ đơn hàng
-        $allOrders = array_merge($currentMonthOrders, $pastOrders);
+        // Lọc trạng thái blockchain
+        if ($bcStatus !== 'all' && !empty($bcStatus)) {
+            $queryBuilder->where('blockchain_status', $bcStatus);
+        }
 
-        // 4. Lọc dữ liệu qua Collection PHP theo bộ lọc
-        $collection = collect($allOrders);
-
-        if (isset($filters['status']) && $filters['status'] != 'all' && $filters['status'] != '') {
-            $status = $filters['status'];
-            $collection = $collection->filter(function ($item) use ($status) {
-                return ($item['status'] ?? '') === $status;
+        // Tìm kiếm theo từ khóa (mã đơn, số bàn, tên khách, số điện thoại khách)
+        if (!empty($search)) {
+            $queryBuilder->where(function ($q) use ($search) {
+                $q->where('order_code', 'like', "%{$search}%")
+                  ->orWhere('table_number', 'like', "%{$search}%")
+                  ->orWhereHas('customer', function ($custQuery) use ($search) {
+                      $custQuery->where('name', 'like', "%{$search}%")
+                                ->orWhere('phone', 'like', "%{$search}%");
+                  });
             });
         }
 
-        if (isset($filters['blockchain_status']) && $filters['blockchain_status'] != 'all' && $filters['blockchain_status'] != '') {
-            $bcStatus = $filters['blockchain_status'];
-            $collection = $collection->filter(function ($item) use ($bcStatus) {
-                return ($item['blockchain_status'] ?? '') === $bcStatus;
-            });
-        }
-
-        // 5. Sắp xếp lại theo thời gian giảm dần và trả về danh sách thô
-        return $collection->sortByDesc('created_at')->values();
+        // Sắp xếp thời gian giảm dần và phân trang thực tế từ database
+        return $queryBuilder->orderBy('created_at', 'desc')->paginate($perPage);
     }
 }

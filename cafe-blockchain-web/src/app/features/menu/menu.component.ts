@@ -86,14 +86,14 @@ export class MenuComponent implements OnInit, OnDestroy {
   // Cấu hình View Mode & Phân trang Thực đơn
   public readonly menuViewMode = signal<'table' | 'card'>('card');
   public readonly menuCurrentPage = signal<number>(1);
-  public readonly menuItemsPerPage = 9;
+  public readonly menuItemsPerPage = 10;
 
   public readonly menuViewModeOptions: TabOption[] = [
     { value: 'card', label: 'Dạng thẻ', icon: 'grid' },
     { value: 'table', label: 'Dạng bảng', icon: 'list' },
   ];
 
-  // Bộ lọc & Tìm kiếm Thực đơn cục bộ
+  // Bộ lọc & Tìm kiếm Thực đơn
   public readonly menuSearchQuery = signal<string>('');
   public readonly menuCategoryFilter = signal<string>('Tất cả');
   public readonly menuProductTypeFilter = signal<'product' | 'ingredient'>('product');
@@ -103,6 +103,10 @@ export class MenuComponent implements OnInit, OnDestroy {
   public readonly menuMaxVariantPrice = signal<number | null>(null);
   public readonly menuFilterStatus = signal<string>('all'); // 'all' | 'active' | 'inactive'
   public readonly isFilterPanelOpen = signal<boolean>(false);
+
+  // States thực đơn phân trang online
+  public readonly productsList = signal<any[]>([]);
+  public readonly totalProducts = signal<number>(0);
 
   // Đồng bộ Blockchain Menu signals
   public readonly isMenuSyncing = signal<boolean>(false);
@@ -134,69 +138,61 @@ export class MenuComponent implements OnInit, OnDestroy {
     return ['Tất cả', ...list];
   });
 
-  // Lọc sản phẩm cục bộ tức thời tại client
-  public readonly filteredProducts = computed(() => {
-    return this.products().filter((p) => {
-      const type = this.menuProductTypeFilter();
-      const matchType = (p.type || 'product') === type;
-
-      const category = this.menuCategoryFilter();
-      const matchCategory =
-        category === 'Tất cả' ||
-        (p.categories && p.categories.some((c: any) => c.name === category)) ||
-        p.category_name === category ||
-        p.category?.category_name === category;
-
-      const search = this.menuSearchQuery().trim().toLowerCase();
-      const matchSearch =
-        !search ||
-        p.name.toLowerCase().includes(search) ||
-        p.sku?.toLowerCase().includes(search) ||
-        (p.short_description && p.short_description.toLowerCase().includes(search));
-
-      // Lọc theo khoảng giá sản phẩm chính
-      const minPrice = this.menuMinPrice();
-      const matchMinPrice = minPrice === null || minPrice === undefined || p.price >= minPrice;
-      const maxPrice = this.menuMaxPrice();
-      const matchMaxPrice = maxPrice === null || maxPrice === undefined || p.price <= maxPrice;
-
-      // Lọc theo khoảng giá biến thể sản phẩm
-      const minVarPrice = this.menuMinVariantPrice();
-      const maxVarPrice = this.menuMaxVariantPrice();
-      let matchVarPrice = true;
-      if (minVarPrice !== null || maxVarPrice !== null) {
-        matchVarPrice =
-          p.variants &&
-          p.variants.length > 0 &&
-          p.variants.some((v: any) => {
-            const matchMin =
-              minVarPrice === null || minVarPrice === undefined || v.price >= minVarPrice;
-            const matchMax =
-              maxVarPrice === null || maxVarPrice === undefined || v.price <= maxVarPrice;
-            return matchMin && matchMax;
-          });
+  // Tải danh sách thực đơn phân trang từ DB
+  public loadMenuProducts(page: number = this.menuCurrentPage()) {
+    this.menuCurrentPage.set(page);
+    this.apiService.getProducts({
+      page,
+      limit: this.menuItemsPerPage,
+      search: this.menuSearchQuery(),
+      category: this.menuCategoryFilter() === 'Tất cả' ? undefined : this.menuCategoryFilter(),
+      type: this.menuProductTypeFilter(),
+      status: this.menuFilterStatus(),
+      min_price: this.menuMinPrice(),
+      max_price: this.menuMaxPrice(),
+      min_variant_price: this.menuMinVariantPrice(),
+      max_variant_price: this.menuMaxVariantPrice()
+    }).subscribe({
+      next: (res) => {
+        if (res && res.data) {
+          this.productsList.set(res.data || []);
+          this.totalProducts.set(res.total || 0);
+          this.menuCurrentPage.set(res.current_page || page);
+        } else {
+          this.productsList.set(res || []);
+          this.totalProducts.set(Array.isArray(res) ? res.length : 0);
+        }
+      },
+      error: (err) => {
+        console.error('[MenuComponent] Lỗi tải thực đơn phân trang:', err);
       }
-
-      // Lọc theo trạng thái bật/tắt (Đang bán/Ngừng bán)
-      const statusFilter = this.menuFilterStatus();
-      let matchStatus = true;
-      if (statusFilter === 'active') {
-        matchStatus = p.status === true || Number(p.status) === 1;
-      } else if (statusFilter === 'inactive') {
-        matchStatus = p.status === false || Number(p.status) === 0;
-      }
-
-      return (
-        matchType &&
-        matchCategory &&
-        matchSearch &&
-        matchMinPrice &&
-        matchMaxPrice &&
-        matchVarPrice &&
-        matchStatus
-      );
     });
-  });
+  }
+
+  // Wrappers thay đổi bộ lọc & reload phân trang
+  public onProductTypeFilterChange(type: 'product' | 'ingredient') {
+    this.menuProductTypeFilter.set(type);
+    this.loadMenuProducts(1);
+  }
+
+  public onSearchQueryChange(query: string) {
+    this.menuSearchQuery.set(query);
+    this.loadMenuProducts(1);
+  }
+
+  public onCategoryFilterChange(category: string) {
+    this.menuCategoryFilter.set(category);
+    this.loadMenuProducts(1);
+  }
+
+  public onFilterStatusChange(status: string) {
+    this.menuFilterStatus.set(status);
+    this.loadMenuProducts(1);
+  }
+
+  public onPriceFilterChange() {
+    this.loadMenuProducts(1);
+  }
 
   public resetMenuFilters() {
     this.menuMinPrice.set(null);
@@ -205,21 +201,20 @@ export class MenuComponent implements OnInit, OnDestroy {
     this.menuMaxVariantPrice.set(null);
     this.menuFilterStatus.set('all');
     this.menuCategoryFilter.set('Tất cả');
-    this.menuCurrentPage.set(1);
+    this.loadMenuProducts(1);
   }
 
-  // Computed properties phục vụ phân trang client dựa trên sản phẩm đã lọc
+  // Computed properties phục vụ phân trang online
   public readonly menuTotalPages = computed(() =>
-    Math.ceil(this.filteredProducts().length / this.menuItemsPerPage),
+    Math.ceil(this.totalProducts() / this.menuItemsPerPage) || 1,
   );
   public readonly paginatedProducts = computed(() => {
-    const start = (this.menuCurrentPage() - 1) * this.menuItemsPerPage;
-    return this.filteredProducts().slice(start, start + this.menuItemsPerPage);
+    return this.productsList();
   });
 
   public readonly isProductLimitReached = computed(() => {
     const maxProducts = this.stateService.getFeatureLimit('max_products');
-    return maxProducts >= 0 && this.products().length >= maxProducts;
+    return maxProducts >= 0 && this.totalProducts() >= maxProducts;
   });
 
   // Mở modal thêm món
@@ -237,6 +232,7 @@ export class MenuComponent implements OnInit, OnDestroy {
         if (success) {
           this.stateService.clearPosProductsCache();
           this.stateService.refreshProducts();
+          this.loadMenuProducts(1);
         }
       });
   }
@@ -256,6 +252,7 @@ export class MenuComponent implements OnInit, OnDestroy {
         if (success) {
           this.stateService.clearPosProductsCache();
           this.stateService.refreshProducts();
+          this.loadMenuProducts(this.menuCurrentPage());
         }
       });
   }
@@ -267,7 +264,7 @@ export class MenuComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const product = this.products().find((p) => p.id === id);
+    const product = this.productsList().find((p) => p.id === id) || this.products().find((p) => p.id === id);
     if (!product) return;
 
     this.modalService
@@ -284,6 +281,7 @@ export class MenuComponent implements OnInit, OnDestroy {
               this.stateService.showToast('Xóa món ăn khỏi thực đơn thành công!', 'success');
               this.stateService.clearPosProductsCache();
               this.stateService.refreshProducts();
+              this.loadMenuProducts(this.menuCurrentPage());
             },
             error: (err) => {
               const errMsg = err.error?.message || 'Xóa món thất bại!';
@@ -394,6 +392,7 @@ export class MenuComponent implements OnInit, OnDestroy {
     }
     this.checkMenuRegistryOwnerPermission();
     this.loadMenuSyncLogs();
+    this.loadMenuProducts(1);
 
     // Lắng nghe ví thay đổi tài khoản
     this.accountSubscription = this.web3Service.accountsChanged$.subscribe(() => {

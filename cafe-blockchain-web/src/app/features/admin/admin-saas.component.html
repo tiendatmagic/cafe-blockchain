@@ -346,12 +346,12 @@
           <app-table
             [columns]="tenantColumns"
             [data]="store.paginatedTenants()"
-            [totalItems]="store.filteredTenants().length"
+            [totalItems]="store.tenantTotal()"
             [itemsPerPage]="store.tenantItemsPerPage"
             [currentPage]="store.tenantCurrentPage()"
             [showPagination]="true"
             [itemName]="'cửa hàng'"
-            (pageChange)="store.tenantCurrentPage.set($event)"
+            (pageChange)="store.setTenantPage($event)"
           >
             <ng-template appCell="store_name" let-row>
               <div class="font-extrabold text-slate-800 dark:text-slate-200 text-sm sm:text-base">

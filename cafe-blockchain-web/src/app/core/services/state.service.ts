@@ -171,14 +171,33 @@ export class StateService {
   public readonly dashboardEndDate = this.dashboardStore.dashboardEndDate;
   public readonly dashboardData = this.dashboardStore.dashboardData;
   public readonly orders = this.orderStore.orders;
+  public readonly totalOrders = this.orderStore.totalOrders;
+  public readonly ordersCurrentPage = this.orderStore.ordersCurrentPage;
+  public readonly ordersItemsPerPage = this.orderStore.ordersItemsPerPage;
   public readonly categoriesList = this.productStore.categoriesList;
   public readonly customers = this.customerStore.customers;
   public readonly customerGroups = this.customerStore.customerGroups;
+  public readonly totalCustomers = this.customerStore.totalCustomers;
+  public readonly customerCurrentPage = this.customerStore.customerCurrentPage;
+  public readonly customerItemsPerPage = this.customerStore.customerItemsPerPage;
   public readonly transactions = this.transactionStore.transactions;
+  public readonly totalTransactions = this.transactionStore.totalTransactions;
+  public readonly transactionCurrentPage = this.transactionStore.transactionCurrentPage;
+  public readonly transactionItemsPerPage = this.transactionStore.transactionItemsPerPage;
+  public readonly totalIncome = this.transactionStore.totalIncome;
+  public readonly totalExpense = this.transactionStore.totalExpense;
   public readonly inventoryRecords = this.inventoryStore.inventoryRecords;
+  public readonly totalInventoryRecords = this.inventoryStore.totalInventoryRecords;
+  public readonly inventoryCurrentPage = this.inventoryStore.inventoryCurrentPage;
+  public readonly inventoryItemsPerPage = this.inventoryStore.inventoryItemsPerPage;
   public readonly areas = this.tableStore.areas;
   public readonly diningTables = this.tableStore.diningTables;
   public readonly debts = this.debtStore.debts;
+  public readonly totalDebts = this.debtStore.totalDebts;
+  public readonly debtCurrentPage = this.debtStore.debtCurrentPage;
+  public readonly debtItemsPerPage = this.debtStore.debtItemsPerPage;
+  public readonly totalDebtOutstanding = this.debtStore.totalDebtOutstanding;
+  public readonly totalDebtorsCount = this.debtStore.totalDebtorsCount;
   public readonly settings = this.settingStore.settings;
 
   // Dữ liệu phương thức thanh toán
@@ -512,11 +531,11 @@ export class StateService {
     );
   }
 
-  public refreshOrders(statusFilter: string = 'all', blockchainFilter: string = 'all') {
+  public refreshOrders(statusFilter: string = 'all', blockchainFilter: string = 'all', page: number = 1, searchQuery: string = '') {
     if (this.isSubscriptionBlocked()) return;
     if (!this.web3Service.walletConnected()) return;
     if (!this.hasPermission('pos') && !this.hasPermission('orders')) return;
-    this.orderStore.refreshOrders(statusFilter, blockchainFilter);
+    this.orderStore.refreshOrders(statusFilter, blockchainFilter, page, searchQuery);
   }
 
   public refreshDashboard(force: boolean = false) {
@@ -635,17 +654,27 @@ export class StateService {
     });
   }
 
-  public refreshCustomers(force: boolean = false) {
+  public refreshCustomers(
+    force: boolean = false,
+    page?: number,
+    limit?: number,
+    search?: string,
+    groupId?: number
+  ) {
     if (this.isSubscriptionBlocked()) return;
     this.customerStore.refreshCustomers(
       this.hasPermission('pos') || this.hasPermission('customers') || this.hasPermission('reports'),
-      force
+      force,
+      page,
+      limit,
+      search,
+      groupId
     );
   }
 
-  public refreshTransactions(typeFilter: string = 'all') {
+  public refreshTransactions(typeFilter: string = 'all', page?: number, search?: string) {
     if (this.isSubscriptionBlocked()) return;
-    this.transactionStore.refreshTransactions(this.hasPermission('financials'), typeFilter);
+    this.transactionStore.refreshTransactions(this.hasPermission('financials'), typeFilter, page, search);
   }
 
   public refreshInventory(typeFilter: string = 'all') {
@@ -719,9 +748,9 @@ export class StateService {
     this.reloadCurrentTab(false);
   }
 
-  public refreshDebts(searchFilter: string = '', statusFilter: string = 'all') {
+  public refreshDebts(searchFilter: string = '', statusFilter: string = 'all', page?: number) {
     if (this.isSubscriptionBlocked()) return;
-    this.debtStore.refreshDebts(this.hasPermission('debts'), searchFilter, statusFilter);
+    this.debtStore.refreshDebts(this.hasPermission('debts'), searchFilter, statusFilter, page);
   }
 
   public refreshStaffsAndRoles() {

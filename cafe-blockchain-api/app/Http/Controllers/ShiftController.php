@@ -185,7 +185,7 @@ class ShiftController extends Controller
             }
         }
 
-        $shifts = $this->shiftRepository->getHistory($storeOwner, $userId);
+        $shifts = $this->shiftRepository->getHistory($storeOwner, $userId, $request->all());
 
         return response()->json($shifts);
     }

@@ -109,25 +109,25 @@
               >
               <app-custom-search-input
                 [ngModel]="orderSearchQuery()"
-                (ngModelChange)="orderSearchQuery.set($event); ordersCurrentPage.set(1)"
+                (ngModelChange)="onSearchQueryChange($event)"
                 placeholder="Mã đơn, số bàn, khách..."
                 containerClass="w-full"
               ></app-custom-search-input>
             </div>
           </div>
-
+ 
           <!-- BẢNG LỊCH SỬ ĐƠN HÀNG -->
           <app-table
             [data]="paginatedOrders()"
             [columns]="columns"
             [isLoading]="stateService.isOrdersLoading()"
             skeletonType="table"
-            [totalItems]="filteredOrders().length"
+            [totalItems]="totalOrders()"
             [itemsPerPage]="ordersItemsPerPage"
             [currentPage]="ordersCurrentPage()"
             itemName="hóa đơn"
             [showPagination]="true"
-            (pageChange)="ordersCurrentPage.set($event)"
+            (pageChange)="refreshOrders($event)"
           >
             <!-- Custom cell cho cột mã đơn -->
             <ng-template appCell="order_code" let-row>

@@ -18,9 +18,9 @@ interface TransactionRepositoryInterface
     public function findByTxHash(string $txHash): ?Transaction;
 
     /**
-     * Lấy danh sách giao dịch thu chi của cửa hàng theo bộ lọc
+     * Lấy danh sách giao dịch thu chi của cửa hàng theo bộ lọc và phân trang
      */
-    public function getTransactions(string $storeOwner, ?string $type = null, ?string $category = null): Collection;
+    public function getTransactions(string $storeOwner, ?string $type = null, ?string $category = null, int $perPage = 10, ?string $search = null): \Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
     /**
      * Tạo giao dịch mới

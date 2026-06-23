@@ -161,7 +161,7 @@
         <app-tab-group
           [options]="transactionTypePresets"
           [activeValue]="transactionTypeFilter()"
-          (valueChange)="transactionTypeFilter.set($event); transactionCurrentPage.set(1)"
+          (valueChange)="onTypeFilterChange($event)"
           containerClass="w-full sm:w-auto sm:max-w-md"
         ></app-tab-group>
 
@@ -169,13 +169,13 @@
           <!-- Search input -->
           <app-custom-search-input
             [ngModel]="transactionSearchQuery()"
-            (ngModelChange)="transactionSearchQuery.set($event); transactionCurrentPage.set(1)"
+            (ngModelChange)="onSearchQueryChange($event)"
             placeholder="Tìm danh mục, mô tả, tiền..."
             containerClass="w-full sm:w-60"
           ></app-custom-search-input>
 
           <span class="text-xs font-bold text-slate-400 whitespace-nowrap"
-            >Tìm thấy {{ filteredTransactions().length }} giao dịch</span
+            >Tìm thấy {{ stateService.totalTransactions() }} giao dịch</span
           >
         </div>
       </div>
@@ -213,7 +213,7 @@
               </tr>
             </thead>
             <tbody>
-              @if (filteredTransactions().length === 0) {
+              @if (stateService.totalTransactions() === 0) {
                 <tr>
                   <td colspan="7" class="p-8 text-center text-xs text-slate-400 italic">
                     Chưa ghi nhận giao dịch thu chi nào phù hợp với bộ lọc.
@@ -339,14 +339,14 @@
         </div>
 
         <!-- Phân trang Thu chi -->
-        @if (filteredTransactions().length > transactionItemsPerPage) {
+        @if (stateService.totalTransactions() > transactionItemsPerPage) {
           <app-pagination
             [currentPage]="transactionCurrentPage()"
             [totalPages]="transactionTotalPages()"
-            [totalItems]="filteredTransactions().length"
+            [totalItems]="stateService.totalTransactions()"
             [itemsPerPage]="transactionItemsPerPage"
             itemName="phiếu"
-            (pageChange)="transactionCurrentPage.set($event)"
+            (pageChange)="refreshTransactions($event)"
           ></app-pagination>
         }
       </div>

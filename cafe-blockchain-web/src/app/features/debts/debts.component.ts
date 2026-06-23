@@ -81,8 +81,13 @@ export class DebtsComponent implements OnInit {
   // Bộ lọc, tìm kiếm khách hàng
   public readonly debtSearchQuery = signal<string>('');
   public readonly debtFilterMode = signal<'all' | 'only_debt' | 'no_debt'>('all'); // all, only_debt, no_debt
-  public readonly debtPage = signal<number>(1);
-  public readonly debtLimit = 10;
+
+  public get debtPage() {
+    return this.stateService.debtCurrentPage;
+  }
+  public get debtLimit() {
+    return this.stateService.debtItemsPerPage;
+  }
 
   public readonly debtFilterOptions: TabOption[] = [
     { value: 'all', label: 'Tất cả' },
@@ -126,25 +131,23 @@ export class DebtsComponent implements OnInit {
   }
 
   public ngOnInit() {
+    this.refreshDebts(1);
+    
     // Nạp danh sách khách hàng nếu chưa có để dùng cho modal chọn khách hàng
     if (this.customers().length === 0 && this.web3Service.walletConnected()) {
       this.stateService.refreshCustomers();
-    }
-    // Nạp transactions nếu chưa có để tính dư nợ thu hồi trong tháng
-    if (this.stateService.transactions().length === 0 && this.web3Service.walletConnected()) {
-      this.stateService.refreshTransactions();
     }
   }
 
   // --- Thống kê công nợ ---
   // Tổng dư nợ phải thu (sum debt_balance của tất cả khách hàng)
   public readonly totalDebtOutstanding = computed(() => {
-    return this.debts().reduce((sum, c) => sum + Number(c.debt_balance || 0), 0);
+    return this.stateService.totalDebtOutstanding();
   });
 
   // Số khách đang nợ (debt_balance > 0)
   public readonly totalDebtorsCount = computed(() => {
-    return this.debts().filter((c) => Number(c.debt_balance || 0) > 0).length;
+    return this.stateService.totalDebtorsCount();
   });
 
   // Đã thu hồi trong tháng (tính từ transactions thu nợ khách hàng trong tháng hiện tại)
@@ -175,66 +178,31 @@ export class DebtsComponent implements OnInit {
 
   // Lọc và tìm kiếm danh sách nợ client-side
   public readonly filteredDebts = computed(() => {
-    let list = this.debts();
-
-    // 1. Lọc theo bộ lọc Đang nợ / Đã trả
-    const filter = this.debtFilterMode();
-    if (filter === 'only_debt') {
-      list = list.filter((c) => Number(c.debt_balance || 0) > 0);
-    } else if (filter === 'no_debt') {
-      list = list.filter((c) => Number(c.debt_balance || 0) <= 0);
-    }
-
-    // 2. Lọc theo tìm kiếm từ khóa
-    const search = this.debtSearchQuery().trim().toLowerCase();
-    if (search) {
-      const searchClean = this.removeSign(search);
-      list = list.filter((c) => {
-        const nameClean = c.name ? this.removeSign(c.name.toLowerCase()) : '';
-        const phoneClean = c.phone ? c.phone.toLowerCase() : '';
-        const codeClean = c.customer_code ? c.customer_code.toLowerCase() : '';
-        return (
-          nameClean.includes(searchClean) ||
-          phoneClean.includes(searchClean) ||
-          codeClean.includes(searchClean)
-        );
-      });
-    }
-
-    // 3. Sắp xếp cột
-    const field = this.sortField();
-    const desc = this.sortDesc();
-    list = [...list].sort((a, b) => {
-      let valA = a[field];
-      let valB = b[field];
-
-      if (typeof valA === 'string') {
-        return desc ? valB.localeCompare(valA) : valA.localeCompare(valB);
-      }
-
-      const numA = Number(valA) || 0;
-      const numB = Number(valB) || 0;
-      return desc ? numB - numA : numA - numB;
-    });
-
-    return list;
+    return this.debts();
   });
 
   // Phân trang
   public readonly paginatedDebts = computed(() => {
-    const list = this.filteredDebts();
-    const startIndex = (this.debtPage() - 1) * this.debtLimit;
-    return list.slice(startIndex, startIndex + this.debtLimit);
+    return this.debts();
   });
 
   public readonly debtTotalPages = computed(() => {
-    return Math.ceil(this.filteredDebts().length / this.debtLimit) || 1;
+    return Math.ceil(this.stateService.totalDebts() / this.debtLimit) || 1;
   });
 
-  public refreshDebts() {
-    this.debtPage.set(1);
-    this.stateService.refreshDebts(this.debtSearchQuery(), this.debtFilterMode());
+  public refreshDebts(page: number = this.debtPage()) {
+    this.stateService.refreshDebts(this.debtSearchQuery(), this.debtFilterMode(), page);
     this.stateService.refreshTransactions();
+  }
+
+  public onSearchQueryChange(query: string) {
+    this.debtSearchQuery.set(query);
+    this.refreshDebts(1);
+  }
+
+  public onFilterModeChange(mode: 'all' | 'only_debt' | 'no_debt') {
+    this.debtFilterMode.set(mode);
+    this.refreshDebts(1);
   }
 
   public toggleSort(field: string) {

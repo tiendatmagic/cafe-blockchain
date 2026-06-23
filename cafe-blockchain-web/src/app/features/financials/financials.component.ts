@@ -54,7 +54,9 @@ export class FinancialsComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly modalService = inject(ModalService);
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.refreshTransactions(1);
+  }
 
   public readonly transactionTypePresets: TabOption[] = [
     { value: 'all', label: 'Tất cả' },
@@ -69,8 +71,6 @@ export class FinancialsComponent implements OnInit {
 
   // Bộ lọc & Phân trang tài chính
   public readonly transactionTypeFilter = signal<string>('all');
-  public readonly transactionCurrentPage = signal<number>(1);
-  public readonly transactionItemsPerPage = 9;
 
   // Bộ tìm kiếm tài chính
   public readonly transactionSearchQuery = signal<string>('');
@@ -89,18 +89,20 @@ export class FinancialsComponent implements OnInit {
   public get isTransactionsLoading() {
     return this.stateService.isTransactionsLoading;
   }
+  public get transactionCurrentPage() {
+    return this.stateService.transactionCurrentPage;
+  }
+  public get transactionItemsPerPage() {
+    return this.stateService.transactionItemsPerPage;
+  }
 
   // Các computed properties LED chỉ số
   public readonly totalIncome = computed(() => {
-    return this.transactions()
-      .filter((t) => t.type === 'thu')
-      .reduce((sum, t) => sum + Number(t.amount), 0);
+    return this.stateService.totalIncome();
   });
 
   public readonly totalExpense = computed(() => {
-    return this.transactions()
-      .filter((t) => t.type === 'chi')
-      .reduce((sum, t) => sum + Number(t.amount), 0);
+    return this.stateService.totalExpense();
   });
 
   public readonly financialBalance = computed(() => {
@@ -108,36 +110,15 @@ export class FinancialsComponent implements OnInit {
   });
 
   public readonly filteredTransactions = computed(() => {
-    let list = this.transactions();
-    const type = this.transactionTypeFilter();
-    if (type !== 'all') {
-      list = list.filter((t) => t.type === type);
-    }
-
-    // Thêm bộ lọc tìm kiếm cục bộ (transaction_code, category, description, amount, blockchain_tx_hash, v.v.)
-    const search = this.transactionSearchQuery().trim().toLowerCase();
-    if (search) {
-      list = list.filter(
-        (t) =>
-          (t.transaction_code && t.transaction_code.toLowerCase().includes(search)) ||
-          (t.category && t.category.toLowerCase().includes(search)) ||
-          (t.description && t.description.toLowerCase().includes(search)) ||
-          (t.amount && t.amount.toString().includes(search)) ||
-          (t.blockchain_tx_hash && t.blockchain_tx_hash.toLowerCase().includes(search)) ||
-          (t.id && t.id.toString().includes(search)),
-      );
-    }
-    return list;
+    return this.transactions();
   });
 
   public readonly paginatedTransactions = computed(() => {
-    const list = this.filteredTransactions();
-    const startIndex = (this.transactionCurrentPage() - 1) * this.transactionItemsPerPage;
-    return list.slice(startIndex, startIndex + this.transactionItemsPerPage);
+    return this.transactions();
   });
 
   public readonly transactionTotalPages = computed(() => {
-    return Math.ceil(this.filteredTransactions().length / this.transactionItemsPerPage) || 1;
+    return Math.ceil(this.stateService.totalTransactions() / this.transactionItemsPerPage) || 1;
   });
 
   // Tự động lấy danh sách giao dịch chưa sync blockchain
@@ -148,8 +129,22 @@ export class FinancialsComponent implements OnInit {
   });
 
   // Làm mới sổ thu chi
-  public refreshTransactions() {
-    this.stateService.refreshTransactions(this.transactionTypeFilter());
+  public refreshTransactions(page: number = this.transactionCurrentPage()) {
+    this.stateService.refreshTransactions(
+      this.transactionTypeFilter(),
+      page,
+      this.transactionSearchQuery()
+    );
+  }
+
+  public onTypeFilterChange(type: string) {
+    this.transactionTypeFilter.set(type);
+    this.refreshTransactions(1);
+  }
+
+  public onSearchQueryChange(query: string) {
+    this.transactionSearchQuery.set(query);
+    this.refreshTransactions(1);
   }
 
   // --- CRUD Transactions ---

@@ -60,7 +60,7 @@
         <app-tab-group
           [options]="mainProductTypeOptions"
           [activeValue]="menuProductTypeFilter()"
-          (valueChange)="menuProductTypeFilter.set($event); menuCurrentPage.set(1); menuSearchQuery.set('')"
+          (valueChange)="onProductTypeFilterChange($event); menuSearchQuery.set('')"
           containerClass="w-full md:max-w-md"
         ></app-tab-group>
 
@@ -69,7 +69,8 @@
           <!-- Search input -->
           <app-custom-search-input
             [ngModel]="menuSearchQuery()"
-            (ngModelChange)="menuSearchQuery.set($event); menuCurrentPage.set(1)"
+            (ngModelChange)="onSearchQueryChange($event)"
+            [debounce]="400"
             [placeholder]="menuProductTypeFilter() === 'product' ? 'Tìm món ăn, SKU...' : 'Tìm nguyên liệu, SKU...'"
             containerClass="w-full md:w-72"
           ></app-custom-search-input>
@@ -115,14 +116,14 @@
                       type="number"
                       placeholder="Từ đ"
                       [ngModel]="menuMinPrice()"
-                      (ngModelChange)="menuMinPrice.set($event); menuCurrentPage.set(1)"
+                      (ngModelChange)="menuMinPrice.set($event); onPriceFilterChange()"
                       class="form-input-sm"
                     />
                     <input
                       type="number"
                       placeholder="Đến đ"
                       [ngModel]="menuMaxPrice()"
-                      (ngModelChange)="menuMaxPrice.set($event); menuCurrentPage.set(1)"
+                      (ngModelChange)="menuMaxPrice.set($event); onPriceFilterChange()"
                       class="form-input-sm"
                     />
                   </div>
@@ -136,14 +137,14 @@
                       type="number"
                       placeholder="Từ đ"
                       [ngModel]="menuMinVariantPrice()"
-                      (ngModelChange)="menuMinVariantPrice.set($event); menuCurrentPage.set(1)"
+                      (ngModelChange)="menuMinVariantPrice.set($event); onPriceFilterChange()"
                       class="form-input-sm"
                     />
                     <input
                       type="number"
                       placeholder="Đến đ"
                       [ngModel]="menuMaxVariantPrice()"
-                      (ngModelChange)="menuMaxVariantPrice.set($event); menuCurrentPage.set(1)"
+                      (ngModelChange)="menuMaxVariantPrice.set($event); onPriceFilterChange()"
                       class="form-input-sm"
                     />
                   </div>
@@ -160,7 +161,7 @@
                     ]; track opt.value) {
                       <button
                         type="button"
-                        (click)="menuFilterStatus.set(opt.value); menuCurrentPage.set(1)"
+                        (click)="onFilterStatusChange(opt.value)"
                         [class]="menuFilterStatus() === opt.value
                           ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)] border-[var(--color-primary)] font-bold'
                           : 'bg-slate-50 dark:bg-slate-950/40 text-slate-500 border-slate-200/60 dark:border-slate-800/80'"
@@ -199,7 +200,7 @@
         <div class="flex gap-2 overflow-x-auto pb-1.5 pr-1 no-scrollbar w-full">
           @for (cat of categories(); track cat) {
             <button
-              (click)="menuCategoryFilter.set(cat); menuCurrentPage.set(1)"
+              (click)="onCategoryFilterChange(cat)"
               [class]="
                 menuCategoryFilter() === cat
                   ? 'bg-[var(--color-primary)] text-white shadow-md shadow-[var(--color-primary)]/20'
@@ -331,14 +332,14 @@
             </div>
 
             <!-- Phân trang Thực đơn (Dạng bảng) -->
-            @if (filteredProducts().length > menuItemsPerPage) {
+            @if (totalProducts() > menuItemsPerPage) {
               <app-pagination
                 [currentPage]="menuCurrentPage()"
                 [totalPages]="menuTotalPages()"
-                [totalItems]="filteredProducts().length"
+                [totalItems]="totalProducts()"
                 [itemsPerPage]="menuItemsPerPage"
                 itemName="món ăn"
-                (pageChange)="menuCurrentPage.set($event)"
+                (pageChange)="loadMenuProducts($event)"
               ></app-pagination>
             }
           </div>
@@ -461,14 +462,14 @@
           </div>
 
           <!-- Phân trang Thực đơn (Dạng thẻ) -->
-          @if (filteredProducts().length > menuItemsPerPage) {
+          @if (totalProducts() > menuItemsPerPage) {
             <app-pagination
               [currentPage]="menuCurrentPage()"
               [totalPages]="menuTotalPages()"
-              [totalItems]="filteredProducts().length"
+              [totalItems]="totalProducts()"
               [itemsPerPage]="menuItemsPerPage"
               itemName="món ăn"
-              (pageChange)="menuCurrentPage.set($event)"
+              (pageChange)="loadMenuProducts($event)"
             ></app-pagination>
           }
         }

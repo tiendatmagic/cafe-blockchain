@@ -31,58 +31,35 @@ class EloquentShiftRepository implements ShiftRepositoryInterface
         return $shift;
     }
 
-    public function getHistory(string $storeOwner, ?int $userId = null): Collection
+    public function getHistory(string $storeOwner, ?int $userId = null, array $filters = [])
     {
-        $startOfCurrentMonth = \Carbon\Carbon::now()->startOfMonth()->toDateTimeString();
+        $perPage = isset($filters['limit']) ? (int)$filters['limit'] : 10;
+        $startDate = isset($filters['start_date']) ? $filters['start_date'] : null;
+        $endDate = isset($filters['end_date']) ? $filters['end_date'] : null;
+        $status = isset($filters['status']) ? $filters['status'] : 'all';
+        $search = isset($filters['search']) ? trim($filters['search']) : '';
 
-        // 1. Lấy các ca làm việc thuộc tháng hiện tại từ DB (real-time)
-        $currentMonthShifts = Shift::where('store_owner_address', $storeOwner)
-            ->where('start_time', '>=', $startOfCurrentMonth)
+        $query = Shift::where('store_owner_address', $storeOwner)
             ->when($userId !== null, function ($q) use ($userId) {
                 return $q->where('user_id', $userId);
             })
-            ->with('user')
-            ->get()
-            ->toArray();
+            ->with('user');
 
-        // 2. Tìm danh sách các tháng trong quá khứ có ca làm việc
-        $pastMonths = Shift::where('store_owner_address', $storeOwner)
-            ->where('start_time', '<', $startOfCurrentMonth)
-            ->when($userId !== null, function ($q) use ($userId) {
-                return $q->where('user_id', $userId);
-            })
-            ->selectRaw("DATE_FORMAT(start_time, '%Y-%m') as month")
-            ->groupBy('month')
-            ->pluck('month');
-
-        $pastShifts = [];
-        $userIdStr = $userId ?? 'all';
-        foreach ($pastMonths as $month) {
-            $monthShifts = \Illuminate\Support\Facades\Cache::remember(
-                "store_shifts_history:{$storeOwner}:{$userIdStr}:{$month}",
-                604800,
-                function () use ($storeOwner, $userId, $month) {
-                    $start = \Carbon\Carbon::parse($month . '-01')->startOfMonth()->toDateTimeString();
-                    $end = \Carbon\Carbon::parse($month . '-01')->endOfMonth()->toDateTimeString();
-
-                    return Shift::where('store_owner_address', $storeOwner)
-                        ->whereBetween('start_time', [$start, $end])
-                        ->when($userId !== null, function ($q) use ($userId) {
-                            return $q->where('user_id', $userId);
-                        })
-                        ->with('user')
-                        ->get()
-                        ->toArray();
-                }
-            );
-            $pastShifts = array_merge($pastShifts, $monthShifts);
+        if ($startDate && $endDate) {
+            $query->whereBetween('start_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
         }
 
-        // 3. Trộn toàn bộ ca làm việc
-        $allShifts = array_merge($currentMonthShifts, $pastShifts);
+        if ($status !== 'all' && !empty($status)) {
+            $query->where('status', $status);
+        }
 
-        // 4. Sắp xếp lại theo start_time giảm dần và trả về mảng thô
-        $collection = collect($allShifts);
-        return $collection->sortByDesc('start_time')->values();
+        if (!empty($search)) {
+            $query->whereHas('user', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('wallet_address', 'like', "%{$search}%");
+            });
+        }
+
+        return $query->orderBy('start_time', 'desc')->paginate($perPage);
     }
 }

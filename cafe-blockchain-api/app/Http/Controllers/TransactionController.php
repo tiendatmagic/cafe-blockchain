@@ -25,10 +25,20 @@ class TransactionController extends Controller
         
         $type = $request->query('type');
         $category = $request->query('category');
+        $limit = (int)$request->query('limit', 10);
+        $search = $request->query('search');
 
-        $transactions = $this->transactionRepository->getTransactions($storeOwner, $type, $category);
+        $paginated = $this->transactionRepository->getTransactions($storeOwner, $type, $category, $limit, $search);
         
-        return response()->json($transactions);
+        // Tính tổng thu, chi tổng thể
+        $totalIncome = Transaction::where('store_owner_address', $storeOwner)->where('type', 'thu')->sum('amount');
+        $totalExpense = Transaction::where('store_owner_address', $storeOwner)->where('type', 'chi')->sum('amount');
+
+        return response()->json([
+            'paginated' => $paginated,
+            'total_income' => (float)$totalIncome,
+            'total_expense' => (float)$totalExpense
+        ]);
     }
 
     /**

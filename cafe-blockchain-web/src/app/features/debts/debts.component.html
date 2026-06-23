@@ -107,7 +107,7 @@
               <!-- Tìm kiếm -->
               <app-custom-search-input
                 [ngModel]="debtSearchQuery()"
-                (ngModelChange)="debtSearchQuery.set($event); debtPage.set(1)"
+                (ngModelChange)="onSearchQueryChange($event)"
                 placeholder="Tìm tên, SĐT, mã khách..."
                 containerClass="w-full sm:w-64"
               ></app-custom-search-input>
@@ -116,7 +116,7 @@
               <app-tab-group
                 [options]="debtFilterOptions"
                 [activeValue]="debtFilterMode()"
-                (valueChange)="debtFilterMode.set($event); debtPage.set(1)"
+                (valueChange)="onFilterModeChange($event)"
               ></app-tab-group>
             </div>
           </div>
@@ -165,7 +165,7 @@
                 </tr>
               </thead>
               <tbody>
-                @if (paginatedDebts().length === 0) {
+                @if (stateService.totalDebts() === 0) {
                   <tr>
                     <td colspan="6" class="p-8 text-center text-xs text-slate-400 font-bold italic">
                       Không tìm thấy khách hàng nào khớp với điều kiện lọc.
@@ -269,10 +269,10 @@
           <app-pagination
             [currentPage]="debtPage()"
             [totalPages]="debtTotalPages()"
-            [totalItems]="filteredDebts().length"
+            [totalItems]="stateService.totalDebts()"
             [itemsPerPage]="debtLimit"
             itemName="khách hàng"
-            (pageChange)="debtPage.set($event)"
+            (pageChange)="refreshDebts($event)"
           ></app-pagination>
         </div>
       }

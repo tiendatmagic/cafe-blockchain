@@ -234,7 +234,7 @@ export class PosComponent implements OnInit, OnDestroy {
 
         if (isEvmWallet) {
           const hasWallet = results.some(
-            (c) => c.wallet_address && c.wallet_address.toLowerCase() === cleanQuery.toLowerCase(),
+            (c: any) => c.wallet_address && c.wallet_address.toLowerCase() === cleanQuery.toLowerCase(),
           );
           if (!hasWallet) {
             const autoCreateOption = {
