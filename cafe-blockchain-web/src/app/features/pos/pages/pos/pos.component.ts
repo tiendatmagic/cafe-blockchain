@@ -373,7 +373,8 @@ export class PosComponent implements OnInit, OnDestroy {
   // Thêm sản phẩm vào giỏ
   public addToCart(product: any, variant: any = null) {
     if (!this.web3Service.walletConnected()) return;
-    if (!this.shiftService.currentShift() || !this.shiftService.currentShift()?.id) {
+    const hasActiveShift = (this.shiftService.currentShift() && this.shiftService.currentShift()?.id) || this.shiftService.isShiftSkipped();
+    if (!hasActiveShift) {
       this.stateService.showToast('Vui lòng mở ca trực trước khi chọn món bán hàng!', 'error');
       return;
     }

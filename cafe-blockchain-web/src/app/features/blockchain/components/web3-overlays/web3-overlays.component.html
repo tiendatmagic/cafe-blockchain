@@ -525,7 +525,7 @@
                     <div class="flex items-center gap-1.5 flex-wrap">
                       <h4 
                         class="text-sm font-black uppercase tracking-wide"
-                        [class.text-slate-850]="!disabled"
+                        [class.text-slate-800]="!disabled"
                         [class.dark:text-slate-100]="!disabled"
                         [class.text-slate-400]="disabled"
                         [class.dark:text-slate-500]="disabled"
@@ -607,7 +607,7 @@
                       [class.text-slate-600]="durationMonths() !== months"
                       [class.dark:text-slate-400]="durationMonths() !== months"
                       [class.hover:bg-slate-100]="!isUpgrading() && durationMonths() !== months && selectedPlan()?.code !== 'free'"
-                      [class.dark:hover:bg-slate-850]="!isUpgrading() && durationMonths() !== months && selectedPlan()?.code !== 'free'"
+                      [class.dark:hover:bg-slate-800]="!isUpgrading() && durationMonths() !== months && selectedPlan()?.code !== 'free'"
                     >
                       {{ months === 12 ? '1 Năm' : (months + ' Tháng') }}
                     </button>
@@ -666,11 +666,11 @@
                           </div>
                           <div>
                             <span class="text-slate-450 mr-1">{{ payment.type === 'bank' ? 'Số tài khoản' : 'Số điện thoại' }}:</span>
-                            <span class="text-slate-850 dark:text-slate-100 font-mono font-bold">{{ payment.account_number }}</span>
+                            <span class="text-slate-800 dark:text-slate-100 font-mono font-bold">{{ payment.account_number }}</span>
                           </div>
                           <div>
                             <span class="text-slate-450 mr-1">Ngân hàng/Ví:</span>
-                            <span class="text-slate-850 dark:text-slate-100 font-bold">
+                            <span class="text-slate-800 dark:text-slate-100 font-bold">
                               {{ payment.name }}
                               @if (payment.bank_code) {
                                 <span class="text-[10px] font-mono text-slate-450 font-bold ml-1">({{ payment.bank_code }})</span>

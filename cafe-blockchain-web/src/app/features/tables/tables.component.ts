@@ -183,7 +183,8 @@ export class TablesComponent implements OnInit {
 
   public openPosForTable(table: any) {
     this.activeDropdownTableId.set(null);
-    if (!this.shiftService.currentShift() || !this.shiftService.currentShift()?.id) {
+    const hasActiveShift = (this.shiftService.currentShift() && this.shiftService.currentShift()?.id) || this.shiftService.isShiftSkipped();
+    if (!hasActiveShift) {
       this.stateService.showToast(
         'Vui lòng mở ca làm việc trước khi thực hiện nghiệp vụ bán hàng POS!',
         'error',

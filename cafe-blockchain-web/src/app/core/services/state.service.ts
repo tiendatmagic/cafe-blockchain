@@ -303,10 +303,12 @@ export class StateService {
       }
     }, { allowSignalWrites: true });
 
-    // 2. Lắng nghe thay đổi của page và category tại POS để tự động load sản phẩm
+    // 2. Lắng nghe thay đổi của page, category, và trạng thái ca trực tại POS để tự động load sản phẩm
     effect(() => {
       const page = this.posCurrentPage();
       const category = this.posCategoryFilter();
+      const shift = this.shiftService.currentShift();
+      const skipped = this.shiftService.isShiftSkipped();
       if (this.activeTab() === 'pos') {
         this.productStore.loadPosProducts();
       }

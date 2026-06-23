@@ -18,6 +18,12 @@ export class ShiftService {
   private readonly modalService = inject(ModalService);
 
   public isLoading = signal<boolean>(false);
+  public isShiftSkipped = signal<boolean>(false);
+
+  public skipShift() {
+    this.isShiftSkipped.set(true);
+  }
+
   public readonly currentShift = this.shiftStore.currentShift;
   public readonly isCurrentShiftLoading = this.shiftStore.isCurrentShiftLoading;
   public readonly shifts = this.shiftStore.shifts;
@@ -59,6 +65,7 @@ export class ShiftService {
   }
 
   private loadShiftDataInitially() {
+    this.isShiftSkipped.set(false);
     if (this.authService.hasPermission('shifts') && this.authService.hasFeature('enable_shifts')) {
       this.refreshCurrentShift();
     } else {
@@ -107,6 +114,7 @@ export class ShiftService {
     this.shiftStore.openShift(initialCash, {
       onSuccess: (res) => {
         this.isLoading.set(false);
+        this.isShiftSkipped.set(false);
         this.toastService.showToast('Vào ca làm việc thành công', 'success');
         if (onSuccess) onSuccess();
       },
@@ -130,6 +138,7 @@ export class ShiftService {
     this.shiftStore.closeShift(actualCash, note, {
       onSuccess: (res) => {
         this.isLoading.set(false);
+        this.isShiftSkipped.set(false);
         this.toastService.showToast('Kết thúc ca trực thành công', 'success');
         if (onSuccess) onSuccess();
         this.refreshShifts();
