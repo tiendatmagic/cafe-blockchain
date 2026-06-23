@@ -55,7 +55,7 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by($request->ip());
         });
 
-        // Giới hạn cho các endpoint đăng nhập Web3 nhạy cảm (Tối đa 5 request/phút dựa trên IP + địa chỉ ví)
+        // Giới hạn cho các endpoint đăng nhập Web3 nhạy cảm (Tối đa 7 request/phút dựa trên IP + địa chỉ ví)
         RateLimiter::for('auth_endpoints', function (Request $request) {
             $address = strtolower($request->input('address') ?: $request->query('address') ?: '');
             $key = $address ? $request->ip() . '|' . $address : $request->ip();
