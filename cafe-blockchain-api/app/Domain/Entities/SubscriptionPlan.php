@@ -23,4 +23,15 @@ class SubscriptionPlan extends Model
         'price_per_year' => 'double',
         'features' => 'array',
     ];
+
+    /**
+     * Lấy thông tin gói cước theo code (có cache 24 giờ)
+     */
+    public static function getCachedPlan(string $code): ?array
+    {
+        return \Illuminate\Support\Facades\Cache::remember("subscription_plan:{$code}", 86400, function () use ($code) {
+            $plan = self::where('code', $code)->first();
+            return $plan ? $plan->toArray() : null;
+        });
+    }
 }

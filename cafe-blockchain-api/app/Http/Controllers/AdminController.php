@@ -105,6 +105,9 @@ class AdminController extends Controller
         \App\Domain\Entities\Setting::setForStore('store_name', $validated['store_name'], $wallet);
         \App\Domain\Entities\Setting::clearStorefrontCache($wallet);
 
+        // Xóa cache thông tin chủ cửa hàng
+        \Illuminate\Support\Facades\Cache::forget("store_owner_user:{$wallet}");
+
         // Xóa cache danh sách tenants
         \Cache::forget('admin_tenants');
 
@@ -171,6 +174,7 @@ class AdminController extends Controller
         // Xóa cache danh sách gói cước
         \Cache::forget('admin_plans');
         \Cache::forget('system_subscription_plans');
+        \Illuminate\Support\Facades\Cache::forget("subscription_plan:" . $plan->code);
 
         return response()->json([
             'success' => true,
@@ -223,6 +227,7 @@ class AdminController extends Controller
         // Xóa cache danh sách gói cước
         \Cache::forget('admin_plans');
         \Cache::forget('system_subscription_plans');
+        \Illuminate\Support\Facades\Cache::forget("subscription_plan:" . $plan->code);
 
         return response()->json([
             'success' => true,
@@ -260,6 +265,7 @@ class AdminController extends Controller
         // Xóa cache danh sách gói cước
         \Cache::forget('admin_plans');
         \Cache::forget('system_subscription_plans');
+        \Illuminate\Support\Facades\Cache::forget("subscription_plan:" . $plan->code);
 
         return response()->json([
             'success' => true,
@@ -373,6 +379,9 @@ class AdminController extends Controller
         // Xóa cache danh sách gói cước
         \Cache::forget('admin_plans');
         \Cache::forget('system_subscription_plans');
+        \Illuminate\Support\Facades\Cache::forget("subscription_plan:free");
+        \Illuminate\Support\Facades\Cache::forget("subscription_plan:pro");
+        \Illuminate\Support\Facades\Cache::forget("subscription_plan:ultra");
 
         return response()->json([
             'success' => true,
@@ -1344,6 +1353,9 @@ class AdminController extends Controller
         $subRequest->approved_by = $adminUser->wallet_address;
         $subRequest->approved_at = now();
         $subRequest->save();
+
+        // Xóa cache thông tin chủ cửa hàng
+        \Illuminate\Support\Facades\Cache::forget("store_owner_user:" . strtolower($user->wallet_address));
 
         // Xóa cache danh sách tenants
         \Cache::forget('admin_tenants');

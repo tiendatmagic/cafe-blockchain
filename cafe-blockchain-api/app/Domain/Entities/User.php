@@ -58,6 +58,18 @@ class User extends Authenticatable
     }
 
     /**
+     * Lấy thông tin tài khoản chủ cửa hàng (có cache 10 phút)
+     */
+    public static function getCachedOwner(string $ownerAddress): ?array
+    {
+        $ownerAddress = strtolower($ownerAddress);
+        return \Illuminate\Support\Facades\Cache::remember("store_owner_user:{$ownerAddress}", 600, function () use ($ownerAddress) {
+            $owner = self::where('wallet_address', $ownerAddress)->first();
+            return $owner ? $owner->toArray() : null;
+        });
+    }
+
+    /**
      * Lấy địa chỉ ví chủ cửa hàng (Store Owner) dạng chữ thường
      */
     public function getStoreOwnerAddress(): string

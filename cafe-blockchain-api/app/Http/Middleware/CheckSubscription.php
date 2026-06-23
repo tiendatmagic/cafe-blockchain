@@ -35,10 +35,10 @@ class CheckSubscription
         }
 
         // Tìm tài khoản chủ quán
-        $owner = User::where('wallet_address', $ownerAddress)->first();
+        $owner = User::getCachedOwner($ownerAddress);
         if ($owner) {
             // 1. Kiểm tra bị khóa (Suspended)
-            if ($owner->subscription_status === 'suspended') {
+            if (($owner['subscription_status'] ?? 'active') === 'suspended') {
                 return response()->json([
                     'success' => false,
                     'subscription_status' => 'suspended',
@@ -47,11 +47,12 @@ class CheckSubscription
             }
 
             // 2. Kiểm tra hết hạn (Expired)
-            if ($owner->subscription_expires_at !== null && now()->greaterThan($owner->subscription_expires_at)) {
+            $expiresAt = $owner['subscription_expires_at'] ?? null;
+            if ($expiresAt !== null && now()->greaterThan(\Carbon\Carbon::parse($expiresAt))) {
                 return response()->json([
                     'success' => false,
                     'subscription_status' => 'expired',
-                    'subscription_expires_at' => $owner->subscription_expires_at,
+                    'subscription_expires_at' => $expiresAt,
                     'message' => 'Your subscription has expired. Please renew or upgrade to continue.'
                 ], 402);
             }

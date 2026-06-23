@@ -159,14 +159,17 @@ class AuthController extends Controller
 
             // Lấy thông tin gói cước (Dựa trên chủ quán)
             $ownerAddress = $user->getStoreOwnerAddress();
-            $owner = User::where('wallet_address', $ownerAddress)->first();
             
-            $planCode = $owner ? ($owner->plan_code ?: 'free') : 'free';
-            $planExpiresAt = $owner ? $owner->subscription_expires_at : null;
-            $planStatus = $owner ? ($owner->subscription_status ?: 'active') : 'active';
+            // Xóa cache để đảm bảo nhận thông tin mới nhất khi đăng nhập lại
+            \Illuminate\Support\Facades\Cache::forget("store_owner_user:{$ownerAddress}");
+            $owner = User::getCachedOwner($ownerAddress);
             
-            $plan = \App\Domain\Entities\SubscriptionPlan::where('code', $planCode)->first();
-            $planFeatures = $plan ? $plan->features : null;
+            $planCode = $owner ? ($owner['plan_code'] ?? 'free') : 'free';
+            $planExpiresAt = $owner ? ($owner['subscription_expires_at'] ?? null) : null;
+            $planStatus = $owner ? ($owner['subscription_status'] ?? 'active') : 'active';
+            
+            $plan = \App\Domain\Entities\SubscriptionPlan::getCachedPlan($planCode);
+            $planFeatures = $plan ? $plan['features'] : null;
 
             // Kiểm tra xem có phải là Super Admin hay Staff không
             $superAdminEnv = config('auth.super_admin_addresses', '');
@@ -226,14 +229,14 @@ class AuthController extends Controller
 
         // Lấy thông tin gói cước dựa trên chủ quán
         $ownerAddress = $user->getStoreOwnerAddress();
-        $owner = User::where('wallet_address', $ownerAddress)->first();
+        $owner = User::getCachedOwner($ownerAddress);
 
-        $planCode = $owner ? ($owner->plan_code ?: 'free') : 'free';
-        $planExpiresAt = $owner ? $owner->subscription_expires_at : null;
-        $planStatus = $owner ? ($owner->subscription_status ?: 'active') : 'active';
+        $planCode = $owner ? ($owner['plan_code'] ?? 'free') : 'free';
+        $planExpiresAt = $owner ? ($owner['subscription_expires_at'] ?? null) : null;
+        $planStatus = $owner ? ($owner['subscription_status'] ?? 'active') : 'active';
 
-        $plan = \App\Domain\Entities\SubscriptionPlan::where('code', $planCode)->first();
-        $planFeatures = $plan ? $plan->features : null;
+        $plan = \App\Domain\Entities\SubscriptionPlan::getCachedPlan($planCode);
+        $planFeatures = $plan ? $plan['features'] : null;
 
         // Kiểm tra xem có phải là Super Admin hay Staff không
         $superAdminEnv = config('auth.super_admin_addresses', '');
@@ -351,7 +354,7 @@ class AuthController extends Controller
         }
 
         // 4. Lấy thông tin giá tiền của gói cước để lưu vào yêu cầu
-        $plan = \App\Domain\Entities\SubscriptionPlan::where('code', $planCode)->first();
+        $plan = \App\Domain\Entities\SubscriptionPlan::getCachedPlan($planCode);
         if (!$plan) {
             return response()->json([
                 'success' => false,
@@ -361,9 +364,9 @@ class AuthController extends Controller
 
         $amount = 0;
         if ($months == 12) {
-            $amount = $plan->price_per_year;
+            $amount = $plan['price_per_year'] ?? 0;
         } else {
-            $amount = $plan->price_per_month * $months;
+            $amount = ($plan['price_per_month'] ?? 0) * $months;
         }
 
         // 5. Tạo yêu cầu đăng ký thuê bao mới ở trạng thái pending
@@ -419,6 +422,10 @@ class AuthController extends Controller
         $user->email = $validated['email'] ?? null;
         $user->phone = $validated['phone'] ?? null;
         $user->save();
+
+        // Xóa cache store_owner_user khi cập nhật profile chủ quán
+        $wallet = strtolower($user->wallet_address);
+        \Illuminate\Support\Facades\Cache::forget("store_owner_user:{$wallet}");
 
         // Sync with staffs table if this user is a staff member
         $staff = Staff::where('wallet_address', strtolower($user->wallet_address))->first();

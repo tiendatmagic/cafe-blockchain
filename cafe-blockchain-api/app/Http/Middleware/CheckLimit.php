@@ -27,14 +27,14 @@ class CheckLimit
         // Xác định địa chỉ ví chủ quán
         $storeOwner = $user->getStoreOwnerAddress();
 
-        $owner = User::where('wallet_address', $storeOwner)->first();
+        $owner = User::getCachedOwner($storeOwner);
         if ($owner) {
-            $planCode = $owner->plan_code ?: 'free';
-            $plan = DB::table('subscription_plans')->where('code', $planCode)->first();
+            $planCode = $owner['plan_code'] ?? 'free';
+            $plan = \App\Domain\Entities\SubscriptionPlan::getCachedPlan($planCode);
             
             $features = [];
             if ($plan) {
-                $features = json_decode($plan->features, true) ?: [];
+                $features = is_array($plan['features']) ? $plan['features'] : (json_decode($plan['features'], true) ?: []);
             }
             
             // Xác định key giới hạn và thực hiện đếm

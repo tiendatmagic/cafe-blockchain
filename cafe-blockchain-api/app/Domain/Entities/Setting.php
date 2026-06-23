@@ -207,6 +207,7 @@ class Setting extends Model
         $slug = self::getForStore('website_slug', $storeOwnerAddress);
         if ($slug) {
             \Illuminate\Support\Facades\Cache::forget("store_details:{$slug}");
+            \Illuminate\Support\Facades\Cache::forget("slug_owner_address:{$slug}");
         }
         \Illuminate\Support\Facades\Cache::forget("store_products_all:{$storeOwnerAddress}");
         \Illuminate\Support\Facades\Cache::forget("store_categories_all:{$storeOwnerAddress}");

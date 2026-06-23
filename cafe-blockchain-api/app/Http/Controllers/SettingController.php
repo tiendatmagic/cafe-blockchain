@@ -452,26 +452,29 @@ class SettingController extends Controller
      */
     public function getStoreDetailsBySlug(string $slug)
     {
-        $setting = Setting::where('key', 'website_slug')->where('value', $slug)->first();
-        if (!$setting) {
+        $storeOwner = Cache::remember("slug_owner_address:{$slug}", 86400, function () use ($slug) {
+            $setting = Setting::where('key', 'website_slug')->where('value', $slug)->first();
+            return $setting ? strtolower($setting->store_owner_address) : null;
+        });
+
+        if (!$storeOwner) {
             return response()->json(['message' => 'Store does not exist!'], 404);
         }
 
-        $storeOwner = strtolower($setting->store_owner_address);
-
-        $owner = \App\Domain\Entities\User::where('wallet_address', $storeOwner)->first();
+        $owner = \App\Domain\Entities\User::getCachedOwner($storeOwner);
         if (!$owner) {
             return response()->json(['message' => 'Store owner not found!'], 404);
         }
 
-        if ($owner->subscription_status === 'suspended') {
+        if (($owner['subscription_status'] ?? 'active') === 'suspended') {
             return response()->json([
                 'success' => false,
                 'message' => 'This store website is currently suspended.'
             ], 403);
         }
 
-        if ($owner->subscription_expires_at !== null && now()->greaterThan($owner->subscription_expires_at)) {
+        $expiresAt = $owner['subscription_expires_at'] ?? null;
+        if ($expiresAt !== null && now()->greaterThan(\Carbon\Carbon::parse($expiresAt))) {
             return response()->json([
                 'success' => false,
                 'message' => 'This store website service has expired.'
@@ -479,8 +482,12 @@ class SettingController extends Controller
         }
 
         // Kiểm tra xem gói cước hiện tại có hỗ trợ storefront không
-        $plan = \App\Domain\Entities\SubscriptionPlan::where('code', $owner->plan_code ?: 'free')->first();
-        if ($plan && isset($plan->features['enable_storefront']) && !$plan->features['enable_storefront']) {
+        $planCode = $owner['plan_code'] ?? 'free';
+        $plan = \App\Domain\Entities\SubscriptionPlan::getCachedPlan($planCode);
+        $features = $plan ? $plan['features'] : [];
+        $enableStorefront = isset($features['enable_storefront']) ? (bool)$features['enable_storefront'] : ($planCode !== 'free');
+
+        if (!$enableStorefront) {
             return response()->json([
                 'success' => false,
                 'message' => 'Storefront feature is not enabled for this store\'s subscription plan.',
@@ -593,26 +600,29 @@ class SettingController extends Controller
      */
     public function createStoreOrderBySlug(Request $request, string $slug, \App\Application\Common\Bus\CommandBus $bus)
     {
-        $setting = Setting::where('key', 'website_slug')->where('value', $slug)->first();
-        if (!$setting) {
+        $storeOwner = Cache::remember("slug_owner_address:{$slug}", 86400, function () use ($slug) {
+            $setting = Setting::where('key', 'website_slug')->where('value', $slug)->first();
+            return $setting ? strtolower($setting->store_owner_address) : null;
+        });
+
+        if (!$storeOwner) {
             return response()->json(['message' => 'Store does not exist!'], 404);
         }
 
-        $storeOwner = strtolower($setting->store_owner_address);
-
-        $owner = \App\Domain\Entities\User::where('wallet_address', $storeOwner)->first();
+        $owner = \App\Domain\Entities\User::getCachedOwner($storeOwner);
         if (!$owner) {
             return response()->json(['message' => 'Store owner not found!'], 404);
         }
 
-        if ($owner->subscription_status === 'suspended') {
+        if (($owner['subscription_status'] ?? 'active') === 'suspended') {
             return response()->json([
                 'success' => false,
                 'message' => 'This store website is currently suspended.'
             ], 403);
         }
 
-        if ($owner->subscription_expires_at !== null && now()->greaterThan($owner->subscription_expires_at)) {
+        $expiresAt = $owner['subscription_expires_at'] ?? null;
+        if ($expiresAt !== null && now()->greaterThan(\Carbon\Carbon::parse($expiresAt))) {
             return response()->json([
                 'success' => false,
                 'message' => 'This store website service has expired.'
@@ -620,8 +630,12 @@ class SettingController extends Controller
         }
 
         // Kiểm tra xem gói cước hiện tại có hỗ trợ storefront không
-        $plan = \App\Domain\Entities\SubscriptionPlan::where('code', $owner->plan_code ?: 'free')->first();
-        if ($plan && isset($plan->features['enable_storefront']) && !$plan->features['enable_storefront']) {
+        $planCode = $owner['plan_code'] ?? 'free';
+        $plan = \App\Domain\Entities\SubscriptionPlan::getCachedPlan($planCode);
+        $features = $plan ? $plan['features'] : [];
+        $enableStorefront = isset($features['enable_storefront']) ? (bool)$features['enable_storefront'] : ($planCode !== 'free');
+
+        if (!$enableStorefront) {
             return response()->json([
                 'success' => false,
                 'message' => 'Storefront feature is not enabled for this store\'s subscription plan.',

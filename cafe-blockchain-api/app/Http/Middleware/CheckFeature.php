@@ -28,16 +28,16 @@ class CheckFeature
         $ownerAddress = $user->getStoreOwnerAddress();
 
         // Tìm tài khoản chủ quán để lấy gói cước
-        $owner = User::where('wallet_address', $ownerAddress)->first();
+        $owner = User::getCachedOwner($ownerAddress);
         if ($owner) {
-            $planCode = $owner->plan_code ?: 'free';
-            $plan = DB::table('subscription_plans')->where('code', $planCode)->first();
+            $planCode = $owner['plan_code'] ?? 'free';
+            $plan = \App\Domain\Entities\SubscriptionPlan::getCachedPlan($planCode);
             
             $isFree = ($planCode === 'free');
             $features = [];
             
             if ($plan) {
-                $features = json_decode($plan->features, true) ?: [];
+                $features = is_array($plan['features']) ? $plan['features'] : (json_decode($plan['features'], true) ?: []);
             }
             
             $enabled = isset($features[$feature]) ? (bool)$features[$feature] : true;
