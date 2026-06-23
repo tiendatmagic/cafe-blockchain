@@ -408,6 +408,9 @@ export class AdminSaaSComponent implements OnInit {
 
   public onPromoEnabledChange(enabled: boolean) {
     this.store.newUserPromoEnabled.set(enabled);
+    if (!enabled) {
+      this.savePromoSettings();
+    }
   }
 
   public onPromoPlanChange(planCode: string) {
