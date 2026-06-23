@@ -47,15 +47,17 @@ return new class extends Migration
             $table->index('tx_hash', 'idx_menu_sync_tx_hash');
         });
 
-        // 7. Bảng inventory_records
+        // 7. Bảng inventory_records (Thêm composite index mới và xóa index đơn dư thừa cũ)
         Schema::table('inventory_records', function (Blueprint $table) {
             $table->index(['store_owner_address', 'type', 'record_date'], 'idx_inv_tenant_type_date');
+            $table->dropIndex('inventory_records_store_owner_address_index');
         });
 
-        // 8. Bảng products
+        // 8. Bảng products (Thêm các composite index mới và xóa index đơn dư thừa cũ)
         Schema::table('products', function (Blueprint $table) {
             $table->index(['store_owner_address', 'status'], 'idx_prod_tenant_status');
             $table->index(['store_owner_address', 'type'], 'idx_prod_tenant_type');
+            $table->dropIndex('products_store_owner_address_index');
         });
     }
 
@@ -65,11 +67,13 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('products', function (Blueprint $table) {
+            $table->index('store_owner_address', 'products_store_owner_address_index');
             $table->dropIndex('idx_prod_tenant_type');
             $table->dropIndex('idx_prod_tenant_status');
         });
 
         Schema::table('inventory_records', function (Blueprint $table) {
+            $table->index('store_owner_address', 'inventory_records_store_owner_address_index');
             $table->dropIndex('idx_inv_tenant_type_date');
         });
 
