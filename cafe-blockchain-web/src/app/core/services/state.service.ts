@@ -74,6 +74,7 @@ export class StateService {
   public readonly maintenanceType = this.uiStateService.maintenanceType;
   public readonly cancelRequests$ = this.uiStateService.cancelRequests$;
   public readonly useSlidingEffect = this.uiStateService.useSlidingEffect;
+  public readonly showBackgroundMesh = this.uiStateService.showBackgroundMesh;
 
   // Trạng thái modal ví và modal upgrade
   public readonly isWalletModalOpen = this.uiStateService.isWalletModalOpen;
@@ -397,6 +398,11 @@ export class StateService {
   // Sliding Effect
   public setSlidingEffect(enabled: boolean) {
     this.uiStateService.setSlidingEffect(enabled);
+  }
+
+  // Background Mesh Effect
+  public setBackgroundMesh(enabled: boolean) {
+    this.uiStateService.setBackgroundMesh(enabled);
   }
 
   // Theme

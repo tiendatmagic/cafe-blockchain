@@ -58,6 +58,18 @@
             type="full"
           ></app-custom-switch>
         </div>
+
+        <div
+          class="p-4 bg-slate-50 dark:bg-slate-950/40 rounded-2xl border border-slate-100 dark:border-slate-800/40"
+        >
+          <app-custom-switch
+            [checked]="stateService.showBackgroundMesh()"
+            (checkedChange)="onBackgroundMeshChange($event)"
+            label="Hiệu ứng nền phát sáng trang POS & Quản trị"
+            description="Bật hiệu ứng lưới màu phát sáng mờ trang trí phía sau nền tại trang bán hàng, tổng quan và các trang quản trị khác."
+            type="full"
+          ></app-custom-switch>
+        </div>
       </div>
     </div>
   </div>

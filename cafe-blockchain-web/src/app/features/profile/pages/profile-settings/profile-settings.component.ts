@@ -28,4 +28,14 @@ export class ProfileSettingsComponent {
       'success'
     );
   }
+
+  public onBackgroundMeshChange(enabled: boolean) {
+    this.stateService.setBackgroundMesh(enabled);
+    this.stateService.showToast(
+      enabled
+        ? 'Đã bật hiệu ứng nền phát sáng trang POS & Quản trị!'
+        : 'Đã tắt hiệu ứng nền phát sáng trang POS & Quản trị!',
+      'success'
+    );
+  }
 }

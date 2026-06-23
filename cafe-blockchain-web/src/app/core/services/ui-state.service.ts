@@ -34,10 +34,24 @@ export class UiStateService {
       : false
   );
 
+  // Hiệu ứng nền lưới phát sáng (background glowing mesh) toàn cục
+  public readonly showBackgroundMesh = signal<boolean>(
+    typeof window !== 'undefined'
+      ? localStorage.getItem('ui_background_mesh') !== 'false'
+      : true
+  );
+
   public setSlidingEffect(enabled: boolean) {
     this.useSlidingEffect.set(enabled);
     if (typeof window !== 'undefined') {
       localStorage.setItem('ui_sliding_effect', String(enabled));
+    }
+  }
+
+  public setBackgroundMesh(enabled: boolean) {
+    this.showBackgroundMesh.set(enabled);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('ui_background_mesh', String(enabled));
     }
   }
 
