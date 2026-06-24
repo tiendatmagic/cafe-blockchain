@@ -72,6 +72,12 @@ class ProductController extends Controller
             }
 
             $paginated = $query->paginate($limit);
+            $paginated->getCollection()->transform(function($product) {
+                if (isset($product->image)) {
+                    $product->image = Product::normalizeImageUrl($product->image);
+                }
+                return $product;
+            });
             return response()->json($paginated);
         }
 
@@ -112,7 +118,13 @@ class ProductController extends Controller
             });
         }
 
-        return response()->json($collection->values()->all());
+        $productsArray = $collection->values()->all();
+        foreach ($productsArray as &$p) {
+            if (isset($p['image'])) {
+                $p['image'] = Product::normalizeImageUrl($p['image']);
+            }
+        }
+        return response()->json($productsArray);
     }
 
     /**
@@ -195,6 +207,7 @@ class ProductController extends Controller
         }
 
         $product->load(['categories', 'variants', 'recipes.ingredient', 'recipes.variant']);
+        $product->image = Product::normalizeImageUrl($product->image);
 
         // Giải phóng cache storefront
         \App\Domain\Entities\Setting::clearStorefrontCache($storeOwner);
@@ -303,6 +316,7 @@ class ProductController extends Controller
         }
 
         $product->load(['categories', 'variants', 'recipes.ingredient', 'recipes.variant']);
+        $product->image = Product::normalizeImageUrl($product->image);
 
         // Giải phóng cache storefront
         \App\Domain\Entities\Setting::clearStorefrontCache($storeOwner);
@@ -360,7 +374,7 @@ class ProductController extends Controller
         try {
             $file = $request->file('image');
             $urlPath = $this->processAndCompressImage($file, $storeOwner);
-            $fullUrl = $request->getSchemeAndHttpHost() . $urlPath;
+            $fullUrl = Product::normalizeImageUrl($urlPath);
 
             return response()->json([
                 'message' => 'Image uploaded and optimized successfully.',
@@ -374,20 +388,22 @@ class ProductController extends Controller
     }
 
     /**
-     * Xử lý và nén ảnh bằng PHP GD (resize 800px, lưu WebP/JPG, giới hạn 1MB)
+     * Xử lý và nén ảnh bằng PHP GD và lưu qua Laravel Storage public disk
      */
     private function processAndCompressImage($file, $storeOwner)
     {
         // Chuẩn hóa tên thư mục ví chủ quán: loại bỏ 0x và chuyển thành chữ thường
         $cleanWallet = strtolower(preg_replace('/^0x/i', '', $storeOwner));
-        $userDir = 'uploads/products/' . $cleanWallet;
-        $targetDir = public_path($userDir);
+        $relativeDir = 'products/' . $cleanWallet;
+
+        // Lấy đường dẫn vật lý tuyệt đối thông qua Laravel Storage (tự động tương thích local & production)
+        $targetDir = \Illuminate\Support\Facades\Storage::disk('public')->path($relativeDir);
 
         if (!\File::exists($targetDir)) {
             \File::makeDirectory($targetDir, 0755, true, true);
         }
 
-        // Đặt tên file theo timestamp + chuỗi ngẫu nhiên ngắn (Phương án 1)
+        // Đặt tên file theo timestamp + chuỗi ngẫu nhiên ngắn
         $fileName = time() . '_' . \Illuminate\Support\Str::random(8) . '.webp';
         $destinationPath = $targetDir . '/' . $fileName;
 
@@ -419,7 +435,7 @@ class ProductController extends Controller
             $destinationPath = $targetDir . '/' . $fileName;
             $file->move($targetDir, $fileName);
 
-            return '/' . $userDir . '/' . $fileName;
+            return \Illuminate\Support\Facades\Storage::disk('public')->url($relativeDir . '/' . $fileName);
         }
 
         // Resize ảnh nếu chiều rộng hoặc chiều cao vượt quá 800px
@@ -475,6 +491,6 @@ class ProductController extends Controller
             throw new \Exception('Compressed image size exceeds 1MB limit.');
         }
 
-        return '/' . $userDir . '/' . $fileName;
+        return \Illuminate\Support\Facades\Storage::disk('public')->url($relativeDir . '/' . $fileName);
     }
 }

@@ -49,6 +49,14 @@ class SettingController extends Controller
             return $data;
         });
 
+        // Chuẩn hóa đường dẫn ảnh nếu có
+        if (isset($settings['website_cover_image'])) {
+            $settings['website_cover_image'] = \App\Domain\Entities\Product::normalizeImageUrl($settings['website_cover_image']);
+        }
+        if (isset($settings['website_avatar_image'])) {
+            $settings['website_avatar_image'] = \App\Domain\Entities\Product::normalizeImageUrl($settings['website_avatar_image']);
+        }
+
         return response()->json($settings);
     }
 
@@ -368,13 +376,13 @@ class SettingController extends Controller
             'voucher_enabled' => $settings['voucher_enabled'] ?? '0',
             'website_slug' => $settings['website_slug'] ?? '',
             'store_categories' => $settings['store_categories'] ?? '',
-            'website_cover_image' => $settings['website_cover_image'] ?? '',
+            'website_cover_image' => isset($settings['website_cover_image']) ? \App\Domain\Entities\Product::normalizeImageUrl($settings['website_cover_image']) : '',
             'store_status' => $settings['store_status'] ?? '0',
             'shipping_fee_flat_enabled' => $settings['shipping_fee_flat_enabled'] ?? '0',
             'shipping_fee_flat_amount' => $settings['shipping_fee_flat_amount'] ?? '0',
             'shipping_fee_free_enabled' => $settings['shipping_fee_free_enabled'] ?? '0',
             'shipping_fee_free_min_amount' => $settings['shipping_fee_free_min_amount'] ?? '0',
-            'website_avatar_image' => $settings['website_avatar_image'] ?? '',
+            'website_avatar_image' => isset($settings['website_avatar_image']) ? \App\Domain\Entities\Product::normalizeImageUrl($settings['website_avatar_image']) : '',
             'store_phone' => $settings['store_phone'] ?? '',
             'store_opening_hours' => $settings['store_opening_hours'] ?? '',
             'store_address' => $settings['store_address'] ?? '',
@@ -521,13 +529,13 @@ class SettingController extends Controller
                 'voucher_enabled' => $settings['voucher_enabled'] ?? '0',
                 'website_slug' => $settings['website_slug'] ?? '',
                 'store_categories' => $settings['store_categories'] ?? '',
-                'website_cover_image' => $settings['website_cover_image'] ?? '',
+                'website_cover_image' => isset($settings['website_cover_image']) ? \App\Domain\Entities\Product::normalizeImageUrl($settings['website_cover_image']) : '',
                 'store_status' => $settings['store_status'] ?? '0',
                 'shipping_fee_flat_enabled' => $settings['shipping_fee_flat_enabled'] ?? '0',
                 'shipping_fee_flat_amount' => $settings['shipping_fee_flat_amount'] ?? '0',
                 'shipping_fee_free_enabled' => $settings['shipping_fee_free_enabled'] ?? '0',
                 'shipping_fee_free_min_amount' => $settings['shipping_fee_free_min_amount'] ?? '0',
-                'website_avatar_image' => $settings['website_avatar_image'] ?? '',
+                'website_avatar_image' => isset($settings['website_avatar_image']) ? \App\Domain\Entities\Product::normalizeImageUrl($settings['website_avatar_image']) : '',
                 'store_phone' => $settings['store_phone'] ?? '',
                 'store_opening_hours' => $settings['store_opening_hours'] ?? '',
                 'store_address' => $settings['store_address'] ?? '',
@@ -570,9 +578,7 @@ class SettingController extends Controller
 
             // Thêm đường dẫn ảnh đầy đủ cho sản phẩm nếu cần
             foreach ($products as $product) {
-                if ($product->image && !str_starts_with($product->image, 'http')) {
-                    $product->image = url($product->image);
-                }
+                $product->image = \App\Domain\Entities\Product::normalizeImageUrl($product->image);
             }
 
             // Lấy danh sách phương thức thanh toán đã kích hoạt
