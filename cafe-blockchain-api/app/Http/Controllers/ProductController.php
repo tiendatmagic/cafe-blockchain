@@ -255,6 +255,8 @@ class ProductController extends Controller
             'recipes.*.quantity' => 'required|numeric|min:0.01',
         ]);
 
+        $oldImage = $product->image;
+
         $product->update([
             'name' => $validated['name'],
             'sku' => $validated['sku'] ?? $product->sku,
@@ -268,6 +270,11 @@ class ProductController extends Controller
             'short_description' => $validated['short_description'] ?? null,
             'description' => $validated['description'] ?? null,
         ]);
+
+        $newImage = $product->image;
+        if ($oldImage && $oldImage !== $newImage) {
+            $this->deleteImageFileIfOrphaned($oldImage, $storeOwner);
+        }
 
         // Đồng bộ hóa các danh mục Nhiều-Nhiều
         $product->categories()->sync($validated['category_ids'] ?? []);
@@ -492,5 +499,49 @@ class ProductController extends Controller
         }
 
         return \Illuminate\Support\Facades\Storage::disk('public')->url($relativeDir . '/' . $fileName);
+    }
+
+    /**
+     * Xóa tệp tin hình ảnh cũ trên server nếu không còn sản phẩm nào dùng chung
+     */
+    private function deleteImageFileIfOrphaned($imageUrl, $storeOwner)
+    {
+        if (!$imageUrl) {
+            return;
+        }
+
+        // Kiểm tra xem ảnh có nằm trong thư mục products/ hay không
+        if (!str_contains($imageUrl, '/products/')) {
+            return;
+        }
+
+        // Tách đường dẫn tương đối của file đối với ổ đĩa public
+        $parts = explode('/products/', $imageUrl);
+        if (count($parts) < 2) {
+            return;
+        }
+        
+        $cleanWallet = strtolower(preg_replace('/^0x/i', '', $storeOwner));
+        $relativeFilePath = 'products/' . ltrim($parts[1], '/');
+
+        // Đảm bảo file này thuộc thư mục của ví chủ quán hiện tại để tránh lỗi bảo mật xóa chéo
+        if (!str_starts_with($relativeFilePath, 'products/' . $cleanWallet . '/')) {
+            return;
+        }
+
+        // Kiểm tra xem có sản phẩm nào khác trong DB đang sử dụng chung ảnh này không
+        $isUsed = Product::where('image', 'like', '%' . $relativeFilePath)->exists();
+        if ($isUsed) {
+            return;
+        }
+
+        // Tiến hành xóa file
+        try {
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($relativeFilePath)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($relativeFilePath);
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('[ProductController] Failed to delete orphaned image: ' . $e->getMessage());
+        }
     }
 }
