@@ -250,6 +250,7 @@ Route::middleware('auth:sanctum')->group(function () {
             // Thực đơn (Menu)
             Route::middleware('feature:enable_menu')->group(function () {
                 Route::post('/products', [ProductController::class, 'store'])->middleware('limit:products');
+                Route::post('/products/upload-image', [ProductController::class, 'uploadImage']);
                 Route::put('/products/{id}', [ProductController::class, 'update']);
                 Route::delete('/products/{id}', [ProductController::class, 'destroy']);
 

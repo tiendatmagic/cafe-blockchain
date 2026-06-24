@@ -113,15 +113,116 @@
     </div>
   </div>
 
-  <!-- Hình ảnh (URL) -->
-  <div class="space-y-1.5 relative focus-within:z-10">
-    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Đường dẫn hình ảnh (URL)</label>
-    <input
-      type="text"
-      [(ngModel)]="form.image"
-      placeholder="https://images.unsplash.com/..."
-      class="form-input font-mono"
-    />
+  <!-- Hình ảnh sản phẩm -->
+  <div class="space-y-2 relative focus-within:z-10">
+    <div class="flex items-center justify-between">
+      <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block">Hình ảnh món ăn</label>
+      <button 
+        type="button" 
+        (click)="toggleUrlInput()" 
+        class="text-[10px] font-bold text-[var(--dynamic-primary)] hover:underline cursor-pointer"
+      >
+        {{ showUrlInput() ? 'Sử dụng tải ảnh lên' : 'Nhập link ảnh thủ công' }}
+      </button>
+    </div>
+
+    <!-- Ô nhập link URL (nếu bật chế độ thủ công) -->
+    @if (showUrlInput()) {
+      <input
+        type="text"
+        [(ngModel)]="form.image"
+        placeholder="Nhập link ảnh tĩnh (Ví dụ: https://images.unsplash.com/...)"
+        class="form-input font-mono text-xs"
+      />
+    } @else {
+      <!-- Giao diện upload ảnh chọn file -->
+      <div class="relative w-full">
+        <!-- Input file ẩn -->
+        <input
+          #fileInput
+          type="file"
+          accept="image/*"
+          (change)="onFileSelected($event)"
+          class="hidden"
+        />
+
+        <!-- Trạng thái chưa có ảnh & không loading -->
+        @if (!form.image && !isUploadingImage()) {
+          <div
+            (click)="fileInput.click()"
+            class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 dark:border-slate-800/80 rounded-2xl hover:border-[var(--color-primary)] hover:bg-slate-50/50 dark:hover:bg-slate-950/20 cursor-pointer transition-all duration-200 group text-center"
+          >
+            <div class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200/40 dark:border-slate-800/40 text-slate-400 dark:text-slate-500 group-hover:text-[var(--color-primary)] transition-all mb-2.5">
+              <app-icon name="image" class="h-5 w-5" [strokeWidth]="2" />
+            </div>
+            <span class="text-xs font-bold text-slate-700 dark:text-slate-300">
+              Nhấn để chọn ảnh món ăn
+            </span>
+            <span class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">
+              Hỗ trợ PNG, JPG, WebP (Tối đa 5MB)
+            </span>
+          </div>
+        }
+
+        <!-- Trạng thái đang upload ảnh -->
+        @if (isUploadingImage()) {
+          <div class="flex flex-col items-center justify-center p-6 border border-slate-200/60 dark:border-slate-800/60 rounded-2xl bg-slate-50/50 dark:bg-slate-950/20 text-center min-h-[128px]">
+            <svg
+              class="animate-spin h-6 w-6 text-[var(--dynamic-primary)] mb-2"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            <span class="text-xs font-bold text-slate-400">Đang tối ưu và tải ảnh lên...</span>
+          </div>
+        }
+
+        <!-- Trạng thái đã có ảnh sản phẩm -->
+        @if (form.image && !isUploadingImage()) {
+          <div class="relative w-full rounded-2xl overflow-hidden border border-slate-200/60 dark:border-slate-800/60 bg-slate-50 dark:bg-slate-950 flex items-center justify-center min-h-[140px] max-h-[180px] p-2">
+            <!-- Ảnh xem trước -->
+            <img
+              [src]="form.image"
+              alt="Preview"
+              class="max-h-[160px] max-w-full rounded-xl object-contain shadow-sm"
+            />
+
+            <!-- Thanh nút hành động nổi trên ảnh -->
+            <div class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 flex items-center justify-center gap-3 transition-opacity duration-200">
+              <button
+                type="button"
+                (click)="fileInput.click()"
+                class="w-8.5 h-8.5 flex items-center justify-center rounded-xl bg-white text-slate-700 hover:bg-slate-100 shadow-lg cursor-pointer transition-all active:scale-95"
+                title="Thay đổi ảnh"
+              >
+                <app-icon name="edit" class="h-4.5 w-4.5" [strokeWidth]="2" />
+              </button>
+              <button
+                type="button"
+                (click)="removeImage()"
+                class="w-8.5 h-8.5 flex items-center justify-center rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 shadow-lg cursor-pointer transition-all active:scale-95"
+                title="Xóa ảnh"
+              >
+                <app-icon name="trash" class="h-4.5 w-4.5" [strokeWidth]="2" />
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
   </div>
 
   <!-- Mô tả ngắn -->

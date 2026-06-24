@@ -84,6 +84,8 @@ export class ProductFormModalComponent implements OnInit {
   };
 
   public readonly isLoading = signal<boolean>(false);
+  public readonly isUploadingImage = signal<boolean>(false);
+  public readonly showUrlInput = signal<boolean>(false);
 
   public get categoriesList() {
     return this.stateService.categoriesList;
@@ -268,6 +270,49 @@ export class ProductFormModalComponent implements OnInit {
         },
       });
     }
+  }
+
+  public onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const file = input.files[0];
+
+    // Validate định dạng ảnh ở client
+    if (!file.type.startsWith('image/')) {
+      this.toastService.showToast('Vui lòng chọn tệp tin hình ảnh hợp lệ (PNG, JPG, WebP...)!', 'error');
+      return;
+    }
+
+    // Validate dung lượng ảnh gốc tối đa 5MB trước khi nén ở server
+    const maxSizeBytes = 5 * 1024 * 1024;
+    if (file.size > maxSizeBytes) {
+      this.toastService.showToast('Dung lượng ảnh gốc không được vượt quá 5MB!', 'error');
+      return;
+    }
+
+    this.isUploadingImage.set(true);
+
+    this.apiService.uploadProductImage(file).subscribe({
+      next: (res) => {
+        this.form.image = res.url;
+        this.toastService.showToast('Tải ảnh lên thành công!', 'success');
+        this.isUploadingImage.set(false);
+      },
+      error: (err) => {
+        const errorMsg = err.error?.message || 'Tải ảnh lên thất bại!';
+        this.toastService.showToast(errorMsg, 'error');
+        this.isUploadingImage.set(false);
+      }
+    });
+  }
+
+  public removeImage() {
+    this.form.image = '';
+  }
+
+  public toggleUrlInput() {
+    this.showUrlInput.set(!this.showUrlInput());
   }
 
   public onCancel() {

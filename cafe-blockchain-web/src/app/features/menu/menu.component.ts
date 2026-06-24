@@ -107,6 +107,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   // States thực đơn phân trang online
   public readonly productsList = signal<any[]>([]);
   public readonly totalProducts = signal<number>(0);
+  public readonly isMenuProductsLoading = signal<boolean>(false);
 
   // Đồng bộ Blockchain Menu signals
   public readonly isMenuSyncing = signal<boolean>(false);
@@ -141,6 +142,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   // Tải danh sách thực đơn phân trang từ DB
   public loadMenuProducts(page: number = this.menuCurrentPage()) {
     this.menuCurrentPage.set(page);
+    this.isMenuProductsLoading.set(true);
     this.apiService.getProducts({
       page,
       limit: this.menuItemsPerPage,
@@ -162,9 +164,11 @@ export class MenuComponent implements OnInit, OnDestroy {
           this.productsList.set(res || []);
           this.totalProducts.set(Array.isArray(res) ? res.length : 0);
         }
+        this.isMenuProductsLoading.set(false);
       },
       error: (err) => {
         console.error('[MenuComponent] Lỗi tải thực đơn phân trang:', err);
+        this.isMenuProductsLoading.set(false);
       }
     });
   }

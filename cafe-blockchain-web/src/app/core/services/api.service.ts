@@ -186,6 +186,12 @@ export class ApiService {
     return this.http.delete(`${this.baseUrl}/products/${id}`, { headers: this.getHeaders() });
   }
 
+  public uploadProductImage(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('image', file);
+    return this.http.post(`${this.baseUrl}/products/upload-image`, formData, { headers: this.getHeaders() });
+  }
+
   // 3. Orders (Đơn hàng) API
   public getOrders(status: string = 'all', blockchainStatus: string = 'all', page?: number, limit?: number, search?: string): Observable<any> {
     let params = new HttpParams();

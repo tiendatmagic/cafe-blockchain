@@ -345,4 +345,136 @@ class ProductController extends Controller
             ], 409); // 409 Conflict đúng chuẩn Restful API
         }
     }
+
+    /**
+     * Tải lên và tối ưu hóa hình ảnh sản phẩm
+     */
+    public function uploadImage(Request $request)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:5120',
+        ]);
+
+        $storeOwner = $request->user()->getStoreOwnerAddress();
+
+        try {
+            $file = $request->file('image');
+            $urlPath = $this->processAndCompressImage($file, $storeOwner);
+            $fullUrl = $request->getSchemeAndHttpHost() . $urlPath;
+
+            return response()->json([
+                'message' => 'Image uploaded and optimized successfully.',
+                'url' => $fullUrl
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 422);
+        }
+    }
+
+    /**
+     * Xử lý và nén ảnh bằng PHP GD (resize 800px, lưu WebP/JPG, giới hạn 1MB)
+     */
+    private function processAndCompressImage($file, $storeOwner)
+    {
+        // Chuẩn hóa tên thư mục ví chủ quán: loại bỏ 0x và chuyển thành chữ thường
+        $cleanWallet = strtolower(preg_replace('/^0x/i', '', $storeOwner));
+        $userDir = 'uploads/products/' . $cleanWallet;
+        $targetDir = public_path($userDir);
+
+        if (!\File::exists($targetDir)) {
+            \File::makeDirectory($targetDir, 0755, true, true);
+        }
+
+        // Đặt tên file theo timestamp + chuỗi ngẫu nhiên ngắn (Phương án 1)
+        $fileName = time() . '_' . \Illuminate\Support\Str::random(8) . '.webp';
+        $destinationPath = $targetDir . '/' . $fileName;
+
+        $mime = $file->getMimeType();
+        $image = null;
+
+        // Đọc ảnh dựa theo mime type
+        try {
+            if ($mime === 'image/jpeg' || $mime === 'image/jpg') {
+                $image = @imagecreatefromjpeg($file->getRealPath());
+            } elseif ($mime === 'image/png') {
+                $image = @imagecreatefrompng($file->getRealPath());
+            } elseif ($mime === 'image/webp') {
+                $image = @imagecreatefromwebp($file->getRealPath());
+            } elseif ($mime === 'image/gif') {
+                $image = @imagecreatefromgif($file->getRealPath());
+            }
+        } catch (\Exception $e) {
+            $image = null;
+        }
+
+        // Fallback: Nếu không tạo được ảnh bằng GD (thiếu extension hoặc file lỗi), lưu file gốc trực tiếp
+        if (!$image) {
+            if ($file->getSize() > 1024 * 1024) { // Lớn hơn 1MB
+                throw new \Exception('Image size exceeds 1MB limit.');
+            }
+
+            $fileName = time() . '_' . \Illuminate\Support\Str::random(8) . '.' . $file->getClientOriginalExtension();
+            $destinationPath = $targetDir . '/' . $fileName;
+            $file->move($targetDir, $fileName);
+
+            return '/' . $userDir . '/' . $fileName;
+        }
+
+        // Resize ảnh nếu chiều rộng hoặc chiều cao vượt quá 800px
+        $width = imagesx($image);
+        $height = imagesy($image);
+        $maxDim = 800;
+
+        if ($width > $maxDim || $height > $maxDim) {
+            $ratio = $width / $height;
+            if ($ratio > 1) {
+                $newWidth = $maxDim;
+                $newHeight = (int)round($maxDim / $ratio);
+            } else {
+                $newHeight = $maxDim;
+                $newWidth = (int)round($maxDim * $ratio);
+            }
+
+            // Tạo ảnh mới và copy
+            $resizedImage = imagecreatetruecolor($newWidth, $newHeight);
+
+            // Giữ độ trong suốt (alpha channel) cho PNG/WebP
+            imagealphablending($resizedImage, false);
+            imagesavealpha($resizedImage, true);
+
+            imagecopyresampled($resizedImage, $image, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+            imagedestroy($image);
+            $image = $resizedImage;
+        }
+
+        // Lưu ảnh dạng WebP chất lượng 75%
+        $saved = false;
+        if (function_exists('imagewebp')) {
+            $saved = @imagewebp($image, $destinationPath, 75);
+        }
+
+        // Fallback sang JPEG nếu không hỗ trợ WebP
+        if (!$saved) {
+            $fileName = time() . '_' . \Illuminate\Support\Str::random(8) . '.jpg';
+            $destinationPath = $targetDir . '/' . $fileName;
+            $saved = @imagejpeg($image, $destinationPath, 75);
+        }
+
+        imagedestroy($image);
+
+        if (!$saved) {
+            throw new \Exception('Failed to process and save image.');
+        }
+
+        // Kiểm tra kích thước file sau khi nén
+        $fileSize = filesize($destinationPath);
+        if ($fileSize > 1024 * 1024) { // Lớn hơn 1MB
+            @unlink($destinationPath);
+            throw new \Exception('Compressed image size exceeds 1MB limit.');
+        }
+
+        return '/' . $userDir . '/' . $fileName;
+    }
 }
