@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.2
+-- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Máy chủ: localhost:3306
--- Thời gian đã tạo: Th6 23, 2026 lúc 08:29 PM
--- Phiên bản máy phục vụ: 8.0.30
--- Phiên bản PHP: 8.3.28
+-- Máy chủ: localhost
+-- Thời gian đã tạo: Th6 24, 2026 lúc 12:07 PM
+-- Phiên bản máy phục vụ: 10.6.24-MariaDB-cll-lve-log
+-- Phiên bản PHP: 8.2.21
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Cơ sở dữ liệu: `cafe-blockchain`
+-- Cơ sở dữ liệu: `xomdoxythosting_cafeweb3`
 --
 
 -- --------------------------------------------------------
@@ -28,9 +28,9 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `areas` (
-  `id` bigint UNSIGNED NOT NULL,
-  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `store_owner_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `store_owner_address` varchar(255) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -40,7 +40,8 @@ CREATE TABLE `areas` (
 --
 
 INSERT INTO `areas` (`id`, `name`, `store_owner_address`, `created_at`, `updated_at`) VALUES
-(1, 'Sân vườn', '0x75ad18ef47eda21baff837cac0f1563d0c355555', '2026-05-25 14:04:19', '2026-05-25 14:04:19');
+(1, 'Sân vườn', '0x75ad18ef47eda21baff837cac0f1563d0c355555', '2026-05-25 14:04:19', '2026-05-25 14:04:19'),
+(2, 'đầ', '0x250105e88b2a7e20045a3199a0e0a87da2d545cd', '2026-06-23 19:54:22', '2026-06-23 19:54:22');
 
 -- --------------------------------------------------------
 
@@ -49,9 +50,9 @@ INSERT INTO `areas` (`id`, `name`, `store_owner_address`, `created_at`, `updated
 --
 
 CREATE TABLE `cache` (
-  `key` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `value` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `expiration` bigint NOT NULL
+  `key` varchar(255) NOT NULL,
+  `value` mediumtext NOT NULL,
+  `expiration` bigint(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -61,9 +62,9 @@ CREATE TABLE `cache` (
 --
 
 CREATE TABLE `cache_locks` (
-  `key` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `owner` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `expiration` bigint NOT NULL
+  `key` varchar(255) NOT NULL,
+  `owner` varchar(255) NOT NULL,
+  `expiration` bigint(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -73,9 +74,9 @@ CREATE TABLE `cache_locks` (
 --
 
 CREATE TABLE `categories` (
-  `id` bigint UNSIGNED NOT NULL,
-  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `store_owner_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `store_owner_address` varchar(255) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -106,8 +107,8 @@ INSERT INTO `categories` (`id`, `name`, `store_owner_address`, `created_at`, `up
 --
 
 CREATE TABLE `category_product` (
-  `product_id` bigint UNSIGNED NOT NULL,
-  `category_id` bigint UNSIGNED NOT NULL
+  `product_id` bigint(20) UNSIGNED NOT NULL,
+  `category_id` bigint(20) UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -117,150 +118,150 @@ CREATE TABLE `category_product` (
 INSERT INTO `category_product` (`product_id`, `category_id`) VALUES
 (434, 12),
 (435, 12),
+(435, 18),
 (436, 12),
 (437, 12),
+(437, 19),
 (438, 12),
 (439, 12),
-(458, 12),
-(459, 12),
-(460, 12),
-(461, 12),
-(462, 12),
-(463, 12),
-(482, 12),
-(483, 12),
-(484, 12),
-(485, 12),
-(486, 12),
-(487, 12),
-(506, 12),
-(507, 12),
-(508, 12),
-(509, 12),
-(510, 12),
-(511, 12),
-(530, 12),
-(531, 12),
-(532, 12),
-(533, 12),
 (440, 13),
 (441, 13),
-(464, 13),
-(465, 13),
-(488, 13),
-(489, 13),
-(512, 13),
-(513, 13),
+(441, 19),
+(442, 19),
+(442, 20),
+(443, 18),
+(443, 20),
+(444, 18),
+(444, 21),
+(445, 21),
 (446, 14),
-(470, 14),
-(494, 14),
-(518, 14),
+(446, 19),
 (447, 15),
-(471, 15),
-(495, 15),
-(519, 15),
+(448, 18),
+(448, 22),
+(449, 19),
+(449, 22),
+(450, 22),
 (451, 16),
 (452, 16),
 (453, 16),
+(453, 18),
+(454, 17),
+(455, 19),
+(455, 23),
+(456, 17),
+(457, 23),
+(458, 12),
+(459, 12),
+(459, 18),
+(460, 12),
+(461, 12),
+(461, 19),
+(462, 12),
+(463, 12),
+(464, 13),
+(465, 13),
+(465, 19),
+(466, 19),
+(466, 20),
+(467, 18),
+(467, 20),
+(468, 18),
+(468, 21),
+(469, 21),
+(470, 14),
+(470, 19),
+(471, 15),
+(472, 18),
+(472, 22),
+(473, 19),
+(473, 22),
+(474, 22),
 (475, 16),
 (476, 16),
 (477, 16),
+(477, 18),
+(478, 17),
+(479, 19),
+(479, 23),
+(480, 17),
+(481, 23),
+(482, 12),
+(483, 12),
+(483, 18),
+(484, 12),
+(485, 12),
+(485, 19),
+(486, 12),
+(487, 12),
+(488, 13),
+(489, 13),
+(489, 19),
+(490, 19),
+(490, 20),
+(491, 18),
+(491, 20),
+(492, 18),
+(492, 21),
+(493, 21),
+(494, 14),
+(494, 19),
+(495, 15),
+(496, 18),
+(496, 22),
+(497, 19),
+(497, 22),
+(498, 22),
 (499, 16),
 (500, 16),
 (501, 16),
+(501, 18),
+(502, 17),
+(503, 19),
+(503, 23),
+(504, 17),
+(505, 23),
+(506, 12),
+(507, 12),
+(507, 18),
+(508, 12),
+(509, 12),
+(509, 19),
+(510, 12),
+(511, 12),
+(512, 13),
+(513, 13),
+(513, 19),
+(514, 19),
+(514, 20),
+(515, 18),
+(515, 20),
+(516, 18),
+(516, 21),
+(517, 21),
+(518, 14),
+(518, 19),
+(519, 15),
+(520, 18),
+(520, 22),
+(521, 19),
+(521, 22),
+(522, 22),
 (523, 16),
 (524, 16),
 (525, 16),
-(454, 17),
-(456, 17),
-(478, 17),
-(480, 17),
-(502, 17),
-(504, 17),
-(526, 17),
-(528, 17),
-(435, 18),
-(443, 18),
-(444, 18),
-(448, 18),
-(453, 18),
-(459, 18),
-(467, 18),
-(468, 18),
-(472, 18),
-(477, 18),
-(483, 18),
-(491, 18),
-(492, 18),
-(496, 18),
-(501, 18),
-(507, 18),
-(515, 18),
-(516, 18),
-(520, 18),
 (525, 18),
-(531, 18),
-(437, 19),
-(441, 19),
-(442, 19),
-(446, 19),
-(449, 19),
-(455, 19),
-(461, 19),
-(465, 19),
-(466, 19),
-(470, 19),
-(473, 19),
-(479, 19),
-(485, 19),
-(489, 19),
-(490, 19),
-(494, 19),
-(497, 19),
-(503, 19),
-(509, 19),
-(513, 19),
-(514, 19),
-(518, 19),
-(521, 19),
+(526, 17),
 (527, 19),
-(533, 19),
-(442, 20),
-(443, 20),
-(466, 20),
-(467, 20),
-(490, 20),
-(491, 20),
-(514, 20),
-(515, 20),
-(444, 21),
-(445, 21),
-(468, 21),
-(469, 21),
-(492, 21),
-(493, 21),
-(516, 21),
-(517, 21),
-(448, 22),
-(449, 22),
-(450, 22),
-(472, 22),
-(473, 22),
-(474, 22),
-(496, 22),
-(497, 22),
-(498, 22),
-(520, 22),
-(521, 22),
-(522, 22),
-(455, 23),
-(457, 23),
-(479, 23),
-(481, 23),
-(503, 23),
-(505, 23),
 (527, 23),
-(529, 23);
+(528, 17),
+(529, 23),
+(530, 12),
+(531, 12),
+(531, 18),
+(532, 12),
+(533, 12),
+(533, 19);
 
 -- --------------------------------------------------------
 
@@ -269,23 +270,23 @@ INSERT INTO `category_product` (`product_id`, `category_id`) VALUES
 --
 
 CREATE TABLE `customers` (
-  `id` bigint UNSIGNED NOT NULL,
-  `customer_code` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'individual',
-  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `company_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `tax_code` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `representative_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `website` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `business_status` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'Đang hoạt động',
-  `phone` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `wallet_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `customer_code` varchar(255) DEFAULT NULL,
+  `type` varchar(255) NOT NULL DEFAULT 'individual',
+  `name` varchar(255) NOT NULL,
+  `company_name` varchar(255) DEFAULT NULL,
+  `tax_code` varchar(255) DEFAULT NULL,
+  `representative_name` varchar(255) DEFAULT NULL,
+  `website` varchar(255) DEFAULT NULL,
+  `business_status` varchar(255) DEFAULT 'Đang hoạt động',
+  `phone` varchar(255) DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `wallet_address` varchar(255) DEFAULT NULL,
   `dob` date DEFAULT NULL,
-  `gender` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `address` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-  `debt_balance` decimal(15,2) NOT NULL DEFAULT '0.00',
-  `store_owner_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `gender` varchar(255) DEFAULT NULL,
+  `address` text DEFAULT NULL,
+  `debt_balance` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `store_owner_address` varchar(255) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1302,7 +1303,8 @@ INSERT INTO `customers` (`id`, `customer_code`, `type`, `name`, `company_name`, 
 (999, 'KH-E4C0', 'business', 'Công ty TNHH MTV Đông Dương', 'Công ty TNHH MTV Đông Dương', '0960423873', 'Trần Hồng Trang', 'https://dongduong.com.vn', 'Đang hoạt động', '0938743342', 'contact@dongduong.com.vn', NULL, NULL, 'Nữ', 'Tầng 17 Tòa nhà Đông Dương Tower, 191 Đồng Khởi, Khánh Hòa', 0.00, '0x75ad18ef47eda21baff837cac0f1563d0c355555', '2026-06-04 03:56:35', '2026-06-04 03:56:35'),
 (1000, 'KH-62A8', 'business', 'Công ty TNHH Đông Dương Dịch vụ', 'Công ty TNHH Đông Dương Dịch vụ', '0747612617', 'Lý Thảo Thảo', 'https://dongduong.com.vn', 'Tạm ngưng', '0243267953', 'contact@dongduong.com.vn', NULL, NULL, 'Nữ', 'Tầng 17 Tòa nhà Đông Dương Tower, 226 Đồng Khởi, Lâm Đồng', 0.00, '0x75ad18ef47eda21baff837cac0f1563d0c355555', '2026-06-04 03:56:35', '2026-06-04 03:56:35'),
 (1001, 'KH-FBDF', 'individual', 'Đạt MG', NULL, NULL, NULL, NULL, 'Đang hoạt động', '0901980543', 'tiendatmagic8@gmail.com', '0x75AD18eF47eDa21BafF837CAc0F1563D0C355555', NULL, 'Nam', NULL, 234000.00, '0x75ad18ef47eda21baff837cac0f1563d0c355555', '2026-06-04 03:59:58', '2026-06-20 11:45:42'),
-(1002, 'KH-34A6', 'individual', 'Đạt 009', NULL, NULL, NULL, NULL, 'Đang hoạt động', NULL, NULL, '0xc0f810364e0eacEbbD9e02187fd6504dF4599999', NULL, 'Nam', NULL, 0.00, '0x75ad18ef47eda21baff837cac0f1563d0c355555', '2026-06-04 04:00:14', '2026-06-23 05:42:24');
+(1002, 'KH-34A6', 'individual', 'Đạt 009', NULL, NULL, NULL, NULL, 'Đang hoạt động', NULL, NULL, '0xc0f810364e0eacEbbD9e02187fd6504dF4599999', NULL, 'Nam', NULL, 0.00, '0x75ad18ef47eda21baff837cac0f1563d0c355555', '2026-06-04 04:00:14', '2026-06-23 05:42:24'),
+(1009, 'KH-9487', 'individual', 'Test', NULL, NULL, NULL, NULL, 'Đang hoạt động', '123456789', 'namth@chantroituonglai.com', NULL, '2018-10-01', 'Nam', NULL, 0.00, '0x5b6381c9312b636327110431d2670ee4472c833f', '2026-06-23 20:06:35', '2026-06-23 20:06:35');
 
 -- --------------------------------------------------------
 
@@ -1311,8 +1313,8 @@ INSERT INTO `customers` (`id`, `customer_code`, `type`, `name`, `company_name`, 
 --
 
 CREATE TABLE `customer_customer_group` (
-  `customer_id` bigint UNSIGNED NOT NULL,
-  `customer_group_id` bigint UNSIGNED NOT NULL
+  `customer_id` bigint(20) UNSIGNED NOT NULL,
+  `customer_group_id` bigint(20) UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -1330,9 +1332,9 @@ INSERT INTO `customer_customer_group` (`customer_id`, `customer_group_id`) VALUE
 --
 
 CREATE TABLE `customer_groups` (
-  `id` bigint UNSIGNED NOT NULL,
-  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `store_owner_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `store_owner_address` varchar(255) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1352,14 +1354,14 @@ INSERT INTO `customer_groups` (`id`, `name`, `store_owner_address`, `created_at`
 --
 
 CREATE TABLE `debt_logs` (
-  `id` bigint UNSIGNED NOT NULL,
-  `store_owner_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `customer_id` bigint UNSIGNED NOT NULL,
-  `order_id` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `transaction_id` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `store_owner_address` varchar(255) NOT NULL,
+  `customer_id` bigint(20) UNSIGNED NOT NULL,
+  `order_id` varchar(36) DEFAULT NULL,
+  `transaction_id` varchar(36) DEFAULT NULL,
+  `type` varchar(255) NOT NULL,
   `amount` decimal(15,2) NOT NULL,
-  `note` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `note` text DEFAULT NULL,
   `recorded_at` date NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -1381,11 +1383,11 @@ INSERT INTO `debt_logs` (`id`, `store_owner_address`, `customer_id`, `order_id`,
 --
 
 CREATE TABLE `dining_tables` (
-  `id` bigint UNSIGNED NOT NULL,
-  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `area_id` bigint UNSIGNED DEFAULT NULL,
-  `status` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'empty',
-  `store_owner_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `area_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `status` varchar(255) NOT NULL DEFAULT 'empty',
+  `store_owner_address` varchar(255) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1407,13 +1409,13 @@ INSERT INTO `dining_tables` (`id`, `name`, `area_id`, `status`, `store_owner_add
 --
 
 CREATE TABLE `failed_jobs` (
-  `id` bigint UNSIGNED NOT NULL,
-  `uuid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `connection` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `queue` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `exception` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `failed_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `uuid` varchar(255) NOT NULL,
+  `connection` varchar(255) NOT NULL,
+  `queue` varchar(255) NOT NULL,
+  `payload` longtext NOT NULL,
+  `exception` longtext NOT NULL,
+  `failed_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -1423,12 +1425,12 @@ CREATE TABLE `failed_jobs` (
 --
 
 CREATE TABLE `inventory_records` (
-  `id` bigint UNSIGNED NOT NULL,
-  `record_code` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `note` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `record_code` varchar(255) DEFAULT NULL,
+  `type` varchar(255) NOT NULL,
+  `note` text DEFAULT NULL,
   `record_date` datetime NOT NULL,
-  `store_owner_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `store_owner_address` varchar(255) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1447,12 +1449,12 @@ INSERT INTO `inventory_records` (`id`, `record_code`, `type`, `note`, `record_da
 --
 
 CREATE TABLE `inventory_record_items` (
-  `id` bigint UNSIGNED NOT NULL,
-  `inventory_record_id` bigint UNSIGNED NOT NULL,
-  `product_id` bigint UNSIGNED NOT NULL,
-  `product_variant_id` bigint UNSIGNED DEFAULT NULL,
-  `quantity` int NOT NULL,
-  `price` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `inventory_record_id` bigint(20) UNSIGNED NOT NULL,
+  `product_id` bigint(20) UNSIGNED NOT NULL,
+  `product_variant_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `quantity` int(11) NOT NULL,
+  `price` decimal(15,2) NOT NULL DEFAULT 0.00,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1471,13 +1473,13 @@ INSERT INTO `inventory_record_items` (`id`, `inventory_record_id`, `product_id`,
 --
 
 CREATE TABLE `jobs` (
-  `id` bigint UNSIGNED NOT NULL,
-  `queue` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `attempts` smallint UNSIGNED NOT NULL,
-  `reserved_at` int UNSIGNED DEFAULT NULL,
-  `available_at` int UNSIGNED NOT NULL,
-  `created_at` int UNSIGNED NOT NULL
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `queue` varchar(255) NOT NULL,
+  `payload` longtext NOT NULL,
+  `attempts` smallint(5) UNSIGNED NOT NULL,
+  `reserved_at` int(10) UNSIGNED DEFAULT NULL,
+  `available_at` int(10) UNSIGNED NOT NULL,
+  `created_at` int(10) UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -1487,16 +1489,16 @@ CREATE TABLE `jobs` (
 --
 
 CREATE TABLE `job_batches` (
-  `id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `total_jobs` int NOT NULL,
-  `pending_jobs` int NOT NULL,
-  `failed_jobs` int NOT NULL,
-  `failed_job_ids` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `options` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-  `cancelled_at` int DEFAULT NULL,
-  `created_at` int NOT NULL,
-  `finished_at` int DEFAULT NULL
+  `id` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `total_jobs` int(11) NOT NULL,
+  `pending_jobs` int(11) NOT NULL,
+  `failed_jobs` int(11) NOT NULL,
+  `failed_job_ids` longtext NOT NULL,
+  `options` mediumtext DEFAULT NULL,
+  `cancelled_at` int(11) DEFAULT NULL,
+  `created_at` int(11) NOT NULL,
+  `finished_at` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -1506,12 +1508,12 @@ CREATE TABLE `job_batches` (
 --
 
 CREATE TABLE `menu_sync_logs` (
-  `id` bigint UNSIGNED NOT NULL,
-  `store_owner_address` varchar(42) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `synced_by` varchar(42) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `tx_hash` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `product_count` int UNSIGNED NOT NULL DEFAULT '0',
-  `chain_id` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `store_owner_address` varchar(42) NOT NULL,
+  `synced_by` varchar(42) NOT NULL,
+  `tx_hash` varchar(100) DEFAULT NULL,
+  `product_count` int(10) UNSIGNED NOT NULL DEFAULT 0,
+  `chain_id` varchar(20) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1532,9 +1534,9 @@ INSERT INTO `menu_sync_logs` (`id`, `store_owner_address`, `synced_by`, `tx_hash
 --
 
 CREATE TABLE `migrations` (
-  `id` int UNSIGNED NOT NULL,
-  `migration` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `batch` int NOT NULL
+  `id` int(10) UNSIGNED NOT NULL,
+  `migration` varchar(255) NOT NULL,
+  `batch` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -1602,7 +1604,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (59, '2026_06_22_000001_create_system_payment_methods_table', 27),
 (60, '2026_06_22_000002_create_system_staffs_table', 27),
 (61, '2026_06_22_000003_create_subscription_requests_table', 27),
-(62, '2026_06_19_000003_create_system_settings_table', 28);
+(62, '2026_06_19_000003_create_system_settings_table', 28),
+(64, '2026_06_24_000000_add_missing_performance_indexes_to_tables', 29);
 
 -- --------------------------------------------------------
 
@@ -1611,27 +1614,27 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 --
 
 CREATE TABLE `orders` (
-  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `order_code` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `table_number` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `shipping_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `id` char(36) NOT NULL,
+  `order_code` varchar(255) DEFAULT NULL,
+  `table_number` varchar(255) DEFAULT NULL,
+  `shipping_address` varchar(255) DEFAULT NULL,
   `total_amount` decimal(15,2) NOT NULL,
-  `discount_amount` int NOT NULL DEFAULT '0',
-  `voucher_nft_token_id` bigint UNSIGNED DEFAULT NULL,
-  `gift_voucher_nft_token_id` bigint UNSIGNED DEFAULT NULL,
-  `payment_method` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `status` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
-  `tx_hash` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `chain_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `blockchain_status` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'none',
-  `store_owner_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `verification_hash` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `discount_amount` int(11) NOT NULL DEFAULT 0,
+  `voucher_nft_token_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `gift_voucher_nft_token_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `payment_method` varchar(255) NOT NULL,
+  `status` varchar(255) NOT NULL DEFAULT 'pending',
+  `tx_hash` varchar(255) DEFAULT NULL,
+  `chain_id` varchar(255) DEFAULT NULL,
+  `blockchain_status` varchar(255) NOT NULL DEFAULT 'none',
+  `store_owner_address` varchar(255) DEFAULT NULL,
+  `verification_hash` varchar(64) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
-  `customer_id` bigint UNSIGNED DEFAULT NULL,
-  `shift_id` bigint UNSIGNED DEFAULT NULL,
-  `is_points_claimed` tinyint(1) NOT NULL DEFAULT '0',
-  `claim_attempts` int NOT NULL DEFAULT '0',
+  `customer_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `shift_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `is_points_claimed` tinyint(1) NOT NULL DEFAULT 0,
+  `claim_attempts` int(11) NOT NULL DEFAULT 0,
   `last_claim_attempt_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -1685,7 +1688,8 @@ INSERT INTO `orders` (`id`, `order_code`, `table_number`, `shipping_address`, `t
 ('019ee208-2f8b-70e0-bc49-bdeca8316501', 'HD-AA9290', NULL, NULL, 92000.00, 0, NULL, NULL, 'cash', 'completed', '0x12d5e79b4f43529a136b0f785a29f38d08484a9b81e1a4f78b98101c6638a7ba', '97', 'success', '0x75ad18ef47eda21baff837cac0f1563d0c355555', '72831df3698e1f5a630706c7714710ebc9a4681ba8ce7b5025c50eafc4721a09', '2026-06-19 08:37:27', '2026-06-20 06:44:31', 1001, 18, 0, 0, NULL),
 ('019ee684-d0b0-705f-a2e6-43f17a78d8db', 'HD-BDFD0D', NULL, NULL, 196000.00, 0, NULL, NULL, 'cash', 'completed', '0x3ab9be6492126054e66297d0d0429a1170758da0c33f4ab35bab309f1169bcb6', '97', 'success', '0x75ad18ef47eda21baff837cac0f1563d0c355555', 'abfab88ad299ad65e09927e4f613ae0e00383f7d134ea39f794ec252d98f09cc', '2026-06-20 05:32:04', '2026-06-20 05:39:46', NULL, 18, 0, 0, NULL),
 ('019ee7da-e239-7310-8995-1e6b891a8dd6', 'HD-F5F8B9', NULL, NULL, 234000.00, 0, NULL, NULL, 'debt', 'completed', '0x9bbf8cf269d65a1680bc0149cbb35b6c44610eb51ac17331937eb106b2a27705', '97', 'success', '0x75ad18ef47eda21baff837cac0f1563d0c355555', '8044a93928afd45fd9f99758073babe607d88527948062de24a94e73513409f3', '2026-06-20 11:45:42', '2026-06-20 12:26:55', 1001, 18, 0, 0, NULL),
-('019eea88-67c6-73b8-9a41-1ab46cb9402e', 'HD-D79BAC', '2', NULL, 158000.00, 0, NULL, NULL, 'e_wallet', 'completed', '0x2bc434c9ac7fee02ee1511c9fc94296d9072039084502e9d038305bf2ab11a23', '97', 'success', '0x75ad18ef47eda21baff837cac0f1563d0c355555', 'ff51581c0467cb3edbadecf3c30ca0124cbf2e4df77698e5251f2d1f331476f9', '2026-06-21 00:14:28', '2026-06-21 00:15:00', NULL, 18, 0, 0, NULL);
+('019eea88-67c6-73b8-9a41-1ab46cb9402e', 'HD-D79BAC', '2', NULL, 158000.00, 0, NULL, NULL, 'e_wallet', 'completed', '0x2bc434c9ac7fee02ee1511c9fc94296d9072039084502e9d038305bf2ab11a23', '97', 'success', '0x75ad18ef47eda21baff837cac0f1563d0c355555', 'ff51581c0467cb3edbadecf3c30ca0124cbf2e4df77698e5251f2d1f331476f9', '2026-06-21 00:14:28', '2026-06-21 00:15:00', NULL, 18, 0, 0, NULL),
+('019ef799-cdba-71e5-8930-062fa7f7bb0b', 'HD-FA23F7', NULL, NULL, 1000.00, 0, NULL, NULL, 'cash', 'completed', NULL, NULL, 'none', '0x5b6381c9312b636327110431d2670ee4472c833f', '6eae1ae01c5ab9679794649bd9cd0aed97d096e01ec9de6665c6639bff7ba1f7', '2026-06-23 20:08:32', '2026-06-23 20:08:49', NULL, 22, 0, 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -1694,16 +1698,16 @@ INSERT INTO `orders` (`id`, `order_code`, `table_number`, `shipping_address`, `t
 --
 
 CREATE TABLE `order_items` (
-  `id` bigint UNSIGNED NOT NULL,
-  `order_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `product_id` bigint UNSIGNED NOT NULL,
-  `product_variant_id` bigint UNSIGNED DEFAULT NULL,
-  `quantity` int NOT NULL,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `order_id` char(36) NOT NULL,
+  `product_id` bigint(20) UNSIGNED NOT NULL,
+  `product_variant_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `quantity` int(11) NOT NULL,
   `price` decimal(15,2) NOT NULL,
   `cost_price` double DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
-  `note` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
+  `note` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -1775,7 +1779,8 @@ INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_variant_id`,
 (62, '019ee684-d0b0-705f-a2e6-43f17a78d8db', 529, NULL, 4, 49000.00, NULL, '2026-06-20 05:32:04', '2026-06-20 05:32:04', NULL),
 (63, '019ee7da-e239-7310-8995-1e6b891a8dd6', 525, NULL, 1, 39000.00, NULL, '2026-06-20 11:45:42', '2026-06-20 11:45:42', NULL),
 (64, '019ee7da-e239-7310-8995-1e6b891a8dd6', 520, NULL, 5, 39000.00, NULL, '2026-06-20 11:45:42', '2026-06-20 11:45:42', NULL),
-(65, '019eea88-67c6-73b8-9a41-1ab46cb9402e', 527, NULL, 2, 79000.00, NULL, '2026-06-21 00:14:28', '2026-06-21 00:14:28', NULL);
+(65, '019eea88-67c6-73b8-9a41-1ab46cb9402e', 527, NULL, 2, 79000.00, NULL, '2026-06-21 00:14:28', '2026-06-21 00:14:28', NULL),
+(66, '019ef799-cdba-71e5-8930-062fa7f7bb0b', 534, NULL, 1, 1000.00, 500, '2026-06-23 20:08:32', '2026-06-23 20:08:32', NULL);
 
 -- --------------------------------------------------------
 
@@ -1784,8 +1789,8 @@ INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_variant_id`,
 --
 
 CREATE TABLE `password_reset_tokens` (
-  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `token` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `token` varchar(255) NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -1796,14 +1801,14 @@ CREATE TABLE `password_reset_tokens` (
 --
 
 CREATE TABLE `payment_methods` (
-  `id` bigint UNSIGNED NOT NULL,
-  `store_owner_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `account_number` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `account_holder` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `bank_code` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `store_owner_address` varchar(255) NOT NULL,
+  `type` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `account_number` varchar(255) NOT NULL,
+  `account_holder` varchar(255) NOT NULL,
+  `bank_code` varchar(255) DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1822,12 +1827,12 @@ INSERT INTO `payment_methods` (`id`, `store_owner_address`, `type`, `name`, `acc
 --
 
 CREATE TABLE `personal_access_tokens` (
-  `id` bigint UNSIGNED NOT NULL,
-  `tokenable_type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `tokenable_id` bigint UNSIGNED NOT NULL,
-  `name` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `token` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `abilities` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `tokenable_type` varchar(255) NOT NULL,
+  `tokenable_id` bigint(20) UNSIGNED NOT NULL,
+  `name` text NOT NULL,
+  `token` varchar(64) NOT NULL,
+  `abilities` text DEFAULT NULL,
   `last_used_at` timestamp NULL DEFAULT NULL,
   `expires_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -1856,7 +1861,12 @@ INSERT INTO `personal_access_tokens` (`id`, `tokenable_type`, `tokenable_id`, `n
 (150, 'App\\Domain\\Entities\\User', 1, 'pos-access-token', '35d9b7a1f9d5d9e716ad3980cae2e982461dd6ecad6c19a5d39a67f945b6c714', '[\"*\"]', '2026-06-21 21:01:45', NULL, '2026-06-21 08:18:07', '2026-06-21 21:01:45'),
 (160, 'App\\Domain\\Entities\\User', 1, 'pos-access-token', '93db200cc40328ea6016770855bee41accec4a94b60ab54bc48dd0feda66a38f', '[\"*\"]', '2026-06-22 22:21:14', NULL, '2026-06-22 22:17:36', '2026-06-22 22:21:14'),
 (163, 'App\\Domain\\Entities\\User', 1, 'pos-access-token', 'f5b724e25f3f1cefb3b6e7998911924d162fbb881089a45e92aeed9a162c30f1', '[\"*\"]', '2026-06-23 06:19:05', NULL, '2026-06-23 06:15:14', '2026-06-23 06:19:05'),
-(167, 'App\\Domain\\Entities\\User', 1, 'pos-access-token', 'f84edf6b05d24be44b7b717ffb956dea1f61378f3f1ba3d314d1fcc72c8e165d', '[\"*\"]', '2026-06-23 13:21:10', NULL, '2026-06-23 13:06:49', '2026-06-23 13:21:10');
+(168, 'App\\Domain\\Entities\\User', 1, 'pos-access-token', '2010efee409d1bb4d58df8b737119cc19d81dc063c74963b59866d1033bc9b75', '[\"*\"]', '2026-06-23 14:21:44', NULL, '2026-06-23 14:16:36', '2026-06-23 14:21:44'),
+(170, 'App\\Domain\\Entities\\User', 1, 'pos-access-token', 'd7550d5c6b96232f3192ad5f1f601e27d1a31a39c154d17779fa9516490fa44f', '[\"*\"]', '2026-06-24 05:01:53', NULL, '2026-06-23 18:58:26', '2026-06-24 05:01:53'),
+(171, 'App\\Domain\\Entities\\User', 54, 'pos-access-token', '84f6590e9a71153fedcfaa177a991ed8608d609140decfb46d56383050c35146', '[\"*\"]', '2026-06-23 19:54:23', NULL, '2026-06-23 19:53:54', '2026-06-23 19:54:23'),
+(172, 'App\\Domain\\Entities\\User', 55, 'pos-access-token', '00a4e11ce4747b8a0f6912b6e66ac3c9211602ffb774ae23c8cbbf7498fadf9b', '[\"*\"]', '2026-06-23 20:16:53', NULL, '2026-06-23 19:57:49', '2026-06-23 20:16:53'),
+(173, 'App\\Domain\\Entities\\User', 1, 'pos-access-token', 'f4debe7887f032a55e63a4b4831ad8c29f082735099fd409583ec024a4d10242', '[\"*\"]', '2026-06-23 22:31:42', NULL, '2026-06-23 21:22:49', '2026-06-23 22:31:42'),
+(174, 'App\\Domain\\Entities\\User', 56, 'pos-access-token', '977e404b5bd5351d47bdbb04d784ec8882a0baa0a3e6f51a63c57a86d832ccbf', '[\"*\"]', '2026-06-24 00:19:51', NULL, '2026-06-24 00:19:03', '2026-06-24 00:19:51');
 
 -- --------------------------------------------------------
 
@@ -1865,19 +1875,19 @@ INSERT INTO `personal_access_tokens` (`id`, `tokenable_type`, `tokenable_id`, `n
 --
 
 CREATE TABLE `products` (
-  `id` bigint UNSIGNED NOT NULL,
-  `sku` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `sku` varchar(255) DEFAULT NULL,
+  `name` varchar(255) NOT NULL,
   `price` decimal(15,2) NOT NULL,
   `cost_price` double DEFAULT NULL,
-  `image` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `barcode` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `unit` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'product',
-  `status` tinyint(1) NOT NULL DEFAULT '1',
-  `store_owner_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `short_description` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `image` varchar(255) DEFAULT NULL,
+  `barcode` varchar(255) DEFAULT NULL,
+  `unit` varchar(255) DEFAULT NULL,
+  `type` varchar(255) NOT NULL DEFAULT 'product',
+  `status` tinyint(1) NOT NULL DEFAULT 1,
+  `store_owner_address` varchar(255) DEFAULT NULL,
+  `short_description` varchar(500) DEFAULT NULL,
+  `description` text DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL
@@ -1981,7 +1991,7 @@ INSERT INTO `products` (`id`, `sku`, `name`, `price`, `cost_price`, `image`, `ba
 (519, 'SP-1XRS8E', 'Sinh Tố Việt Quất Dâu Tây Classic', 45000.00, NULL, 'https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=500&auto=format&fit=crop&q=60', NULL, NULL, 'product', 1, '0x75ad18ef47eda21baff837cac0f1563d0c355555', 'Sinh tố kết hợp hai loại quả mọng tươi ngon dồi dào chất chống oxy hóa.', 'Sinh tố kết hợp hai loại quả mọng tươi ngon dồi dào chất chống oxy hóa. Đây là món ăn đặc sắc được chuẩn bị bởi đội ngũ pha chế/đầu bếp giàu kinh nghiệm của quán, sử dụng các nguyên liệu nhập khẩu tươi ngon nhất để mang lại hương vị chuẩn gu đẳng cấp cho khách hàng thưởng thức.', '2026-05-28 20:37:18', '2026-05-28 20:37:18', NULL),
 (520, 'SP-WSG8SW', 'Kem Gelato Vani Bourbon Classic', 39000.00, NULL, 'https://images.unsplash.com/photo-1579954115545-a95591f28bfc?w=500&auto=format&fit=crop&q=60', NULL, NULL, 'product', 1, '0x75ad18ef47eda21baff837cac0f1563d0c355555', 'Kem Ý dẻo mịn thượng hạng thơm lừng hương vani tự nhiên từ vùng Bourbon.', 'Kem Ý dẻo mịn thượng hạng thơm lừng hương vani tự nhiên từ vùng Bourbon. Đây là món ăn đặc sắc được chuẩn bị bởi đội ngũ pha chế/đầu bếp giàu kinh nghiệm của quán, sử dụng các nguyên liệu nhập khẩu tươi ngon nhất để mang lại hương vị chuẩn gu đẳng cấp cho khách hàng thưởng thức.', '2026-05-28 20:37:18', '2026-05-28 20:37:18', NULL),
 (521, 'SP-LDKOLI', 'Kem Gelato Matcha Uji Classic', 39000.00, NULL, 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=500&auto=format&fit=crop&q=60', NULL, NULL, 'product', 1, '0x75ad18ef47eda21baff837cac0f1563d0c355555', 'Vị đắng thanh đậm đà từ bột matcha Nhật Bản quyện cùng kem sữa dẻo mịn.', 'Vị đắng thanh đậm đà từ bột matcha Nhật Bản quyện cùng kem sữa dẻo mịn. Đây là món ăn đặc sắc được chuẩn bị bởi đội ngũ pha chế/đầu bếp giàu kinh nghiệm của quán, sử dụng các nguyên liệu nhập khẩu tươi ngon nhất để mang lại hương vị chuẩn gu đẳng cấp cho khách hàng thưởng thức.', '2026-05-28 20:37:18', '2026-05-28 20:37:18', NULL),
-(522, 'SP-ROYQKJ', 'Kem Gelato Chocolate Bỉ Classic', 39000.00, NULL, 'https://images.unsplash.com/photo-1501443769991-63b01a27b72c?w=500&auto=format&fit=crop&q=60', NULL, NULL, 'product', 1, '0x75ad18ef47eda21baff837cac0f1563d0c355555', 'Sử dụng chocolate đen 70% nhập khẩu từ Bỉ cho vị đắng ngọt đậm đà.', 'Sử dụng chocolate đen 70% nhập khẩu từ Bỉ cho vị đắng ngọt đậm đà. Đây là món ăn đặc sắc được chuẩn bị bởi đội ngũ pha chế/đầu bếp giàu kinh nghiệm của quán, sử dụng các nguyên liệu nhập khẩu tươi ngon nhất để mang lại hương vị chuẩn gu đẳng cấp cho khách hàng thưởng thức.', '2026-05-28 20:37:18', '2026-05-28 20:37:18', NULL),
+(522, 'SP-ROYQKJ', 'Kem Gelato Chocolate Bỉ Classic', 39000.00, 0, 'https://cafeweb3.ddns.net/public/storage/products/75ad18ef47eda21baff837cac0f1563d0c355555/1782279095_yg1u4tCh.webp', NULL, 'Cái', 'product', 1, '0x75ad18ef47eda21baff837cac0f1563d0c355555', 'Sử dụng chocolate đen 70% nhập khẩu từ Bỉ cho vị đắng ngọt đậm đà.', 'Sử dụng chocolate đen 70% nhập khẩu từ Bỉ cho vị đắng ngọt đậm đà. Đây là món ăn đặc sắc được chuẩn bị bởi đội ngũ pha chế/đầu bếp giàu kinh nghiệm của quán, sử dụng các nguyên liệu nhập khẩu tươi ngon nhất để mang lại hương vị chuẩn gu đẳng cấp cho khách hàng thưởng thức.', '2026-05-28 20:37:18', '2026-06-23 22:31:42', NULL),
 (523, 'SP-YNPY3K', 'Bánh Red Velvet Kiêu Kỳ Classic', 45000.00, NULL, 'https://images.unsplash.com/photo-1588195538326-c5b1e9f80a1b?w=500&auto=format&fit=crop&q=60', NULL, NULL, 'product', 1, '0x75ad18ef47eda21baff837cac0f1563d0c355555', 'Cốt bánh đỏ nhung xốp mịn xen kẽ lớp kem cheese béo ngậy chua dịu.', 'Cốt bánh đỏ nhung xốp mịn xen kẽ lớp kem cheese béo ngậy chua dịu. Đây là món ăn đặc sắc được chuẩn bị bởi đội ngũ pha chế/đầu bếp giàu kinh nghiệm của quán, sử dụng các nguyên liệu nhập khẩu tươi ngon nhất để mang lại hương vị chuẩn gu đẳng cấp cho khách hàng thưởng thức.', '2026-05-28 20:37:18', '2026-05-28 20:37:18', NULL),
 (524, 'SP-RP4Z2T', 'Bánh Cheesecake Chanh Dây Classic', 45000.00, NULL, 'https://images.unsplash.com/photo-1535141192574-5d4897c13636?w=500&auto=format&fit=crop&q=60', NULL, NULL, 'product', 1, '0x75ad18ef47eda21baff837cac0f1563d0c355555', 'Bánh phô mai nướng béo ngậy phủ sốt chanh leo chua thanh tươi mát.', 'Bánh phô mai nướng béo ngậy phủ sốt chanh leo chua thanh tươi mát. Đây là món ăn đặc sắc được chuẩn bị bởi đội ngũ pha chế/đầu bếp giàu kinh nghiệm của quán, sử dụng các nguyên liệu nhập khẩu tươi ngon nhất để mang lại hương vị chuẩn gu đẳng cấp cho khách hàng thưởng thức.', '2026-05-28 20:37:18', '2026-06-05 12:34:23', '2026-06-05 12:34:23'),
 (525, 'SP-ZL3LVB', 'Bánh Croissant Trứng Muối Classic', 39000.00, NULL, 'https://images.unsplash.com/photo-1550617931-e17a7b70dce2?w=500&auto=format&fit=crop&q=60', NULL, NULL, 'product', 1, '0x75ad18ef47eda21baff837cac0f1563d0c355555', 'Bánh sừng bò ngàn lớp giòn tan chứa nhân sốt trứng muối tan chảy bùi béo.', 'Bánh sừng bò ngàn lớp giòn tan chứa nhân sốt trứng muối tan chảy bùi béo. Đây là món ăn đặc sắc được chuẩn bị bởi đội ngũ pha chế/đầu bếp giàu kinh nghiệm của quán, sử dụng các nguyên liệu nhập khẩu tươi ngon nhất để mang lại hương vị chuẩn gu đẳng cấp cho khách hàng thưởng thức.', '2026-05-28 20:37:18', '2026-05-28 20:37:18', NULL),
@@ -1992,7 +2002,8 @@ INSERT INTO `products` (`id`, `sku`, `name`, `price`, `cost_price`, `image`, `ba
 (530, 'SP-RQQOAZ', 'Cà Phê Cold Brew Nitro Royal', 45000.00, 0, 'https://images.unsplash.com/photo-1498804103079-a6351b050096?w=500&auto=format&fit=crop&q=60', NULL, NULL, 'product', 1, '0x75ad18ef47eda21baff837cac0f1563d0c355555', 'Cold brew được sục khí nitơ tạo lớp bọt mịn dày xốp và hương vị ngọt dịu tự nhiên.', 'Cold brew được sục khí nitơ tạo lớp bọt mịn dày xốp và hương vị ngọt dịu tự nhiên. Đây là món ăn đặc sắc được chuẩn bị bởi đội ngũ pha chế/đầu bếp giàu kinh nghiệm của quán, sử dụng các nguyên liệu nhập khẩu tươi ngon nhất để mang lại hương vị chuẩn gu đẳng cấp cho khách hàng thưởng thức.', '2026-05-28 20:37:18', '2026-06-10 20:09:53', NULL),
 (531, 'SP-ZZYUNM', 'Cà Phê Latte Hạt Dẻ Royal', 49000.00, NULL, 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=500&auto=format&fit=crop&q=60', NULL, NULL, 'product', 1, '0x75ad18ef47eda21baff837cac0f1563d0c355555', 'Espresso thơm nhẹ kết hợp cùng sữa tươi nóng và hương hạt dẻ ấm áp.', 'Espresso thơm nhẹ kết hợp cùng sữa tươi nóng và hương hạt dẻ ấm áp. Đây là món ăn đặc sắc được chuẩn bị bởi đội ngũ pha chế/đầu bếp giàu kinh nghiệm của quán, sử dụng các nguyên liệu nhập khẩu tươi ngon nhất để mang lại hương vị chuẩn gu đẳng cấp cho khách hàng thưởng thức.', '2026-05-28 20:37:18', '2026-06-05 11:32:55', '2026-06-05 11:32:55'),
 (532, 'SP-JSBQUW', 'Caramel Macchiato Nóng Royal', 53000.00, 0, 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?w=500&auto=format&fit=crop&q=60', NULL, 'Cái', 'product', 1, '0x75ad18ef47eda21baff837cac0f1563d0c355555', 'Vị ngọt béo từ caramel hòa quyện với lớp espresso đậm đà và sữa tươi đánh bọt.', 'Vị ngọt béo từ caramel hòa quyện với lớp espresso đậm đà và sữa tươi đánh bọt. Đây là món ăn đặc sắc được chuẩn bị bởi đội ngũ pha chế/đầu bếp giàu kinh nghiệm của quán, sử dụng các nguyên liệu nhập khẩu tươi ngon nhất để mang lại hương vị chuẩn gu đẳng cấp cho khách hàng thưởng thức.', '2026-05-28 20:37:18', '2026-06-14 02:22:34', NULL),
-(533, 'SP-XE275I', 'Cà Phê Cốt Dừa Đá Xay Royal', 42000.00, NULL, 'https://images.unsplash.com/photo-1507133750040-4a8f57021571?w=500&auto=format&fit=crop&q=60', NULL, NULL, 'product', 1, '0x75ad18ef47eda21baff837cac0f1563d0c355555', 'Cà phê Robusta đắng đậm kết hợp hoàn hảo cùng nước cốt dừa dẻo thơm mát lạnh.', 'Cà phê Robusta đắng đậm kết hợp hoàn hảo cùng nước cốt dừa dẻo thơm mát lạnh. Đây là món ăn đặc sắc được chuẩn bị bởi đội ngũ pha chế/đầu bếp giàu kinh nghiệm của quán, sử dụng các nguyên liệu nhập khẩu tươi ngon nhất để mang lại hương vị chuẩn gu đẳng cấp cho khách hàng thưởng thức.', '2026-05-28 20:37:18', '2026-05-28 20:37:18', NULL);
+(533, 'SP-XE275I', 'Cà Phê Cốt Dừa Đá Xay Royal', 42000.00, NULL, 'https://images.unsplash.com/photo-1507133750040-4a8f57021571?w=500&auto=format&fit=crop&q=60', NULL, NULL, 'product', 1, '0x75ad18ef47eda21baff837cac0f1563d0c355555', 'Cà phê Robusta đắng đậm kết hợp hoàn hảo cùng nước cốt dừa dẻo thơm mát lạnh.', 'Cà phê Robusta đắng đậm kết hợp hoàn hảo cùng nước cốt dừa dẻo thơm mát lạnh. Đây là món ăn đặc sắc được chuẩn bị bởi đội ngũ pha chế/đầu bếp giàu kinh nghiệm của quán, sử dụng các nguyên liệu nhập khẩu tươi ngon nhất để mang lại hương vị chuẩn gu đẳng cấp cho khách hàng thưởng thức.', '2026-05-28 20:37:18', '2026-05-28 20:37:18', NULL),
+(534, 'AAA', 'Món A', 1000.00, 500, NULL, NULL, 'Cái', 'product', 1, '0x5b6381c9312b636327110431d2670ee4472c833f', NULL, NULL, '2026-06-23 20:08:26', '2026-06-23 20:08:26', NULL);
 
 -- --------------------------------------------------------
 
@@ -2001,12 +2012,12 @@ INSERT INTO `products` (`id`, `sku`, `name`, `price`, `cost_price`, `image`, `ba
 --
 
 CREATE TABLE `product_variants` (
-  `id` bigint UNSIGNED NOT NULL,
-  `product_id` bigint UNSIGNED NOT NULL,
-  `variant_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `product_id` bigint(20) UNSIGNED NOT NULL,
+  `variant_name` varchar(255) NOT NULL,
   `price` decimal(15,2) NOT NULL,
   `cost_price` double DEFAULT NULL,
-  `status` tinyint(1) NOT NULL DEFAULT '1',
+  `status` tinyint(1) NOT NULL DEFAULT 1,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -2068,12 +2079,12 @@ INSERT INTO `product_variants` (`id`, `product_id`, `variant_name`, `price`, `co
 --
 
 CREATE TABLE `recipes` (
-  `id` bigint UNSIGNED NOT NULL,
-  `product_id` bigint UNSIGNED NOT NULL,
-  `product_variant_id` bigint UNSIGNED DEFAULT NULL,
-  `ingredient_id` bigint UNSIGNED NOT NULL,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `product_id` bigint(20) UNSIGNED NOT NULL,
+  `product_variant_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `ingredient_id` bigint(20) UNSIGNED NOT NULL,
   `quantity` decimal(10,2) NOT NULL,
-  `store_owner_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `store_owner_address` varchar(255) NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -2085,10 +2096,10 @@ CREATE TABLE `recipes` (
 --
 
 CREATE TABLE `roles` (
-  `id` bigint UNSIGNED NOT NULL,
-  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `store_owner_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `permissions` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `store_owner_address` varchar(255) NOT NULL,
+  `permissions` longtext DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -2105,7 +2116,15 @@ INSERT INTO `roles` (`id`, `name`, `store_owner_address`, `permissions`, `create
 (5, 'Chủ quán', '0x282eae859073adc4bc3cf4de24a2436bc1888888', '{\"dashboard\":true,\"pos\":true,\"menu\":true,\"orders\":true,\"financials\":true,\"customers\":true,\"debts\":true,\"inventory\":true,\"tables\":true,\"reports\":true,\"settings\":true,\"staffs\":true,\"shifts\":true}', '2026-06-23 06:05:21', '2026-06-23 06:05:21'),
 (6, 'Quản lý', '0x282eae859073adc4bc3cf4de24a2436bc1888888', '{\"dashboard\":true,\"pos\":true,\"menu\":true,\"orders\":true,\"financials\":false,\"customers\":true,\"debts\":true,\"inventory\":true,\"tables\":true,\"reports\":true,\"settings\":false,\"staffs\":false,\"shifts\":true}', '2026-06-23 06:05:21', '2026-06-23 06:05:21'),
 (7, 'Thu ngân', '0x282eae859073adc4bc3cf4de24a2436bc1888888', '{\"dashboard\":false,\"pos\":true,\"menu\":false,\"orders\":true,\"financials\":false,\"customers\":true,\"debts\":true,\"inventory\":false,\"tables\":true,\"reports\":false,\"settings\":false,\"staffs\":false,\"shifts\":true}', '2026-06-23 06:05:21', '2026-06-23 06:05:21'),
-(8, 'Kế toán', '0x282eae859073adc4bc3cf4de24a2436bc1888888', '{\"dashboard\":true,\"pos\":false,\"menu\":false,\"orders\":false,\"financials\":true,\"customers\":true,\"debts\":true,\"inventory\":true,\"tables\":false,\"reports\":true,\"settings\":false,\"staffs\":false,\"shifts\":true}', '2026-06-23 06:05:21', '2026-06-23 06:05:21');
+(8, 'Kế toán', '0x282eae859073adc4bc3cf4de24a2436bc1888888', '{\"dashboard\":true,\"pos\":false,\"menu\":false,\"orders\":false,\"financials\":true,\"customers\":true,\"debts\":true,\"inventory\":true,\"tables\":false,\"reports\":true,\"settings\":false,\"staffs\":false,\"shifts\":true}', '2026-06-23 06:05:21', '2026-06-23 06:05:21'),
+(9, 'Chủ quán', '0x5b6381c9312b636327110431d2670ee4472c833f', '{\"dashboard\":true,\"pos\":true,\"menu\":true,\"orders\":true,\"financials\":true,\"customers\":true,\"debts\":true,\"inventory\":true,\"tables\":true,\"reports\":true,\"settings\":true,\"staffs\":true,\"shifts\":true}', '2026-06-23 19:58:21', '2026-06-23 19:58:21'),
+(10, 'Quản lý', '0x5b6381c9312b636327110431d2670ee4472c833f', '{\"dashboard\":true,\"pos\":true,\"menu\":true,\"orders\":true,\"financials\":false,\"customers\":true,\"debts\":true,\"inventory\":true,\"tables\":true,\"reports\":true,\"settings\":false,\"staffs\":false,\"shifts\":true}', '2026-06-23 19:58:21', '2026-06-23 19:58:21'),
+(11, 'Thu ngân', '0x5b6381c9312b636327110431d2670ee4472c833f', '{\"dashboard\":false,\"pos\":true,\"menu\":false,\"orders\":true,\"financials\":false,\"customers\":true,\"debts\":true,\"inventory\":false,\"tables\":true,\"reports\":false,\"settings\":false,\"staffs\":false,\"shifts\":true}', '2026-06-23 19:58:21', '2026-06-23 19:58:21'),
+(12, 'Kế toán', '0x5b6381c9312b636327110431d2670ee4472c833f', '{\"dashboard\":true,\"pos\":false,\"menu\":false,\"orders\":false,\"financials\":true,\"customers\":true,\"debts\":true,\"inventory\":true,\"tables\":false,\"reports\":true,\"settings\":false,\"staffs\":false,\"shifts\":true}', '2026-06-23 19:58:21', '2026-06-23 19:58:21'),
+(13, 'Chủ quán', '0x97da5e998effcdf3af26f8e8504549733e77351b', '{\"dashboard\":true,\"pos\":true,\"menu\":true,\"orders\":true,\"financials\":true,\"customers\":true,\"debts\":true,\"inventory\":true,\"tables\":true,\"reports\":true,\"settings\":true,\"staffs\":true,\"shifts\":true}', '2026-06-24 00:19:51', '2026-06-24 00:19:51'),
+(14, 'Quản lý', '0x97da5e998effcdf3af26f8e8504549733e77351b', '{\"dashboard\":true,\"pos\":true,\"menu\":true,\"orders\":true,\"financials\":false,\"customers\":true,\"debts\":true,\"inventory\":true,\"tables\":true,\"reports\":true,\"settings\":false,\"staffs\":false,\"shifts\":true}', '2026-06-24 00:19:51', '2026-06-24 00:19:51'),
+(15, 'Thu ngân', '0x97da5e998effcdf3af26f8e8504549733e77351b', '{\"dashboard\":false,\"pos\":true,\"menu\":false,\"orders\":true,\"financials\":false,\"customers\":true,\"debts\":true,\"inventory\":false,\"tables\":true,\"reports\":false,\"settings\":false,\"staffs\":false,\"shifts\":true}', '2026-06-24 00:19:51', '2026-06-24 00:19:51'),
+(16, 'Kế toán', '0x97da5e998effcdf3af26f8e8504549733e77351b', '{\"dashboard\":true,\"pos\":false,\"menu\":false,\"orders\":false,\"financials\":true,\"customers\":true,\"debts\":true,\"inventory\":true,\"tables\":false,\"reports\":true,\"settings\":false,\"staffs\":false,\"shifts\":true}', '2026-06-24 00:19:51', '2026-06-24 00:19:51');
 
 -- --------------------------------------------------------
 
@@ -2114,12 +2133,12 @@ INSERT INTO `roles` (`id`, `name`, `store_owner_address`, `permissions`, `create
 --
 
 CREATE TABLE `sessions` (
-  `id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `user_id` bigint UNSIGNED DEFAULT NULL,
-  `ip_address` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `user_agent` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-  `payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `last_activity` int NOT NULL
+  `id` varchar(255) NOT NULL,
+  `user_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `ip_address` varchar(45) DEFAULT NULL,
+  `user_agent` text DEFAULT NULL,
+  `payload` longtext NOT NULL,
+  `last_activity` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -2139,10 +2158,10 @@ INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, 
 --
 
 CREATE TABLE `settings` (
-  `id` bigint UNSIGNED NOT NULL,
-  `key` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `value` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-  `store_owner_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `key` varchar(255) NOT NULL,
+  `value` text DEFAULT NULL,
+  `store_owner_address` varchar(255) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -2155,7 +2174,9 @@ INSERT INTO `settings` (`id`, `key`, `value`, `store_owner_address`, `created_at
 (237, 'store_config', '{\"store_name\":\"Cafe Web3 POS\",\"primary_color\":\"#ff00dd\",\"secondary_color\":\"#8000ff\",\"rpc_url\":\"\",\"chain_id\":\"\",\"explorer_url\":\"\",\"default_print_size\":\"80mm\",\"store_phone\":\"123\",\"store_opening_hours\":\"\",\"store_address\":\"\",\"store_description\":\"\",\"contract_address\":\"\",\"finance_contract_address\":\"\",\"voucher_contract_address\":\"\",\"menu_registry_contract_address\":\"\",\"loyalty_token_contract_address\":\"\",\"voucher_shop_contract_address\":\"\",\"voucher_marketplace_contract_address\":\"\",\"explorer_api_key\":\"\",\"voucher_gift_min_amount\":\"100000\",\"voucher_discount_amount\":\"5000\",\"voucher_use_min_amount\":\"100000\",\"show_crypto_payment\":\"0\",\"voucher_enabled\":\"0\",\"has_synced_menu\":\"0\",\"store_categories\":\"\",\"website_cover_image\":\"\",\"store_status\":\"0\",\"shipping_fee_flat_enabled\":\"0\",\"shipping_fee_flat_amount\":\"0\",\"shipping_fee_free_enabled\":\"0\",\"shipping_fee_free_min_amount\":\"0\",\"website_avatar_image\":\"\"}', '0x1ad11e0e96797a14336bf474676eb0a332055555', '2026-06-22 21:49:07', '2026-06-22 21:49:07'),
 (238, 'store_config', '{\"store_name\":\"Cafe Web3 POS\",\"primary_color\":\"#ff00dd\",\"secondary_color\":\"#8000ff\",\"contract_address\":\"0x9078773ACdD8A0Ae62e50737E3570eFac1C4B53E\",\"finance_contract_address\":\"0x4Bb6233AE796e910dC94d636F427Ea5f50660884\",\"voucher_contract_address\":\"0xDCe8DeD4887179c6f07dCd4f634925903b3Fa383\",\"relayer_private_key\":\"eyJpdiI6IkloMlQrNTZyK3BFaVBEbGpJWUxJOVE9PSIsInZhbHVlIjoibGNPUjE1dEZrRkthellrdnAxbUoyL3QrYmNnWXVLMElnVllmQVppb2ZYem4vNXFRUHVSbmRpZzE3RWFSYmk5MnorcHYwVUtXTEQyNHFPdU1BeXdlbytTaGU0R2xPV3k0NHErTVk2TjRmNzA9IiwibWFjIjoiYTFmYjJmZWVlN2M4NDU5NzY4MjJkN2RiMDJkMTZiYzU4ZmJmYTc1MmFiMzNmMmJhNDIxYjczOGIxNTY5Mjk3YSIsInRhZyI6IiJ9\",\"rpc_url\":\"https:\\/\\/bsc-testnet-rpc.publicnode.com\",\"chain_id\":\"97\",\"explorer_url\":\"https:\\/\\/testnet.bscscan.com\",\"explorer_api_key\":\"94CWX8UC3A5UI54EA2B9MAHW2VXRGB3G82\",\"default_print_size\":\"80mm\",\"voucher_gift_min_amount\":\"100000\",\"voucher_discount_amount\":\"5000\",\"voucher_use_min_amount\":\"100000\",\"show_crypto_payment\":\"0\",\"has_synced_menu\":\"1\",\"menu_registry_contract_address\":\"0xBD916F9BD4D0BbD596616890d335DFF9c9034bfE\",\"store_categories\":\"all\",\"website_cover_image\":\"https:\\/\\/cellphones.com.vn\\/sforum\\/wp-content\\/uploads\\/2024\\/04\\/anh-bia-facebook-3.jpg\",\"store_status\":\"1\",\"shipping_fee_flat_enabled\":\"1\",\"shipping_fee_flat_amount\":\"20000\",\"shipping_fee_free_enabled\":\"0\",\"shipping_fee_free_min_amount\":\"0\",\"website_avatar_image\":\"\",\"voucher_enabled\":\"0\",\"loyalty_token_contract_address\":\"\",\"voucher_shop_contract_address\":\"\",\"voucher_marketplace_contract_address\":\"\",\"store_phone\":\"123\",\"store_opening_hours\":\"\",\"store_address\":\"\",\"store_description\":\"\"}', '0x75ad18ef47eda21baff837cac0f1563d0c355555', '2026-06-22 21:50:33', '2026-06-22 21:57:53'),
 (241, 'store_config', '{\"store_name\":\"Cafe Web3 POS\",\"primary_color\":\"#7c3aed\",\"secondary_color\":\"#c084fc\",\"contract_address\":\"\",\"finance_contract_address\":\"\",\"voucher_contract_address\":\"\",\"menu_registry_contract_address\":\"\",\"loyalty_token_contract_address\":\"\",\"voucher_shop_contract_address\":\"\",\"voucher_marketplace_contract_address\":\"\",\"relayer_private_key\":\"\",\"rpc_url\":\"https:\\/\\/bsc-testnet.rpc.sentio.xyz\",\"chain_id\":\"97\",\"explorer_url\":\"https:\\/\\/testnet.bscscan.com\",\"explorer_api_key\":\"\",\"default_print_size\":\"80mm\",\"voucher_gift_min_amount\":\"100000\",\"voucher_discount_amount\":\"5000\",\"voucher_use_min_amount\":\"100000\",\"show_crypto_payment\":\"0\",\"voucher_enabled\":\"0\",\"has_synced_menu\":\"0\",\"store_categories\":\"\",\"website_cover_image\":\"\",\"store_status\":\"0\",\"shipping_fee_flat_enabled\":\"0\",\"shipping_fee_flat_amount\":\"0\",\"shipping_fee_free_enabled\":\"0\",\"shipping_fee_free_min_amount\":\"0\",\"website_avatar_image\":\"\"}', '0xc0f810364e0eacebbd9e02187fd6504df4599999', '2026-06-22 21:51:16', '2026-06-22 21:51:16'),
-(244, 'website_slug', 'cafe-web3-pos', '0x75ad18ef47eda21baff837cac0f1563d0c355555', '2026-06-22 21:57:53', '2026-06-22 21:58:13');
+(244, 'website_slug', 'cafe-web3-pos', '0x75ad18ef47eda21baff837cac0f1563d0c355555', '2026-06-22 21:57:53', '2026-06-22 21:58:13'),
+(245, 'store_config', '{\"store_name\":\"Cafe Web3 POS\",\"store_phone\":\"0987654321\",\"store_opening_hours\":\"\",\"store_address\":\"\",\"store_description\":\"\",\"contract_address\":\"\",\"finance_contract_address\":\"\",\"voucher_contract_address\":\"\",\"menu_registry_contract_address\":\"\",\"loyalty_token_contract_address\":\"\",\"voucher_shop_contract_address\":\"\",\"voucher_marketplace_contract_address\":\"\",\"rpc_url\":\"https:\\/\\/sepolia-rollup.arbitrum.io\\/rpc\",\"chain_id\":\"421614\",\"explorer_url\":\"https:\\/\\/sepolia.arbiscan.io\\/\",\"explorer_api_key\":\"AA11BB22CC33\",\"primary_color\":\"#ff00dd\",\"secondary_color\":\"#8000ff\",\"default_print_size\":\"80mm\",\"voucher_gift_min_amount\":\"100000\",\"voucher_discount_amount\":\"5000\",\"voucher_use_min_amount\":\"100000\",\"show_crypto_payment\":\"0\",\"voucher_enabled\":\"0\",\"has_synced_menu\":\"0\",\"store_categories\":\"\",\"website_cover_image\":\"\",\"store_status\":\"0\",\"shipping_fee_flat_enabled\":\"0\",\"shipping_fee_flat_amount\":\"0\",\"shipping_fee_free_enabled\":\"0\",\"shipping_fee_free_min_amount\":\"0\",\"website_avatar_image\":\"\"}', '0x5b6381c9312b636327110431d2670ee4472c833f', '2026-06-23 19:58:41', '2026-06-23 20:11:41'),
+(246, 'website_slug', 'cafe-web3-pos-6uja', '0x5b6381c9312b636327110431d2670ee4472c833f', '2026-06-23 20:11:41', '2026-06-23 20:11:41');
 
 -- --------------------------------------------------------
 
@@ -2164,20 +2185,20 @@ INSERT INTO `settings` (`id`, `key`, `value`, `store_owner_address`, `created_at
 --
 
 CREATE TABLE `shifts` (
-  `id` bigint UNSIGNED NOT NULL,
-  `store_owner_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `user_id` bigint UNSIGNED NOT NULL,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `store_owner_address` varchar(255) NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
   `start_time` datetime NOT NULL,
   `end_time` datetime DEFAULT NULL,
   `initial_cash` decimal(15,2) NOT NULL,
   `actual_cash` decimal(15,2) DEFAULT NULL,
   `expected_cash` decimal(15,2) DEFAULT NULL,
-  `status` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'open',
-  `note` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `status` varchar(255) NOT NULL DEFAULT 'open',
+  `note` text DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
-  `payment_revenues` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-  `payment_expenses` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+  `payment_revenues` longtext DEFAULT NULL,
+  `payment_expenses` longtext DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -2204,7 +2225,9 @@ INSERT INTO `shifts` (`id`, `store_owner_address`, `user_id`, `start_time`, `end
 (17, '0x75ad18ef47eda21baff837cac0f1563d0c355555', 2, '2026-06-20 04:25:28', NULL, 2000000.00, NULL, NULL, 'open', NULL, '2026-06-19 14:25:28', '2026-06-19 14:25:28', NULL, NULL),
 (18, '0x75ad18ef47eda21baff837cac0f1563d0c355555', 1, '2026-06-20 19:31:55', '2026-06-22 16:49:16', 500000.00, 788000.00, -2412000.00, 'closed', 'trừ tiền chi phí', '2026-06-20 05:31:55', '2026-06-22 02:49:16', '{\"cash\": 288000, \"debt\": 234000, \"crypto\": 0, \"e_wallet\": 158000, \"bank_transfer\": 0}', '{\"cash\": 3200000, \"bank_transfer\": 0}'),
 (19, '0x75ad18ef47eda21baff837cac0f1563d0c355555', 1, '2026-06-22 16:49:26', '2026-06-23 13:16:28', 1000000.00, 1000000.00, 1000000.00, 'closed', NULL, '2026-06-22 02:49:26', '2026-06-23 06:16:28', '{\"cash\":0,\"bank_transfer\":0,\"crypto\":0,\"e_wallet\":0,\"debt\":0}', '{\"cash\":0,\"bank_transfer\":0}'),
-(20, '0x282eae859073adc4bc3cf4de24a2436bc1888888', 52, '2026-06-23 13:12:35', NULL, 0.00, NULL, NULL, 'open', NULL, '2026-06-23 06:12:35', '2026-06-23 06:12:35', NULL, NULL);
+(20, '0x282eae859073adc4bc3cf4de24a2436bc1888888', 52, '2026-06-23 13:12:35', NULL, 0.00, NULL, NULL, 'open', NULL, '2026-06-23 06:12:35', '2026-06-23 06:12:35', NULL, NULL),
+(21, '0x75ad18ef47eda21baff837cac0f1563d0c355555', 1, '2026-06-24 03:02:22', '2026-06-24 03:02:43', 0.00, 0.00, 0.00, 'closed', NULL, '2026-06-23 20:02:22', '2026-06-23 20:02:43', '{\"cash\":0,\"bank_transfer\":0,\"crypto\":0,\"e_wallet\":0,\"debt\":0}', '{\"cash\":0,\"bank_transfer\":0}'),
+(22, '0x5b6381c9312b636327110431d2670ee4472c833f', 55, '2026-06-24 03:07:36', NULL, 0.00, NULL, NULL, 'open', NULL, '2026-06-23 20:07:36', '2026-06-23 20:07:36', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -2213,12 +2236,12 @@ INSERT INTO `shifts` (`id`, `store_owner_address`, `user_id`, `start_time`, `end
 --
 
 CREATE TABLE `staffs` (
-  `id` bigint UNSIGNED NOT NULL,
-  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `phone` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `wallet_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `store_owner_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `role_id` bigint UNSIGNED NOT NULL,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `phone` varchar(255) NOT NULL,
+  `wallet_address` varchar(255) NOT NULL,
+  `store_owner_address` varchar(255) NOT NULL,
+  `role_id` bigint(20) UNSIGNED NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -2238,13 +2261,13 @@ INSERT INTO `staffs` (`id`, `name`, `phone`, `wallet_address`, `store_owner_addr
 --
 
 CREATE TABLE `subscription_plans` (
-  `id` bigint UNSIGNED NOT NULL,
-  `code` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `is_active` tinyint(1) NOT NULL DEFAULT '1',
-  `price_per_month` decimal(15,2) NOT NULL DEFAULT '0.00',
-  `price_per_year` decimal(15,2) NOT NULL DEFAULT '0.00',
-  `features` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `code` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `price_per_month` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `price_per_year` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `features` longtext DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -2265,16 +2288,16 @@ INSERT INTO `subscription_plans` (`id`, `code`, `name`, `is_active`, `price_per_
 --
 
 CREATE TABLE `subscription_requests` (
-  `id` bigint UNSIGNED NOT NULL,
-  `store_owner_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `plan_code` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `duration_months` int NOT NULL,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `store_owner_address` varchar(255) NOT NULL,
+  `plan_code` varchar(255) NOT NULL,
+  `duration_months` int(11) NOT NULL,
   `amount` decimal(15,2) NOT NULL,
-  `system_payment_method_id` bigint UNSIGNED DEFAULT NULL,
-  `tx_hash` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `status` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
-  `rejected_reason` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-  `approved_by` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `system_payment_method_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `tx_hash` varchar(255) DEFAULT NULL,
+  `status` varchar(255) NOT NULL DEFAULT 'pending',
+  `rejected_reason` text DEFAULT NULL,
+  `approved_by` varchar(255) DEFAULT NULL,
   `approved_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -2294,13 +2317,13 @@ INSERT INTO `subscription_requests` (`id`, `store_owner_address`, `plan_code`, `
 --
 
 CREATE TABLE `system_payment_methods` (
-  `id` bigint UNSIGNED NOT NULL,
-  `type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `account_number` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `account_holder` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `bank_code` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `type` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `account_number` varchar(255) NOT NULL,
+  `account_holder` varchar(255) NOT NULL,
+  `bank_code` varchar(255) DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -2319,8 +2342,8 @@ INSERT INTO `system_payment_methods` (`id`, `type`, `name`, `account_number`, `a
 --
 
 CREATE TABLE `system_settings` (
-  `key` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `value` json DEFAULT NULL,
+  `key` varchar(191) NOT NULL,
+  `value` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`value`)),
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -2341,11 +2364,11 @@ INSERT INTO `system_settings` (`key`, `value`, `created_at`, `updated_at`) VALUE
 --
 
 CREATE TABLE `system_staffs` (
-  `id` bigint UNSIGNED NOT NULL,
-  `wallet_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `role` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'staff',
-  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `wallet_address` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `role` varchar(255) NOT NULL DEFAULT 'staff',
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -2364,22 +2387,22 @@ INSERT INTO `system_staffs` (`id`, `wallet_address`, `name`, `role`, `is_active`
 --
 
 CREATE TABLE `transactions` (
-  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `transaction_code` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id` char(36) NOT NULL,
+  `transaction_code` varchar(255) DEFAULT NULL,
+  `type` varchar(255) NOT NULL,
   `amount` decimal(15,2) NOT NULL,
-  `category` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `payment_method` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'cash',
-  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `category` varchar(255) NOT NULL,
+  `payment_method` varchar(255) NOT NULL DEFAULT 'cash',
+  `description` text DEFAULT NULL,
   `transaction_date` date NOT NULL,
-  `store_owner_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `tx_hash` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `blockchain_status` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'none',
-  `chain_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `verification_hash` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `store_owner_address` varchar(255) DEFAULT NULL,
+  `tx_hash` varchar(255) DEFAULT NULL,
+  `blockchain_status` varchar(255) NOT NULL DEFAULT 'none',
+  `chain_id` varchar(255) DEFAULT NULL,
+  `verification_hash` varchar(255) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
-  `shift_id` bigint UNSIGNED DEFAULT NULL
+  `shift_id` bigint(20) UNSIGNED DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -2422,15 +2445,15 @@ INSERT INTO `transactions` (`id`, `transaction_code`, `type`, `amount`, `categor
 --
 
 CREATE TABLE `users` (
-  `id` bigint UNSIGNED NOT NULL,
-  `wallet_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `phone` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `store_owner_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `plan_code` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'free',
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `wallet_address` varchar(255) NOT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `phone` varchar(255) DEFAULT NULL,
+  `store_owner_address` varchar(255) DEFAULT NULL,
+  `plan_code` varchar(255) DEFAULT 'free',
   `subscription_expires_at` timestamp NULL DEFAULT NULL,
-  `subscription_status` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
+  `subscription_status` varchar(255) NOT NULL DEFAULT 'active',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -2440,7 +2463,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `wallet_address`, `name`, `email`, `phone`, `store_owner_address`, `plan_code`, `subscription_expires_at`, `subscription_status`, `created_at`, `updated_at`) VALUES
-(1, '0x75ad18ef47eda21baff837cac0f1563d0c355555', 'Đạt', NULL, NULL, NULL, 'pro', '2026-07-21 06:47:08', 'active', '2026-06-04 03:57:14', '2026-06-21 06:47:08'),
+(1, '0x75ad18ef47eda21baff837cac0f1563d0c355555', 'Đạt', NULL, NULL, NULL, 'ultra', '2027-06-23 17:00:00', 'active', '2026-06-04 03:57:14', '2026-06-23 19:24:08'),
 (2, '0x9ae04ba2df125a40d6cca2ea5775f698bc36031a', NULL, NULL, NULL, '0x75ad18ef47eda21baff837cac0f1563d0c355555', 'free', NULL, 'active', '2026-06-05 17:19:46', '2026-06-05 17:19:46'),
 (3, '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266', NULL, NULL, NULL, NULL, 'free', '2026-06-25 10:00:00', 'active', '2026-06-13 13:41:02', '2026-06-18 15:20:21'),
 (4, '0x70997970c51812dc3a010c7d01b50e0d17dc79c8', NULL, NULL, NULL, NULL, 'free', '2026-06-25 10:00:00', 'active', '2026-06-13 13:43:17', '2026-06-18 15:20:03'),
@@ -2450,7 +2473,10 @@ INSERT INTO `users` (`id`, `wallet_address`, `name`, `email`, `phone`, `store_ow
 (50, '0x37421a6d6b0beaf2606bfbb52a19c2c8d6e3d30b', NULL, NULL, NULL, NULL, 'free', '2026-06-27 10:00:00', 'active', '2026-06-21 07:09:03', '2026-06-21 07:34:30'),
 (51, '0x1ad11e0e96797a14336bf474676eb0a332055555', NULL, NULL, NULL, NULL, 'free', '2026-06-29 21:36:38', 'active', '2026-06-22 21:36:38', '2026-06-22 21:36:38'),
 (52, '0x282eae859073adc4bc3cf4de24a2436bc1888888', NULL, NULL, NULL, NULL, 'ultra', '2026-06-30 05:59:08', 'active', '2026-06-23 05:59:08', '2026-06-23 05:59:08'),
-(53, '0x42863a74164440f3384ca82394e891bdb9888888', NULL, NULL, NULL, NULL, 'ultra', '2026-06-30 12:52:39', 'active', '2026-06-23 12:52:39', '2026-06-23 12:52:39');
+(53, '0x42863a74164440f3384ca82394e891bdb9888888', NULL, NULL, NULL, NULL, 'ultra', '2026-06-30 12:52:39', 'active', '2026-06-23 12:52:39', '2026-06-23 12:52:39'),
+(54, '0x250105e88b2a7e20045a3199a0e0a87da2d545cd', NULL, NULL, NULL, NULL, 'ultra', '2026-06-30 19:53:54', 'active', '2026-06-23 19:53:54', '2026-06-23 19:53:54'),
+(55, '0x5b6381c9312b636327110431d2670ee4472c833f', 'Trần Hải Nam', 'namth@chantroituonglai.com', '0784207831', NULL, 'ultra', '2026-07-23 17:00:00', 'active', '2026-06-23 19:57:49', '2026-06-23 19:58:41'),
+(56, '0x97da5e998effcdf3af26f8e8504549733e77351b', NULL, NULL, NULL, NULL, 'ultra', '2026-07-01 00:19:03', 'active', '2026-06-24 00:19:03', '2026-06-24 00:19:03');
 
 -- --------------------------------------------------------
 
@@ -2459,13 +2485,13 @@ INSERT INTO `users` (`id`, `wallet_address`, `name`, `email`, `phone`, `store_ow
 --
 
 CREATE TABLE `voucher_signatures` (
-  `id` bigint UNSIGNED NOT NULL,
-  `order_code` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `token_id` int NOT NULL,
-  `store_owner_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `temp_order_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-  `signature` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-  `status` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `order_code` varchar(255) NOT NULL,
+  `token_id` int(11) NOT NULL,
+  `store_owner_address` varchar(255) DEFAULT NULL,
+  `temp_order_data` longtext DEFAULT NULL,
+  `signature` text DEFAULT NULL,
+  `status` varchar(255) NOT NULL DEFAULT 'pending',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -2524,7 +2550,8 @@ ALTER TABLE `customers`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `customers_customer_code_unique` (`customer_code`),
   ADD KEY `idx_cust_tenant_phone` (`store_owner_address`,`phone`),
-  ADD KEY `customers_store_owner_address_index` (`store_owner_address`);
+  ADD KEY `customers_store_owner_address_index` (`store_owner_address`),
+  ADD KEY `idx_cust_tenant_wallet` (`store_owner_address`,`wallet_address`);
 
 --
 -- Chỉ mục cho bảng `customer_customer_group`
@@ -2572,7 +2599,7 @@ ALTER TABLE `failed_jobs`
 ALTER TABLE `inventory_records`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `inventory_records_record_code_unique` (`record_code`),
-  ADD KEY `inventory_records_store_owner_address_index` (`store_owner_address`);
+  ADD KEY `idx_inv_tenant_type_date` (`store_owner_address`,`type`,`record_date`);
 
 --
 -- Chỉ mục cho bảng `inventory_record_items`
@@ -2601,7 +2628,8 @@ ALTER TABLE `job_batches`
 --
 ALTER TABLE `menu_sync_logs`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `menu_sync_logs_store_owner_address_index` (`store_owner_address`);
+  ADD KEY `menu_sync_logs_store_owner_address_index` (`store_owner_address`),
+  ADD KEY `idx_menu_sync_tx_hash` (`tx_hash`);
 
 --
 -- Chỉ mục cho bảng `migrations`
@@ -2617,7 +2645,10 @@ ALTER TABLE `orders`
   ADD UNIQUE KEY `orders_order_code_unique` (`order_code`),
   ADD KEY `orders_customer_id_foreign` (`customer_id`),
   ADD KEY `idx_orders_tenant_status_date` (`store_owner_address`,`status`,`created_at`),
-  ADD KEY `orders_shift_id_foreign` (`shift_id`);
+  ADD KEY `orders_shift_id_foreign` (`shift_id`),
+  ADD KEY `idx_orders_tx_hash` (`tx_hash`),
+  ADD KEY `idx_orders_tenant_updated` (`store_owner_address`,`updated_at`),
+  ADD KEY `idx_orders_tenant_payment` (`store_owner_address`,`payment_method`);
 
 --
 -- Chỉ mục cho bảng `order_items`
@@ -2656,8 +2687,9 @@ ALTER TABLE `personal_access_tokens`
 ALTER TABLE `products`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `products_sku_unique` (`sku`),
-  ADD KEY `products_store_owner_address_index` (`store_owner_address`),
-  ADD KEY `products_type_index` (`type`);
+  ADD KEY `products_type_index` (`type`),
+  ADD KEY `idx_prod_tenant_status` (`store_owner_address`,`status`),
+  ADD KEY `idx_prod_tenant_type` (`store_owner_address`,`type`);
 
 --
 -- Chỉ mục cho bảng `product_variants`
@@ -2705,7 +2737,9 @@ ALTER TABLE `shifts`
   ADD PRIMARY KEY (`id`),
   ADD KEY `shifts_user_id_foreign` (`user_id`),
   ADD KEY `shifts_store_owner_address_index` (`store_owner_address`),
-  ADD KEY `shifts_status_index` (`status`);
+  ADD KEY `shifts_status_index` (`status`),
+  ADD KEY `idx_shifts_tenant_status_start` (`store_owner_address`,`status`,`start_time`),
+  ADD KEY `idx_shifts_user_status` (`user_id`,`status`);
 
 --
 -- Chỉ mục cho bảng `staffs`
@@ -2729,7 +2763,10 @@ ALTER TABLE `subscription_plans`
 --
 ALTER TABLE `subscription_requests`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `subscription_requests_system_payment_method_id_foreign` (`system_payment_method_id`);
+  ADD KEY `subscription_requests_system_payment_method_id_foreign` (`system_payment_method_id`),
+  ADD KEY `idx_sub_req_tenant` (`store_owner_address`),
+  ADD KEY `idx_sub_req_status` (`status`),
+  ADD KEY `idx_sub_req_tx_hash` (`tx_hash`);
 
 --
 -- Chỉ mục cho bảng `system_payment_methods`
@@ -2758,7 +2795,9 @@ ALTER TABLE `transactions`
   ADD UNIQUE KEY `transactions_transaction_code_unique` (`transaction_code`),
   ADD KEY `idx_trans_tenant_type_date` (`store_owner_address`,`type`,`transaction_date`),
   ADD KEY `transactions_store_owner_address_index` (`store_owner_address`),
-  ADD KEY `transactions_shift_id_foreign` (`shift_id`);
+  ADD KEY `transactions_shift_id_foreign` (`shift_id`),
+  ADD KEY `idx_trans_tx_hash` (`tx_hash`),
+  ADD KEY `idx_trans_tenant_date` (`store_owner_address`,`transaction_date`);
 
 --
 -- Chỉ mục cho bảng `users`
@@ -2784,190 +2823,190 @@ ALTER TABLE `voucher_signatures`
 -- AUTO_INCREMENT cho bảng `areas`
 --
 ALTER TABLE `areas`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT cho bảng `categories`
 --
 ALTER TABLE `categories`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT cho bảng `customers`
 --
 ALTER TABLE `customers`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1009;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1010;
 
 --
 -- AUTO_INCREMENT cho bảng `customer_groups`
 --
 ALTER TABLE `customer_groups`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT cho bảng `debt_logs`
 --
 ALTER TABLE `debt_logs`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT cho bảng `dining_tables`
 --
 ALTER TABLE `dining_tables`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT cho bảng `failed_jobs`
 --
 ALTER TABLE `failed_jobs`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT cho bảng `inventory_records`
 --
 ALTER TABLE `inventory_records`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT cho bảng `inventory_record_items`
 --
 ALTER TABLE `inventory_record_items`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT cho bảng `jobs`
 --
 ALTER TABLE `jobs`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT cho bảng `menu_sync_logs`
 --
 ALTER TABLE `menu_sync_logs`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT cho bảng `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=63;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=65;
 
 --
 -- AUTO_INCREMENT cho bảng `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
 
 --
 -- AUTO_INCREMENT cho bảng `payment_methods`
 --
 ALTER TABLE `payment_methods`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT cho bảng `personal_access_tokens`
 --
 ALTER TABLE `personal_access_tokens`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=168;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=175;
 
 --
 -- AUTO_INCREMENT cho bảng `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=534;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=535;
 
 --
 -- AUTO_INCREMENT cho bảng `product_variants`
 --
 ALTER TABLE `product_variants`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=91;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=91;
 
 --
 -- AUTO_INCREMENT cho bảng `recipes`
 --
 ALTER TABLE `recipes`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT cho bảng `roles`
 --
 ALTER TABLE `roles`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT cho bảng `settings`
 --
 ALTER TABLE `settings`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=245;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=247;
 
 --
 -- AUTO_INCREMENT cho bảng `shifts`
 --
 ALTER TABLE `shifts`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT cho bảng `staffs`
 --
 ALTER TABLE `staffs`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT cho bảng `subscription_plans`
 --
 ALTER TABLE `subscription_plans`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT cho bảng `subscription_requests`
 --
 ALTER TABLE `subscription_requests`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT cho bảng `system_payment_methods`
 --
 ALTER TABLE `system_payment_methods`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT cho bảng `system_staffs`
 --
 ALTER TABLE `system_staffs`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT cho bảng `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=54;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=57;
 
 --
 -- AUTO_INCREMENT cho bảng `voucher_signatures`
 --
 ALTER TABLE `voucher_signatures`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
--- Ràng buộc đối với các bảng kết xuất
+-- Các ràng buộc cho các bảng đã đổ
 --
 
 --
--- Ràng buộc cho bảng `category_product`
+-- Các ràng buộc cho bảng `category_product`
 --
 ALTER TABLE `category_product`
   ADD CONSTRAINT `category_product_category_id_foreign` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `category_product_product_id_foreign` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE;
 
 --
--- Ràng buộc cho bảng `customer_customer_group`
+-- Các ràng buộc cho bảng `customer_customer_group`
 --
 ALTER TABLE `customer_customer_group`
   ADD CONSTRAINT `customer_customer_group_customer_group_id_foreign` FOREIGN KEY (`customer_group_id`) REFERENCES `customer_groups` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `customer_customer_group_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE CASCADE;
 
 --
--- Ràng buộc cho bảng `debt_logs`
+-- Các ràng buộc cho bảng `debt_logs`
 --
 ALTER TABLE `debt_logs`
   ADD CONSTRAINT `debt_logs_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE CASCADE,
@@ -2975,13 +3014,13 @@ ALTER TABLE `debt_logs`
   ADD CONSTRAINT `debt_logs_transaction_id_foreign` FOREIGN KEY (`transaction_id`) REFERENCES `transactions` (`id`) ON DELETE SET NULL;
 
 --
--- Ràng buộc cho bảng `dining_tables`
+-- Các ràng buộc cho bảng `dining_tables`
 --
 ALTER TABLE `dining_tables`
   ADD CONSTRAINT `dining_tables_area_id_foreign` FOREIGN KEY (`area_id`) REFERENCES `areas` (`id`) ON DELETE SET NULL;
 
 --
--- Ràng buộc cho bảng `inventory_record_items`
+-- Các ràng buộc cho bảng `inventory_record_items`
 --
 ALTER TABLE `inventory_record_items`
   ADD CONSTRAINT `inventory_record_items_inventory_record_id_foreign` FOREIGN KEY (`inventory_record_id`) REFERENCES `inventory_records` (`id`) ON DELETE CASCADE,
@@ -2989,14 +3028,14 @@ ALTER TABLE `inventory_record_items`
   ADD CONSTRAINT `inventory_record_items_product_variant_id_foreign` FOREIGN KEY (`product_variant_id`) REFERENCES `product_variants` (`id`) ON DELETE CASCADE;
 
 --
--- Ràng buộc cho bảng `orders`
+-- Các ràng buộc cho bảng `orders`
 --
 ALTER TABLE `orders`
   ADD CONSTRAINT `orders_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `orders_shift_id_foreign` FOREIGN KEY (`shift_id`) REFERENCES `shifts` (`id`) ON DELETE SET NULL;
 
 --
--- Ràng buộc cho bảng `order_items`
+-- Các ràng buộc cho bảng `order_items`
 --
 ALTER TABLE `order_items`
   ADD CONSTRAINT `order_items_order_id_foreign` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE,
@@ -3004,13 +3043,13 @@ ALTER TABLE `order_items`
   ADD CONSTRAINT `order_items_product_variant_id_foreign` FOREIGN KEY (`product_variant_id`) REFERENCES `product_variants` (`id`) ON DELETE SET NULL;
 
 --
--- Ràng buộc cho bảng `product_variants`
+-- Các ràng buộc cho bảng `product_variants`
 --
 ALTER TABLE `product_variants`
   ADD CONSTRAINT `product_variants_product_id_foreign` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE;
 
 --
--- Ràng buộc cho bảng `recipes`
+-- Các ràng buộc cho bảng `recipes`
 --
 ALTER TABLE `recipes`
   ADD CONSTRAINT `recipes_ingredient_id_foreign` FOREIGN KEY (`ingredient_id`) REFERENCES `products` (`id`) ON DELETE CASCADE,
@@ -3018,25 +3057,25 @@ ALTER TABLE `recipes`
   ADD CONSTRAINT `recipes_product_variant_id_foreign` FOREIGN KEY (`product_variant_id`) REFERENCES `product_variants` (`id`) ON DELETE CASCADE;
 
 --
--- Ràng buộc cho bảng `shifts`
+-- Các ràng buộc cho bảng `shifts`
 --
 ALTER TABLE `shifts`
   ADD CONSTRAINT `shifts_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
--- Ràng buộc cho bảng `staffs`
+-- Các ràng buộc cho bảng `staffs`
 --
 ALTER TABLE `staffs`
   ADD CONSTRAINT `staffs_role_id_foreign` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`);
 
 --
--- Ràng buộc cho bảng `subscription_requests`
+-- Các ràng buộc cho bảng `subscription_requests`
 --
 ALTER TABLE `subscription_requests`
   ADD CONSTRAINT `subscription_requests_system_payment_method_id_foreign` FOREIGN KEY (`system_payment_method_id`) REFERENCES `system_payment_methods` (`id`) ON DELETE SET NULL;
 
 --
--- Ràng buộc cho bảng `transactions`
+-- Các ràng buộc cho bảng `transactions`
 --
 ALTER TABLE `transactions`
   ADD CONSTRAINT `transactions_shift_id_foreign` FOREIGN KEY (`shift_id`) REFERENCES `shifts` (`id`) ON DELETE SET NULL;
