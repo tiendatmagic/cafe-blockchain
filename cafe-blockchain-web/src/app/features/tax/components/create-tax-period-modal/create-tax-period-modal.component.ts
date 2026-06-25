@@ -38,7 +38,10 @@ export class CreateTaxPeriodModalComponent implements OnInit {
     { value: 3, label: 'Quý 3 (T7 - T9)' },
     { value: 4, label: 'Quý 4 (T10 - T12)' },
   ];
-  public readonly yearOptions = [2025, 2026, 2027, 2028].map(y => ({ value: y, label: `Năm ${y}` }));
+  public readonly yearOptions = Array.from(
+    { length: 6 },
+    (_, i) => new Date().getFullYear() - 5 + i
+  ).map(y => ({ value: y, label: `Năm ${y}` }));
 
   ngOnInit() {
     const now = new Date();
