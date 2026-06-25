@@ -147,17 +147,11 @@ class TaxController extends Controller
         }
 
         // Check if period already exists
-        $exists = TaxPeriod::where('store_owner_address', $storeOwner)
+        $existingPeriod = TaxPeriod::where('store_owner_address', $storeOwner)
             ->where('period_type', $validated['period_type'])
             ->where('period_value', $validated['period_value'])
             ->where('period_year', $validated['period_year'])
-            ->exists();
-
-        if ($exists) {
-            return response()->json([
-                'message' => 'Tax period for this timeframe already exists.'
-            ], 400);
-        }
+            ->first();
 
         // Calculate timeframe dates
         $dates = $this->getTimeframeDates($validated['period_type'], $validated['period_value'], $validated['period_year']);
@@ -165,6 +159,29 @@ class TaxController extends Controller
         // Calculate estimate
         $estimate = $this->calculateTaxEstimate($storeOwner, $profile, $dates['start_date'], $dates['end_date']);
 
+        if ($existingPeriod) {
+            if ($existingPeriod->status === 'locked') {
+                return response()->json([
+                    'message' => 'Kỳ kê khai thuế cho khoảng thời gian này đã được khóa sổ và không thể tạo lại.'
+                ], 400);
+            }
+
+            // Update existing period: recalculate estimates and increment created_books_count by 2
+            $existingPeriod->update([
+                'revenue_amount' => $estimate['revenue'],
+                'expense_amount' => $estimate['expense'],
+                'estimated_vat' => $estimate['estimated_vat'],
+                'estimated_pit' => $estimate['estimated_pit'],
+                'created_books_count' => $existingPeriod->created_books_count + 2,
+            ]);
+
+            return response()->json([
+                'message' => 'Tax period updated and books count incremented successfully.',
+                'period' => $existingPeriod
+            ], 200);
+        }
+
+        // Create new period
         $period = TaxPeriod::create([
             'store_owner_address' => $storeOwner,
             'period_type' => $validated['period_type'],
@@ -175,6 +192,7 @@ class TaxController extends Controller
             'expense_amount' => $estimate['expense'],
             'estimated_vat' => $estimate['estimated_vat'],
             'estimated_pit' => $estimate['estimated_pit'],
+            'created_books_count' => 2,
         ]);
 
         return response()->json([

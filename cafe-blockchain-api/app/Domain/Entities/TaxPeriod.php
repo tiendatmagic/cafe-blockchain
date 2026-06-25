@@ -24,6 +24,7 @@ class TaxPeriod extends Model
         'expense_amount',
         'estimated_vat',
         'estimated_pit',
+        'created_books_count',
     ];
 
     protected $casts = [
@@ -33,6 +34,7 @@ class TaxPeriod extends Model
         'expense_amount' => 'float',
         'estimated_vat' => 'float',
         'estimated_pit' => 'float',
+        'created_books_count' => 'integer',
     ];
 
     protected static function booted()
