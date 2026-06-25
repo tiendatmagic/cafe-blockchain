@@ -209,7 +209,28 @@ export class TaxDetailModalComponent implements OnInit {
   private loadSavedData() {
     if (!this.period || !this.period.id) return;
 
-    const documentTypes = ['info', 'declaration', 'banks', 's1a', 's2a', 's2b', 's2c', 's2d', 's2e'];
+    // Xác định các loại tài liệu cần tải dựa trên category đang mở (Lazy Loading)
+    let documentTypes: string[] = [];
+    const cat = this.logRow.category || '';
+    if (cat.includes('Tờ khai')) {
+      documentTypes = ['info', 'declaration', 'banks'];
+    } else if (cat.includes('S1a')) {
+      documentTypes = ['s1a'];
+    } else if (cat.includes('S2a')) {
+      documentTypes = ['s2a'];
+    } else if (cat.includes('S2b')) {
+      documentTypes = ['s2b'];
+    } else if (cat.includes('S2c')) {
+      documentTypes = ['s2c'];
+    } else if (cat.includes('S2d')) {
+      documentTypes = ['s2d'];
+    } else if (cat.includes('S2e')) {
+      documentTypes = ['s2e'];
+    } else {
+      // Mặc định tải hết nếu không khớp loại nào
+      documentTypes = ['info', 'declaration', 'banks', 's1a', 's2a', 's2b', 's2c', 's2d', 's2e'];
+    }
+
     const requests = documentTypes.map(docType => 
       this.taxService.getPeriodDetails(this.period.id, docType).pipe(
         catchError(() => of({ detail: null }))
@@ -218,8 +239,13 @@ export class TaxDetailModalComponent implements OnInit {
 
     forkJoin(requests).subscribe({
       next: (results: any[]) => {
+        const getData = (type: string) => {
+          const idx = documentTypes.indexOf(type);
+          return idx !== -1 ? results[idx]?.detail?.data : null;
+        };
+
         // 1. Tax Info
-        const infoRes = results[0]?.detail?.data;
+        const infoRes = getData('info');
         if (infoRes) {
           this.taxInfo = infoRes;
         } else {
@@ -237,7 +263,7 @@ export class TaxDetailModalComponent implements OnInit {
         }
 
         // 2. Declaration
-        const decRes = results[1]?.detail?.data;
+        const decRes = getData('declaration');
         if (decRes) {
           this.declarationRows = decRes;
         } else {
@@ -245,7 +271,7 @@ export class TaxDetailModalComponent implements OnInit {
         }
 
         // 3. Banks
-        const banksRes = results[2]?.detail?.data;
+        const banksRes = getData('banks');
         if (banksRes) {
           this.bankAccounts = banksRes;
         } else {
@@ -263,7 +289,7 @@ export class TaxDetailModalComponent implements OnInit {
         }
 
         // 4. S1a
-        const s1aRes = results[3]?.detail?.data;
+        const s1aRes = getData('s1a');
         if (s1aRes) {
           this.s1aTransactions = s1aRes;
         } else {
@@ -271,7 +297,7 @@ export class TaxDetailModalComponent implements OnInit {
         }
 
         // 5. S2a
-        const s2aRes = results[4]?.detail?.data;
+        const s2aRes = getData('s2a');
         if (s2aRes) {
           this.s2aAssets = s2aRes;
         } else {
@@ -279,7 +305,7 @@ export class TaxDetailModalComponent implements OnInit {
         }
 
         // 6. S2b
-        const s2bRes = results[5]?.detail?.data;
+        const s2bRes = getData('s2b');
         if (s2bRes) {
           this.s2bExpenses = s2bRes;
         } else {
@@ -287,7 +313,7 @@ export class TaxDetailModalComponent implements OnInit {
         }
 
         // 7. S2c
-        const s2cRes = results[6]?.detail?.data;
+        const s2cRes = getData('s2c');
         if (s2cRes) {
           this.s2cSalaries = s2cRes;
         } else {
@@ -295,7 +321,7 @@ export class TaxDetailModalComponent implements OnInit {
         }
 
         // 8. S2d
-        const s2dRes = results[7]?.detail?.data;
+        const s2dRes = getData('s2d');
         if (s2dRes) {
           this.s2dInventories = s2dRes;
         } else {
@@ -303,7 +329,7 @@ export class TaxDetailModalComponent implements OnInit {
         }
 
         // 9. S2e
-        const s2eRes = results[8]?.detail?.data;
+        const s2eRes = getData('s2e');
         if (s2eRes) {
           this.s2eTaxObligations = s2eRes;
         } else {
