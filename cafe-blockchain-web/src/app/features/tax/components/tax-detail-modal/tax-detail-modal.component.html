@@ -29,11 +29,15 @@
 
           <div class="space-y-2">
             <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block">Cơ quan thuế *</label>
-            <select [(ngModel)]="taxInfo.taxOffice" class="form-input w-full rounded-xl text-sm font-semibold bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-4 py-2.5 outline-none focus:border-purple-500 transition-colors">
-              @for (opt of taxOfficeOptions; track opt.value) {
-                <option [value]="opt.value">{{ opt.label }}</option>
-              }
-            </select>
+            <app-custom-select
+              [(ngModel)]="taxInfo.taxOffice"
+              [options]="taxOfficeOptions"
+              valueKey="value"
+              labelKey="label"
+              [showSearch]="false"
+              containerClass="w-full"
+              triggerClass="w-full form-input rounded-xl text-sm font-semibold bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-4 py-2.5 outline-none transition-colors"
+            ></app-custom-select>
           </div>
         </div>
       </div>
@@ -57,11 +61,15 @@
 
             <div class="space-y-2">
               <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block">[06.3] Tỉnh/Thành phố</label>
-              <select [(ngModel)]="taxInfo.addressProvince" class="form-input w-full rounded-xl text-sm font-semibold bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-4 py-2.5 outline-none focus:border-purple-500 transition-colors">
-                @for (opt of provinceOptions; track opt.value) {
-                  <option [value]="opt.value">{{ opt.label }}</option>
-                }
-              </select>
+              <app-custom-select
+                [(ngModel)]="taxInfo.addressProvince"
+                [options]="provinceOptions"
+                valueKey="value"
+                labelKey="label"
+                [showSearch]="false"
+                containerClass="w-full"
+                triggerClass="w-full form-input rounded-xl text-sm font-semibold bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-4 py-2.5 outline-none transition-colors"
+              ></app-custom-select>
             </div>
 
             <div class="space-y-2">
@@ -101,7 +109,7 @@
     </div>
 
     <!-- Footer actions phẳng -->
-    <div class="pt-4 mt-6 border-t border-slate-100 dark:border-slate-800/60 flex justify-between shrink-0">
+    <div class="pt-4 mt-6 border-t border-slate-100 dark:border-slate-800/60 flex justify-end gap-3 shrink-0">
       <button app-button variant="secondary" size="md" (click)="closeInfoEdit()">
         Quay lại
       </button>
@@ -313,11 +321,15 @@
                           <input type="text" [(ngModel)]="bank.bankName" class="w-full bg-transparent border-none outline-none font-semibold text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
                         </td>
                         <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
-                          <select [(ngModel)]="bank.status" class="w-full bg-transparent border-none outline-none font-semibold text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white">
-                            <option value="Khai lần đầu">Khai lần đầu</option>
-                            <option value="Đóng">Đóng</option>
-                            <option value="Thay đổi thông tin">Thay đổi thông tin</option>
-                          </select>
+                          <app-custom-select
+                            [(ngModel)]="bank.status"
+                            [options]="bankStatusOptions"
+                            valueKey="value"
+                            labelKey="label"
+                            [showSearch]="false"
+                            containerClass="w-full"
+                            triggerClass="w-full bg-transparent border-none outline-none font-semibold text-sm rounded !py-1 !px-2 dark:text-white"
+                          ></app-custom-select>
                         </td>
                         
                         <td class="py-1 px-3 text-center">
@@ -732,7 +744,7 @@
       </div>
 
       <!-- Bottom footer actions phẳng -->
-    <div class="pt-4 mt-6 border-t border-slate-100 dark:border-slate-800/60 flex justify-between shrink-0 bg-transparent">
+    <div class="pt-4 mt-6 border-t border-slate-100 dark:border-slate-800/60 flex justify-end gap-3 shrink-0 bg-transparent">
       <button app-button variant="secondary" size="md" (click)="close()">
         Đóng
       </button>

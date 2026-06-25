@@ -94,10 +94,21 @@ export class CustomSelectComponent implements ControlValueAccessor, OnDestroy {
       placement = this.placement as 'top' | 'bottom';
     }
 
+    const viewportWidth = window.innerWidth;
+    const dropdownMinWidth = Math.max(160, rect.width);
+    let left = rect.left;
+
+    // Neu dropdown bi tran mep phai man hinh, can lui left lai
+    if (left + dropdownMinWidth > viewportWidth - 16) {
+      left = Math.max(16, viewportWidth - dropdownMinWidth - 16);
+    }
+
     const styles: { [key: string]: string } = {
       position: 'fixed',
-      left: `${rect.left}px`,
-      width: `${rect.width}px`,
+      left: `${left}px`,
+      minWidth: `${dropdownMinWidth}px`,
+      width: 'max-content',
+      maxWidth: '320px',
       zIndex: '9999',
     };
 

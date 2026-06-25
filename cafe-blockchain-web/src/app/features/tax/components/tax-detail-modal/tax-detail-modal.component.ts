@@ -9,6 +9,7 @@ import { IconComponent } from '@shared/components/icon/icon.component';
 import { CustomSwitchComponent } from '@shared/components/custom-switch/custom-switch.component';
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
 import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
+import { CustomSelectComponent } from '@shared/components/custom-select/custom-select.component';
 import * as XLSX from 'xlsx';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -104,7 +105,8 @@ interface S2eTaxObligationRow {
     IconComponent,
     CustomSwitchComponent,
     VNDCurrencyPipe,
-    TabGroupComponent
+    TabGroupComponent,
+    CustomSelectComponent
   ],
   templateUrl: './tax-detail-modal.component.html',
   styles: [
@@ -170,6 +172,12 @@ export class TaxDetailModalComponent implements OnInit {
     { value: 'Thành phố Hà Nội', label: 'Thành phố Hà Nội' },
     { value: 'Thành phố Đà Nẵng', label: 'Thành phố Đà Nẵng' },
     { value: 'Tỉnh Bình Dương', label: 'Tỉnh Bình Dương' }
+  ];
+
+  public readonly bankStatusOptions = [
+    { value: 'Khai lần đầu', label: 'Khai lần đầu' },
+    { value: 'Đóng', label: 'Đóng' },
+    { value: 'Thay đổi thông tin', label: 'Thay đổi thông tin' }
   ];
 
   // Tab 1: Declaration rows
