@@ -483,26 +483,52 @@
           }
         }
 
+      <!-- Thống kê chi tiết phí và thuế -->
+      @if ((storeSettings && storeSettings.shipping_fee_flat_enabled === '1') || (storeSettings && storeSettings.tax_enabled === '1')) {
         <div class="space-y-2 text-xs font-bold text-slate-500 dark:text-slate-400">
-          <div class="flex items-center justify-between">
-            <span>Tạm tính:</span>
-            <span class="font-mono text-slate-700 dark:text-slate-300">{{
-              cartTotal | vnd
-            }}</span>
-          </div>
-          <div class="flex items-center justify-between">
-            <span>Phí vận chuyển:</span>
-            <span class="font-mono text-slate-700 dark:text-slate-300">
-              @if (shippingFee > 0) {
-                {{ shippingFee | vnd }}
-              } @else {
-                <span class="text-emerald-500 uppercase tracking-wider text-[10px]"
-                  >Miễn phí</span
-                >
-              }
-            </span>
-          </div>
+          <!-- Tạm tính chưa VAT -->
+          @if (storeSettings.tax_enabled === '1') {
+            <div class="flex items-center justify-between">
+              <span>Tạm tính (chưa thuế):</span>
+              <span class="font-mono text-slate-700 dark:text-slate-300">{{
+                cartSubtotal | vnd
+              }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="flex items-center gap-1">
+                <span>Thuế VAT:</span>
+                @if (storeSettings.tax_inclusive === '1') {
+                  <span class="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 px-1 py-0.5 rounded font-extrabold">Đã gồm trong giá</span>
+                }
+              </span>
+              <span class="font-mono text-slate-700 dark:text-slate-300">{{
+                cartTaxAmount | vnd
+              }}</span>
+            </div>
+          } @else {
+            <div class="flex items-center justify-between">
+              <span>Tạm tính:</span>
+              <span class="font-mono text-slate-700 dark:text-slate-300">{{
+                cartTotal | vnd
+              }}</span>
+            </div>
+          }
+
+          <!-- Phí vận chuyển -->
+          @if (storeSettings.shipping_fee_flat_enabled === '1') {
+            <div class="flex items-center justify-between">
+              <span>Phí vận chuyển:</span>
+              <span class="font-mono text-slate-700 dark:text-slate-300">
+                @if (shippingFee > 0) {
+                  {{ shippingFee | vnd }}
+                } @else {
+                  <span class="text-emerald-500 uppercase tracking-wider text-[10px]">Miễn phí</span>
+                }
+              </span>
+            </div>
+          }
         </div>
+      }
       }
 
       <div

@@ -853,5 +853,37 @@ export class ApiService {
   public getWebBuildSize(): Observable<any> {
     return this.http.get('assets/build-size.json');
   }
+
+  public getTaxProfile(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/tax/profile`, { headers: this.getHeaders() });
+  }
+
+  public saveTaxProfile(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/tax/profile`, data, { headers: this.getHeaders() });
+  }
+
+  public getTaxEstimate(startDate: string, endDate: string): Observable<any> {
+    const params = new HttpParams().set('start_date', startDate).set('end_date', endDate);
+    return this.http.get(`${this.baseUrl}/tax/estimate`, { headers: this.getHeaders(), params });
+  }
+
+  public getTaxPeriods(page: number, limit: number, status?: string, year?: string): Observable<any> {
+    let params = new HttpParams().set('page', page.toString()).set('limit', limit.toString());
+    if (status) params = params.set('status', status);
+    if (year) params = params.set('year', year);
+    return this.http.get(`${this.baseUrl}/tax/periods`, { headers: this.getHeaders(), params });
+  }
+
+  public createTaxPeriod(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/tax/periods`, data, { headers: this.getHeaders() });
+  }
+
+  public lockTaxPeriod(id: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/tax/periods/${id}/lock`, {}, { headers: this.getHeaders() });
+  }
+
+  public destroyTaxPeriod(id: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/tax/periods/${id}`, { headers: this.getHeaders() });
+  }
 }
 

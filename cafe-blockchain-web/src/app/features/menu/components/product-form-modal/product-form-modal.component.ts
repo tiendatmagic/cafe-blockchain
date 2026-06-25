@@ -81,7 +81,15 @@ export class ProductFormModalComponent implements OnInit {
     description: '',
     variants: [],
     recipes: [],
+    tax_rate: '',
   };
+
+  public readonly taxOptions = [
+    { value: '', label: 'Theo cấu hình quán' },
+    { value: 0, label: 'Miễn thuế (0%)' },
+    { value: 8, label: 'Thuế suất 8%' },
+    { value: 10, label: 'Thuế suất 10%' },
+  ];
 
   public readonly isLoading = signal<boolean>(false);
   public readonly isUploadingImage = signal<boolean>(false);
@@ -118,6 +126,7 @@ export class ProductFormModalComponent implements OnInit {
         description: p.description || '',
         variants: p.variants ? p.variants.map((v: any) => ({ ...v })) : [],
         recipes: p.recipes ? p.recipes.map((r: any) => ({ ...r })) : [],
+        tax_rate: p.tax_rate !== undefined && p.tax_rate !== null ? p.tax_rate : '',
       };
     } else {
       this.form.type = this.data.typeFilter || 'product';
@@ -228,6 +237,14 @@ export class ProductFormModalComponent implements OnInit {
 
     this.isLoading.set(true);
 
+    // Compute payload with parsed numbers and null for empty tax_rate
+    const payload = { ...this.form };
+    if (payload.tax_rate === '') {
+      payload.tax_rate = null;
+    } else if (payload.tax_rate !== null) {
+      payload.tax_rate = Number(payload.tax_rate);
+    }
+
     if (!this.data.product) {
       // Add product
       const maxProducts = this.stateService.getFeatureLimit('max_products');
@@ -239,7 +256,7 @@ export class ProductFormModalComponent implements OnInit {
         this.isLoading.set(false);
         return;
       }
-      this.apiService.createProduct(this.form).subscribe({
+      this.apiService.createProduct(payload).subscribe({
         next: () => {
           this.toastService.showToast('Thêm món thành công!', 'success');
           this.isLoading.set(false);
@@ -255,7 +272,7 @@ export class ProductFormModalComponent implements OnInit {
       });
     } else {
       // Edit product
-      this.apiService.updateProduct(this.data.product.id, this.form).subscribe({
+      this.apiService.updateProduct(this.data.product.id, payload).subscribe({
         next: () => {
           this.toastService.showToast('Cập nhật món thành công!', 'success');
           this.isLoading.set(false);

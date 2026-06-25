@@ -23,12 +23,14 @@ class Product extends Model
         'short_description',
         'description',
         'store_owner_address',
+        'tax_rate',
     ];
 
     protected $casts = [
         'price' => 'float',
         'cost_price' => 'float',
         'status' => 'boolean',
+        'tax_rate' => 'float',
     ];
 
     protected static function booted()

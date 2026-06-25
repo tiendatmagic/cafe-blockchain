@@ -10,6 +10,7 @@ class Order
     public ?int $customer_id;
     public float $total_amount;
     public int $discount_amount;
+    public float $tax_amount;
     public ?int $voucher_nft_token_id;
     public ?int $gift_voucher_nft_token_id;
     public string $payment_method;
@@ -31,6 +32,7 @@ class Order
         $this->customer_id = $attributes['customer_id'] ?? null;
         $this->total_amount = (float)($attributes['total_amount'] ?? 0.0);
         $this->discount_amount = (int)($attributes['discount_amount'] ?? 0);
+        $this->tax_amount = (float)($attributes['tax_amount'] ?? 0.0);
         $this->voucher_nft_token_id = isset($attributes['voucher_nft_token_id']) ? (int)$attributes['voucher_nft_token_id'] : null;
         $this->gift_voucher_nft_token_id = isset($attributes['gift_voucher_nft_token_id']) ? (int)$attributes['gift_voucher_nft_token_id'] : null;
         $this->payment_method = $attributes['payment_method'] ?? 'cash';
@@ -108,6 +110,7 @@ class Order
             'customer_id' => $this->customer_id,
             'total_amount' => $this->total_amount,
             'discount_amount' => $this->discount_amount,
+            'tax_amount' => $this->tax_amount,
             'voucher_nft_token_id' => $this->voucher_nft_token_id,
             'gift_voucher_nft_token_id' => $this->gift_voucher_nft_token_id,
             'payment_method' => $this->payment_method,

@@ -51,6 +51,9 @@ class Setting extends Model
         'store_opening_hours' => '',
         'store_address' => '',
         'store_description' => '',
+        'tax_enabled' => '0',
+        'tax_default_rate' => '10',
+        'tax_inclusive' => '0',
     ];
 
     protected static $jsonExcludedKeys = [

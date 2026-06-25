@@ -198,8 +198,60 @@ export class StoreComponent implements OnInit, AfterViewInit {
     return flatAmount;
   });
 
+  public readonly cartTaxAmount = computed(() => {
+    const settings = this.storeSettings();
+    const taxEnabled = settings?.tax_enabled === '1';
+    if (!taxEnabled) return 0;
+
+    const taxInclusive = settings?.tax_inclusive === '1';
+    const defaultTaxRate = Number(settings?.tax_default_rate ?? 10);
+
+    return this.cart().reduce((sum, item) => {
+      const price = item.variant ? item.variant.price : item.product.price;
+      const rate = (item.product.tax_rate !== null && item.product.tax_rate !== undefined && item.product.tax_rate !== '')
+        ? Number(item.product.tax_rate)
+        : defaultTaxRate;
+
+      let itemTax = 0;
+      if (taxInclusive) {
+        // Price includes tax: tax = price - (price / (1 + rate / 100))
+        itemTax = (price - (price / (1 + rate / 100))) * item.quantity;
+      } else {
+        // Price excludes tax: tax = price * (rate / 100)
+        itemTax = (price * (rate / 100)) * item.quantity;
+      }
+      return sum + itemTax;
+    }, 0);
+  });
+
+  public readonly cartSubtotal = computed(() => {
+    const settings = this.storeSettings();
+    const taxEnabled = settings?.tax_enabled === '1';
+    if (!taxEnabled) return this.cartTotal();
+
+    const taxInclusive = settings?.tax_inclusive === '1';
+    if (taxInclusive) {
+      return Math.max(0, this.cartTotal() - this.cartTaxAmount());
+    } else {
+      return this.cartTotal();
+    }
+  });
+
+  public readonly cartTotalWithTax = computed(() => {
+    const settings = this.storeSettings();
+    const taxEnabled = settings?.tax_enabled === '1';
+    if (!taxEnabled) return this.cartTotal();
+
+    const taxInclusive = settings?.tax_inclusive === '1';
+    if (taxInclusive) {
+      return this.cartTotal();
+    } else {
+      return this.cartTotal() + this.cartTaxAmount();
+    }
+  });
+
   public readonly cartTotalWithShipping = computed(() => {
-    return this.cartTotal() + this.shippingFee();
+    return this.cartTotalWithTax() + this.shippingFee();
   });
 
   // Lấy các sản phẩm thuộc danh mục đang hoạt động và lọc theo tìm kiếm

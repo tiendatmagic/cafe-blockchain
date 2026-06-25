@@ -97,6 +97,20 @@
     />
   </div>
 
+  <!-- Thuế suất sản phẩm -->
+  @if (stateService.hasFeature('enable_tax')) {
+    <div class="space-y-1.5 relative focus-within:z-10">
+      <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Thuế suất VAT (%)</label>
+      <app-custom-select
+        [value]="form.tax_rate"
+        (valueChange)="updateField('tax_rate', $event)"
+        [options]="taxOptions"
+        [triggerClass]="'w-full form-input bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700'"
+        placeholder="Chọn thuế suất..."
+      ></app-custom-select>
+    </div>
+  }
+
   <!-- Gắn Danh mục -->
   <div class="space-y-1.5 relative focus-within:z-10">
     <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Gắn Danh mục (Chọn nhiều)</label>

@@ -40,6 +40,9 @@ export class StoreCartDrawerComponent {
   @Input() shippingFee: number = 0;
   @Input() cartTotal: number = 0;
   @Input() cartTotalWithShipping: number = 0;
+  @Input() cartTaxAmount: number = 0;
+  @Input() cartSubtotal: number = 0;
+  @Input() cartTotalWithTax: number = 0;
   @Input() turnstileSiteKey: string | null = null;
   @Input() isSubmittingOrder: boolean = false;
   @Input() isQrTable: boolean = false;

@@ -140,7 +140,7 @@ export class PosComponent implements OnInit, OnDestroy {
 
   // Computed properties cho tổng tiền cuối cùng sau giảm giá
   public readonly posFinalTotal = computed(() => {
-    const total = this.cartTotal();
+    const total = this.stateService.cartTotalWithTax();
     const voucher = this.posSelectedVoucher();
     if (!voucher) return total;
     return Math.max(0, total - voucher.discount_amount);
@@ -266,6 +266,15 @@ export class PosComponent implements OnInit, OnDestroy {
   }
   public get cartTotal() {
     return this.stateService.cartTotal;
+  }
+  public get cartTaxAmount() {
+    return this.stateService.cartTaxAmount;
+  }
+  public get cartSubtotal() {
+    return this.stateService.cartSubtotal;
+  }
+  public get cartTotalWithTax() {
+    return this.stateService.cartTotalWithTax;
   }
   public get tableNumber() {
     return this.stateService.tableNumber;

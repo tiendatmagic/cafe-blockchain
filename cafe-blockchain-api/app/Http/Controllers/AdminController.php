@@ -160,6 +160,7 @@ class AdminController extends Controller
             'features.enable_storefront' => 'required|boolean',
             'features.enable_reports' => 'required|boolean',
             'features.enable_excel_export' => 'required|boolean',
+            'features.enable_tax' => 'required|boolean',
         ]);
 
         $plan = SubscriptionPlan::create([
@@ -215,6 +216,7 @@ class AdminController extends Controller
             'features.enable_storefront' => 'required|boolean',
             'features.enable_reports' => 'required|boolean',
             'features.enable_excel_export' => 'required|boolean',
+            'features.enable_tax' => 'required|boolean',
         ]);
 
         $plan->name = $validated['name'];
@@ -306,6 +308,7 @@ class AdminController extends Controller
                     'enable_storefront'   => false,
                     'enable_reports'      => false,
                     'enable_excel_export' => false,
+                    'enable_tax'          => false,
                 ]),
             ],
             [
@@ -334,6 +337,7 @@ class AdminController extends Controller
                     'enable_storefront'   => true,
                     'enable_reports'      => true,
                     'enable_excel_export' => false,
+                    'enable_tax'          => true,
                 ]),
             ],
             [
@@ -362,6 +366,7 @@ class AdminController extends Controller
                     'enable_storefront'   => true,
                     'enable_reports'      => true,
                     'enable_excel_export' => true,
+                    'enable_tax'          => true,
                 ]),
             ],
         ];

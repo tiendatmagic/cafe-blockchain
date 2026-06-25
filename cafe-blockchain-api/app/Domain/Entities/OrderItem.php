@@ -17,6 +17,8 @@ class OrderItem extends Model
         'price',
         'cost_price',
         'note',
+        'tax_rate',
+        'tax_amount',
     ];
 
     protected $casts = [
@@ -25,6 +27,8 @@ class OrderItem extends Model
         'price' => 'float',
         'cost_price' => 'float',
         'quantity' => 'integer',
+        'tax_rate' => 'float',
+        'tax_amount' => 'float',
     ];
 
     public function order()

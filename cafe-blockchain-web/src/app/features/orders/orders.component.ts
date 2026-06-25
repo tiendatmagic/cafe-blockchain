@@ -644,6 +644,16 @@ export class OrdersComponent implements OnInit {
       `;
     }
 
+    let taxHtml = '';
+    if (order.tax_amount && Number(order.tax_amount) > 0) {
+      taxHtml = `
+        <div style="display: flex; justify-content: space-between; font-size: 10px;">
+          <span>Thuế VAT:</span>
+          <span>${Number(order.tax_amount).toLocaleString('vi-VN')}đ</span>
+        </div>
+      `;
+    }
+
     doc.open();
     doc.write(`
       <html>
@@ -685,6 +695,7 @@ export class OrdersComponent implements OnInit {
           </table>
           <div class="divider"></div>
           ${discountHtml}
+          ${taxHtml}
           <div style="display: flex; justify-content: space-between;" class="total-row">
             <span>TỔNG THANH TOÁN:</span>
             <span>${order.total_amount.toLocaleString('vi-VN')}đ</span>

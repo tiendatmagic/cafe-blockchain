@@ -18,6 +18,7 @@ use App\Http\Controllers\StaffController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\TaxController;
 use App\Http\Middleware\RequireOwner;
 use Illuminate\Support\Facades\Route;
 
@@ -238,6 +239,17 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/roles/reset-default', [StaffController::class, 'resetDefaultRoles'])->middleware('permission:staffs');
             Route::put('/roles/{id}', [StaffController::class, 'updateRole'])->middleware('permission:staffs');
             Route::delete('/roles/{id}', [StaffController::class, 'destroyRole'])->middleware('permission:staffs');
+        });
+
+        // Tax (Kê khai & Ước tính Thuế) API
+        Route::middleware(['feature:enable_tax', 'permission:tax'])->group(function () {
+            Route::get('/tax/profile', [TaxController::class, 'getProfile']);
+            Route::post('/tax/profile', [TaxController::class, 'saveProfile']);
+            Route::get('/tax/estimate', [TaxController::class, 'getEstimate']);
+            Route::get('/tax/periods', [TaxController::class, 'getPeriods']);
+            Route::post('/tax/periods', [TaxController::class, 'createPeriod']);
+            Route::post('/tax/periods/{id}/lock', [TaxController::class, 'lockPeriod']);
+            Route::delete('/tax/periods/{id}', [TaxController::class, 'destroyPeriod']);
         });
 
         // Owner-only routes

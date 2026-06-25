@@ -1097,13 +1097,31 @@
 
         <!-- Tính tổng tiền -->
         <div class="space-y-1.5 py-1">
-          @if (posSelectedVoucher()) {
-            <div
-              class="flex items-center justify-between text-xs font-bold text-slate-500 dark:text-slate-400"
-            >
-              <span>Tạm tính</span>
-              <span>{{ cartTotal() | vnd }}</span>
+          <!-- Nếu có bật thuế VAT -->
+          @if (stateService.settings()?.tax_enabled === '1') {
+            <div class="flex items-center justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
+              <span>Tạm tính (chưa thuế)</span>
+              <span>{{ cartSubtotal() | vnd }}</span>
             </div>
+            <div class="flex items-center justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
+              <span class="flex items-center gap-1">
+                <span>Thuế VAT</span>
+                @if (stateService.settings()?.tax_inclusive === '1') {
+                  <span class="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 px-1 py-0.5 rounded font-extrabold">Đã gồm trong giá</span>
+                }
+              </span>
+              <span>{{ cartTaxAmount() | vnd }}</span>
+            </div>
+          } @else {
+            @if (posSelectedVoucher()) {
+              <div class="flex items-center justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
+                <span>Tạm tính</span>
+                <span>{{ cartTotal() | vnd }}</span>
+              </div>
+            }
+          }
+
+          @if (posSelectedVoucher()) {
             <div
               class="flex items-center justify-between text-xs font-bold text-emerald-600 dark:text-emerald-400"
             >

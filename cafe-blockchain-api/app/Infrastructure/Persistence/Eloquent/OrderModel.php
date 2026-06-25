@@ -23,6 +23,7 @@ class OrderModel extends Model
         'customer_id',
         'total_amount',
         'discount_amount',
+        'tax_amount',
         'voucher_nft_token_id',
         'gift_voucher_nft_token_id',
         'payment_method',
@@ -43,6 +44,7 @@ class OrderModel extends Model
     protected $casts = [
         'total_amount' => 'float',
         'discount_amount' => 'integer',
+        'tax_amount' => 'float',
     ];
 
     public function items()

@@ -161,6 +161,7 @@ class ProductController extends Controller
             'recipes.*.ingredient_id' => 'required|exists:products,id',
             'recipes.*.product_variant_id' => 'nullable|exists:product_variants,id',
             'recipes.*.quantity' => 'required|numeric|min:0.01',
+            'tax_rate' => 'nullable|numeric|min:-1|max:100',
         ]);
 
         $product = Product::create([
@@ -176,6 +177,7 @@ class ProductController extends Controller
             'short_description' => $validated['short_description'] ?? null,
             'description' => $validated['description'] ?? null,
             'store_owner_address' => $storeOwner,
+            'tax_rate' => isset($validated['tax_rate']) ? ($validated['tax_rate'] !== null && $validated['tax_rate'] !== '' ? (float)$validated['tax_rate'] : null) : null,
         ]);
 
         // Đồng bộ hóa các danh mục Nhiều-Nhiều
@@ -253,6 +255,7 @@ class ProductController extends Controller
             'recipes.*.ingredient_id' => 'required|exists:products,id',
             'recipes.*.product_variant_id' => 'nullable|exists:product_variants,id',
             'recipes.*.quantity' => 'required|numeric|min:0.01',
+            'tax_rate' => 'nullable|numeric|min:-1|max:100',
         ]);
 
         $oldImage = $product->image;
@@ -269,6 +272,7 @@ class ProductController extends Controller
             'status' => $validated['status'],
             'short_description' => $validated['short_description'] ?? null,
             'description' => $validated['description'] ?? null,
+            'tax_rate' => isset($validated['tax_rate']) ? ($validated['tax_rate'] !== null && $validated['tax_rate'] !== '' ? (float)$validated['tax_rate'] : null) : null,
         ]);
 
         $newImage = $product->image;

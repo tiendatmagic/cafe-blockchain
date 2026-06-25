@@ -1,0 +1,297 @@
+<div class="space-y-6">
+  <!-- Stepper header -->
+  <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800/60">
+    <span class="text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40 px-2.5 py-1 rounded-xl">
+      Bước {{ surveyStep() }}/3
+    </span>
+  </div>
+
+  <!-- Stepper Progress Bar -->
+  <div class="relative w-full h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+    <div
+      class="bg-purple-600 h-full transition-all duration-300"
+      [style.width.%]="(surveyStep() / 3) * 100"
+    ></div>
+  </div>
+
+  <!-- STEP 1: Ngành nghề kinh doanh -->
+  @if (surveyStep() === 1) {
+    <div class="space-y-6">
+      <div>
+        <h4 class="text-sm font-bold text-slate-700 dark:text-slate-300">
+          Bước 1: Chọn ngành nghề kinh doanh chính
+        </h4>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          Thuế suất GTGT & TNCN sẽ được xác định tự động dựa trên ngành nghề kinh doanh của bạn.
+        </p>
+      </div>
+
+      <!-- Industry select list -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <button
+          type="button"
+          (click)="setSurveyField('industry_type', 'production')"
+          [class]="'text-left p-4 rounded-[15px] border transition-all duration-200 ' + (surveyForm().industry_type === 'production' ? 'border-purple-600 bg-purple-500/5 ring-1 ring-purple-600/30' : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/30')"
+        >
+          <div class="flex justify-between items-start">
+            <span class="text-sm font-bold text-slate-800 dark:text-white">Dịch vụ ăn uống / F&B / Sản xuất</span>
+            @if (surveyForm().industry_type === 'production') {
+              <app-icon name="check-circle" class="w-4.5 h-4.5 text-purple-600" />
+            }
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
+            Áp dụng cho nhà hàng, quán cafe, đồ uống, và gia công sản xuất.<br>
+            <span class="text-purple-600 dark:text-purple-400 font-bold">GTGT: 3% | TNCN: 1.5%</span>
+          </p>
+        </button>
+
+        <button
+          type="button"
+          (click)="setSurveyField('industry_type', 'service')"
+          [class]="'text-left p-4 rounded-[15px] border transition-all duration-200 ' + (surveyForm().industry_type === 'service' ? 'border-purple-600 bg-purple-500/5 ring-1 ring-purple-600/30' : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/30')"
+        >
+          <div class="flex justify-between items-start">
+            <span class="text-sm font-bold text-slate-800 dark:text-white">Dịch vụ kinh doanh, cho thuê</span>
+            @if (surveyForm().industry_type === 'service') {
+              <app-icon name="check-circle" class="w-4.5 h-4.5 text-purple-600" />
+            }
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
+            Dịch vụ lưu trú, giải trí, tư vấn, xây dựng không thầu vật liệu.<br>
+            <span class="text-purple-600 dark:text-purple-400 font-bold">GTGT: 5% | TNCN: 2%</span>
+          </p>
+        </button>
+
+        <button
+          type="button"
+          (click)="setSurveyField('industry_type', 'distributor')"
+          [class]="'text-left p-4 rounded-[15px] border transition-all duration-200 ' + (surveyForm().industry_type === 'distributor' ? 'border-purple-600 bg-purple-500/5 ring-1 ring-purple-600/30' : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/30')"
+        >
+          <div class="flex justify-between items-start">
+            <span class="text-sm font-bold text-slate-800 dark:text-white">Bán buôn, cung cấp hàng hóa</span>
+            @if (surveyForm().industry_type === 'distributor') {
+              <app-icon name="check-circle" class="w-4.5 h-4.5 text-purple-600" />
+            }
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
+            Bán hàng siêu thị, cửa hàng tiện lợi, tạp hóa, đại lý phân phối.<br>
+            <span class="text-purple-600 dark:text-purple-400 font-bold">GTGT: 1% | TNCN: 0.5%</span>
+          </p>
+        </button>
+
+        <button
+          type="button"
+          (click)="setSurveyField('industry_type', 'others')"
+          [class]="'text-left p-4 rounded-[15px] border transition-all duration-200 ' + (surveyForm().industry_type === 'others' ? 'border-purple-600 bg-purple-500/5 ring-1 ring-purple-600/30' : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/30')"
+        >
+          <div class="flex justify-between items-start">
+            <span class="text-sm font-bold text-slate-800 dark:text-white">Hoạt động kinh doanh khác</span>
+            @if (surveyForm().industry_type === 'others') {
+              <app-icon name="check-circle" class="w-4.5 h-4.5 text-purple-600" />
+            }
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
+            Bán buôn thầu nguyên vật liệu, xây dựng có bao thầu vật tư.<br>
+            <span class="text-purple-600 dark:text-purple-400 font-bold">GTGT: 2% | TNCN: 1%</span>
+          </p>
+        </button>
+      </div>
+
+      <!-- Multi industry option -->
+      <div class="p-4 bg-slate-50 dark:bg-slate-900 rounded-[15px] space-y-4">
+        <app-custom-switch
+          [checked]="surveyForm().is_multi_industry"
+          (checkedChange)="setSurveyField('is_multi_industry', $event)"
+          label="Quán có kinh doanh nhiều nhóm ngành khác nhau"
+        ></app-custom-switch>
+
+        @if (surveyForm().is_multi_industry) {
+          <div class="space-y-3 pt-2">
+            <label class="text-xs font-bold text-slate-600 dark:text-slate-400 block">
+              Phân bổ tỉ lệ phần trăm doanh thu (%) - Tổng bằng 100%
+            </label>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="space-y-1">
+                <span class="text-xs text-slate-500">Phân phối (%):</span>
+                <input
+                  type="number"
+                  class="form-input w-full rounded-xl text-xs bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3 py-2 outline-none focus:border-purple-500 transition-colors"
+                  [ngModel]="surveyForm().industry_allocation.distributor"
+                  (ngModelChange)="setAllocationField('distributor', $event)"
+                />
+              </div>
+              <div class="space-y-1">
+                <span class="text-xs text-slate-500">Dịch vụ (%):</span>
+                <input
+                  type="number"
+                  class="form-input w-full rounded-xl text-xs bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3 py-2 outline-none focus:border-purple-500 transition-colors"
+                  [ngModel]="surveyForm().industry_allocation.service"
+                  (ngModelChange)="setAllocationField('service', $event)"
+                />
+              </div>
+              <div class="space-y-1">
+                <span class="text-xs text-slate-500">F&B / Sản xuất (%):</span>
+                <input
+                  type="number"
+                  class="form-input w-full rounded-xl text-xs bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3 py-2 outline-none focus:border-purple-500 transition-colors"
+                  [ngModel]="surveyForm().industry_allocation.production"
+                  (ngModelChange)="setAllocationField('production', $event)"
+                />
+              </div>
+              <div class="space-y-1">
+                <span class="text-xs text-slate-500">Kinh doanh khác (%):</span>
+                <input
+                  type="number"
+                  class="form-input w-full rounded-xl text-xs bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3 py-2 outline-none focus:border-purple-500 transition-colors"
+                  [ngModel]="surveyForm().industry_allocation.others"
+                  (ngModelChange)="setAllocationField('others', $event)"
+                />
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- STEP 2: Quy mô doanh thu -->
+  @if (surveyStep() === 2) {
+    <div class="space-y-6">
+      <div>
+        <h4 class="text-sm font-bold text-slate-700 dark:text-slate-300">
+          Bước 2: Chọn quy mô doanh thu năm ước tính
+        </h4>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          Xác định điều kiện miễn thuế cho hộ kinh doanh (nếu doanh thu năm dưới 100 triệu sẽ thuộc diện miễn thuế).
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 gap-4">
+        <button
+          type="button"
+          (click)="setSurveyField('business_group', 1)"
+          [class]="'text-left p-4 rounded-[15px] border transition-all duration-200 ' + (surveyForm().business_group === 1 ? 'border-purple-600 bg-purple-500/5 ring-1 ring-purple-600/30' : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/30')"
+        >
+          <div class="flex justify-between items-start">
+            <span class="text-sm font-bold text-slate-800 dark:text-white">Dưới 100 triệu đồng / năm</span>
+            @if (surveyForm().business_group === 1) {
+              <app-icon name="check-circle" class="w-4.5 h-4.5 text-purple-600" />
+            }
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Thuộc diện được miễn nộp thuế giá trị gia tăng và thuế thu nhập cá nhân.
+          </p>
+        </button>
+
+        <button
+          type="button"
+          (click)="setSurveyField('business_group', 2)"
+          [class]="'text-left p-4 rounded-[15px] border transition-all duration-200 ' + (surveyForm().business_group === 2 ? 'border-purple-600 bg-purple-500/5 ring-1 ring-purple-600/30' : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/30')"
+        >
+          <div class="flex justify-between items-start">
+            <span class="text-sm font-bold text-slate-800 dark:text-white">Từ 100 triệu đến 1 tỷ đồng / năm</span>
+            @if (surveyForm().business_group === 2) {
+              <app-icon name="check-circle" class="w-4.5 h-4.5 text-purple-600" />
+            }
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Hộ kinh doanh thuộc diện chịu thuế kê khai cơ bản.
+          </p>
+        </button>
+
+        <button
+          type="button"
+          (click)="setSurveyField('business_group', 3)"
+          [class]="'text-left p-4 rounded-[15px] border transition-all duration-200 ' + (surveyForm().business_group === 3 ? 'border-purple-600 bg-purple-500/5 ring-1 ring-purple-600/30' : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/30')"
+        >
+          <div class="flex justify-between items-start">
+            <span class="text-sm font-bold text-slate-800 dark:text-white">Từ 1 tỷ đến 50 tỷ đồng / năm</span>
+            @if (surveyForm().business_group === 3) {
+              <app-icon name="check-circle" class="w-4.5 h-4.5 text-purple-600" />
+            }
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Khuyên dùng chế độ chốt chênh lệch doanh thu và chi phí hóa đơn.
+          </p>
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- STEP 3: Phương pháp tính thuế -->
+  @if (surveyStep() === 3) {
+    <div class="space-y-6">
+      <div>
+        <h4 class="text-sm font-bold text-slate-700 dark:text-slate-300">
+          Bước 3: Chọn phương pháp tính thuế TNCN
+        </h4>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          Chọn cách thức ước tính thuế thu nhập cá nhân phù hợp với hệ thống kế toán nội bộ của bạn.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <button
+          type="button"
+          (click)="setSurveyField('tax_method', 'revenue_percent')"
+          [class]="'text-left p-4 rounded-[15px] border transition-all duration-200 ' + (surveyForm().tax_method === 'revenue_percent' ? 'border-purple-600 bg-purple-500/5 ring-1 ring-purple-600/30' : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/30')"
+        >
+          <div class="flex justify-between items-start">
+            <span class="text-sm font-bold text-slate-800 dark:text-white">Khoán tỷ lệ % Doanh thu</span>
+            @if (surveyForm().tax_method === 'revenue_percent') {
+              <app-icon name="check-circle" class="w-4.5 h-4.5 text-purple-600" />
+            }
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
+            Tính thuế TNCN = Doanh thu * Thuế suất ngành nghề.<br>
+            <span class="text-slate-400 dark:text-slate-500 text-[10px] block mt-1 font-bold">Khuyên dùng cho quán nhỏ không quản lý chi phí chặt chẽ.</span>
+          </p>
+        </button>
+
+        <button
+          type="button"
+          (click)="setSurveyField('tax_method', 'profit_percent')"
+          [class]="'text-left p-4 rounded-[15px] border transition-all duration-200 ' + (surveyForm().tax_method === 'profit_percent' ? 'border-purple-600 bg-purple-500/5 ring-1 ring-purple-600/30' : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/30')"
+        >
+          <div class="flex justify-between items-start">
+            <span class="text-sm font-bold text-slate-800 dark:text-white">15% trên Lợi nhuận ròng</span>
+            @if (surveyForm().tax_method === 'profit_percent') {
+              <app-icon name="check-circle" class="w-4.5 h-4.5 text-purple-600" />
+            }
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
+            Thuế TNCN = (Doanh thu - Chi phí) * 15%.<br>
+            <span class="text-slate-400 dark:text-slate-500 text-[10px] block mt-1 font-bold">Áp dụng nếu biên lợi nhuận thấp và ghi nhận chi phí đầy đủ.</span>
+          </p>
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Footer Stepper actions -->
+  <div class="flex justify-between pt-4 border-t border-slate-100 dark:border-slate-800/60">
+    <button
+      app-button
+      variant="secondary"
+      (click)="prevStep()"
+      [disabled]="surveyStep() === 1"
+    >
+      Quay lại
+    </button>
+
+    <div class="flex gap-2">
+      <button app-button variant="secondary" (click)="close()">Hủy</button>
+      @if (surveyStep() < 3) {
+        <button app-button variant="primary" class="!bg-purple-600 hover:!bg-purple-700 text-white" (click)="nextStep()">Tiếp theo</button>
+      } @else {
+        <button app-button variant="primary" class="!bg-purple-600 hover:!bg-purple-700 text-white" [disabled]="isSaving()" (click)="submitSurvey()">
+          @if (isSaving()) {
+            <span class="animate-pulse">Đang lưu...</span>
+          } @else {
+            Hoàn tất
+          }
+        </button>
+      }
+    </div>
+  </div>
+</div>

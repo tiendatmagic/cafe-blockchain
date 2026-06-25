@@ -24,6 +24,7 @@ export const routes: Routes = [
   { path: 'debts', canActivate: [FeatureGuard], data: { featureKey: 'enable_debts', featureName: 'Sổ nợ' }, loadComponent: () => import('@features/debts/debts.component').then(m => m.DebtsComponent) },
   { path: 'staffs', canActivate: [FeatureGuard], data: { featureKey: 'enable_staffs', featureName: 'Nhân viên' }, loadComponent: () => import('@features/staffs/staffs.component').then(m => m.StaffsComponent) },
   { path: 'shifts', canActivate: [FeatureGuard], data: { featureKey: 'enable_shifts', featureName: 'Ca làm việc' }, loadComponent: () => import('@features/shifts/shifts.component').then(m => m.ShiftsComponent) },
+  { path: 'tax', canActivate: [FeatureGuard], data: { featureKey: 'enable_tax', featureName: 'Kê khai & Ước tính Thuế' }, loadComponent: () => import('@features/tax/tax.component').then(m => m.TaxComponent) },
   { path: 'mobile-sign', loadComponent: () => import('@features/auth/pages/mobile-sign/mobile-sign.component').then(m => m.MobileSignComponent) },
   { path: 'blockchain-explorer', loadComponent: () => import('@features/blockchain/pages/blockchain-explorer/blockchain-explorer.component').then(m => m.BlockchainExplorerComponent) },
   { path: 'claim-points', loadComponent: () => import('@features/claim-points/claim-points.component').then(m => m.ClaimPointsComponent) },

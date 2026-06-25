@@ -2303,7 +2303,7 @@
                     class="btn-secondary btn-sm !px-2.5 !py-1 flex items-center gap-1.5"
                     title="Chỉnh sửa"
                   >
-                    <app-icon name="pencil" class="h-3.5 w-3.5" strokeWidth="2.5" />
+                    <app-icon name="edit" class="h-3.5 w-3.5" strokeWidth="2.5" />
                     <span>Sửa</span>
                   </button>
                   <button
@@ -2318,6 +2318,86 @@
                 </div>
               </ng-template>
             </app-table>
+          </div>
+        }
+
+        @if (settingsSubTab() === 'tax') {
+          <div app-card class="space-y-6 w-full">
+            <div
+              class="flex items-center gap-2.5 pb-2 border-b border-slate-100 dark:border-slate-800/60"
+            >
+              <div
+                class="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0 flex items-center"
+              >
+                <app-icon name="tax" class="h-5 w-5" strokeWidth="2" />
+              </div>
+              <h4 class="text-md font-bold text-slate-800 dark:text-white uppercase tracking-wider">
+                Cấu hình Thuế VAT
+              </h4>
+            </div>
+
+            <div class="space-y-5">
+              <!-- Grid các cấu hình -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Switch Bật tắt Thuế -->
+                <app-custom-switch
+                  type="full"
+                  label="Áp dụng thuế VAT"
+                  description="Tự động tính thuế VAT khi bán hàng và tạo đơn"
+                  [checked]="configForm().tax_enabled === '1'"
+                  (checkedChange)="updateConfigForm('tax_enabled', $event ? '1' : '0')"
+                  [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                ></app-custom-switch>
+
+                <!-- Switch Giá gồm thuế hay chưa -->
+                <app-custom-switch
+                  type="full"
+                  label="Giá bán đã bao gồm thuế"
+                  description="Tích chọn nếu giá sản phẩm hiển thị trên Storefront/POS đã có thuế VAT"
+                  [checked]="configForm().tax_inclusive === '1'"
+                  (checkedChange)="updateConfigForm('tax_inclusive', $event ? '1' : '0')"
+                  [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                ></app-custom-switch>
+
+                <!-- Thuế suất mặc định -->
+                <div class="space-y-1.5">
+                  <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                    >Thuế suất mặc định (%)</label
+                  >
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    class="form-input font-semibold"
+                    [ngModel]="configForm().tax_default_rate"
+                    (ngModelChange)="updateConfigForm('tax_default_rate', $event)"
+                    [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                    placeholder="Ví dụ: 10"
+                  />
+                  <span class="text-xs text-slate-400 block mt-1">Áp dụng khi sản phẩm chưa được thiết lập thuế suất riêng.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Nút Lưu -->
+            <div class="flex justify-end pt-4">
+              <button
+                (click)="saveConfig()"
+                [disabled]="isConfigSaving() || !web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                class="btn-primary flex items-center gap-2"
+              >
+                @if (isConfigSaving()) {
+                  <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Đang lưu...</span>
+                } @else {
+                  <app-icon name="check" class="h-4 w-4" strokeWidth="2.5" />
+                  <span>Lưu cấu hình thuế</span>
+                }
+              </button>
+            </div>
           </div>
         }
 

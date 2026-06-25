@@ -50,7 +50,13 @@ class UpdateOrderCommand
             }
 
             $totalAmount = 0;
+            $totalTaxAmount = 0;
             $itemsData = [];
+
+            // Đọc cấu hình thuế của cửa hàng
+            $taxEnabled = \App\Domain\Entities\Setting::getForStore('tax_enabled', $storeOwner, '0') === '1';
+            $taxDefaultRate = (float)\App\Domain\Entities\Setting::getForStore('tax_default_rate', $storeOwner, 10);
+            $taxInclusive = \App\Domain\Entities\Setting::getForStore('tax_inclusive', $storeOwner, '0') === '1';
 
             foreach ($data['items'] as $item) {
                 $product = Product::where('store_owner_address', $storeOwner)->findOrFail($item['product_id']);
@@ -77,7 +83,33 @@ class UpdateOrderCommand
                 }
 
                 $quantity = $item['quantity'];
-                $subTotal = $price * $quantity;
+
+                // Tính toán thuế của sản phẩm
+                $itemTaxRate = 0;
+                if ($taxEnabled) {
+                    if ($product->tax_rate !== null) {
+                        $itemTaxRate = $product->tax_rate == -1 ? 0 : (float)$product->tax_rate;
+                    } else {
+                        $itemTaxRate = $taxDefaultRate;
+                    }
+                }
+
+                $itemTaxAmount = 0;
+                if ($itemTaxRate > 0) {
+                    if ($taxInclusive) {
+                        $itemTaxAmount = ($price * $quantity) * ($itemTaxRate / (100 + $itemTaxRate));
+                    } else {
+                        $itemTaxAmount = ($price * $quantity) * ($itemTaxRate / 100);
+                    }
+                }
+
+                $totalTaxAmount += $itemTaxAmount;
+
+                if ($taxInclusive) {
+                    $subTotal = $price * $quantity;
+                } else {
+                    $subTotal = ($price * $quantity) + $itemTaxAmount;
+                }
                 $totalAmount += $subTotal;
 
                 $itemsData[] = [
@@ -87,6 +119,8 @@ class UpdateOrderCommand
                     'price' => $price,
                     'cost_price' => $costPrice,
                     'note' => $item['note'] ?? null,
+                    'tax_rate' => $itemTaxRate,
+                    'tax_amount' => $itemTaxAmount,
                 ];
             }
 
@@ -152,6 +186,7 @@ class UpdateOrderCommand
                 'customer_id' => $data['customer_id'] ?? null,
                 'total_amount' => $finalTotalAmount,
                 'discount_amount' => $discountAmount,
+                'tax_amount' => $totalTaxAmount,
                 'voucher_nft_token_id' => $voucherNftTokenId,
                 'payment_method' => $data['payment_method'],
                 'tx_hash' => isset($relayerResult['txHash']) ? $relayerResult['txHash'] : $order->tx_hash,

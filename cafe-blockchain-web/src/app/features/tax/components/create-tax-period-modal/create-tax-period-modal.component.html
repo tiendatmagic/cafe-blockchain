@@ -1,0 +1,91 @@
+<div class="space-y-6">
+  <!-- Chọn loại kỳ (Radio Buttons theo hình ảnh tham chiếu) -->
+  <div class="space-y-3">
+    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block">Kỳ kê khai</label>
+    <div class="flex items-center gap-6">
+      <label class="flex items-center gap-2 cursor-pointer text-sm font-semibold text-slate-700 dark:text-slate-300">
+        <input
+          type="radio"
+          name="newPeriodType"
+          value="month"
+          [ngModel]="newPeriodType()"
+          (ngModelChange)="newPeriodType.set($event)"
+          class="w-4.5 h-4.5 cursor-pointer accent-emerald-600 dark:accent-emerald-500"
+        />
+        <span>Theo tháng</span>
+      </label>
+      
+      <label class="flex items-center gap-2 cursor-pointer text-sm font-semibold text-slate-700 dark:text-slate-300">
+        <input
+          type="radio"
+          name="newPeriodType"
+          value="quarter"
+          [ngModel]="newPeriodType()"
+          (ngModelChange)="newPeriodType.set($event)"
+          class="w-4.5 h-4.5 cursor-pointer accent-emerald-600 dark:accent-emerald-500"
+        />
+        <span>Theo quý</span>
+      </label>
+
+      <label class="flex items-center gap-2 cursor-pointer text-sm font-semibold text-slate-700 dark:text-slate-300">
+        <input
+          type="radio"
+          name="newPeriodType"
+          value="year"
+          [ngModel]="newPeriodType()"
+          (ngModelChange)="newPeriodType.set($event)"
+          class="w-4.5 h-4.5 cursor-pointer accent-emerald-600 dark:accent-emerald-500"
+        />
+        <span>Theo năm</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Chọn giá trị kỳ (chỉ hiển thị cho Tháng và Quý) -->
+  @if (newPeriodType() === 'month') {
+    <div class="space-y-1.5">
+      <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block">Chọn tháng</label>
+      <app-custom-select
+        [value]="newPeriodValue()"
+        (valueChange)="newPeriodValue.set($event)"
+        [options]="monthOptions"
+        valueKey="value"
+        labelKey="label"
+        placeholder="Chọn tháng..."
+      ></app-custom-select>
+    </div>
+  }
+
+  @if (newPeriodType() === 'quarter') {
+    <div class="space-y-1.5">
+      <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block">Chọn Quý</label>
+      <app-custom-select
+        [value]="newPeriodValue()"
+        (valueChange)="newPeriodValue.set($event)"
+        [options]="quarterOptions"
+        valueKey="value"
+        labelKey="label"
+        placeholder="Chọn quý..."
+      ></app-custom-select>
+    </div>
+  }
+
+  <!-- Chọn Năm -->
+  <div class="space-y-1.5">
+    <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block">Chọn năm</label>
+    <app-custom-select
+      [value]="newPeriodYear()"
+      (valueChange)="newPeriodYear.set($event)"
+      [options]="yearOptions"
+      valueKey="value"
+      labelKey="label"
+      placeholder="Chọn năm..."
+    ></app-custom-select>
+  </div>
+
+  <!-- Action buttons -->
+  <div class="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800/60">
+    <button app-button variant="secondary" (click)="close()">Hủy</button>
+    <button app-button [disabled]="isSaving()" class="!bg-emerald-600 hover:!bg-emerald-700 text-white !px-6" (click)="createPeriod()">Tạo kỳ kê khai</button>
+  </div>
+</div>

@@ -249,6 +249,11 @@ export class StaffsComponent implements OnInit {
       name: 'Cấu hình quán',
       desc: 'Thiết lập thông tin quán, màu sắc dynamic, địa chỉ ví hợp đồng',
     },
+    {
+      key: 'tax',
+      name: 'Thuế & Kê khai',
+      desc: 'Quản lý hồ sơ thuế hộ kinh doanh, kỳ kê khai và ước tính thuế GTGT/TNCN',
+    },
   ];
 
   // Map các tùy chọn vai trò cho CustomSelect

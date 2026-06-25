@@ -773,4 +773,64 @@
       </div>
     </div>
   }
+
+  <!-- 17. TAX MAIN LAYOUT -->
+  @if (type === 'tax') {
+    <div class="animate-pulse space-y-6">
+      <!-- Summary header card -->
+      <div class="app-card flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-5">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-slate-200 dark:bg-slate-800 rounded-xl"></div>
+          <div class="space-y-2">
+            <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-40"></div>
+            <div class="h-3 bg-slate-100 dark:bg-slate-800/60 rounded-md w-56"></div>
+          </div>
+        </div>
+        <div class="w-24 h-9 bg-slate-200 dark:bg-slate-800 rounded-xl"></div>
+      </div>
+
+      <!-- Tab selector -->
+      <div class="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-full sm:w-96"></div>
+
+      <!-- Content area app-card -->
+      <div class="app-card p-5 space-y-6">
+        <div class="space-y-2">
+          <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-32"></div>
+          <div class="h-3 bg-slate-100 dark:bg-slate-800/60 rounded-md w-64"></div>
+        </div>
+        <div class="space-y-4">
+          <div class="h-8 bg-slate-100 dark:bg-slate-800 rounded-xl w-full"></div>
+          @for (i of getArray(5); track i) {
+            <div class="h-10 bg-slate-50 dark:bg-slate-900/40 rounded-xl w-full"></div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- 18. TAX LOGS LAYOUT -->
+  @if (type === 'tax-logs') {
+    <div class="animate-pulse space-y-6">
+      <div class="space-y-4">
+        <div class="h-8 bg-slate-100 dark:bg-slate-800 rounded-xl w-full"></div>
+        @for (i of getArray(rows); track i) {
+          <div class="h-10 bg-slate-50 dark:bg-slate-900/40 rounded-xl w-full"></div>
+        }
+      </div>
+    </div>
+  }
+
+  @if (type === 'tax-estimation') {
+    <div class="animate-pulse space-y-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (i of getArray(6); track i) {
+          <div class="app-card p-5 space-y-3">
+            <div class="h-3 bg-slate-200 dark:bg-slate-800/80 rounded-md w-1/2"></div>
+            <div class="h-8 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4"></div>
+            <div class="h-3 bg-slate-100 dark:bg-slate-800/60 rounded-md w-full"></div>
+          </div>
+        }
+      </div>
+    </div>
+  }
 </div>

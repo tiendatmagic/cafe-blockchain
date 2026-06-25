@@ -33,7 +33,13 @@ class CreateOrderCommandHandler
 
         return DB::transaction(function () use ($storeOwner, $data) {
             $totalAmount = 0;
+            $totalTaxAmount = 0;
             $itemsData = [];
+
+            // Đọc cấu hình thuế của cửa hàng
+            $taxEnabled = Setting::getForStore('tax_enabled', $storeOwner, '0') === '1';
+            $taxDefaultRate = (float)Setting::getForStore('tax_default_rate', $storeOwner, 10);
+            $taxInclusive = Setting::getForStore('tax_inclusive', $storeOwner, '0') === '1';
 
             // Tải trước (Eager Load) tất cả sản phẩm và các biến thể tương ứng
             $productIds = collect($data['items'])->pluck('product_id')->unique()->all();
@@ -72,7 +78,33 @@ class CreateOrderCommandHandler
                 }
 
                 $quantity = $item['quantity'];
-                $subTotal = $price * $quantity;
+
+                // Tính toán thuế của sản phẩm
+                $itemTaxRate = 0;
+                if ($taxEnabled) {
+                    if ($product->tax_rate !== null) {
+                        $itemTaxRate = $product->tax_rate == -1 ? 0 : (float)$product->tax_rate;
+                    } else {
+                        $itemTaxRate = $taxDefaultRate;
+                    }
+                }
+
+                $itemTaxAmount = 0;
+                if ($itemTaxRate > 0) {
+                    if ($taxInclusive) {
+                        $itemTaxAmount = ($price * $quantity) * ($itemTaxRate / (100 + $itemTaxRate));
+                    } else {
+                        $itemTaxAmount = ($price * $quantity) * ($itemTaxRate / 100);
+                    }
+                }
+
+                $totalTaxAmount += $itemTaxAmount;
+
+                if ($taxInclusive) {
+                    $subTotal = $price * $quantity;
+                } else {
+                    $subTotal = ($price * $quantity) + $itemTaxAmount;
+                }
                 $totalAmount += $subTotal;
 
                 $itemsData[] = [
@@ -82,6 +114,8 @@ class CreateOrderCommandHandler
                     'price' => $price,
                     'cost_price' => $costPrice,
                     'note' => $item['note'] ?? null,
+                    'tax_rate' => $itemTaxRate,
+                    'tax_amount' => $itemTaxAmount,
                 ];
             }
 
@@ -184,6 +218,7 @@ class CreateOrderCommandHandler
                 'customer_id' => $data['customer_id'] ?? null,
                 'total_amount' => $finalTotalAmount,
                 'discount_amount' => $discountAmount,
+                'tax_amount' => $totalTaxAmount,
                 'voucher_nft_token_id' => $voucherNftTokenId,
                 'payment_method' => $data['payment_method'],
                 'status' => 'pending',

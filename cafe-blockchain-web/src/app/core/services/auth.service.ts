@@ -22,7 +22,8 @@ export const FEATURE_CONFIGS: FeatureConfig[] = [
   { key: 'enable_debts', tab: 'debts', name: 'Sổ nợ' },
   { key: 'enable_financials', tab: 'financials', name: 'Thu chi tài chính' },
   { key: 'enable_reports', tab: 'reports', name: 'Báo cáo' },
-  { key: 'enable_staffs', tab: 'staffs', name: 'Nhân viên' }
+  { key: 'enable_staffs', tab: 'staffs', name: 'Nhân viên' },
+  { key: 'enable_tax', tab: 'tax', name: 'Kê khai & Ước tính Thuế' }
 ];
 
 export const DEFAULT_PLAN_FEATURES: Record<string, Record<string, any>> = {
@@ -41,6 +42,7 @@ export const DEFAULT_PLAN_FEATURES: Record<string, Record<string, any>> = {
     'enable_excel_export': false,
     'enable_storefront': false,
     'enable_staffs': false,
+    'enable_tax': false,
     'max_products': 50,
     'max_staffs': 0,
     'max_customers': 50,

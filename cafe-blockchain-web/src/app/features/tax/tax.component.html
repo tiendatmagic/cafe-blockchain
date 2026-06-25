@@ -1,0 +1,390 @@
+<div class="space-y-6 max-w-[1530px] mx-auto p-4 sm:p-6 text-slate-800 dark:text-slate-200 font-sans">
+  <app-page-header
+    title="Quản lý & Kê khai Thuế"
+    description="Ước tính thuế GTGT và TNCN phải nộp dành cho Hộ Kinh Doanh Cá Thể và cấu hình hóa đơn."
+  >
+    <app-icon
+      icon
+      name="tax"
+      class="h-6.5 w-6.5 text-[var(--dynamic-primary)]"
+      strokeWidth="2.5"
+    />
+  </app-page-header>
+
+  @if (web3Service.walletConnected()) {
+    @if (stateService.hasPermission('tax')) {
+      @if (taxService.isLoading()) {
+        <app-skeleton-loader type="tax"></app-skeleton-loader>
+      } @else {
+        <div class="space-y-6 animate-in fade-in duration-300">
+          <!-- Summary header card -->
+          <div app-card class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 rounded-[15px]">
+            <div class="flex items-center gap-3">
+              <div class="p-2.5 bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-xl flex items-center">
+                <app-icon name="tax" class="h-6 w-6" />
+              </div>
+              <div>
+                @if (taxService.isProfileConfigured()) {
+                  <h3 class="text-sm font-bold text-slate-800 dark:text-white">
+                    Ngành nghề chính:
+                    <span class="text-purple-600 dark:text-purple-400">{{
+                      getIndustryLabel(taxService.taxProfile()?.industry_type)
+                    }}</span>
+                  </h3>
+                  <p class="text-xs text-slate-500 mt-0.5 font-semibold">
+                    Quy mô: {{ getBusinessGroupLabel(taxService.taxProfile()?.business_group) }} | Phương pháp TNCN:
+                    <span class="font-bold">
+                      {{ taxService.taxProfile()?.tax_method === 'profit_percent' ? '15% Lợi nhuận' : 'Tỷ lệ % doanh thu' }}
+                    </span>
+                  </p>
+                } @else {
+                  <h3 class="text-sm font-bold text-slate-800 dark:text-white">
+                    Hồ sơ khảo sát thuế chưa thiết lập
+                  </h3>
+                  <p class="text-xs text-slate-500 mt-0.5 font-semibold">
+                    Vui lòng hoàn tất khảo sát tại tab <span class="text-purple-600 font-bold">Kê khai thuế</span> để sử dụng đầy đủ chức năng.
+                  </p>
+                }
+              </div>
+            </div>
+            @if (taxService.isProfileConfigured()) {
+              <button app-button variant="secondary" size="sm" (click)="resetTaxProfile()">
+                <app-icon name="edit" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
+                <span>Khảo sát lại</span>
+              </button>
+            }
+          </div>
+
+          <!-- Banner thông tư 50 -->
+          <div class="flex items-center gap-2.5 px-4 py-3 bg-sky-50 dark:bg-sky-950/20 text-sky-700 dark:text-sky-400 text-xs font-semibold rounded-[15px] border border-sky-100/50 dark:border-sky-900/30">
+            <app-icon name="info" class="h-4.5 w-4.5 shrink-0 text-sky-500" strokeWidth="2.2" />
+            <span>Hệ thống đã cập nhật tờ khai thuế theo thông tư 50/2026/TT-BTC</span>
+          </div>
+
+          <!-- Tab Selector -->
+          <app-tab-group
+            [options]="tabOptions"
+            [activeValue]="activeTab()"
+            (valueChange)="setTab($event)"
+            [flex]="false"
+            class="w-full shrink-0"
+          ></app-tab-group>
+
+          <!-- TAB 1: NHẬT KÝ CHỐT THUẾ (LOCKED PERIODS) -->
+          @if (activeTab() === 'logs') {
+            <div app-card class="space-y-6 rounded-[15px] animate-in fade-in duration-200">
+              <div>
+                <h4 class="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider">
+                  Nhật ký chốt thuế
+                </h4>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-bold">
+                  Xem lịch sử các kỳ kê khai thuế đã khóa sổ kế toán, số tiền đã kê nộp.
+                </p>
+              </div>
+
+              @if (isLogsLoading()) {
+                <app-skeleton-loader type="tax-logs" [rows]="5"></app-skeleton-loader>
+              } @else if (logsList().length === 0) {
+                <div class="py-12 text-center text-slate-400 font-bold">
+                  Không có dữ liệu kỳ kê khai đã khóa sổ.
+                </div>
+              } @else {
+                <div class="overflow-x-auto">
+                  <table class="w-full text-sm text-left">
+                    <thead>
+                      <tr class="border-b border-slate-100 dark:border-slate-800/60 text-xs font-black uppercase text-slate-400 tracking-wider">
+                        <th class="py-3 px-4">Tên kỳ</th>
+                        <th class="py-3 px-4 text-right">Doanh thu chốt</th>
+                        <th class="py-3 px-4 text-right">Chi phí chốt</th>
+                        <th class="py-3 px-4 text-right">Thuế GTGT</th>
+                        <th class="py-3 px-4 text-right">Thuế TNCN</th>
+                        <th class="py-3 px-4 text-right">Tổng thuế</th>
+                        <th class="py-3 px-4 text-center">Trạng thái</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800/40">
+                      @for (row of logsList(); track row.id) {
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-850/50 transition-colors">
+                          <td class="py-3.5 px-4 font-bold text-slate-800 dark:text-white">
+                            {{ getPeriodName(row) }}
+                          </td>
+                          <td class="py-3.5 px-4 text-right font-mono font-medium">{{ row.revenue_amount | vnd }}</td>
+                          <td class="py-3.5 px-4 text-right font-mono font-medium text-slate-500">{{ row.expense_amount | vnd }}</td>
+                          <td class="py-3.5 px-4 text-right font-mono font-bold text-purple-600 dark:text-purple-400">{{ row.estimated_vat | vnd }}</td>
+                          <td class="py-3.5 px-4 text-right font-mono font-bold text-purple-600 dark:text-purple-400">{{ row.estimated_pit | vnd }}</td>
+                          <td class="py-3.5 px-4 text-right font-mono font-black text-rose-500">
+                            {{ (row.estimated_vat + row.estimated_pit) | vnd }}
+                                        </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- TAB 2: KỲ KÊ KHAI (OPEN PERIODS / SURVEY) -->
+          @if (activeTab() === 'declaration') {
+            @if (!taxService.isProfileConfigured()) {
+              <!-- Giao diện yêu cầu thiết lập hồ sơ thuế -->
+              <div app-card class="max-w-2xl mx-auto py-12 flex flex-col items-center justify-center text-center space-y-4 rounded-[15px] animate-in fade-in duration-200">
+                <div class="p-4 bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-full">
+                  <app-icon name="tax" class="h-10 w-10" strokeWidth="2" />
+                </div>
+                <div class="text-sm font-bold text-slate-800 dark:text-white">
+                  Hồ sơ khảo sát thuế chưa được thiết lập
+                </div>
+                <p class="text-xs text-slate-500 dark:text-slate-400 max-w-md font-semibold">
+                  Vui lòng hoàn thành khảo sát hồ sơ thuế của cửa hàng để bắt đầu tạo kỳ kê khai và quản lý thuế.
+                </p>
+                <button app-button variant="primary" class="!bg-purple-600 hover:!bg-purple-700 text-white !px-6" (click)="openSurveyModal()">
+                  Thiết lập hồ sơ ngay
+                </button>
+              </div>
+            } @else {
+              <!-- Các kỳ kê khai thuế đang mở (đã khảo sát xong) -->
+              <div app-card class="space-y-6 rounded-[15px] animate-in fade-in duration-200">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h4 class="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider">
+                      Các kỳ kê khai thuế đang mở
+                    </h4>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-bold">
+                      Khởi tạo kỳ kê khai và thực hiện khóa sổ để hoàn thành kê khai.
+                    </p>
+                  </div>
+                  <button app-button variant="primary" (click)="createPeriod()">
+                    <app-icon name="plus" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
+                    <span>Tạo kỳ kê khai mới</span>
+                  </button>
+                </div>
+
+                @if (isPeriodsLoading()) {
+                  <app-skeleton-loader type="tax-logs" [rows]="5"></app-skeleton-loader>
+                } @else if (periodsList().length === 0) {
+                  <div class="py-12 flex flex-col items-center justify-center text-center space-y-4">
+                    <!-- SVG Minh họa Tờ giấy & Cây bút -->
+                    <div class="relative w-40 h-40 flex items-center justify-center text-slate-300 dark:text-slate-700">
+                      <svg class="w-28 h-28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                      </svg>
+                      <svg class="w-12 h-12 absolute bottom-6 right-6 text-emerald-600 dark:text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 20h9"></path>
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                      </svg>
+                    </div>
+                    <div class="text-sm font-bold text-slate-700 dark:text-slate-300">
+                      Chưa có kỳ kê khai
+                    </div>
+                    <button
+                      app-button
+                      class="!bg-emerald-600 hover:!bg-emerald-700 text-white !px-6 !py-2.5 rounded-xl shadow-lg shadow-emerald-600/10 flex items-center gap-2"
+                      (click)="createPeriod()"
+                    >
+                      <app-icon name="plus" class="h-4 w-4" strokeWidth="2.5" />
+                      <span>Tạo kỳ kê khai</span>
+                    </button>
+                  </div>
+                } @else {
+                  <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                      <thead>
+                        <tr class="border-b border-slate-100 dark:border-slate-800/60 text-xs font-black uppercase text-slate-400 tracking-wider">
+                          <th class="py-3 px-4">Tên kỳ</th>
+                          <th class="py-3 px-4 text-right">Doanh thu tạm tính</th>
+                          <th class="py-3 px-4 text-right">Chi phí tạm tính</th>
+                          <th class="py-3 px-4 text-right">Thuế GTGT</th>
+                          <th class="py-3 px-4 text-right">Thuế TNCN</th>
+                          <th class="py-3 px-4 text-right">Tổng thuế ước tính</th>
+                          <th class="py-3 px-4 text-center">Hành động</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-slate-100 dark:divide-slate-800/40">
+                        @for (row of periodsList(); track row.id) {
+                          <tr class="hover:bg-slate-50 dark:hover:bg-slate-850/50 transition-colors">
+                            <td class="py-3.5 px-4 font-bold text-slate-800 dark:text-white">
+                              {{ getPeriodName(row) }}
+                            </td>
+                            <td class="py-3.5 px-4 text-right font-mono font-medium">{{ row.revenue_amount | vnd }}</td>
+                            <td class="py-3.5 px-4 text-right font-mono font-medium text-slate-500">{{ row.expense_amount | vnd }}</td>
+                            <td class="py-3.5 px-4 text-right font-mono font-bold text-purple-600 dark:text-purple-400">{{ row.estimated_vat | vnd }}</td>
+                            <td class="py-3.5 px-4 text-right font-mono font-bold text-purple-600 dark:text-purple-400">{{ row.estimated_pit | vnd }}</td>
+                            <td class="py-3.5 px-4 text-right font-mono font-black text-rose-500">
+                              {{ (row.estimated_vat + row.estimated_pit) | vnd }}
+                            </td>
+                            <td class="py-3.5 px-4">
+                              <div class="flex items-center justify-center gap-2">
+                                <button
+                                  (click)="lockPeriod(row.id)"
+                                  class="btn-primary btn-sm !px-2.5 !py-1 flex items-center gap-1.5"
+                                >
+                                  <app-icon name="lock" class="h-3.5 w-3.5" strokeWidth="2.5" />
+                                  <span>Khóa sổ</span>
+                                </button>
+                                <button
+                                  (click)="deletePeriod(row.id)"
+                                  class="btn-danger-light btn-sm !px-2.5 !py-1 flex items-center gap-1.5"
+                                >
+                                  <app-icon name="trash" class="h-3.5 w-3.5" strokeWidth="2.5" />
+                                  <span>Xóa</span>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                }
+              </div>
+            }
+          }
+
+          <!-- TAB 3: ƯỚC TÍNH THUẾ ĐỘNG (DYNAMIC ESTIMATION) -->
+          @if (activeTab() === 'estimation') {
+            @if (!taxService.isProfileConfigured()) {
+              <!-- Card yêu cầu thiết lập hồ sơ thuế -->
+              <div app-card class="py-12 flex flex-col items-center justify-center text-center space-y-4 rounded-[15px] animate-in fade-in duration-200">
+                <div class="p-4 bg-purple-500/10 text-purple-600 rounded-full">
+                  <app-icon name="tax" class="h-10 w-10" strokeWidth="2" />
+                </div>
+                <div class="text-sm font-bold text-slate-800 dark:text-white">
+                  Hồ sơ khảo sát thuế chưa được thiết lập
+                </div>
+                <p class="text-xs text-slate-500 dark:text-slate-400 max-w-sm">
+                  Để xem số liệu ước tính thuế GTGT & TNCN, vui lòng hoàn tất thiết lập hồ sơ thuế của cửa hàng trước.
+                </p>
+                 <button app-button variant="primary" class="!bg-purple-600 hover:!bg-purple-700 text-white" (click)="openSurveyModal()">
+                  Thiết lập ngay
+                </button>
+              </div>
+            } @else {
+              <div class="space-y-6 animate-in fade-in duration-200">
+                <!-- Date Range filters card -->
+                <div app-card class="rounded-[15px] space-y-4">
+                  <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
+                      <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wide block">Từ ngày</label>
+                        <app-custom-date-picker
+                          [selectedDate]="estimateStartDate()"
+                          (selectedDateChange)="estimateStartDate.set($event)"
+                          placeholder="Chọn ngày bắt đầu..."
+                        ></app-custom-date-picker>
+                      </div>
+                      <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wide block">Đến ngày</label>
+                        <app-custom-date-picker
+                          [selectedDate]="estimateEndDate()"
+                          (selectedDateChange)="estimateEndDate.set($event)"
+                          placeholder="Chọn ngày kết thúc..."
+                        ></app-custom-date-picker>
+                      </div>
+                    </div>
+                    <button
+                      app-button
+                      variant="primary"
+                      [disabled]="isEstimateLoading()"
+                      (click)="getEstimate()"
+                      class="h-10 px-5 flex items-center gap-2"
+                    >
+                      @if (isEstimateLoading()) {
+                        <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        <span>Đang tính...</span>
+                      } @else {
+                        <app-icon name="search" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
+                        <span>Tính thuế</span>
+                      }
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Estimated visual cards -->
+                @if (isEstimateLoading()) {
+                  <app-skeleton-loader type="tax-estimation"></app-skeleton-loader>
+                } @else if (estimateResult()) {
+                  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Revenue card -->
+                    <div app-card class="bg-slate-50 dark:bg-slate-900 rounded-[15px] space-y-2 border border-slate-200/40 dark:border-slate-800/40">
+                      <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Doanh thu bán lẻ</span>
+                      <h2 class="text-2xl font-black text-slate-800 dark:text-white font-mono">
+                        {{ estimateResult().revenue | vnd }}
+                      </h2>
+                      <p class="text-[10px] text-slate-500 font-medium pt-1">
+                        Tổng tiền các hóa đơn hoàn thành trong thời gian chọn.
+                      </p>
+                    </div>
+
+                    <!-- Expense card -->
+                    <div app-card class="bg-slate-50 dark:bg-slate-900 rounded-[15px] space-y-2 border border-slate-200/40 dark:border-slate-800/40">
+                      <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Tổng chi phí phát sinh</span>
+                      <h2 class="text-2xl font-black text-slate-800 dark:text-white font-mono">
+                        {{ estimateResult().expense | vnd }}
+                      </h2>
+                      <p class="text-[10px] text-slate-500 font-medium pt-1">
+                        Chi phí lấy từ các phiếu chi thu ngân lập (loại giao dịch 'chi').
+                      </p>
+                    </div>
+
+                    <!-- Lợi nhuận ròng -->
+                    <div app-card class="bg-slate-50 dark:bg-slate-900 rounded-[15px] space-y-2 border border-slate-200/40 dark:border-slate-800/40">
+                      <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Lợi nhuận ước tính</span>
+                      <h2 class="text-2xl font-black text-purple-600 dark:text-purple-400 font-mono">
+                        {{ Math.max(0, estimateResult().revenue - estimateResult().expense) | vnd }}
+                      </h2>
+                      <p class="text-[10px] text-slate-500 font-medium pt-1">
+                        Doanh thu trừ Chi phí vận hành trong kỳ.
+                      </p>
+                    </div>
+
+                    <!-- VAT estimate -->
+                    <div app-card class="bg-slate-50 dark:bg-slate-900 rounded-[15px] space-y-2 border border-slate-200/40 dark:border-slate-800/40">
+                      <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Thuế GTGT ước tính</span>
+                      <h2 class="text-2xl font-black text-slate-800 dark:text-white font-mono">
+                        {{ estimateResult().estimated_vat | vnd }}
+                      </h2>
+                      <p class="text-[10px] text-slate-500 font-medium pt-1">
+                        Thuế suất áp dụng: {{ (estimateResult().vat_rate * 100).toFixed(1) }}% doanh thu.
+                      </p>
+                    </div>
+
+                    <!-- PIT estimate -->
+                    <div app-card class="bg-slate-50 dark:bg-slate-900 rounded-[15px] space-y-2 border border-slate-200/40 dark:border-slate-800/40">
+                      <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Thuế TNCN ước tính</span>
+                      <h2 class="text-2xl font-black text-slate-800 dark:text-white font-mono">
+                        {{ estimateResult().estimated_pit | vnd }}
+                      </h2>
+                      <p class="text-[10px] text-slate-500 font-medium pt-1">
+                        Phương pháp: {{ taxService.taxProfile()?.tax_method === 'profit_percent' ? '15% Lợi nhuận' : 'Tỷ lệ % doanh thu' }}.
+                      </p>
+                    </div>
+
+                    <!-- Total tax estimate -->
+                    <div app-card class="bg-rose-500/5 rounded-[15px] space-y-2 border border-rose-500/20">
+                      <span class="text-[11px] font-bold text-rose-500 uppercase tracking-wider block">Tổng thuế tạm tính</span>
+                      <h2 class="text-2xl font-black text-rose-500 font-mono">
+                        {{ estimateResult().estimated_total_tax | vnd }}
+                      </h2>
+                      <p class="text-[10px] text-rose-500/80 font-medium pt-1 font-bold">
+                        Tổng số tiền thuế GTGT và TNCN ước tính phải đóng.
+                      </p>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          }
+        </div>
+      }
+    } @else {
+      <app-access-restricted pageName="Thuế & Kê khai"></app-access-restricted>
+    }
+  } @else {
+    <app-web3-connect-prompt title="Kết nối ví Web3 để truy cập phân hệ Thuế"></app-web3-connect-prompt>
+  }
+</div>

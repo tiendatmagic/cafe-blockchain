@@ -51,7 +51,8 @@ class CheckFeature
                     'enable_storefront',
                     'enable_reports',
                     'enable_excel_export',
-                    'enable_shifts'
+                    'enable_shifts',
+                    'enable_tax'
                 ];
                 if (in_array($feature, $premiumFeatures)) {
                     $enabled = isset($features[$feature]) ? (bool)$features[$feature] : false;

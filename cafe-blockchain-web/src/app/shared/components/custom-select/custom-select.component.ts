@@ -139,15 +139,15 @@ export class CustomSelectComponent implements ControlValueAccessor, OnDestroy {
 
   public toggleOpen(): void {
     if (this.disabled) return;
-    this.isOpen.update((val) => !val);
-    if (this.isOpen()) {
+    const nextState = !this.isOpen();
+    if (nextState) {
       this.searchQuery.set('');
-      // Chờ Angular render dropdown vào DOM rồi đo tọa độ
-      setTimeout(() => {
-        this.updateDropdownPosition();
-        this.addScrollListeners();
-      }, 0);
+      // Tính toán vị trí ngay lập tức trước khi dropdown hiển thị để tránh hiện tượng giật/lệch layout
+      this.updateDropdownPosition();
+      this.isOpen.set(nextState);
+      this.addScrollListeners();
     } else {
+      this.isOpen.set(nextState);
       this.removeScrollListeners();
     }
   }

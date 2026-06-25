@@ -25,7 +25,10 @@ export class SkeletonLoaderComponent {
     | 'tables'
     | 'staffs'
     | 'shifts'
-    | 'settings' = 'table';
+    | 'settings'
+    | 'tax'
+    | 'tax-logs'
+    | 'tax-estimation' = 'table';
   @Input() rows = 5;
   @Input() cols = 5;
   @Input() cards = 8;

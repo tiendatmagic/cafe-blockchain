@@ -123,20 +123,26 @@ export class SettingsComponent implements OnInit {
     });
   }
 
-  // Tab nhỏ trong Cấu hình: 'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher' | 'store' | 'payment'
+  // Tab nhỏ trong Cấu hình: 'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher' | 'store' | 'payment' | 'tax'
   public readonly settingsSubTab = signal<
-    'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher' | 'store' | 'payment'
+    'general' | 'blockchain' | 'permissions' | 'invoice' | 'voucher' | 'store' | 'payment' | 'tax'
   >('general');
 
-  public readonly settingsSubTabOptions: TabOption[] = [
-    { value: 'general', label: 'Cấu hình Quán' },
-    { value: 'payment', label: 'Thanh toán' },
-    { value: 'invoice', label: 'Mẫu hoá đơn' },
-    { value: 'store', label: 'Website' },
-    { value: 'voucher', label: 'Voucher NFT' },
-    { value: 'blockchain', label: 'Blockchain Web3' },
-    { value: 'permissions', label: 'Ủy quyền ví' },
-  ];
+  public get settingsSubTabOptions(): TabOption[] {
+    const list: TabOption[] = [
+      { value: 'general', label: 'Cấu hình Quán' },
+      { value: 'payment', label: 'Thanh toán' },
+      { value: 'invoice', label: 'Mẫu hoá đơn' },
+      { value: 'store', label: 'Website' },
+      { value: 'voucher', label: 'Voucher NFT' },
+      { value: 'blockchain', label: 'Blockchain Web3' },
+      { value: 'permissions', label: 'Ủy quyền ví' },
+    ];
+    if (this.stateService.hasFeature('enable_tax') && this.stateService.hasPermission('tax')) {
+      list.push({ value: 'tax', label: 'Cấu hình Thuế' });
+    }
+    return list;
+  }
 
   // Các signals quản lý lỗi và đếm số từ
   public readonly phoneError = signal<string>('');
@@ -157,6 +163,9 @@ export class SettingsComponent implements OnInit {
   public readonly configForm = signal<any>({
     store_name: '',
     store_phone: '',
+    tax_enabled: '0',
+    tax_default_rate: 10,
+    tax_inclusive: '0',
     store_opening_hours: '',
     store_address: '',
     store_description: '',
