@@ -579,12 +579,13 @@ export class TaxComponent implements OnInit {
         const s2dId = `real-s2d-locked-${item.id}`;
         const s2eId = `real-s2e-locked-${item.id}`;
         
-        const decSaved = localStorage.getItem(`tax_data_${decId}_rows`) !== null;
-        const s2aSaved = localStorage.getItem(`tax_data_${s2aId}_rows`) !== null;
-        const s2bSaved = localStorage.getItem(`tax_data_${s2bId}_rows`) !== null;
-        const s2cSaved = localStorage.getItem(`tax_data_${s2cId}_rows`) !== null;
-        const s2dSaved = localStorage.getItem(`tax_data_${s2dId}_rows`) !== null;
-        const s2eSaved = localStorage.getItem(`tax_data_${s2eId}_rows`) !== null;
+        const decSaved = item.details?.some((d: any) => d.document_type === 'declaration') || false;
+        const s1aSaved = item.details?.some((d: any) => d.document_type === 's1a') || false;
+        const s2aSaved = item.details?.some((d: any) => d.document_type === 's2a') || false;
+        const s2bSaved = item.details?.some((d: any) => d.document_type === 's2b') || false;
+        const s2cSaved = item.details?.some((d: any) => d.document_type === 's2c') || false;
+        const s2dSaved = item.details?.some((d: any) => d.document_type === 's2d') || false;
+        const s2eSaved = item.details?.some((d: any) => d.document_type === 's2e') || false;
 
         allLogs.push({
           id: decId,
@@ -598,8 +599,8 @@ export class TaxComponent implements OnInit {
           id: s1aId,
           category: 'S1a - HKD',
           name: `Sổ chi tiết doanh thu bán hàng hóa dịch vụ kỳ ${periodName}`,
-          status: 'saved',
-          statusLabel: 'Đã lưu',
+          status: s1aSaved ? 'saved' : 'pending',
+          statusLabel: s1aSaved ? 'Đã lưu' : 'Chưa kê khai / Nháp',
           period: item
         });
         allLogs.push({
@@ -655,12 +656,13 @@ export class TaxComponent implements OnInit {
         const s2dId = `real-s2d-open-${item.id}`;
         const s2eId = `real-s2e-open-${item.id}`;
         
-        const decSaved = localStorage.getItem(`tax_data_${decId}_rows`) !== null;
-        const s2aSaved = localStorage.getItem(`tax_data_${s2aId}_rows`) !== null;
-        const s2bSaved = localStorage.getItem(`tax_data_${s2bId}_rows`) !== null;
-        const s2cSaved = localStorage.getItem(`tax_data_${s2cId}_rows`) !== null;
-        const s2dSaved = localStorage.getItem(`tax_data_${s2dId}_rows`) !== null;
-        const s2eSaved = localStorage.getItem(`tax_data_${s2eId}_rows`) !== null;
+        const decSaved = item.details?.some((d: any) => d.document_type === 'declaration') || false;
+        const s1aSaved = item.details?.some((d: any) => d.document_type === 's1a') || false;
+        const s2aSaved = item.details?.some((d: any) => d.document_type === 's2a') || false;
+        const s2bSaved = item.details?.some((d: any) => d.document_type === 's2b') || false;
+        const s2cSaved = item.details?.some((d: any) => d.document_type === 's2c') || false;
+        const s2dSaved = item.details?.some((d: any) => d.document_type === 's2d') || false;
+        const s2eSaved = item.details?.some((d: any) => d.document_type === 's2e') || false;
 
         allLogs.push({
           id: decId,
@@ -674,8 +676,8 @@ export class TaxComponent implements OnInit {
           id: s1aId,
           category: 'S1a - HKD',
           name: `Sổ chi tiết doanh thu bán hàng hóa dịch vụ kỳ ${periodName} (Đang mở)`,
-          status: 'saved',
-          statusLabel: 'Đã lưu',
+          status: s1aSaved ? 'saved' : 'pending',
+          statusLabel: s1aSaved ? 'Đã lưu' : 'Chưa kê khai / Nháp',
           period: item
         });
         allLogs.push({

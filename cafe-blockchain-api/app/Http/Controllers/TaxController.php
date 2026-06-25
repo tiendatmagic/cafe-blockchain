@@ -110,6 +110,7 @@ class TaxController extends Controller
         $year = $request->query('year');
 
         $query = TaxPeriod::where('store_owner_address', $storeOwner)
+            ->with('details')
             ->orderBy('period_year', 'desc')
             ->orderBy('period_type', 'desc')
             ->orderBy('period_value', 'desc');

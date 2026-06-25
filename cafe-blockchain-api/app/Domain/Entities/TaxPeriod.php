@@ -46,4 +46,12 @@ class TaxPeriod extends Model
             }
         });
     }
+
+    /**
+     * Get the details for the tax period.
+     */
+    public function details()
+    {
+        return $this->hasMany(TaxPeriodDetail::class, 'tax_period_id', 'id');
+    }
 }
