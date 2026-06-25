@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('tax_period_details', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('tax_period_id');
-            $table->string('document_type'); // declaration, s1a, s2a, s2b, s2c, s2d, s2e
+            $table->string('document_type', 50); // declaration, s1a, s2a, s2b, s2c, s2d, s2e
             $table->json('data'); // JSON data (rows, etc)
             $table->timestamps();
 
