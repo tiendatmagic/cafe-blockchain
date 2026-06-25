@@ -804,7 +804,6 @@ export class TaxComponent implements OnInit {
     this.modalService.open(TaxDetailModalComponent, {
       title: title,
       size: '5xl',
-      showHeader: false,
       data: { log: row }
     }).afterClosed$.subscribe((hasChanges) => {
       // Reload logs after closing details modal to catch any status updates (e.g. 'Đã lưu')
