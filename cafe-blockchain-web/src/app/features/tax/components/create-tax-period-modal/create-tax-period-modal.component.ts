@@ -7,6 +7,7 @@ import { ToastService } from '@core/services/toast.service';
 import { CustomSelectComponent } from '@shared/components/custom-select/custom-select.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
+import { CustomRadioComponent } from '@shared/components/custom-radio/custom-radio.component';
 
 @Component({
   selector: 'app-create-tax-period-modal',
@@ -15,7 +16,8 @@ import { IconComponent } from '@shared/components/icon/icon.component';
     CommonModule,
     FormsModule,
     CustomSelectComponent,
-    ButtonComponent
+    ButtonComponent,
+    CustomRadioComponent
   ],
   templateUrl: './create-tax-period-modal.component.html',
 })

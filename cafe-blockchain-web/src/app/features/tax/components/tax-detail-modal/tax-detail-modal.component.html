@@ -1,0 +1,778 @@
+<!-- Main Modal Container -->
+<div class="flex flex-col h-[85vh] bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 rounded-2xl overflow-hidden font-sans">
+  
+  <!-- VIEW 1: CHỈNH SỬA THÔNG TIN KHAI THUẾ -->
+  @if (isEditingInfo) {
+    <div class="flex flex-col h-full">
+      <!-- Header -->
+      <div class="px-6 py-4 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] text-white flex justify-between items-center shrink-0 rounded-t-2xl">
+        <h3 class="text-base font-extrabold tracking-wide">Thông tin khai thuế</h3>
+        <button (click)="closeInfoEdit()" class="text-white/80 hover:text-white transition-colors">
+          <app-icon name="close" class="h-5 w-5" />
+        </button>
+      </div>
+
+      <!-- Form Content -->
+      <div class="flex-1 overflow-y-auto p-6 space-y-6">
+        <div class="bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/60 rounded-[15px] p-5 space-y-6">
+          <h4 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider border-b border-slate-200/40 dark:border-slate-800/40 pb-2">
+            Thông tin người nộp thuế
+          </h4>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="space-y-2">
+              <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block">[04] Người nộp thuế *</label>
+              <input type="text" [(ngModel)]="taxInfo.taxpayerName" class="form-input w-full rounded-xl text-sm font-semibold bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-4 py-2.5 outline-none focus:border-purple-500 transition-colors" />
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block">[05] Mã số thuế/Số định danh *</label>
+              <input type="text" [(ngModel)]="taxInfo.taxpayerMst" class="form-input w-full rounded-xl text-sm font-semibold bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-4 py-2.5 outline-none focus:border-purple-500 transition-colors" />
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block">Cơ quan thuế *</label>
+              <select [(ngModel)]="taxInfo.taxOffice" class="form-input w-full rounded-xl text-sm font-semibold bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-4 py-2.5 outline-none focus:border-purple-500 transition-colors">
+                @for (opt of taxOfficeOptions; track opt.value) {
+                  <option [value]="opt.value">{{ opt.label }}</option>
+                }
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/60 rounded-[15px] p-5 space-y-6">
+          <h4 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider border-b border-slate-200/40 dark:border-slate-800/40 pb-2">
+            Địa chỉ trụ sở kinh doanh
+          </h4>
+          
+          <div class="space-y-4">
+            <div class="space-y-2">
+              <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block">[06] Địa chỉ trụ sở chính</label>
+              <input type="text" [(ngModel)]="taxInfo.addressStreet" placeholder="Nhập địa chỉ" class="form-input w-full rounded-xl text-sm font-semibold bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-4 py-2.5 outline-none focus:border-purple-500 transition-colors" />
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block">[06.1] Số nhà, đường phố/xóm/ấp/thôn</label>
+                <input type="text" [(ngModel)]="taxInfo.addressStreet" placeholder="Nhập địa chỉ" class="form-input w-full rounded-xl text-sm font-semibold bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-4 py-2.5 outline-none focus:border-purple-500 transition-colors" />
+              </div>
+
+              <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block">[06.3] Tỉnh/Thành phố</label>
+                <select [(ngModel)]="taxInfo.addressProvince" class="form-input w-full rounded-xl text-sm font-semibold bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-4 py-2.5 outline-none focus:border-purple-500 transition-colors">
+                  @for (opt of provinceOptions; track opt.value) {
+                    <option [value]="opt.value">{{ opt.label }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block">[06.2] Xã/Phường/Đặc khu</label>
+                <input type="text" [(ngModel)]="taxInfo.addressWard" placeholder="Phường/Xã/Thị trấn" class="form-input w-full rounded-xl text-sm font-semibold bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-4 py-2.5 outline-none focus:border-purple-500 transition-colors" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/60 rounded-[15px] p-5 space-y-6">
+          <h4 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider border-b border-slate-200/40 dark:border-slate-800/40 pb-2">
+            Ủy quyền và Đại lý thuế
+          </h4>
+          
+          <div class="space-y-5">
+            <app-custom-switch
+              [checked]="taxInfo.isAuthorized"
+              (checkedChange)="taxInfo.isAuthorized = $event"
+              label="[07] Tổ chức/cá nhân kê khai, nộp thuế thay theo ủy quyền (nếu có)"
+            ></app-custom-switch>
+
+            @if (taxInfo.isAuthorized) {
+              <div class="space-y-2 pl-4 border-l-2 border-purple-500 animate-in fade-in duration-150">
+                <label class="text-xs font-bold text-slate-500 block">Tên đơn vị được ủy quyền</label>
+                <input type="text" [(ngModel)]="taxInfo.taxAgentName" class="form-input w-72 rounded-xl text-sm font-semibold bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-4 py-2.5 outline-none focus:border-purple-500 transition-colors" />
+              </div>
+            }
+
+            <app-custom-switch
+              [checked]="!!taxInfo.taxAgentName && !taxInfo.isAuthorized"
+              (checkedChange)="$event ? (taxInfo.isAuthorized = false) : null"
+              label="[08] Tên đại lý thuế (nếu có)"
+            ></app-custom-switch>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer actions -->
+      <div class="px-6 py-4 border-t border-slate-100 dark:border-slate-800/60 flex justify-between shrink-0">
+        <button app-button variant="secondary" size="md" (click)="closeInfoEdit()">
+          Quay lại
+        </button>
+        <button app-button variant="primary" class="!bg-emerald-600 hover:!bg-emerald-700 text-white !px-6" (click)="saveInfo()">
+          Lưu thông tin
+        </button>
+      </div>
+    </div>
+  } @else {
+    <!-- VIEW 2: CHI TIẾT TỜ KHAI HOẶC SỔ SÁCH -->
+    <div class="flex flex-col h-full">
+      
+      <!-- Top Title Bar -->
+      <div class="px-6 py-4 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] text-white flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0 rounded-t-2xl overflow-visible">
+        <div class="flex items-center gap-3">
+          <h2 class="text-lg font-black tracking-wide">{{ logRow.category }} - {{ periodName }}</h2>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-white/20 text-white">
+            {{ logRow.statusLabel }}
+          </span>
+        </div>
+        <div class="flex items-center gap-2 shrink-0 overflow-visible">
+          <!-- Button Sửa thông tin khai thuế (Chỉ cho Tờ khai) -->
+          @if (logRow.category.includes('Tờ khai')) {
+            <button 
+              (click)="openInfoEdit()" 
+              class="whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold border border-white/15 transition-all"
+            >
+              <app-icon name="edit" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
+              <span>Thông tin khai thuế</span>
+            </button>
+          }
+          <!-- Dropdown Tải file -->
+          <div class="relative group overflow-visible">
+            <button 
+              class="whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold border border-white/15 transition-all"
+            >
+              <app-icon name="download" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
+              <span>Tải file</span>
+              <app-icon name="chevron-down" class="h-3 w-3 shrink-0" strokeWidth="2.5" />
+            </button>
+            <div class="absolute right-0 top-full pt-1 w-40 z-50 hidden group-hover:block overflow-visible">
+              <div class="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/60 rounded-xl shadow-lg py-1">
+                <button (click)="downloadExcel()" class="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-350">
+                  Tải Excel (.xlsx)
+                </button>
+                @if (logRow.category.includes('Tờ khai')) {
+                  <button (click)="downloadXml()" class="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-350">
+                    Tải XML (Nộp thuế)
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+          <button (click)="close()" class="text-white/80 hover:text-white transition-colors ml-2">
+            <app-icon name="close" class="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+
+      <!-- Tab bar for Declaration -->
+      @if (logRow.category.includes('Tờ khai')) {
+        <div class="px-6 border-b border-slate-100 dark:border-slate-800/60 flex gap-4 shrink-0 bg-slate-50 dark:bg-slate-900/40">
+          <button 
+            (click)="activeTab = 'declaration'"
+            [class]="'py-3 text-xs font-black uppercase tracking-wider border-b-2 transition-all ' + (activeTab === 'declaration' ? 'border-[var(--dynamic-primary)] text-[var(--dynamic-primary)]' : 'border-transparent text-slate-400 hover:text-slate-650')"
+          >
+            Tờ khai thuế
+          </button>
+          <button 
+            (click)="activeTab = 'pl01'"
+            [class]="'py-3 text-xs font-black uppercase tracking-wider border-b-2 transition-all ' + (activeTab === 'pl01' ? 'border-[var(--dynamic-primary)] text-[var(--dynamic-primary)]' : 'border-transparent text-slate-400 hover:text-slate-650')"
+          >
+            PL 01 BK-STK
+          </button>
+        </div>
+      }
+
+      <!-- Main Body content -->
+      <div class="flex-1 overflow-y-auto p-6 min-h-0">
+        
+        <!-- CASE A: TỜ KHAI THUẾ -->
+        @if (logRow.category.includes('Tờ khai')) {
+          @if (activeTab === 'declaration') {
+            <!-- Tab 1: Tờ khai chi tiết -->
+            <div class="space-y-4">
+              <!-- Banner nộp thuế -->
+              <div class="p-3.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40 rounded-xl flex items-start gap-2.5">
+                <app-icon name="info" class="h-4 w-4 text-blue-500 shrink-0 mt-0.5" strokeWidth="2.5" />
+                <span class="text-xs font-medium text-blue-700 dark:text-blue-300 leading-relaxed">
+                  Để nộp tờ khai này lên cơ quan thuế, vui lòng bấm nút <strong>Tải file</strong> ở góc trên bên phải để tải file XML, sau đó tự nộp lên Cổng dịch vụ công của Tổng cục Thuế (ThueDT).
+                </span>
+              </div>
+
+              <div class="flex justify-between items-center">
+                <h4 class="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-wide">
+                  A. KÊ KHAI THUẾ GIÁ TRỊ GIA TĂNG (GTGT), THUẾ THU NHẬP CÁ NHÂN (TNCN)
+                </h4>
+                <span class="text-[10px] text-slate-450 dark:text-slate-500 font-bold italic">Đơn vị tính: Đồng Việt Nam</span>
+              </div>
+
+              <!-- Declaration Table -->
+              <div class="overflow-x-auto border border-slate-200/50 dark:border-slate-800/60 rounded-xl bg-white dark:bg-slate-900/20">
+                <table class="w-full text-sm text-left min-w-[900px]">
+                  <thead>
+                    <tr class="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200/50 dark:border-slate-800/60 text-xs font-black uppercase text-slate-450 tracking-wider">
+                      <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center w-[50px]">STT</th>
+                      <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 w-[280px]">Chỉ tiêu</th>
+                      <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center w-[70px]">Mã</th>
+                      <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center w-[120px]">Doanh thu GTGT</th>
+                      <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center w-[110px]">Không chịu GTGT</th>
+                      <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center w-[100px]">Thuế 0%</th>
+                      <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center w-[110px]">Thuế GTGT phải nộp</th>
+                      <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center w-[120px]">Doanh thu TNCN</th>
+                      <th class="py-2.5 px-3 text-center w-[110px]">Thuế TNCN phải nộp</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                    @for (row of declarationRows; track row.code) {
+                      @if (row.isHeader) {
+                        <tr class="bg-slate-50/60 dark:bg-slate-900/30 font-black text-slate-700 dark:text-slate-350">
+                          <td class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center font-mono">{{ row.stt }}</td>
+                          <td class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 pl-4 font-bold" colspan="2">{{ row.name }}</td>
+                          <td class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center font-mono" colspan="6">
+                            {{ row.code }}
+                          </td>
+                        </tr>
+                      } @else {
+                        <tr class="hover:bg-slate-50/30 dark:hover:bg-slate-900/10">
+                          <td class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center font-mono font-bold">{{ row.stt }}</td>
+                          <td class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 font-medium pl-6 leading-relaxed text-slate-650 dark:text-slate-400">{{ row.name }}</td>
+                          <td class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center font-mono font-bold text-[var(--dynamic-primary)]">{{ row.code }}</td>
+                          
+                          <!-- Doanh thu GTGT -->
+                          <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                            <input type="number" [(ngModel)]="row.revVat" class="w-full text-right bg-transparent border-none outline-none font-semibold font-mono text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                          </td>
+                          <!-- Không chịu thuế GTGT -->
+                          <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                            <input type="number" [(ngModel)]="row.exemptVat" class="w-full text-right bg-transparent border-none outline-none font-semibold font-mono text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                          </td>
+                          <!-- Thuế 0% -->
+                          <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                            <input type="number" [(ngModel)]="row.zeroVat" class="w-full text-right bg-transparent border-none outline-none font-semibold font-mono text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                          </td>
+                          <!-- Thuế GTGT phải nộp -->
+                          <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                            <input type="number" [(ngModel)]="row.payableVat" class="w-full text-right bg-transparent border-none outline-none font-semibold font-mono text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                          </td>
+                          <!-- Doanh thu TNCN -->
+                          <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                            <input type="number" [(ngModel)]="row.revPit" class="w-full text-right bg-transparent border-none outline-none font-semibold font-mono text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                          </td>
+                          <!-- Thuế TNCN phải nộp -->
+                          <td class="py-1 px-1.5">
+                            <input type="number" [(ngModel)]="row.payablePit" class="w-full text-right bg-transparent border-none outline-none font-semibold font-mono text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                          </td>
+                        </tr>
+                      }
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          } @else if (activeTab === 'pl01') {
+            <!-- Tab 2: PL 01 BK-STK -->
+            <div class="space-y-4">
+              <div class="flex justify-between items-center">
+                <h4 class="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-wide">
+                  PHỤ LỤC 01 BẢNG KÊ TÀI KHOẢN NGÂN HÀNG / VÍ ĐIỆN TỬ
+                </h4>
+                <button (click)="addBankRow()" app-button variant="secondary" size="sm" class="flex items-center gap-1 font-bold">
+                  <app-icon name="plus" class="h-3.5 w-3.5" strokeWidth="2.5" />
+                  <span>Thêm dòng</span>
+                </button>
+              </div>
+
+              <!-- Bank Accounts Table -->
+              <div class="overflow-x-auto border border-slate-200/50 dark:border-slate-800/60 rounded-xl bg-white dark:bg-slate-900/20">
+                <table class="w-full text-sm text-left min-w-[800px]">
+                  <thead>
+                    <tr class="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200/50 dark:border-slate-800/60 text-xs font-black uppercase text-slate-450 tracking-wider">
+                      <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center w-[50px]">STT</th>
+                      <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 w-[200px]">Tên địa điểm kinh doanh</th>
+                      <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center w-[90px]">Mã địa điểm</th>
+                      <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center w-[160px]">Số tài khoản/Ví điện tử</th>
+                      <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 w-[150px]">Tên chủ tài khoản</th>
+                      <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 w-[140px]">Ngân hàng/Ví mở tại</th>
+                      <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center w-[120px]">Trạng thái</th>
+                      <th class="py-2.5 px-3 text-center w-[60px]">Xóa</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                    @for (bank of bankAccounts; track bank.stt) {
+                      <tr class="hover:bg-slate-50/30 dark:hover:bg-slate-900/10">
+                        <td class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center font-mono font-bold">{{ bank.stt }}</td>
+                        
+                        <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                          <input type="text" [(ngModel)]="bank.locationName" class="w-full bg-transparent border-none outline-none font-semibold text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                        </td>
+                        <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                          <input type="text" [(ngModel)]="bank.locationCode" class="w-full text-center bg-transparent border-none outline-none font-semibold font-mono text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                        </td>
+                        <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                          <input type="text" [(ngModel)]="bank.accountNumber" class="w-full text-center bg-transparent border-none outline-none font-semibold font-mono text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                        </td>
+                        <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                          <input type="text" [(ngModel)]="bank.accountOwner" class="w-full bg-transparent border-none outline-none font-semibold uppercase text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                        </td>
+                        <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                          <input type="text" [(ngModel)]="bank.bankName" class="w-full bg-transparent border-none outline-none font-semibold text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                        </td>
+                        <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                          <select [(ngModel)]="bank.status" class="w-full bg-transparent border-none outline-none font-semibold text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white">
+                            <option value="Khai lần đầu">Khai lần đầu</option>
+                            <option value="Đóng">Đóng</option>
+                            <option value="Thay đổi thông tin">Thay đổi thông tin</option>
+                          </select>
+                        </td>
+                        
+                        <td class="py-1 px-3 text-center">
+                          <button (click)="removeBankRow(bank.stt)" class="text-rose-500 hover:text-rose-600 transition-colors">
+                            <app-icon name="trash" class="h-4 w-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+        } @else if (logRow.category.includes('S1a')) {
+          <!-- CASE B: SỔ SÁCH S1A -->
+          <div class="space-y-4">
+            <div class="flex justify-between items-center">
+              <h4 class="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-wide">
+                SỔ CHI TIẾT DOANH THU BÁN HÀNG HÓA, DỊCH VỤ (MẪU SỐ S1A-HKD)
+              </h4>
+              <button (click)="addS1aRow()" app-button variant="secondary" size="sm" class="flex items-center gap-1 font-bold">
+                <app-icon name="plus" class="h-3.5 w-3.5" strokeWidth="2.5" />
+                <span>Thêm dòng</span>
+              </button>
+            </div>
+
+            <!-- S1a Transaction Table -->
+            <div class="overflow-x-auto border border-slate-200/50 dark:border-slate-800/60 rounded-xl bg-white dark:bg-slate-900/20">
+              <table class="w-full text-sm text-left min-w-[700px]">
+                <thead>
+                  <tr class="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200/50 dark:border-slate-800/60 text-xs font-black uppercase text-slate-450 tracking-wider">
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center w-[50px]">STT</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center w-[120px]">Ngày ghi sổ</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center w-[110px]">Số chứng từ</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 w-[240px]">Diễn giải</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right w-[150px]">Doanh thu bán lẻ (VND)</th>
+                    <th class="py-2.5 px-3 text-center w-[60px]">Xóa</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                  @for (t of s1aTransactions; track t.stt) {
+                    <tr class="hover:bg-slate-50/30 dark:hover:bg-slate-900/10">
+                      <td class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center font-mono font-bold">{{ t.stt }}</td>
+                      
+                      <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                        <input type="text" [(ngModel)]="t.date" class="w-full text-center bg-transparent border-none outline-none font-semibold font-mono text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                      </td>
+                      <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                        <input type="text" [(ngModel)]="t.code" class="w-full text-center bg-transparent border-none outline-none font-semibold font-mono text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                      </td>
+                      <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                        <input type="text" [(ngModel)]="t.description" class="w-full bg-transparent border-none outline-none font-semibold text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                      </td>
+                      <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                        <input type="number" [(ngModel)]="t.amount" class="w-full text-right bg-transparent border-none outline-none font-semibold font-mono text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                      </td>
+                      
+                      <td class="py-1 px-3 text-center">
+                        <button (click)="removeS1aRow(t.stt)" class="text-rose-500 hover:text-rose-600 transition-colors">
+                          <app-icon name="trash" class="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                  <!-- S1a Total Row -->
+                  <tr class="bg-slate-50 dark:bg-slate-900/50 font-black text-slate-850 dark:text-white">
+                    <td class="py-3 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center" colspan="4">TỔNG CỘNG</td>
+                    <td class="py-3 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right font-mono">{{ getS1aTotal() | vnd }}</td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        } @else if (logRow.category.includes('S2a')) {
+          <!-- CASE C: SỔ SÁCH S2A (TÀI SẢN CỐ ĐỊNH) -->
+          <div class="space-y-4">
+            <div class="flex justify-between items-center">
+              <h4 class="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-wide">
+                SỔ CHI TIẾT TÀI SẢN CỐ ĐỊNH (MẪU SỐ S2A-HKD)
+              </h4>
+              <button (click)="addS2aRow()" app-button variant="secondary" size="sm" class="flex items-center gap-1 font-bold">
+                <app-icon name="plus" class="h-3.5 w-3.5" strokeWidth="2.5" />
+                <span>Thêm dòng</span>
+              </button>
+            </div>
+
+            <div class="overflow-x-auto border border-slate-200/50 dark:border-slate-800/60 rounded-xl bg-white dark:bg-slate-900/20">
+              <table class="w-full text-sm text-left min-w-[800px]">
+                <thead>
+                  <tr class="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200/50 dark:border-slate-800/60 text-xs font-black uppercase text-slate-450 tracking-wider">
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center w-[50px]">STT</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 w-[240px]">Tên tài sản cố định</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center w-[120px]">Mã TSCĐ</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center w-[110px]">Ngày mua</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right w-[130px]">Nguyên giá (VND)</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right w-[130px]">Hao mòn lũy kế</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right w-[130px]">Giá trị còn lại</th>
+                    <th class="py-2.5 px-3 text-center w-[60px]">Xóa</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                  @for (asset of s2aAssets; track asset.stt) {
+                    <tr class="hover:bg-slate-50/30 dark:hover:bg-slate-900/10">
+                      <td class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center font-mono font-bold">{{ asset.stt }}</td>
+                      <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                        <input type="text" [(ngModel)]="asset.assetName" class="w-full bg-transparent border-none outline-none font-semibold text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                      </td>
+                      <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                        <input type="text" [(ngModel)]="asset.assetCode" class="w-full text-center bg-transparent border-none outline-none font-semibold font-mono text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                      </td>
+                      <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                        <input type="text" [(ngModel)]="asset.purchaseDate" class="w-full text-center bg-transparent border-none outline-none font-semibold font-mono text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                      </td>
+                      <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                        <input type="number" [(ngModel)]="asset.originalPrice" (ngModelChange)="asset.remainingValue = asset.originalPrice - asset.depreciationAccumulated" class="w-full text-right bg-transparent border-none outline-none font-semibold font-mono text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                      </td>
+                      <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                        <input type="number" [(ngModel)]="asset.depreciationAccumulated" (ngModelChange)="asset.remainingValue = asset.originalPrice - asset.depreciationAccumulated" class="w-full text-right bg-transparent border-none outline-none font-semibold font-mono text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                      </td>
+                      <td class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right font-semibold font-mono">
+                        {{ asset.remainingValue | vnd }}
+                      </td>
+                      <td class="py-1 px-3 text-center">
+                        <button (click)="removeS2aRow(asset.stt)" class="text-rose-500 hover:text-rose-600 transition-colors">
+                          <app-icon name="trash" class="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                  <tr class="bg-slate-50 dark:bg-slate-900/50 font-black text-slate-850 dark:text-white">
+                    <td class="py-3 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center" colspan="4">TỔNG CỘNG</td>
+                    <td class="py-3 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right font-mono">{{ getS2aTotal().originalPrice | vnd }}</td>
+                    <td class="py-3 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right font-mono">{{ getS2aTotal().depreciationAccumulated | vnd }}</td>
+                    <td class="py-3 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right font-mono">{{ getS2aTotal().remainingValue | vnd }}</td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        } @else if (logRow.category.includes('S2b')) {
+          <!-- CASE D: SỔ SÁCH S2B (CHI PHÍ SXKD) -->
+          <div class="space-y-4">
+            <div class="flex justify-between items-center">
+              <h4 class="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-wide">
+                SỔ CHI PHÍ SẢN XUẤT, KINH DOANH (MẪU SỐ S2B-HKD)
+              </h4>
+              <button (click)="addS2bRow()" app-button variant="secondary" size="sm" class="flex items-center gap-1 font-bold">
+                <app-icon name="plus" class="h-3.5 w-3.5" strokeWidth="2.5" />
+                <span>Thêm dòng</span>
+              </button>
+            </div>
+
+            <div class="overflow-x-auto border border-slate-200/50 dark:border-slate-800/60 rounded-xl bg-white dark:bg-slate-900/20">
+              <table class="w-full text-sm text-left min-w-[900px]">
+                <thead>
+                  <tr class="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200/50 dark:border-slate-800/60 text-xs font-black uppercase text-slate-450 tracking-wider">
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center w-[50px]">STT</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center w-[110px]">Ngày ghi sổ</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center w-[100px]">Mã chứng từ</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 w-[220px]">Diễn giải</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right w-[120px]">CP Nhân công (VND)</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right w-[120px]">CP Vật liệu</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right w-[120px]">CP Quản lý</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right w-[120px]">CP Khác</th>
+                    <th class="py-2.5 px-3 text-center w-[60px]">Xóa</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                  @for (exp of s2bExpenses; track exp.stt) {
+                    <tr class="hover:bg-slate-50/30 dark:hover:bg-slate-900/10">
+                      <td class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center font-mono font-bold">{{ exp.stt }}</td>
+                      <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                        <input type="text" [(ngModel)]="exp.date" class="w-full text-center bg-transparent border-none outline-none font-semibold font-mono text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                      </td>
+                      <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                        <input type="text" [(ngModel)]="exp.voucherCode" class="w-full text-center bg-transparent border-none outline-none font-semibold font-mono text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                      </td>
+                      <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                        <input type="text" [(ngModel)]="exp.description" class="w-full bg-transparent border-none outline-none font-semibold text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                      </td>
+                      <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                        <input type="number" [(ngModel)]="exp.laborExpense" class="w-full text-right bg-transparent border-none outline-none font-semibold font-mono text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                      </td>
+                      <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                        <input type="number" [(ngModel)]="exp.materialExpense" class="w-full text-right bg-transparent border-none outline-none font-semibold font-mono text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                      </td>
+                      <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                        <input type="number" [(ngModel)]="exp.managementExpense" class="w-full text-right bg-transparent border-none outline-none font-semibold font-mono text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                      </td>
+                      <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                        <input type="number" [(ngModel)]="exp.otherExpense" class="w-full text-right bg-transparent border-none outline-none font-semibold font-mono text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                      </td>
+                      <td class="py-1 px-3 text-center">
+                        <button (click)="removeS2bRow(exp.stt)" class="text-rose-500 hover:text-rose-600 transition-colors">
+                          <app-icon name="trash" class="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                  <tr class="bg-slate-50 dark:bg-slate-900/50 font-black text-slate-850 dark:text-white">
+                    <td class="py-3 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center" colspan="4">TỔNG CỘNG</td>
+                    <td class="py-3 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right font-mono">{{ getS2bTotal().labor | vnd }}</td>
+                    <td class="py-3 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right font-mono">{{ getS2bTotal().material | vnd }}</td>
+                    <td class="py-3 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right font-mono">{{ getS2bTotal().management | vnd }}</td>
+                    <td class="py-3 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right font-mono">{{ getS2bTotal().other | vnd }}</td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        } @else if (logRow.category.includes('S2c')) {
+          <!-- CASE E: SỔ SÁCH S2C (LUƠNG) -->
+          <div class="space-y-4">
+            <div class="flex justify-between items-center">
+              <h4 class="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-wide">
+                SỔ THEO DÕI TÌNH HÌNH THANH TOÁN TIỀN LƯƠNG (MẪU SỐ S2C-HKD)
+              </h4>
+              <button (click)="addS2cRow()" app-button variant="secondary" size="sm" class="flex items-center gap-1 font-bold">
+                <app-icon name="plus" class="h-3.5 w-3.5" strokeWidth="2.5" />
+                <span>Thêm dòng</span>
+              </button>
+            </div>
+
+            <div class="overflow-x-auto border border-slate-200/50 dark:border-slate-800/60 rounded-xl bg-white dark:bg-slate-900/20">
+              <table class="w-full text-sm text-left min-w-[800px]">
+                <thead>
+                  <tr class="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200/50 dark:border-slate-800/60 text-xs font-black uppercase text-slate-450 tracking-wider">
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center w-[50px]">STT</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 w-[200px]">Họ và tên người lao động</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right w-[130px]">Lương cơ bản (VND)</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right w-[120px]">Phụ cấp</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right w-[125px]">Giảm trừ</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right w-[130px]">Thực lĩnh (VND)</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center w-[120px]">Ký nhận</th>
+                    <th class="py-2.5 px-3 text-center w-[60px]">Xóa</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                  @for (sal of s2cSalaries; track sal.stt) {
+                    <tr class="hover:bg-slate-50/30 dark:hover:bg-slate-900/10">
+                      <td class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center font-mono font-bold">{{ sal.stt }}</td>
+                      <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                        <input type="text" [(ngModel)]="sal.employeeName" class="w-full bg-transparent border-none outline-none font-semibold text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                      </td>
+                      <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                        <input type="number" [(ngModel)]="sal.baseSalary" (ngModelChange)="sal.netSalary = sal.baseSalary + sal.allowance - sal.deduction" class="w-full text-right bg-transparent border-none outline-none font-semibold font-mono text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                      </td>
+                      <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                        <input type="number" [(ngModel)]="sal.allowance" (ngModelChange)="sal.netSalary = sal.baseSalary + sal.allowance - sal.deduction" class="w-full text-right bg-transparent border-none outline-none font-semibold font-mono text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                      </td>
+                      <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                        <input type="number" [(ngModel)]="sal.deduction" (ngModelChange)="sal.netSalary = sal.baseSalary + sal.allowance - sal.deduction" class="w-full text-right bg-transparent border-none outline-none font-semibold font-mono text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                      </td>
+                      <td class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right font-semibold font-mono">
+                        {{ sal.netSalary | vnd }}
+                      </td>
+                      <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                        <input type="text" [(ngModel)]="sal.signature" class="w-full text-center bg-transparent border-none outline-none font-semibold text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                      </td>
+                      <td class="py-1 px-3 text-center">
+                        <button (click)="removeS2cRow(sal.stt)" class="text-rose-500 hover:text-rose-600 transition-colors">
+                          <app-icon name="trash" class="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                  <tr class="bg-slate-50 dark:bg-slate-900/50 font-black text-slate-850 dark:text-white">
+                    <td class="py-3 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center" colspan="2">TỔNG CỘNG</td>
+                    <td class="py-3 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right font-mono">{{ getS2cTotal().base | vnd }}</td>
+                    <td class="py-3 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right font-mono">{{ getS2cTotal().allowance | vnd }}</td>
+                    <td class="py-3 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right font-mono">{{ getS2cTotal().deduction | vnd }}</td>
+                    <td class="py-3 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right font-mono">{{ getS2cTotal().net | vnd }}</td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        } @else if (logRow.category.includes('S2d')) {
+          <!-- CASE F: SỔ SÁCH S2D (KHO) -->
+          <div class="space-y-4">
+            <div class="flex justify-between items-center">
+              <h4 class="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-wide">
+                SỔ CHI TIẾT VẬT LIỆU, DỤNG CỤ, SẢN PHẨM, HÀNG HÓA (MẪU SỐ S2D-HKD)
+              </h4>
+              <button (click)="addS2dRow()" app-button variant="secondary" size="sm" class="flex items-center gap-1 font-bold">
+                <app-icon name="plus" class="h-3.5 w-3.5" strokeWidth="2.5" />
+                <span>Thêm dòng</span>
+              </button>
+            </div>
+
+            <div class="overflow-x-auto border border-slate-200/50 dark:border-slate-800/60 rounded-xl bg-white dark:bg-slate-900/20">
+              <table class="w-full text-sm text-left min-w-[800px]">
+                <thead>
+                  <tr class="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200/50 dark:border-slate-800/60 text-xs font-black uppercase text-slate-450 tracking-wider">
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center w-[50px]">STT</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center w-[120px]">Mã hàng hóa</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 w-[240px]">Tên vật tư, hàng hóa</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center w-[100px]">Đơn vị tính</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right w-[110px]">Số lượng nhập</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right w-[110px]">Số lượng xuất</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right w-[110px]">Tồn kho cuối</th>
+                    <th class="py-2.5 px-3 text-center w-[60px]">Xóa</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                  @for (inv of s2dInventories; track inv.stt) {
+                    <tr class="hover:bg-slate-50/30 dark:hover:bg-slate-900/10">
+                      <td class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center font-mono font-bold">{{ inv.stt }}</td>
+                      <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                        <input type="text" [(ngModel)]="inv.itemCode" class="w-full text-center bg-transparent border-none outline-none font-semibold font-mono text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                      </td>
+                      <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                        <input type="text" [(ngModel)]="inv.itemName" class="w-full bg-transparent border-none outline-none font-semibold text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                      </td>
+                      <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                        <input type="text" [(ngModel)]="inv.unit" class="w-full text-center bg-transparent border-none outline-none font-semibold text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                      </td>
+                      <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                        <input type="number" [(ngModel)]="inv.importQty" (ngModelChange)="inv.stockQty = inv.importQty - inv.exportQty" class="w-full text-right bg-transparent border-none outline-none font-semibold font-mono text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                      </td>
+                      <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                        <input type="number" [(ngModel)]="inv.exportQty" (ngModelChange)="inv.stockQty = inv.importQty - inv.exportQty" class="w-full text-right bg-transparent border-none outline-none font-semibold font-mono text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                      </td>
+                      <td class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right font-semibold font-mono">
+                        {{ inv.stockQty }}
+                      </td>
+                      <td class="py-1 px-3 text-center">
+                        <button (click)="removeS2dRow(inv.stt)" class="text-rose-500 hover:text-rose-600 transition-colors">
+                          <app-icon name="trash" class="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                  <tr class="bg-slate-50 dark:bg-slate-900/50 font-black text-slate-850 dark:text-white">
+                    <td class="py-3 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center" colspan="3">TỔNG CỘNG</td>
+                    <td class="py-3 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center"></td>
+                    <td class="py-3 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right font-mono">{{ getS2dTotal().import }}</td>
+                    <td class="py-3 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right font-mono">{{ getS2dTotal().export }}</td>
+                    <td class="py-3 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right font-mono">{{ getS2dTotal().stock }}</td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        } @else if (logRow.category.includes('S2e')) {
+          <!-- CASE G: SỔ SÁCH S2E (NGHĨA VỤ THUẾ) -->
+          <div class="space-y-4">
+            <div class="flex justify-between items-center">
+              <h4 class="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-wide">
+                SỔ THEO DÕI THỰC HIỆN NGHĨA VỤ THUẾ VỚI NSNN (MẪU SỐ S2E-HKD)
+              </h4>
+              <button (click)="addS2eRow()" app-button variant="secondary" size="sm" class="flex items-center gap-1 font-bold">
+                <app-icon name="plus" class="h-3.5 w-3.5" strokeWidth="2.5" />
+                <span>Thêm dòng</span>
+              </button>
+            </div>
+
+            <div class="overflow-x-auto border border-slate-200/50 dark:border-slate-800/60 rounded-xl bg-white dark:bg-slate-900/20">
+              <table class="w-full text-sm text-left min-w-[700px]">
+                <thead>
+                  <tr class="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200/50 dark:border-slate-800/60 text-xs font-black uppercase text-slate-450 tracking-wider">
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center w-[50px]">STT</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 w-[240px]">Loại thuế, khoản phải nộp</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right w-[150px]">Số thuế phải nộp (VND)</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right w-[150px]">Số thuế đã nộp</th>
+                    <th class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right w-[150px]">Số thuế còn nợ</th>
+                    <th class="py-2.5 px-3 text-center w-[60px]">Xóa</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                  @for (obligation of s2eTaxObligations; track obligation.stt) {
+                    <tr class="hover:bg-slate-50/30 dark:hover:bg-slate-900/10">
+                      <td class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center font-mono font-bold">{{ obligation.stt }}</td>
+                      <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                        <input type="text" [(ngModel)]="obligation.taxType" class="w-full bg-transparent border-none outline-none font-semibold text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                      </td>
+                      <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                        <input type="number" [(ngModel)]="obligation.payableAmount" (ngModelChange)="obligation.debtAmount = obligation.payableAmount - obligation.paidAmount" class="w-full text-right bg-transparent border-none outline-none font-semibold font-mono text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                      </td>
+                      <td class="py-1 px-1.5 border-r border-slate-200/40 dark:border-slate-800/40">
+                        <input type="number" [(ngModel)]="obligation.paidAmount" (ngModelChange)="obligation.debtAmount = obligation.payableAmount - obligation.paidAmount" class="w-full text-right bg-transparent border-none outline-none font-semibold font-mono text-sm focus:ring-1 focus:ring-purple-500 rounded p-1 dark:text-white" />
+                      </td>
+                      <td class="py-2.5 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right font-semibold font-mono">
+                        {{ obligation.debtAmount | vnd }}
+                      </td>
+                      <td class="py-1 px-3 text-center">
+                        <button (click)="removeS2eRow(obligation.stt)" class="text-rose-500 hover:text-rose-600 transition-colors">
+                          <app-icon name="trash" class="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                  <tr class="bg-slate-50 dark:bg-slate-900/50 font-black text-slate-850 dark:text-white">
+                    <td class="py-3 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-center" colspan="2">TỔNG CỘNG</td>
+                    <td class="py-3 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right font-mono">{{ getS2eTotal().payable | vnd }}</td>
+                    <td class="py-3 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right font-mono">{{ getS2eTotal().paid | vnd }}</td>
+                    <td class="py-3 px-3 border-r border-slate-200/40 dark:border-slate-800/40 text-right font-mono">{{ getS2eTotal().debt | vnd }}</td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Bottom footer actions -->
+      <div class="px-6 py-4 border-t border-slate-100 dark:border-slate-800/60 flex justify-between shrink-0 bg-slate-50/20 dark:bg-slate-950">
+        <button app-button variant="secondary" size="md" (click)="close()">
+          Đóng
+        </button>
+        <div class="flex gap-2">
+          @if (logRow.category.includes('Tờ khai')) {
+            <button app-button variant="primary" class="!bg-emerald-600 hover:!bg-emerald-700 text-white !px-6" (click)="saveDeclaration()">
+              Lưu tờ khai
+            </button>
+          } @else if (logRow.category.includes('S1a')) {
+            <button app-button variant="primary" class="!bg-emerald-600 hover:!bg-emerald-700 text-white !px-6" (click)="saveS1a()">
+              Lưu sổ S1a
+            </button>
+          } @else if (logRow.category.includes('S2a')) {
+            <button app-button variant="primary" class="!bg-emerald-600 hover:!bg-emerald-700 text-white !px-6" (click)="saveS2a()">
+              Lưu sổ S2a
+            </button>
+          } @else if (logRow.category.includes('S2b')) {
+            <button app-button variant="primary" class="!bg-emerald-600 hover:!bg-emerald-700 text-white !px-6" (click)="saveS2b()">
+              Lưu sổ S2b
+            </button>
+          } @else if (logRow.category.includes('S2c')) {
+            <button app-button variant="primary" class="!bg-emerald-600 hover:!bg-emerald-700 text-white !px-6" (click)="saveS2c()">
+              Lưu sổ S2c
+            </button>
+          } @else if (logRow.category.includes('S2d')) {
+            <button app-button variant="primary" class="!bg-emerald-600 hover:!bg-emerald-700 text-white !px-6" (click)="saveS2d()">
+              Lưu sổ S2d
+            </button>
+          } @else if (logRow.category.includes('S2e')) {
+            <button app-button variant="primary" class="!bg-emerald-600 hover:!bg-emerald-700 text-white !px-6" (click)="saveS2e()">
+              Lưu sổ S2e
+            </button>
+          }
+        </div>
+      </div>
+
+    </div>
+  }
+</div>

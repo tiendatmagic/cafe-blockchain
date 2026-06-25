@@ -49,4 +49,12 @@ export class TaxService {
   public destroyTaxPeriod(id: string): Observable<any> {
     return this.apiService.destroyTaxPeriod(id);
   }
+
+  public getPeriodDetails(periodId: string, documentType: string): Observable<any> {
+    return this.apiService.getTaxPeriodDetails(periodId, documentType);
+  }
+
+  public savePeriodDetails(periodId: string, documentType: string, data: any): Observable<any> {
+    return this.apiService.saveTaxPeriodDetails(periodId, documentType, data);
+  }
 }

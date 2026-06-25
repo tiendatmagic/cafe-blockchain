@@ -162,7 +162,10 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-800/40">
                       @for (row of getFormattedLogs(); track row.id) {
-                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                        <tr
+                          (click)="openLogDetail(row)"
+                          class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
+                        >
                           <td class="py-3.5 px-4 font-bold text-slate-800 dark:text-white text-xs">
                             {{ row.category }}
                           </td>
@@ -189,7 +192,7 @@
                                 app-button
                                 variant="secondary"
                                 size="sm"
-                                (click)="downloadLogExcel(row)"
+                                (click)="$event.stopPropagation(); downloadLogExcel(row)"
                                 class="whitespace-nowrap flex items-center gap-1 font-bold ml-auto"
                               >
                                 <app-icon
@@ -750,8 +753,8 @@
             } @else {
               <!-- Các kỳ kê khai thuế đang mở (đã khảo sát xong) - Layout Screenshot 1 -->
               <div app-card class="space-y-6 rounded-[15px] animate-in fade-in duration-200">
-                <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                  <div class="min-w-0">
+                <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
+                  <div class="flex-1 min-w-0">
                     <h4
                       class="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider"
                     >
@@ -765,7 +768,7 @@
                       TNCN: <span class="font-bold">{{ getPitMethodLabel(taxService.taxProfile()) }}</span>
                     </p>
                   </div>
-                  <div class="flex flex-wrap items-center gap-2 shrink-0">
+                  <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto lg:shrink-0 lg:justify-end">
                     <button
                       app-button
                       variant="secondary"

@@ -23,6 +23,7 @@ import { Web3ConnectPromptComponent } from '@shared/components/web3-connect-prom
 import { CreateTaxPeriodModalComponent } from './components/create-tax-period-modal/create-tax-period-modal.component';
 import { TaxConfirmModalComponent } from './components/tax-confirm-modal/tax-confirm-modal.component';
 import { TaxResultModalComponent } from './components/tax-result-modal/tax-result-modal.component';
+import { TaxDetailModalComponent } from './components/tax-detail-modal/tax-detail-modal.component';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
 import { CustomCheckboxComponent } from '@shared/components/custom-checkbox/custom-checkbox.component';
 
@@ -44,7 +45,7 @@ import { CustomCheckboxComponent } from '@shared/components/custom-checkbox/cust
     AccessRestrictedComponent,
     SkeletonLoaderComponent,
     Web3ConnectPromptComponent,
-    PaginationComponent,
+    PaginationComponent
   ],
   templateUrl: './tax.component.html',
   styles: [
@@ -480,25 +481,137 @@ export class TaxComponent implements OnInit {
     let allLogs: any[] = [];
     
     if (lockedList.length === 0 && openList.length === 0) {
-      allLogs = [...this.demoLogs];
+      const demo1Saved = localStorage.getItem('tax_data_demo-1_rows') !== null;
+      const demoS2aSaved = localStorage.getItem('tax_data_demo-s2a_rows') !== null;
+      const demoS2bSaved = localStorage.getItem('tax_data_demo-s2b_rows') !== null;
+      const demoS2cSaved = localStorage.getItem('tax_data_demo-s2c_rows') !== null;
+      const demoS2dSaved = localStorage.getItem('tax_data_demo-s2d_rows') !== null;
+      const demoS2eSaved = localStorage.getItem('tax_data_demo-s2e_rows') !== null;
+
+      allLogs = [
+        {
+          id: 'demo-1',
+          category: 'Tờ khai thuế 01.TKN-CNKD',
+          name: '',
+          status: demo1Saved ? 'saved' : 'pending',
+          statusLabel: demo1Saved ? 'Đã lưu' : 'Chưa kê khai / Nháp'
+        },
+        {
+          id: 'demo-2',
+          category: 'S1a - HKD',
+          name: 'Sổ chi tiết doanh thu bán hàng hóa dịch vụ',
+          status: 'saved',
+          statusLabel: 'Đã lưu'
+        },
+        {
+          id: 'demo-s2a',
+          category: 'S2a - HKD',
+          name: 'Sổ chi tiết tài sản cố định',
+          status: demoS2aSaved ? 'saved' : 'pending',
+          statusLabel: demoS2aSaved ? 'Đã lưu' : 'Chưa kê khai / Nháp'
+        },
+        {
+          id: 'demo-s2b',
+          category: 'S2b - HKD',
+          name: 'Sổ chi phí sản xuất, kinh doanh',
+          status: demoS2bSaved ? 'saved' : 'pending',
+          statusLabel: demoS2bSaved ? 'Đã lưu' : 'Chưa kê khai / Nháp'
+        },
+        {
+          id: 'demo-s2c',
+          category: 'S2c - HKD',
+          name: 'Sổ theo dõi tình hình thanh toán tiền lương',
+          status: demoS2cSaved ? 'saved' : 'pending',
+          statusLabel: demoS2cSaved ? 'Đã lưu' : 'Chưa kê khai / Nháp'
+        },
+        {
+          id: 'demo-s2d',
+          category: 'S2d - HKD',
+          name: 'Sổ chi tiết vật liệu, dụng cụ, sản phẩm, hàng hóa',
+          status: demoS2dSaved ? 'saved' : 'pending',
+          statusLabel: demoS2dSaved ? 'Đã lưu' : 'Chưa kê khai / Nháp'
+        },
+        {
+          id: 'demo-s2e',
+          category: 'S2e - HKD',
+          name: 'Sổ theo dõi thực hiện nghĩa vụ thuế với NSNN',
+          status: demoS2eSaved ? 'saved' : 'pending',
+          statusLabel: demoS2eSaved ? 'Đã lưu' : 'Chưa kê khai / Nháp'
+        }
+      ];
     } else {
       // 1. Duyệt qua các kỳ đã khóa
       lockedList.forEach((item) => {
         const periodName = this.getPeriodName(item);
+        const decId = `real-declaration-locked-${item.id}`;
+        const s1aId = `real-s1a-locked-${item.id}`;
+        const s2aId = `real-s2a-locked-${item.id}`;
+        const s2bId = `real-s2b-locked-${item.id}`;
+        const s2cId = `real-s2c-locked-${item.id}`;
+        const s2dId = `real-s2d-locked-${item.id}`;
+        const s2eId = `real-s2e-locked-${item.id}`;
+        
+        const decSaved = localStorage.getItem(`tax_data_${decId}_rows`) !== null;
+        const s2aSaved = localStorage.getItem(`tax_data_${s2aId}_rows`) !== null;
+        const s2bSaved = localStorage.getItem(`tax_data_${s2bId}_rows`) !== null;
+        const s2cSaved = localStorage.getItem(`tax_data_${s2cId}_rows`) !== null;
+        const s2dSaved = localStorage.getItem(`tax_data_${s2dId}_rows`) !== null;
+        const s2eSaved = localStorage.getItem(`tax_data_${s2eId}_rows`) !== null;
+
         allLogs.push({
-          id: `real-declaration-locked-${item.id}`,
+          id: decId,
           category: 'Tờ khai thuế 01.TKN-CNKD',
           name: `Tờ khai thuế của kỳ ${periodName}`,
-          status: item.is_submitted ? 'saved' : 'pending',
-          statusLabel: item.is_submitted ? 'Đã gửi TCT' : 'Chưa gửi tờ khai TCT',
+          status: decSaved ? 'saved' : 'pending',
+          statusLabel: decSaved ? 'Đã lưu' : 'Chưa kê khai / Nháp',
           period: item
         });
         allLogs.push({
-          id: `real-s1a-locked-${item.id}`,
+          id: s1aId,
           category: 'S1a - HKD',
           name: `Sổ chi tiết doanh thu bán hàng hóa dịch vụ kỳ ${periodName}`,
           status: 'saved',
           statusLabel: 'Đã lưu',
+          period: item
+        });
+        allLogs.push({
+          id: s2aId,
+          category: 'S2a - HKD',
+          name: `Sổ chi tiết tài sản cố định kỳ ${periodName}`,
+          status: s2aSaved ? 'saved' : 'pending',
+          statusLabel: s2aSaved ? 'Đã lưu' : 'Chưa kê khai / Nháp',
+          period: item
+        });
+        allLogs.push({
+          id: s2bId,
+          category: 'S2b - HKD',
+          name: `Sổ chi phí sản xuất, kinh doanh kỳ ${periodName}`,
+          status: s2bSaved ? 'saved' : 'pending',
+          statusLabel: s2bSaved ? 'Đã lưu' : 'Chưa kê khai / Nháp',
+          period: item
+        });
+        allLogs.push({
+          id: s2cId,
+          category: 'S2c - HKD',
+          name: `Sổ theo dõi thanh toán tiền lương kỳ ${periodName}`,
+          status: s2cSaved ? 'saved' : 'pending',
+          statusLabel: s2cSaved ? 'Đã lưu' : 'Chưa kê khai / Nháp',
+          period: item
+        });
+        allLogs.push({
+          id: s2dId,
+          category: 'S2d - HKD',
+          name: `Sổ chi tiết vật liệu, dụng cụ, sản phẩm, hàng hóa kỳ ${periodName}`,
+          status: s2dSaved ? 'saved' : 'pending',
+          statusLabel: s2dSaved ? 'Đã lưu' : 'Chưa kê khai / Nháp',
+          period: item
+        });
+        allLogs.push({
+          id: s2eId,
+          category: 'S2e - HKD',
+          name: `Sổ theo dõi nghĩa vụ thuế với NSNN kỳ ${periodName}`,
+          status: s2eSaved ? 'saved' : 'pending',
+          statusLabel: s2eSaved ? 'Đã lưu' : 'Chưa kê khai / Nháp',
           period: item
         });
       });
@@ -506,20 +619,75 @@ export class TaxComponent implements OnInit {
       // 2. Duyệt qua các kỳ đang mở
       openList.forEach((item) => {
         const periodName = this.getPeriodName(item);
+        const decId = `real-declaration-open-${item.id}`;
+        const s1aId = `real-s1a-open-${item.id}`;
+        const s2aId = `real-s2a-open-${item.id}`;
+        const s2bId = `real-s2b-open-${item.id}`;
+        const s2cId = `real-s2c-open-${item.id}`;
+        const s2dId = `real-s2d-open-${item.id}`;
+        const s2eId = `real-s2e-open-${item.id}`;
+        
+        const decSaved = localStorage.getItem(`tax_data_${decId}_rows`) !== null;
+        const s2aSaved = localStorage.getItem(`tax_data_${s2aId}_rows`) !== null;
+        const s2bSaved = localStorage.getItem(`tax_data_${s2bId}_rows`) !== null;
+        const s2cSaved = localStorage.getItem(`tax_data_${s2cId}_rows`) !== null;
+        const s2dSaved = localStorage.getItem(`tax_data_${s2dId}_rows`) !== null;
+        const s2eSaved = localStorage.getItem(`tax_data_${s2eId}_rows`) !== null;
+
         allLogs.push({
-          id: `real-declaration-open-${item.id}`,
+          id: decId,
           category: 'Tờ khai thuế 01.TKN-CNKD',
           name: `Tờ khai thuế của kỳ ${periodName} (Đang mở)`,
-          status: 'pending',
-          statusLabel: 'Chưa gửi tờ khai TCT',
+          status: decSaved ? 'saved' : 'pending',
+          statusLabel: decSaved ? 'Đã lưu' : 'Chưa kê khai / Nháp',
           period: item
         });
         allLogs.push({
-          id: `real-s1a-open-${item.id}`,
+          id: s1aId,
           category: 'S1a - HKD',
           name: `Sổ chi tiết doanh thu bán hàng hóa dịch vụ kỳ ${periodName} (Đang mở)`,
           status: 'saved',
           statusLabel: 'Đã lưu',
+          period: item
+        });
+        allLogs.push({
+          id: s2aId,
+          category: 'S2a - HKD',
+          name: `Sổ chi tiết tài sản cố định kỳ ${periodName} (Đang mở)`,
+          status: s2aSaved ? 'saved' : 'pending',
+          statusLabel: s2aSaved ? 'Đã lưu' : 'Chưa kê khai / Nháp',
+          period: item
+        });
+        allLogs.push({
+          id: s2bId,
+          category: 'S2b - HKD',
+          name: `Sổ chi phí sản xuất, kinh doanh kỳ ${periodName} (Đang mở)`,
+          status: s2bSaved ? 'saved' : 'pending',
+          statusLabel: s2bSaved ? 'Đã lưu' : 'Chưa kê khai / Nháp',
+          period: item
+        });
+        allLogs.push({
+          id: s2cId,
+          category: 'S2c - HKD',
+          name: `Sổ theo dõi thanh toán tiền lương kỳ ${periodName} (Đang mở)`,
+          status: s2cSaved ? 'saved' : 'pending',
+          statusLabel: s2cSaved ? 'Đã lưu' : 'Chưa kê khai / Nháp',
+          period: item
+        });
+        allLogs.push({
+          id: s2dId,
+          category: 'S2d - HKD',
+          name: `Sổ chi tiết vật liệu, dụng cụ, sản phẩm, hàng hóa kỳ ${periodName} (Đang mở)`,
+          status: s2dSaved ? 'saved' : 'pending',
+          statusLabel: s2dSaved ? 'Đã lưu' : 'Chưa kê khai / Nháp',
+          period: item
+        });
+        allLogs.push({
+          id: s2eId,
+          category: 'S2e - HKD',
+          name: `Sổ theo dõi nghĩa vụ thuế với NSNN kỳ ${periodName} (Đang mở)`,
+          status: s2eSaved ? 'saved' : 'pending',
+          statusLabel: s2eSaved ? 'Đã lưu' : 'Chưa kê khai / Nháp',
           period: item
         });
       });
@@ -529,7 +697,7 @@ export class TaxComponent implements OnInit {
     if (activeFilters.length === 0) return allLogs;
 
     return allLogs.filter(log => {
-      if (activeFilters.includes('Tờ khai thuế') && log.category.includes('Tờ khai thuế')) {
+      if (activeFilters.includes('Tờ khai thuế') && log.category.includes('Tờ khai')) {
         return true;
       }
       return activeFilters.includes(log.category);
@@ -598,6 +766,25 @@ export class TaxComponent implements OnInit {
     return this.activeSelectedFilters().map(val => this.getFilterLabel(val)).join(', ');
   }
 
+
+  public openLogDetail(row: any) {
+    let title = row.category;
+    if (row.name) {
+      title += ' - ' + row.name;
+    }
+    
+    this.modalService.open(TaxDetailModalComponent, {
+      title: title,
+      size: '5xl',
+      showHeader: false,
+      data: { log: row }
+    }).afterClosed$.subscribe((hasChanges) => {
+      // Reload logs after closing details modal to catch any status updates (e.g. 'Đã lưu')
+      if (hasChanges === true) {
+        this.loadLogs();
+      }
+    });
+  }
 
   public downloadLogExcel(row: any) {
     const period = row.period;

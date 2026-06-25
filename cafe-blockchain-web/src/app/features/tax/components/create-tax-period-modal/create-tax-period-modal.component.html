@@ -3,41 +3,29 @@
   <div class="space-y-3">
     <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block">Kỳ kê khai</label>
     <div class="flex items-center gap-6">
-      <label class="flex items-center gap-2 cursor-pointer text-sm font-semibold text-slate-700 dark:text-slate-300">
-        <input
-          type="radio"
-          name="newPeriodType"
-          value="month"
-          [ngModel]="newPeriodType()"
-          (ngModelChange)="newPeriodType.set($event)"
-          class="w-4.5 h-4.5 cursor-pointer accent-emerald-600 dark:accent-emerald-500"
-        />
-        <span>Theo tháng</span>
-      </label>
+      <app-custom-radio
+        name="newPeriodType"
+        value="month"
+        [ngModel]="newPeriodType()"
+        (ngModelChange)="newPeriodType.set($event)"
+        label="Theo tháng"
+      ></app-custom-radio>
       
-      <label class="flex items-center gap-2 cursor-pointer text-sm font-semibold text-slate-700 dark:text-slate-300">
-        <input
-          type="radio"
-          name="newPeriodType"
-          value="quarter"
-          [ngModel]="newPeriodType()"
-          (ngModelChange)="newPeriodType.set($event)"
-          class="w-4.5 h-4.5 cursor-pointer accent-emerald-600 dark:accent-emerald-500"
-        />
-        <span>Theo quý</span>
-      </label>
+      <app-custom-radio
+        name="newPeriodType"
+        value="quarter"
+        [ngModel]="newPeriodType()"
+        (ngModelChange)="newPeriodType.set($event)"
+        label="Theo quý"
+      ></app-custom-radio>
 
-      <label class="flex items-center gap-2 cursor-pointer text-sm font-semibold text-slate-700 dark:text-slate-300">
-        <input
-          type="radio"
-          name="newPeriodType"
-          value="year"
-          [ngModel]="newPeriodType()"
-          (ngModelChange)="newPeriodType.set($event)"
-          class="w-4.5 h-4.5 cursor-pointer accent-emerald-600 dark:accent-emerald-500"
-        />
-        <span>Theo năm</span>
-      </label>
+      <app-custom-radio
+        name="newPeriodType"
+        value="year"
+        [ngModel]="newPeriodType()"
+        (ngModelChange)="newPeriodType.set($event)"
+        label="Theo năm"
+      ></app-custom-radio>
     </div>
   </div>
 

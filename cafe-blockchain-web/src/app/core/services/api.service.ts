@@ -885,5 +885,14 @@ export class ApiService {
   public destroyTaxPeriod(id: string): Observable<any> {
     return this.http.delete(`${this.baseUrl}/tax/periods/${id}`, { headers: this.getHeaders() });
   }
+
+  public getTaxPeriodDetails(periodId: string, documentType: string): Observable<any> {
+    const params = new HttpParams().set('document_type', documentType);
+    return this.http.get(`${this.baseUrl}/tax/periods/${periodId}/details`, { headers: this.getHeaders(), params });
+  }
+
+  public saveTaxPeriodDetails(periodId: string, documentType: string, data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/tax/periods/${periodId}/details`, { document_type: documentType, data }, { headers: this.getHeaders() });
+  }
 }
 

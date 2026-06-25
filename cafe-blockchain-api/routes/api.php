@@ -250,6 +250,8 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/tax/periods', [TaxController::class, 'createPeriod']);
             Route::post('/tax/periods/{id}/lock', [TaxController::class, 'lockPeriod']);
             Route::delete('/tax/periods/{id}', [TaxController::class, 'destroyPeriod']);
+            Route::get('/tax/periods/{id}/details', [TaxController::class, 'getPeriodDetails']);
+            Route::post('/tax/periods/{id}/details', [TaxController::class, 'savePeriodDetails']);
         });
 
         // Owner-only routes

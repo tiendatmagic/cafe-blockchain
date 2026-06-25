@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Domain\Entities\TaxProfile;
 use App\Domain\Entities\TaxPeriod;
+use App\Domain\Entities\TaxPeriodDetail;
 use App\Infrastructure\Persistence\Eloquent\OrderModel as Order;
 use App\Domain\Entities\Transaction;
 use Illuminate\Http\Request;
@@ -251,6 +252,71 @@ class TaxController extends Controller
 
         return response()->json([
             'message' => 'Tax period deleted successfully.'
+        ]);
+    }
+
+    /**
+     * Get details for a specific tax period and document type.
+     */
+    public function getPeriodDetails(Request $request, $id)
+    {
+        $storeOwner = $request->user()->getStoreOwnerAddress();
+        
+        $period = TaxPeriod::where('id', $id)->where('store_owner_address', $storeOwner)->first();
+        if (!$period) {
+            return response()->json([
+                'message' => 'Tax period not found.'
+            ], 404);
+        }
+
+        $documentType = $request->query('document_type');
+        if (!$documentType) {
+            return response()->json([
+                'message' => 'Document type is required.'
+            ], 400);
+        }
+
+        $detail = TaxPeriodDetail::where('tax_period_id', $id)
+            ->where('document_type', $documentType)
+            ->first();
+
+        return response()->json([
+            'detail' => $detail
+        ]);
+    }
+
+    /**
+     * Save details for a specific tax period and document type.
+     */
+    public function savePeriodDetails(Request $request, $id)
+    {
+        $storeOwner = $request->user()->getStoreOwnerAddress();
+        
+        $period = TaxPeriod::where('id', $id)->where('store_owner_address', $storeOwner)->first();
+        if (!$period) {
+            return response()->json([
+                'message' => 'Tax period not found.'
+            ], 404);
+        }
+
+        $validated = $request->validate([
+            'document_type' => 'required|string',
+            'data' => 'required|array'
+        ]);
+
+        $detail = TaxPeriodDetail::updateOrCreate(
+            [
+                'tax_period_id' => $id,
+                'document_type' => $validated['document_type']
+            ],
+            [
+                'data' => $validated['data']
+            ]
+        );
+
+        return response()->json([
+            'message' => 'Tax period details saved successfully.',
+            'detail' => $detail
         ]);
     }
 
