@@ -75,24 +75,29 @@ export class TaxComponent implements OnInit {
     { value: 'estimation', label: 'Ước tính thuế' },
   ];
 
-  // Estimate range states
-  public readonly estimateStartDate = signal<string>('');
-  public readonly estimateEndDate = signal<string>('');
-  public readonly estimateResult = signal<any>(null);
+  // Estimate range states (Đọc/ghi qua TaxService để giữ trạng thái khi chuyển route)
+  public get estimateStartDate() { return this.taxService.estimateStartDate; }
+  public get estimateEndDate() { return this.taxService.estimateEndDate; }
+  public get estimateResult() { return this.taxService.estimateResult; }
   public readonly isEstimateLoading = signal<boolean>(false);
 
   // Periods list states
-  public readonly periodsList = signal<any[]>([]);
-  public readonly openPeriodsList = signal<any[]>([]);
+  public get periodsList() { return this.taxService.periodsList; }
+  public get openPeriodsList() { return this.taxService.openPeriodsList; }
   public readonly periodsCurrentPage = signal<number>(1);
-  public readonly periodsTotalItems = signal<number>(0);
+  public get periodsTotalItems() { return this.taxService.periodsTotalItems; }
   public readonly periodsItemsPerPage = 10;
   public readonly isPeriodsLoading = signal<boolean>(false);
 
+  // Loaded states for soft caching
+  public get isLogsLoaded() { return this.taxService.isLogsLoaded; }
+  public get isPeriodsLoaded() { return this.taxService.isPeriodsLoaded; }
+  public get isEstimateLoaded() { return this.taxService.isEstimateLoaded; }
+
   // Locked logs list
-  public readonly logsList = signal<any[]>([]);
+  public get logsList() { return this.taxService.logsList; }
   public readonly logsCurrentPage = signal<number>(1);
-  public readonly logsTotalItems = signal<number>(0);
+  public get logsTotalItems() { return this.taxService.logsTotalItems; }
   public readonly isLogsLoading = signal<boolean>(false);
   public readonly totalLogsPages = computed(() => Math.max(1, Math.ceil(this.logsTotalItems() / this.periodsItemsPerPage)));
   public readonly totalPeriodsPages = computed(() => Math.max(1, Math.ceil(this.periodsTotalItems() / this.periodsItemsPerPage)));
@@ -206,24 +211,35 @@ export class TaxComponent implements OnInit {
           untracked(() => this.taxService.loadTaxProfile());
         }
 
-        // Tải dữ liệu tương ứng với từng tab
+        // Tải dữ liệu tương ứng với từng tab nếu chưa được tải trước đó (cache mềm)
         if (tab === 'logs') {
-          untracked(() => this.loadLogs());
+          const loaded = untracked(() => this.isLogsLoaded());
+          if (!loaded) {
+            untracked(() => this.loadLogs());
+          }
         } else if (tab === 'declaration') {
-          untracked(() => this.loadPeriods());
+          const loaded = untracked(() => this.isPeriodsLoaded());
+          if (!loaded) {
+            untracked(() => this.loadPeriods());
+          }
         } else if (tab === 'estimation') {
-          untracked(() => this.getEstimate());
+          const loaded = untracked(() => this.isEstimateLoaded());
+          if (!loaded) {
+            untracked(() => this.getEstimate());
+          }
         }
       }
     }, { allowSignalWrites: true });
   }
 
   ngOnInit() {
-    // Set default dates for estimate (current month)
+    // Set default dates for estimate (current month) if not already set in Service
     const now = new Date();
-    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-    this.estimateStartDate.set(firstDay.toISOString().substring(0, 10));
-    this.estimateEndDate.set(now.toISOString().substring(0, 10));
+    if (!this.taxService.estimateStartDate()) {
+      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+      this.estimateStartDate.set(firstDay.toISOString().substring(0, 10));
+      this.estimateEndDate.set(now.toISOString().substring(0, 10));
+    }
 
     this.newPeriodValue.set(now.getMonth() + 1);
     this.newPeriodYear.set(now.getFullYear());
@@ -257,6 +273,11 @@ export class TaxComponent implements OnInit {
     const connected = this.web3Service.walletConnected();
     if (!connected) return;
 
+    // Reset loaded flags để bắt buộc tải mới
+    this.isLogsLoaded.set(false);
+    this.isPeriodsLoaded.set(false);
+    this.isEstimateLoaded.set(false);
+
     const hasProfile = this.taxService.taxProfile();
     if (!hasProfile) {
       this.taxService.loadTaxProfile();
@@ -276,6 +297,7 @@ export class TaxComponent implements OnInit {
         this.periodsList.set(res.data || []);
         this.periodsTotalItems.set(res.total || 0);
         this.isPeriodsLoading.set(false);
+        this.isPeriodsLoaded.set(true); // Đánh dấu đã load thành công
       },
       error: () => {
         this.isPeriodsLoading.set(false);
@@ -299,6 +321,7 @@ export class TaxComponent implements OnInit {
         this.logsList.set(res.data || []);
         this.logsTotalItems.set(res.total || 0);
         this.isLogsLoading.set(false);
+        this.isLogsLoaded.set(true); // Đánh dấu đã load thành công
       },
       error: () => {
         this.isLogsLoading.set(false);
@@ -410,6 +433,7 @@ export class TaxComponent implements OnInit {
       next: (res) => {
         this.estimateResult.set(res);
         this.isEstimateLoading.set(false);
+        this.isEstimateLoaded.set(true); // Đánh dấu đã load thành công
       },
       error: () => {
         this.isEstimateLoading.set(false);
@@ -424,6 +448,7 @@ export class TaxComponent implements OnInit {
       size: 'md',
     }).afterClosed$.subscribe((success) => {
       if (success) {
+        this.isPeriodsLoaded.set(false); // Reset cache mềm
         this.loadPeriods();
       }
     });
@@ -441,6 +466,8 @@ export class TaxComponent implements OnInit {
         this.taxService.lockTaxPeriod(id).subscribe({
           next: () => {
             this.toastService.showToast('Khóa sổ kỳ kế toán thuế thành công!', 'success');
+            this.isPeriodsLoaded.set(false); // Reset cache mềm
+            this.isLogsLoaded.set(false);    // Reset cache mềm
             this.loadPeriods();
             this.loadLogs();
           },
@@ -464,6 +491,7 @@ export class TaxComponent implements OnInit {
         this.taxService.destroyTaxPeriod(id).subscribe({
           next: () => {
             this.toastService.showToast('Xóa kỳ kê khai thành công!', 'success');
+            this.isPeriodsLoaded.set(false); // Reset cache mềm
             this.loadPeriods();
           },
           error: () => {
@@ -781,6 +809,7 @@ export class TaxComponent implements OnInit {
     }).afterClosed$.subscribe((hasChanges) => {
       // Reload logs after closing details modal to catch any status updates (e.g. 'Đã lưu')
       if (hasChanges === true) {
+        this.isLogsLoaded.set(false); // Reset cache mềm
         this.loadLogs();
       }
     });

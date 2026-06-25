@@ -12,6 +12,22 @@ export class TaxService {
   public readonly isProfileConfigured = signal<boolean>(false);
   public readonly isLoading = signal<boolean>(false);
 
+  // Cache dữ liệu và trạng thái tải cho soft caching
+  public readonly isLogsLoaded = signal<boolean>(false);
+  public readonly isPeriodsLoaded = signal<boolean>(false);
+  public readonly isEstimateLoaded = signal<boolean>(false);
+
+  public readonly periodsList = signal<any[]>([]);
+  public readonly openPeriodsList = signal<any[]>([]);
+  public readonly periodsTotalItems = signal<number>(0);
+
+  public readonly logsList = signal<any[]>([]);
+  public readonly logsTotalItems = signal<number>(0);
+
+  public readonly estimateResult = signal<any>(null);
+  public readonly estimateStartDate = signal<string>('');
+  public readonly estimateEndDate = signal<string>('');
+
   public loadTaxProfile() {
     this.isLoading.set(true);
     this.apiService.getTaxProfile().subscribe({
