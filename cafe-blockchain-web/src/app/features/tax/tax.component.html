@@ -887,10 +887,10 @@
                               class="py-3.5 px-4 text-center font-semibold text-slate-600 dark:text-slate-400"
                             >
                               @if (row.status === 'locked') {
-                                <div class="flex items-center justify-center gap-2">
-                                  <span>{{ row.updated_at | date: 'dd/MM/yyyy' }}</span>
+                                <div class="flex flex-col items-center gap-1">
+                                  <span class="text-xs">{{ row.updated_at | date: 'dd/MM/yyyy' }}</span>
                                   <span
-                                    class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-emerald-500/10 dark:bg-emerald-500/20 text-[10px] font-black text-emerald-600 dark:text-emerald-500 uppercase tracking-wide border border-emerald-500/10"
+                                    class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full whitespace-nowrap bg-emerald-500/10 dark:bg-emerald-500/20 text-[10px] font-black text-emerald-600 dark:text-emerald-500 uppercase tracking-wide border border-emerald-500/20"
                                   >
                                     <app-icon
                                       name="check-circle"
@@ -901,7 +901,7 @@
                                   </span>
                                 </div>
                               } @else {
-                                <span>-</span>
+                                <span class="text-slate-400">-</span>
                               }
                             </td>
                             <td class="py-3.5 px-4 text-right">
@@ -924,7 +924,7 @@
                                   </button>
                                   <button
                                     app-button
-                                    variant="secondary"
+                                    variant="danger-light"
                                     size="sm"
                                     (click)="deletePeriod(row.id)"
                                     class="whitespace-nowrap flex items-center gap-1 font-bold"
