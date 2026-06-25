@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed, effect, HostListener } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, effect, HostListener, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import * as XLSX from 'xlsx';
@@ -24,6 +24,7 @@ import { CreateTaxPeriodModalComponent } from './components/create-tax-period-mo
 import { TaxConfirmModalComponent } from './components/tax-confirm-modal/tax-confirm-modal.component';
 import { TaxResultModalComponent } from './components/tax-result-modal/tax-result-modal.component';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
+import { CustomCheckboxComponent } from '@shared/components/custom-checkbox/custom-checkbox.component';
 
 @Component({
   selector: 'app-tax',
@@ -39,6 +40,7 @@ import { PaginationComponent } from '@shared/components/pagination/pagination.co
     VNDCurrencyPipe,
     CustomDatePickerComponent,
     CustomSwitchComponent,
+    CustomCheckboxComponent,
     AccessRestrictedComponent,
     SkeletonLoaderComponent,
     Web3ConnectPromptComponent,
@@ -189,6 +191,30 @@ export class TaxComponent implements OnInit {
         });
       }
     });
+
+    // Lắng nghe tab và ví kết nối để tải dữ liệu, triệt tiêu gọi trùng lặp API
+    effect(() => {
+      const connected = this.web3Service.walletConnected();
+      const tab = this.activeTab();
+
+      if (connected) {
+        // Tải profile (chỉ tải khi chưa có profile và không đang tải)
+        const hasProfile = untracked(() => !!this.taxService.taxProfile());
+        const isProfileLoading = untracked(() => this.taxService.isLoading());
+        if (!hasProfile && !isProfileLoading) {
+          untracked(() => this.taxService.loadTaxProfile());
+        }
+
+        // Tải dữ liệu tương ứng với từng tab
+        if (tab === 'logs') {
+          untracked(() => this.loadLogs());
+        } else if (tab === 'declaration') {
+          untracked(() => this.loadPeriods());
+        } else if (tab === 'estimation') {
+          untracked(() => this.getEstimate());
+        }
+      }
+    }, { allowSignalWrites: true });
   }
 
   ngOnInit() {
@@ -206,12 +232,7 @@ export class TaxComponent implements OnInit {
       filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
       this.updateTabFromRoute();
-      this.loadInitialData();
     });
-
-    if (this.web3Service.walletConnected()) {
-      this.loadInitialData();
-    }
   }
 
   private updateTabFromRoute() {
@@ -232,7 +253,14 @@ export class TaxComponent implements OnInit {
   }
 
   public loadInitialData() {
-    this.taxService.loadTaxProfile();
+    const connected = this.web3Service.walletConnected();
+    if (!connected) return;
+
+    const hasProfile = this.taxService.taxProfile();
+    if (!hasProfile) {
+      this.taxService.loadTaxProfile();
+    }
+    
     const tab = this.activeTab();
     if (tab === 'logs') this.loadLogs();
     if (tab === 'declaration') this.loadPeriods();
