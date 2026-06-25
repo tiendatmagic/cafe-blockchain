@@ -27,21 +27,23 @@
       </div>
 
       <!-- Industry select list -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 gap-4">
         <button
           type="button"
-          (click)="setSurveyField('industry_type', 'production')"
-          [class]="'text-left p-4 rounded-[15px] border transition-all duration-200 ' + (surveyForm().industry_type === 'production' ? 'border-purple-600 bg-purple-500/5 ring-1 ring-purple-600/30' : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/30')"
+          (click)="setSurveyField('industry_type', 'distributor')"
+          [class]="'text-left p-4 rounded-[15px] border transition-all duration-200 ' + (surveyForm().industry_type === 'distributor' ? 'border-purple-600 bg-purple-500/5 ring-1 ring-purple-600/30' : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/30')"
         >
           <div class="flex justify-between items-start">
-            <span class="text-sm font-bold text-slate-800 dark:text-white">Dịch vụ ăn uống / F&B / Sản xuất</span>
-            @if (surveyForm().industry_type === 'production') {
+            <div>
+              <span class="text-sm font-bold text-slate-800 dark:text-white">Phân phối, cung cấp hàng hóa</span>
+              <span class="text-xs text-purple-600 dark:text-purple-400 font-bold ml-2">GTGT 1%, TNCN 0.5%</span>
+            </div>
+            @if (surveyForm().industry_type === 'distributor') {
               <app-icon name="check-circle" class="w-4.5 h-4.5 text-purple-600" />
             }
           </div>
           <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
-            Áp dụng cho nhà hàng, quán cafe, đồ uống, và gia công sản xuất.<br>
-            <span class="text-purple-600 dark:text-purple-400 font-bold">GTGT: 3% | TNCN: 1.5%</span>
+            Ngành hàng mua đi bán lại. VD: tạp hóa, thời trang, mỹ phẩm, điện tử...
           </p>
         </button>
 
@@ -51,31 +53,35 @@
           [class]="'text-left p-4 rounded-[15px] border transition-all duration-200 ' + (surveyForm().industry_type === 'service' ? 'border-purple-600 bg-purple-500/5 ring-1 ring-purple-600/30' : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/30')"
         >
           <div class="flex justify-between items-start">
-            <span class="text-sm font-bold text-slate-800 dark:text-white">Dịch vụ kinh doanh, cho thuê</span>
+            <div>
+              <span class="text-sm font-bold text-slate-800 dark:text-white">Dịch vụ, XD không NVL</span>
+              <span class="text-xs text-purple-600 dark:text-purple-400 font-bold ml-2">GTGT 5%, TNCN 2.0%</span>
+            </div>
             @if (surveyForm().industry_type === 'service') {
               <app-icon name="check-circle" class="w-4.5 h-4.5 text-purple-600" />
             }
           </div>
           <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
-            Dịch vụ lưu trú, giải trí, tư vấn, xây dựng không thầu vật liệu.<br>
-            <span class="text-purple-600 dark:text-purple-400 font-bold">GTGT: 5% | TNCN: 2%</span>
+            Dịch vụ, xây dựng không bao thầu NVL. VD: spa, sửa chữa, tư vấn, thiết kế...
           </p>
         </button>
 
         <button
           type="button"
-          (click)="setSurveyField('industry_type', 'distributor')"
-          [class]="'text-left p-4 rounded-[15px] border transition-all duration-200 ' + (surveyForm().industry_type === 'distributor' ? 'border-purple-600 bg-purple-500/5 ring-1 ring-purple-600/30' : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/30')"
+          (click)="setSurveyField('industry_type', 'production')"
+          [class]="'text-left p-4 rounded-[15px] border transition-all duration-200 ' + (surveyForm().industry_type === 'production' ? 'border-purple-600 bg-purple-500/5 ring-1 ring-purple-600/30' : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/30')"
         >
           <div class="flex justify-between items-start">
-            <span class="text-sm font-bold text-slate-800 dark:text-white">Bán buôn, cung cấp hàng hóa</span>
-            @if (surveyForm().industry_type === 'distributor') {
+            <div>
+              <span class="text-sm font-bold text-slate-800 dark:text-white">SX, vận tải, XD có NVL</span>
+              <span class="text-xs text-purple-600 dark:text-purple-400 font-bold ml-2">GTGT 3%, TNCN 1.5%</span>
+            </div>
+            @if (surveyForm().industry_type === 'production') {
               <app-icon name="check-circle" class="w-4.5 h-4.5 text-purple-600" />
             }
           </div>
           <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
-            Bán hàng siêu thị, cửa hàng tiện lợi, tạp hóa, đại lý phân phối.<br>
-            <span class="text-purple-600 dark:text-purple-400 font-bold">GTGT: 1% | TNCN: 0.5%</span>
+            Sản xuất, vận tải, XD có bao thầu NVL. VD: may mặc, chế biến thực phẩm, xưởng gỗ...
           </p>
         </button>
 
@@ -85,14 +91,16 @@
           [class]="'text-left p-4 rounded-[15px] border transition-all duration-200 ' + (surveyForm().industry_type === 'others' ? 'border-purple-600 bg-purple-500/5 ring-1 ring-purple-600/30' : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/30')"
         >
           <div class="flex justify-between items-start">
-            <span class="text-sm font-bold text-slate-800 dark:text-white">Hoạt động kinh doanh khác</span>
+            <div>
+              <span class="text-sm font-bold text-slate-800 dark:text-white">Hoạt động KD khác</span>
+              <span class="text-xs text-purple-600 dark:text-purple-400 font-bold ml-2">GTGT 2%, TNCN 1.0%</span>
+            </div>
             @if (surveyForm().industry_type === 'others') {
               <app-icon name="check-circle" class="w-4.5 h-4.5 text-purple-600" />
             }
           </div>
           <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
-            Bán buôn thầu nguyên vật liệu, xây dựng có bao thầu vật tư.<br>
-            <span class="text-purple-600 dark:text-purple-400 font-bold">GTGT: 2% | TNCN: 1%</span>
+            Hoạt động kinh doanh khác. VD: cho thuê tài sản, môi giới, đại lý...
           </p>
         </button>
       </div>
@@ -102,17 +110,17 @@
         <app-custom-switch
           [checked]="surveyForm().is_multi_industry"
           (checkedChange)="setSurveyField('is_multi_industry', $event)"
-          label="Quán có kinh doanh nhiều nhóm ngành khác nhau"
+          label="Kinh doanh nhiều ngành"
         ></app-custom-switch>
 
         @if (surveyForm().is_multi_industry) {
           <div class="space-y-3 pt-2">
             <label class="text-xs font-bold text-slate-600 dark:text-slate-400 block">
-              Phân bổ tỉ lệ phần trăm doanh thu (%) - Tổng bằng 100%
+              Phân bổ doanh thu theo ngành
             </label>
             <div class="grid grid-cols-2 gap-4">
               <div class="space-y-1">
-                <span class="text-xs text-slate-500">Phân phối (%):</span>
+                <span class="text-xs text-slate-500">Phân phối, cung cấp hàng hóa (%):</span>
                 <input
                   type="number"
                   class="form-input w-full rounded-xl text-xs bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3 py-2 outline-none focus:border-purple-500 transition-colors"
@@ -121,7 +129,7 @@
                 />
               </div>
               <div class="space-y-1">
-                <span class="text-xs text-slate-500">Dịch vụ (%):</span>
+                <span class="text-xs text-slate-500">Dịch vụ, XD không NVL (%):</span>
                 <input
                   type="number"
                   class="form-input w-full rounded-xl text-xs bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3 py-2 outline-none focus:border-purple-500 transition-colors"
@@ -130,7 +138,7 @@
                 />
               </div>
               <div class="space-y-1">
-                <span class="text-xs text-slate-500">F&B / Sản xuất (%):</span>
+                <span class="text-xs text-slate-500">SX, vận tải, XD có NVL (%):</span>
                 <input
                   type="number"
                   class="form-input w-full rounded-xl text-xs bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3 py-2 outline-none focus:border-purple-500 transition-colors"
@@ -139,7 +147,7 @@
                 />
               </div>
               <div class="space-y-1">
-                <span class="text-xs text-slate-500">Kinh doanh khác (%):</span>
+                <span class="text-xs text-slate-500">Hoạt động KD khác (%):</span>
                 <input
                   type="number"
                   class="form-input w-full rounded-xl text-xs bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3 py-2 outline-none focus:border-purple-500 transition-colors"

@@ -1,14 +1,11 @@
-<div class="space-y-6 max-w-[1530px] mx-auto p-4 sm:p-6 text-slate-800 dark:text-slate-200 font-sans">
+<div
+  class="space-y-6 max-w-[1530px] mx-auto p-4 sm:p-6 text-slate-800 dark:text-slate-200 font-sans"
+>
   <app-page-header
-    title="Quản lý & Kê khai Thuế"
+    title="Thuế"
     description="Ước tính thuế GTGT và TNCN phải nộp dành cho Hộ Kinh Doanh Cá Thể và cấu hình hóa đơn."
   >
-    <app-icon
-      icon
-      name="tax"
-      class="h-6.5 w-6.5 text-[var(--dynamic-primary)]"
-      strokeWidth="2.5"
-    />
+    <app-icon icon name="tax" class="h-6.5 w-6.5 text-[var(--dynamic-primary)]" strokeWidth="2.5" />
   </app-page-header>
 
   @if (web3Service.walletConnected()) {
@@ -17,50 +14,6 @@
         <app-skeleton-loader type="tax"></app-skeleton-loader>
       } @else {
         <div class="space-y-6 animate-in fade-in duration-300">
-          <!-- Summary header card -->
-          <div app-card class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 rounded-[15px]">
-            <div class="flex items-center gap-3">
-              <div class="p-2.5 bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-xl flex items-center">
-                <app-icon name="tax" class="h-6 w-6" />
-              </div>
-              <div>
-                @if (taxService.isProfileConfigured()) {
-                  <h3 class="text-sm font-bold text-slate-800 dark:text-white">
-                    Ngành nghề chính:
-                    <span class="text-purple-600 dark:text-purple-400">{{
-                      getIndustryLabel(taxService.taxProfile()?.industry_type)
-                    }}</span>
-                  </h3>
-                  <p class="text-xs text-slate-500 mt-0.5 font-semibold">
-                    Quy mô: {{ getBusinessGroupLabel(taxService.taxProfile()?.business_group) }} | Phương pháp TNCN:
-                    <span class="font-bold">
-                      {{ taxService.taxProfile()?.tax_method === 'profit_percent' ? '15% Lợi nhuận' : 'Tỷ lệ % doanh thu' }}
-                    </span>
-                  </p>
-                } @else {
-                  <h3 class="text-sm font-bold text-slate-800 dark:text-white">
-                    Hồ sơ khảo sát thuế chưa thiết lập
-                  </h3>
-                  <p class="text-xs text-slate-500 mt-0.5 font-semibold">
-                    Vui lòng hoàn tất khảo sát tại tab <span class="text-purple-600 font-bold">Kê khai thuế</span> để sử dụng đầy đủ chức năng.
-                  </p>
-                }
-              </div>
-            </div>
-            @if (taxService.isProfileConfigured()) {
-              <button app-button variant="secondary" size="sm" (click)="resetTaxProfile()">
-                <app-icon name="edit" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
-                <span>Khảo sát lại</span>
-              </button>
-            }
-          </div>
-
-          <!-- Banner thông tư 50 -->
-          <div class="flex items-center gap-2.5 px-4 py-3 bg-sky-50 dark:bg-sky-950/20 text-sky-700 dark:text-sky-400 text-xs font-semibold rounded-[15px] border border-sky-100/50 dark:border-sky-900/30">
-            <app-icon name="info" class="h-4.5 w-4.5 shrink-0 text-sky-500" strokeWidth="2.2" />
-            <span>Hệ thống đã cập nhật tờ khai thuế theo thông tư 50/2026/TT-BTC</span>
-          </div>
-
           <!-- Tab Selector -->
           <app-tab-group
             [options]="tabOptions"
@@ -70,110 +23,852 @@
             class="w-full shrink-0"
           ></app-tab-group>
 
-          <!-- TAB 1: NHẬT KÝ CHỐT THUẾ (LOCKED PERIODS) -->
+          <!-- TAB 1: NHẬT KÝ KÊ KHAI (LOCKED PERIODS & DEMO) -->
           @if (activeTab() === 'logs') {
-            <div app-card class="space-y-6 rounded-[15px] animate-in fade-in duration-200">
-              <div>
-                <h4 class="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider">
-                  Nhật ký chốt thuế
-                </h4>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-bold">
-                  Xem lịch sử các kỳ kê khai thuế đã khóa sổ kế toán, số tiền đã kê nộp.
-                </p>
+            <div app-card class="space-y-5 rounded-[15px] animate-in fade-in duration-205">
+              <div class="flex flex-col gap-4">
+                <div>
+                  <h4
+                    class="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider"
+                  >
+                    Nhật ký kê khai
+                  </h4>
+                </div>
+
+                <!-- Bộ lọc Phân loại và Trạng thái lọc -->
+                <div class="flex flex-col gap-3">
+                  <div class="flex items-center justify-between gap-4">
+                    <!-- Dropdown Phân loại (Select UI Pill Style) -->
+                    <div class="relative inline-block text-left filter-dropdown-container">
+                      <button
+                        type="button"
+                        (click)="toggleFilterDropdown($event)"
+                        class="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-full bg-white dark:bg-slate-950 text-xs font-semibold text-slate-700 dark:text-slate-300 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-900 transition-all focus:outline-none"
+                        [class.border-[var(--dynamic-primary)]]="isFilterDropdownOpen()"
+                      >
+                        <span>Phân loại</span>
+                        <app-icon
+                          name="chevron-down"
+                          class="h-3.5 w-3.5 text-slate-400 transition-transform duration-200 shrink-0"
+                          [class.rotate-180]="isFilterDropdownOpen()"
+                          strokeWidth="2.5"
+                        />
+                      </button>
+
+                      @if (isFilterDropdownOpen()) {
+                        <div
+                          class="absolute left-0 mt-2 w-56 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-950 shadow-lg p-3 z-30 space-y-3 animate-in fade-in duration-100"
+                        >
+                          <!-- Options list -->
+                          <div class="space-y-2 max-h-56 overflow-y-auto no-scrollbar">
+                            @for (opt of filterOptions; track opt.value) {
+                              <label
+                                class="flex items-center gap-2.5 cursor-pointer py-1 px-1 rounded hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors"
+                              >
+                                <input
+                                  type="checkbox"
+                                  [checked]="tempSelectedFilters().includes(opt.value)"
+                                  (change)="toggleTempFilter(opt.value)"
+                                  class="rounded border-slate-300 dark:border-slate-850 text-[var(--dynamic-primary)] focus:ring-[var(--dynamic-primary)] w-4 h-4"
+                                />
+                                <span
+                                  class="text-xs font-semibold text-slate-700 dark:text-slate-300"
+                                  >{{ opt.label }}</span
+                                >
+                              </label>
+                            }
+                          </div>
+
+                          <!-- Actions footer -->
+                          <div
+                            class="flex justify-between items-center pt-2.5 border-t border-slate-100 dark:border-slate-800/40"
+                          >
+                            <button
+                              app-button
+                              variant="secondary"
+                              size="sm"
+                              (click)="resetTempFilters()"
+                              class="!py-1 !px-2.5 !text-[10px] font-bold"
+                            >
+                              Thiết lập lại
+                            </button>
+                            <button
+                              app-button
+                              variant="primary"
+                              size="sm"
+                              (click)="applyFilters()"
+                              class="!py-1 !px-2.5 !text-[10px] !bg-[var(--dynamic-primary)] hover:!bg-[var(--dynamic-primary)]/90 text-white font-bold"
+                            >
+                              Áp dụng ({{ tempSelectedFilters().length }})
+                            </button>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Trạng thái lọc hiển thị giống hình mẫu -->
+                  @if (activeSelectedFilters().length > 0) {
+                    <div
+                      class="flex items-center justify-between gap-4 py-1.5 animate-in fade-in duration-200"
+                    >
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-xs font-bold text-slate-450 dark:text-slate-500"
+                          >Đang lọc:</span
+                        >
+                        <span
+                          class="inline-flex items-center gap-2 px-3 py-1 border border-purple-100 dark:border-purple-900/30 bg-purple-50 dark:bg-purple-950/20 text-xs font-bold text-[var(--dynamic-primary)] rounded-full"
+                        >
+                          <span>Phân loại: {{ getActiveSelectedFiltersLabel() }}</span>
+                          <button
+                            (click)="clearAllFilters()"
+                            class="text-purple-400 hover:text-[var(--dynamic-primary)] dark:hover:text-purple-300 flex items-center"
+                          >
+                            <app-icon name="close" class="h-3.5 w-3.5 shrink-0" strokeWidth="2.5" />
+                          </button>
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        (click)="clearAllFilters()"
+                        class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-rose-500 dark:text-slate-400 dark:hover:text-rose-450 transition-colors"
+                      >
+                        <app-icon
+                          name="trash"
+                          class="h-3.5 w-3.5 shrink-0 text-slate-500"
+                          strokeWidth="2.2"
+                        />
+                        <span>Bỏ lọc</span>
+                      </button>
+                    </div>
+                  }
+                </div>
               </div>
 
               @if (isLogsLoading()) {
                 <app-skeleton-loader type="tax-logs" [rows]="5"></app-skeleton-loader>
-              } @else if (logsList().length === 0) {
-                <div class="py-12 text-center text-slate-400 font-bold">
-                  Không có dữ liệu kỳ kê khai đã khóa sổ.
-                </div>
               } @else {
                 <div class="overflow-x-auto">
-                  <table class="w-full text-sm text-left">
+                  <table class="w-full text-sm text-left min-w-[750px]">
                     <thead>
-                      <tr class="border-b border-slate-100 dark:border-slate-800/60 text-xs font-black uppercase text-slate-400 tracking-wider">
-                        <th class="py-3 px-4">Tên kỳ</th>
-                        <th class="py-3 px-4 text-right">Doanh thu chốt</th>
-                        <th class="py-3 px-4 text-right">Chi phí chốt</th>
-                        <th class="py-3 px-4 text-right">Thuế GTGT</th>
-                        <th class="py-3 px-4 text-right">Thuế TNCN</th>
-                        <th class="py-3 px-4 text-right">Tổng thuế</th>
-                        <th class="py-3 px-4 text-center">Trạng thái</th>
+                      <tr
+                        class="border-b border-slate-100 dark:border-slate-800/60 text-xs font-black uppercase text-slate-400 tracking-wider"
+                      >
+                        <th class="py-3 px-4 w-[280px]">Phân loại</th>
+                        <th class="py-3 px-4">Tên sổ/tờ khai</th>
+                        <th class="py-3 px-4 text-center w-[180px]">Trạng thái</th>
+                        <th class="py-3 px-4 w-[50px]"></th>
                       </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-800/40">
-                      @for (row of logsList(); track row.id) {
+                      @for (row of getFormattedLogs(); track row.id) {
                         <tr class="hover:bg-slate-50 dark:hover:bg-slate-850/50 transition-colors">
                           <td class="py-3.5 px-4 font-bold text-slate-800 dark:text-white">
-                            {{ getPeriodName(row) }}
+                            {{ row.category }}
                           </td>
-                          <td class="py-3.5 px-4 text-right font-mono font-medium">{{ row.revenue_amount | vnd }}</td>
-                          <td class="py-3.5 px-4 text-right font-mono font-medium text-slate-500">{{ row.expense_amount | vnd }}</td>
-                          <td class="py-3.5 px-4 text-right font-mono font-bold text-purple-600 dark:text-purple-400">{{ row.estimated_vat | vnd }}</td>
-                          <td class="py-3.5 px-4 text-right font-mono font-bold text-purple-600 dark:text-purple-400">{{ row.estimated_pit | vnd }}</td>
-                          <td class="py-3.5 px-4 text-right font-mono font-black text-rose-500">
-                            {{ (row.estimated_vat + row.estimated_pit) | vnd }}
-                                        </td>
+                          <td class="py-3.5 px-4 text-slate-500 dark:text-slate-400 font-medium">
+                            {{ row.name }}
+                          </td>
+                          <td class="py-3.5 px-4 text-center">
+                            <span
+                              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold"
+                              [class]="
+                                row.status === 'saved'
+                                  ? 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20'
+                                  : 'bg-amber-500/10 text-amber-600 dark:bg-amber-500/20'
+                              "
+                            >
+                              {{ row.statusLabel }}
+                            </span>
+                          </td>
+                          <td class="py-3.5 px-4 text-right">
+                            <div class="relative inline-block text-left row-menu-container">
+                              <button
+                                (click)="toggleRowMenu(row.id, $event)"
+                                class="text-slate-400 hover:text-slate-650 dark:hover:text-slate-200 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                              >
+                                <app-icon name="dots-vertical" class="h-4.5 w-4.5" />
+                              </button>
+
+                              @if (activeRowMenuId() === row.id) {
+                                <div
+                                  class="absolute right-0 mt-1 w-40 rounded-xl border border-slate-150 dark:border-slate-800/80 bg-white dark:bg-slate-950 shadow-lg p-1.5 z-30 animate-in fade-in slide-in-from-top-1 duration-100 text-left"
+                                >
+                                  <button
+                                    (click)="downloadLogExcel(row); closeRowMenu()"
+                                    class="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg transition-colors"
+                                  >
+                                    <app-icon
+                                      name="download"
+                                      class="h-4 w-4 text-slate-400"
+                                      strokeWidth="2.5"
+                                    />
+                                    <span>Tải file excel</span>
+                                  </button>
+                                </div>
+                              }
+                            </div>
+                          </td>
                         </tr>
                       }
                     </tbody>
                   </table>
                 </div>
+
+                <!-- Bộ phân trang -->
+                <div
+                  class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800/60"
+                >
+                  <div class="flex items-center gap-2">
+                    <button
+                      class="inline-flex items-center gap-1.5 px-2.5 py-1.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-950 text-xs font-bold text-slate-700 dark:text-slate-300"
+                    >
+                      <span>10 / Trang</span>
+                      <app-icon name="chevron-down" class="h-3 w-3" strokeWidth="2.5" />
+                    </button>
+                  </div>
+                  <div class="flex items-center gap-1">
+                    <button
+                      class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 disabled:opacity-50"
+                      disabled
+                    >
+                      <app-icon name="chevron-left" class="h-4 w-4" strokeWidth="2.5" />
+                    </button>
+                    <span
+                      class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 flex items-center justify-center text-xs font-bold"
+                      >1</span
+                    >
+                    <button
+                      class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 disabled:opacity-50"
+                      disabled
+                    >
+                      <app-icon name="chevron-right" class="h-4 w-4" strokeWidth="2.5" />
+                    </button>
+                  </div>
+                </div>
               }
             </div>
           }
 
-          <!-- TAB 2: KỲ KÊ KHAI (OPEN PERIODS / SURVEY) -->
+          <!-- TAB 2: KÊ KHAI THUẾ (OPEN PERIODS / SURVEY) -->
           @if (activeTab() === 'declaration') {
-            @if (!taxService.isProfileConfigured()) {
-              <!-- Giao diện yêu cầu thiết lập hồ sơ thuế -->
-              <div app-card class="max-w-2xl mx-auto py-12 flex flex-col items-center justify-center text-center space-y-4 rounded-[15px] animate-in fade-in duration-200">
-                <div class="p-4 bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-full">
-                  <app-icon name="tax" class="h-10 w-10" strokeWidth="2" />
+            @if (!taxService.isProfileConfigured() || isSurveyMode()) {
+              <!-- Inline Survey Container -->
+              <div app-card class="space-y-6 rounded-[15px] animate-in fade-in duration-200">
+                <div>
+                  <h3 class="text-lg font-bold text-slate-800 dark:text-white">Kê khai thuế</h3>
+                  <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-bold">
+                    Các câu hỏi giúp hệ thống xác định loại sổ kế toán phù hợp với bạn
+                  </p>
                 </div>
-                <div class="text-sm font-bold text-slate-800 dark:text-white">
-                  Hồ sơ khảo sát thuế chưa được thiết lập
+
+                <!-- Custom Stepper inline -->
+                <div
+                  class="flex items-center gap-4 py-2 border-b border-slate-100 dark:border-slate-800/60"
+                >
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-200"
+                      [class]="
+                        surveyStep() === 1
+                          ? 'bg-[var(--dynamic-primary)] text-white'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
+                      "
+                    >
+                      1
+                    </span>
+                    <span
+                      class="text-xs font-bold transition-all duration-200"
+                      [class]="
+                        surveyStep() === 1 ? 'text-[var(--dynamic-primary)]' : 'text-slate-400'
+                      "
+                    >
+                      Doanh thu
+                    </span>
+                  </div>
+                  <div class="h-px bg-slate-200 dark:bg-slate-800 flex-1 max-w-[100px]"></div>
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-200"
+                      [class]="
+                        surveyStep() === 2
+                          ? 'bg-[var(--dynamic-primary)] text-white'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
+                      "
+                    >
+                      2
+                    </span>
+                    <span
+                      class="text-xs font-bold transition-all duration-200"
+                      [class]="
+                        surveyStep() === 2 ? 'text-[var(--dynamic-primary)]' : 'text-slate-400'
+                      "
+                    >
+                      Phương pháp tính thuế
+                    </span>
+                  </div>
                 </div>
-                <p class="text-xs text-slate-500 dark:text-slate-400 max-w-md font-semibold">
-                  Vui lòng hoàn thành khảo sát hồ sơ thuế của cửa hàng để bắt đầu tạo kỳ kê khai và quản lý thuế.
-                </p>
-                <button app-button variant="primary" class="!bg-purple-600 hover:!bg-purple-700 text-white !px-6" (click)="openSurveyModal()">
-                  Thiết lập hồ sơ ngay
-                </button>
+
+                <!-- STEP 1: DOANH THU -->
+                @if (surveyStep() === 1) {
+                  <div class="space-y-6 animate-in fade-in duration-200">
+                    <!-- Q1 -->
+                    <div class="space-y-3">
+                      <label class="text-xs font-bold text-slate-700 dark:text-slate-300 block">
+                        1. Ước tính tổng doanh thu trong 1 năm của cơ sở bạn thuộc khoảng nào dưới
+                        đây? *
+                      </label>
+                      <div class="grid grid-cols-1 gap-3 max-w-lg">
+                        <button
+                          type="button"
+                          (click)="setSurveyField('business_group', 1)"
+                          [class]="
+                            'text-left p-3.5 rounded-xl border flex items-center gap-3 transition-all duration-205 ' +
+                            (surveyForm().business_group === 1
+                              ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 ring-1 ring-[var(--dynamic-primary)]/30'
+                              : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/30')
+                          "
+                        >
+                          <span
+                            class="w-4 h-4 rounded-full border flex items-center justify-center shrink-0"
+                            [class]="
+                              surveyForm().business_group === 1
+                                ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]'
+                                : 'border-slate-300'
+                            "
+                          >
+                            @if (surveyForm().business_group === 1) {
+                              <span class="w-1.5 h-1.5 bg-white rounded-full"></span>
+                            }
+                          </span>
+                          <span class="text-xs font-bold text-slate-700 dark:text-slate-300"
+                            >Dưới 1 tỷ/năm</span
+                          >
+                        </button>
+                        <button
+                          type="button"
+                          (click)="setSurveyField('business_group', 2)"
+                          [class]="
+                            'text-left p-3.5 rounded-xl border flex items-center gap-3 transition-all duration-205 ' +
+                            (surveyForm().business_group === 2
+                              ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 ring-1 ring-[var(--dynamic-primary)]/30'
+                              : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/30')
+                          "
+                        >
+                          <span
+                            class="w-4 h-4 rounded-full border flex items-center justify-center shrink-0"
+                            [class]="
+                              surveyForm().business_group === 2
+                                ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]'
+                                : 'border-slate-300'
+                            "
+                          >
+                            @if (surveyForm().business_group === 2) {
+                              <span class="w-1.5 h-1.5 bg-white rounded-full"></span>
+                            }
+                          </span>
+                          <span class="text-xs font-bold text-slate-700 dark:text-slate-300"
+                            >1 tỷ - 3 tỷ/năm</span
+                          >
+                        </button>
+                        <button
+                          type="button"
+                          (click)="setSurveyField('business_group', 3)"
+                          [class]="
+                            'text-left p-3.5 rounded-xl border flex items-center gap-3 transition-all duration-205 ' +
+                            (surveyForm().business_group === 3
+                              ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 ring-1 ring-[var(--dynamic-primary)]/30'
+                              : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/30')
+                          "
+                        >
+                          <span
+                            class="w-4 h-4 rounded-full border flex items-center justify-center shrink-0"
+                            [class]="
+                              surveyForm().business_group === 3
+                                ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]'
+                                : 'border-slate-300'
+                            "
+                          >
+                            @if (surveyForm().business_group === 3) {
+                              <span class="w-1.5 h-1.5 bg-white rounded-full"></span>
+                            }
+                          </span>
+                          <span class="text-xs font-bold text-slate-700 dark:text-slate-300"
+                            >3 tỷ - 50 tỷ/năm</span
+                          >
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Q2 -->
+                    <div class="space-y-3">
+                      <label class="text-xs font-bold text-slate-700 dark:text-slate-300 block">
+                        2. Doanh thu của bạn có tập trung mạnh vào một vài tháng cụ thể trong năm
+                        không?
+                      </label>
+                      <div class="flex items-center gap-6">
+                        <button
+                          type="button"
+                          (click)="setSurveyField('is_seasonal', 'có')"
+                          class="flex items-center gap-2"
+                        >
+                          <span
+                            class="w-4 h-4 rounded-full border flex items-center justify-center shrink-0"
+                            [class]="
+                              surveyForm().is_seasonal === 'có'
+                                ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]'
+                                : 'border-slate-300'
+                            "
+                          >
+                            @if (surveyForm().is_seasonal === 'có') {
+                              <span class="w-1.5 h-1.5 bg-white rounded-full"></span>
+                            }
+                          </span>
+                          <span
+                            class="text-xs font-bold text-slate-700 dark:text-slate-300 font-sans"
+                            >Có</span
+                          >
+                        </button>
+                        <button
+                          type="button"
+                          (click)="setSurveyField('is_seasonal', 'không')"
+                          class="flex items-center gap-2"
+                        >
+                          <span
+                            class="w-4 h-4 rounded-full border flex items-center justify-center shrink-0"
+                            [class]="
+                              surveyForm().is_seasonal === 'không'
+                                ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]'
+                                : 'border-slate-300'
+                            "
+                          >
+                            @if (surveyForm().is_seasonal === 'không') {
+                              <span class="w-1.5 h-1.5 bg-white rounded-full"></span>
+                            }
+                          </span>
+                          <span
+                            class="text-xs font-bold text-slate-700 dark:text-slate-300 font-sans"
+                            >Không</span
+                          >
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Q3 -->
+                    <div class="space-y-3">
+                      <label class="text-xs font-bold text-slate-700 dark:text-slate-300 block">
+                        3. Ngoài bán trực tiếp tại cửa hàng, bạn có doanh thu từ các kênh nào khác
+                        không?
+                      </label>
+                      <div class="space-y-2 max-w-md">
+                        <label
+                          class="flex items-center gap-3.5 p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            [checked]="surveyForm().sales_channels.ecommerce"
+                            (change)="toggleSalesChannel('ecommerce')"
+                            class="rounded border-slate-300 text-[var(--dynamic-primary)] focus:ring-[var(--dynamic-primary)] w-4 h-4"
+                          />
+                          <span class="text-xs font-bold text-slate-700 dark:text-slate-300"
+                            >Các sàn TMĐT (Shopee, Lazada, Tiktok Shop,...)</span
+                          >
+                        </label>
+                        <label
+                          class="flex items-center gap-3.5 p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            [checked]="surveyForm().sales_channels.foodapp"
+                            (change)="toggleSalesChannel('foodapp')"
+                            class="rounded border-slate-300 text-[var(--dynamic-primary)] focus:ring-[var(--dynamic-primary)] w-4 h-4"
+                          />
+                          <span class="text-xs font-bold text-slate-700 dark:text-slate-300"
+                            >Ứng dụng giao đồ ăn (ShopeeFood, GrabFood, BeFood,...)</span
+                          >
+                        </label>
+                        <label
+                          class="flex items-center gap-3.5 p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            [checked]="surveyForm().sales_channels.social"
+                            (change)="toggleSalesChannel('social')"
+                            class="rounded border-slate-300 text-[var(--dynamic-primary)] focus:ring-[var(--dynamic-primary)] w-4 h-4"
+                          />
+                          <span class="text-xs font-bold text-slate-700 dark:text-slate-300"
+                            >Mạng xã hội (Facebook, Zalo,...)</span
+                          >
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                }
+
+                <!-- STEP 2: PHƯƠNG PHÁP TÍNH THUẾ -->
+                @if (surveyStep() === 2) {
+                  <div class="space-y-6 animate-in fade-in duration-200">
+                    <!-- Tax Method -->
+                    <div class="space-y-3">
+                      <label class="text-xs font-bold text-slate-700 dark:text-slate-300 block">
+                        Chọn phương pháp tính thuế TNCN phù hợp
+                      </label>
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <button
+                          type="button"
+                          (click)="setSurveyField('tax_method', 'revenue_percent')"
+                          [class]="
+                            'text-left p-4 rounded-xl border transition-all duration-200 ' +
+                            (surveyForm().tax_method === 'revenue_percent'
+                              ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 ring-1 ring-[var(--dynamic-primary)]/30'
+                              : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/30')
+                          "
+                        >
+                          <div class="flex justify-between items-start">
+                            <span class="text-xs font-bold text-slate-800 dark:text-white"
+                              >Khoán tỷ lệ % Doanh thu</span
+                            >
+                            @if (surveyForm().tax_method === 'revenue_percent') {
+                              <app-icon
+                                name="check-circle"
+                                class="w-4 h-4 text-[var(--dynamic-primary)]"
+                              />
+                            }
+                          </div>
+                          <p
+                            class="text-[11px] text-slate-500 dark:text-slate-400 mt-2 font-medium"
+                          >
+                            Tính thuế TNCN = Doanh thu * Thuế suất ngành nghề. Khuyên dùng cho quán
+                            nhỏ.
+                          </p>
+                        </button>
+                        <button
+                          type="button"
+                          (click)="setSurveyField('tax_method', 'profit_percent')"
+                          [class]="
+                            'text-left p-4 rounded-xl border transition-all duration-200 ' +
+                            (surveyForm().tax_method === 'profit_percent'
+                              ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 ring-1 ring-[var(--dynamic-primary)]/30'
+                              : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/30')
+                          "
+                        >
+                          <div class="flex justify-between items-start">
+                            <span class="text-xs font-bold text-slate-800 dark:text-white"
+                              >15% trên Lợi nhuận ròng</span
+                            >
+                            @if (surveyForm().tax_method === 'profit_percent') {
+                              <app-icon
+                                name="check-circle"
+                                class="w-4 h-4 text-[var(--dynamic-primary)]"
+                              />
+                            }
+                          </div>
+                          <p
+                            class="text-[11px] text-slate-500 dark:text-slate-400 mt-2 font-medium"
+                          >
+                            Thuế TNCN = (Doanh thu - Chi phí) * 15%. Áp dụng nếu quản lý chi phí
+                            chặt chẽ.
+                          </p>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Main Industry -->
+                    <div class="space-y-3">
+                      <label class="text-xs font-bold text-slate-700 dark:text-slate-300 block">
+                        Chọn ngành nghề kinh doanh chính
+                      </label>
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <button
+                          type="button"
+                          (click)="setSurveyField('industry_type', 'distributor')"
+                          [class]="
+                            'text-left p-3.5 rounded-xl border transition-all duration-200 ' +
+                            (surveyForm().industry_type === 'distributor'
+                              ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 ring-1 ring-[var(--dynamic-primary)]/30'
+                              : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/30')
+                          "
+                        >
+                          <span class="text-xs font-bold text-slate-800 dark:text-white block"
+                            >Phân phối, cung cấp hàng hóa</span
+                          >
+                          <span
+                            class="text-[10px] text-[var(--dynamic-primary)] font-bold block mt-1"
+                            >GTGT 1%, TNCN 0.5%</span
+                          >
+                        </button>
+                        <button
+                          type="button"
+                          (click)="setSurveyField('industry_type', 'service')"
+                          [class]="
+                            'text-left p-3.5 rounded-xl border transition-all duration-200 ' +
+                            (surveyForm().industry_type === 'service'
+                              ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 ring-1 ring-[var(--dynamic-primary)]/30'
+                              : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/30')
+                          "
+                        >
+                          <span class="text-xs font-bold text-slate-800 dark:text-white block"
+                            >Dịch vụ, XD không NVL</span
+                          >
+                          <span
+                            class="text-[10px] text-[var(--dynamic-primary)] font-bold block mt-1"
+                            >GTGT 5%, TNCN 2.0%</span
+                          >
+                        </button>
+                        <button
+                          type="button"
+                          (click)="setSurveyField('industry_type', 'production')"
+                          [class]="
+                            'text-left p-3.5 rounded-xl border transition-all duration-200 ' +
+                            (surveyForm().industry_type === 'production'
+                              ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 ring-1 ring-[var(--dynamic-primary)]/30'
+                              : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/30')
+                          "
+                        >
+                          <span class="text-xs font-bold text-slate-800 dark:text-white block"
+                            >SX, vận tải, XD có NVL</span
+                          >
+                          <span
+                            class="text-[10px] text-[var(--dynamic-primary)] font-bold block mt-1"
+                            >GTGT 3%, TNCN 1.5%</span
+                          >
+                        </button>
+                        <button
+                          type="button"
+                          (click)="setSurveyField('industry_type', 'others')"
+                          [class]="
+                            'text-left p-3.5 rounded-xl border transition-all duration-200 ' +
+                            (surveyForm().industry_type === 'others'
+                              ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 ring-1 ring-[var(--dynamic-primary)]/30'
+                              : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/30')
+                          "
+                        >
+                          <span class="text-xs font-bold text-slate-800 dark:text-white block"
+                            >Hoạt động KD khác</span
+                          >
+                          <span
+                            class="text-[10px] text-[var(--dynamic-primary)] font-bold block mt-1"
+                            >GTGT 2%, TNCN 1.0%</span
+                          >
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Multi Industry Allocations -->
+                    <div class="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl space-y-4">
+                      <app-custom-switch
+                        [checked]="surveyForm().is_multi_industry"
+                        (checkedChange)="setSurveyField('is_multi_industry', $event)"
+                        label="Kinh doanh nhiều ngành"
+                      ></app-custom-switch>
+
+                      @if (surveyForm().is_multi_industry) {
+                        <div class="space-y-3 pt-2">
+                          <label class="text-[11px] font-bold text-slate-500 block">
+                            Phân bổ doanh thu theo ngành (%):
+                          </label>
+                          <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                              <span class="text-[10px] text-slate-500"
+                                >Phân phối, cung cấp hàng hóa (%):</span
+                              >
+                              <input
+                                type="number"
+                                class="form-input w-full rounded-xl text-xs px-3 py-2 outline-none border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950"
+                                [ngModel]="surveyForm().industry_allocation.distributor"
+                                (ngModelChange)="setAllocationField('distributor', $event)"
+                              />
+                            </div>
+                            <div class="space-y-1">
+                              <span class="text-[10px] text-slate-500"
+                                >Dịch vụ, XD không NVL (%):</span
+                              >
+                              <input
+                                type="number"
+                                class="form-input w-full rounded-xl text-xs px-3 py-2 outline-none border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950"
+                                [ngModel]="surveyForm().industry_allocation.service"
+                                (ngModelChange)="setAllocationField('service', $event)"
+                              />
+                            </div>
+                            <div class="space-y-1">
+                              <span class="text-[10px] text-slate-500"
+                                >SX, vận tải, XD có NVL (%):</span
+                              >
+                              <input
+                                type="number"
+                                class="form-input w-full rounded-xl text-xs px-3 py-2 outline-none border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950"
+                                [ngModel]="surveyForm().industry_allocation.production"
+                                (ngModelChange)="setAllocationField('production', $event)"
+                              />
+                            </div>
+                            <div class="space-y-1">
+                              <span class="text-[10px] text-slate-500">Hoạt động KD khác (%):</span>
+                              <input
+                                type="number"
+                                class="form-input w-full rounded-xl text-xs px-3 py-2 outline-none border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950"
+                                [ngModel]="surveyForm().industry_allocation.others"
+                                (ngModelChange)="setAllocationField('others', $event)"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+
+                <!-- Survey Actions -->
+                <div
+                  class="flex justify-between items-center pt-4 border-t border-slate-100 dark:border-slate-800/60"
+                >
+                  <div>
+                    @if (surveyStep() === 2) {
+                      <button app-button variant="secondary" (click)="prevStep()">Quay lại</button>
+                    } @else if (taxService.isProfileConfigured()) {
+                      <button app-button variant="secondary" (click)="cancelSurveyReset()">
+                        Hủy bỏ
+                      </button>
+                    }
+                  </div>
+                  <div>
+                    @if (surveyStep() === 1) {
+                      <button
+                        app-button
+                        variant="primary"
+                        class="!bg-[var(--dynamic-primary)] hover:!bg-[var(--dynamic-primary)]/90 text-white !px-6"
+                        (click)="nextStep()"
+                      >
+                        Tiếp tục
+                      </button>
+                    } @else {
+                      <button
+                        app-button
+                        variant="primary"
+                        class="!bg-[var(--dynamic-primary)] hover:!bg-[var(--dynamic-primary)]/90 text-white !px-6"
+                        [disabled]="isSavingProfile()"
+                        (click)="submitSurvey()"
+                      >
+                        {{ isSavingProfile() ? 'Đang lưu...' : 'Hoàn tất' }}
+                      </button>
+                    }
+                  </div>
+                </div>
               </div>
             } @else {
-              <!-- Các kỳ kê khai thuế đang mở (đã khảo sát xong) -->
+              <!-- Các kỳ kê khai thuế đang mở (đã khảo sát xong) - Layout Screenshot 1 -->
               <div app-card class="space-y-6 rounded-[15px] animate-in fade-in duration-200">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                   <div>
-                    <h4 class="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider">
-                      Các kỳ kê khai thuế đang mở
+                    <h4
+                      class="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider"
+                    >
+                      Nhóm {{ taxService.taxProfile()?.business_group }}
                     </h4>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-bold">
-                      Khởi tạo kỳ kê khai và thực hiện khóa sổ để hoàn thành kê khai.
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-semibold">
+                      Quy mô: {{ getBusinessGroupLabel(taxService.taxProfile()?.business_group) }} |
+                      Phương pháp TNCN:
+                      <span class="font-bold">
+                        {{
+                          taxService.taxProfile()?.tax_method === 'profit_percent'
+                            ? '15% Lợi nhuận'
+                            : 'Tỷ lệ % doanh thu'
+                        }}
+                      </span>
                     </p>
                   </div>
-                  <button app-button variant="primary" (click)="createPeriod()">
-                    <app-icon name="plus" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
-                    <span>Tạo kỳ kê khai mới</span>
-                  </button>
+                  <div class="flex flex-wrap items-center gap-2 shrink-0">
+                    <button
+                      app-button
+                      variant="secondary"
+                      size="md"
+                      (click)="resetTaxProfile()"
+                      class="whitespace-nowrap flex items-center gap-1.5 font-bold"
+                    >
+                      <svg
+                        class="h-4.5 w-4.5 shrink-0"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"
+                        />
+                      </svg>
+                      <span>Thiết lập lại</span>
+                    </button>
+                    <button
+                      app-button
+                      variant="secondary"
+                      size="md"
+                      (click)="createPeriod()"
+                      class="whitespace-nowrap flex items-center gap-1.5 font-bold"
+                    >
+                      <app-icon name="plus" class="h-4.5 w-4.5 shrink-0" strokeWidth="2.5" />
+                      <span>Tạo kỳ kê khai</span>
+                    </button>
+                    <button
+                      app-button
+                      variant="primary"
+                      size="md"
+                      (click)="lockLatestOpenPeriod()"
+                      class="whitespace-nowrap font-bold flex items-center gap-1.5 !bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 border-none text-white shadow-md shadow-purple-650/10"
+                    >
+                      <app-icon name="lock" class="h-4.5 w-4.5" strokeWidth="2.5" />
+                      <span>Khóa sổ kỳ kế toán</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Banner thông tư 50 -->
+                <div
+                  class="flex items-center gap-2.5 px-4 py-3 bg-sky-50 dark:bg-sky-950/20 text-sky-700 dark:text-sky-400 text-xs font-semibold rounded-xl border border-sky-100/50 dark:border-sky-900/30"
+                >
+                  <app-icon
+                    name="info"
+                    class="h-4.5 w-4.5 shrink-0 text-sky-500"
+                    strokeWidth="2.2"
+                  />
+                  <span>Hệ thống đã cập nhật tờ khai thuế theo thông tư 50/2026/TT-BTC</span>
                 </div>
 
                 @if (isPeriodsLoading()) {
                   <app-skeleton-loader type="tax-logs" [rows]="5"></app-skeleton-loader>
                 } @else if (periodsList().length === 0) {
-                  <div class="py-12 flex flex-col items-center justify-center text-center space-y-4">
+                  <div
+                    class="py-12 flex flex-col items-center justify-center text-center space-y-4"
+                  >
                     <!-- SVG Minh họa Tờ giấy & Cây bút -->
-                    <div class="relative w-40 h-40 flex items-center justify-center text-slate-300 dark:text-slate-700">
-                      <svg class="w-28 h-28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                    <div
+                      class="relative w-40 h-40 flex items-center justify-center text-slate-300 dark:text-slate-700"
+                    >
+                      <svg
+                        class="w-28 h-28"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                         <polyline points="14 2 14 8 20 8"></polyline>
                         <line x1="16" y1="13" x2="8" y2="13"></line>
                         <line x1="16" y1="17" x2="8" y2="17"></line>
                         <polyline points="10 9 9 9 8 9"></polyline>
                       </svg>
-                      <svg class="w-12 h-12 absolute bottom-6 right-6 text-emerald-600 dark:text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <svg
+                        class="w-12 h-12 absolute bottom-6 right-6 text-emerald-600 dark:text-emerald-500"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
                         <path d="M12 20h9"></path>
                         <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
                       </svg>
@@ -192,48 +887,93 @@
                   </div>
                 } @else {
                   <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left">
+                    <table class="w-full text-sm text-left min-w-[850px]">
                       <thead>
-                        <tr class="border-b border-slate-100 dark:border-slate-800/60 text-xs font-black uppercase text-slate-400 tracking-wider">
-                          <th class="py-3 px-4">Tên kỳ</th>
-                          <th class="py-3 px-4 text-right">Doanh thu tạm tính</th>
-                          <th class="py-3 px-4 text-right">Chi phí tạm tính</th>
-                          <th class="py-3 px-4 text-right">Thuế GTGT</th>
-                          <th class="py-3 px-4 text-right">Thuế TNCN</th>
-                          <th class="py-3 px-4 text-right">Tổng thuế ước tính</th>
-                          <th class="py-3 px-4 text-center">Hành động</th>
+                        <tr
+                          class="border-b border-slate-100 dark:border-slate-800/60 text-xs font-black uppercase text-slate-400 tracking-wider"
+                        >
+                          <th class="py-3 px-4">Kỳ kê khai</th>
+                          <th class="py-3 px-4 text-center w-[250px]">
+                            Số lượng sổ đã tạo trong kỳ
+                          </th>
+                          <th class="py-3 px-4 text-center w-[200px]">Ngày khóa số</th>
+                          <th class="py-3 px-4 w-[60px]"></th>
                         </tr>
                       </thead>
                       <tbody class="divide-y divide-slate-100 dark:divide-slate-800/40">
                         @for (row of periodsList(); track row.id) {
-                          <tr class="hover:bg-slate-50 dark:hover:bg-slate-850/50 transition-colors">
+                          <tr
+                            class="hover:bg-slate-50 dark:hover:bg-slate-850/50 transition-colors"
+                          >
                             <td class="py-3.5 px-4 font-bold text-slate-800 dark:text-white">
                               {{ getPeriodName(row) }}
                             </td>
-                            <td class="py-3.5 px-4 text-right font-mono font-medium">{{ row.revenue_amount | vnd }}</td>
-                            <td class="py-3.5 px-4 text-right font-mono font-medium text-slate-500">{{ row.expense_amount | vnd }}</td>
-                            <td class="py-3.5 px-4 text-right font-mono font-bold text-purple-600 dark:text-purple-400">{{ row.estimated_vat | vnd }}</td>
-                            <td class="py-3.5 px-4 text-right font-mono font-bold text-purple-600 dark:text-purple-400">{{ row.estimated_pit | vnd }}</td>
-                            <td class="py-3.5 px-4 text-right font-mono font-black text-rose-500">
-                              {{ (row.estimated_vat + row.estimated_pit) | vnd }}
+                            <td
+                              class="py-3.5 px-4 text-center font-semibold text-slate-700 dark:text-slate-300"
+                            >
+                              2
                             </td>
-                            <td class="py-3.5 px-4">
-                              <div class="flex items-center justify-center gap-2">
-                                <button
-                                  (click)="lockPeriod(row.id)"
-                                  class="btn-primary btn-sm !px-2.5 !py-1 flex items-center gap-1.5"
+                            <td
+                              class="py-3.5 px-4 text-center font-semibold text-slate-600 dark:text-slate-400"
+                            >
+                              {{
+                                row.status === 'locked'
+                                  ? (row.updated_at | date: 'dd/MM/yyyy')
+                                  : '-'
+                              }}
+                            </td>
+                            <td class="py-3.5 px-4 text-right">
+                              <!-- Nếu là kỳ open mới cho phép thao tác (khóa/xóa) -->
+                              @if (row.status === 'open') {
+                                <div class="relative inline-block text-left period-menu-container">
+                                  <button
+                                    (click)="togglePeriodMenu(row.id, $event)"
+                                    class="text-slate-400 hover:text-slate-650 dark:hover:text-slate-200 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                  >
+                                    <app-icon name="dots-vertical" class="h-4.5 w-4.5" />
+                                  </button>
+
+                                  @if (activePeriodMenuId() === row.id) {
+                                    <div
+                                      class="absolute right-0 mt-1 w-36 rounded-xl border border-slate-150 dark:border-slate-800/80 bg-white dark:bg-slate-950 shadow-lg p-1.5 z-30 animate-in fade-in slide-in-from-top-1 duration-100 text-left"
+                                    >
+                                      <button
+                                        (click)="lockPeriod(row.id); closePeriodMenu()"
+                                        class="w-full flex items-center gap-2 px-2.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg transition-colors"
+                                      >
+                                        <app-icon
+                                          name="lock"
+                                          class="h-4 w-4 text-slate-400"
+                                          strokeWidth="2.5"
+                                        />
+                                        <span>Khóa sổ</span>
+                                      </button>
+                                      <button
+                                        (click)="deletePeriod(row.id); closePeriodMenu()"
+                                        class="w-full flex items-center gap-2 px-2.5 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-colors"
+                                      >
+                                        <app-icon
+                                          name="trash"
+                                          class="h-4 w-4 text-rose-500"
+                                          strokeWidth="2.5"
+                                        />
+                                        <span>Xóa</span>
+                                      </button>
+                                    </div>
+                                  }
+                                </div>
+                              } @else {
+                                <span
+                                  class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-500 uppercase tracking-wide"
                                 >
-                                  <app-icon name="lock" class="h-3.5 w-3.5" strokeWidth="2.5" />
-                                  <span>Khóa sổ</span>
-                                </button>
-                                <button
-                                  (click)="deletePeriod(row.id)"
-                                  class="btn-danger-light btn-sm !px-2.5 !py-1 flex items-center gap-1.5"
-                                >
-                                  <app-icon name="trash" class="h-3.5 w-3.5" strokeWidth="2.5" />
-                                  <span>Xóa</span>
-                                </button>
-                              </div>
+                                  <app-icon
+                                    name="check-circle"
+                                    class="h-3.5 w-3.5"
+                                    strokeWidth="2.5"
+                                  />
+                                  <span>Đã khóa</span>
+                                </span>
+                              }
                             </td>
                           </tr>
                         }
@@ -249,7 +989,10 @@
           @if (activeTab() === 'estimation') {
             @if (!taxService.isProfileConfigured()) {
               <!-- Card yêu cầu thiết lập hồ sơ thuế -->
-              <div app-card class="py-12 flex flex-col items-center justify-center text-center space-y-4 rounded-[15px] animate-in fade-in duration-200">
+              <div
+                app-card
+                class="py-12 flex flex-col items-center justify-center text-center space-y-4 rounded-[15px] animate-in fade-in duration-200"
+              >
                 <div class="p-4 bg-purple-500/10 text-purple-600 rounded-full">
                   <app-icon name="tax" class="h-10 w-10" strokeWidth="2" />
                 </div>
@@ -257,9 +1000,15 @@
                   Hồ sơ khảo sát thuế chưa được thiết lập
                 </div>
                 <p class="text-xs text-slate-500 dark:text-slate-400 max-w-sm">
-                  Để xem số liệu ước tính thuế GTGT & TNCN, vui lòng hoàn tất thiết lập hồ sơ thuế của cửa hàng trước.
+                  Để xem số liệu ước tính thuế GTGT & TNCN, vui lòng hoàn tất thiết lập hồ sơ thuế
+                  của cửa hàng trước.
                 </p>
-                 <button app-button variant="primary" class="!bg-purple-600 hover:!bg-purple-700 text-white" (click)="openSurveyModal()">
+                <button
+                  app-button
+                  variant="primary"
+                  class="!bg-purple-600 hover:!bg-purple-700 text-white"
+                  (click)="setTab('declaration')"
+                >
                   Thiết lập ngay
                 </button>
               </div>
@@ -270,7 +1019,10 @@
                   <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
                       <div class="space-y-1.5">
-                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wide block">Từ ngày</label>
+                        <label
+                          class="text-xs font-bold text-slate-500 uppercase tracking-wide block"
+                          >Từ ngày</label
+                        >
                         <app-custom-date-picker
                           [selectedDate]="estimateStartDate()"
                           (selectedDateChange)="estimateStartDate.set($event)"
@@ -278,7 +1030,10 @@
                         ></app-custom-date-picker>
                       </div>
                       <div class="space-y-1.5">
-                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wide block">Đến ngày</label>
+                        <label
+                          class="text-xs font-bold text-slate-500 uppercase tracking-wide block"
+                          >Đến ngày</label
+                        >
                         <app-custom-date-picker
                           [selectedDate]="estimateEndDate()"
                           (selectedDateChange)="estimateEndDate.set($event)"
@@ -294,7 +1049,9 @@
                       class="h-10 px-5 flex items-center gap-2"
                     >
                       @if (isEstimateLoading()) {
-                        <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        <div
+                          class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"
+                        ></div>
                         <span>Đang tính...</span>
                       } @else {
                         <app-icon name="search" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
@@ -310,8 +1067,14 @@
                 } @else if (estimateResult()) {
                   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     <!-- Revenue card -->
-                    <div app-card class="bg-slate-50 dark:bg-slate-900 rounded-[15px] space-y-2 border border-slate-200/40 dark:border-slate-800/40">
-                      <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Doanh thu bán lẻ</span>
+                    <div
+                      app-card
+                      class="bg-slate-50 dark:bg-slate-900 rounded-[15px] space-y-2 border border-slate-200/40 dark:border-slate-800/40"
+                    >
+                      <span
+                        class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block"
+                        >Doanh thu bán lẻ</span
+                      >
                       <h2 class="text-2xl font-black text-slate-800 dark:text-white font-mono">
                         {{ estimateResult().revenue | vnd }}
                       </h2>
@@ -321,8 +1084,14 @@
                     </div>
 
                     <!-- Expense card -->
-                    <div app-card class="bg-slate-50 dark:bg-slate-900 rounded-[15px] space-y-2 border border-slate-200/40 dark:border-slate-800/40">
-                      <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Tổng chi phí phát sinh</span>
+                    <div
+                      app-card
+                      class="bg-slate-50 dark:bg-slate-900 rounded-[15px] space-y-2 border border-slate-200/40 dark:border-slate-800/40"
+                    >
+                      <span
+                        class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block"
+                        >Tổng chi phí phát sinh</span
+                      >
                       <h2 class="text-2xl font-black text-slate-800 dark:text-white font-mono">
                         {{ estimateResult().expense | vnd }}
                       </h2>
@@ -332,9 +1101,17 @@
                     </div>
 
                     <!-- Lợi nhuận ròng -->
-                    <div app-card class="bg-slate-50 dark:bg-slate-900 rounded-[15px] space-y-2 border border-slate-200/40 dark:border-slate-800/40">
-                      <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Lợi nhuận ước tính</span>
-                      <h2 class="text-2xl font-black text-purple-600 dark:text-purple-400 font-mono">
+                    <div
+                      app-card
+                      class="bg-slate-50 dark:bg-slate-900 rounded-[15px] space-y-2 border border-slate-200/40 dark:border-slate-800/40"
+                    >
+                      <span
+                        class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block"
+                        >Lợi nhuận ước tính</span
+                      >
+                      <h2
+                        class="text-2xl font-black text-purple-600 dark:text-purple-400 font-mono"
+                      >
                         {{ Math.max(0, estimateResult().revenue - estimateResult().expense) | vnd }}
                       </h2>
                       <p class="text-[10px] text-slate-500 font-medium pt-1">
@@ -343,30 +1120,54 @@
                     </div>
 
                     <!-- VAT estimate -->
-                    <div app-card class="bg-slate-50 dark:bg-slate-900 rounded-[15px] space-y-2 border border-slate-200/40 dark:border-slate-800/40">
-                      <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Thuế GTGT ước tính</span>
+                    <div
+                      app-card
+                      class="bg-slate-50 dark:bg-slate-900 rounded-[15px] space-y-2 border border-slate-200/40 dark:border-slate-800/40"
+                    >
+                      <span
+                        class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block"
+                        >Thuế GTGT ước tính</span
+                      >
                       <h2 class="text-2xl font-black text-slate-800 dark:text-white font-mono">
                         {{ estimateResult().estimated_vat | vnd }}
                       </h2>
                       <p class="text-[10px] text-slate-500 font-medium pt-1">
-                        Thuế suất áp dụng: {{ (estimateResult().vat_rate * 100).toFixed(1) }}% doanh thu.
+                        Thuế suất áp dụng: {{ (estimateResult().vat_rate * 100).toFixed(1) }}% doanh
+                        thu.
                       </p>
                     </div>
 
                     <!-- PIT estimate -->
-                    <div app-card class="bg-slate-50 dark:bg-slate-900 rounded-[15px] space-y-2 border border-slate-200/40 dark:border-slate-800/40">
-                      <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Thuế TNCN ước tính</span>
+                    <div
+                      app-card
+                      class="bg-slate-50 dark:bg-slate-900 rounded-[15px] space-y-2 border border-slate-200/40 dark:border-slate-800/40"
+                    >
+                      <span
+                        class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block"
+                        >Thuế TNCN ước tính</span
+                      >
                       <h2 class="text-2xl font-black text-slate-800 dark:text-white font-mono">
                         {{ estimateResult().estimated_pit | vnd }}
                       </h2>
                       <p class="text-[10px] text-slate-500 font-medium pt-1">
-                        Phương pháp: {{ taxService.taxProfile()?.tax_method === 'profit_percent' ? '15% Lợi nhuận' : 'Tỷ lệ % doanh thu' }}.
+                        Phương pháp:
+                        {{
+                          taxService.taxProfile()?.tax_method === 'profit_percent'
+                            ? '15% Lợi nhuận'
+                            : 'Tỷ lệ % doanh thu'
+                        }}.
                       </p>
                     </div>
 
                     <!-- Total tax estimate -->
-                    <div app-card class="bg-rose-500/5 rounded-[15px] space-y-2 border border-rose-500/20">
-                      <span class="text-[11px] font-bold text-rose-500 uppercase tracking-wider block">Tổng thuế tạm tính</span>
+                    <div
+                      app-card
+                      class="bg-rose-500/5 rounded-[15px] space-y-2 border border-rose-500/20"
+                    >
+                      <span
+                        class="text-[11px] font-bold text-rose-500 uppercase tracking-wider block"
+                        >Tổng thuế tạm tính</span
+                      >
                       <h2 class="text-2xl font-black text-rose-500 font-mono">
                         {{ estimateResult().estimated_total_tax | vnd }}
                       </h2>
@@ -385,6 +1186,8 @@
       <app-access-restricted pageName="Thuế & Kê khai"></app-access-restricted>
     }
   } @else {
-    <app-web3-connect-prompt title="Kết nối ví Web3 để truy cập phân hệ Thuế"></app-web3-connect-prompt>
+    <app-web3-connect-prompt
+      title="Kết nối ví Web3 để truy cập phân hệ Thuế"
+    ></app-web3-connect-prompt>
   }
 </div>
