@@ -57,7 +57,7 @@
 
                       @if (isFilterDropdownOpen()) {
                         <div
-                          class="absolute left-0 mt-2 w-56 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-950 shadow-lg p-3 z-30 space-y-3 animate-in fade-in duration-100"
+                          class="absolute left-0 mt-2 w-64 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-950 shadow-lg p-3 z-30 space-y-3 animate-in fade-in duration-100"
                         >
                           <!-- Options list -->
                           <div class="space-y-2 max-h-56 overflow-y-auto no-scrollbar">
@@ -88,7 +88,7 @@
                               variant="secondary"
                               size="sm"
                               (click)="resetTempFilters()"
-                              class="!py-1 !px-2.5 !text-[10px] font-bold"
+                              class="font-bold"
                             >
                               Thiết lập lại
                             </button>
@@ -97,7 +97,7 @@
                               variant="primary"
                               size="sm"
                               (click)="applyFilters()"
-                              class="!py-1 !px-2.5 !text-[10px] !bg-[var(--dynamic-primary)] hover:!bg-[var(--dynamic-primary)]/90 text-white font-bold"
+                              class="text-white font-bold"
                             >
                               Áp dụng ({{ tempSelectedFilters().length }})
                             </button>
