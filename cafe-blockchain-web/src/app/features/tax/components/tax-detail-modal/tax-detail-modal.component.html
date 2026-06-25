@@ -108,7 +108,7 @@
         <button app-button variant="secondary" size="md" (click)="closeInfoEdit()">
           Quay lại
         </button>
-        <button app-button variant="primary" class="!bg-emerald-600 hover:!bg-emerald-700 text-white !px-6" (click)="saveInfo()">
+        <button app-button variant="primary" class="!bg-emerald-600 hover:!bg-emerald-700 text-white !px-6" [loading]="isSaving()" (click)="saveInfo()">
           Lưu thông tin
         </button>
       </div>
@@ -742,31 +742,31 @@
         </button>
         <div class="flex gap-2">
           @if (logRow.category.includes('Tờ khai')) {
-            <button app-button variant="primary" class="!bg-emerald-600 hover:!bg-emerald-700 text-white !px-6" (click)="saveDeclaration()">
+            <button app-button variant="primary" class="!bg-emerald-600 hover:!bg-emerald-700 text-white !px-6" [loading]="isSaving()" (click)="saveDeclaration()">
               Lưu tờ khai
             </button>
           } @else if (logRow.category.includes('S1a')) {
-            <button app-button variant="primary" class="!bg-emerald-600 hover:!bg-emerald-700 text-white !px-6" (click)="saveS1a()">
+            <button app-button variant="primary" class="!bg-emerald-600 hover:!bg-emerald-700 text-white !px-6" [loading]="isSaving()" (click)="saveS1a()">
               Lưu sổ S1a
             </button>
           } @else if (logRow.category.includes('S2a')) {
-            <button app-button variant="primary" class="!bg-emerald-600 hover:!bg-emerald-700 text-white !px-6" (click)="saveS2a()">
+            <button app-button variant="primary" class="!bg-emerald-600 hover:!bg-emerald-700 text-white !px-6" [loading]="isSaving()" (click)="saveS2a()">
               Lưu sổ S2a
             </button>
           } @else if (logRow.category.includes('S2b')) {
-            <button app-button variant="primary" class="!bg-emerald-600 hover:!bg-emerald-700 text-white !px-6" (click)="saveS2b()">
+            <button app-button variant="primary" class="!bg-emerald-600 hover:!bg-emerald-700 text-white !px-6" [loading]="isSaving()" (click)="saveS2b()">
               Lưu sổ S2b
             </button>
           } @else if (logRow.category.includes('S2c')) {
-            <button app-button variant="primary" class="!bg-emerald-600 hover:!bg-emerald-700 text-white !px-6" (click)="saveS2c()">
+            <button app-button variant="primary" class="!bg-emerald-600 hover:!bg-emerald-700 text-white !px-6" [loading]="isSaving()" (click)="saveS2c()">
               Lưu sổ S2c
             </button>
           } @else if (logRow.category.includes('S2d')) {
-            <button app-button variant="primary" class="!bg-emerald-600 hover:!bg-emerald-700 text-white !px-6" (click)="saveS2d()">
+            <button app-button variant="primary" class="!bg-emerald-600 hover:!bg-emerald-700 text-white !px-6" [loading]="isSaving()" (click)="saveS2d()">
               Lưu sổ S2d
             </button>
           } @else if (logRow.category.includes('S2e')) {
-            <button app-button variant="primary" class="!bg-emerald-600 hover:!bg-emerald-700 text-white !px-6" (click)="saveS2e()">
+            <button app-button variant="primary" class="!bg-emerald-600 hover:!bg-emerald-700 text-white !px-6" [loading]="isSaving()" (click)="saveS2e()">
               Lưu sổ S2e
             </button>
           }

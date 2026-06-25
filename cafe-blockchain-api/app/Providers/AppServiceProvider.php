@@ -52,7 +52,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Định nghĩa các rate limiters toàn cục cho API
         RateLimiter::for('api', function (Request $request) {
-            return Limit::perMinute(60)->by($request->ip());
+            return Limit::perSecond(30, 10)->by($request->ip());
         });
 
         // Giới hạn cho các endpoint đăng nhập Web3 nhạy cảm (Tối đa 7 request/phút dựa trên IP + địa chỉ ví)

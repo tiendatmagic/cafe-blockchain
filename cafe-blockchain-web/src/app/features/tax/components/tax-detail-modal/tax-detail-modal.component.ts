@@ -134,6 +134,7 @@ export class TaxDetailModalComponent implements OnInit {
   public isEditingInfo = false;
   public activeTab: 'declaration' | 'pl01' = 'declaration';
   private hasSaved = false;
+  public isSaving = signal(false);
 
   // Tax Info Form
   public taxInfo = {
@@ -573,6 +574,8 @@ export class TaxDetailModalComponent implements OnInit {
   // UI Actions
   public saveDeclaration() {
     if (!this.period || !this.period.id) return;
+    if (this.isSaving()) return;
+    this.isSaving.set(true);
     
     forkJoin([
       this.taxService.savePeriodDetails(this.period.id, 'info', this.taxInfo),
@@ -581,9 +584,11 @@ export class TaxDetailModalComponent implements OnInit {
     ]).subscribe({
       next: () => {
         this.hasSaved = true;
+        this.isSaving.set(false);
         this.toastService.showToast('Lưu tờ khai thuế thành công!', 'success');
       },
       error: () => {
+        this.isSaving.set(false);
         this.toastService.showToast('Lưu tờ khai thuế thất bại!', 'error');
       }
     });
@@ -591,12 +596,16 @@ export class TaxDetailModalComponent implements OnInit {
 
   public saveS1a() {
     if (!this.period || !this.period.id) return;
+    if (this.isSaving()) return;
+    this.isSaving.set(true);
     this.taxService.savePeriodDetails(this.period.id, 's1a', this.s1aTransactions).subscribe({
       next: () => {
         this.hasSaved = true;
+        this.isSaving.set(false);
         this.toastService.showToast('Lưu sổ S1a thành công!', 'success');
       },
       error: () => {
+        this.isSaving.set(false);
         this.toastService.showToast('Lưu sổ S1a thất bại!', 'error');
       }
     });
@@ -604,12 +613,16 @@ export class TaxDetailModalComponent implements OnInit {
 
   public saveS2a() {
     if (!this.period || !this.period.id) return;
+    if (this.isSaving()) return;
+    this.isSaving.set(true);
     this.taxService.savePeriodDetails(this.period.id, 's2a', this.s2aAssets).subscribe({
       next: () => {
         this.hasSaved = true;
+        this.isSaving.set(false);
         this.toastService.showToast('Lưu sổ S2a thành công!', 'success');
       },
       error: () => {
+        this.isSaving.set(false);
         this.toastService.showToast('Lưu sổ S2a thất bại!', 'error');
       }
     });
@@ -617,12 +630,16 @@ export class TaxDetailModalComponent implements OnInit {
 
   public saveS2b() {
     if (!this.period || !this.period.id) return;
+    if (this.isSaving()) return;
+    this.isSaving.set(true);
     this.taxService.savePeriodDetails(this.period.id, 's2b', this.s2bExpenses).subscribe({
       next: () => {
         this.hasSaved = true;
+        this.isSaving.set(false);
         this.toastService.showToast('Lưu sổ S2b thành công!', 'success');
       },
       error: () => {
+        this.isSaving.set(false);
         this.toastService.showToast('Lưu sổ S2b thất bại!', 'error');
       }
     });
@@ -630,12 +647,16 @@ export class TaxDetailModalComponent implements OnInit {
 
   public saveS2c() {
     if (!this.period || !this.period.id) return;
+    if (this.isSaving()) return;
+    this.isSaving.set(true);
     this.taxService.savePeriodDetails(this.period.id, 's2c', this.s2cSalaries).subscribe({
       next: () => {
         this.hasSaved = true;
+        this.isSaving.set(false);
         this.toastService.showToast('Lưu sổ S2c thành công!', 'success');
       },
       error: () => {
+        this.isSaving.set(false);
         this.toastService.showToast('Lưu sổ S2c thất bại!', 'error');
       }
     });
@@ -643,12 +664,16 @@ export class TaxDetailModalComponent implements OnInit {
 
   public saveS2d() {
     if (!this.period || !this.period.id) return;
+    if (this.isSaving()) return;
+    this.isSaving.set(true);
     this.taxService.savePeriodDetails(this.period.id, 's2d', this.s2dInventories).subscribe({
       next: () => {
         this.hasSaved = true;
+        this.isSaving.set(false);
         this.toastService.showToast('Lưu sổ S2d thành công!', 'success');
       },
       error: () => {
+        this.isSaving.set(false);
         this.toastService.showToast('Lưu sổ S2d thất bại!', 'error');
       }
     });
@@ -656,12 +681,16 @@ export class TaxDetailModalComponent implements OnInit {
 
   public saveS2e() {
     if (!this.period || !this.period.id) return;
+    if (this.isSaving()) return;
+    this.isSaving.set(true);
     this.taxService.savePeriodDetails(this.period.id, 's2e', this.s2eTaxObligations).subscribe({
       next: () => {
         this.hasSaved = true;
+        this.isSaving.set(false);
         this.toastService.showToast('Lưu sổ S2e thành công!', 'success');
       },
       error: () => {
+        this.isSaving.set(false);
         this.toastService.showToast('Lưu sổ S2e thất bại!', 'error');
       }
     });
@@ -677,13 +706,17 @@ export class TaxDetailModalComponent implements OnInit {
 
   public saveInfo() {
     if (!this.period || !this.period.id) return;
+    if (this.isSaving()) return;
+    this.isSaving.set(true);
     this.taxService.savePeriodDetails(this.period.id, 'info', this.taxInfo).subscribe({
       next: () => {
         this.isEditingInfo = false;
         this.hasSaved = true;
+        this.isSaving.set(false);
         this.toastService.showToast('Cập nhật thông tin khai thuế thành công!', 'success');
       },
       error: () => {
+        this.isSaving.set(false);
         this.toastService.showToast('Cập nhật thông tin khai thuế thất bại!', 'error');
       }
     });

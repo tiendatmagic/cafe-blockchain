@@ -12,6 +12,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Áp dụng Rate Limiting chung cho toàn bộ API routes
+        $middleware->api(append: [
+            'throttle:api',
+        ]);
+
         // Loại bỏ CORS middleware mặc định của Laravel để tránh xung đột ghi đè headers
         $middleware->remove([
             \Illuminate\Http\Middleware\HandleCors::class,
