@@ -446,345 +446,7 @@
           </div>
         }
 
-        <!-- Tab 2: Mẫu hóa đơn -->
-        @if (settingsSubTab() === 'invoice') {
-          <div app-card class="space-y-6 w-full">
-            <div
-              class="flex items-center gap-2.5 pb-2 border-b border-slate-100 dark:border-slate-800/60"
-            >
-              <div
-                class="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0 flex items-center"
-              >
-                <app-icon name="debts" class="h-5 w-5" strokeWidth="2" />
-              </div>
-              <h4 class="text-md font-bold text-slate-800 dark:text-white uppercase tracking-wider">
-                Cấu hình mẫu hoá đơn
-              </h4>
-            </div>
-
-            <div class="space-y-5">
-              <!-- Cấu hình điều chỉnh mẫu hóa đơn -->
-              <div class="space-y-3">
-                <div class="space-y-2">
-                  <label
-                    class="text-xs font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1.5"
-                  >
-                    <span>Chọn khổ giấy in mặc định</span>
-                  </label>
-                  <div class="grid grid-cols-3 gap-3">
-                    <!-- Khổ 80mm -->
-                    <div
-                      (click)="
-                        !web3Service.walletConnected() || !web3Service.isOwnerContract()
-                          ? null
-                          : updateConfigForm('default_print_size', '80mm')
-                      "
-                      [class]="
-                        'relative flex flex-col items-center justify-center p-3.5 rounded-2xl border-2 transition-all ' +
-                        (configForm().default_print_size === '80mm'
-                          ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)]'
-                          : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-600 dark:text-slate-300') +
-                        (!web3Service.walletConnected() || !web3Service.isOwnerContract()
-                          ? ' opacity-50 cursor-not-allowed'
-                          : ' cursor-pointer')
-                      "
-                    >
-                      <span class="text-xs font-extrabold">Khổ 80mm</span>
-                      <span class="text-[10px] text-slate-400 mt-1 text-center"
-                        >Khổ nhỏ (Mặc định)</span
-                      >
-                      @if (configForm().default_print_size === '80mm') {
-                        <div class="absolute top-2 right-2 text-[var(--dynamic-primary)]">
-                          <app-icon name="check-circle" class="h-4 w-4" strokeWidth="2.5" />
-                        </div>
-                      }
-                    </div>
-
-                    <!-- Khổ A4 -->
-                    <div
-                      (click)="
-                        !web3Service.walletConnected() || !web3Service.isOwnerContract()
-                          ? null
-                          : updateConfigForm('default_print_size', 'A4')
-                      "
-                      [class]="
-                        'relative flex flex-col items-center justify-center p-3.5 rounded-2xl border-2 transition-all ' +
-                        (configForm().default_print_size === 'A4'
-                          ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)]'
-                          : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-600 dark:text-slate-300') +
-                        (!web3Service.walletConnected() || !web3Service.isOwnerContract()
-                          ? ' opacity-50 cursor-not-allowed'
-                          : ' cursor-pointer')
-                      "
-                    >
-                      <span class="text-xs font-extrabold">Khổ A4</span>
-                      <span class="text-[10px] text-slate-400 mt-1 text-center">Khổ lớn (A4)</span>
-                      @if (configForm().default_print_size === 'A4') {
-                        <div class="absolute top-2 right-2 text-[var(--dynamic-primary)]">
-                          <app-icon name="check-circle" class="h-4 w-4" strokeWidth="2.5" />
-                        </div>
-                      }
-                    </div>
-
-                    <!-- Khổ A5 -->
-                    <div
-                      (click)="
-                        !web3Service.walletConnected() || !web3Service.isOwnerContract()
-                          ? null
-                          : updateConfigForm('default_print_size', 'A5')
-                      "
-                      [class]="
-                        'relative flex flex-col items-center justify-center p-3.5 rounded-2xl border-2 transition-all ' +
-                        (configForm().default_print_size === 'A5'
-                          ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)]'
-                          : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-600 dark:text-slate-300') +
-                        (!web3Service.walletConnected() || !web3Service.isOwnerContract()
-                          ? ' opacity-50 cursor-not-allowed'
-                          : ' cursor-pointer')
-                      "
-                    >
-                      <span class="text-xs font-extrabold">Khổ A5</span>
-                      <span class="text-[10px] text-slate-400 mt-1 text-center">Khổ lớn (A5)</span>
-                      @if (configForm().default_print_size === 'A5') {
-                        <div class="absolute top-2 right-2 text-[var(--dynamic-primary)]">
-                          <app-icon name="check-circle" class="h-4 w-4" strokeWidth="2.5" />
-                        </div>
-                      }
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="pt-4">
-                <button
-                  app-button
-                  variant="primary"
-                  (click)="saveConfig()"
-                  [loading]="isConfigSaving()"
-                  [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
-                  class="w-full shadow-lg"
-                >
-                  <app-icon name="save" class="h-4.5 w-4.5 shrink-0" strokeWidth="2.5" />
-                  <span>LƯU CẤU HÌNH HỆ THỐNG</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        }
-
-        <!-- Tab 3: Voucher NFT -->
-        @if (settingsSubTab() === 'voucher') {
-          <div app-card class="space-y-6 w-full">
-            <div
-              class="flex items-center gap-2.5 pb-2 border-b border-slate-100 dark:border-slate-800/60"
-            >
-              <div
-                class="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0 flex items-center"
-              >
-                <app-icon name="ticket" class="h-5 w-5" strokeWidth="2" />
-              </div>
-              <h4 class="text-md font-bold text-slate-800 dark:text-white uppercase tracking-wider">
-                Cấu hình Chương trình Voucher NFT
-              </h4>
-            </div>
-
-            <div class="space-y-6">
-              <!-- Switch Bật/Tắt chương trình Voucher NFT -->
-              <app-custom-switch
-                type="full"
-                label="Chương trình Voucher NFT"
-                description="Bật/tắt chương trình tặng và áp dụng Voucher NFT giảm giá cho khách hàng tại cửa hàng."
-                [checked]="configForm().voucher_enabled === '1'"
-                (checkedChange)="updateConfigForm('voucher_enabled', $event ? '1' : '0')"
-                [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
-              ></app-custom-switch>
-
-              @if (configForm().voucher_enabled === '1') {
-                <!-- 1. Tham số chương trình Voucher NFT -->
-                <div class="space-y-3.5">
-                  <h5 class="text-xs font-bold text-slate-400 uppercase tracking-wide block">
-                    Tham số chương trình Voucher
-                  </h5>
-                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <!-- Đơn hàng tối thiểu tặng voucher -->
-                    <div class="space-y-1.5">
-                      <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-                        >Đơn tối thiểu để tặng</label
-                      >
-                      <div
-                        class="relative form-input p-0 overflow-hidden focus-within:border-[var(--color-primary)] transition-all flex items-center h-[42px]"
-                      >
-                        <input
-                          type="number"
-                          [ngModel]="configForm().voucher_gift_min_amount"
-                          (ngModelChange)="updateConfigForm('voucher_gift_min_amount', $event)"
-                          [disabled]="
-                            !web3Service.walletConnected() || !web3Service.isOwnerContract()
-                          "
-                          class="w-full pl-4 pr-9 bg-transparent text-sm font-semibold focus:outline-none text-slate-800 dark:text-white disabled:opacity-50"
-                          placeholder="100,000"
-                        />
-                        <span
-                          class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400"
-                          >đ</span
-                        >
-                      </div>
-                    </div>
-
-                    <!-- Giá trị giảm giá -->
-                    <div class="space-y-1.5">
-                      <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-                        >Mức giảm giá của Voucher</label
-                      >
-                      <div
-                        class="relative form-input p-0 overflow-hidden focus-within:border-[var(--color-primary)] transition-all flex items-center h-[42px]"
-                      >
-                        <input
-                          type="number"
-                          [ngModel]="configForm().voucher_discount_amount"
-                          (ngModelChange)="updateConfigForm('voucher_discount_amount', $event)"
-                          [disabled]="
-                            !web3Service.walletConnected() || !web3Service.isOwnerContract()
-                          "
-                          class="w-full pl-4 pr-9 bg-transparent text-sm font-semibold focus:outline-none text-slate-800 dark:text-white disabled:opacity-50"
-                          placeholder="5,000"
-                        />
-                        <span
-                          class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400"
-                          >đ</span
-                        >
-                      </div>
-                    </div>
-
-                    <!-- Đơn hàng tối thiểu sử dụng voucher -->
-                    <div class="space-y-1.5">
-                      <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-                        >Đơn tối thiểu áp dụng</label
-                      >
-                      <div
-                        class="relative form-input p-0 overflow-hidden focus-within:border-[var(--color-primary)] transition-all flex items-center h-[42px]"
-                      >
-                        <input
-                          type="number"
-                          [ngModel]="configForm().voucher_use_min_amount"
-                          (ngModelChange)="updateConfigForm('voucher_use_min_amount', $event)"
-                          [disabled]="
-                            !web3Service.walletConnected() || !web3Service.isOwnerContract()
-                          "
-                          class="w-full pl-4 pr-9 bg-transparent text-sm font-semibold focus:outline-none text-slate-800 dark:text-white disabled:opacity-50"
-                          placeholder="100,000"
-                        />
-                        <span
-                          class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400"
-                          >đ</span
-                        >
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 2. Hợp đồng NFT Voucher -->
-                <div class="border-t border-slate-100 dark:border-slate-800/60 pt-4 space-y-1.5">
-                  <div class="flex items-center gap-2 pb-0.5">
-                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wide"
-                      >Địa chỉ Smart Contract NFT Voucher (0x...)</span
-                    >
-                    @if (
-                      settings().voucher_contract_address === '' ||
-                      !settings().voucher_contract_address
-                    ) {
-                      <app-badge variant="danger" size="sm" rounded="full" [pulse]="true"
-                        >Chưa Deploy</app-badge
-                      >
-                    } @else {
-                      <app-badge variant="success" size="sm" rounded="full">Đã Cấu Hình</app-badge>
-                    }
-                  </div>
-                  <div class="flex flex-col sm:flex-row gap-2">
-                    <input
-                      type="text"
-                      [ngModel]="configForm().voucher_contract_address"
-                      (ngModelChange)="updateConfigForm('voucher_contract_address', $event)"
-                      placeholder="Chưa deploy hợp đồng NFT Voucher. Vui lòng bấm Deploy..."
-                      [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
-                      class="form-input font-mono flex-1 min-w-0"
-                    />
-                    @if (!settings().voucher_contract_address) {
-                      <button
-                        app-button
-                        variant="secondary"
-                        size="sm"
-                        type="button"
-                        [loading]="isDeployingVoucher()"
-                        [disabled]="
-                          !web3Service.walletConnected() || !web3Service.isOwnerContract()
-                        "
-                        (click)="deployVoucherContract()"
-                        class="h-[42px] w-full sm:w-auto shrink-0"
-                      >
-                        <app-icon name="archive" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
-                        <span>Deploy NFT Voucher Contract</span>
-                      </button>
-                    }
-                  </div>
-                </div>
-
-                <!-- 3. Khóa ví nóng Relayer (Private Key) -->
-                <div class="border-t border-slate-100 dark:border-slate-800/60 pt-4 space-y-1.5">
-                  <div class="flex items-center gap-2 pb-0.5">
-                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wide"
-                      >Khóa ví nóng Relayer (Private Key)</span
-                    >
-                    @if (!configForm().has_relayer_private_key) {
-                      <app-badge variant="danger" size="sm" rounded="full">Chưa Cấu Hình</app-badge>
-                    } @else {
-                      <app-badge variant="success" size="sm" rounded="full">Đã Cấu Hình</app-badge>
-                    }
-                  </div>
-                  <div class="flex flex-col sm:flex-row gap-2">
-                    <input
-                      type="password"
-                      [ngModel]="configForm().relayer_private_key"
-                      (ngModelChange)="updateConfigForm('relayer_private_key', $event)"
-                      [placeholder]="
-                        configForm().has_relayer_private_key
-                          ? '••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••'
-                          : 'Nhập Private Key của ví Relayer để thanh toán gas (0x...)'
-                      "
-                      [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
-                      class="form-input font-mono flex-1 min-w-0"
-                    />
-                  </div>
-                  <p class="text-xs font-bold text-slate-400/80 leading-normal mt-1 block">
-                    <app-icon
-                      name="warning"
-                      class="h-4 w-4 shrink-0 text-amber-500 inline-block"
-                      strokeWidth="2"
-                    />
-                    Lưu ý: Khóa ví Relayer sẽ được **mã hóa đối xứng bảo mật (AES-256)** trên
-                    Backend. Chỉ dùng ví Relayer phụ chứa lượng nhỏ coin làm phí gas.
-                  </p>
-                </div>
-              }
-
-              <div class="pt-4 border-t border-slate-100 dark:border-slate-800/60">
-                <button
-                  app-button
-                  variant="primary"
-                  (click)="saveConfig()"
-                  [loading]="isConfigSaving()"
-                  [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
-                  class="w-full shadow-lg"
-                >
-                  <app-icon name="save" class="h-4.5 w-4.5 shrink-0" strokeWidth="2.5" />
-                  <span>LƯU CẤU HÌNH HỆ THỐNG</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        }
-
-        <!-- Tab 4: Kết nối & Hợp đồng Web3 -->
+        <!-- Tab 2: Blockchain Web3 (Hợp đồng thông minh) -->
         @if (settingsSubTab() === 'blockchain') {
           <div app-card class="space-y-6 w-full">
             <div
@@ -1261,7 +923,7 @@
           </div>
         }
 
-        <!-- Tab 3: Ủy quyền nhân sự (Ví) -->
+        <!-- Tab 3: Ủy quyền ví (Phân quyền nhân sự) -->
         @if (settingsSubTab() === 'permissions') {
           <div app-card class="space-y-6 w-full">
             <div
@@ -1793,7 +1455,349 @@
           </div>
         }
 
-        <!-- Tab 6: Website Cửa hàng -->
+        <!-- Tab 4: Phương thức thanh toán -->
+        @if (settingsSubTab() === 'payment') {
+          <div app-card class="space-y-6 w-full">
+            <!-- Header Tab -->
+            <div
+              class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800/60"
+            >
+              <div class="flex items-center gap-2.5">
+                <div
+                  class="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0 flex items-center"
+                >
+                  <app-icon name="debts" class="h-5 w-5" strokeWidth="2" />
+                </div>
+                <div>
+                  <h4
+                    class="text-md font-bold text-slate-800 dark:text-white uppercase tracking-wider"
+                  >
+                    Phương thức thanh toán
+                  </h4>
+                  <p class="text-xs text-slate-500 dark:text-slate-400 font-bold mt-0.5">
+                    Quản lý tài khoản ngân hàng và ví điện tử dùng cho khách chuyển khoản trên
+                    Storefront.
+                  </p>
+                </div>
+              </div>
+              <button
+                (click)="openAddPaymentModal()"
+                [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                class="btn-primary w-full sm:w-auto"
+              >
+                <app-icon name="plus" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
+                <span>Thêm phương thức</span>
+              </button>
+            </div>
+
+            <!-- Tìm kiếm phương thức thanh toán -->
+            <div class="flex flex-col sm:flex-row gap-4 items-end justify-between">
+              <div class="flex flex-col gap-1.5 w-full sm:max-w-xs shrink-0">
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider"
+                  >Tìm kiếm phương thức</span
+                >
+                <div class="relative w-full">
+                  <input
+                    type="text"
+                    [ngModel]="paymentMethodsSearch()"
+                    (ngModelChange)="paymentMethodsSearch.set($event); onPaymentSearchChange()"
+                    placeholder="Ngân hàng, số tài khoản..."
+                    class="w-full search-input text-xs sm:text-sm h-10.5 pl-10 pr-4"
+                  />
+                  <app-icon
+                    name="search"
+                    class="absolute left-3 top-3 h-4.5 w-4.5 text-slate-400"
+                    strokeWidth="2.5"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Bảng danh sách phương thức thanh toán -->
+            <app-table
+              [data]="paymentMethodsList()"
+              [columns]="paymentColumns"
+              [isLoading]="isPaymentMethodsLoading()"
+              skeletonType="table"
+              [skeletonRows]="5"
+              [totalItems]="paymentMethodsTotal()"
+              [itemsPerPage]="paymentMethodsPerPage()"
+              [currentPage]="paymentMethodsPage()"
+              (pageChange)="setPaymentMethodsPage($event)"
+              [showPagination]="true"
+              itemName="phương thức thanh toán"
+            >
+              <!-- Cell Loại -->
+              <ng-template appCell="type" let-row>
+                <span
+                  [class]="
+                    'text-xs font-black px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0 ' +
+                    (row.type === 'bank'
+                      ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                      : 'bg-pink-500/10 text-pink-600 dark:text-pink-400')
+                  "
+                >
+                  {{ row.type === 'bank' ? 'Ngân hàng' : 'Ví điện tử' }}
+                </span>
+              </ng-template>
+
+              <!-- Cell Trạng thái -->
+              <ng-template appCell="is_active" let-row>
+                <span
+                  [class]="
+                    'text-xs font-black px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0 ' +
+                    (row.is_active
+                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                      : 'bg-slate-500/10 text-slate-500 dark:text-slate-400')
+                  "
+                >
+                  {{ row.is_active ? 'Kích hoạt' : 'Vô hiệu' }}
+                </span>
+              </ng-template>
+
+              <!-- Cell Thao tác -->
+              <ng-template appCell="actions" let-row>
+                <div class="flex items-center justify-end gap-2">
+                  <button
+                    (click)="showQrCode(row)"
+                    class="btn-secondary btn-sm !px-2.5 !py-1 flex items-center gap-1.5"
+                    title="Xem mã QR"
+                  >
+                    <app-icon name="qr-code" class="h-3.5 w-3.5" strokeWidth="2.5" />
+                    <span>Xem QR</span>
+                  </button>
+                  <button
+                    (click)="openEditPaymentModal(row)"
+                    [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                    class="btn-secondary btn-sm !px-2.5 !py-1 flex items-center gap-1.5"
+                    title="Chỉnh sửa"
+                  >
+                    <app-icon name="edit" class="h-3.5 w-3.5" strokeWidth="2.5" />
+                    <span>Sửa</span>
+                  </button>
+                  <button
+                    (click)="deletePaymentMethod(row.id)"
+                    [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                    class="btn-danger-light btn-sm !px-2.5 !py-1 flex items-center gap-1.5"
+                    title="Xóa"
+                  >
+                    <app-icon name="trash" class="h-3.5 w-3.5" strokeWidth="2.5" />
+                    <span>Xóa</span>
+                  </button>
+                </div>
+              </ng-template>
+            </app-table>
+          </div>
+        }
+
+        <!-- Tab 5: Mẫu hóa đơn -->
+        @if (settingsSubTab() === 'invoice') {
+          <div app-card class="space-y-6 w-full">
+            <div
+              class="flex items-center gap-2.5 pb-2 border-b border-slate-100 dark:border-slate-800/60"
+            >
+              <div
+                class="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0 flex items-center"
+              >
+                <app-icon name="debts" class="h-5 w-5" strokeWidth="2" />
+              </div>
+              <h4 class="text-md font-bold text-slate-800 dark:text-white uppercase tracking-wider">
+                Cấu hình mẫu hoá đơn
+              </h4>
+            </div>
+
+            <div class="space-y-5">
+              <!-- Cấu hình điều chỉnh mẫu hóa đơn -->
+              <div class="space-y-3">
+                <div class="space-y-2">
+                  <label
+                    class="text-xs font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1.5"
+                  >
+                    <span>Chọn khổ giấy in mặc định</span>
+                  </label>
+                  <div class="grid grid-cols-3 gap-3">
+                    <!-- Khổ 80mm -->
+                    <div
+                      (click)="
+                        !web3Service.walletConnected() || !web3Service.isOwnerContract()
+                          ? null
+                          : updateConfigForm('default_print_size', '80mm')
+                      "
+                      [class]="
+                        'relative flex flex-col items-center justify-center p-3.5 rounded-2xl border-2 transition-all ' +
+                        (configForm().default_print_size === '80mm'
+                          ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)]'
+                          : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-600 dark:text-slate-300') +
+                        (!web3Service.walletConnected() || !web3Service.isOwnerContract()
+                          ? ' opacity-50 cursor-not-allowed'
+                          : ' cursor-pointer')
+                      "
+                    >
+                      <span class="text-xs font-extrabold">Khổ 80mm</span>
+                      <span class="text-[10px] text-slate-400 mt-1 text-center"
+                        >Khổ nhỏ (Mặc định)</span
+                      >
+                      @if (configForm().default_print_size === '80mm') {
+                        <div class="absolute top-2 right-2 text-[var(--dynamic-primary)]">
+                          <app-icon name="check-circle" class="h-4 w-4" strokeWidth="2.5" />
+                        </div>
+                      }
+                    </div>
+
+                    <!-- Khổ A4 -->
+                    <div
+                      (click)="
+                        !web3Service.walletConnected() || !web3Service.isOwnerContract()
+                          ? null
+                          : updateConfigForm('default_print_size', 'A4')
+                      "
+                      [class]="
+                        'relative flex flex-col items-center justify-center p-3.5 rounded-2xl border-2 transition-all ' +
+                        (configForm().default_print_size === 'A4'
+                          ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)]'
+                          : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-600 dark:text-slate-300') +
+                        (!web3Service.walletConnected() || !web3Service.isOwnerContract()
+                          ? ' opacity-50 cursor-not-allowed'
+                          : ' cursor-pointer')
+                      "
+                    >
+                      <span class="text-xs font-extrabold">Khổ A4</span>
+                      <span class="text-[10px] text-slate-400 mt-1 text-center">Khổ lớn (A4)</span>
+                      @if (configForm().default_print_size === 'A4') {
+                        <div class="absolute top-2 right-2 text-[var(--dynamic-primary)]">
+                          <app-icon name="check-circle" class="h-4 w-4" strokeWidth="2.5" />
+                        </div>
+                      }
+                    </div>
+
+                    <!-- Khổ A5 -->
+                    <div
+                      (click)="
+                        !web3Service.walletConnected() || !web3Service.isOwnerContract()
+                          ? null
+                          : updateConfigForm('default_print_size', 'A5')
+                      "
+                      [class]="
+                        'relative flex flex-col items-center justify-center p-3.5 rounded-2xl border-2 transition-all ' +
+                        (configForm().default_print_size === 'A5'
+                          ? 'border-[var(--dynamic-primary)] bg-[var(--dynamic-primary)]/5 dark:bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)]'
+                          : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-600 dark:text-slate-300') +
+                        (!web3Service.walletConnected() || !web3Service.isOwnerContract()
+                          ? ' opacity-50 cursor-not-allowed'
+                          : ' cursor-pointer')
+                      "
+                    >
+                      <span class="text-xs font-extrabold">Khổ A5</span>
+                      <span class="text-[10px] text-slate-400 mt-1 text-center">Khổ lớn (A5)</span>
+                      @if (configForm().default_print_size === 'A5') {
+                        <div class="absolute top-2 right-2 text-[var(--dynamic-primary)]">
+                          <app-icon name="check-circle" class="h-4 w-4" strokeWidth="2.5" />
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="pt-4">
+                <button
+                  app-button
+                  variant="primary"
+                  (click)="saveConfig()"
+                  [loading]="isConfigSaving()"
+                  [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                  class="w-full shadow-lg"
+                >
+                  <app-icon name="save" class="h-4.5 w-4.5 shrink-0" strokeWidth="2.5" />
+                  <span>LƯU CẤU HÌNH HỆ THỐNG</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Tab 6: Cấu hình Thuế VAT -->
+        @if (settingsSubTab() === 'tax') {
+          <div app-card class="space-y-6 w-full">
+            <div
+              class="flex items-center gap-2.5 pb-2 border-b border-slate-100 dark:border-slate-800/60"
+            >
+              <div
+                class="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0 flex items-center"
+              >
+                <app-icon name="tax" class="h-5 w-5" strokeWidth="2" />
+              </div>
+              <h4 class="text-md font-bold text-slate-800 dark:text-white uppercase tracking-wider">
+                Cấu hình Thuế VAT
+              </h4>
+            </div>
+
+            <div class="space-y-5">
+              <!-- Grid các cấu hình -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Switch Bật tắt Thuế -->
+                <app-custom-switch
+                  type="full"
+                  label="Áp dụng thuế VAT"
+                  description="Tự động tính thuế VAT khi bán hàng và tạo đơn"
+                  [checked]="configForm().tax_enabled === '1'"
+                  (checkedChange)="updateConfigForm('tax_enabled', $event ? '1' : '0')"
+                  [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                ></app-custom-switch>
+
+                <!-- Switch Giá gồm thuế hay chưa -->
+                <app-custom-switch
+                  type="full"
+                  label="Giá bán đã bao gồm thuế"
+                  description="Tích chọn nếu giá sản phẩm hiển thị trên Storefront/POS đã có thuế VAT"
+                  [checked]="configForm().tax_inclusive === '1'"
+                  (checkedChange)="updateConfigForm('tax_inclusive', $event ? '1' : '0')"
+                  [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                ></app-custom-switch>
+
+                <!-- Thuế suất mặc định -->
+                <div class="space-y-1.5">
+                  <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                    >Thuế suất mặc định (%)</label
+                  >
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    class="form-input font-semibold"
+                    [ngModel]="configForm().tax_default_rate"
+                    (ngModelChange)="updateConfigForm('tax_default_rate', $event)"
+                    [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                    placeholder="Ví dụ: 10"
+                  />
+                  <span class="text-xs text-slate-400 block mt-1">Áp dụng khi sản phẩm chưa được thiết lập thuế suất riêng.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Nút Lưu -->
+            <div class="flex justify-end pt-4">
+              <button
+                (click)="saveConfig()"
+                [disabled]="isConfigSaving() || !web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                class="btn-primary flex items-center gap-2"
+              >
+                @if (isConfigSaving()) {
+                  <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Đang lưu...</span>
+                } @else {
+                  <app-icon name="check" class="h-4 w-4" strokeWidth="2.5" />
+                  <span>Lưu cấu hình thuế</span>
+                }
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- Tab 7: Website Cửa hàng (Storefront) -->
         @if (settingsSubTab() === 'store') {
           <div app-card class="space-y-6 w-full">
             <div
@@ -2186,142 +2190,8 @@
           </div>
         }
 
-        <!-- Tab 7: Phương thức thanh toán -->
-        @if (settingsSubTab() === 'payment') {
-          <div app-card class="space-y-6 w-full">
-            <!-- Header Tab -->
-            <div
-              class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800/60"
-            >
-              <div class="flex items-center gap-2.5">
-                <div
-                  class="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0 flex items-center"
-                >
-                  <app-icon name="debts" class="h-5 w-5" strokeWidth="2" />
-                </div>
-                <div>
-                  <h4
-                    class="text-md font-bold text-slate-800 dark:text-white uppercase tracking-wider"
-                  >
-                    Phương thức thanh toán
-                  </h4>
-                  <p class="text-xs text-slate-500 dark:text-slate-400 font-bold mt-0.5">
-                    Quản lý tài khoản ngân hàng và ví điện tử dùng cho khách chuyển khoản trên
-                    Storefront.
-                  </p>
-                </div>
-              </div>
-              <button
-                (click)="openAddPaymentModal()"
-                [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
-                class="btn-primary w-full sm:w-auto"
-              >
-                <app-icon name="plus" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
-                <span>Thêm phương thức</span>
-              </button>
-            </div>
-
-            <!-- Tìm kiếm phương thức thanh toán -->
-            <div class="flex flex-col sm:flex-row gap-4 items-end justify-between">
-              <div class="flex flex-col gap-1.5 w-full sm:max-w-xs shrink-0">
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider"
-                  >Tìm kiếm phương thức</span
-                >
-                <div class="relative w-full">
-                  <input
-                    type="text"
-                    [ngModel]="paymentMethodsSearch()"
-                    (ngModelChange)="paymentMethodsSearch.set($event); onPaymentSearchChange()"
-                    placeholder="Ngân hàng, số tài khoản..."
-                    class="w-full search-input text-xs sm:text-sm h-10.5 pl-10 pr-4"
-                  />
-                  <app-icon
-                    name="search"
-                    class="absolute left-3 top-3 h-4.5 w-4.5 text-slate-400"
-                    strokeWidth="2.5"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <!-- Bảng danh sách phương thức thanh toán -->
-            <app-table
-              [data]="paymentMethodsList()"
-              [columns]="paymentColumns"
-              [isLoading]="isPaymentMethodsLoading()"
-              skeletonType="table"
-              [skeletonRows]="5"
-              [totalItems]="paymentMethodsTotal()"
-              [itemsPerPage]="paymentMethodsPerPage()"
-              [currentPage]="paymentMethodsPage()"
-              (pageChange)="setPaymentMethodsPage($event)"
-              [showPagination]="true"
-              itemName="phương thức thanh toán"
-            >
-              <!-- Cell Loại -->
-              <ng-template appCell="type" let-row>
-                <span
-                  [class]="
-                    'text-xs font-black px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0 ' +
-                    (row.type === 'bank'
-                      ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                      : 'bg-pink-500/10 text-pink-600 dark:text-pink-400')
-                  "
-                >
-                  {{ row.type === 'bank' ? 'Ngân hàng' : 'Ví điện tử' }}
-                </span>
-              </ng-template>
-
-              <!-- Cell Trạng thái -->
-              <ng-template appCell="is_active" let-row>
-                <span
-                  [class]="
-                    'text-xs font-black px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0 ' +
-                    (row.is_active
-                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                      : 'bg-slate-500/10 text-slate-500 dark:text-slate-400')
-                  "
-                >
-                  {{ row.is_active ? 'Kích hoạt' : 'Vô hiệu' }}
-                </span>
-              </ng-template>
-
-              <!-- Cell Thao tác -->
-              <ng-template appCell="actions" let-row>
-                <div class="flex items-center justify-end gap-2">
-                  <button
-                    (click)="showQrCode(row)"
-                    class="btn-secondary btn-sm !px-2.5 !py-1 flex items-center gap-1.5"
-                    title="Xem mã QR"
-                  >
-                    <app-icon name="qr-code" class="h-3.5 w-3.5" strokeWidth="2.5" />
-                    <span>Xem QR</span>
-                  </button>
-                  <button
-                    (click)="openEditPaymentModal(row)"
-                    [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
-                    class="btn-secondary btn-sm !px-2.5 !py-1 flex items-center gap-1.5"
-                    title="Chỉnh sửa"
-                  >
-                    <app-icon name="edit" class="h-3.5 w-3.5" strokeWidth="2.5" />
-                    <span>Sửa</span>
-                  </button>
-                  <button
-                    (click)="deletePaymentMethod(row.id)"
-                    [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
-                    class="btn-danger-light btn-sm !px-2.5 !py-1 flex items-center gap-1.5"
-                    title="Xóa"
-                  >
-                    <app-icon name="trash" class="h-3.5 w-3.5" strokeWidth="2.5" />
-                    <span>Xóa</span>
-                  </button>
-                </div>
-              </ng-template>
-            </app-table>
-          </div>
-        }
-
-        @if (settingsSubTab() === 'tax') {
+        <!-- Tab 8: Chương trình Voucher NFT -->
+        @if (settingsSubTab() === 'voucher') {
           <div app-card class="space-y-6 w-full">
             <div
               class="flex items-center gap-2.5 pb-2 border-b border-slate-100 dark:border-slate-800/60"
@@ -2329,74 +2199,205 @@
               <div
                 class="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0 flex items-center"
               >
-                <app-icon name="tax" class="h-5 w-5" strokeWidth="2" />
+                <app-icon name="ticket" class="h-5 w-5" strokeWidth="2" />
               </div>
               <h4 class="text-md font-bold text-slate-800 dark:text-white uppercase tracking-wider">
-                Cấu hình Thuế VAT
+                Cấu hình Chương trình Voucher NFT
               </h4>
             </div>
 
-            <div class="space-y-5">
-              <!-- Grid các cấu hình -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Switch Bật tắt Thuế -->
-                <app-custom-switch
-                  type="full"
-                  label="Áp dụng thuế VAT"
-                  description="Tự động tính thuế VAT khi bán hàng và tạo đơn"
-                  [checked]="configForm().tax_enabled === '1'"
-                  (checkedChange)="updateConfigForm('tax_enabled', $event ? '1' : '0')"
-                  [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
-                ></app-custom-switch>
+            <div class="space-y-6">
+              <!-- Switch Bật/Tắt chương trình Voucher NFT -->
+              <app-custom-switch
+                type="full"
+                label="Chương trình Voucher NFT"
+                description="Bật/tắt chương trình tặng và áp dụng Voucher NFT giảm giá cho khách hàng tại cửa hàng."
+                [checked]="configForm().voucher_enabled === '1'"
+                (checkedChange)="updateConfigForm('voucher_enabled', $event ? '1' : '0')"
+                [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+              ></app-custom-switch>
 
-                <!-- Switch Giá gồm thuế hay chưa -->
-                <app-custom-switch
-                  type="full"
-                  label="Giá bán đã bao gồm thuế"
-                  description="Tích chọn nếu giá sản phẩm hiển thị trên Storefront/POS đã có thuế VAT"
-                  [checked]="configForm().tax_inclusive === '1'"
-                  (checkedChange)="updateConfigForm('tax_inclusive', $event ? '1' : '0')"
-                  [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
-                ></app-custom-switch>
+              @if (configForm().voucher_enabled === '1') {
+                <!-- 1. Tham số chương trình Voucher NFT -->
+                <div class="space-y-3.5">
+                  <h5 class="text-xs font-bold text-slate-400 uppercase tracking-wide block">
+                    Tham số chương trình Voucher
+                  </h5>
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <!-- Đơn hàng tối thiểu tặng voucher -->
+                    <div class="space-y-1.5">
+                      <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                        >Đơn tối thiểu để tặng</label
+                      >
+                      <div
+                        class="relative form-input p-0 overflow-hidden focus-within:border-[var(--color-primary)] transition-all flex items-center h-[42px]"
+                      >
+                        <input
+                          type="number"
+                          [ngModel]="configForm().voucher_gift_min_amount"
+                          (ngModelChange)="updateConfigForm('voucher_gift_min_amount', $event)"
+                          [disabled]="
+                            !web3Service.walletConnected() || !web3Service.isOwnerContract()
+                          "
+                          class="w-full pl-4 pr-9 bg-transparent text-sm font-semibold focus:outline-none text-slate-800 dark:text-white disabled:opacity-50"
+                          placeholder="100,000"
+                        />
+                        <span
+                          class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400"
+                          >đ</span
+                        >
+                      </div>
+                    </div>
 
-                <!-- Thuế suất mặc định -->
-                <div class="space-y-1.5">
-                  <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
-                    >Thuế suất mặc định (%)</label
-                  >
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    class="form-input font-semibold"
-                    [ngModel]="configForm().tax_default_rate"
-                    (ngModelChange)="updateConfigForm('tax_default_rate', $event)"
-                    [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
-                    placeholder="Ví dụ: 10"
-                  />
-                  <span class="text-xs text-slate-400 block mt-1">Áp dụng khi sản phẩm chưa được thiết lập thuế suất riêng.</span>
+                    <!-- Giá trị giảm giá -->
+                    <div class="space-y-1.5">
+                      <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                        >Mức giảm giá của Voucher</label
+                      >
+                      <div
+                        class="relative form-input p-0 overflow-hidden focus-within:border-[var(--color-primary)] transition-all flex items-center h-[42px]"
+                      >
+                        <input
+                          type="number"
+                          [ngModel]="configForm().voucher_discount_amount"
+                          (ngModelChange)="updateConfigForm('voucher_discount_amount', $event)"
+                          [disabled]="
+                            !web3Service.walletConnected() || !web3Service.isOwnerContract()
+                          "
+                          class="w-full pl-4 pr-9 bg-transparent text-sm font-semibold focus:outline-none text-slate-800 dark:text-white disabled:opacity-50"
+                          placeholder="5,000"
+                        />
+                        <span
+                          class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400"
+                          >đ</span
+                        >
+                      </div>
+                    </div>
+
+                    <!-- Đơn hàng tối thiểu sử dụng voucher -->
+                    <div class="space-y-1.5">
+                      <label class="text-xs font-bold text-slate-400 uppercase tracking-wide block"
+                        >Đơn tối thiểu áp dụng</label
+                      >
+                      <div
+                        class="relative form-input p-0 overflow-hidden focus-within:border-[var(--color-primary)] transition-all flex items-center h-[42px]"
+                      >
+                        <input
+                          type="number"
+                          [ngModel]="configForm().voucher_use_min_amount"
+                          (ngModelChange)="updateConfigForm('voucher_use_min_amount', $event)"
+                          [disabled]="
+                            !web3Service.walletConnected() || !web3Service.isOwnerContract()
+                          "
+                          class="w-full pl-4 pr-9 bg-transparent text-sm font-semibold focus:outline-none text-slate-800 dark:text-white disabled:opacity-50"
+                          placeholder="100,000"
+                        />
+                        <span
+                          class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400"
+                          >đ</span
+                        >
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            <!-- Nút Lưu -->
-            <div class="flex justify-end pt-4">
-              <button
-                (click)="saveConfig()"
-                [disabled]="isConfigSaving() || !web3Service.walletConnected() || !web3Service.isOwnerContract()"
-                class="btn-primary flex items-center gap-2"
-              >
-                @if (isConfigSaving()) {
-                  <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <span>Đang lưu...</span>
-                } @else {
-                  <app-icon name="check" class="h-4 w-4" strokeWidth="2.5" />
-                  <span>Lưu cấu hình thuế</span>
-                }
-              </button>
+                <!-- 2. Hợp đồng NFT Voucher -->
+                <div class="border-t border-slate-100 dark:border-slate-800/60 pt-4 space-y-1.5">
+                  <div class="flex items-center gap-2 pb-0.5">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wide"
+                      >Địa chỉ Smart Contract NFT Voucher (0x...)</span
+                    >
+                    @if (
+                      settings().voucher_contract_address === '' ||
+                      !settings().voucher_contract_address
+                    ) {
+                      <app-badge variant="danger" size="sm" rounded="full" [pulse]="true"
+                        >Chưa Deploy</app-badge
+                      >
+                    } @else {
+                      <app-badge variant="success" size="sm" rounded="full">Đã Cấu Hình</app-badge>
+                    }
+                  </div>
+                  <div class="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="text"
+                      [ngModel]="configForm().voucher_contract_address"
+                      (ngModelChange)="updateConfigForm('voucher_contract_address', $event)"
+                      placeholder="Chưa deploy hợp đồng NFT Voucher. Vui lòng bấm Deploy..."
+                      [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                      class="form-input font-mono flex-1 min-w-0"
+                    />
+                    @if (!settings().voucher_contract_address) {
+                      <button
+                        app-button
+                        variant="secondary"
+                        size="sm"
+                        type="button"
+                        [loading]="isDeployingVoucher()"
+                        [disabled]="
+                          !web3Service.walletConnected() || !web3Service.isOwnerContract()
+                        "
+                        (click)="deployVoucherContract()"
+                        class="h-[42px] w-full sm:w-auto shrink-0"
+                      >
+                        <app-icon name="archive" class="h-4 w-4 shrink-0" strokeWidth="2.5" />
+                        <span>Deploy NFT Voucher Contract</span>
+                      </button>
+                    }
+                  </div>
+                </div>
+
+                <!-- 3. Khóa ví nóng Relayer (Private Key) -->
+                <div class="border-t border-slate-100 dark:border-slate-800/60 pt-4 space-y-1.5">
+                  <div class="flex items-center gap-2 pb-0.5">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wide"
+                      >Khóa ví nóng Relayer (Private Key)</span
+                    >
+                    @if (!configForm().has_relayer_private_key) {
+                      <app-badge variant="danger" size="sm" rounded="full">Chưa Cấu Hình</app-badge>
+                    } @else {
+                      <app-badge variant="success" size="sm" rounded="full">Đã Cấu Hình</app-badge>
+                    }
+                  </div>
+                  <div class="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="password"
+                      [ngModel]="configForm().relayer_private_key"
+                      (ngModelChange)="updateConfigForm('relayer_private_key', $event)"
+                      [placeholder]="
+                        configForm().has_relayer_private_key
+                          ? '••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••'
+                          : 'Nhập Private Key của ví Relayer để thanh toán gas (0x...)'
+                      "
+                      [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                      class="form-input font-mono flex-1 min-w-0"
+                    />
+                  </div>
+                  <p class="text-xs font-bold text-slate-400/80 leading-normal mt-1 block">
+                    <app-icon
+                      name="warning"
+                      class="h-4 w-4 shrink-0 text-amber-500 inline-block"
+                      strokeWidth="2"
+                    />
+                    Lưu ý: Khóa ví Relayer sẽ được **mã hóa đối xứng bảo mật (AES-256)** trên
+                    Backend. Chỉ dùng ví Relayer phụ chứa lượng nhỏ coin làm phí gas.
+                  </p>
+                </div>
+              }
+
+              <div class="pt-4 border-t border-slate-100 dark:border-slate-800/60">
+                <button
+                  app-button
+                  variant="primary"
+                  (click)="saveConfig()"
+                  [loading]="isConfigSaving()"
+                  [disabled]="!web3Service.walletConnected() || !web3Service.isOwnerContract()"
+                  class="w-full shadow-lg"
+                >
+                  <app-icon name="save" class="h-4.5 w-4.5 shrink-0" strokeWidth="2.5" />
+                  <span>LƯU CẤU HÌNH HỆ THỐNG</span>
+                </button>
+              </div>
             </div>
           </div>
         }

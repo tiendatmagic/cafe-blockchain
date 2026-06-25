@@ -131,16 +131,18 @@ export class SettingsComponent implements OnInit {
   public get settingsSubTabOptions(): TabOption[] {
     const list: TabOption[] = [
       { value: 'general', label: 'Cấu hình Quán' },
-      { value: 'payment', label: 'Thanh toán' },
-      { value: 'invoice', label: 'Mẫu hoá đơn' },
-      { value: 'store', label: 'Website' },
-      { value: 'voucher', label: 'Voucher NFT' },
       { value: 'blockchain', label: 'Blockchain Web3' },
       { value: 'permissions', label: 'Ủy quyền ví' },
+      { value: 'payment', label: 'Thanh toán' },
+      { value: 'invoice', label: 'Mẫu hoá đơn' },
     ];
     if (this.stateService.hasFeature('enable_tax') && this.stateService.hasPermission('tax')) {
       list.push({ value: 'tax', label: 'Cấu hình Thuế' });
     }
+    list.push(
+      { value: 'store', label: 'Website' },
+      { value: 'voucher', label: 'Voucher NFT' }
+    );
     return list;
   }
 
