@@ -296,7 +296,7 @@ class TaxController extends Controller
             ->whereBetween('transaction_date', [$startDate, $endDate])
             ->sum('amount');
 
-        // 3. Compute tax rates
+        // 3. Compute tax rates based on business group (New 2026 regulations)
         $vatRate = 0;
         $pitRate = 0;
 
@@ -312,17 +312,72 @@ class TaxController extends Controller
             $pitRate = $rates['pit'];
         }
 
-        // Calculate VAT
-        $estimatedVat = $revenue * $vatRate;
+        $businessGroup = (int)($profile->business_group ?? 2);
+        
+        $estimatedVat = 0.0;
+        $estimatedPit = 0.0;
 
-        // Calculate PIT
-        if ($profile->tax_method === 'profit_percent') {
-            // Method 2: 15% profit
+        if ($businessGroup === 1) {
+            // Nhóm 1: Dưới 1 tỷ/năm -> Miễn thuế hoàn toàn
+            $vatRate = 0.0;
+            $pitRate = 0.0;
+            $estimatedVat = 0.0;
+            $estimatedPit = 0.0;
+        } elseif ($businessGroup === 2) {
+            // Nhóm 2: 1 tỷ - 3 tỷ/năm (Phần miễn thuế 1 tỷ đầu)
+            $startDateCarbon = Carbon::parse($startDate);
+            $endDateCarbon = Carbon::parse($endDate);
+            $days = $startDateCarbon->diffInDays($endDateCarbon) + 1;
+            
+            // Ngưỡng miễn thuế phân bổ theo số ngày (1 tỷ/năm)
+            $proportionalThreshold = 1000000000.0 * ($days / 365.0);
+            $taxableRevenue = max(0.0, $revenue - $proportionalThreshold);
+
+            $estimatedVat = $taxableRevenue * $vatRate;
+
+            if ($profile->tax_method === 'profit_percent') {
+                $profit = max(0.0, $revenue - $expense);
+                $estimatedPit = $profit * 0.15;
+                $pitRate = 0.15;
+            } else {
+                $estimatedPit = $taxableRevenue * $pitRate;
+            }
+        } elseif ($businessGroup === 3) {
+            // Nhóm 3: 3 tỷ - 50 tỷ/năm -> VAT khấu trừ, TNCN = 17% lợi nhuận
+            $pitRate = 0.17;
+            
+            $vatOutput = (float)Order::where('store_owner_address', $storeOwner)
+                ->where('status', 'completed')
+                ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+                ->sum('tax_amount');
+            
+            if ($vatOutput <= 0.0) {
+                $vatOutput = $revenue * $vatRate;
+            }
+
+            $vatInput = $expense * 0.08;
+            $estimatedVat = max(0.0, $vatOutput - $vatInput);
+
             $profit = max(0.0, $revenue - $expense);
-            $estimatedPit = $profit * 0.15;
+            $estimatedPit = $profit * 0.17;
         } else {
-            // Method 1: % revenue
-            $estimatedPit = $revenue * $pitRate;
+            // Nhóm 4: > 50 tỷ/năm -> VAT khấu trừ, TNCN = 20% lợi nhuận
+            $pitRate = 0.20;
+
+            $vatOutput = (float)Order::where('store_owner_address', $storeOwner)
+                ->where('status', 'completed')
+                ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+                ->sum('tax_amount');
+            
+            if ($vatOutput <= 0.0) {
+                $vatOutput = $revenue * $vatRate;
+            }
+
+            $vatInput = $expense * 0.08;
+            $estimatedVat = max(0.0, $vatOutput - $vatInput);
+
+            $profit = max(0.0, $revenue - $expense);
+            $estimatedPit = $profit * 0.20;
         }
         
         return [

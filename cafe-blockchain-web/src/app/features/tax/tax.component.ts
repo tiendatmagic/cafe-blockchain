@@ -380,6 +380,7 @@ export class TaxComponent implements OnInit {
         let groupTitle = 'Bạn thuộc nhóm doanh thu dưới 1 tỷ';
         if (groupNum === 2) groupTitle = 'Bạn thuộc nhóm doanh thu 1 tỷ - 3 tỷ';
         if (groupNum === 3) groupTitle = 'Bạn thuộc nhóm doanh thu 3 tỷ - 50 tỷ';
+        if (groupNum === 4) groupTitle = 'Bạn thuộc nhóm doanh thu trên 50 tỷ';
 
         this.modalService.open(TaxResultModalComponent, {
           title: groupTitle,
@@ -708,12 +709,41 @@ export class TaxComponent implements OnInit {
   }
 
   public getBusinessGroupLabel(group: number): string {
-    switch (group) {
+    switch (Number(group)) {
       case 1: return 'Dưới 1 tỷ/năm';
       case 2: return '1 tỷ - 3 tỷ/năm';
       case 3: return '3 tỷ - 50 tỷ/năm';
+      case 4: return 'Trên 50 tỷ/năm';
       default: return `Nhóm ${group}`;
     }
+  }
+
+  public getPitMethodLabel(profile: any): string {
+    if (!profile) return '';
+    const group = Number(profile.business_group);
+    if (group === 1) {
+      return 'Miễn thuế';
+    } else if (group === 2) {
+      return profile.tax_method === 'profit_percent' ? '15% Lợi nhuận' : 'Tỷ lệ % doanh thu';
+    } else if (group === 3) {
+      return '17% Lợi nhuận';
+    } else if (group === 4) {
+      return '20% Lợi nhuận';
+    }
+    return '';
+  }
+
+  public getVatMethodLabel(profile: any): string {
+    if (!profile) return '';
+    const group = Number(profile.business_group);
+    if (group === 1) {
+      return 'Miễn thuế';
+    } else if (group === 2) {
+      return 'Tỷ lệ % doanh thu';
+    } else if (group === 3 || group === 4) {
+      return 'Khấu trừ (đầu ra - đầu vào)';
+    }
+    return '';
   }
 
   public changePeriodsPage(page: number) {
