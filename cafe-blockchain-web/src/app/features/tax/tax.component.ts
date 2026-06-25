@@ -139,14 +139,14 @@ export class TaxComponent implements OnInit {
     { value: 'S2e - HKD', label: 'S2e - HKD' },
     { value: 'S2c - HKD', label: 'S2c - HKD' },
     { value: 'S2d - HKD', label: 'S2d - HKD' },
-    { value: 'S1a - HKD', label: 'S1a - HKD' },
     { value: 'S2a - HKD', label: 'S2a - HKD' },
+    { value: 'S1a - HKD', label: 'S1a - HKD' },
     { value: 'Tờ khai thuế', label: 'Tờ khai thuế' }
   ];
 
   public readonly isFilterDropdownOpen = signal<boolean>(false);
-  public readonly tempSelectedFilters = signal<string[]>([]);
-  public readonly activeSelectedFilters = signal<string[]>([]);
+  public readonly tempSelectedFilters = signal<string[]>(['Tờ khai thuế', 'S1a - HKD']);
+  public readonly activeSelectedFilters = signal<string[]>(['Tờ khai thuế', 'S1a - HKD']);
 
   // Inline Survey states
   public readonly isSurveyMode = signal<boolean>(false);
