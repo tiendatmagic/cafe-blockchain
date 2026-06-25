@@ -8,6 +8,7 @@ import { ButtonComponent } from '@shared/components/button/button.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { CustomSwitchComponent } from '@shared/components/custom-switch/custom-switch.component';
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
+import { TabGroupComponent, TabOption } from '@shared/components/tab-group/tab-group.component';
 import * as XLSX from 'xlsx';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -102,7 +103,8 @@ interface S2eTaxObligationRow {
     ButtonComponent,
     IconComponent,
     CustomSwitchComponent,
-    VNDCurrencyPipe
+    VNDCurrencyPipe,
+    TabGroupComponent
   ],
   templateUrl: './tax-detail-modal.component.html',
   styles: [
@@ -133,6 +135,10 @@ export class TaxDetailModalComponent implements OnInit {
   // Views
   public isEditingInfo = false;
   public activeTab: 'declaration' | 'pl01' = 'declaration';
+  public readonly declarationTabOptions: TabOption[] = [
+    { value: 'declaration', label: 'Tờ khai thuế' },
+    { value: 'pl01', label: 'PL 01 BK-STK' }
+  ];
   private hasSaved = false;
   public isSaving = signal(false);
 

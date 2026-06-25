@@ -166,21 +166,15 @@
       </div>
     </div>
 
-    <!-- Tab bar for Declaration (căn phẳng, không dùng px-6 và bg-slate) -->
+    <!-- Tab bar for Declaration (dùng app-tab-group chuẩn của hệ thống) -->
     @if (logRow.category.includes('Tờ khai')) {
-      <div class="border-b border-slate-100 dark:border-slate-800/60 flex gap-4 shrink-0 mb-4 bg-transparent">
-        <button 
-          (click)="activeTab = 'declaration'"
-          [class]="'py-3 text-xs font-black uppercase tracking-wider border-b-2 transition-all ' + (activeTab === 'declaration' ? 'border-[var(--dynamic-primary)] text-[var(--dynamic-primary)]' : 'border-transparent text-slate-400 hover:text-slate-650')"
-        >
-          Tờ khai thuế
-        </button>
-        <button 
-          (click)="activeTab = 'pl01'"
-          [class]="'py-3 text-xs font-black uppercase tracking-wider border-b-2 transition-all ' + (activeTab === 'pl01' ? 'border-[var(--dynamic-primary)] text-[var(--dynamic-primary)]' : 'border-transparent text-slate-400 hover:text-slate-650')"
-        >
-          PL 01 BK-STK
-        </button>
+      <div class="border-b border-slate-100 dark:border-slate-800/60 mb-4 bg-transparent">
+        <app-tab-group
+          [options]="declarationTabOptions"
+          [activeValue]="activeTab"
+          (valueChange)="activeTab = $event"
+          [flex]="false"
+        ></app-tab-group>
       </div>
     }
 
