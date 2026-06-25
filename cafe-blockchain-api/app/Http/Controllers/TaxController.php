@@ -160,18 +160,13 @@ class TaxController extends Controller
         $estimate = $this->calculateTaxEstimate($storeOwner, $profile, $dates['start_date'], $dates['end_date']);
 
         if ($existingPeriod) {
-            if ($existingPeriod->status === 'locked') {
-                return response()->json([
-                    'message' => 'Kỳ kê khai thuế cho khoảng thời gian này đã được khóa sổ và không thể tạo lại.'
-                ], 400);
-            }
-
-            // Update existing period: recalculate estimates and increment created_books_count by 2
+            // Update existing period: recalculate estimates, reset status to 'open' and increment created_books_count by 2
             $existingPeriod->update([
                 'revenue_amount' => $estimate['revenue'],
                 'expense_amount' => $estimate['expense'],
                 'estimated_vat' => $estimate['estimated_vat'],
                 'estimated_pit' => $estimate['estimated_pit'],
+                'status' => 'open',
                 'created_books_count' => $existingPeriod->created_books_count + 2,
             ]);
 
