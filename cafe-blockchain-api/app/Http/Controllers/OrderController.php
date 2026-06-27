@@ -134,7 +134,7 @@ class OrderController extends Controller
         $storeOwner = $request->user()->getStoreOwnerAddress();
 
         $validated = $request->validate([
-            'status' => 'required|string|in:completed,cancelled,pending,preparing',
+            'status' => 'required|string|in:completed,cancelled,pending,preparing,ready',
         ]);
 
         try {

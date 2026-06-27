@@ -215,6 +215,11 @@ export class StaffsComponent implements OnInit {
     },
     { key: 'pos', name: 'Bán hàng', desc: 'Lập đơn hàng, chọn món, in hóa đơn tạm, thanh toán' },
     {
+      key: 'kds',
+      name: 'Nhà bếp & Pha chế',
+      desc: 'Xem màn hình KDS, quản lý quy trình pha chế và trạng thái chuẩn bị món nước',
+    },
+    {
       key: 'orders',
       name: 'Đơn hàng',
       desc: 'Quản lý lịch sử đơn hàng, cập nhật trạng thái, đồng bộ blockchain',

@@ -124,7 +124,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/orders', [OrderController::class, 'index'])->middleware('permission:pos|orders');
             Route::get('/orders/{id}', [OrderController::class, 'show'])->middleware('permission:pos|orders');
             Route::put('/orders/{id}', [OrderController::class, 'update'])->middleware('permission:pos|orders');
-            Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus'])->middleware(RequireOwner::class);
+            Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus'])->middleware('permission:pos|orders|kds');
             Route::put('/orders/{id}/sync', [OrderController::class, 'syncBlockchain'])->middleware(RequireOwner::class);
             Route::post('/orders/{id}/mint-voucher-manual', [OrderController::class, 'mintVoucherManual'])->middleware(RequireOwner::class);
         });
@@ -138,7 +138,7 @@ Route::middleware('auth:sanctum')->group(function () {
                 Route::get('/orders', [OrderController::class, 'index'])->middleware('permission:pos|orders');
                 Route::get('/orders/{id}', [OrderController::class, 'show'])->middleware('permission:pos|orders');
                 Route::put('/orders/{id}', [OrderController::class, 'update'])->middleware('permission:pos|orders');
-                Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus'])->middleware(RequireOwner::class);
+                Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus'])->middleware('permission:pos|orders|kds');
                 Route::put('/orders/{id}/sync', [OrderController::class, 'syncBlockchain'])->middleware(RequireOwner::class);
                 Route::post('/orders/{id}/mint-voucher-manual', [OrderController::class, 'mintVoucherManual'])->middleware(RequireOwner::class);
             });

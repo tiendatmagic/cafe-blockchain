@@ -1,0 +1,288 @@
+<div class="max-w-[1530px] mx-auto w-full p-4 sm:p-6 space-y-6">
+  <!-- Page Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/30 flex items-center justify-center text-[var(--dynamic-primary)] shrink-0">
+          <app-icon name="coffee" class="h-6 w-6" />
+        </div>
+        <div>
+          <h3 class="text-2xl font-extrabold text-slate-800 dark:text-white leading-none">
+            Nhà bếp & Pha chế
+          </h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mt-1.5">
+            Màn hình hiển thị đơn hàng pha chế KDS (Kitchen Display System)
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats & Actions -->
+    <div class="flex items-center gap-3">
+      <div class="px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/40 rounded-xl flex items-center gap-2.5">
+        <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+        <span class="text-sm font-bold text-slate-700 dark:text-slate-300">
+          Đang chờ: {{ queueCount() }} đơn
+        </span>
+      </div>
+      <button
+        (click)="loadKdsOrders()"
+        class="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-slate-600 dark:text-slate-400 hover:text-[var(--dynamic-primary)] dark:hover:text-[var(--dynamic-primary)] transition-all cursor-pointer hover:scale-105 active:scale-95 shadow-sm"
+        title="Làm mới danh sách"
+      >
+        <app-icon name="sync" class="h-5 w-5" />
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters Tab Group styled phẳng -->
+  <div class="border-b border-slate-200/40 dark:border-slate-800/40 pb-px">
+    <div class="flex items-center gap-6 overflow-x-auto no-scrollbar">
+      <button
+        (click)="setFilter('all')"
+        class="pb-3 text-sm font-bold border-b-2 transition-all cursor-pointer relative whitespace-nowrap"
+        [class.border-[var(--dynamic-primary)]]="filterStatus() === 'all'"
+        [class.text-[var(--dynamic-primary)]]="filterStatus() === 'all'"
+        [class.border-transparent]="filterStatus() !== 'all'"
+        [class.text-slate-400]="filterStatus() !== 'all'"
+        [class.dark:text-slate-500]="filterStatus() !== 'all'"
+        [class.hover:text-slate-600]="filterStatus() !== 'all'"
+      >
+        Tất cả đơn
+        <span class="ml-1.5 px-1.5 py-0.5 text-[10px] rounded-full bg-slate-100 dark:bg-slate-800 font-extrabold text-slate-500 dark:text-slate-400">
+          {{ orders().length }}
+        </span>
+      </button>
+
+      <button
+        (click)="setFilter('pending')"
+        class="pb-3 text-sm font-bold border-b-2 transition-all cursor-pointer relative whitespace-nowrap"
+        [class.border-[var(--dynamic-primary)]]="filterStatus() === 'pending'"
+        [class.text-[var(--dynamic-primary)]]="filterStatus() === 'pending'"
+        [class.border-transparent]="filterStatus() !== 'pending'"
+        [class.text-slate-400]="filterStatus() !== 'pending'"
+        [class.dark:text-slate-500]="filterStatus() !== 'pending'"
+        [class.hover:text-slate-600]="filterStatus() !== 'pending'"
+      >
+        Chờ pha chế
+        <span class="ml-1.5 px-1.5 py-0.5 text-[10px] rounded-full bg-amber-500/10 font-extrabold text-amber-600 dark:text-amber-500">
+          {{ orders().filter(o => o.status === 'pending').length }}
+        </span>
+      </button>
+
+      <button
+        (click)="setFilter('preparing')"
+        class="pb-3 text-sm font-bold border-b-2 transition-all cursor-pointer relative whitespace-nowrap"
+        [class.border-[var(--dynamic-primary)]]="filterStatus() === 'preparing'"
+        [class.text-[var(--dynamic-primary)]]="filterStatus() === 'preparing'"
+        [class.border-transparent]="filterStatus() !== 'preparing'"
+        [class.text-slate-400]="filterStatus() !== 'preparing'"
+        [class.dark:text-slate-500]="filterStatus() !== 'preparing'"
+        [class.hover:text-slate-600]="filterStatus() !== 'preparing'"
+      >
+        Đang pha chế
+        <span class="ml-1.5 px-1.5 py-0.5 text-[10px] rounded-full bg-purple-500/10 font-extrabold text-purple-600 dark:text-purple-400">
+          {{ orders().filter(o => o.status === 'preparing').length }}
+        </span>
+      </button>
+
+      <button
+        (click)="setFilter('ready')"
+        class="pb-3 text-sm font-bold border-b-2 transition-all cursor-pointer relative whitespace-nowrap"
+        [class.border-[var(--dynamic-primary)]]="filterStatus() === 'ready'"
+        [class.text-[var(--dynamic-primary)]]="filterStatus() === 'ready'"
+        [class.border-transparent]="filterStatus() !== 'ready'"
+        [class.text-slate-400]="filterStatus() !== 'ready'"
+        [class.dark:text-slate-500]="filterStatus() !== 'ready'"
+        [class.hover:text-slate-600]="filterStatus() !== 'ready'"
+      >
+        Chờ phục vụ (Xong)
+        <span class="ml-1.5 px-1.5 py-0.5 text-[10px] rounded-full bg-emerald-500/10 font-extrabold text-emerald-600 dark:text-emerald-500">
+          {{ orders().filter(o => o.status === 'ready').length }}
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading Skeleton -->
+  @if (loading()) {
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      @for (i of [1, 2, 3, 4, 5, 6, 7, 8]; track i) {
+        <div class="bg-white dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/40 rounded-2xl p-5 space-y-4 animate-pulse">
+          <div class="flex items-center justify-between">
+            <div class="h-6 w-24 bg-slate-200 dark:bg-slate-800 rounded-lg"></div>
+            <div class="h-5 w-12 bg-slate-200 dark:bg-slate-800 rounded-lg"></div>
+          </div>
+          <div class="space-y-2.5 pt-2">
+            <div class="h-4 w-full bg-slate-200 dark:bg-slate-800 rounded"></div>
+            <div class="h-4 w-5/6 bg-slate-200 dark:bg-slate-800 rounded"></div>
+            <div class="h-4 w-4/6 bg-slate-200 dark:bg-slate-800 rounded"></div>
+          </div>
+          <div class="h-10 w-full bg-slate-200 dark:bg-slate-800 rounded-xl pt-2"></div>
+        </div>
+      }
+    </div>
+  } @else {
+    <!-- Empty State -->
+    @if (filteredOrders().length === 0) {
+      <div class="flex flex-col items-center justify-center py-20 text-center bg-white dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/40 rounded-2xl p-6">
+        <div class="w-16 h-16 rounded-full bg-purple-50 dark:bg-purple-950/20 flex items-center justify-center text-purple-400 dark:text-purple-500 mb-4 group hover:scale-110 transition-transform duration-300">
+          <app-icon name="coffee" class="h-8 w-8" />
+        </div>
+        <h4 class="text-base font-extrabold text-slate-700 dark:text-slate-300">
+          Bếp sạch sẽ!
+        </h4>
+        <p class="text-sm text-slate-400 mt-1 max-w-sm">
+          Hiện không có đơn hàng nào trong danh sách lọc. Hãy nghỉ tay một chút nhé!
+        </p>
+      </div>
+    } @else {
+      <!-- Kanban Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        @for (order of filteredOrders(); track order.id) {
+          <!-- Order Card -->
+          <div
+            class="bg-white dark:bg-slate-900 border transition-all duration-300 rounded-2xl flex flex-col justify-between overflow-hidden shadow-sm"
+            [class.border-slate-200/40]="getMinutesElapsed(order.created_at) < 15 && order.status !== 'ready'"
+            [class.dark:border-slate-800/40]="getMinutesElapsed(order.created_at) < 15 && order.status !== 'ready'"
+            [class.border-rose-500/50]="getMinutesElapsed(order.created_at) >= 15 && order.status !== 'ready'"
+            [class.shadow-md]="getMinutesElapsed(order.created_at) >= 15 && order.status !== 'ready'"
+            [class.shadow-rose-500/5]="getMinutesElapsed(order.created_at) >= 15 && order.status !== 'ready'"
+            [class.border-emerald-500/40]="order.status === 'ready'"
+            [class.shadow-emerald-500/5]="order.status === 'ready'"
+          >
+            <!-- Card Header -->
+            <div class="p-4 pb-3 border-b border-slate-100 dark:border-slate-800/50 flex items-start justify-between gap-2">
+              <div>
+                <span class="text-[10px] font-bold font-mono text-purple-600 dark:text-purple-400 tracking-wide uppercase">
+                  #{{ order.order_code || order.id }}
+                </span>
+                <h4 class="text-lg font-black text-slate-800 dark:text-white mt-0.5 leading-tight">
+                  {{ order.table_number ? 'Bàn ' + order.table_number : 'Mang đi' }}
+                </h4>
+              </div>
+
+              <!-- Time Counter & Status Badge -->
+              <div class="flex flex-col items-end gap-1.5 shrink-0">
+                @if (order.status !== 'ready') {
+                  <span
+                    class="text-xs font-bold flex items-center gap-1.5 px-2 py-1 rounded-lg"
+                    [class.bg-rose-50]="getMinutesElapsed(order.created_at) >= 15"
+                    [class.text-rose-500]="getMinutesElapsed(order.created_at) >= 15"
+                    [class.bg-slate-50]="getMinutesElapsed(order.created_at) < 15"
+                    [class.dark:bg-slate-800/40]="getMinutesElapsed(order.created_at) < 15"
+                    [class.text-slate-500]="getMinutesElapsed(order.created_at) < 15"
+                    [class.dark:text-slate-400]="getMinutesElapsed(order.created_at) < 15"
+                  >
+                    <app-icon name="clock" class="h-3.5 w-3.5" />
+                    {{ getMinutesElapsed(order.created_at) }} ph
+                  </span>
+                } @else {
+                  <app-badge variant="success" size="sm" rounded="full" class="whitespace-nowrap font-extrabold uppercase text-[10px] tracking-wide">
+                    Đã xong
+                  </app-badge>
+                }
+
+                @if (getMinutesElapsed(order.created_at) >= 15 && order.status !== 'ready') {
+                  <span class="text-[9px] font-black text-rose-500 uppercase tracking-widest animate-pulse">
+                    Trễ đơn
+                  </span>
+                }
+              </div>
+            </div>
+
+            <!-- Card Body: Món nước -->
+            <div class="p-4 flex-1 space-y-4">
+              <div class="space-y-3">
+                @for (item of order.items; track item.id) {
+                  <div class="flex items-start gap-3">
+                    <!-- Quantity -->
+                    <span class="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-950/40 flex items-center justify-center text-sm font-black text-purple-600 dark:text-purple-400 shrink-0">
+                      {{ item.quantity }}x
+                    </span>
+
+                    <!-- Product Details -->
+                    <div class="flex-1 min-w-0 pt-0.5">
+                      <p class="text-sm font-bold text-slate-800 dark:text-slate-200 leading-tight">
+                        {{ item.product?.name }}
+                      </p>
+                      
+                      <!-- Variant & Note -->
+                      @if (item.variant?.name || item.note) {
+                        <div class="mt-1 flex flex-col gap-0.5">
+                          @if (item.variant?.name) {
+                            <span class="text-xs font-semibold text-slate-400 dark:text-slate-500">
+                              Loại: {{ item.variant?.name }}
+                            </span>
+                          }
+                          @if (item.note) {
+                            <span class="text-xs font-bold text-amber-600 dark:text-amber-500 bg-amber-500/5 px-2 py-0.5 rounded border border-amber-500/10 w-fit mt-1">
+                              * Ghi chú: {{ item.note }}
+                            </span>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Card Footer: Actions -->
+            <div class="p-4 pt-0 border-t border-transparent">
+              @if (order.status === 'pending') {
+                <button
+                  [disabled]="isUpdatingStatus() === order.id.toString()"
+                  (click)="updateStatus(order.id, 'preparing')"
+                  class="w-full h-11 bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] hover:scale-[1.02] active:scale-95 text-white font-extrabold text-sm rounded-xl transition-all shadow-md shadow-[var(--dynamic-primary)]/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+                >
+                  @if (isUpdatingStatus() === order.id.toString()) {
+                    <svg class="animate-spin h-4.5 w-4.5 text-white" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  } @else {
+                    <app-icon name="clock" class="h-4.5 w-4.5" />
+                    <span>Bắt đầu làm</span>
+                  }
+                </button>
+              } @else if (order.status === 'preparing') {
+                <button
+                  [disabled]="isUpdatingStatus() === order.id.toString()"
+                  (click)="updateStatus(order.id, 'ready')"
+                  class="w-full h-11 bg-emerald-500 hover:bg-emerald-600 hover:scale-[1.02] active:scale-95 text-white font-extrabold text-sm rounded-xl transition-all shadow-md shadow-emerald-500/25 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+                >
+                  @if (isUpdatingStatus() === order.id.toString()) {
+                    <svg class="animate-spin h-4.5 w-4.5 text-white" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  } @else {
+                    <app-icon name="check" class="h-4.5 w-4.5" />
+                    <span>Pha xong</span>
+                  }
+                </button>
+              } @else if (order.status === 'ready') {
+                <button
+                  [disabled]="isUpdatingStatus() === order.id.toString()"
+                  (click)="updateStatus(order.id, 'completed')"
+                  class="w-full h-11 border border-[var(--dynamic-primary)]/30 text-[var(--dynamic-primary)] hover:bg-[var(--dynamic-primary)]/5 active:scale-95 font-extrabold text-sm rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+                >
+                  @if (isUpdatingStatus() === order.id.toString()) {
+                    <svg class="animate-spin h-4.5 w-4.5 text-[var(--dynamic-primary)]" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  } @else {
+                    <app-icon name="check-circle" class="h-4.5 w-4.5" />
+                    <span>Đã phục vụ</span>
+                  }
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>

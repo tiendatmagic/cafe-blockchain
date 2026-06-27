@@ -23,7 +23,13 @@ class GetOrdersQueryHandler
 
         // Lọc trạng thái đơn hàng
         if ($status !== 'all' && !empty($status)) {
-            $queryBuilder->where('status', $status);
+            if ($status === 'kds') {
+                $queryBuilder->whereIn('status', ['pending', 'preparing', 'ready']);
+            } elseif (is_array($status)) {
+                $queryBuilder->whereIn('status', $status);
+            } else {
+                $queryBuilder->where('status', $status);
+            }
         }
 
         // Lọc trạng thái blockchain

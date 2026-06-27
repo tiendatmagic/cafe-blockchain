@@ -4,6 +4,7 @@ import { FeatureGuard } from './core/guards/feature.guard';
 export const routes: Routes = [
   { path: 'dashboard', canActivate: [FeatureGuard], data: { featureKey: 'enable_dashboard', featureName: 'Tổng quan' }, loadComponent: () => import('@features/dashboard/pages/dashboard/dashboard.component').then(m => m.DashboardComponent) },
   { path: 'pos', canActivate: [FeatureGuard], data: { featureKey: 'enable_pos', featureName: 'Bán hàng POS' }, loadComponent: () => import('@features/pos/pages/pos/pos.component').then(m => m.PosComponent) },
+  { path: 'kds', canActivate: [FeatureGuard], data: { featureKey: 'enable_pos', featureName: 'Nhà bếp & Pha chế' }, loadComponent: () => import('@features/kds/kds.component').then(m => m.KdsComponent) },
   { path: 'menu', canActivate: [FeatureGuard], data: { featureKey: 'enable_menu', featureName: 'Quản lý Thực đơn' }, loadComponent: () => import('@features/menu/menu.component').then(m => m.MenuComponent) },
   { path: 'orders', canActivate: [FeatureGuard], data: { featureKey: 'enable_orders', featureName: 'Đơn hàng' }, loadComponent: () => import('@features/orders/orders.component').then(m => m.OrdersComponent) },
   { path: 'settings', loadComponent: () => import('@features/settings/settings.component').then(m => m.SettingsComponent) },
