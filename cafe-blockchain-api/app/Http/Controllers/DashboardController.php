@@ -16,17 +16,32 @@ class DashboardController extends Controller
     {
         $storeOwner = $request->user()->getStoreOwnerAddress();
 
-        // Nhận bộ lọc thời gian từ query
+        // Nhận bộ lọc thời gian từ query và chuẩn hóa bảo mật
         $startDate = $request->query('start_date');
         $endDate = $request->query('end_date');
 
-        if (empty($startDate) || empty($endDate)) {
-            $startDate = Carbon::today()->subDays(6)->toDateString();
-            $endDate = Carbon::today()->toDateString();
+        try {
+            if (empty($startDate) || empty($endDate)) {
+                $startDateObj = Carbon::today()->subDays(6);
+                $endDateObj = Carbon::today();
+            } else {
+                $startDateObj = Carbon::parse($startDate);
+                $endDateObj = Carbon::parse($endDate);
+            }
+        } catch (\Exception $e) {
+            // Fallback an toàn nếu định dạng ngày tháng sai, tránh lộ lỗi hệ thống
+            $startDateObj = Carbon::today()->subDays(6);
+            $endDateObj = Carbon::today();
         }
 
-        $startDateObj = Carbon::parse($startDate);
-        $endDateObj = Carbon::parse($endDate);
+        // Giới hạn tối đa 365 ngày lọc để ngăn chặn tấn công Slow Query gây quá tải DB (DoS)
+        if ($startDateObj->diffInDays($endDateObj) > 365) {
+            $startDateObj = $endDateObj->copy()->subDays(365);
+        }
+
+        // Chuẩn hóa định dạng YYYY-MM-DD để bảo mật SQL và tối ưu Cache key
+        $startDate = $startDateObj->toDateString();
+        $endDate = $endDateObj->toDateString();
 
         $isHistory = $endDateObj->isBefore(Carbon::today());
         $ttl = $isHistory ? 604800 : 120; // 1 tuần (lịch sử) hoặc 2 phút (ngày hôm nay / động)
