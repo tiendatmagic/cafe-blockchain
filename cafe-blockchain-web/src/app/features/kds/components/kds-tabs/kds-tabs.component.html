@@ -1,0 +1,111 @@
+<div class="border-b border-slate-200/40 dark:border-slate-800/40 pb-px">
+  <div
+    #containerEl
+    class="relative flex items-center gap-6 overflow-x-auto no-scrollbar flex-nowrap"
+  >
+    <!-- Sliding Border Line Indicator -->
+    @if (orders && activeIndex !== -1) {
+      <div
+        class="absolute bottom-0 h-0.5 bg-[var(--dynamic-primary)] transition-all duration-300 ease-out z-10"
+        [style.width]="sliderStyle().width"
+        [style.left]="sliderStyle().left"
+      ></div>
+    }
+
+    <!-- Tất cả đơn -->
+    <button
+      #tabBtn
+      type="button"
+      (click)="setFilter('all')"
+      class="pb-3 text-sm font-bold transition-all cursor-pointer relative whitespace-nowrap"
+      [class.text-[var(--dynamic-primary)]]="activeFilter === 'all'"
+      [class.text-slate-400]="activeFilter !== 'all'"
+      [class.dark:text-slate-500]="activeFilter !== 'all'"
+      [class.hover:text-slate-600]="activeFilter !== 'all'"
+    >
+      Tất cả đơn
+      <span
+        [class]="
+          activeFilter === 'all'
+            ? 'bg-[var(--dynamic-primary)]/10 text-[var(--dynamic-primary)]'
+            : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+        "
+        class="ml-1.5 px-1.5 py-0.5 text-[10px] rounded-full font-extrabold transition-colors duration-300"
+      >
+        {{ orders.length }}
+      </span>
+    </button>
+
+    <!-- Chờ pha chế -->
+    <button
+      #tabBtn
+      type="button"
+      (click)="setFilter('pending')"
+      class="pb-3 text-sm font-bold transition-all cursor-pointer relative whitespace-nowrap"
+      [class.text-[var(--dynamic-primary)]]="activeFilter === 'pending'"
+      [class.text-slate-400]="activeFilter !== 'pending'"
+      [class.dark:text-slate-500]="activeFilter !== 'pending'"
+      [class.hover:text-slate-600]="activeFilter !== 'pending'"
+    >
+      Chờ pha chế
+      <span
+        [class]="
+          activeFilter === 'pending'
+            ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400'
+            : 'bg-amber-500/10 text-amber-600 dark:text-amber-500'
+        "
+        class="ml-1.5 px-1.5 py-0.5 text-[10px] rounded-full font-extrabold transition-colors duration-300"
+      >
+        {{ getPendingCount() }}
+      </span>
+    </button>
+
+    <!-- Đang pha chế -->
+    <button
+      #tabBtn
+      type="button"
+      (click)="setFilter('preparing')"
+      class="pb-3 text-sm font-bold transition-all cursor-pointer relative whitespace-nowrap"
+      [class.text-[var(--dynamic-primary)]]="activeFilter === 'preparing'"
+      [class.text-slate-400]="activeFilter !== 'preparing'"
+      [class.dark:text-slate-500]="activeFilter !== 'preparing'"
+      [class.hover:text-slate-600]="activeFilter !== 'preparing'"
+    >
+      Đang pha chế
+      <span
+        [class]="
+          activeFilter === 'preparing'
+            ? 'bg-purple-500/20 text-purple-600 dark:text-purple-400'
+            : 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
+        "
+        class="ml-1.5 px-1.5 py-0.5 text-[10px] rounded-full font-extrabold transition-colors duration-300"
+      >
+        {{ getPreparingCount() }}
+      </span>
+    </button>
+
+    <!-- Chờ phục vụ (Xong) -->
+    <button
+      #tabBtn
+      type="button"
+      (click)="setFilter('ready')"
+      class="pb-3 text-sm font-bold transition-all cursor-pointer relative whitespace-nowrap"
+      [class.text-[var(--dynamic-primary)]]="activeFilter === 'ready'"
+      [class.text-slate-400]="activeFilter !== 'ready'"
+      [class.dark:text-slate-500]="activeFilter !== 'ready'"
+      [class.hover:text-slate-600]="activeFilter !== 'ready'"
+    >
+      Chờ phục vụ (Xong)
+      <span
+        [class]="
+          activeFilter === 'ready'
+            ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+            : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-500'
+        "
+        class="ml-1.5 px-1.5 py-0.5 text-[10px] rounded-full font-extrabold transition-colors duration-300"
+      >
+        {{ getReadyCount() }}
+      </span>
+    </button>
+  </div>
+</div>

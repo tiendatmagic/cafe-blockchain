@@ -8,11 +8,12 @@ import { StateService } from '@core/services/state.service';
 import { ToastService } from '@core/services/toast.service';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { BadgeComponent } from '@shared/components/badge/badge.component';
+import { KdsTabsComponent } from './components/kds-tabs/kds-tabs.component';
 
 @Component({
   selector: 'app-kds',
   standalone: true,
-  imports: [CommonModule, RouterModule, IconComponent, BadgeComponent],
+  imports: [CommonModule, RouterModule, IconComponent, BadgeComponent, KdsTabsComponent],
   templateUrl: './kds.component.html',
   styles: [`
     :host {

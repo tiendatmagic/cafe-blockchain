@@ -35,74 +35,12 @@
     </div>
   </div>
 
-  <!-- Filters Tab Group styled phẳng -->
-  <div class="border-b border-slate-200/40 dark:border-slate-800/40 pb-px">
-    <div class="flex items-center gap-6 overflow-x-auto no-scrollbar">
-      <button
-        (click)="setFilter('all')"
-        class="pb-3 text-sm font-bold border-b-2 transition-all cursor-pointer relative whitespace-nowrap"
-        [class.border-[var(--dynamic-primary)]]="filterStatus() === 'all'"
-        [class.text-[var(--dynamic-primary)]]="filterStatus() === 'all'"
-        [class.border-transparent]="filterStatus() !== 'all'"
-        [class.text-slate-400]="filterStatus() !== 'all'"
-        [class.dark:text-slate-500]="filterStatus() !== 'all'"
-        [class.hover:text-slate-600]="filterStatus() !== 'all'"
-      >
-        Tất cả đơn
-        <span class="ml-1.5 px-1.5 py-0.5 text-[10px] rounded-full bg-slate-100 dark:bg-slate-800 font-extrabold text-slate-500 dark:text-slate-400">
-          {{ orders().length }}
-        </span>
-      </button>
-
-      <button
-        (click)="setFilter('pending')"
-        class="pb-3 text-sm font-bold border-b-2 transition-all cursor-pointer relative whitespace-nowrap"
-        [class.border-[var(--dynamic-primary)]]="filterStatus() === 'pending'"
-        [class.text-[var(--dynamic-primary)]]="filterStatus() === 'pending'"
-        [class.border-transparent]="filterStatus() !== 'pending'"
-        [class.text-slate-400]="filterStatus() !== 'pending'"
-        [class.dark:text-slate-500]="filterStatus() !== 'pending'"
-        [class.hover:text-slate-600]="filterStatus() !== 'pending'"
-      >
-        Chờ pha chế
-        <span class="ml-1.5 px-1.5 py-0.5 text-[10px] rounded-full bg-amber-500/10 font-extrabold text-amber-600 dark:text-amber-500">
-          {{ orders().filter(o => o.status === 'pending').length }}
-        </span>
-      </button>
-
-      <button
-        (click)="setFilter('preparing')"
-        class="pb-3 text-sm font-bold border-b-2 transition-all cursor-pointer relative whitespace-nowrap"
-        [class.border-[var(--dynamic-primary)]]="filterStatus() === 'preparing'"
-        [class.text-[var(--dynamic-primary)]]="filterStatus() === 'preparing'"
-        [class.border-transparent]="filterStatus() !== 'preparing'"
-        [class.text-slate-400]="filterStatus() !== 'preparing'"
-        [class.dark:text-slate-500]="filterStatus() !== 'preparing'"
-        [class.hover:text-slate-600]="filterStatus() !== 'preparing'"
-      >
-        Đang pha chế
-        <span class="ml-1.5 px-1.5 py-0.5 text-[10px] rounded-full bg-purple-500/10 font-extrabold text-purple-600 dark:text-purple-400">
-          {{ orders().filter(o => o.status === 'preparing').length }}
-        </span>
-      </button>
-
-      <button
-        (click)="setFilter('ready')"
-        class="pb-3 text-sm font-bold border-b-2 transition-all cursor-pointer relative whitespace-nowrap"
-        [class.border-[var(--dynamic-primary)]]="filterStatus() === 'ready'"
-        [class.text-[var(--dynamic-primary)]]="filterStatus() === 'ready'"
-        [class.border-transparent]="filterStatus() !== 'ready'"
-        [class.text-slate-400]="filterStatus() !== 'ready'"
-        [class.dark:text-slate-500]="filterStatus() !== 'ready'"
-        [class.hover:text-slate-600]="filterStatus() !== 'ready'"
-      >
-        Chờ phục vụ (Xong)
-        <span class="ml-1.5 px-1.5 py-0.5 text-[10px] rounded-full bg-emerald-500/10 font-extrabold text-emerald-600 dark:text-emerald-500">
-          {{ orders().filter(o => o.status === 'ready').length }}
-        </span>
-      </button>
-    </div>
-  </div>
+  <!-- Filters Tab Group -->
+  <app-kds-tabs
+    [orders]="orders()"
+    [activeFilter]="filterStatus()"
+    (filterChange)="setFilter($event)"
+  ></app-kds-tabs>
 
   <!-- Loading Skeleton -->
   @if (loading()) {
