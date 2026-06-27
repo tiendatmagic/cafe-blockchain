@@ -88,6 +88,23 @@ class DashboardController extends Controller
                 ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
                 ->sum('total_amount');
 
+            $periodOrdersCount = Order::where('store_owner_address', $storeOwner)
+                ->where('status', 'completed')
+                ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+                ->count();
+
+            $periodWeb3Revenue = Order::where('store_owner_address', $storeOwner)
+                ->where('status', 'completed')
+                ->where('blockchain_status', 'success')
+                ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+                ->sum('total_amount');
+
+            $periodPendingWeb3Count = Order::where('store_owner_address', $storeOwner)
+                ->where('status', 'completed')
+                ->whereIn('blockchain_status', ['none', 'pending'])
+                ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+                ->count();
+
             $prevEndDate = $start->copy()->subDay()->toDateString();
             $prevStartDate = $start->copy()->subDays($daysDiff + 1)->toDateString();
             $prevPeriodRevenue = Order::where('store_owner_address', $storeOwner)
@@ -320,7 +337,11 @@ class DashboardController extends Controller
                 'today_revenue_growth' => round($todayRevenueGrowth, 1),
                 'total_revenue' => (float)$totalRevenue,
                 'total_orders_count' => $totalOrdersCount,
+                'period_revenue' => (float)$periodRevenue,
+                'period_orders_count' => $periodOrdersCount,
                 'period_revenue_growth' => round($periodRevenueGrowth, 1),
+                'period_web3_revenue' => (float)$periodWeb3Revenue,
+                'period_pending_web3_count' => $periodPendingWeb3Count,
                 'web3_revenue' => (float)$web3Revenue,
                 'pending_web3_count' => $pendingWeb3Count,
                 'weekly_chart' => $weeklyChart,

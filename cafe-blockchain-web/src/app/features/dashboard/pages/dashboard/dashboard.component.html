@@ -253,7 +253,7 @@
         <div class="space-y-6">
           <!-- Grid 4 thẻ thống kê số liệu thật -->
           <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-            <!-- Doanh thu hôm nay -->
+            <!-- Doanh thu trong kỳ -->
             <div
               app-card
               [interactive]="true"
@@ -261,26 +261,26 @@
             >
               <div class="space-y-2 min-w-0">
                 <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
-                  >Doanh thu hôm nay</span
+                  >{{ getPeriodRevenueLabel() }}</span
                 >
                 <h4 class="text-2xl font-black text-slate-800 dark:text-white truncate">
-                  {{ dashboardData()?.today_revenue || 0 | vnd }}
+                  {{ dashboardData()?.period_revenue || 0 | vnd }}
                 </h4>
                 <div class="flex flex-wrap items-center gap-2 text-xs font-bold">
                   <span class="text-emerald-500 flex items-center gap-1 shrink-0">
-                    ↗ {{ dashboardData()?.today_orders_count || 0 }} đơn mới
+                    ↗ {{ dashboardData()?.period_orders_count || 0 }} {{ getPeriodOrdersLabel() }}
                   </span>
                   @if (
-                    $safeNavigationMigration(dashboardData()?.today_revenue_growth) !== undefined
+                    $safeNavigationMigration(dashboardData()?.period_revenue_growth) !== undefined
                   ) {
                     <span
-                      [class.text-emerald-500]="dashboardData()?.today_revenue_growth >= 0"
-                      [class.text-rose-500]="dashboardData()?.today_revenue_growth < 0"
+                      [class.text-emerald-500]="dashboardData()?.period_revenue_growth >= 0"
+                      [class.text-rose-500]="dashboardData()?.period_revenue_growth < 0"
                       class="flex items-center gap-0.5 shrink-0"
                     >
-                      {{ dashboardData()?.today_revenue_growth >= 0 ? '↗' : '↘' }}
-                      {{ dashboardData()?.today_revenue_growth >= 0 ? '+' : ''
-                      }}{{ dashboardData()?.today_revenue_growth }}%
+                      {{ dashboardData()?.period_revenue_growth >= 0 ? '↗' : '↘' }}
+                      {{ dashboardData()?.period_revenue_growth >= 0 ? '+' : ''
+                      }}{{ dashboardData()?.period_revenue_growth }}%
                     </span>
                   }
                 </div>
@@ -339,7 +339,7 @@
               </div>
             </div>
 
-            <!-- Doanh thu Web3 (tích lũy blockchain) -->
+            <!-- Doanh thu Web3 trong kỳ -->
             <div
               app-card
               [interactive]="true"
@@ -347,18 +347,18 @@
             >
               <div class="space-y-2 min-w-0">
                 <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
-                  >Doanh thu Web3</span
+                  >{{ getPeriodWeb3RevenueLabel() }}</span
                 >
                 <h4
                   class="text-xl font-extrabold text-purple-600 dark:text-purple-400 leading-snug truncate"
                 >
-                  {{ ((dashboardData()?.web3_revenue || 0) / nativeTokenPriceVND()).toFixed(5) }}
+                  {{ ((dashboardData()?.period_web3_revenue || 0) / nativeTokenPriceVND()).toFixed(5) }}
                   <span class="text-xs">{{ web3Service.nativeTokenSymbol() }}</span>
                 </h4>
                 <span
                   class="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate"
                 >
-                  {{ dashboardData()?.web3_revenue || 0 | vnd }} tương đương
+                  {{ dashboardData()?.period_web3_revenue || 0 | vnd }} tương đương
                 </span>
               </div>
               <div
@@ -372,7 +372,7 @@
               </div>
             </div>
 
-            <!-- Đơn chờ Web3 -->
+            <!-- Đơn chờ Web3 trong kỳ -->
             <div
               app-card
               [interactive]="true"
@@ -380,10 +380,10 @@
             >
               <div class="space-y-2 min-w-0">
                 <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider"
-                  >Đơn chờ Web3</span
+                  >{{ getPeriodWeb3PendingLabel() }}</span
                 >
                 <h4 class="text-2xl font-black text-rose-500 truncate">
-                  {{ dashboardData()?.pending_web3_count || 0 }}
+                  {{ dashboardData()?.period_pending_web3_count || 0 }}
                   <span class="text-xs font-bold text-slate-400">đơn</span>
                 </h4>
                 <span class="text-xs font-medium text-slate-500 dark:text-slate-400 block truncate"

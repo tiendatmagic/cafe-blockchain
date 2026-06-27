@@ -278,4 +278,59 @@ export class DashboardComponent implements OnInit {
       this.lowStockCurrentPage = page;
     }
   }
+
+  public getPeriodRevenueLabel(): string {
+    switch (this.activeDatePreset) {
+      case 'today':
+        return 'Doanh thu hôm nay';
+      case '7days':
+        return 'Doanh thu 7 ngày qua';
+      case '30days':
+        return 'Doanh thu 30 ngày qua';
+      case 'thisMonth':
+        return 'Doanh thu tháng này';
+      case 'custom':
+        return 'Doanh thu tùy chọn';
+      default:
+        return 'Doanh thu trong kỳ';
+    }
+  }
+
+  public getPeriodOrdersLabel(): string {
+    return this.activeDatePreset === 'today' ? 'đơn mới' : 'đơn hoàn thành';
+  }
+
+  public getPeriodWeb3RevenueLabel(): string {
+    switch (this.activeDatePreset) {
+      case 'today':
+        return 'Doanh thu Web3 hôm nay';
+      case '7days':
+        return 'Doanh thu Web3 7 ngày qua';
+      case '30days':
+        return 'Doanh thu Web3 30 ngày qua';
+      case 'thisMonth':
+        return 'Doanh thu Web3 tháng này';
+      case 'custom':
+        return 'Doanh thu Web3 tùy chọn';
+      default:
+        return 'Doanh thu Web3 trong kỳ';
+    }
+  }
+
+  public getPeriodWeb3PendingLabel(): string {
+    switch (this.activeDatePreset) {
+      case 'today':
+        return 'Đơn chờ Web3 hôm nay';
+      case '7days':
+        return 'Đơn chờ Web3 7 ngày qua';
+      case '30days':
+        return 'Đơn chờ Web3 30 ngày qua';
+      case 'thisMonth':
+        return 'Đơn chờ Web3 tháng này';
+      case 'custom':
+        return 'Đơn chờ Web3 tùy chọn';
+      default:
+        return 'Đơn chờ Web3 trong kỳ';
+    }
+  }
 }
