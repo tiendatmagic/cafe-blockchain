@@ -27,7 +27,7 @@
             }}</span>
           </div>
           <div
-            class="col-span-2 pt-2 border-t border-slate-200/50 dark:border-slate-800"
+            class="pt-2 border-t border-slate-200/50 dark:border-slate-800"
           >
             <span
               class="text-slate-400 font-bold block uppercase tracking-wider text-xs"
@@ -38,6 +38,36 @@
               >{{
                 data.order?.created_at | date: 'dd/MM/yyyy HH:mm:ss'
               }}</span>
+          </div>
+          <div
+            class="pt-2 border-t border-slate-200/50 dark:border-slate-800"
+          >
+            <span
+              class="text-slate-400 font-bold block uppercase tracking-wider text-xs mb-1.5"
+              >TRẠNG THÁI ĐƠN</span
+            >
+            <div class="flex items-center">
+              @if (data.order?.is_verified === false) {
+                <app-badge variant="danger" [pulse]="true" class="!font-black text-[10px] uppercase">
+                  <app-icon
+                    name="warning"
+                    class="h-3.5 w-3.5 text-amber-500 shrink-0 mr-1"
+                    strokeWidth="2.5"
+                  />
+                  <span>DB bị can thiệp!</span>
+                </app-badge>
+              } @else if (data.order?.status === 'completed') {
+                <app-badge variant="success" class="!font-black text-[10px] uppercase">Thành công</app-badge>
+              } @else if (data.order?.status === 'cancelled') {
+                <app-badge variant="danger" class="!font-black text-[10px] uppercase">Đã hủy</app-badge>
+              } @else if (data.order?.status === 'preparing') {
+                <app-badge variant="info" [pulse]="true" class="!font-black text-[10px] uppercase">Đang chuẩn bị</app-badge>
+              } @else if (data.order?.status === 'ready') {
+                <app-badge variant="success" [pulse]="true" class="!font-black text-[10px] uppercase">Chờ phục vụ</app-badge>
+              } @else {
+                <app-badge variant="warning" [pulse]="true" class="!font-black text-[10px] uppercase">Chờ xác nhận</app-badge>
+              }
+            </div>
           </div>
           @if (data.order?.customer) {
             <div
