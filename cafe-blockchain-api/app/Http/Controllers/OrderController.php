@@ -137,6 +137,17 @@ class OrderController extends Controller
             'status' => 'required|string|in:completed,cancelled,pending,preparing,ready',
         ]);
 
+        $user = $request->user();
+
+        // Prevent staff with only 'kds' permission from completing or cancelling orders
+        if (in_array($validated['status'], ['completed', 'cancelled'])) {
+            if (!$user->hasPermission('pos') && !$user->hasPermission('orders')) {
+                return response()->json([
+                    'message' => 'You do not have permission to complete or cancel orders.'
+                ], 403);
+            }
+        }
+
         try {
             $order = $command->execute($storeOwner, $id, $validated['status']);
 

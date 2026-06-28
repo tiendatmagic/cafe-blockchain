@@ -201,21 +201,12 @@
                   }
                 </button>
               } @else if (order.status === 'ready') {
-                <button
-                  [disabled]="isUpdatingStatus() === order.id.toString()"
-                  (click)="updateStatus(order.id, 'completed')"
-                  class="w-full h-11 border border-[var(--dynamic-primary)]/30 text-[var(--dynamic-primary)] hover:bg-[var(--dynamic-primary)]/5 active:scale-95 font-extrabold text-sm rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+                <div
+                  class="w-full h-11 bg-slate-50 dark:bg-slate-800/30 border border-slate-200/20 dark:border-slate-800/20 text-slate-500 dark:text-slate-400 font-extrabold text-sm rounded-xl flex items-center justify-center gap-2 select-none"
                 >
-                  @if (isUpdatingStatus() === order.id.toString()) {
-                    <svg class="animate-spin h-4.5 w-4.5 text-[var(--dynamic-primary)]" fill="none" viewBox="0 0 24 24">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                  } @else {
-                    <app-icon name="check-circle" class="h-4.5 w-4.5" />
-                    <span>Đã phục vụ</span>
-                  }
-                </button>
+                  <app-icon name="check-circle" class="h-4.5 w-4.5 text-emerald-500 animate-pulse" />
+                  <span>Chờ phục vụ bê đồ</span>
+                </div>
               }
             </div>
           </div>
