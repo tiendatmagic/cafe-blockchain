@@ -9,11 +9,12 @@ import { ToastService } from '@core/services/toast.service';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { BadgeComponent } from '@shared/components/badge/badge.component';
 import { KdsTabsComponent } from './components/kds-tabs/kds-tabs.component';
+import { PaginationComponent } from '@shared/components/pagination/pagination.component';
 
 @Component({
   selector: 'app-kds',
   standalone: true,
-  imports: [CommonModule, RouterModule, IconComponent, BadgeComponent, KdsTabsComponent],
+  imports: [CommonModule, RouterModule, IconComponent, BadgeComponent, KdsTabsComponent, PaginationComponent],
   templateUrl: './kds.component.html',
   styles: [`
     :host {
@@ -32,6 +33,10 @@ export class KdsComponent implements OnInit, OnDestroy {
   public readonly isUpdatingStatus = signal<string | null>(null);
   public readonly currentTime = signal<number>(Date.now());
 
+  // Phân trang KDS ở client
+  public readonly kdsCurrentPage = signal<number>(1);
+  public readonly kdsItemsPerPage = 10; // Hiển thị tối đa 10 đơn trên 1 trang KDS
+
   private pollingSubscription?: Subscription;
   private timerSubscription?: Subscription;
 
@@ -43,6 +48,28 @@ export class KdsComponent implements OnInit, OnDestroy {
       return list;
     }
     return list.filter((o) => o.status === status);
+  });
+
+  // Danh sách đơn hàng đã phân trang để hiển thị lên giao diện KDS
+  public readonly pagedOrders = computed(() => {
+    const list = this.filteredOrders();
+    let page = this.kdsCurrentPage();
+    const limit = this.kdsItemsPerPage;
+    const totalPages = Math.ceil(list.length / limit) || 1;
+
+    // Nếu trang hiện tại lớn hơn tổng số trang thực tế (do đơn hàng giảm đi), đưa về trang cuối
+    if (page > totalPages) {
+      page = totalPages;
+      setTimeout(() => this.kdsCurrentPage.set(totalPages), 0);
+    }
+
+    const startIndex = (page - 1) * limit;
+    return list.slice(startIndex, startIndex + limit);
+  });
+
+  // Tính tổng số trang dựa trên danh sách đơn đã lọc
+  public readonly kdsTotalPages = computed(() => {
+    return Math.ceil(this.filteredOrders().length / this.kdsItemsPerPage) || 1;
   });
 
   // Đếm số lượng đơn đang chờ chế biến (pending + preparing)
@@ -108,6 +135,7 @@ export class KdsComponent implements OnInit, OnDestroy {
   // Thay đổi bộ lọc hiển thị
   public setFilter(status: 'all' | 'pending' | 'preparing' | 'ready') {
     this.filterStatus.set(status);
+    this.kdsCurrentPage.set(1); // Reset về trang 1 khi đổi bộ lọc
   }
 
   // Cập nhật trạng thái đơn hàng
