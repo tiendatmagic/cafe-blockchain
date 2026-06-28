@@ -235,6 +235,14 @@ class StaffController extends Controller
                             'financials' => true, 'customers' => true, 'debts' => true, 'inventory' => true,
                             'tables' => false, 'reports' => true, 'settings' => false, 'staffs' => false, 'shifts' => true, 'tax' => true, 'kds' => false
                         ]
+                    ],
+                    [
+                        'name' => 'Pha chế',
+                        'permissions' => [
+                            'dashboard' => false, 'pos' => false, 'menu' => false, 'orders' => false,
+                            'financials' => false, 'customers' => false, 'debts' => false, 'inventory' => false,
+                            'tables' => false, 'reports' => false, 'settings' => false, 'staffs' => false, 'shifts' => true, 'tax' => false, 'kds' => true
+                        ]
                     ]
                 ];
 
@@ -378,6 +386,14 @@ class StaffController extends Controller
                     'dashboard' => true, 'pos' => false, 'menu' => false, 'orders' => false,
                     'financials' => true, 'customers' => true, 'debts' => true, 'inventory' => true,
                     'tables' => false, 'reports' => true, 'settings' => false, 'staffs' => false, 'shifts' => true, 'tax' => true, 'kds' => false
+                ]
+            ],
+            [
+                'name' => 'Pha chế',
+                'permissions' => [
+                    'dashboard' => false, 'pos' => false, 'menu' => false, 'orders' => false,
+                    'financials' => false, 'customers' => false, 'debts' => false, 'inventory' => false,
+                    'tables' => false, 'reports' => false, 'settings' => false, 'staffs' => false, 'shifts' => true, 'tax' => false, 'kds' => true
                 ]
             ]
         ];
