@@ -3,7 +3,9 @@
   <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
     <div>
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/30 flex items-center justify-center text-[var(--dynamic-primary)] shrink-0">
+        <div
+          class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/30 flex items-center justify-center text-[var(--dynamic-primary)] shrink-0"
+        >
           <app-icon name="coffee" class="h-6 w-6" />
         </div>
         <div>
@@ -19,7 +21,9 @@
 
     <!-- Stats & Actions -->
     <div class="flex items-center gap-3">
-      <div class="px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/40 rounded-xl flex items-center gap-2.5">
+      <div
+        class="px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/40 rounded-xl flex items-center gap-2.5"
+      >
         <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
         <span class="text-sm font-bold text-slate-700 dark:text-slate-300">
           Đang chờ: {{ queueCount() }} đơn
@@ -46,7 +50,9 @@
   @if (loading()) {
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       @for (i of [1, 2, 3, 4, 5, 6, 7, 8]; track i) {
-        <div class="bg-white dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/40 rounded-2xl p-5 space-y-4 animate-pulse">
+        <div
+          class="bg-white dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/40 rounded-2xl p-5 space-y-4 animate-pulse"
+        >
           <div class="flex items-center justify-between">
             <div class="h-6 w-24 bg-slate-200 dark:bg-slate-800 rounded-lg"></div>
             <div class="h-5 w-12 bg-slate-200 dark:bg-slate-800 rounded-lg"></div>
@@ -63,13 +69,15 @@
   } @else {
     <!-- Empty State -->
     @if (filteredOrders().length === 0) {
-      <div class="flex flex-col items-center justify-center py-20 text-center bg-white dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/40 rounded-2xl p-6">
-        <div class="w-16 h-16 rounded-full bg-purple-50 dark:bg-purple-950/20 flex items-center justify-center text-purple-400 dark:text-purple-500 mb-4 group hover:scale-110 transition-transform duration-300">
+      <div
+        class="flex flex-col items-center justify-center py-20 text-center bg-white dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/40 rounded-2xl p-6"
+      >
+        <div
+          class="w-16 h-16 rounded-full bg-purple-50 dark:bg-purple-950/20 flex items-center justify-center text-purple-400 dark:text-purple-500 mb-4 group hover:scale-110 transition-transform duration-300"
+        >
           <app-icon name="coffee" class="h-8 w-8" />
         </div>
-        <h4 class="text-base font-extrabold text-slate-700 dark:text-slate-300">
-          Bếp sạch sẽ!
-        </h4>
+        <h4 class="text-base font-extrabold text-slate-700 dark:text-slate-300">Bếp sạch sẽ!</h4>
         <p class="text-sm text-slate-400 mt-1 max-w-sm">
           Hiện không có đơn hàng nào trong danh sách lọc. Hãy nghỉ tay một chút nhé!
         </p>
@@ -81,18 +89,32 @@
           <!-- Order Card -->
           <div
             class="bg-white dark:bg-slate-900 border transition-all duration-300 rounded-2xl flex flex-col justify-between overflow-hidden shadow-sm"
-            [class.border-slate-200/40]="getMinutesElapsed(order.created_at) < 15 && order.status !== 'ready'"
-            [class.dark:border-slate-800/40]="getMinutesElapsed(order.created_at) < 15 && order.status !== 'ready'"
-            [class.border-rose-500/50]="getMinutesElapsed(order.created_at) >= 15 && order.status !== 'ready'"
-            [class.shadow-md]="getMinutesElapsed(order.created_at) >= 15 && order.status !== 'ready'"
-            [class.shadow-rose-500/5]="getMinutesElapsed(order.created_at) >= 15 && order.status !== 'ready'"
+            [class.border-slate-200/40]="
+              getMinutesElapsed(order.created_at) < 15 && order.status !== 'ready'
+            "
+            [class.dark:border-slate-800/40]="
+              getMinutesElapsed(order.created_at) < 15 && order.status !== 'ready'
+            "
+            [class.border-rose-500/50]="
+              getMinutesElapsed(order.created_at) >= 15 && order.status !== 'ready'
+            "
+            [class.shadow-md]="
+              getMinutesElapsed(order.created_at) >= 15 && order.status !== 'ready'
+            "
+            [class.shadow-rose-500/5]="
+              getMinutesElapsed(order.created_at) >= 15 && order.status !== 'ready'
+            "
             [class.border-emerald-500/40]="order.status === 'ready'"
             [class.shadow-emerald-500/5]="order.status === 'ready'"
           >
             <!-- Card Header -->
-            <div class="p-4 pb-3 border-b border-slate-100 dark:border-slate-800/50 flex items-start justify-between gap-2">
+            <div
+              class="p-4 pb-3 border-b border-slate-100 dark:border-slate-800/50 flex items-start justify-between gap-2"
+            >
               <div>
-                <span class="text-[10px] font-bold font-mono text-purple-600 dark:text-purple-400 tracking-wide uppercase">
+                <span
+                  class="text-[10px] font-bold font-mono text-purple-600 dark:text-purple-400 tracking-wide uppercase"
+                >
                   #{{ order.order_code || order.id }}
                 </span>
                 <h4 class="text-lg font-black text-slate-800 dark:text-white mt-0.5 leading-tight">
@@ -116,13 +138,20 @@
                     {{ getMinutesElapsed(order.created_at) }} ph
                   </span>
                 } @else {
-                  <app-badge variant="success" size="sm" rounded="full" class="whitespace-nowrap font-extrabold uppercase text-[10px] tracking-wide">
+                  <app-badge
+                    variant="success"
+                    size="sm"
+                    rounded="full"
+                    class="whitespace-nowrap font-extrabold uppercase text-[10px] tracking-wide"
+                  >
                     Đã xong
                   </app-badge>
                 }
 
                 @if (getMinutesElapsed(order.created_at) >= 15 && order.status !== 'ready') {
-                  <span class="text-[9px] font-black text-rose-500 uppercase tracking-widest animate-pulse">
+                  <span
+                    class="text-[9px] font-black text-rose-500 uppercase tracking-widest animate-pulse"
+                  >
                     Trễ đơn
                   </span>
                 }
@@ -135,7 +164,9 @@
                 @for (item of order.items; track item.id) {
                   <div class="flex items-start gap-3">
                     <!-- Quantity -->
-                    <span class="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-950/40 flex items-center justify-center text-sm font-black text-purple-600 dark:text-purple-400 shrink-0">
+                    <span
+                      class="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-950/40 flex items-center justify-center text-sm font-black text-purple-600 dark:text-purple-400 shrink-0"
+                    >
                       {{ item.quantity }}x
                     </span>
 
@@ -144,7 +175,7 @@
                       <p class="text-sm font-bold text-slate-800 dark:text-slate-200 leading-tight">
                         {{ item.product?.name }}
                       </p>
-                      
+
                       <!-- Variant & Note -->
                       @if (item.variant?.name || item.note) {
                         <div class="mt-1 flex flex-col gap-0.5">
@@ -154,7 +185,9 @@
                             </span>
                           }
                           @if (item.note) {
-                            <span class="text-xs font-bold text-amber-600 dark:text-amber-500 bg-amber-500/5 px-2 py-0.5 rounded border border-amber-500/10 w-fit mt-1">
+                            <span
+                              class="text-xs font-bold text-amber-600 dark:text-amber-500 bg-amber-500/5 px-2 py-0.5 rounded border border-amber-500/10 w-fit mt-1"
+                            >
                               * Ghi chú: {{ item.note }}
                             </span>
                           }
@@ -170,41 +203,38 @@
             <div class="p-4 pt-0 border-t border-transparent">
               @if (order.status === 'pending') {
                 <button
-                  [disabled]="isUpdatingStatus() === order.id.toString()"
+                  app-button
+                  variant="primary"
+                  [loading]="isUpdatingStatus() === order.id.toString()"
                   (click)="updateStatus(order.id, 'preparing')"
-                  class="w-full h-11 bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] hover:scale-[1.02] active:scale-95 text-white font-extrabold text-sm rounded-xl transition-all shadow-md shadow-[var(--dynamic-primary)]/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+                  class="w-full flex items-center justify-center gap-2"
                 >
-                  @if (isUpdatingStatus() === order.id.toString()) {
-                    <svg class="animate-spin h-4.5 w-4.5 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                  } @else {
+                  @if (isUpdatingStatus() !== order.id.toString()) {
                     <app-icon name="clock" class="h-4.5 w-4.5" />
-                    <span>Bắt đầu làm</span>
                   }
+                  <span>Bắt đầu làm</span>
                 </button>
               } @else if (order.status === 'preparing') {
                 <button
-                  [disabled]="isUpdatingStatus() === order.id.toString()"
+                  app-button
+                  variant="success"
+                  [loading]="isUpdatingStatus() === order.id.toString()"
                   (click)="updateStatus(order.id, 'ready')"
-                  class="w-full h-11 bg-emerald-500 hover:bg-emerald-600 hover:scale-[1.02] active:scale-95 text-white font-extrabold text-sm rounded-xl transition-all shadow-md shadow-emerald-500/25 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+                  class="w-full h-11 !font-extrabold !text-sm !rounded-xl shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2"
                 >
-                  @if (isUpdatingStatus() === order.id.toString()) {
-                    <svg class="animate-spin h-4.5 w-4.5 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                  } @else {
+                  @if (isUpdatingStatus() !== order.id.toString()) {
                     <app-icon name="check" class="h-4.5 w-4.5" />
-                    <span>Pha xong</span>
                   }
+                  <span>Pha xong</span>
                 </button>
               } @else if (order.status === 'ready') {
                 <div
                   class="w-full h-11 bg-slate-50 dark:bg-slate-800/30 border border-slate-200/20 dark:border-slate-800/20 text-slate-500 dark:text-slate-400 font-extrabold text-sm rounded-xl flex items-center justify-center gap-2 select-none"
                 >
-                  <app-icon name="check-circle" class="h-4.5 w-4.5 text-emerald-500 animate-pulse" />
+                  <app-icon
+                    name="check-circle"
+                    class="h-4.5 w-4.5 text-emerald-500 animate-pulse"
+                  />
                   <span>Chờ phục vụ bê đồ</span>
                 </div>
               }

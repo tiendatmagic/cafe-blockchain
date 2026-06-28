@@ -10,11 +10,12 @@ import { IconComponent } from '@shared/components/icon/icon.component';
 import { BadgeComponent } from '@shared/components/badge/badge.component';
 import { KdsTabsComponent } from './components/kds-tabs/kds-tabs.component';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
+import { ButtonComponent } from '@shared/components/button/button.component';
 
 @Component({
   selector: 'app-kds',
   standalone: true,
-  imports: [CommonModule, RouterModule, IconComponent, BadgeComponent, KdsTabsComponent, PaginationComponent],
+  imports: [CommonModule, RouterModule, IconComponent, BadgeComponent, KdsTabsComponent, PaginationComponent, ButtonComponent],
   templateUrl: './kds.component.html',
   styles: [`
     :host {
