@@ -219,6 +219,16 @@
           <p class="text-xs text-slate-400 dark:text-slate-500 font-bold">
             Thu ngân đang chuẩn bị món hoặc xử lý thanh toán cho bạn tại quầy.
           </p>
+        } @else if (orderStatus() === 'ready') {
+          <h2 class="text-xl font-black text-emerald-600 dark:text-emerald-400 mb-2">
+            Đã Pha Chế Xong!
+          </h2>
+          <p class="text-xs font-bold text-slate-600 dark:text-slate-300 leading-relaxed mb-1">
+            Món nước của bạn đã được chuẩn bị xong tại quầy pha chế.
+          </p>
+          <p class="text-xs text-slate-400 dark:text-slate-500 font-bold">
+            Vui lòng chờ nhân viên phục vụ bê nước ra bàn cho bạn nhé!
+          </p>
         } @else if (orderStatus() === 'cancelled') {
           <h2 class="text-xl font-black text-rose-600 dark:text-rose-400 mb-2">
             Đơn Hàng Đã Bị Hủy!

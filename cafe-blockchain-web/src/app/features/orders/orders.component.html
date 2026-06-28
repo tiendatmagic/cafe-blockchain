@@ -181,6 +181,8 @@
                 <app-badge variant="danger">Đã hủy</app-badge>
               } @else if (row.status === 'preparing') {
                 <app-badge variant="info" [pulse]="true">Đang chuẩn bị</app-badge>
+              } @else if (row.status === 'ready') {
+                <app-badge variant="success" [pulse]="true">Chờ phục vụ</app-badge>
               } @else {
                 <app-badge variant="warning" [pulse]="true">Chờ xác nhận</app-badge>
               }

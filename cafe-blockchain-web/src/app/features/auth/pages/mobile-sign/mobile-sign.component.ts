@@ -176,7 +176,7 @@ export class MobileSignComponent implements OnInit {
 
             // 3. Nếu đơn hàng đã hoàn tất (completed) hoặc đang chuẩn bị (preparing) nhưng không phải do voucher này áp dụng
             // (hoặc chưa áp dụng voucher nào, hoặc áp dụng voucher khác), thì không cho phép ký ví nữa vì đơn hàng đã được xử lý.
-            if (settings.order_status === 'completed' || settings.order_status === 'preparing') {
+            if (settings.order_status === 'completed' || settings.order_status === 'preparing' || settings.order_status === 'ready') {
               this.step.set('error');
               this.errorMessage.set(
                 'Đơn hàng đã được xử lý hoặc thanh toán từ trước, không thể áp dụng NFT Voucher này nữa!',

@@ -109,6 +109,7 @@ export class OrdersComponent implements OnInit {
     { value: 'all', label: 'Tất cả' },
     { value: 'pending', label: 'Chờ xác nhận' },
     { value: 'preparing', label: 'Đang chuẩn bị' },
+    { value: 'ready', label: 'Chờ phục vụ' },
     { value: 'completed', label: 'Thành công' },
     { value: 'cancelled', label: 'Đã hủy' },
   ];
