@@ -11,6 +11,8 @@ import { BadgeComponent } from '@shared/components/badge/badge.component';
 import { KdsTabsComponent } from './components/kds-tabs/kds-tabs.component';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
+import { ModalService } from '@core/services/modal.service';
+import { OrderDetailModalComponent } from '../orders/components/order-detail-modal/order-detail-modal.component';
 
 @Component({
   selector: 'app-kds',
@@ -27,6 +29,7 @@ export class KdsComponent implements OnInit, OnDestroy {
   private readonly apiService = inject(ApiService);
   public readonly stateService = inject(StateService);
   private readonly toastService = inject(ToastService);
+  private readonly modalService = inject(ModalService);
 
   public readonly orders = signal<any[]>([]);
   public readonly loading = signal<boolean>(true);
@@ -215,5 +218,28 @@ export class KdsComponent implements OnInit, OnDestroy {
     } catch (e) {
       console.warn('Web Audio API not allowed or supported:', e);
     }
+  }
+
+  // Mở modal xem chi tiết đơn hàng dạng chỉ đọc (Read-only) cho bếp
+  public viewOrderDetail(order: any) {
+    this.modalService.open(OrderDetailModalComponent, {
+      title: `Chi tiết hóa đơn ${order.order_code || '#' + order.id}`,
+      size: '5xl',
+      data: {
+        order,
+        settings: this.stateService.settings(),
+        web3Service: this.stateService.web3Service,
+        // Truyền signal references giả định do bếp không được thao tác cập nhật/đúc trên modal
+        isOrderStatusUpdating: signal(false),
+        blockchainSyncLoading: signal(false),
+        isMintingVoucherManual: signal(false),
+        isAutoSyncOnCompleteChecked: signal(false),
+        // Không truyền callback hành động để ẩn hoàn toàn nút đổi trạng thái/blockchain trên modal
+        onUpdateStatus: undefined,
+        onSyncToBlockchain: undefined,
+        onMintVoucher: undefined,
+        onUpdateOrder: undefined
+      }
+    });
   }
 }

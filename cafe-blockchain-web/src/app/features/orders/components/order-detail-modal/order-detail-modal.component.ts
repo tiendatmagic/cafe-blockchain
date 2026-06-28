@@ -19,10 +19,10 @@ export interface OrderDetailModalData {
   isMintingVoucherManual: Signal<boolean>;
   isAutoSyncOnCompleteChecked: Signal<boolean>;
   // Callback functions để modal thực thi action mà không đóng modal
-  onUpdateStatus: (status: 'preparing' | 'completed' | 'cancelled', isAutoSync: boolean) => void;
-  onSyncToBlockchain: () => void;
-  onMintVoucher: () => void;
-  onUpdateOrder: (order: any) => void;
+  onUpdateStatus?: (status: 'preparing' | 'completed' | 'cancelled', isAutoSync: boolean) => void;
+  onSyncToBlockchain?: () => void;
+  onMintVoucher?: () => void;
+  onUpdateOrder?: (order: any) => void;
 }
 
 @Component({
@@ -69,17 +69,23 @@ export class OrderDetailModalComponent {
 
   /** Gọi callback cập nhật trạng thái - không đóng modal */
   public onUpdateStatus(status: 'preparing' | 'completed' | 'cancelled') {
-    this.data.onUpdateStatus(status, this.isAutoSync());
+    if (this.data.onUpdateStatus) {
+      this.data.onUpdateStatus(status, this.isAutoSync());
+    }
   }
 
   /** Gọi callback đồng bộ blockchain - không đóng modal */
   public onSyncToBlockchain() {
-    this.data.onSyncToBlockchain();
+    if (this.data.onSyncToBlockchain) {
+      this.data.onSyncToBlockchain();
+    }
   }
 
   /** Gọi callback đúc voucher NFT - không đóng modal */
   public onMintVoucher() {
-    this.data.onMintVoucher();
+    if (this.data.onMintVoucher) {
+      this.data.onMintVoucher();
+    }
   }
 
   /** Mở modal cảnh báo nghiệp vụ khi yêu cầu hủy đơn đã hoàn thành */

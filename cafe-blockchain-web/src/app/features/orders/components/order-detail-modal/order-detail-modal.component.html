@@ -168,9 +168,9 @@
       <div
         class="flex flex-col gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/60"
       >
-        @if (data.order?.status === 'pending' ||
+        @if (data.onUpdateStatus && (data.order?.status === 'pending' ||
           data.order?.status === 'preparing' ||
-          data.order?.status === 'ready'
+          data.order?.status === 'ready')
         ) {
           <div
             class="flex items-center gap-2 pb-1 bg-slate-50/20 dark:bg-slate-950/10 p-2.5 rounded-xl border border-slate-100/50 dark:border-slate-800/30"
@@ -190,7 +190,7 @@
           </div>
         }
 
-        @if (data.order?.status === 'pending') {
+        @if (data.order?.status === 'pending' && data.onUpdateStatus) {
           <div class="grid grid-cols-3 gap-2">
             <button
               app-button
@@ -229,7 +229,7 @@
           </div>
         }
 
-        @if (data.order?.status === 'preparing' || data.order?.status === 'ready') {
+        @if ((data.order?.status === 'preparing' || data.order?.status === 'ready') && data.onUpdateStatus) {
           <div class="grid grid-cols-2 gap-2">
             <button
               app-button
@@ -259,6 +259,7 @@
         }
 
         @if (
+          data.onSyncToBlockchain &&
           data.order?.status === 'completed' &&
           data.order?.blockchain_status !== 'success'
         ) {
@@ -308,7 +309,8 @@
         }
 
         @if (
-          (data.order?.status === 'completed' &&
+          data.onMintVoucher &&
+          ((data.order?.status === 'completed' &&
             data.order?.blockchain_status === 'success' &&
             data.order?.gift_voucher_nft_token_id === null &&
             data.order?.customer?.wallet_address &&
@@ -318,7 +320,7 @@
           (data.order?.status === 'cancelled' &&
             data.order?.voucher_nft_token_id !== null &&
             data.order?.gift_voucher_nft_token_id === null &&
-            data.order?.customer?.wallet_address)
+            data.order?.customer?.wallet_address))
         ) {
           <button
             app-button
@@ -338,7 +340,7 @@
           </button>
         }
 
-        @if (data.order?.status === 'completed') {
+        @if (data.order?.status === 'completed' && data.onUpdateStatus) {
           <button
             app-button
             variant="danger-light"
