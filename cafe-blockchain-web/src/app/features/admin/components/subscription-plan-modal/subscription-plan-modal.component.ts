@@ -75,6 +75,7 @@ export class SubscriptionPlanModalComponent implements OnInit {
         enable_reports: [false, [Validators.required]],
         enable_excel_export: [false, [Validators.required]],
         enable_tax: [false, [Validators.required]],
+        enable_kds: [false, [Validators.required]],
       }),
     });
 
@@ -110,6 +111,7 @@ export class SubscriptionPlanModalComponent implements OnInit {
           enable_reports: !!plan.features?.enable_reports,
           enable_excel_export: !!plan.features?.enable_excel_export,
           enable_tax: !!plan.features?.enable_tax,
+          enable_kds: !!plan.features?.enable_kds,
         },
       });
     }

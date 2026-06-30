@@ -601,6 +601,16 @@
                 <span
                   class="inline-flex items-center rounded px-2 py-0.5 text-[10px] font-bold"
                   [ngClass]="
+                    row.features?.enable_kds
+                      ? 'bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700'
+                  "
+                >
+                  Nhà bếp & Pha chế
+                </span>
+                <span
+                  class="inline-flex items-center rounded px-2 py-0.5 text-[10px] font-bold"
+                  [ngClass]="
                     row.features?.enable_storefront
                       ? 'bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20'
                       : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700'

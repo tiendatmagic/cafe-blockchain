@@ -161,6 +161,7 @@ class AdminController extends Controller
             'features.enable_reports' => 'required|boolean',
             'features.enable_excel_export' => 'required|boolean',
             'features.enable_tax' => 'required|boolean',
+            'features.enable_kds' => 'required|boolean',
         ]);
 
         $plan = SubscriptionPlan::create([
@@ -217,6 +218,7 @@ class AdminController extends Controller
             'features.enable_reports' => 'required|boolean',
             'features.enable_excel_export' => 'required|boolean',
             'features.enable_tax' => 'required|boolean',
+            'features.enable_kds' => 'required|boolean',
         ]);
 
         $plan->name = $validated['name'];
@@ -309,6 +311,7 @@ class AdminController extends Controller
                     'enable_reports'      => false,
                     'enable_excel_export' => false,
                     'enable_tax'          => false,
+                    'enable_kds'          => false,
                 ]),
             ],
             [
@@ -338,6 +341,7 @@ class AdminController extends Controller
                     'enable_reports'      => true,
                     'enable_excel_export' => false,
                     'enable_tax'          => true,
+                    'enable_kds'          => true,
                 ]),
             ],
             [
@@ -367,6 +371,7 @@ class AdminController extends Controller
                     'enable_reports'      => true,
                     'enable_excel_export' => true,
                     'enable_tax'          => true,
+                    'enable_kds'          => true,
                 ]),
             ],
         ];
