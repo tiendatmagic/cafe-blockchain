@@ -729,12 +729,16 @@ class ProductController extends Controller
             try {
                 $product = null;
                 if (!empty($sku)) {
-                    $product = Product::where('store_owner_address', $storeOwner)
+                    $product = Product::withTrashed()
+                        ->where('store_owner_address', $storeOwner)
                         ->where('sku', $sku)
                         ->first();
                 }
 
                 if ($product) {
+                    if ($product->trashed()) {
+                        $product->restore();
+                    }
                     $product->update([
                         'name' => $name,
                         'barcode' => $barcode ?: $product->barcode,
