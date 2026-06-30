@@ -244,18 +244,18 @@ export class MenuComponent implements OnInit, OnDestroy {
 
   // Mở modal nhập Excel
   public openImportExcelModal() {
-    this.modalService
-      .open(ImportExcelModalComponent, {
-        title: 'Nhập sản phẩm từ Excel',
-        size: 'md'
-      })
-      .afterClosed$.subscribe((success) => {
-        if (success) {
-          this.stateService.clearPosProductsCache();
-          this.stateService.refreshProducts();
-          this.loadMenuProducts(1);
-        }
-      });
+    const modalRef = this.modalService.open(ImportExcelModalComponent, {
+      title: 'Nhập sản phẩm từ Excel',
+      size: '4xl'
+    });
+
+    modalRef.afterClosed$.subscribe((success) => {
+      if (success || (modalRef as any).isImportedSuccess) {
+        this.stateService.clearPosProductsCache();
+        this.stateService.refreshProducts();
+        this.loadMenuProducts(1);
+      }
+    });
   }
 
   // Mở modal sửa món

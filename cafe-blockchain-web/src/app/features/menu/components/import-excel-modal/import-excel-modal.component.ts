@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ModalRef } from '@core/services/modal-ref';
 import { ApiService } from '@core/services/api.service';
 import { ToastService } from '@core/services/toast.service';
+import { StateService } from '@core/services/state.service';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 
@@ -23,6 +24,7 @@ export class ImportExcelModalComponent {
   public readonly modalRef = inject(ModalRef);
   private readonly apiService = inject(ApiService);
   private readonly toastService = inject(ToastService);
+  private readonly stateService = inject(StateService);
 
   public selectedFile = signal<File | null>(null);
   public isUploading = signal<boolean>(false);
@@ -98,6 +100,12 @@ export class ImportExcelModalComponent {
           errors: res.errors || []
         });
 
+        if (res.success_count > 0) {
+          (this.modalRef as any).isImportedSuccess = true;
+          this.stateService.clearPosProductsCache();
+          this.stateService.refreshProducts();
+        }
+
         if (res.error_count === 0) {
           this.toastService.showToast(`Nhập dữ liệu thành công ${res.success_count} sản phẩm!`, 'success');
         } else if (res.success_count > 0) {
@@ -117,7 +125,7 @@ export class ImportExcelModalComponent {
 
   public onCancel() {
     const result = this.importResult();
-    if (result && result.success_count > 0) {
+    if ((result && result.success_count > 0) || (this.modalRef as any).isImportedSuccess) {
       this.modalRef.close(true);
     } else {
       this.modalRef.close(false);
