@@ -1,0 +1,146 @@
+<div class="p-5 sm:p-6 space-y-6">
+  <!-- Hướng dẫn và tải file mẫu -->
+  <div class="bg-slate-50 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/80 rounded-2xl p-4.5 space-y-3">
+    <div class="flex gap-2.5 items-start">
+      <div class="p-2 rounded-xl bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400 shrink-0">
+        <app-icon name="info" class="h-5 w-5" strokeWidth="2.5" />
+      </div>
+      <div>
+        <h4 class="text-sm font-bold text-slate-800 dark:text-slate-100">Hướng dẫn nhập sản phẩm từ Excel</h4>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+          Hệ thống hỗ trợ nhập sản phẩm hàng loạt bằng file Excel. Bạn có thể sử dụng file xuất kho từ <strong>KiotViet</strong> hoặc tải file mẫu chuẩn của hệ thống bên dưới.
+        </p>
+      </div>
+    </div>
+
+    <div class="pl-11 flex flex-wrap gap-3">
+      <button
+        app-button
+        variant="secondary"
+        size="sm"
+        type="button"
+        (click)="downloadTemplate()"
+        class="text-xs font-semibold"
+      >
+        <app-icon name="download" class="h-4 w-4 shrink-0" strokeWidth="2" />
+        <span>Tải file Excel mẫu</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Vùng Drag & Drop chọn file -->
+  @if (!importResult()) {
+    <div
+      (dragover)="onDragOver($event)"
+      (drop)="onDrop($event)"
+      class="border-2 border-dashed border-slate-300 dark:border-slate-800 hover:border-purple-400 dark:hover:border-purple-600 rounded-2xl p-8 flex flex-col items-center justify-center gap-3 transition-colors cursor-pointer bg-slate-50/20 dark:bg-slate-950/20"
+      (click)="fileInput.click()"
+    >
+      <input
+        #fileInput
+        type="file"
+        accept=".xlsx, .xls"
+        (change)="onFileSelected($event)"
+        class="hidden"
+      />
+
+      <div class="h-12 w-12 rounded-full bg-purple-50 dark:bg-purple-950/30 text-purple-500 flex items-center justify-center shrink-0">
+        <app-icon name="upload" class="h-6 w-6" strokeWidth="2.5" />
+      </div>
+
+      <div class="text-center">
+        @if (selectedFile()) {
+          <p class="text-sm font-bold text-slate-700 dark:text-slate-200">{{ selectedFile()?.name }}</p>
+          <p class="text-xs text-slate-400 mt-1">{{ (selectedFile()?.size || 0) / 1024 | number:'1.0-2' }} KB</p>
+        } @else {
+          <p class="text-sm font-bold text-slate-700 dark:text-slate-200">Kéo thả tệp Excel vào đây hoặc nhấp để chọn</p>
+          <p class="text-xs text-slate-400 mt-1">Hỗ trợ định dạng .xlsx, .xls</p>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Hiển thị kết quả nhập dữ liệu -->
+  @if (importResult()) {
+    <div class="space-y-4">
+      <div class="grid grid-cols-2 gap-4">
+        <!-- Thành công Card -->
+        <div class="bg-emerald-50/30 dark:bg-emerald-950/10 border border-emerald-100 dark:border-emerald-950/40 rounded-2xl p-4 flex items-center gap-3">
+          <div class="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+            <app-icon name="check" class="h-5 w-5" strokeWidth="3" />
+          </div>
+          <div>
+            <p class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wide">Thành công</p>
+            <p class="text-xl font-black text-emerald-600 dark:text-emerald-400">{{ importResult()?.success_count }} món</p>
+          </div>
+        </div>
+
+        <!-- Thất bại Card -->
+        <div class="bg-rose-50/30 dark:bg-rose-950/10 border border-rose-100 dark:border-rose-950/40 rounded-2xl p-4 flex items-center gap-3">
+          <div class="h-10 w-10 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+            <app-icon name="x" class="h-5 w-5" strokeWidth="3" />
+          </div>
+          <div>
+            <p class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wide">Lỗi dòng dữ liệu</p>
+            <p class="text-xl font-black text-rose-600 dark:text-rose-400">{{ importResult()?.error_count }} dòng</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danh sách lỗi chi tiết -->
+      @if (importResult()?.errors && importResult()!.errors.length > 0) {
+        <div class="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden bg-white dark:bg-slate-900/60 shadow-sm">
+          <div class="bg-slate-50 dark:bg-slate-900/80 px-4 py-2.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+            <span class="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Chi tiết các dòng bị lỗi</span>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400">
+              Cần sửa lại
+            </span>
+          </div>
+          
+          <div class="max-h-48 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60">
+            @for (err of importResult()?.errors; track err.row) {
+              <div class="px-4 py-3 flex gap-3 text-xs">
+                <div class="font-bold text-rose-500 shrink-0">Dòng {{ err.row }}:</div>
+                <div class="space-y-1">
+                  <div class="font-semibold text-slate-700 dark:text-slate-200">{{ err.product_name }}</div>
+                  <ul class="list-disc pl-4 text-slate-400 dark:text-slate-500 space-y-0.5">
+                    @for (reason of err.reasons; track reason) {
+                      <li>{{ reason }}</li>
+                    }
+                  </ul>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Footer Actions -->
+  <div class="flex justify-end gap-3 pt-2 border-t border-slate-100 dark:border-slate-800/60">
+    <button
+      app-button
+      variant="secondary"
+      (click)="onCancel()"
+      type="button"
+      [disabled]="isUploading()"
+    >
+      <span>{{ importResult() ? 'Đóng' : 'Hủy bỏ' }}</span>
+    </button>
+
+    @if (!importResult()) {
+      <button
+        app-button
+        variant="primary"
+        (click)="onSubmit()"
+        type="button"
+        [loading]="isUploading()"
+        [disabled]="!selectedFile()"
+      >
+        <app-icon name="upload" class="h-4 w-4 shrink-0" strokeWidth="2" />
+        <span>Nhập dữ liệu</span>
+      </button>
+    }
+  </div>
+</div>

@@ -27,6 +27,7 @@ import { CardComponent } from '@shared/components/card/card.component';
 import { CustomSearchInputComponent } from '@shared/components/custom-search-input/custom-search-input.component';
 import { ProductFormModalComponent } from './components/product-form-modal/product-form-modal.component';
 import { CategoryFormModalComponent } from './components/category-form-modal/category-form-modal.component';
+import { ImportExcelModalComponent } from './components/import-excel-modal/import-excel-modal.component';
 
 @Component({
   selector: 'app-menu',
@@ -231,6 +232,22 @@ export class MenuComponent implements OnInit, OnDestroy {
           product: null,
           typeFilter: this.menuProductTypeFilter(),
         },
+      })
+      .afterClosed$.subscribe((success) => {
+        if (success) {
+          this.stateService.clearPosProductsCache();
+          this.stateService.refreshProducts();
+          this.loadMenuProducts(1);
+        }
+      });
+  }
+
+  // Mở modal nhập Excel
+  public openImportExcelModal() {
+    this.modalService
+      .open(ImportExcelModalComponent, {
+        title: 'Nhập sản phẩm từ Excel',
+        size: 'md'
       })
       .afterClosed$.subscribe((success) => {
         if (success) {

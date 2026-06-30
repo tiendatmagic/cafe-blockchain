@@ -192,6 +192,19 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/products/upload-image`, formData, { headers: this.getHeaders() });
   }
 
+  public importProductsFromExcel(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post(`${this.baseUrl}/products/import`, formData, { headers: this.getHeaders() });
+  }
+
+  public downloadProductImportTemplate(): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/products/import-template`, {
+      headers: this.getHeaders(),
+      responseType: 'blob'
+    });
+  }
+
   // 3. Orders (Đơn hàng) API
   public getOrders(status: string = 'all', blockchainStatus: string = 'all', page?: number, limit?: number, search?: string): Observable<any> {
     let params = new HttpParams();

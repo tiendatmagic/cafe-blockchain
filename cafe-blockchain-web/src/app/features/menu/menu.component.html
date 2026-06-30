@@ -36,6 +36,17 @@
           </button>
         }
 
+        <!-- Nhập Excel -->
+        <button
+          app-button
+          variant="secondary"
+          (click)="openImportExcelModal()"
+          [disabled]="!web3Service.walletConnected()"
+        >
+          <app-icon name="upload" class="h-4 w-4 shrink-0" strokeWidth="2" />
+          <span>Nhập Excel</span>
+        </button>
+
         <!-- Thêm món mới -->
         <button
           app-button

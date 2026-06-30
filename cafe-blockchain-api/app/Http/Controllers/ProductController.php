@@ -548,4 +548,335 @@ class ProductController extends Controller
             \Illuminate\Support\Facades\Log::error('[ProductController] Failed to delete orphaned image: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Import sản phẩm/món ăn từ file Excel
+     */
+    public function importExcel(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xls,xlsx'
+        ]);
+
+        $filePath = $request->file('file')->getRealPath();
+        
+        try {
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($filePath);
+            $sheet = $spreadsheet->getActiveSheet();
+            $rows = $sheet->toArray(null, true, true, true);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Lỗi đọc tệp Excel: ' . $e->getMessage()], 400);
+        }
+
+        if (count($rows) < 2) {
+            return response()->json(['message' => 'Tệp Excel rỗng hoặc không có dữ liệu.'], 400);
+        }
+
+        $header = $rows[1];
+        $colMap = [
+            'name' => null,
+            'sku' => null,
+            'barcode' => null,
+            'unit' => null,
+            'price' => null,
+            'cost_price' => null,
+            'image' => null,
+            'short_description' => null,
+            'description' => null,
+            'category' => null,
+            'status' => null,
+        ];
+
+        foreach ($header as $colKey => $colValue) {
+            $val = trim(strtolower($colValue));
+            if (empty($val)) continue;
+            
+            if (in_array($val, ['tên sản phẩm', 'tên hàng', 'tên món', 'tên', 'name', 'tên sản phẩm (*)'])) {
+                $colMap['name'] = $colKey;
+            } elseif (in_array($val, ['mã sản phẩm', 'mã hàng', 'sku', 'mã sản phẩm (sku)'])) {
+                $colMap['sku'] = $colKey;
+            } elseif (in_array($val, ['mã vạch', 'barcode', 'mã vạch (barcode)'])) {
+                $colMap['barcode'] = $colKey;
+            } elseif (in_array($val, ['đơn vị tính', 'đvt', 'đơn vị'])) {
+                $colMap['unit'] = $colKey;
+            } elseif (in_array($val, ['giá bán', 'giá bán lẻ', 'đơn giá', 'price', 'giá bán (*)'])) {
+                $colMap['price'] = $colKey;
+            } elseif (in_array($val, ['giá vốn', 'cost_price'])) {
+                $colMap['cost_price'] = $colKey;
+            } elseif (in_array($val, ['hình ảnh', 'link hình ảnh', 'image', 'hình ảnh (url1,url2...)'])) {
+                $colMap['image'] = $colKey;
+            } elseif (in_array($val, ['mô tả ngắn', 'short_description'])) {
+                $colMap['short_description'] = $colKey;
+            } elseif (in_array($val, ['mô tả', 'mô tả chi tiết', 'description'])) {
+                $colMap['description'] = $colKey;
+            } elseif (in_array($val, ['danh mục', 'nhóm hàng', 'nhóm hàng(3 cấp)', 'category'])) {
+                $colMap['category'] = $colKey;
+            } elseif (in_array($val, ['trạng thái', 'đang kinh doanh', 'status', 'trạng thái (1: đang bán, 0: ngừng bán)'])) {
+                $colMap['status'] = $colKey;
+            }
+        }
+
+        if (empty($colMap['name']) || empty($colMap['price'])) {
+            return response()->json([
+                'message' => 'Cấu trúc file Excel không hợp lệ. Cột "Tên sản phẩm" và "Giá bán" là bắt buộc.'
+            ], 400);
+        }
+
+        $successCount = 0;
+        $errorCount = 0;
+        $errors = [];
+        $storeOwner = $request->user()->getStoreOwnerAddress();
+
+        // Lấy giới hạn sản phẩm của gói cước
+        $maxProducts = -1;
+        try {
+            $maxProducts = $request->user()->getFeatureLimit('max_products');
+        } catch (\Exception $e) {}
+
+        // Đếm số sản phẩm hiện tại của shop
+        $currentProductsCount = Product::where('store_owner_address', $storeOwner)->count();
+
+        // Duyệt dữ liệu
+        for ($rowIdx = 2; $rowIdx <= count($rows); $rowIdx++) {
+            $row = $rows[$rowIdx];
+            
+            // Bỏ qua dòng rỗng
+            $isRowEmpty = true;
+            foreach ($row as $cell) {
+                if ($cell !== null && trim((string)$cell) !== '') {
+                    $isRowEmpty = false;
+                    break;
+                }
+            }
+            if ($isRowEmpty) continue;
+
+            $name = $colMap['name'] ? trim((string)($row[$colMap['name']] ?? '')) : '';
+            $priceVal = $colMap['price'] ? trim((string)($row[$colMap['price']] ?? '')) : '';
+            
+            $rowErrors = [];
+            if (empty($name)) {
+                $rowErrors[] = 'Tên sản phẩm không được để trống.';
+            }
+            
+            $price = 0;
+            if ($priceVal === '') {
+                $rowErrors[] = 'Giá bán không được để trống.';
+            } else {
+                $priceClean = str_replace([',', ' '], '', $priceVal);
+                if (!is_numeric($priceClean) || floatval($priceClean) < 0) {
+                    $rowErrors[] = 'Giá bán phải là số lớn hơn hoặc bằng 0.';
+                } else {
+                    $price = floatval($priceClean);
+                }
+            }
+
+            $costPrice = null;
+            if ($colMap['cost_price']) {
+                $costPriceVal = trim((string)($row[$colMap['cost_price']] ?? ''));
+                if ($costPriceVal !== '') {
+                    $costPriceClean = str_replace([',', ' '], '', $costPriceVal);
+                    if (!is_numeric($costPriceClean) || floatval($costPriceClean) < 0) {
+                        $rowErrors[] = 'Giá vốn phải là số lớn hơn hoặc bằng 0.';
+                    } else {
+                        $costPrice = floatval($costPriceClean);
+                    }
+                }
+            }
+
+            if (!empty($rowErrors)) {
+                $errorCount++;
+                $errors[] = [
+                    'row' => $rowIdx,
+                    'product_name' => $name ?: '(Chưa có tên)',
+                    'reasons' => $rowErrors
+                ];
+                continue;
+            }
+
+            // Các cột khác
+            $sku = $colMap['sku'] ? trim((string)($row[$colMap['sku']] ?? '')) : '';
+            $barcode = $colMap['barcode'] ? trim((string)($row[$colMap['barcode']] ?? '')) : '';
+            $unit = $colMap['unit'] ? trim((string)($row[$colMap['unit']] ?? '')) : 'Cái';
+            if (empty($unit)) $unit = 'Cái';
+            
+            $imageUrl = $colMap['image'] ? trim((string)($row[$colMap['image']] ?? '')) : null;
+            if (!empty($imageUrl)) {
+                $urls = explode(',', $imageUrl);
+                $imageUrl = trim($urls[0]);
+            }
+
+            $shortDesc = $colMap['short_description'] ? trim((string)($row[$colMap['short_description']] ?? '')) : null;
+            $desc = $colMap['description'] ? trim((string)($row[$colMap['description']] ?? '')) : null;
+            
+            $status = true;
+            if ($colMap['status']) {
+                $statusVal = trim((string)($row[$colMap['status']] ?? ''));
+                if ($statusVal !== '') {
+                    if (in_array(strtolower($statusVal), ['0', 'ngừng bán', 'no', 'false', 'inactive', 'không'])) {
+                        $status = false;
+                    }
+                }
+            }
+
+            $categoryName = $colMap['category'] ? trim((string)($row[$colMap['category']] ?? '')) : '';
+            if (!empty($categoryName) && (str_contains($categoryName, '>>') || str_contains($categoryName, '>'))) {
+                $delimiter = str_contains($categoryName, '>>') ? '>>' : '>';
+                $parts = explode($delimiter, $categoryName);
+                $categoryName = trim(end($parts));
+            }
+
+            \DB::beginTransaction();
+            try {
+                $product = null;
+                if (!empty($sku)) {
+                    $product = Product::where('store_owner_address', $storeOwner)
+                        ->where('sku', $sku)
+                        ->first();
+                }
+
+                if ($product) {
+                    $product->update([
+                        'name' => $name,
+                        'barcode' => $barcode ?: $product->barcode,
+                        'unit' => $unit,
+                        'price' => $price,
+                        'cost_price' => $costPrice !== null ? $costPrice : $product->cost_price,
+                        'image' => $imageUrl ?: $product->image,
+                        'status' => $status,
+                        'short_description' => $shortDesc ?: $product->short_description,
+                        'description' => $desc ?: $product->description,
+                    ]);
+                } else {
+                    if ($maxProducts >= 0 && ($currentProductsCount + $successCount) >= $maxProducts) {
+                        \DB::rollBack();
+                        $errorCount++;
+                        $errors[] = [
+                            'row' => $rowIdx,
+                            'product_name' => $name,
+                            'reasons' => ['Đã vượt quá giới hạn số lượng sản phẩm tối đa của gói cước (' . $maxProducts . ' món).']
+                        ];
+                        continue;
+                    }
+
+                    $product = Product::create([
+                        'store_owner_address' => $storeOwner,
+                        'sku' => $sku ?: null,
+                        'barcode' => $barcode ?: null,
+                        'unit' => $unit,
+                        'type' => 'product',
+                        'name' => $name,
+                        'price' => $price,
+                        'cost_price' => $costPrice,
+                        'image' => $imageUrl ?: null,
+                        'status' => $status,
+                        'short_description' => $shortDesc,
+                        'description' => $desc,
+                    ]);
+                }
+
+                if (!empty($categoryName)) {
+                    $category = \App\Domain\Entities\Category::firstOrCreate([
+                        'name' => $categoryName,
+                        'store_owner_address' => $storeOwner
+                    ]);
+                    $product->categories()->sync([$category->id]);
+                }
+
+                \DB::commit();
+                $successCount++;
+            } catch (\Exception $e) {
+                \DB::rollBack();
+                $errorCount++;
+                $errors[] = [
+                    'row' => $rowIdx,
+                    'product_name' => $name,
+                    'reasons' => ['Lỗi hệ thống khi lưu database: ' . $e->getMessage()]
+                ];
+            }
+        }
+
+        \App\Domain\Entities\Setting::clearStorefrontCache($storeOwner);
+        \Illuminate\Support\Facades\Cache::forget("store_products_all:{$storeOwner}");
+
+        return response()->json([
+            'message' => 'Import hoàn tất.',
+            'success_count' => $successCount,
+            'error_count' => $errorCount,
+            'errors' => $errors
+        ], 200);
+    }
+
+    /**
+     * Tải file excel mẫu cho import sản phẩm
+     */
+    public function downloadTemplate()
+    {
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Template Import');
+        
+        $headers = [
+            'Mã sản phẩm (SKU)',
+            'Mã vạch (Barcode)',
+            'Tên sản phẩm (*)',
+            'Danh mục',
+            'Đơn vị tính',
+            'Giá bán (*)',
+            'Giá vốn',
+            'Link hình ảnh',
+            'Mô tả ngắn',
+            'Mô tả',
+            'Trạng thái (1: Đang bán, 0: Ngừng bán)'
+        ];
+        
+        $sheet->fromArray($headers, null, 'A1');
+        
+        $sampleData = [
+            [
+                'SP001',
+                '8936079381394',
+                'Cà phê sữa đá',
+                'Cà phê',
+                'Ly',
+                29000,
+                12000,
+                'https://images.unsplash.com/photo-1541167760496-1628856ab772?q=80&w=300',
+                'Cà phê sữa đá pha phin truyền thống',
+                'Cà phê sữa đá pha phin đậm vị, sử dụng sữa đặc chất lượng cao và đá tinh khiết.',
+                1
+            ],
+            [
+                'SP002',
+                '',
+                'Trà đào cam sả',
+                'Trà trái cây',
+                'Ly',
+                39000,
+                15000,
+                '',
+                'Trà đào sả cam giải nhiệt mùa hè',
+                'Hương vị thanh mát kết hợp từ cam tươi, sả thơm nồng và đào lát giòn ngọt.',
+                1
+            ]
+        ];
+        
+        $sheet->fromArray($sampleData, null, 'A2');
+        
+        // Auto-fit các cột
+        foreach (range('A', 'K') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+        
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        
+        $response = new \Symfony\Component\HttpFoundation\StreamedResponse(function() use ($writer) {
+            $writer->save('php://output');
+        });
+        
+        $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        $response->headers->set('Content-Disposition', 'attachment; filename="cafe_blockchain_product_template.xlsx"');
+        $response->headers->set('Cache-Control', 'max-age=0');
+        
+        return $response;
+    }
 }
