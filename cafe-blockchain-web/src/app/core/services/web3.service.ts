@@ -471,8 +471,8 @@ export class Web3Service {
       this.chainId.set(decimalChainId);
 
       // Nếu mạng mới là một trong các mạng hỗ trợ của AppKit, và modal đang mở, đóng modal lại để tránh kẹt giao diện
-      const supportedChains = ['1', '56', '97', '42161', '421614', '8453', '84532'];
-      if (supportedChains.includes(decimalChainId.toString()) && this.modal) {
+      const supportedChainIds = this.POPULAR_CHAINS.map(c => c.chainId.toString().trim());
+      if (supportedChainIds.includes(decimalChainId.toString().trim()) && this.modal) {
         try {
           this.modal.close();
         } catch (e) {
