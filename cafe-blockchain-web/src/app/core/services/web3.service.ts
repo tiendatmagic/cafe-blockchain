@@ -376,7 +376,28 @@ export class Web3Service {
             this.emitAccountChange(address);
           }
         } else {
-          // Chỉ xử lý ngắt kết nối thực sự sau khi kết thúc giai đoạn khởi tạo
+          // Nếu có address nhưng isConnected = false (do ví chuyển sang mạng không hỗ trợ khi allowUnsupportedChain = false)
+          // Chúng ta giữ kết nối ví ở chế độ Wrong Chain thay vì ngắt kết nối hoàn toàn
+          if (address) {
+            const oldAccount = this.currentAccount();
+            this.currentAccount.set(address);
+            this.appKitIsConnected = true; // Cho phép giữ provider của AppKit để gọi lệnh switch tiếp theo
+
+            if (this.hasValidAuthToken(address)) {
+              this.walletConnected.set(true);
+            } else {
+              this.walletConnected.set(false);
+            }
+
+            await this.updateBalanceAndStatus(address);
+
+            if (oldAccount && oldAccount.toLowerCase() !== address.toLowerCase()) {
+              this.emitAccountChange(address);
+            }
+            return;
+          }
+
+          // Thực sự ngắt kết nối khi không còn address
           if (!this.isAppKitInitializing && this.currentAccount()) {
             this.resetWalletState(true);
             this.emitAccountChange('');
@@ -448,6 +469,16 @@ export class Web3Service {
     eth.on('chainChanged', (chainIdHex: string) => {
       const decimalChainId = BigInt(chainIdHex).toString();
       this.chainId.set(decimalChainId);
+
+      // Nếu mạng mới là một trong các mạng hỗ trợ của AppKit, và modal đang mở, đóng modal lại để tránh kẹt giao diện
+      const supportedChains = ['1', '56', '97', '42161', '421614', '8453', '84532'];
+      if (supportedChains.includes(decimalChainId.toString()) && this.modal) {
+        try {
+          this.modal.close();
+        } catch (e) {
+          console.warn('Lỗi đóng modal khi chuyển mạng:', e);
+        }
+      }
 
       const account = this.currentAccount();
       if (account) {
