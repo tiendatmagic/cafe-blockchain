@@ -318,7 +318,7 @@ export class Web3Service {
       }
 
       // Ghi đè ApiController.fetchProjectConfig để nó luôn trả về null.
-      // Điều này ngăn AppKit fetch remote config từ Cloud, từ đó cho phép cấu hình 
+      // Điều này ngăn AppKit fetch remote config từ Cloud, từ đó cho phép cấu hình
       // features.reownAuthentication = false có hiệu lực ở client-side để tắt SIWE hoàn toàn.
       try {
         (ApiController as any).fetchProjectConfig = async () => {
@@ -334,6 +334,7 @@ export class Web3Service {
         adapters: [ethersAdapter],
         networks: [arbitrum, base, bsc, bscTestnet, arbitrumSepolia],
         defaultNetwork: arbitrum,
+        allowUnsupportedChain: false,
         metadata: {
           name: 'Cafe Blockchain',
           description: 'Cafe Blockchain POS & Storefront DApp',
@@ -687,6 +688,23 @@ export class Web3Service {
 
     const chainIdToUse = targetChainId || this.configuredChainId();
     const chainIdHex = `0x${BigInt(chainIdToUse).toString(16)}`;
+
+    // Nếu kết nối qua AppKit, ưu tiên dùng switchNetwork của AppKit để đồng bộ trạng thái an toàn
+    if (this.modal && this.appKitIsConnected) {
+      try {
+        const net = this.getAppKitNetworkByChainId(chainIdToUse);
+        if (net) {
+          await this.modal.switchNetwork(net);
+          this.chainId.set(chainIdToUse);
+          if (this.currentAccount()) {
+            await this.updateBalanceAndStatus(this.currentAccount());
+          }
+          return true;
+        }
+      } catch (appKitSwitchError: any) {
+        console.warn('Switch network via AppKit failed, attempting fallback:', appKitSwitchError);
+      }
+    }
 
     // Lấy provider tương ứng (AppKit wallet provider hoặc window.ethereum)
     let provider: any = null;
