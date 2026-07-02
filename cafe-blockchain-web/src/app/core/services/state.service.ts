@@ -325,6 +325,12 @@ export class StateService {
   private accountsChangedSub?: Subscription;
 
   constructor() {
+    // 0. Tự động đồng bộ theme sang WalletConnect modal (Reown AppKit)
+    effect(() => {
+      const isDark = this.isDarkMode();
+      this.web3Service.updateAppKitTheme(isDark ? 'dark' : 'light');
+    });
+
     // 1. Tự động nạp cấu hình và dữ liệu của tab hiện tại khi ví đã xác thực thành công
     effect(() => {
       if (this.web3Service.walletConnected() && this.isAuthLoggedIn()) {

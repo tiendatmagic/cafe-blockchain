@@ -330,11 +330,27 @@ export class Web3Service {
 
       const ethersAdapter = new EthersAdapter();
       const defaultNet = this.getAppKitNetworkByChainId(this.configuredChainId());
+
+      // Lấy theme mặc định để khởi tạo AppKit đồng bộ
+      let initialTheme: 'light' | 'dark' = 'light';
+      if (typeof window !== 'undefined') {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+          initialTheme = 'dark';
+        } else if (savedTheme === 'auto') {
+          const hour = new Date().getHours();
+          if (hour >= 18 || hour < 6) {
+            initialTheme = 'dark';
+          }
+        }
+      }
+
       const appKitConfig: any = {
         adapters: [ethersAdapter],
         networks: [arbitrum, base, bsc, bscTestnet, arbitrumSepolia],
         defaultNetwork: arbitrum,
         allowUnsupportedChain: false,
+        themeMode: initialTheme, // Đồng bộ theme mode lúc khởi tạo
         metadata: {
           name: 'Cafe Blockchain',
           description: 'Cafe Blockchain POS & Storefront DApp',
@@ -423,6 +439,19 @@ export class Web3Service {
 
     } catch (error) {
       console.error('[Web3] Error initializing Reown AppKit:', error);
+    }
+  }
+
+  /**
+   * Cập nhật theme mode cho WalletConnect modal
+   */
+  public updateAppKitTheme(theme: 'light' | 'dark') {
+    try {
+      if (this.modal) {
+        this.modal.setThemeMode(theme);
+      }
+    } catch (e) {
+      console.warn('[Web3] Lỗi cập nhật theme cho AppKit:', e);
     }
   }
 
