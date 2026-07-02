@@ -1,5 +1,5 @@
 import { HttpInterceptorFn, HttpErrorResponse, HttpResponse, HttpEvent } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { inject, Injector } from '@angular/core';
 import { catchError, map, takeUntil } from 'rxjs/operators';
 import { throwError } from 'rxjs';
 import { UiStateService } from './ui-state.service';
@@ -11,10 +11,9 @@ import { environment } from '@environments/environment';
 
 export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
   const uiStateService = inject(UiStateService);
-  const authService = inject(AuthService);
-  const web3Service = inject(Web3Service);
   const toastService = inject(ToastService);
   const router = inject(Router);
+  const injector = inject(Injector);
 
   // Kiểm tra xem trang hiện tại có phải là blockchain explorer không
   const isExplorer = router.url.includes('/blockchain-explorer') || 
@@ -67,8 +66,10 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
         const isUnauthenticated = error.status === 401;
 
         if (isUnauthenticated) {
+          const web3Service = injector.get(Web3Service);
           if (web3Service.walletConnected()) {
             console.warn('Nhận được lỗi 401 (Unauthenticated) từ API. Tự động ngắt kết nối ví...');
+            const authService = injector.get(AuthService);
             authService.disconnectWalletAndClose('Phiên làm việc đã hết hạn hoặc không hợp lệ. Vui lòng kết nối lại ví!', true);
           }
         } else if (error.status !== 503) {
@@ -78,13 +79,15 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
           const isStorefrontDetails = req.url.includes('/store/') && !req.url.includes('/orders');
           
           if (!isStorefrontDetails) {
-            const errorMsg = error.error?.message || error.error?.error || error.message || 'Lỗi kết nối máy chủ!';
+            const rawErrorMsg = error.error?.message || error.error?.error || error.message || 'Lỗi kết nối máy chủ!';
+            const errorMsg = typeof rawErrorMsg === 'string' ? rawErrorMsg : (JSON.stringify(rawErrorMsg) || 'Lỗi kết nối máy chủ!');
             
             const isFeatureError = errorMsg.includes('This feature is not unlocked');
             const isLimitError = errorMsg.includes('subscription plan has reached the maximum limit');
 
             if (isFeatureError && !isStorefront) {
               const featureKey = error.error?.feature || '';
+              const authService = injector.get(AuthService);
               const config = authService.getFeatureConfig(featureKey);
               
               // Xác định xem request có phải là GET chạy ngầm ở background không
