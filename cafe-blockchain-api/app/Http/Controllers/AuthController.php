@@ -283,8 +283,21 @@ class AuthController extends Controller
         $displayPhone = $user->phone ?: ($staff?->phone ?? null);
         $displayEmail = $user->email ?? null;
 
+        $roleName = 'Chủ cửa hàng';
+        $permissions = null;
+
+        if ($staff) {
+            $roleName = $staff->role->name;
+            $permissions = $staff->role->permissions;
+            if (is_string($permissions)) {
+                $permissions = json_decode($permissions, true);
+            }
+        }
+
         return response()->json([
             'address' => $address,
+            'role' => $roleName,
+            'permissions' => $permissions,
             'is_super_admin' => $isSuperAdmin,
             'admin_role' => $adminRole,
             'name' => $displayName,

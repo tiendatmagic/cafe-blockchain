@@ -19,6 +19,7 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ApiService } from '@core/services/api.service';
 import { Title } from '@angular/platform-browser';
 import { StateService } from '@core/services/state.service';
+import { IndexedDbStorageService } from '@core/services/indexed-db.service';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
 import { ThemeToggleComponent } from '@shared/components/theme-toggle/theme-toggle.component';
@@ -73,6 +74,7 @@ export class StoreComponent implements OnInit, AfterViewInit {
   private readonly titleService = inject(Title);
   private readonly stateService = inject(StateService);
   private readonly modalService = inject(ModalService);
+  private readonly indexedDbService = inject(IndexedDbStorageService);
 
   @ViewChild('categoriesContainer') categoriesContainer!: ElementRef<HTMLDivElement>;
   @ViewChildren('categoryBtn') categoryButtons!: QueryList<ElementRef<HTMLButtonElement>>;
@@ -334,7 +336,11 @@ export class StoreComponent implements OnInit, AfterViewInit {
     return Math.ceil(this.filteredProducts().length / this.itemsPerPage) || 1;
   });
 
-  ngOnInit() {
+  async ngOnInit() {
+    // Load giỏ hàng & yêu thích từ IndexedDB trước khi load dữ liệu quán
+    await this.loadCartFromStorage();
+    await this.loadFavoritesFromStorage();
+
     // Đọc slug từ route
     this.route.params.subscribe((params) => {
       const slug = params['slug'];
@@ -357,10 +363,6 @@ export class StoreComponent implements OnInit, AfterViewInit {
         this.isQrTable.set(false);
       }
     });
-
-    // Load giỏ hàng & yêu thích từ localStorage
-    this.loadCartFromStorage();
-    this.loadFavoritesFromStorage();
   }
 
   // Tải dữ liệu quán từ API
@@ -444,22 +446,18 @@ export class StoreComponent implements OnInit, AfterViewInit {
   }
 
   // --- Quản lý Giỏ hàng ---
-  private loadCartFromStorage() {
+  private async loadCartFromStorage() {
     if (typeof window !== 'undefined') {
-      const data = localStorage.getItem('store_cart');
+      const data = await this.indexedDbService.get('store_cart', 'current_cart');
       if (data) {
-        try {
-          this.cart.set(JSON.parse(data));
-        } catch (e) {
-          console.error(e);
-        }
+        this.cart.set(data);
       }
     }
   }
 
-  private saveCartToStorage(cartData: CartItem[]) {
+  private async saveCartToStorage(cartData: CartItem[]) {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('store_cart', JSON.stringify(cartData));
+      await this.indexedDbService.set('store_cart', 'current_cart', cartData);
     }
   }
 
@@ -594,20 +592,16 @@ export class StoreComponent implements OnInit, AfterViewInit {
   }
 
   // --- Quản lý Yêu thích ---
-  private loadFavoritesFromStorage() {
+  private async loadFavoritesFromStorage() {
     if (typeof window !== 'undefined') {
-      const data = localStorage.getItem('store_favorites');
+      const data = await this.indexedDbService.get('store_favorites', 'current_favorites');
       if (data) {
-        try {
-          this.favorites.set(JSON.parse(data));
-        } catch (e) {
-          console.error(e);
-        }
+        this.favorites.set(data);
       }
     }
   }
 
-  public toggleFavorite(productId: number) {
+  public async toggleFavorite(productId: number) {
     const current = [...this.favorites()];
     const idx = current.indexOf(productId);
     if (idx > -1) {
@@ -617,7 +611,7 @@ export class StoreComponent implements OnInit, AfterViewInit {
     }
     this.favorites.set(current);
     if (typeof window !== 'undefined') {
-      localStorage.setItem('store_favorites', JSON.stringify(current));
+      await this.indexedDbService.set('store_favorites', 'current_favorites', current);
     }
   }
 

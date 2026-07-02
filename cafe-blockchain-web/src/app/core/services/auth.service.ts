@@ -104,44 +104,37 @@ export class AuthService {
     const savedAddress = localStorage.getItem('auth_address');
     if (savedAddress && this.hasValidAuthToken(savedAddress)) {
       this.isAuthLoggedIn.set(true);
-      this.isSuperAdmin.set(localStorage.getItem('auth_is_super_admin') === 'true');
-      this.currentUserAdminRole.set(localStorage.getItem('auth_admin_role') as 'super_admin' | 'staff' | 'admin' | null);
-      this.currentUserRole.set(localStorage.getItem('auth_role') || 'Chủ cửa hàng');
-      
-      const permStr = localStorage.getItem('auth_permissions');
-      if (permStr) {
-        try {
-          this.currentUserPermissions.set(JSON.parse(permStr));
-        } catch {
-          this.currentUserPermissions.set(null);
+      // Nạp thông tin phiên làm việc từ backend để đảm bảo bảo mật và dữ liệu mới nhất
+      this.apiService.getMe().subscribe({
+        next: (res) => {
+          this.isSuperAdmin.set(!!res.is_super_admin);
+          this.currentUserAdminRole.set(res.admin_role || null);
+          this.currentUserRole.set(res.role || 'Chủ cửa hàng');
+          this.currentUserPermissions.set(res.permissions || null);
+
+          if (res.subscription) {
+            const sub = res.subscription;
+            this.subscriptionPlanCode.set(sub.plan_code || 'free');
+            this.subscriptionExpiresAt.set(sub.subscription_expires_at || null);
+            this.subscriptionStatus.set(sub.subscription_status || 'active');
+            this.planFeatures.set(sub.features || null);
+          } else {
+            this.subscriptionPlanCode.set('free');
+            this.subscriptionExpiresAt.set(null);
+            this.subscriptionStatus.set('active');
+            this.planFeatures.set(null);
+          }
+
+          this.systemContacts.set(res.system_contacts || []);
+          this.currentUserName.set(res.name || '');
+          this.currentUserEmail.set(res.email || '');
+          this.currentUserPhone.set(res.phone || '');
+        },
+        error: (err) => {
+          console.error('[Auth] Không thể khôi phục phiên đăng nhập từ backend:', err);
+          this.disconnectWalletAndClose();
         }
-      }
-
-      this.subscriptionPlanCode.set(localStorage.getItem('auth_subscription_plan_code') || 'free');
-      this.subscriptionExpiresAt.set(localStorage.getItem('auth_subscription_expires_at'));
-      this.subscriptionStatus.set(localStorage.getItem('auth_subscription_status') || 'active');
-
-      const featStr = localStorage.getItem('auth_plan_features');
-      if (featStr) {
-        try {
-          this.planFeatures.set(JSON.parse(featStr));
-        } catch {
-          this.planFeatures.set(null);
-        }
-      }
-
-      const contactsStr = localStorage.getItem('auth_system_contacts');
-      if (contactsStr) {
-        try {
-          this.systemContacts.set(JSON.parse(contactsStr));
-        } catch {
-          this.systemContacts.set([]);
-        }
-      }
-
-      this.currentUserName.set(localStorage.getItem('auth_user_name') || '');
-      this.currentUserEmail.set(localStorage.getItem('auth_user_email') || '');
-      this.currentUserPhone.set(localStorage.getItem('auth_user_phone') || '');
+      });
     }
   }
 
@@ -189,50 +182,32 @@ export class AuthService {
                     localStorage.setItem('auth_address', address);
                     localStorage.setItem('auth_logged_in', 'true');
                     this.isAuthLoggedIn.set(true);
-                    localStorage.setItem('auth_is_super_admin', verifyRes.is_super_admin ? 'true' : 'false');
                     this.isSuperAdmin.set(!!verifyRes.is_super_admin);
-                    localStorage.setItem('auth_admin_role', verifyRes.admin_role || '');
                     this.currentUserAdminRole.set(verifyRes.admin_role || null);
 
                     if (verifyRes.role) {
-                      localStorage.setItem('auth_role', verifyRes.role);
                       this.currentUserRole.set(verifyRes.role);
                     } else {
-                      localStorage.removeItem('auth_role');
                       this.currentUserRole.set('Chủ cửa hàng');
                     }
                     if (verifyRes.permissions) {
-                      const permStr = JSON.stringify(verifyRes.permissions);
-                      localStorage.setItem('auth_permissions', permStr);
                       this.currentUserPermissions.set(verifyRes.permissions);
                     } else {
-                      localStorage.removeItem('auth_permissions');
                       this.currentUserPermissions.set(null);
                     }
 
                     if (verifyRes.subscription) {
                       const sub = verifyRes.subscription;
-                      localStorage.setItem('auth_subscription_plan_code', sub.plan_code || 'free');
-                      localStorage.setItem('auth_subscription_expires_at', sub.subscription_expires_at || '');
-                      localStorage.setItem('auth_subscription_status', sub.subscription_status || 'active');
-
                       this.subscriptionPlanCode.set(sub.plan_code || 'free');
                       this.subscriptionExpiresAt.set(sub.subscription_expires_at || null);
                       this.subscriptionStatus.set(sub.subscription_status || 'active');
 
                       if (sub.features) {
-                        localStorage.setItem('auth_plan_features', JSON.stringify(sub.features));
                         this.planFeatures.set(sub.features);
                       } else {
-                        localStorage.removeItem('auth_plan_features');
                         this.planFeatures.set(null);
                       }
                     } else {
-                      localStorage.removeItem('auth_subscription_plan_code');
-                      localStorage.removeItem('auth_subscription_expires_at');
-                      localStorage.removeItem('auth_subscription_status');
-                      localStorage.removeItem('auth_plan_features');
-
                       this.subscriptionPlanCode.set('free');
                       this.subscriptionExpiresAt.set(null);
                       this.subscriptionStatus.set('active');
@@ -240,32 +215,24 @@ export class AuthService {
                     }
 
                     if (verifyRes.system_contacts) {
-                      localStorage.setItem('auth_system_contacts', JSON.stringify(verifyRes.system_contacts));
                       this.systemContacts.set(verifyRes.system_contacts);
                     } else {
-                      localStorage.removeItem('auth_system_contacts');
                       this.systemContacts.set([]);
                     }
 
                     if (verifyRes.name) {
-                      localStorage.setItem('auth_user_name', verifyRes.name);
                       this.currentUserName.set(verifyRes.name);
                     } else {
-                      localStorage.removeItem('auth_user_name');
                       this.currentUserName.set('');
                     }
                     if (verifyRes.email) {
-                      localStorage.setItem('auth_user_email', verifyRes.email);
                       this.currentUserEmail.set(verifyRes.email);
                     } else {
-                      localStorage.removeItem('auth_user_email');
                       this.currentUserEmail.set('');
                     }
                     if (verifyRes.phone) {
-                      localStorage.setItem('auth_user_phone', verifyRes.phone);
                       this.currentUserPhone.set(verifyRes.phone);
                     } else {
-                      localStorage.removeItem('auth_user_phone');
                       this.currentUserPhone.set('');
                     }
                   }
@@ -343,64 +310,46 @@ export class AuthService {
               localStorage.setItem('auth_address', this.pendingAddress);
               localStorage.setItem('auth_logged_in', 'true');
               this.isAuthLoggedIn.set(true);
-              localStorage.setItem('auth_is_super_admin', verifyRes.is_super_admin ? 'true' : 'false');
               this.isSuperAdmin.set(!!verifyRes.is_super_admin);
-              localStorage.setItem('auth_admin_role', verifyRes.admin_role || '');
               this.currentUserAdminRole.set(verifyRes.admin_role || null);
 
               if (verifyRes.role) {
-                localStorage.setItem('auth_role', verifyRes.role);
                 this.currentUserRole.set(verifyRes.role);
               } else {
-                localStorage.removeItem('auth_role');
                 this.currentUserRole.set('Chủ cửa hàng');
               }
               if (verifyRes.permissions) {
-                localStorage.setItem('auth_permissions', JSON.stringify(verifyRes.permissions));
                 this.currentUserPermissions.set(verifyRes.permissions);
               } else {
-                localStorage.removeItem('auth_permissions');
                 this.currentUserPermissions.set(null);
               }
 
               if (verifyRes.subscription) {
                 const sub = verifyRes.subscription;
-                localStorage.setItem('auth_subscription_plan_code', sub.plan_code || 'free');
-                localStorage.setItem('auth_subscription_expires_at', sub.subscription_expires_at || '');
-                localStorage.setItem('auth_subscription_status', sub.subscription_status || 'active');
-
                 this.subscriptionPlanCode.set(sub.plan_code || 'free');
                 this.subscriptionExpiresAt.set(sub.subscription_expires_at || null);
                 this.subscriptionStatus.set(sub.subscription_status || 'active');
 
                 if (sub.features) {
-                  localStorage.setItem('auth_plan_features', JSON.stringify(sub.features));
                   this.planFeatures.set(sub.features);
                 } else {
-                  localStorage.removeItem('auth_plan_features');
                   this.planFeatures.set(null);
                 }
               }
 
               if (verifyRes.name) {
-                localStorage.setItem('auth_user_name', verifyRes.name);
                 this.currentUserName.set(verifyRes.name);
               } else {
-                localStorage.removeItem('auth_user_name');
                 this.currentUserName.set('');
               }
               if (verifyRes.email) {
-                localStorage.setItem('auth_user_email', verifyRes.email);
                 this.currentUserEmail.set(verifyRes.email);
               } else {
-                localStorage.removeItem('auth_user_email');
                 this.currentUserEmail.set('');
               }
               if (verifyRes.phone) {
-                localStorage.setItem('auth_user_phone', verifyRes.phone);
                 this.currentUserPhone.set(verifyRes.phone);
               } else {
-                localStorage.removeItem('auth_user_phone');
                 this.currentUserPhone.set('');
               }
             }

@@ -644,61 +644,21 @@ export class StateService {
 
           if (sub.features) {
             this.authService.planFeatures.set(sub.features);
-            if (typeof window !== 'undefined') {
-              localStorage.setItem('auth_plan_features', JSON.stringify(sub.features));
-            }
           } else {
             this.authService.planFeatures.set(null);
-            if (typeof window !== 'undefined') {
-              localStorage.removeItem('auth_plan_features');
-            }
-          }
-
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('auth_subscription_plan_code', planCode);
-            if (expiresAt) {
-              localStorage.setItem('auth_subscription_expires_at', expiresAt);
-            } else {
-              localStorage.removeItem('auth_subscription_expires_at');
-            }
-            localStorage.setItem('auth_subscription_status', status);
           }
         }
 
         if (res?.system_contacts) {
           this.authService.systemContacts.set(res.system_contacts);
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('auth_system_contacts', JSON.stringify(res.system_contacts));
-          }
         } else {
           this.authService.systemContacts.set([]);
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('auth_system_contacts');
-          }
         }
 
         if (res) {
-          if (res.name) {
-            localStorage.setItem('auth_user_name', res.name);
-            this.authService.currentUserName.set(res.name);
-          } else {
-            localStorage.removeItem('auth_user_name');
-            this.authService.currentUserName.set('');
-          }
-          if (res.email) {
-            localStorage.setItem('auth_user_email', res.email);
-            this.authService.currentUserEmail.set(res.email);
-          } else {
-            localStorage.removeItem('auth_user_email');
-            this.authService.currentUserEmail.set('');
-          }
-          if (res.phone) {
-            localStorage.setItem('auth_user_phone', res.phone);
-            this.authService.currentUserPhone.set(res.phone);
-          } else {
-            localStorage.removeItem('auth_user_phone');
-            this.authService.currentUserPhone.set('');
-          }
+          this.authService.currentUserName.set(res.name || '');
+          this.authService.currentUserEmail.set(res.email || '');
+          this.authService.currentUserPhone.set(res.phone || '');
         }
       },
       error: (err) => {
