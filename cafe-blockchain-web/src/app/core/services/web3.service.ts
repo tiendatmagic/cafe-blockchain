@@ -244,6 +244,17 @@ export class Web3Service {
         this.updateNetworkHealth();
       }, 30000);
     }
+
+    // Tự động đồng bộ configuredChainId xuống AppKit modal để modal gọi đúng chain khi bấm connect
+    effect(() => {
+      const targetChainId = this.configuredChainId();
+      if (this.modal && !this.walletConnected()) {
+        const net = this.getAppKitNetworkByChainId(targetChainId);
+        if (net) {
+          this.modal.switchNetwork(net).catch(() => {});
+        }
+      }
+    });
   }
 
   /**
@@ -348,7 +359,7 @@ export class Web3Service {
       const appKitConfig: any = {
         adapters: [ethersAdapter],
         networks: [arbitrum, base, bsc, bscTestnet, arbitrumSepolia],
-        defaultNetwork: arbitrum,
+        defaultNetwork: defaultNet,
         allowUnsupportedChain: false,
         themeMode: initialTheme, // Đồng bộ theme mode lúc khởi tạo
         metadata: {
