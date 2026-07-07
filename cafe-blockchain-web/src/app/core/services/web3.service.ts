@@ -1,4 +1,4 @@
-import { Injectable, signal, computed, inject, Injector } from '@angular/core';
+import { Injectable, signal, computed, inject, Injector, effect } from '@angular/core';
 import { BrowserProvider, Contract, JsonRpcProvider, parseEther, formatEther, parseUnits } from 'ethers';
 import { Subject } from 'rxjs';
 import { environment } from '@environments/environment';
