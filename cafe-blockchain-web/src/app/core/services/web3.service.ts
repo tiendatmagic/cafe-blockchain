@@ -1,4 +1,4 @@
-import { Injectable, signal, computed, inject, Injector, effect } from '@angular/core';
+import { Injectable, signal, computed, inject, Injector, effect, untracked } from '@angular/core';
 import { BrowserProvider, Contract, JsonRpcProvider, parseEther, formatEther, parseUnits } from 'ethers';
 import { Subject } from 'rxjs';
 import { environment } from '@environments/environment';
@@ -246,15 +246,24 @@ export class Web3Service {
     }
 
     // Tự động đồng bộ configuredChainId xuống AppKit modal để modal gọi đúng chain khi bấm connect
+    // CHÚ Ý: Chỉ đồng bộ khi người dùng chủ động đổi mạng (configuredChainId thay đổi).
+    // Dùng untracked() cho walletConnected để effect không bị trigger lại khi ví đang trong quá trình kết nối.
+    let previousChainId = this.configuredChainId();
     effect(() => {
-      const targetChainId = this.configuredChainId();
-      if (this.modal && !this.walletConnected()) {
-        const net = this.getAppKitNetworkByChainId(targetChainId);
-        if (net) {
-          this.modal.switchNetwork(net).catch(() => {});
+      const currentChainId = this.configuredChainId();
+      if (currentChainId !== previousChainId) {
+        previousChainId = currentChainId;
+        const isConnected = untracked(() => this.walletConnected());
+        if (this.modal && !isConnected) {
+          const net = this.getAppKitNetworkByChainId(currentChainId);
+          if (net) {
+            this.modal.switchNetwork(net).catch(() => {});
+          }
         }
       }
     });
+
+
   }
 
   /**
