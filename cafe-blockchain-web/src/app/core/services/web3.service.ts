@@ -880,6 +880,7 @@ export class Web3Service {
     this.walletConnected.set(false);
     this.isOwnerContract.set(false);
     if (forceLogout && typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
       localStorage.removeItem('auth_address');
       localStorage.removeItem('auth_logged_in');
       localStorage.removeItem('auth_role');

@@ -15,19 +15,25 @@ export class ApiService {
   private readonly baseUrl = environment.apiBaseUrl;
 
   /**
-   * Cập nhật token (Vô hiệu hóa vì đã dùng HttpOnly Cookie)
+   * Cập nhật token và lưu vào localStorage để gửi trong Header (Khắc phục lỗi SameSite cookie cross-origin)
    */
   public setToken(token: string) {
-    // Không còn lưu token ở localStorage để chống XSS
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('auth_token', token);
+    }
   }
 
   public getToken(): string | null {
-    // Đọc token từ localStorage bị vô hiệu hóa
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('auth_token');
+    }
     return null;
   }
 
   public removeToken() {
-    // Xóa token ở localStorage bị vô hiệu hóa
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
+    }
   }
 
   /**
