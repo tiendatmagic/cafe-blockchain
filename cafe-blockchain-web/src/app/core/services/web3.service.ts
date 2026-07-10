@@ -252,6 +252,7 @@ export class Web3Service {
   private appKitAddress: string | null = null;
   private appKitIsConnected = false;
   private isAppKitInitializing = true;
+  private isSwitchingNetwork = false;
   private lastEmittedAccount = '';
 
   constructor() {
@@ -477,7 +478,7 @@ export class Web3Service {
           }
 
           // Thực sự ngắt kết nối khi không còn address
-          if (!this.isAppKitInitializing && this.currentAccount()) {
+          if (!this.isAppKitInitializing && !this.isSwitchingNetwork && this.currentAccount()) {
             this.resetWalletState(true);
             this.emitAccountChange('');
           } else {
@@ -847,109 +848,117 @@ export class Web3Service {
    */
   public async ensureCorrectNetwork(targetChainId?: string): Promise<boolean> {
     this.walletError.set('');
+    this.isSwitchingNetwork = true;
 
     const chainIdToUse = targetChainId || this.configuredChainId();
     const chainIdHex = `0x${BigInt(chainIdToUse).toString(16)}`;
 
-    // Nếu kết nối qua AppKit, ưu tiên dùng switchNetwork của AppKit để đồng bộ trạng thái an toàn
-    if (this.modal && this.appKitIsConnected) {
-      try {
-        const net = this.getAppKitNetworkByChainId(chainIdToUse);
-        if (net) {
-          await this.modal.switchNetwork(net);
-          this.chainId.set(chainIdToUse);
-          this.configuredChainId.set(chainIdToUse);
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('configured_chain_id', chainIdToUse);
-          }
-          if (this.currentAccount()) {
-            await this.updateBalanceAndStatus(this.currentAccount());
-          }
-          return true;
-        }
-      } catch (appKitSwitchError: any) {
-        console.warn('Switch network via AppKit failed, attempting fallback:', appKitSwitchError);
-      }
-    }
-
-    // Lấy provider tương ứng (AppKit wallet provider hoặc window.ethereum)
-    let provider: any = null;
-    if (this.modal && this.appKitIsConnected) {
-      provider = this.modal.getWalletProvider();
-    }
-    if (!provider && typeof window !== 'undefined' && (window as any).ethereum) {
-      provider = (window as any).ethereum;
-    }
-
-    if (!provider) {
-      this.walletError.set('Không tìm thấy ví Web3!');
-      return false;
-    }
-
     try {
-      await provider.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: chainIdHex }],
-      });
-
-      this.chainId.set(chainIdToUse);
-      this.configuredChainId.set(chainIdToUse);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('configured_chain_id', chainIdToUse);
-      }
-      if (this.currentAccount()) {
-        await this.updateBalanceAndStatus(this.currentAccount());
-      }
-      return true;
-    } catch (directSwitchError: any) {
-      console.warn('Switch network failed, attempting to add network:', directSwitchError);
-      const isNetworkNotAdded = directSwitchError.code === 4902 ||
-        directSwitchError.data?.originalError?.code === 4902 ||
-        directSwitchError.message?.includes('4902');
-      if (isNetworkNotAdded) {
+      // Nếu kết nối qua AppKit, ưu tiên dùng switchNetwork của AppKit để đồng bộ trạng thái an toàn
+      if (this.modal) {
         try {
-          const tokenSymbol = this.getNativeTokenSymbolByChainId(chainIdToUse);
-          const netName = this.getNetworkNameByChainId(chainIdToUse);
-
-          // Lấy RPC URL và Explorer URL từ danh sách mạng phổ biến (nếu có), ngược lại lấy từ cấu hình
-          const popularChain = this.POPULAR_CHAINS.find(c => c.chainId === chainIdToUse.toString().trim());
-          const rpcUrl = popularChain ? popularChain.rpcUrl : this.rpcUrl();
-          const explorerUrl = popularChain ? popularChain.explorerUrl : this.explorerUrl();
-
-          await provider.request({
-            method: 'wallet_addEthereumChain',
-            params: [{
-              chainId: chainIdHex,
-              chainName: netName || `Mạng EVM Custom (ID: ${chainIdToUse})`,
-              rpcUrls: [rpcUrl],
-              blockExplorerUrls: explorerUrl ? [explorerUrl] : undefined,
-              nativeCurrency: {
-                name: tokenSymbol,
-                symbol: tokenSymbol,
-                decimals: 18
-              }
-            }],
-          });
-          this.chainId.set(chainIdToUse);
-          this.configuredChainId.set(chainIdToUse);
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('configured_chain_id', chainIdToUse);
+          const net = this.getAppKitNetworkByChainId(chainIdToUse);
+          if (net) {
+            await this.modal.switchNetwork(net);
+            this.chainId.set(chainIdToUse);
+            this.configuredChainId.set(chainIdToUse);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('configured_chain_id', chainIdToUse);
+            }
+            if (this.currentAccount()) {
+              await this.updateBalanceAndStatus(this.currentAccount());
+            }
+            return true;
           }
-          if (this.currentAccount()) {
-            await this.updateBalanceAndStatus(this.currentAccount());
-          }
-          return true;
-        } catch (addError) {
-          console.error('Add network failed:', addError);
-          this.walletError.set('Không thể tự động thêm mạng mới vào ví!');
-          return false;
+        } catch (appKitSwitchError: any) {
+          console.warn('Switch network via AppKit failed, attempting fallback:', appKitSwitchError);
         }
-      } else if (directSwitchError.code === 4001 || directSwitchError.message?.includes('user rejected') || directSwitchError.message?.includes('rejected')) {
-        this.walletError.set('Giao dịch chuyển mạng bị hủy bởi người dùng.');
+      }
+
+      // Lấy provider tương ứng (AppKit wallet provider hoặc window.ethereum)
+      let provider: any = null;
+      if (this.modal) {
+        provider = this.modal.getWalletProvider();
+      }
+      if (!provider && typeof window !== 'undefined' && (window as any).ethereum) {
+        provider = (window as any).ethereum;
+      }
+
+      if (!provider) {
+        this.walletError.set('Không tìm thấy ví Web3!');
         return false;
       }
-      this.walletError.set(directSwitchError.message || 'Lỗi chuyển mạng.');
-      return false;
+
+      try {
+        await provider.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: chainIdHex }],
+        });
+
+        this.chainId.set(chainIdToUse);
+        this.configuredChainId.set(chainIdToUse);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('configured_chain_id', chainIdToUse);
+        }
+        if (this.currentAccount()) {
+          await this.updateBalanceAndStatus(this.currentAccount());
+        }
+        return true;
+      } catch (directSwitchError: any) {
+        console.warn('Switch network failed, attempting to add network:', directSwitchError);
+        const isNetworkNotAdded = directSwitchError.code === 4902 ||
+          directSwitchError.data?.originalError?.code === 4902 ||
+          directSwitchError.message?.includes('4902');
+        if (isNetworkNotAdded) {
+          try {
+            const tokenSymbol = this.getNativeTokenSymbolByChainId(chainIdToUse);
+            const netName = this.getNetworkNameByChainId(chainIdToUse);
+
+            // Lấy RPC URL và Explorer URL từ danh sách mạng phổ biến (nếu có), ngược lại lấy từ cấu hình
+            const popularChain = this.POPULAR_CHAINS.find(c => c.chainId === chainIdToUse.toString().trim());
+            const rpcUrl = popularChain ? popularChain.rpcUrl : this.rpcUrl();
+            const explorerUrl = popularChain ? popularChain.explorerUrl : this.explorerUrl();
+
+            await provider.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: chainIdHex,
+                chainName: netName || `Mạng EVM Custom (ID: ${chainIdToUse})`,
+                rpcUrls: [rpcUrl],
+                blockExplorerUrls: explorerUrl ? [explorerUrl] : undefined,
+                nativeCurrency: {
+                  name: tokenSymbol,
+                  symbol: tokenSymbol,
+                  decimals: 18
+                }
+              }],
+            });
+            this.chainId.set(chainIdToUse);
+            this.configuredChainId.set(chainIdToUse);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('configured_chain_id', chainIdToUse);
+            }
+            if (this.currentAccount()) {
+              await this.updateBalanceAndStatus(this.currentAccount());
+            }
+            return true;
+          } catch (addError) {
+            console.error('Add network failed:', addError);
+            this.walletError.set('Không thể tự động thêm mạng mới vào ví!');
+            return false;
+          }
+        } else if (directSwitchError.code === 4001 || directSwitchError.message?.includes('user rejected') || directSwitchError.message?.includes('rejected')) {
+          this.walletError.set('Giao dịch chuyển mạng bị hủy bởi người dùng.');
+          return false;
+        }
+        this.walletError.set(directSwitchError.message || 'Lỗi chuyển mạng.');
+        return false;
+      }
+    } finally {
+      // Đợi 2.5 giây để ví di động đồng bộ kết nối lại trước khi tắt cờ chuyển mạng
+      setTimeout(() => {
+        this.isSwitchingNetwork = false;
+      }, 2500);
     }
   }
 
