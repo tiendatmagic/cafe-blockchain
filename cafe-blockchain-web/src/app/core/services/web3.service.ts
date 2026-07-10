@@ -33,6 +33,14 @@ export class Web3Service {
   public readonly gasPriceGwei = signal<string>('0.0');
   public readonly networkStatus = signal<string>('Đang kiểm tra...');
 
+  // Signals quản lý tốc độ giao dịch và phí Gas
+  public readonly txSpeed = signal<'default' | 'fast' | 'custom'>(
+    (typeof window !== 'undefined' ? localStorage.getItem('web3_tx_speed') as any : null) || 'default'
+  );
+  public readonly gasMultiplier = signal<number>(
+    Number((typeof window !== 'undefined' ? localStorage.getItem('web3_gas_multiplier') : null) || '2')
+  );
+
   // Sự kiện thay đổi tài khoản hoặc ngắt kết nối ví
   public readonly accountsChanged$ = new Subject<string>();
 
@@ -47,9 +55,32 @@ export class Web3Service {
   public readonly rpcUrl = signal<string>(environment.defaultRpcUrl || 'https://arb1.arbitrum.io/rpc');
   public readonly explorerUrl = signal<string>(environment.defaultExplorerUrl || 'https://arbiscan.io');
   public readonly explorerApiKey = signal<string>('');
-  public readonly configuredChainId = signal<string>(environment.defaultChainId || '42161');
+  public readonly configuredChainId = signal<string>(
+    (typeof window !== 'undefined' ? localStorage.getItem('configured_chain_id') : null) ||
+    environment.defaultChainId ||
+    '42161'
+  );
 
   public readonly POPULAR_CHAINS = POPULAR_CHAINS;
+
+  // Mạng được hỗ trợ (cấu hình động RPC & Explorer từ POPULAR_CHAINS)
+  public readonly supportedChains = [arbitrum, base, bsc, bscTestnet, arbitrumSepolia].map(chain => {
+    const popular = POPULAR_CHAINS.find(c => Number(c.chainId) === Number(chain.id));
+    if (popular) {
+      return {
+        ...chain,
+        rpcUrls: {
+          ...chain.rpcUrls,
+          default: { http: [popular.rpcUrl] }
+        },
+        blockExplorers: {
+          ...chain.blockExplorers,
+          default: { name: popular.name, url: popular.explorerUrl }
+        }
+      };
+    }
+    return chain;
+  });
 
   // Địa chỉ ví rút gọn
   public readonly shortAddress = computed(() => {
@@ -263,7 +294,19 @@ export class Web3Service {
       }
     });
 
+    // Tự động lưu txSpeed vào localStorage khi thay đổi
+    effect(() => {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('web3_tx_speed', this.txSpeed());
+      }
+    });
 
+    // Tự động lưu gasMultiplier vào localStorage khi thay đổi
+    effect(() => {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('web3_gas_multiplier', this.gasMultiplier().toString());
+      }
+    });
   }
 
   /**
@@ -367,7 +410,7 @@ export class Web3Service {
 
       const appKitConfig: any = {
         adapters: [ethersAdapter],
-        networks: [arbitrum, base, bsc, bscTestnet, arbitrumSepolia],
+        networks: this.supportedChains,
         defaultNetwork: defaultNet,
         allowUnsupportedChain: false,
         themeMode: initialTheme, // Đồng bộ theme mode lúc khởi tạo
@@ -686,6 +729,45 @@ export class Web3Service {
       // Xóa các key auth cũ thay vì clear toàn bộ localStorage tránh làm hỏng cache của AppKit
       this.resetWalletState(true);
 
+      // Phát hiện môi trường in-app browser của các app ví di động (Bitget, Trust, MetaMask, OKX, v.v.)
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const isInAppBrowser = typeof window !== 'undefined' && (
+        (window as any).ethereum && (
+          (window as any).bitkeep || 
+          (window as any).ethereum.isBitKeep ||
+          ((window as any).ethereum.isMetaMask && isMobile) ||
+          (window as any).ethereum.isTrust ||
+          navigator.userAgent.includes('Bitget') || 
+          navigator.userAgent.includes('OKX') ||
+          navigator.userAgent.includes('TokenPocket')
+        )
+      );
+
+      // Nếu đang trong in-app browser của ví, ưu tiên kết nối trực tiếp qua injected provider
+      if (isInAppBrowser && (window as any).ethereum) {
+        try {
+          const eth = (window as any).ethereum;
+          const accounts = await eth.request({ method: 'eth_requestAccounts' });
+          if (accounts && accounts.length > 0) {
+            const addr = accounts[0];
+            this.currentAccount.set(addr);
+            this.appKitAddress = addr;
+            this.appKitIsConnected = true;
+            
+            if (this.hasValidAuthToken(addr)) {
+              this.walletConnected.set(true);
+            } else {
+              this.walletConnected.set(false);
+            }
+
+            await this.updateBalanceAndStatus(addr);
+            return true;
+          }
+        } catch (inAppErr: any) {
+          console.warn('[Web3] Kết nối trực tiếp qua window.ethereum thất bại, fallback sang AppKit modal:', inAppErr);
+        }
+      }
+
       // 2. Nếu chưa kết nối, mở modal chọn ví của AppKit
       await this.modal.open();
 
@@ -776,6 +858,10 @@ export class Web3Service {
         if (net) {
           await this.modal.switchNetwork(net);
           this.chainId.set(chainIdToUse);
+          this.configuredChainId.set(chainIdToUse);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('configured_chain_id', chainIdToUse);
+          }
           if (this.currentAccount()) {
             await this.updateBalanceAndStatus(this.currentAccount());
           }
@@ -807,6 +893,10 @@ export class Web3Service {
       });
 
       this.chainId.set(chainIdToUse);
+      this.configuredChainId.set(chainIdToUse);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('configured_chain_id', chainIdToUse);
+      }
       if (this.currentAccount()) {
         await this.updateBalanceAndStatus(this.currentAccount());
       }
@@ -841,6 +931,10 @@ export class Web3Service {
             }],
           });
           this.chainId.set(chainIdToUse);
+          this.configuredChainId.set(chainIdToUse);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('configured_chain_id', chainIdToUse);
+          }
           if (this.currentAccount()) {
             await this.updateBalanceAndStatus(this.currentAccount());
           }
@@ -972,6 +1066,40 @@ export class Web3Service {
   }
 
   /**
+   * Tính toán phí gas overrides dựa vào tốc độ giao dịch thiết lập
+   */
+  private async getGasOverrides(): Promise<any> {
+    const overrides: any = {};
+    if (!this.provider) return overrides;
+
+    try {
+      const feeData = await this.provider.getFeeData();
+      const speed = this.txSpeed();
+
+      if (speed === 'fast') {
+        if (feeData.maxFeePerGas) {
+          overrides.maxFeePerGas = (feeData.maxFeePerGas * 150n) / 100n;
+        }
+        if (feeData.maxPriorityFeePerGas) {
+          overrides.maxPriorityFeePerGas = (feeData.maxPriorityFeePerGas * 150n) / 100n;
+        }
+      } else if (speed === 'custom') {
+        const multiplier = this.gasMultiplier() || 2.0;
+        const multiplierBigInt = BigInt(Math.round(multiplier * 100));
+        if (feeData.maxFeePerGas) {
+          overrides.maxFeePerGas = (feeData.maxFeePerGas * multiplierBigInt) / 100n;
+        }
+        if (feeData.maxPriorityFeePerGas) {
+          overrides.maxPriorityFeePerGas = (feeData.maxPriorityFeePerGas * multiplierBigInt) / 100n;
+        }
+      }
+    } catch (gasErr) {
+      console.warn('[Web3] Không thể cấu hình phí gas nâng cao:', gasErr);
+    }
+    return overrides;
+  }
+
+  /**
    * Gửi native token tới một địa chỉ xác định
    */
   public async sendNativeToken(
@@ -989,9 +1117,11 @@ export class Web3Service {
 
     try {
       const signer = await this.provider.getSigner();
+      const overrides = await this.getGasOverrides();
       const tx = await signer.sendTransaction({
         to: recipientAddress,
-        value: parseEther(amount)
+        value: parseEther(amount),
+        ...overrides
       });
 
       // Theo dõi và cập nhật lại số dư ví sau khi giao dịch hoàn tất trên mạng lưới
@@ -1073,7 +1203,8 @@ export class Web3Service {
       const contract = new Contract(usdtAddress, abi, signer);
       const parsedAmount = parseUnits(amount, decimals);
 
-      const tx = await contract['transfer'](recipientAddress, parsedAmount);
+      const overrides = await this.getGasOverrides();
+      const tx = await contract['transfer'](recipientAddress, parsedAmount, overrides);
 
       tx.wait().then(() => {
         if (this.currentAccount()) {
@@ -1143,7 +1274,8 @@ export class Web3Service {
     try {
       const signer = await this.provider.getSigner();
       const contract = new Contract(contractAddress, abi, signer);
-      const tx = await contract[methodName](...args);
+      const overrides = await this.getGasOverrides();
+      const tx = await contract[methodName](...args, overrides);
       return {
         txHash: tx.hash,
         success: true
