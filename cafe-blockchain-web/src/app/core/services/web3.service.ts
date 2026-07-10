@@ -753,7 +753,7 @@ export class Web3Service {
             const addr = accounts[0];
             this.currentAccount.set(addr);
             this.appKitAddress = addr;
-            this.appKitIsConnected = true;
+            this.appKitIsConnected = false;
             
             if (this.hasValidAuthToken(addr)) {
               this.walletConnected.set(true);
