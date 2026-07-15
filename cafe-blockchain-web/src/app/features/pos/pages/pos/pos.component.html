@@ -1,4 +1,4 @@
-<div class="space-y-6 p-4 sm:p-6 max-w-[1530px] mx-auto">
+<div class="space-y-6 p-4 sm:p-6 pb-28 xl:pb-6 max-w-[1530px] mx-auto">
   <!-- Header tiêu đề tab -->
   <app-page-header
     title="Bán hàng POS"
@@ -389,6 +389,20 @@
               (shiftService.currentShift() && shiftService.currentShift().id) ||
               shiftService.isShiftSkipped()
             ) {
+              <!-- Header giỏ hàng (chỉ desktop) -->
+              <div
+                class="flex items-center justify-between pb-4 border-b border-slate-200/60 dark:border-slate-800/60 shrink-0"
+              >
+                <h4 class="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
+                  <app-icon name="cart" class="h-5 w-5 text-slate-500 shrink-0" strokeWidth="2" />
+                  <span>Giỏ hàng bán hàng</span>
+                </h4>
+                @if (cart().length > 0) {
+                  <button (click)="clearCart()" class="text-xs font-bold text-rose-500 hover:underline">
+                    Xóa tất cả
+                  </button>
+                }
+              </div>
               <ng-container *ngTemplateOutlet="cartContentTemplate"></ng-container>
             } @else {
               <ng-container *ngTemplateOutlet="startShiftTemplate"></ng-container>
@@ -405,7 +419,7 @@
 
   <!-- ==================== DRAWER GIỎ HÀNG DI ĐỘNG (MOBILE CART DRAWER) ==================== -->
   <div
-    class="fixed inset-0 z-50 transition-opacity duration-300 lg:hidden"
+    class="fixed inset-0 z-50 transition-opacity duration-300 xl:hidden"
     [class.opacity-100]="isMobileCartOpen()"
     [class.pointer-events-auto]="isMobileCartOpen()"
     [class.opacity-0]="!isMobileCartOpen()"
@@ -431,14 +445,21 @@
           <app-icon name="cart" class="h-5 w-5 text-slate-500 shrink-0" strokeWidth="2" />
           <span>Giỏ hàng bán hàng</span>
         </h4>
-        <button
-          type="button"
-          (click)="isMobileCartOpen.set(false)"
-          class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 flex items-center justify-center transition-colors active:scale-95 shrink-0"
-          title="Đóng giỏ hàng"
-        >
-          <app-icon name="close" class="h-4.5 w-4.5" strokeWidth="2.5" />
-        </button>
+        <div class="flex items-center gap-3">
+          @if (cart().length > 0) {
+            <button (click)="clearCart()" class="text-xs font-bold text-rose-500 hover:underline">
+              Xóa tất cả
+            </button>
+          }
+          <button
+            type="button"
+            (click)="isMobileCartOpen.set(false)"
+            class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 flex items-center justify-center transition-colors active:scale-95 shrink-0"
+            title="Đóng giỏ hàng"
+          >
+            <app-icon name="close" class="h-4.5 w-4.5" strokeWidth="2.5" />
+          </button>
+        </div>
       </div>
 
       <!-- Vùng nội dung giỏ hàng trích xuất -->
@@ -457,7 +478,7 @@
     cart().length > 0
   ) {
     <div
-      class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200/80 dark:border-slate-800/80 p-4 shadow-[0_-8px_30px_rgb(0,0,0,0.08)] flex items-center justify-between animate-in slide-in-from-bottom duration-300"
+      class="xl:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200/80 dark:border-slate-800/80 p-4 shadow-[0_-8px_30px_rgb(0,0,0,0.08)] flex items-center justify-between animate-in slide-in-from-bottom duration-300"
     >
       <div class="flex flex-col gap-0.5">
         <span
@@ -486,19 +507,6 @@
 
   <!-- 1. Template Giỏ hàng thực tế -->
   <ng-template #cartContentTemplate>
-    <div
-      class="flex items-center justify-between pb-4 border-b border-slate-200/60 dark:border-slate-800/60"
-    >
-      <h4 class="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
-        <app-icon name="cart" class="h-5 w-5 text-slate-500 shrink-0" strokeWidth="2" />
-        <span>Giỏ hàng bán hàng</span>
-      </h4>
-      @if (cart().length > 0) {
-        <button (click)="clearCart()" class="text-xs font-bold text-rose-500 hover:underline">
-          Xóa tất cả
-        </button>
-      }
-    </div>
 
     <!-- Ô Tìm kiếm và Chọn Khách hàng (Tối ưu sang trọng) -->
     <div class="py-3 border-b border-slate-200/50 dark:border-slate-800/80 relative shrink-0">
@@ -1258,7 +1266,7 @@
           </button>
         </div>
 
-        <div class="flex flex-col sm:flex-row xl:flex-col gap-3 fle">
+        <div class="flex flex-col sm:flex-row xl:flex-col gap-3">
           <button
             app-button
             variant="primary"
@@ -1328,4 +1336,22 @@
       </button>
     </div>
   </ng-template>
+
+  <!-- Nút Giỏ hàng nổi (FAB) khi giỏ hàng trống trên di động/tablet (dưới 1280px) -->
+  @if (
+    web3Service.walletConnected() &&
+    stateService.hasPermission('pos') &&
+    ((shiftService.currentShift() && shiftService.currentShift().id) ||
+      shiftService.isShiftSkipped()) &&
+    cart().length === 0
+  ) {
+    <button
+      type="button"
+      (click)="isMobileCartOpen.set(true)"
+      class="xl:hidden fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-gradient-to-r from-[var(--dynamic-primary)] to-[var(--dynamic-secondary)] text-white shadow-lg shadow-[var(--dynamic-primary)]/30 flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 cursor-pointer border border-white/10"
+      title="Xem giỏ hàng"
+    >
+      <app-icon name="cart" class="h-6 w-6 text-white" strokeWidth="2.5" />
+    </button>
+  }
 </div>
