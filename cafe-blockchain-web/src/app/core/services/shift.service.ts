@@ -47,9 +47,15 @@ export class ShiftService {
   private lastShiftSummaryLoadedTime = 0;
  
   constructor() {
-    // 1. Tự động nạp ca trực ban đầu dưới nền khi đăng nhập ví thành công
+    // 1. Tự động nạp ca trực ban đầu dưới nền khi đăng nhập ví thành công hoặc thông tin phân quyền thay đổi
     effect(() => {
-      if (this.web3Service.walletConnected() && this.authService.isAuthLoggedIn()) {
+      const walletConnected = this.web3Service.walletConnected();
+      const isLoggedIn = this.authService.isAuthLoggedIn();
+      // Đọc các signal này để kích hoạt lại effect khi thông tin phân quyền/gói cước được tải xong từ backend
+      const permissions = this.authService.currentUserPermissions();
+      const features = this.authService.planFeatures();
+
+      if (walletConnected && isLoggedIn) {
         untracked(() => {
           this.loadShiftDataInitially();
         });
