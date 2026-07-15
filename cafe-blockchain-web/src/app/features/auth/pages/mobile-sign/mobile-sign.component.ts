@@ -67,7 +67,7 @@ export class MobileSignComponent implements OnInit {
   public onDocumentClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
     if (
-      !this.elementRef.nativeElement.querySelector('#chain-dropdown-container')?.contains(target)
+      !this.elementRef.nativeElement.querySelector('#mobile-chain-dropdown-container')?.contains(target)
     ) {
       this.isChainDropdownOpen.set(false);
     }
