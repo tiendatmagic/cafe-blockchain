@@ -230,7 +230,7 @@ export class PosComponent implements OnInit, OnDestroy {
 
     this.apiService.getCustomers(cleanQuery, 15).subscribe({
       next: (res) => {
-        const results = res || [];
+        const results = (res && res.data ? res.data : res) || [];
 
         if (isEvmWallet) {
           const hasWallet = results.some(
@@ -604,7 +604,8 @@ export class PosComponent implements OnInit, OnDestroy {
           if (isWalletExistsError) {
             // Nếu đã tồn tại ví này, tự động tìm kiếm lại khách hàng đó và chọn
             this.apiService.getCustomers(customer.wallet_address, 1).subscribe({
-              next: (results) => {
+              next: (res) => {
+                const results = (res && res.data ? res.data : res) || [];
                 const foundCustomer =
                   results &&
                   results.find(
