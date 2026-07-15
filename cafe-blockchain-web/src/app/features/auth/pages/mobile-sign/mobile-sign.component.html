@@ -100,7 +100,8 @@
       <!-- BANNER CẢNH BÁO SAI CHAIN CHO KHÁCH HÀNG -->
       @if (isWrongChain) {
         <div
-          class="mb-6 p-4 rounded-[15px] bg-amber-500/10 dark:bg-amber-500/10 border border-amber-300/60 dark:border-amber-500/30 backdrop-blur-md text-amber-800 dark:text-amber-200 text-xs font-bold shadow-lg transition-all duration-300 flex flex-col gap-3.5"
+          app-card
+          class="mb-6 p-4 border border-amber-300/60 dark:border-amber-500/30 bg-amber-500/10 dark:bg-amber-500/10 flex flex-col gap-3.5"
         >
           <div class="flex items-start gap-3">
             <div
@@ -123,11 +124,13 @@
             </div>
           </div>
           <button
+            app-button
+            variant="primary"
             (click)="switchNetwork()"
-            class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
+            class="w-full"
           >
-            <app-icon name="sync" class="h-3.5 w-3.5" [strokeWidth]="3"></app-icon>
-            Chuyển mạng tự động
+            <app-icon name="sync" class="h-3.5 w-3.5 inline shrink-0" [strokeWidth]="3"></app-icon>
+            <span>Chuyển mạng tự động</span>
           </button>
         </div>
       }
@@ -135,7 +138,8 @@
       <!-- STEP: ERROR -->
       @if (step() === 'error') {
         <div
-          class="bg-white/90 dark:bg-slate-800/35 border border-rose-200 dark:border-rose-500/20 rounded-[15px] p-4 sm:p-6 text-center shadow-xl dark:shadow-slate-950/20"
+          app-card
+          class="p-4 sm:p-6 text-center border-rose-200/50 dark:border-rose-500/20 shadow-xl"
         >
           <div
             class="w-16 h-16 rounded-full bg-rose-100 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-500/20 flex items-center justify-center mx-auto mb-4 text-rose-500"
@@ -147,8 +151,10 @@
             {{ errorMessage() }}
           </p>
           <button
+            app-button
+            variant="secondary"
             (click)="step.set('connect')"
-            class="mt-6 btn btn-secondary px-6 py-2.5 rounded-xl hover:scale-[1.01]"
+            class="mt-6 px-6"
           >
             Thử lại
           </button>
@@ -158,7 +164,8 @@
       <!-- STEP: SUCCESS -->
       @if (step() === 'success') {
         <div
-          class="bg-white/90 dark:bg-slate-800/35 border border-emerald-200 dark:border-emerald-500/20 rounded-[15px] p-4 sm:p-6 text-center shadow-xl dark:shadow-slate-950/20"
+          app-card
+          class="p-4 sm:p-6 text-center border-emerald-200/50 dark:border-emerald-500/20 shadow-xl"
         >
           @if (orderStatus() === 'cancelled') {
             <div
@@ -295,7 +302,8 @@
       <!-- STEP: CONNECT WALLET -->
       @if (step() === 'connect') {
         <div
-          class="bg-white/80 dark:bg-slate-800/30 border border-slate-200/50 dark:border-slate-700/30 backdrop-blur-md rounded-[15px] p-4 sm:p-6 shadow-xl dark:shadow-slate-950/20"
+          app-card
+          class="p-4 sm:p-6 shadow-xl"
         >
           <h2
             class="text-base sm:text-lg font-black text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2"
@@ -311,7 +319,7 @@
               <div class="flex items-center gap-3">
                 <app-icon
                   name="gift"
-                  class="h-6 w-6 text-[var(--color-primary)] shrink-0 inline-block animate-pulse"
+                  class="h-6 w-6 text-[var(--color-primary)] shrink-0 inline-block"
                   [strokeWidth]="2"
                 ></app-icon>
                 <div class="flex flex-col">
@@ -350,18 +358,13 @@
           }
 
           <button
+            app-button
+            variant="primary"
+            [loading]="isConnecting()"
             (click)="connectWallet()"
-            [disabled]="isConnecting()"
-            class="btn btn-primary btn-full py-3.5 rounded-xl hover:scale-[1.01] active:scale-[0.98]"
+            class="w-full py-3.5"
           >
-            @if (isConnecting()) {
-              <span
-                class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin shrink-0"
-              ></span>
-              <span>Đang kết nối...</span>
-            } @else {
-              <span>Kết nối ví Metamask</span>
-            }
+            Kết nối ví Metamask
           </button>
         </div>
       }
@@ -369,7 +372,8 @@
       <!-- STEP: SIGN SIGNATURE -->
       @if (step() === 'sign') {
         <div
-          class="bg-white/80 dark:bg-slate-800/30 border border-slate-200/50 dark:border-slate-700/30 backdrop-blur-md rounded-[15px] p-4 sm:p-6 shadow-xl dark:shadow-slate-950/20"
+          app-card
+          class="p-4 sm:p-6 shadow-xl"
         >
           <h2
             class="text-base sm:text-lg font-black text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2"
@@ -398,7 +402,7 @@
               <span>Mạng kết nối:</span>
               <span class="flex items-center gap-1.5 text-slate-700 dark:text-slate-200">
                 <span
-                  class="w-1.5 h-1.5 rounded-full shrink-0 animate-pulse"
+                  class="w-1.5 h-1.5 rounded-full shrink-0"
                   [class]="getChainColorClass(web3Service.chainId())"
                 ></span>
                 <span>{{ web3Service.networkName() | uppercase }}</span>
@@ -453,24 +457,22 @@
 
           <div class="flex flex-col gap-2.5">
             <button
+              app-button
+              variant="primary"
+              [loading]="isSigning()"
+              [disabled]="isWrongChain"
               (click)="signVoucher()"
-              [disabled]="isSigning() || isWrongChain"
-              class="btn btn-primary btn-full py-3.5 rounded-xl hover:scale-[1.01] active:scale-[0.98]"
+              class="w-full py-3.5"
             >
-              @if (isSigning()) {
-                <span
-                  class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin shrink-0"
-                ></span>
-                <span>Đang ký xác nhận...</span>
-              } @else {
-                <span>Ký Xác Nhận Sử Dụng</span>
-              }
+              Ký Xác Nhận Sử Dụng
             </button>
 
             <button
-              (click)="step.set('connect')"
+              app-button
+              variant="secondary"
               [disabled]="isSigning()"
-              class="btn btn-secondary btn-full py-3 rounded-xl hover:scale-[1.01] active:scale-[0.98]"
+              (click)="step.set('connect')"
+              class="w-full py-3"
             >
               Đổi ví kết nối
             </button>
@@ -480,7 +482,10 @@
 
       <!-- Chi tiết đơn hàng/Biên lai (Hiển thị dưới dạng thông tin đối soát ở mọi step) -->
       @if (tempOrder()) {
-        <div class="mt-6 p-4 sm:p-5 bg-white/80 dark:bg-slate-800/30 border border-slate-200/50 dark:border-slate-700/30 backdrop-blur-md rounded-[15px] shadow-xl dark:shadow-slate-950/20">
+        <div
+          app-card
+          class="mt-6 p-4 sm:p-5 shadow-xl"
+        >
           <div
             class="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-700/40 pb-3 mb-3"
           >
