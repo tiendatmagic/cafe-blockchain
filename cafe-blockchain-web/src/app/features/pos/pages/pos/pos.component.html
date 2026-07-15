@@ -1,4 +1,7 @@
-<div class="space-y-6 p-4 sm:p-6 pb-28 xl:pb-6 max-w-[1530px] mx-auto">
+<div
+  class="space-y-6 p-4 sm:p-6 max-w-[1530px] mx-auto"
+  [ngClass]="cart().length > 0 ? 'pb-28 xl:pb-6' : 'pb-6'"
+>
   <!-- Header tiêu đề tab -->
   <app-page-header
     title="Bán hàng POS"
@@ -341,14 +344,16 @@
 
             <!-- Phân trang Bán hàng POS -->
             @if (posTotalItems() > posItemsPerPage) {
-              <app-pagination
-                [currentPage]="posCurrentPage()"
-                [totalPages]="posTotalPages()"
-                [totalItems]="posTotalItems()"
-                [itemsPerPage]="posItemsPerPage"
-                itemName="món"
-                (pageChange)="posCurrentPage.set($event)"
-              ></app-pagination>
+              <div class="pb-6 xl:pb-0">
+                <app-pagination
+                  [currentPage]="posCurrentPage()"
+                  [totalPages]="posTotalPages()"
+                  [totalItems]="posTotalItems()"
+                  [itemsPerPage]="posItemsPerPage"
+                  itemName="món"
+                  (pageChange)="posCurrentPage.set($event)"
+                ></app-pagination>
+              </div>
             }
           }
         </div>
