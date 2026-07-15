@@ -18,12 +18,11 @@ import { CAFE_VOUCHER_NFT_ABI } from '@core/services/voucher-contract-abi';
 import { VNDCurrencyPipe } from '@shared/pipes/vnd.pipe';
 import { ThemeToggleComponent } from '@shared/components/theme-toggle/theme-toggle.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
-import { CardComponent } from '@shared/components/card/card.component';
 
 @Component({
   selector: 'app-mobile-sign',
   standalone: true,
-  imports: [CommonModule, VNDCurrencyPipe, ThemeToggleComponent, IconComponent, CardComponent],
+  imports: [CommonModule, VNDCurrencyPipe, ThemeToggleComponent, IconComponent],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './mobile-sign.component.html',
 })

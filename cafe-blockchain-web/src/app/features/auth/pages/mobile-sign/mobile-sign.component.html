@@ -1,5 +1,5 @@
 <div
-  class="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white flex flex-col justify-between p-6 relative overflow-hidden font-sans transition-colors duration-300"
+  class="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white flex flex-col relative overflow-hidden font-sans transition-colors duration-300"
 >
   <!-- Gradient Background Effects -->
   <div
@@ -9,553 +9,566 @@
     class="absolute w-96 h-96 rounded-full bg-blue-600/5 dark:bg-blue-600/10 blur-[120px] bottom-[-10%] right-[-20%] pointer-events-none"
   ></div>
 
-  <!-- Header -->
-  <header
-    class="flex pb-6 items-center justify-between z-10 border-b border-slate-200 dark:border-slate-800/60 transition-colors duration-300 shrink-0"
-  >
-    <div class="flex items-center gap-3">
-      <div class="border-b border-slate-200/60 dark:border-slate-800/60 flex items-center gap-3">
+  <!-- Content Centered Wrapper -->
+  <div class="flex-1 flex flex-col justify-between p-4 sm:p-6 max-w-md w-full mx-auto z-10">
+    <!-- Header -->
+    <header
+      class="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800/60 transition-colors duration-300 shrink-0 w-full"
+    >
+      <div class="flex items-center gap-2 sm:gap-3">
         <img
           src="/assets/logo.png"
-          class="h-10 object-contain shrink-0 w-10"
+          class="h-9.5 w-9.5 sm:h-10 sm:w-10 object-contain shrink-0 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-800/60 p-1.5 shadow-sm"
           alt="Cafe Blockchain Logo"
         />
-        <div>
-          <h1 class="text-lg font-bold tracking-tight text-slate-800 dark:text-white leading-none">
+        <div class="hidden sm:block">
+          <h1 class="text-sm sm:text-base font-extrabold tracking-tight text-slate-800 dark:text-white leading-none">
             Cafe Web3
           </h1>
           <span
-            class="text-xs font-semibold text-purple-600 dark:text-purple-400 tracking-wider uppercase"
+            class="text-[10px] font-bold text-purple-600 dark:text-purple-400 tracking-wider uppercase block mt-1"
             >Sổ Bán Hàng POS</span
           >
         </div>
       </div>
-    </div>
 
-    <div class="flex items-center gap-3">
-      <!-- Standalone Theme Toggle Component -->
-      <app-theme-toggle size="sm"></app-theme-toggle>
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Standalone Theme Toggle Component -->
+        <div class="flex items-center h-9.5">
+          <app-theme-toggle size="sm"></app-theme-toggle>
+        </div>
 
-      <!-- Dropdown Chọn Chain -->
-      <div id="chain-dropdown-container" class="relative">
-        <button
-          type="button"
-          (click)="isChainDropdownOpen.set(!isChainDropdownOpen())"
-          class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-200 dark:bg-slate-800/40 border border-slate-300 dark:border-slate-700/30 text-xs font-black text-slate-600 dark:text-slate-300 transition-colors cursor-pointer hover:bg-slate-300/50 dark:hover:bg-slate-800/70"
-          title="Chọn mạng Blockchain"
-        >
-          <span
-            class="w-1.5 h-1.5 rounded-full animate-pulse"
-            [class]="
-              getChainColorClass(
-                web3Service.walletConnected()
-                  ? web3Service.chainId()
-                  : web3Service.configuredChainId()
-              )
-            "
-          ></span>
-          <span>{{
-            (web3Service.walletConnected()
-              ? web3Service.networkName()
-              : web3Service.configuredNetworkName()
-            ) | uppercase
-          }}</span>
-          <app-icon
-            name="chevron-down"
-            class="h-3 w-3 text-slate-500 transition-transform duration-200"
-            [class.rotate-180]="isChainDropdownOpen()"
-            [strokeWidth]="2.5"
-          ></app-icon>
-        </button>
-
-        @if (isChainDropdownOpen()) {
-          <div
-            class="fixed left-4 right-4 top-[70px] sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:w-72 sm:mt-2 p-1.5 rounded-[15px] bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-2xl shadow-slate-900/10 dark:shadow-black/50 max-h-[250px] overflow-y-auto no-scrollbar transition-all z-[9995] animate-in fade-in slide-in-from-top-2 duration-150"
+        <!-- Dropdown Chọn Chain -->
+        <div id="chain-dropdown-container" class="relative">
+          <button
+            type="button"
+            (click)="isChainDropdownOpen.set(!isChainDropdownOpen())"
+            class="flex items-center justify-center w-9.5 h-9.5 rounded-xl bg-white dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800/60 text-slate-500 dark:text-slate-400 hover:text-[var(--color-primary)] hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200 active:scale-95 cursor-pointer shadow-sm"
+            title="Chọn mạng Blockchain"
           >
-            <button
-              type="button"
-              class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-default"
+            <app-icon name="globe" class="h-4.5 w-4.5" strokeWidth="2.2"></app-icon>
+          </button>
+
+          @if (isChainDropdownOpen()) {
+            <div
+              class="absolute right-0 mt-2 w-64 sm:w-72 p-1.5 rounded-[15px] bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-2xl shadow-slate-900/10 dark:shadow-black/50 max-h-[250px] overflow-y-auto no-scrollbar transition-all z-[9995]"
             >
-              -- Chọn nhanh mạng phổ biến nhất --
-            </button>
-            @for (chain of web3Service.POPULAR_CHAINS; track chain.chainId) {
               <button
                 type="button"
-                (click)="switchChain(chain.chainId)"
-                class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm text-slate-700 dark:text-slate-300 hover:bg-[var(--dynamic-primary)]/5 hover:text-[var(--dynamic-primary)] transition-all text-left"
-                [class.bg-[var(--dynamic-primary)]/5]="
-                  web3Service.chainId() === chain.chainId ||
-                  (!web3Service.walletConnected() &&
-                    web3Service.configuredChainId() === chain.chainId)
-                "
-                [class.text-[var(--dynamic-primary)]]="
-                  web3Service.chainId() === chain.chainId ||
-                  (!web3Service.walletConnected() &&
-                    web3Service.configuredChainId() === chain.chainId)
-                "
+                class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-default"
               >
-                <div class="flex items-center gap-2">
-                  <span
-                    class="w-2.5 h-2.5 rounded-full shrink-0"
-                    [class]="getChainColorClass(chain.chainId)"
-                  ></span>
-                  <span class="font-medium">{{ chain.name }}</span>
-                </div>
-                <span
-                  class="text-xs font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 rounded font-mono shrink-0"
-                >
-                  ID: {{ chain.chainId }}
-                </span>
+                -- Chọn nhanh mạng phổ biến nhất --
               </button>
-            }
-          </div>
-        }
-      </div>
-    </div>
-  </header>
-
-  <!-- Main Content Card -->
-  <main class="my-auto py-8 z-10 max-w-md w-full mx-auto">
-    <!-- BANNER CẢNH BÁO SAI CHAIN CHO KHÁCH HÀNG -->
-    @if (isWrongChain) {
-      <div
-        class="mb-6 p-4.5 rounded-3xl bg-amber-500/10 dark:bg-amber-500/10 border border-amber-300/60 dark:border-amber-500/30 backdrop-blur-md text-amber-800 dark:text-amber-200 text-xs font-bold shadow-lg transition-all duration-300 animate-in fade-in slide-in-from-top-2 flex flex-col gap-3.5"
-      >
-        <div class="flex items-start gap-3">
-          <div
-            class="w-8 h-8 rounded-xl bg-amber-500/20 dark:bg-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0"
-          >
-            <app-icon name="warning" class="h-5 w-5" [strokeWidth]="2.5"></app-icon>
-          </div>
-          <div class="flex flex-col">
-            <span
-              class="text-xs font-extrabold uppercase tracking-wide text-amber-700 dark:text-amber-400"
-              >Sai mạng kết nối</span
-            >
-            <span class="text-xs font-bold text-slate-600 dark:text-slate-300 leading-snug mt-0.5">
-              Ví của bạn đang ở mạng khác. Quán yêu cầu kết nối mạng
-              <span class="underline decoration-wavy decoration-amber-500/50 font-black">{{
-                web3Service.configuredNetworkName()
-              }}</span>
-              để có thể đồng bộ Blockchain!
-            </span>
-          </div>
-        </div>
-        <button
-          (click)="switchNetwork()"
-          class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs rounded-2xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5"
-        >
-          <app-icon name="sync" class="h-3.5 w-3.5" [strokeWidth]="3"></app-icon>
-          Chuyển mạng tự động
-        </button>
-      </div>
-    }
-
-    <!-- STEP: ERROR -->
-    @if (step() === 'error') {
-      <div
-        class="bg-white dark:bg-slate-800/35 border border-rose-100 dark:border-rose-500/20 rounded-3xl p-6 text-center shadow-xl dark:shadow-rose-950/5 animate-in fade-in zoom-in-95 duration-200"
-      >
-        <div
-          class="w-16 h-16 rounded-full bg-rose-100 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-500/20 flex items-center justify-center mx-auto mb-4 text-rose-500"
-        >
-          <app-icon name="warning" class="h-8 w-8 text-rose-500" [strokeWidth]="2.2"></app-icon>
-        </div>
-        <h2 class="text-lg font-black text-rose-600 dark:text-rose-400 mb-2">Đã xảy ra lỗi</h2>
-        <p class="text-xs font-bold text-slate-500 dark:text-slate-400 leading-relaxed">
-          {{ errorMessage() }}
-        </p>
-        <button
-          (click)="step.set('connect')"
-          class="mt-6 px-6 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 rounded-2xl transition-all active:scale-95"
-        >
-          Thử lại
-        </button>
-      </div>
-    }
-
-    <!-- STEP: SUCCESS -->
-    @if (step() === 'success') {
-      <div
-        class="bg-white dark:bg-slate-800/35 border border-emerald-100 dark:border-emerald-500/20 rounded-3xl p-6 text-center shadow-xl dark:shadow-emerald-950/5 animate-in fade-in zoom-in-95 duration-200"
-      >
-        @if (orderStatus() === 'cancelled') {
-          <div
-            class="w-20 h-20 rounded-full bg-gradient-to-tr from-rose-500 to-red-400 text-white flex items-center justify-center mx-auto mb-5 text-4xl shadow-lg shadow-rose-500/20"
-          >
-            <app-icon name="close" class="h-10 w-10 text-white" [strokeWidth]="2.5"></app-icon>
-          </div>
-        } @else if (orderStatus() === 'pending' || orderStatus() === 'preparing') {
-          <div
-            class="w-20 h-20 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-400 text-white flex items-center justify-center mx-auto mb-5 shadow-lg shadow-indigo-500/20 animate-pulse"
-          >
-            <app-icon name="coffee" class="h-10 w-10 text-white" [strokeWidth]="2.2"></app-icon>
-          </div>
-        } @else {
-          <div
-            class="w-20 h-20 rounded-full bg-gradient-to-tr from-emerald-500 to-green-400 text-white flex items-center justify-center mx-auto mb-5 text-4xl shadow-lg shadow-emerald-500/20"
-          >
-            <app-icon name="check" class="h-10 w-10 text-white" [strokeWidth]="2.5"></app-icon>
-          </div>
-        }
-
-        @if (orderStatus() === 'completed') {
-          <h2 class="text-xl font-black text-emerald-600 dark:text-emerald-400 mb-2">
-            Đã Thanh Toán Thành Công!
-          </h2>
-          <p class="text-xs font-bold text-slate-600 dark:text-slate-300 leading-relaxed mb-1">
-            Hóa đơn này đã hoàn tất thanh toán và Voucher NFT đã được áp dụng thành công.
-          </p>
-          <p class="text-xs text-slate-400 dark:text-slate-500 font-bold">
-            Cảm ơn bạn đã trải nghiệm dịch vụ thanh toán Web3 của quán!
-          </p>
-        } @else if (orderStatus() === 'pending' || orderStatus() === 'preparing') {
-          <h2 class="text-xl font-black text-indigo-600 dark:text-indigo-400 mb-2">
-            Đơn Hàng Đang Xử Lý!
-          </h2>
-          <p class="text-xs font-bold text-slate-600 dark:text-slate-300 leading-relaxed mb-1">
-            Hóa đơn đã được ghi nhận trên hệ thống và Voucher NFT đã được áp dụng thành công.
-          </p>
-          <p class="text-xs text-slate-400 dark:text-slate-500 font-bold">
-            Thu ngân đang chuẩn bị món hoặc xử lý thanh toán cho bạn tại quầy.
-          </p>
-        } @else if (orderStatus() === 'ready') {
-          <h2 class="text-xl font-black text-emerald-600 dark:text-emerald-400 mb-2">
-            Đã Pha Chế Xong!
-          </h2>
-          <p class="text-xs font-bold text-slate-600 dark:text-slate-300 leading-relaxed mb-1">
-            Món nước của bạn đã được chuẩn bị xong tại quầy pha chế.
-          </p>
-          <p class="text-xs text-slate-400 dark:text-slate-500 font-bold">
-            Vui lòng chờ nhân viên phục vụ bê nước ra bàn cho bạn nhé!
-          </p>
-        } @else if (orderStatus() === 'cancelled') {
-          <h2 class="text-xl font-black text-rose-600 dark:text-rose-400 mb-2">
-            Đơn Hàng Đã Bị Hủy!
-          </h2>
-          <p class="text-xs font-bold text-slate-600 dark:text-slate-300 leading-relaxed mb-1">
-            Hóa đơn này đã bị hủy bỏ trên hệ thống của quán.
-          </p>
-          <p class="text-xs text-slate-400 dark:text-slate-500 font-bold">
-            Vui lòng liên hệ thu ngân tại quầy nếu cần hỗ trợ thêm thông tin.
-          </p>
-        } @else {
-          <h2 class="text-xl font-black text-emerald-600 dark:text-emerald-400 mb-2">
-            Ký Số Thành Công!
-          </h2>
-          <p class="text-xs font-bold text-slate-600 dark:text-slate-300 leading-relaxed mb-1">
-            Chữ ký xác nhận sử dụng NFT Voucher đã được nộp thành công lên máy POS.
-          </p>
-          <p class="text-xs text-slate-400 dark:text-slate-500 font-bold">
-            Thu ngân sẽ hoàn tất việc lập hóa đơn cho bạn tại quầy ngay lập tức.
-          </p>
-        }
-
-        <div
-          class="mt-6 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-700/20 text-left space-y-1.5"
-        >
-          <div class="flex justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
-            <span>Mã hóa đơn:</span>
-            <span class="text-slate-700 dark:text-slate-200 font-black uppercase">{{
-              orderCode()
-            }}</span>
-          </div>
-          @if (tokenId() !== null) {
-            <div class="flex justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
-              <span>Voucher Token ID:</span>
-              <span class="text-slate-700 dark:text-slate-200 font-black">#{{ tokenId() }}</span>
+              @for (chain of web3Service.POPULAR_CHAINS; track chain.chainId) {
+                <button
+                  type="button"
+                  (click)="switchChain(chain.chainId)"
+                  class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm text-slate-700 dark:text-slate-300 hover:bg-[var(--color-primary)]/5 hover:text-[var(--color-primary)] transition-all text-left"
+                  [class.bg-[var(--color-primary)]/5]="
+                    web3Service.chainId() === chain.chainId ||
+                    (!web3Service.walletConnected() &&
+                      web3Service.configuredChainId() === chain.chainId)
+                  "
+                  [class.text-[var(--color-primary)]]="
+                    web3Service.chainId() === chain.chainId ||
+                    (!web3Service.walletConnected() &&
+                      web3Service.configuredChainId() === chain.chainId)
+                  "
+                >
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="w-2.5 h-2.5 rounded-full shrink-0"
+                      [class]="getChainColorClass(chain.chainId)"
+                    ></span>
+                    <span class="font-medium">{{ chain.name }}</span>
+                  </div>
+                  <span
+                    class="text-xs font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 rounded font-mono shrink-0"
+                  >
+                    ID: {{ chain.chainId }}
+                  </span>
+                </button>
+              }
             </div>
           }
-          @if (txHash()) {
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Card -->
+    <main class="my-auto py-6 w-full">
+      <!-- BANNER CẢNH BÁO SAI CHAIN CHO KHÁCH HÀNG -->
+      @if (isWrongChain) {
+        <div
+          class="mb-6 p-4 rounded-[15px] bg-amber-500/10 dark:bg-amber-500/10 border border-amber-300/60 dark:border-amber-500/30 backdrop-blur-md text-amber-800 dark:text-amber-200 text-xs font-bold shadow-lg transition-all duration-300 flex flex-col gap-3.5"
+        >
+          <div class="flex items-start gap-3">
             <div
-              class="flex flex-col gap-1.5 pt-2 border-t border-slate-200/40 dark:border-slate-700/20"
+              class="w-8 h-8 rounded-xl bg-amber-500/20 dark:bg-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0"
             >
-              <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500"
-                >Giao dịch Blockchain (Tx Hash):</span
-              >
-              <a
-                [href]="web3Service.explorerUrl() + '/tx/' + txHash()"
-                target="_blank"
-                class="text-xs font-bold text-purple-600 dark:text-purple-400 truncate hover:underline flex items-center gap-1 leading-none font-mono"
-              >
-                {{ txHash() }}
-                <app-icon
-                  name="external-link"
-                  class="h-3 w-3 inline shrink-0"
-                  [strokeWidth]="2.5"
-                ></app-icon>
-              </a>
+              <app-icon name="warning" class="h-5 w-5" [strokeWidth]="2.5"></app-icon>
             </div>
-          }
-        </div>
-      </div>
-    }
-
-    <!-- STEP: CONNECT WALLET -->
-    @if (step() === 'connect') {
-      <div
-        class="bg-white/80 dark:bg-slate-800/30 border border-slate-200/50 dark:border-slate-700/30 backdrop-blur-md rounded-3xl p-6 shadow-xl dark:shadow-slate-950/20 animate-in fade-in slide-in-from-bottom-2 duration-300"
-      >
-        <h2
-          class="text-lg font-black text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2"
-        >
-          Áp Dụng NFT Voucher
-        </h2>
-
-        <!-- Voucher Details Card -->
-        @if (voucherInfo()) {
-          <div
-            class="p-4 rounded-2xl bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border border-purple-100 dark:border-purple-500/10 mb-6 flex items-center justify-between"
-          >
-            <div class="flex items-center gap-3">
-              <app-icon
-                name="gift"
-                class="h-6 w-6 text-purple-600 dark:text-purple-400 shrink-0 inline-block animate-pulse"
-                [strokeWidth]="2"
-              ></app-icon>
-              <div class="flex flex-col">
-                <span
-                  class="text-xs font-black text-purple-600 dark:text-purple-400 uppercase tracking-wide"
-                  >Trị giá Voucher</span
-                >
-                <span class="text-xl font-black text-slate-800 dark:text-white leading-tight">{{
-                  $safeNavigationMigration(voucherInfo()?.discount) | vnd
-                }}</span>
-                >
-                <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-0.5"
-                  >Đơn tối thiểu:
-                  {{ $safeNavigationMigration(voucherInfo()?.minOrder) | vnd }}</span
-                >
-              </div>
-            </div>
-            <div
-              class="px-2 py-1 bg-purple-100 dark:bg-purple-500/25 border border-purple-200 dark:border-purple-500/40 rounded-lg text-xs font-black text-purple-600 dark:text-white uppercase tracking-wide shrink-0"
-            >
-              Token #{{ tokenId() }}
-            </div>
-          </div>
-        }
-
-        <p class="text-xs text-slate-500 dark:text-slate-400 font-bold mb-6 leading-relaxed">
-          Vui lòng kết nối ví Metamask di động chứa NFT Voucher của bạn để thực hiện xác thực chữ
-          ký. Thao tác này hoàn toàn **không tốn gas**.
-        </p>
-
-        @if (errorMessage()) {
-          <div
-            class="mb-4 text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20 rounded-xl p-3"
-          >
-            {{ errorMessage() }}
-          </div>
-        }
-
-        <button
-          (click)="connectWallet()"
-          [disabled]="isConnecting()"
-          class="w-full py-3.5 bg-gradient-to-r from-purple-600 to-purple-500 hover:opacity-90 disabled:opacity-50 text-xs font-black text-white rounded-2xl transition-all shadow-lg shadow-purple-500/20 flex items-center justify-center gap-2 active:scale-[0.98]"
-        >
-          @if (isConnecting()) {
-            <span
-              class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
-            ></span>
-            Đang kết nối...
-          } @else {
-            Kết nối ví Metamask
-          }
-        </button>
-      </div>
-    }
-
-    <!-- STEP: SIGN SIGNATURE -->
-    @if (step() === 'sign') {
-      <div
-        class="bg-white/80 dark:bg-slate-800/30 border border-slate-200/50 dark:border-slate-700/30 backdrop-blur-md rounded-3xl p-6 shadow-xl dark:shadow-slate-950/20 animate-in fade-in slide-in-from-bottom-2 duration-300"
-      >
-        <h2
-          class="text-lg font-black text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2"
-        >
-          <app-icon
-            name="lock"
-            class="h-5 w-5 text-[var(--dynamic-primary)] inline-block shrink-0"
-            [strokeWidth]="2"
-          ></app-icon>
-          <span>Xác Thực Chữ Ký</span>
-        </h2>
-
-        <!-- Connected Wallet Display -->
-        <div
-          class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/40 text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center justify-between mb-6"
-        >
-          <span>Ví đang kết nối:</span>
-          <span class="font-mono text-purple-600 dark:text-purple-500 font-bold"
-            >{{ web3Service.currentAccount() | slice: 0 : 6 }}...{{
-              web3Service.currentAccount() | slice: -4
-            }}</span
-          >
-        </div>
-
-        @if (voucherInfo()) {
-          <div
-            class="p-4 rounded-2xl bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border border-purple-100 dark:border-purple-500/10 mb-6 flex items-center justify-between"
-          >
-            <div class="flex items-center gap-3">
-              <div class="flex flex-col">
-                <span
-                  class="text-xs font-black text-purple-600 dark:text-purple-400 uppercase tracking-wide"
-                  >Khấu trừ hóa đơn</span
-                >
-                <span class="text-xl font-black text-slate-800 dark:text-white leading-tight"
-                  >-{{ $safeNavigationMigration(voucherInfo()?.discount) | vnd }}</span
-                >
-                <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-0.5"
-                  >Áp dụng cho đơn: {{ orderCode() }}</span
-                >
-              </div>
-            </div>
-          </div>
-        }
-
-        <p class="text-xs text-slate-500 dark:text-slate-400 font-bold mb-6 leading-relaxed">
-          Nhấp nút phía dưới để sinh chữ ký số EIP-712 bảo mật, chứng minh bạn là chủ sở hữu thực sự
-          của NFT Token #{{ tokenId() }} và đồng ý thanh toán cho hóa đơn {{ orderCode() }}.
-        </p>
-
-        @if (statusMessage()) {
-          <div
-            class="mb-4 text-xs font-bold text-purple-600 dark:text-purple-500 bg-purple-50 dark:bg-purple-500/10 border border-purple-100 dark:border-purple-500/20 rounded-xl p-3 flex items-center gap-2"
-          >
-            <span
-              class="w-3.5 h-3.5 border-2 border-purple-600 dark:border-purple-500 border-t-transparent rounded-full animate-spin"
-            ></span>
-            {{ statusMessage() }}
-          </div>
-        }
-
-        @if (errorMessage()) {
-          <div
-            class="mb-4 text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20 rounded-xl p-3"
-          >
-            {{ errorMessage() }}
-          </div>
-        }
-
-        <div class="flex flex-col gap-2.5">
-          <button
-            (click)="signVoucher()"
-            [disabled]="isSigning() || isWrongChain"
-            class="w-full py-3.5 bg-gradient-to-r from-purple-600 to-purple-500 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-black text-white rounded-2xl transition-all shadow-lg shadow-purple-500/20 flex items-center justify-center gap-2 active:scale-[0.98]"
-          >
-            @if (isSigning()) {
+            <div class="flex flex-col">
               <span
-                class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
-              ></span>
-              Đang ký xác nhận...
-            } @else {
-              <span>Ký Xác Nhận Sử Dụng</span>
-            }
+                class="text-xs font-extrabold uppercase tracking-wide text-amber-700 dark:text-amber-400"
+                >Sai mạng kết nối</span
+              >
+              <span class="text-xs font-bold text-slate-600 dark:text-slate-300 leading-snug mt-0.5">
+                Ví của bạn đang ở mạng khác. Quán yêu cầu kết nối mạng
+                <span class="underline decoration-wavy decoration-amber-500/50 font-black">{{
+                  web3Service.configuredNetworkName()
+                }}</span>
+                để có thể đồng bộ Blockchain!
+              </span>
+            </div>
+          </div>
+          <button
+            (click)="switchNetwork()"
+            class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            <app-icon name="sync" class="h-3.5 w-3.5" [strokeWidth]="3"></app-icon>
+            Chuyển mạng tự động
           </button>
+        </div>
+      }
 
+      <!-- STEP: ERROR -->
+      @if (step() === 'error') {
+        <div
+          class="bg-white/90 dark:bg-slate-800/35 border border-rose-200 dark:border-rose-500/20 rounded-[15px] p-4 sm:p-6 text-center shadow-xl dark:shadow-slate-950/20"
+        >
+          <div
+            class="w-16 h-16 rounded-full bg-rose-100 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-500/20 flex items-center justify-center mx-auto mb-4 text-rose-500"
+          >
+            <app-icon name="warning" class="h-8 w-8 text-rose-500" [strokeWidth]="2.2"></app-icon>
+          </div>
+          <h2 class="text-base sm:text-lg font-black text-rose-600 dark:text-rose-400 mb-2">Đã xảy ra lỗi</h2>
+          <p class="text-xs font-bold text-slate-500 dark:text-slate-400 leading-relaxed">
+            {{ errorMessage() }}
+          </p>
           <button
             (click)="step.set('connect')"
-            [disabled]="isSigning()"
-            class="w-full py-3 border border-purple-300 dark:border-purple-500/30 hover:border-purple-400 dark:hover:border-purple-500/50 hover:bg-purple-50 dark:hover:bg-purple-500/5 text-xs font-bold text-purple-600 dark:text-purple-500 rounded-2xl transition-all active:scale-[0.98]"
+            class="mt-6 btn btn-secondary px-6 py-2.5 rounded-xl hover:scale-[1.01]"
           >
-            Đổi ví kết nối
+            Thử lại
           </button>
         </div>
-      </div>
-    }
+      }
 
-    <!-- Chi tiết đơn hàng/Biên lai (Hiển thị dưới dạng thông tin đối soát ở mọi step) -->
-    @if (tempOrder()) {
-      <div app-card class="mt-6 p-5 bg-white/70 dark:bg-slate-800/40 backdrop-blur-md">
+      <!-- STEP: SUCCESS -->
+      @if (step() === 'success') {
         <div
-          class="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-700/40 pb-3 mb-3"
+          class="bg-white/90 dark:bg-slate-800/35 border border-emerald-200 dark:border-emerald-500/20 rounded-[15px] p-4 sm:p-6 text-center shadow-xl dark:shadow-slate-950/20"
         >
-          <div class="flex flex-col">
-            <span
-              class="text-xs text-slate-400 dark:text-slate-500 font-extrabold uppercase tracking-wider"
-              >Chi tiết hóa đơn</span
-            >
-            <span class="text-sm font-black text-slate-700 dark:text-slate-200 uppercase">{{
-              orderCode()
-            }}</span>
-          </div>
-          @if (tempOrder().table_number) {
+          @if (orderStatus() === 'cancelled') {
             <div
-              class="px-3 py-1 bg-purple-100 dark:bg-purple-500/20 border border-purple-200/50 dark:border-purple-500/30 rounded-xl text-xs font-black text-purple-600 dark:text-purple-400"
+              class="w-20 h-20 rounded-full bg-gradient-to-tr from-rose-50 to-red-50 text-rose-500 border border-rose-200 dark:from-rose-950/30 dark:to-red-950/30 dark:border-rose-500/20 flex items-center justify-center mx-auto mb-5 text-4xl shadow-md"
             >
-              Bàn: {{ tempOrder().table_number }}
+              <app-icon name="close" class="h-10 w-10 text-rose-500" [strokeWidth]="2.5"></app-icon>
+            </div>
+          } @else if (orderStatus() === 'pending' || orderStatus() === 'preparing') {
+            <div
+              class="w-20 h-20 rounded-full bg-gradient-to-tr from-indigo-50 to-purple-50 text-indigo-500 border border-indigo-200 dark:from-indigo-950/30 dark:to-purple-950/30 dark:border-indigo-500/20 flex items-center justify-center mx-auto mb-5 shadow-md animate-pulse"
+            >
+              <app-icon name="coffee" class="h-10 w-10" [strokeWidth]="2.2"></app-icon>
+            </div>
+          } @else {
+            <div
+              class="w-20 h-20 rounded-full bg-gradient-to-tr from-emerald-50 to-green-50 text-emerald-500 border border-emerald-200 dark:from-emerald-950/30 dark:to-green-950/30 dark:border-emerald-500/20 flex items-center justify-center mx-auto mb-5 text-4xl shadow-md"
+            >
+              <app-icon name="check" class="h-10 w-10 text-emerald-500" [strokeWidth]="2.5"></app-icon>
             </div>
           }
-        </div>
 
-        <!-- Danh sách món -->
-        <div class="space-y-3 max-h-48 overflow-y-auto pr-1 mb-2">
-          @for (item of tempOrder().items; track $index) {
-            <div
-              class="flex items-start justify-between text-xs py-1 border-b border-slate-100 dark:border-slate-800/30 last:border-0"
-            >
-              <div class="flex flex-col max-w-[70%]">
-                <span class="font-extrabold text-slate-800 dark:text-slate-200 leading-tight">
-                  {{ item.product_name }}
-                </span>
-                @if (item.variant_name) {
-                  <span class="text-xs font-bold text-slate-400 dark:text-slate-500 mt-0.5">
-                    Mẫu: {{ item.variant_name }}
-                  </span>
-                }
-                @if (item.note) {
-                  <span
-                    class="text-[10px] text-amber-600 dark:text-amber-500 font-bold mt-0.5 italic"
-                  >
-                    * Ghi chú: {{ item.note }}
-                  </span>
-                }
-              </div>
-              <div class="flex flex-col items-end shrink-0">
-                <span class="font-black text-slate-700 dark:text-slate-300">{{
-                  item.price | vnd
-                }}</span>
-                <span class="text-xs font-bold text-slate-400">x{{ item.quantity }}</span>
-              </div>
-            </div>
+          @if (orderStatus() === 'completed') {
+            <h2 class="text-lg sm:text-xl font-black text-emerald-600 dark:text-emerald-400 mb-2">
+              Đã Thanh Toán Thành Công!
+            </h2>
+            <p class="text-xs font-bold text-slate-600 dark:text-slate-300 leading-relaxed mb-1">
+              Hóa đơn này đã hoàn tất thanh toán và Voucher NFT đã được áp dụng thành công.
+            </p>
+            <p class="text-xs text-slate-400 dark:text-slate-500 font-bold">
+              Cảm ơn bạn đã trải nghiệm dịch vụ thanh toán Web3 của quán!
+            </p>
+          } @else if (orderStatus() === 'pending' || orderStatus() === 'preparing') {
+            <h2 class="text-lg sm:text-xl font-black text-indigo-600 dark:text-indigo-400 mb-2">
+              Đơn Hàng Đang Xử Lý!
+            </h2>
+            <p class="text-xs font-bold text-slate-600 dark:text-slate-300 leading-relaxed mb-1">
+              Hóa đơn đã được ghi nhận trên hệ thống và Voucher NFT đã được áp dụng thành công.
+            </p>
+            <p class="text-xs text-slate-400 dark:text-slate-500 font-bold">
+              Thu ngân đang chuẩn bị món hoặc xử lý thanh toán cho bạn tại quầy.
+            </p>
+          } @else if (orderStatus() === 'ready') {
+            <h2 class="text-lg sm:text-xl font-black text-emerald-600 dark:text-emerald-400 mb-2">
+              Đã Pha Chế Xong!
+            </h2>
+            <p class="text-xs font-bold text-slate-600 dark:text-slate-300 leading-relaxed mb-1">
+              Món nước của bạn đã được chuẩn bị xong tại quầy pha chế.
+            </p>
+            <p class="text-xs text-slate-400 dark:text-slate-500 font-bold">
+              Vui lòng chờ nhân viên phục vụ bê nước ra bàn cho bạn nhé!
+            </p>
+          } @else if (orderStatus() === 'cancelled') {
+            <h2 class="text-lg sm:text-xl font-black text-rose-600 dark:text-rose-400 mb-2">
+              Đơn Hàng Đã Bị Hủy!
+            </h2>
+            <p class="text-xs font-bold text-slate-600 dark:text-slate-300 leading-relaxed mb-1">
+              Hóa đơn này đã bị hủy bỏ trên hệ thống của quán.
+            </p>
+            <p class="text-xs text-slate-400 dark:text-slate-500 font-bold">
+              Vui lòng liên hệ thu ngân tại quầy nếu cần hỗ trợ thêm thông tin.
+            </p>
+          } @else {
+            <h2 class="text-lg sm:text-xl font-black text-emerald-600 dark:text-emerald-400 mb-2">
+              Ký Số Thành Công!
+            </h2>
+            <p class="text-xs font-bold text-slate-600 dark:text-slate-300 leading-relaxed mb-1">
+              Chữ ký xác nhận sử dụng NFT Voucher đã được nộp thành công lên máy POS.
+            </p>
+            <p class="text-xs text-slate-400 dark:text-slate-500 font-bold">
+              Thu ngân sẽ hoàn tất việc lập hóa đơn cho bạn tại quầy ngay lập tức.
+            </p>
           }
-        </div>
 
-        <!-- Tổng cộng đơn hàng -->
-        <div class="border-t border-slate-200/60 dark:border-slate-700/40 mt-4 pt-3 space-y-2">
-          <div class="flex justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
-            <span>Tổng tiền món:</span>
-            <span class="text-slate-800 dark:text-slate-200">{{
-              tempOrder().total_amount | vnd
-            }}</span>
-          </div>
-          @if (tempOrder().discount_amount > 0) {
-            <div
-              class="flex justify-between text-xs font-bold text-emerald-600 dark:text-emerald-400"
-            >
-              <span>Voucher giảm giá:</span>
-              <span>-{{ tempOrder().discount_amount | vnd }}</span>
-            </div>
-          }
           <div
-            class="flex justify-between text-sm font-black text-slate-800 dark:text-white border-t border-dashed border-slate-200 dark:border-slate-700/40 pt-2.5"
+            class="mt-6 p-4 rounded-[15px] bg-slate-50/50 dark:bg-slate-800/40 border border-slate-200/40 dark:border-slate-700/20 text-left space-y-1.5"
           >
-            <span>Cần thanh toán:</span>
-            <span class="text-purple-600 dark:text-purple-400 text-base">{{
-              tempOrder().final_amount | vnd
-            }}</span>
+            <div class="flex justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
+              <span>Mã hóa đơn:</span>
+              <span class="text-slate-700 dark:text-slate-200 font-black uppercase">{{
+                orderCode()
+              }}</span>
+            </div>
+            @if (tokenId() !== null) {
+              <div class="flex justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
+                <span>Voucher Token ID:</span>
+                <span class="text-slate-700 dark:text-slate-200 font-black">#{{ tokenId() }}</span>
+              </div>
+            }
+            @if (web3Service.walletConnected() && web3Service.currentAccount()) {
+              <div class="flex justify-between text-xs font-bold text-slate-500 dark:text-slate-400 pt-1.5 border-t border-slate-200/40 dark:border-slate-700/20">
+                <span>Ví đã ký:</span>
+                <span class="text-slate-700 dark:text-slate-200 font-mono font-bold">
+                  {{ web3Service.currentAccount() | slice: 0 : 6 }}...{{
+                    web3Service.currentAccount() | slice: -4
+                  }}
+                </span>
+              </div>
+              <div class="flex justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
+                <span>Mạng đã ký:</span>
+                <span class="flex items-center gap-1.5 text-slate-700 dark:text-slate-200 font-bold">
+                  <span
+                    class="w-1.5 h-1.5 rounded-full shrink-0"
+                    [class]="getChainColorClass(web3Service.chainId())"
+                  ></span>
+                  <span>{{ web3Service.networkName() | uppercase }}</span>
+                </span>
+              </div>
+            }
+            @if (txHash()) {
+              <div
+                class="flex flex-col gap-1.5 pt-2 border-t border-slate-200/40 dark:border-slate-700/20"
+              >
+                <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500"
+                  >Giao dịch Blockchain (Tx Hash):</span
+                >
+                <a
+                  [href]="web3Service.explorerUrl() + '/tx/' + txHash()"
+                  target="_blank"
+                  class="text-xs font-bold text-purple-600 dark:text-purple-400 truncate hover:underline flex items-center gap-1 leading-none font-mono"
+                >
+                  {{ txHash() }}
+                  <app-icon
+                    name="external-link"
+                    class="h-3 w-3 inline shrink-0"
+                    [strokeWidth]="2.5"
+                  ></app-icon>
+                </a>
+              </div>
+            }
           </div>
         </div>
-      </div>
-    }
-  </main>
+      }
 
-  <!-- Footer -->
-  <footer
-    class="text-center z-10 py-4 text-xs text-slate-400 dark:text-slate-500 font-bold border-t border-slate-200 dark:border-slate-800/40 mt-8 transition-colors duration-300"
-  >
-    Bản quyền thuộc Cafe Web3 POS • Được bảo vệ bằng mật mã học Blockchain
-  </footer>
+      <!-- STEP: CONNECT WALLET -->
+      @if (step() === 'connect') {
+        <div
+          class="bg-white/80 dark:bg-slate-800/30 border border-slate-200/50 dark:border-slate-700/30 backdrop-blur-md rounded-[15px] p-4 sm:p-6 shadow-xl dark:shadow-slate-950/20"
+        >
+          <h2
+            class="text-base sm:text-lg font-black text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2"
+          >
+            Áp Dụng NFT Voucher
+          </h2>
+
+          <!-- Voucher Details Card -->
+          @if (voucherInfo()) {
+            <div
+              class="p-4 rounded-[15px] bg-purple-500/5 dark:bg-purple-500/10 border border-purple-500/15 mb-6 flex items-center justify-between"
+            >
+              <div class="flex items-center gap-3">
+                <app-icon
+                  name="gift"
+                  class="h-6 w-6 text-[var(--color-primary)] shrink-0 inline-block animate-pulse"
+                  [strokeWidth]="2"
+                ></app-icon>
+                <div class="flex flex-col">
+                  <span
+                    class="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-wide"
+                    >Trị giá Voucher</span
+                  >
+                  <span class="text-lg sm:text-xl font-black text-slate-800 dark:text-white leading-tight">{{
+                    voucherInfo()?.discount | vnd
+                  }}</span>
+                  <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-0.5"
+                    >Đơn tối thiểu:
+                    {{ voucherInfo()?.minOrder | vnd }}</span
+                  >
+                </div>
+              </div>
+              <div
+                class="px-2 py-1 bg-[var(--color-primary)]/10 dark:bg-[var(--color-primary)]/20 border border-[var(--color-primary)]/15 rounded-lg text-[10px] sm:text-xs font-black text-[var(--color-primary)] uppercase tracking-wide shrink-0"
+              >
+                Token #{{ tokenId() }}
+              </div>
+            </div>
+          }
+
+          <p class="text-xs text-slate-500 dark:text-slate-400 font-bold mb-6 leading-relaxed">
+            Vui lòng kết nối ví Metamask di động chứa NFT Voucher của bạn để thực hiện xác thực chữ
+            ký. Thao tác này hoàn toàn **không tốn gas**.
+          </p>
+
+          @if (errorMessage()) {
+            <div
+              class="mb-4 text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20 rounded-xl p-3"
+            >
+              {{ errorMessage() }}
+            </div>
+          }
+
+          <button
+            (click)="connectWallet()"
+            [disabled]="isConnecting()"
+            class="btn btn-primary btn-full py-3.5 rounded-xl hover:scale-[1.01] active:scale-[0.98]"
+          >
+            @if (isConnecting()) {
+              <span
+                class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin shrink-0"
+              ></span>
+              <span>Đang kết nối...</span>
+            } @else {
+              <span>Kết nối ví Metamask</span>
+            }
+          </button>
+        </div>
+      }
+
+      <!-- STEP: SIGN SIGNATURE -->
+      @if (step() === 'sign') {
+        <div
+          class="bg-white/80 dark:bg-slate-800/30 border border-slate-200/50 dark:border-slate-700/30 backdrop-blur-md rounded-[15px] p-4 sm:p-6 shadow-xl dark:shadow-slate-950/20"
+        >
+          <h2
+            class="text-base sm:text-lg font-black text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2"
+          >
+            <app-icon
+              name="lock"
+              class="h-5 w-5 text-[var(--color-primary)] inline-block shrink-0"
+              [strokeWidth]="2"
+            ></app-icon>
+            <span>Xác Thực Chữ Ký</span>
+          </h2>
+
+          <!-- Connected Wallet & Chain Display -->
+          <div
+            class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/40 text-xs font-bold text-slate-500 dark:text-slate-400 flex flex-col gap-2.5 mb-6"
+          >
+            <div class="flex items-center justify-between">
+              <span>Ví đang kết nối:</span>
+              <span class="font-mono text-[var(--color-primary)] font-bold"
+                >{{ web3Service.currentAccount() | slice: 0 : 6 }}...{{
+                  web3Service.currentAccount() | slice: -4
+                }}</span
+              >
+            </div>
+            <div class="flex items-center justify-between pt-2 border-t border-slate-200/40 dark:border-slate-700/20">
+              <span>Mạng kết nối:</span>
+              <span class="flex items-center gap-1.5 text-slate-700 dark:text-slate-200">
+                <span
+                  class="w-1.5 h-1.5 rounded-full shrink-0 animate-pulse"
+                  [class]="getChainColorClass(web3Service.chainId())"
+                ></span>
+                <span>{{ web3Service.networkName() | uppercase }}</span>
+              </span>
+            </div>
+          </div>
+
+          @if (voucherInfo()) {
+            <div
+              class="p-4 rounded-[15px] bg-purple-500/5 dark:bg-purple-500/10 border border-purple-500/15 mb-6 flex items-center justify-between"
+            >
+              <div class="flex items-center gap-3">
+                <div class="flex flex-col">
+                  <span
+                    class="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-wide"
+                    >Khấu trừ hóa đơn</span
+                  >
+                  <span class="text-lg sm:text-xl font-black text-slate-800 dark:text-white leading-tight"
+                    >-{{ voucherInfo()?.discount | vnd }}</span
+                  >
+                  <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-0.5"
+                    >Áp dụng cho đơn: {{ orderCode() }}</span
+                  >
+                </div>
+              </div>
+            </div>
+          }
+
+          <p class="text-xs text-slate-500 dark:text-slate-400 font-bold mb-6 leading-relaxed">
+            Nhấp nút phía dưới để sinh chữ ký số EIP-712 bảo mật, chứng minh bạn là chủ sở hữu thực sự
+            của NFT Token #{{ tokenId() }} và đồng ý thanh toán cho hóa đơn {{ orderCode() }}.
+          </p>
+
+          @if (statusMessage()) {
+            <div
+              class="mb-4 text-xs font-bold text-[var(--color-primary)] bg-[var(--color-primary)]/5 dark:bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/15 rounded-xl p-3 flex items-center gap-2"
+            >
+              <span
+                class="w-3.5 h-3.5 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin shrink-0"
+              ></span>
+              {{ statusMessage() }}
+            </div>
+          }
+
+          @if (errorMessage()) {
+            <div
+              class="mb-4 text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20 rounded-xl p-3"
+            >
+              {{ errorMessage() }}
+            </div>
+          }
+
+          <div class="flex flex-col gap-2.5">
+            <button
+              (click)="signVoucher()"
+              [disabled]="isSigning() || isWrongChain"
+              class="btn btn-primary btn-full py-3.5 rounded-xl hover:scale-[1.01] active:scale-[0.98]"
+            >
+              @if (isSigning()) {
+                <span
+                  class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin shrink-0"
+                ></span>
+                <span>Đang ký xác nhận...</span>
+              } @else {
+                <span>Ký Xác Nhận Sử Dụng</span>
+              }
+            </button>
+
+            <button
+              (click)="step.set('connect')"
+              [disabled]="isSigning()"
+              class="btn btn-secondary btn-full py-3 rounded-xl hover:scale-[1.01] active:scale-[0.98]"
+            >
+              Đổi ví kết nối
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- Chi tiết đơn hàng/Biên lai (Hiển thị dưới dạng thông tin đối soát ở mọi step) -->
+      @if (tempOrder()) {
+        <div class="mt-6 p-4 sm:p-5 bg-white/80 dark:bg-slate-800/30 border border-slate-200/50 dark:border-slate-700/30 backdrop-blur-md rounded-[15px] shadow-xl dark:shadow-slate-950/20">
+          <div
+            class="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-700/40 pb-3 mb-3"
+          >
+            <div class="flex flex-col">
+              <span
+                class="text-xs text-slate-400 dark:text-slate-500 font-extrabold uppercase tracking-wider"
+                >Chi tiết hóa đơn</span
+              >
+              <span class="text-sm font-black text-slate-700 dark:text-slate-200 uppercase">{{
+                orderCode()
+              }}</span>
+            </div>
+            @if (tempOrder().table_number) {
+              <div
+                class="px-2.5 py-0.5 bg-[var(--color-primary)]/10 dark:bg-[var(--color-primary)]/20 border border-[var(--color-primary)]/15 rounded-xl text-xs font-black text-[var(--color-primary)]"
+              >
+                Bàn: {{ tempOrder().table_number }}
+              </div>
+            }
+          </div>
+
+          <!-- Danh sách món -->
+          <div class="space-y-3 max-h-48 overflow-y-auto pr-1 mb-2">
+            @for (item of tempOrder().items; track $index) {
+              <div
+                class="flex items-start justify-between text-xs py-1 border-b border-slate-100 dark:border-slate-800/30 last:border-0"
+              >
+                <div class="flex flex-col max-w-[70%]">
+                  <span class="font-extrabold text-slate-800 dark:text-slate-200 leading-tight">
+                    {{ item.product_name }}
+                  </span>
+                  @if (item.variant_name) {
+                    <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 mt-0.5">
+                      Mẫu: {{ item.variant_name }}
+                    </span>
+                  }
+                  @if (item.note) {
+                    <span
+                      class="text-[10px] text-amber-600 dark:text-amber-500 font-bold mt-0.5 italic"
+                    >
+                      * Ghi chú: {{ item.note }}
+                    </span>
+                  }
+                </div>
+                <div class="flex flex-col items-end shrink-0">
+                  <span class="font-black text-slate-700 dark:text-slate-300">{{
+                    item.price | vnd
+                  }}</span>
+                  <span class="text-[10px] font-bold text-slate-400">x{{ item.quantity }}</span>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Tổng cộng đơn hàng -->
+          <div class="border-t border-slate-200/60 dark:border-slate-700/40 mt-4 pt-3 space-y-2">
+            <div class="flex justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
+              <span>Tổng tiền món:</span>
+              <span class="text-slate-800 dark:text-slate-200">{{
+                tempOrder().total_amount | vnd
+              }}</span>
+            </div>
+            @if (tempOrder().discount_amount > 0) {
+              <div
+                class="flex justify-between text-xs font-bold text-emerald-600 dark:text-emerald-400"
+              >
+                <span>Voucher giảm giá:</span>
+                <span>-{{ tempOrder().discount_amount | vnd }}</span>
+              </div>
+            }
+            <div
+              class="flex justify-between text-sm font-black text-slate-800 dark:text-white border-t border-dashed border-slate-200 dark:border-slate-700/40 pt-2.5"
+            >
+              <span>Cần thanh toán:</span>
+              <span class="text-[var(--color-primary)] text-base font-black">{{
+                tempOrder().final_amount | vnd
+              }}</span>
+            </div>
+          </div>
+        </div>
+      }
+    </main>
+
+    <!-- Footer -->
+    <footer
+      class="text-center py-4 text-xs text-slate-400 dark:text-slate-500 font-bold border-t border-slate-200 dark:border-slate-800/40 mt-8 transition-colors duration-300"
+    >
+      Bản quyền thuộc Cafe Web3 POS • Được bảo vệ bằng mật mã học Blockchain
+    </footer>
+  </div>
 </div>

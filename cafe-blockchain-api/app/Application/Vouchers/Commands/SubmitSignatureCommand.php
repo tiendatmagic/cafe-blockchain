@@ -57,6 +57,7 @@ class SubmitSignatureCommand
 
             // Tạo đơn hàng
             $order = OrderModel::create([
+                'id' => (string) \Illuminate\Support\Str::uuid7(),
                 'order_code' => $orderCode,
                 'table_number' => $tempOrderData['table_number'] ?? null,
                 'customer_id' => $tempOrderData['customer_id'] ?? null,
