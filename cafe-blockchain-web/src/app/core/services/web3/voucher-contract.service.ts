@@ -220,7 +220,7 @@ export class VoucherContractService extends BaseContractService {
    * Ký số thông điệp EIP-712 cho phép sử dụng Voucher NFT (Miễn phí Gas)
    */
   public async signVoucherUsageEIP712(tokenId: number, orderCode: string): Promise<string> {
-    if (!this.web3Service.walletConnected() || !this.web3Service.currentAccount()) {
+    if (!this.web3Service.currentAccount()) {
       throw new Error('Chưa kết nối ví Web3!');
     }
     const provider = this.web3Service.getBrowserProvider();

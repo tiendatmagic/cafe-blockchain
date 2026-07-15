@@ -200,7 +200,7 @@ export class MobileSignComponent implements OnInit {
     });
 
     // Theo dõi trạng thái kết nối ví của khách hàng
-    if (this.web3Service.walletConnected()) {
+    if (this.web3Service.currentAccount()) {
       this.step.set('sign');
     }
   }

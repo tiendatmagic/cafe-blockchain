@@ -91,7 +91,7 @@ export class Web3Service {
 
   // Kiểm tra ví đang kết nối có sai chain so với cấu hình không
   public readonly isWrongChain = computed(() => {
-    const connected = this.walletConnected();
+    const connected = !!this.currentAccount();
     const contract = this.contractAddress();
     const activeChain = this.chainId();
     const configChain = this.configuredChainId();
@@ -828,7 +828,7 @@ export class Web3Service {
    * Ký số thông điệp EIP-712 cho phép sử dụng Voucher NFT (Miễn phí Gas)
    */
   public async signVoucherUsageEIP712(tokenId: number, orderCode: string): Promise<string> {
-    if (!this.walletConnected() || !this.currentAccount()) {
+    if (!this.currentAccount()) {
       throw new Error('Chưa kết nối ví Web3!');
     }
     this.provider = this.getBrowserProvider();
