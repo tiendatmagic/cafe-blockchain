@@ -231,12 +231,12 @@
               (click)="stateService.switchChain(chain.chainId)"
               class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm text-slate-700 dark:text-slate-300 hover:bg-[var(--dynamic-primary)]/5 hover:text-[var(--dynamic-primary)] transition-all text-left cursor-pointer"
               [class.bg-[var(--dynamic-primary)]/5]="
-                web3Service.chainId() === chain.chainId ||
+                (web3Service.walletConnected() && web3Service.chainId() === chain.chainId) ||
                 (!web3Service.walletConnected() &&
                   web3Service.configuredChainId() === chain.chainId)
               "
               [class.text-[var(--dynamic-primary)]]="
-                web3Service.chainId() === chain.chainId ||
+                (web3Service.walletConnected() && web3Service.chainId() === chain.chainId) ||
                 (!web3Service.walletConnected() &&
                   web3Service.configuredChainId() === chain.chainId)
               "
