@@ -276,21 +276,11 @@ export class Web3Service {
       }, 30000);
     }
 
-    // Tự động đồng bộ configuredChainId xuống AppKit modal để modal gọi đúng chain khi bấm connect
-    // CHÚ Ý: Chỉ đồng bộ khi người dùng chủ động đổi mạng (configuredChainId thay đổi).
-    // Dùng untracked() cho walletConnected để effect không bị trigger lại khi ví đang trong quá trình kết nối.
     let previousChainId = this.configuredChainId();
     effect(() => {
       const currentChainId = this.configuredChainId();
       if (currentChainId !== previousChainId) {
         previousChainId = currentChainId;
-        const isConnected = untracked(() => this.walletConnected());
-        if (this.modal && !isConnected) {
-          const net = this.getAppKitNetworkByChainId(currentChainId);
-          if (net) {
-            this.modal.switchNetwork(net).catch(() => {});
-          }
-        }
       }
     });
 
@@ -392,7 +382,7 @@ export class Web3Service {
       }
 
       const ethersAdapter = new EthersAdapter();
-      const defaultNet = this.getAppKitNetworkByChainId(this.configuredChainId());
+      const defaultNet = arbitrum;
 
       let initialTheme: 'light' | 'dark' = 'light';
       if (typeof window !== 'undefined') {
@@ -448,6 +438,15 @@ export class Web3Service {
 
           await this.updateBalanceAndStatus(address);
 
+          // Tự động chuyển ví sang mạng mong muốn sau khi kết nối thành công để ví không bị lỗi treo unknown network lúc chưa connect
+          const currentChainId = this.chainId();
+          const targetChainId = this.configuredChainId();
+          if (currentChainId && currentChainId.toString() !== targetChainId.toString()) {
+            setTimeout(async () => {
+              await this.ensureCorrectNetwork(targetChainId);
+            }, 500);
+          }
+
           if (oldAccount && oldAccount.toLowerCase() !== address.toLowerCase()) {
             this.emitAccountChange(address);
           }
@@ -465,7 +464,6 @@ export class Web3Service {
         }
       });
 
-      // Lắng nghe thay đổi mạng lưới
       this.modal.subscribeNetwork((networkState: any) => {
         if (networkState.chainId) {
           const newChainId = Number(networkState.chainId);
@@ -482,6 +480,20 @@ export class Web3Service {
           if (this.currentAccount()) {
             this.updateBalanceAndStatus(this.currentAccount());
           }
+        }
+      });
+
+      this.modal.subscribeEvents(async (event: any) => {
+        const eventName = event.data?.event;
+        const errorMsg = event.data?.properties?.message || event.data?.error || '';
+        const isConnectionError = eventName === 'CONNECT_ERROR' || errorMsg.toString().toLowerCase().includes('declined') || errorMsg.toString().toLowerCase().includes('active');
+        
+        if (isConnectionError) {
+          console.warn('[Web3] Phát hiện lỗi kết nối hoặc treo session từ AppKit, tự động giải phóng...');
+          try {
+            await this.modal.disconnect();
+            await this.clearWalletConnectStorage();
+          } catch (e) {}
         }
       });
 
@@ -634,14 +646,12 @@ export class Web3Service {
     }
 
     try {
-      // Tự động kiểm tra và thêm mạng vào ví MetaMask/Extension nếu mạng cấu hình là Arbitrum Sepolia (421614) hoặc BSC Testnet (97)
-      // Điều này giúp tránh lỗi "unknown network" gây treo request trên MetaMask khi ví chưa lưu mạng này
-      const targetChainId = this.configuredChainId();
-      if ((targetChainId === '421614' || targetChainId === '97') && typeof window !== 'undefined' && (window as any).ethereum) {
+      const defaultChain = this.supportedChains.find(c => !(c as any).testnet && !c.name.toLowerCase().includes('sepolia') && !c.name.toLowerCase().includes('testnet')) || this.supportedChains[0];
+      if (defaultChain) {
         try {
-          await this.addNetworkToWallet(targetChainId);
-        } catch (addErr) {
-          console.warn('[Web3] Thử thêm mạng trước khi kết nối ví thất bại:', addErr);
+          await this.modal.switchNetwork(defaultChain as any);
+        } catch (e) {
+          console.warn('[Web3] Ép mạng mặc định trước khi mở modal thất bại:', e);
         }
       }
 
@@ -688,6 +698,15 @@ export class Web3Service {
               }
 
               await this.updateBalanceAndStatus(accountState.address);
+
+              // Tự động chuyển ví sang mạng mong muốn sau khi kết nối thành công để ví không bị lỗi treo unknown network lúc chưa connect
+              const currentChainId = this.chainId();
+              const targetChainId = this.configuredChainId();
+              if (currentChainId && currentChainId.toString() !== targetChainId.toString()) {
+                setTimeout(async () => {
+                  await this.ensureCorrectNetwork(targetChainId);
+                }, 500);
+              }
 
               unsubscribeAccount();
               unsubscribeEvents();
