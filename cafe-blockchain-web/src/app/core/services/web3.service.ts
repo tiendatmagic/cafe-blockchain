@@ -370,7 +370,7 @@ export class Web3Service {
   /**
    * Khởi tạo Reown AppKit modal với cấu hình được yêu cầu
    */
-  private initAppKit() {
+  private async initAppKit() {
     if (typeof window === 'undefined') return;
 
     try {
@@ -378,6 +378,11 @@ export class Web3Service {
       if (!projectId) {
         console.warn('[Web3] walletConnectProjectId is missing in environment configuration.');
         return;
+      }
+
+      // Nếu chưa đăng nhập, tự động dọn rác session/proposal treo cũ trong storage
+      if (!this.walletConnected()) {
+        await this.clearWalletConnectStorage();
       }
 
       try {
@@ -629,6 +634,17 @@ export class Web3Service {
     }
 
     try {
+      // Tự động kiểm tra và thêm mạng vào ví MetaMask/Extension nếu mạng cấu hình là Arbitrum Sepolia (421614) hoặc BSC Testnet (97)
+      // Điều này giúp tránh lỗi "unknown network" gây treo request trên MetaMask khi ví chưa lưu mạng này
+      const targetChainId = this.configuredChainId();
+      if ((targetChainId === '421614' || targetChainId === '97') && typeof window !== 'undefined' && (window as any).ethereum) {
+        try {
+          await this.addNetworkToWallet(targetChainId);
+        } catch (addErr) {
+          console.warn('[Web3] Thử thêm mạng trước khi kết nối ví thất bại:', addErr);
+        }
+      }
+
       const isConnected = this.appKitIsConnected;
       const address = this.appKitAddress;
       if (isConnected && address) {
@@ -642,6 +658,13 @@ export class Web3Service {
 
         await this.updateBalanceAndStatus(address);
         return true;
+      }
+
+      // Ngắt kết nối phiên treo cũ nếu người dùng chưa kết nối active để tránh lỗi "Connection can be declined"
+      if (!this.walletConnected()) {
+        try {
+          await this.modal.disconnect();
+        } catch (e) {}
       }
 
       this.resetWalletState(true);
@@ -710,6 +733,13 @@ export class Web3Service {
       });
     } catch (err: any) {
       console.error('Lỗi khi mở modal kết nối:', err);
+      // Nếu dính lỗi Connection declined do request cũ active, tự động ngắt phiên treo và mở lại
+      if (err?.message?.includes('declined') || err?.message?.includes('active')) {
+        try {
+          await this.modal.disconnect();
+          await this.modal.open();
+        } catch (e) {}
+      }
       this.walletError.set(err.message || 'Lỗi kết nối ví.');
       this.resetWalletState(true);
       return false;
@@ -728,7 +758,17 @@ export class Web3Service {
       if (this.modal) {
         const net = this.getAppKitNetworkByChainId(chainIdToUse);
         if (net) {
-          await this.modal.switchNetwork(net);
+          try {
+            await this.modal.switchNetwork(net);
+          } catch (switchErr: any) {
+            console.warn(`[Web3] AppKit switchNetwork thất bại cho chain ${chainIdToUse}, thử addNetworkToWallet:`, switchErr);
+            const added = await this.addNetworkToWallet(chainIdToUse);
+            if (added) {
+              await this.modal.switchNetwork(net);
+            } else {
+              throw switchErr;
+            }
+          }
           this.chainId.set(chainIdToUse);
           this.configuredChainId.set(chainIdToUse);
           if (typeof window !== 'undefined') {
@@ -775,6 +815,75 @@ export class Web3Service {
     }
     this.resetWalletState(true);
     this.emitAccountChange('');
+  }
+
+  public async addNetworkToWallet(chainId: number | string): Promise<boolean> {
+    if (typeof window === 'undefined' || !(window as any).ethereum) return false;
+    const idNum = Number(chainId);
+    const idStr = idNum.toString();
+    const hexChainId = '0x' + idNum.toString(16);
+
+    const chainInfo = this.POPULAR_CHAINS.find(c => c.chainId === idStr);
+    if (!chainInfo) {
+      console.warn(`[Web3] Không tìm thấy thông tin mạng trong POPULAR_CHAINS cho chainId: ${chainId}`);
+      return false;
+    }
+
+    let symbol = 'ETH';
+    let currencyName = 'Ether';
+    if (idStr === '56' || idStr === '97') {
+      symbol = 'BNB';
+      currencyName = 'BNB';
+    }
+
+    const params = {
+      chainId: hexChainId,
+      chainName: chainInfo.name,
+      nativeCurrency: { name: currencyName, symbol: symbol, decimals: 18 },
+      rpcUrls: [chainInfo.rpcUrl],
+      blockExplorerUrls: [chainInfo.explorerUrl]
+    };
+
+    try {
+      await (window as any).ethereum.request({
+        method: 'wallet_addEthereumChain',
+        params: [params]
+      });
+      return true;
+    } catch (e) {
+      console.warn('[Web3] Thêm mạng vào ví thất bại:', e);
+      return false;
+    }
+  }
+
+  private async clearWalletConnectStorage() {
+    if (typeof window === 'undefined') return;
+
+    try {
+      if ('indexedDB' in window) {
+        const dbs = (await indexedDB.databases?.()) || [];
+        for (const db of dbs) {
+          if (db.name && (db.name.includes('WALLET_CONNECT') || db.name.includes('walletconnect') || db.name.includes('reown') || db.name.includes('appkit'))) {
+            indexedDB.deleteDatabase(db.name);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[Web3] Lỗi khi dọn dẹp IndexedDB:', e);
+    }
+
+    try {
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('wc@2') || key.startsWith('@w3m') || key.startsWith('@appkit'))) {
+          if (key.includes('proposal') || key.includes('request') || key.includes('pending')) {
+            keysToRemove.push(key);
+          }
+        }
+      }
+      keysToRemove.forEach(k => localStorage.removeItem(k));
+    } catch (e) {}
   }
 
   private resetWalletState(forceLogout = false) {
